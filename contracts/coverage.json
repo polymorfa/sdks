@@ -2655,9 +2655,8 @@
       "operationId": "getBilling",
       "fingerprint": "d02dff1f6a9982c73eaca4bd8ae1cb54c374c59ae8cc07dbff709f1ad4a84cc7",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.billing.retrieve"
       }
     },
     {
@@ -2667,9 +2666,8 @@
       "operationId": "listTierPricing",
       "fingerprint": "11fd2a21332fc6cc122e2453819b5832e03fa24a2ae035700a040749889db798",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.billing.listPricing"
       }
     },
     {
@@ -2679,9 +2677,8 @@
       "operationId": "listBillingTransactions",
       "fingerprint": "dcd05457f7da5d5133e1283af495c541527d091d9f89cba7fad999692aa8c034",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.billing.listTransactions"
       }
     },
     {
@@ -2691,9 +2688,8 @@
       "operationId": "listUsageMeters",
       "fingerprint": "608b3ae4cc856505bca3f0295432a4d27070cfc86e44b99a8d65a717c6587548",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.billing.usage"
       }
     },
     {
@@ -3017,9 +3013,8 @@
       "operationId": "updateBillingReminderSettings",
       "fingerprint": "e4daaaab1908b0be01151e3b76ad71321e1948550f0c9ad6d51a007fcebb23f5",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.billing.updateReminderSettings"
       }
     },
     {
@@ -3064,8 +3059,9 @@
       "operationId": "updateOrganization",
       "fingerprint": "2bebc7153acadcdd51c38194d1953ab83faad44217c89a6024432ac2dd1dc33f",
       "typescript": {
-        "status": "covered",
-        "method": "PlatformClient.organizations.update"
+        "status": "excluded",
+        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {

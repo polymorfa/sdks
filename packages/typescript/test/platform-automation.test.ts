@@ -35,6 +35,44 @@ async function platformServer(): Promise<{
   };
 }
 
+describe("PlatformClient billing", () => {
+  it("maps the complete organization-key billing read surface", async () => {
+    const { client, requests } = await platformServer();
+
+    const billing = await client.billing.retrieve();
+    await client.billing.usage();
+    await client.billing.listTransactions();
+    await client.billing.listPricing();
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /v1/billing",
+      "GET /v1/billing/usage",
+      "GET /v1/billing/transactions",
+      "GET /v1/billing/pricing",
+    ]);
+    expect(billing.metadata.requestId).toBe("req_platform_automation");
+  });
+
+  it("updates reminder settings with an idempotency key", async () => {
+    const { client, requests } = await platformServer();
+
+    await client.billing.updateReminderSettings(
+      {
+        lowBalanceThresholdCents: 2_500,
+        reminderChannels: ["email", "inApp"],
+      },
+      { idempotencyKey: "billing-reminders-1" },
+    );
+
+    expect(requests[0]).toMatchObject({
+      method: "PATCH",
+      path: "/v1/billing/reminders",
+      body: '{"lowBalanceThresholdCents":2500,"reminderChannels":["email","inApp"]}',
+    });
+    expect(requests[0]?.headers["idempotency-key"]).toBe("billing-reminders-1");
+  });
+});
+
 describe("PlatformClient media", () => {
   it("maps media URL, delete, and upload operations", async () => {
     const { client, requests } = await platformServer();

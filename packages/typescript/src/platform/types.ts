@@ -27,12 +27,51 @@ export interface Organization {
   readonly updatedAt: number;
 }
 
-export interface UpdateOrganizationRequest {
-  readonly name?: string;
-  readonly email?: string;
-  readonly timezone?: string | null;
-  readonly billingEmail?: string | null;
-  readonly lowBalanceThresholdCents?: number;
+export type BillingCurrency = "USD" | "BRL" | "INR";
+
+export interface BillingBalance {
+  readonly balanceCents: number;
+  readonly preferredCurrency: BillingCurrency;
+}
+
+export interface BillingUsage {
+  readonly activeNumbers: number;
+  readonly totalChargedCents: number;
+}
+
+export interface BillingTransaction {
+  readonly id: string;
+  readonly amountCents: number;
+  readonly balanceAfterCents: number;
+  readonly type: string;
+  readonly description: string;
+  readonly sessionId: string | null;
+  readonly projectId: string | null;
+  readonly tier: string | null;
+  readonly currency: string | null;
+  readonly paymentStatus: "paid" | "refunded";
+  readonly createdAt: number;
+}
+
+export interface TierPricing {
+  readonly id: string;
+  readonly tier: string;
+  readonly dailyRateCents: number;
+  readonly label: string;
+  readonly description: string;
+  readonly features: readonly string[];
+}
+
+export type BillingReminderChannel = "email" | "inApp";
+
+export interface UpdateBillingReminderSettingsRequest {
+  readonly lowBalanceThresholdCents: number;
+  readonly reminderChannels?: readonly BillingReminderChannel[];
+}
+
+export interface BillingReminderSettings {
+  readonly lowBalanceThresholdCents: number;
+  readonly reminderChannels: readonly BillingReminderChannel[];
 }
 
 export interface ProjectIcon {

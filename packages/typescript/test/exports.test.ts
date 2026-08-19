@@ -2,6 +2,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {
   AudiencesResource,
+  BillingResource,
   CampaignsResource,
   ChatsResource,
   ClientTokensResource,
@@ -23,6 +24,9 @@ import {
   isEvent,
   verifyWebhookSignature,
   type ApiResponse,
+  type BillingBalance,
+  type BillingTransaction,
+  type BillingUsage,
   type CreateProjectRequest,
   type CreateSessionRequest,
   type Contact,
@@ -43,6 +47,8 @@ import {
   type ResponseMetadata,
   type SendMessageRequest,
   type TemplateDefinition,
+  type TierPricing,
+  type UpdateBillingReminderSettingsRequest,
   type WebhookEvent,
 } from "../src/index.js";
 
@@ -52,6 +58,7 @@ describe("public exports", () => {
       MessagingClient,
       PlatformClient,
       AudiencesResource,
+      BillingResource,
       CampaignsResource,
       ChatsResource,
       ClientTokensResource,
@@ -70,11 +77,18 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(21);
+    ]).toHaveLength(22);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
     expectTypeOf<ApiResponse<unknown>>().toHaveProperty("metadata");
+    expectTypeOf<BillingBalance>().toHaveProperty("balanceCents");
+    expectTypeOf<BillingUsage>().toHaveProperty("activeNumbers");
+    expectTypeOf<BillingTransaction>().toHaveProperty("balanceAfterCents");
+    expectTypeOf<TierPricing>().toHaveProperty("dailyRateCents");
+    expectTypeOf<UpdateBillingReminderSettingsRequest>().toHaveProperty(
+      "lowBalanceThresholdCents",
+    );
     expectTypeOf<ResponseMetadata>().toHaveProperty("requestId");
     expectTypeOf<RequestOptions>().toHaveProperty("signal");
     expectTypeOf<RawRequest>().toHaveProperty("path");

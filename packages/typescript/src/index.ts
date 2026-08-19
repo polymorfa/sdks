@@ -124,6 +124,7 @@ export type {
 export { WebhooksResource } from "./messaging/webhooks.js";
 export { CursorPage, type PageDecoder, type PageResult } from "./pagination.js";
 export { AudiencesResource } from "./platform/audiences.js";
+export { BillingResource } from "./platform/billing.js";
 export { CampaignsResource } from "./platform/campaigns.js";
 export { PlatformClient } from "./platform/client.js";
 export { MediaResource } from "./platform/media.js";
@@ -132,6 +133,12 @@ export { OrganizationsResource } from "./platform/organizations.js";
 export { ProjectsResource } from "./platform/projects.js";
 export { PlatformSessionsResource } from "./platform/sessions.js";
 export type {
+  BillingBalance,
+  BillingCurrency,
+  BillingReminderChannel,
+  BillingReminderSettings,
+  BillingTransaction,
+  BillingUsage,
   CreateProjectRequest,
   CreateTestingSessionRequest,
   DataEnvelope,
@@ -153,7 +160,8 @@ export type {
   SessionStopResult,
   SessionTier,
   SessionTierOverrideRequest,
-  UpdateOrganizationRequest,
+  TierPricing,
+  UpdateBillingReminderSettingsRequest,
 } from "./platform/types.js";
 export { RawClient } from "./raw.js";
 export type {

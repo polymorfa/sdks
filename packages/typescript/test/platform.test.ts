@@ -48,20 +48,13 @@ describe("PlatformClient credentials", () => {
 });
 
 describe("PlatformClient organizations and projects", () => {
-  it("retrieves and updates the active organization", async () => {
+  it("retrieves the active organization without exposing dashboard-only updates", async () => {
     const { client, requests } = await platformServer();
     await client.organizations.retrieve();
-    await client.organizations.update({
-      name: "Support Team",
-      timezone: "Asia/Beirut",
-    });
+    expect(client.organizations).not.toHaveProperty("update");
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "GET /v1/organization",
-      "PATCH /v1/organization",
     ]);
-    expect(requests[1]?.body).toBe(
-      '{"name":"Support Team","timezone":"Asia/Beirut"}',
-    );
   });
 
   it("lists and creates projects", async () => {

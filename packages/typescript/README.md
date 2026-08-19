@@ -168,3 +168,39 @@ The pinned contract defines these operation payloads as open objects, exposed
 as `PlatformPayload`. Templates and Flows are not methods on `PlatformClient`:
 their endpoints require a dashboard bearer and reject the organization API key
 used by the server client.
+
+## Billing and usage
+
+`PlatformClient.billing` exposes the complete organization-key billing family.
+Reads require `sessions:read`; updating reminder settings requires
+`sessions:manage`.
+
+```ts
+const [balance, usage, transactions, pricing] = await Promise.all([
+  platform.billing.retrieve(),
+  platform.billing.usage(),
+  platform.billing.listTransactions(),
+  platform.billing.listPricing(),
+]);
+
+await platform.billing.updateReminderSettings(
+  {
+    lowBalanceThresholdCents: 2_500,
+    reminderChannels: ["email", "inApp"],
+  },
+  { idempotencyKey: "billing-reminders-august" },
+);
+
+console.log({
+  balance: balance.data.data,
+  usage: usage.data.data,
+  transactions: transactions.data.data,
+  pricing: pricing.data.data,
+  requestId: usage.metadata.requestId,
+});
+```
+
+Organization updates, member mutations, invitations, billing top-ups, and
+console usage insights require a dashboard session and are not exposed by the
+server SDK. `PlatformClient` accepts organization API keys and deliberately
+rejects project and browser client tokens.

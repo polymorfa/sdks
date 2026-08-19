@@ -6,6 +6,7 @@ import {
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
 import { AudiencesResource } from "./audiences.js";
+import { BillingResource } from "./billing.js";
 import { CampaignsResource } from "./campaigns.js";
 import { MediaResource } from "./media.js";
 import { OptOutsResource } from "./opt-outs.js";
@@ -15,6 +16,7 @@ import { PlatformSessionsResource } from "./sessions.js";
 
 export class PlatformClient {
   readonly audiences: AudiencesResource;
+  readonly billing: BillingResource;
   readonly campaigns: CampaignsResource;
   readonly organizations: OrganizationsResource;
   readonly media: MediaResource;
@@ -37,6 +39,7 @@ export class PlatformClient {
       ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
     });
     this.audiences = new AudiencesResource(transport);
+    this.billing = new BillingResource(transport);
     this.campaigns = new CampaignsResource(transport);
     this.organizations = new OrganizationsResource(transport);
     this.media = new MediaResource(transport);
