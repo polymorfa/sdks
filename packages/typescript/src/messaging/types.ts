@@ -78,6 +78,42 @@ export interface SuccessResponse {
   readonly message?: string;
 }
 
+export interface MintClientTokenRequest {
+  readonly session: string;
+  readonly ephemeralId: string;
+  readonly ttlSeconds?: number;
+}
+
+export interface ClientTokenValue {
+  readonly token: string;
+  readonly expiresAt: string;
+}
+
+export type MintClientTokenResponse = SuccessEnvelope<ClientTokenValue>;
+
+export interface ClientRuleRateLimits {
+  readonly perMinute?: number;
+  readonly perDay?: number;
+}
+
+export interface ClientRules {
+  readonly actions: readonly string[];
+  readonly recipientMode: string;
+  readonly verifiedJids?: readonly string[];
+  readonly rateLimits?: ClientRuleRateLimits;
+}
+
+export type GetClientRulesResponse = SuccessEnvelope<ClientRules>;
+
+export interface SetClientRulesRequest {
+  readonly recipientMode: string;
+  readonly allowedActions?: string;
+  readonly rateLimit?: number;
+  readonly maxDaily?: number;
+  readonly allowedOrigins?: string;
+  readonly enabled: boolean;
+}
+
 export type ListSessionsResponse = SuccessEnvelope<readonly Session[]>;
 export type CreateSessionResponse = SuccessEnvelope<SessionOperation>;
 export type GetSessionResponse = SuccessEnvelope<Session>;

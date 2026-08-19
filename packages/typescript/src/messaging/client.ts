@@ -5,11 +5,13 @@ import {
 } from "../credentials.js";
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
+import { ClientTokensResource } from "./client-tokens.js";
 import { MessagesResource } from "./messages.js";
 import { SessionsResource } from "./sessions.js";
 import { WebhooksResource } from "./webhooks.js";
 
 export class MessagingClient {
+  readonly clientTokens: ClientTokensResource;
   readonly sessions: SessionsResource;
   readonly messages: MessagesResource;
   readonly webhooks: WebhooksResource;
@@ -28,6 +30,7 @@ export class MessagingClient {
         : { apiVersion: options.apiVersion }),
       ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
     });
+    this.clientTokens = new ClientTokensResource(transport);
     this.sessions = new SessionsResource(transport);
     this.messages = new MessagesResource(transport);
     this.webhooks = new WebhooksResource(transport);

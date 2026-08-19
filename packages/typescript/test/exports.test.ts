@@ -3,6 +3,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import {
   AudiencesResource,
   CampaignsResource,
+  ClientTokensResource,
   CursorPage,
   MessagingClient,
   MediaResource,
@@ -20,6 +21,7 @@ import {
   type ApiResponse,
   type CreateProjectRequest,
   type CreateSessionRequest,
+  type MintClientTokenRequest,
   type MessageReceivedEvent,
   type MessagingClientOptions,
   type ListCampaignsParams,
@@ -39,6 +41,7 @@ describe("public exports", () => {
       PlatformClient,
       AudiencesResource,
       CampaignsResource,
+      ClientTokensResource,
       MediaResource,
       OptOutsResource,
       CursorPage,
@@ -51,7 +54,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(16);
+    ]).toHaveLength(17);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -66,6 +69,7 @@ describe("public exports", () => {
       Readonly<Record<string, unknown>>
     >();
     expectTypeOf<CreateSessionRequest>().toHaveProperty("projectId");
+    expectTypeOf<MintClientTokenRequest>().toHaveProperty("ephemeralId");
     expectTypeOf<CreateProjectRequest>().toHaveProperty("name");
     expectTypeOf<SendMessageRequest>().toHaveProperty("chatId");
     expectTypeOf<WebhookEvent>().toHaveProperty("event");

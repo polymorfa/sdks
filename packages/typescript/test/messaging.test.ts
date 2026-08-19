@@ -133,6 +133,47 @@ describe("MessagingClient messages", () => {
   });
 });
 
+describe("MessagingClient client tokens", () => {
+  it("mints tokens and manages session-bound rules", async () => {
+    const { client, requests } = await messagingServer();
+
+    await client.clientTokens.mint(
+      {
+        session: "support/eu",
+        ephemeralId: "user-1-tab-2",
+        ttlSeconds: 600,
+      },
+      { idempotencyKey: "browser-user-1-tab-2" },
+    );
+    await client.clientTokens.retrieveRules("support/eu");
+    await client.clientTokens.updateRules("support/eu", {
+      recipientMode: "conversation",
+      allowedActions: "send_message,send_reaction",
+      rateLimit: 20,
+      maxDaily: 200,
+      allowedOrigins: "https://app.example.test",
+      enabled: true,
+    });
+    await client.clientTokens.deleteRules("support/eu");
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "POST /api/client-tokens",
+      "GET /api/sessions/support%2Feu/client-rules",
+      "PUT /api/sessions/support%2Feu/client-rules",
+      "DELETE /api/sessions/support%2Feu/client-rules",
+    ]);
+    expect(requests[0]?.body).toBe(
+      '{"session":"support/eu","ephemeralId":"user-1-tab-2","ttlSeconds":600}',
+    );
+    expect(requests[0]?.headers["idempotency-key"]).toBe(
+      "browser-user-1-tab-2",
+    );
+    expect(requests[2]?.body).toBe(
+      '{"recipientMode":"conversation","allowedActions":"send_message,send_reaction","rateLimit":20,"maxDaily":200,"allowedOrigins":"https://app.example.test","enabled":true}',
+    );
+  });
+});
+
 describe("MessagingClient webhooks", () => {
   it("maps webhook CRUD operations without exposing the HMAC key in URLs", async () => {
     const { client, requests } = await messagingServer();

@@ -146,9 +146,8 @@
       "operationId": "deleteClientRules",
       "fingerprint": "5e776e131aeff24de634c8c23228b96ea9db5f39ef12032934cd95440bd3fd93",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.clientTokens.deleteRules"
       }
     },
     {
@@ -767,9 +766,8 @@
       "operationId": "getClientRules",
       "fingerprint": "f878fc588bcf2c51faa82d6c1d7e2bf2a3765c01affd9513a7b0004b07e3b5ec",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.clientTokens.retrieveRules"
       }
     },
     {
@@ -1371,9 +1369,8 @@
       "operationId": "mintClientToken",
       "fingerprint": "26489877b93f4b1b7ef2845f195489e5baf5400f5c5ba5a01e18ba6701146f26",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.clientTokens.mint"
       }
     },
     {
@@ -1916,9 +1913,8 @@
       "operationId": "setClientRules",
       "fingerprint": "322a2571256b5bd75b030eeffbfd6b69664530debe3e644685bb879657e431b3",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.clientTokens.updateRules"
       }
     },
     {

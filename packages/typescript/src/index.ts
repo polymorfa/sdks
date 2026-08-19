@@ -23,16 +23,21 @@ export {
   type PolymorfaErrorOptions,
 } from "./errors.js";
 export { MessagingClient } from "./messaging/client.js";
+export { ClientTokensResource } from "./messaging/client-tokens.js";
 export { MessagesResource } from "./messaging/messages.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export type {
   BartenderMode,
   CloudApiCredentials,
+  ClientRuleRateLimits,
+  ClientRules,
+  ClientTokenValue,
   CreateSessionRequest,
   CreateSessionResponse,
   CreateWebhookRequest,
   CreateWebhookResponse,
   GetSessionAccountResponse,
+  GetClientRulesResponse,
   GetSessionResponse,
   GetWebhookResponse,
   HistorySyncPolicy,
@@ -41,6 +46,8 @@ export type {
   MessageKind,
   MessageResponse,
   MessageTemplateSend,
+  MintClientTokenRequest,
+  MintClientTokenResponse,
   MessagingConnection,
   OperationAccepted,
   QuotedMessage,
@@ -49,6 +56,7 @@ export type {
   SendMessageRequest,
   SendMessageResponse,
   SendReactionResponse,
+  SetClientRulesRequest,
   Session,
   SessionOperation,
   StarMessageResponse,
