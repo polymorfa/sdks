@@ -5,6 +5,7 @@ import {
   validateMessagingCredential,
   validatePlatformApiKey,
 } from "../src/credentials.js";
+import { PolymorfaConfigurationError } from "../src/errors.js";
 
 describe("credential validation", () => {
   it("accepts an explicit Messaging server API key", () => {
@@ -31,7 +32,7 @@ describe("credential validation", () => {
   });
 
   it("rejects client and project tokens as Platform server keys", () => {
-    expect(() => validatePlatformApiKey("pmfa_ct_example")).toThrow(/Platform server API key/);
+    expect(() => validatePlatformApiKey("pmfa_ct_example")).toThrow(PolymorfaConfigurationError);
     expect(() => validatePlatformApiKey("pmfa_pt_example")).toThrow(/Platform server API key/);
   });
 
