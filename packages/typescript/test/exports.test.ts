@@ -45,6 +45,7 @@ import {
   SessionBansResource,
   TemplatesResource,
   UsersResource,
+  WidgetSettingsResource,
   constructWebhookEvent,
   isEvent,
   verifyWebhookSignature,
@@ -94,12 +95,14 @@ import {
   type ResponseMetadata,
   type SecurityIncident,
   type SessionBan,
+  type SessionBatchRequest,
   type SendMessageRequest,
   type TemplateDefinition,
   type TierPricing,
   type UpdateBillingReminderSettingsRequest,
   type WebhookEvent,
   type UserSecurityCode,
+  type WidgetSettings,
 } from "../src/index.js";
 
 describe("public exports", () => {
@@ -152,10 +155,11 @@ describe("public exports", () => {
       SessionBansResource,
       TemplatesResource,
       UsersResource,
+      WidgetSettingsResource,
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(42);
+    ]).toHaveLength(43);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -186,6 +190,7 @@ describe("public exports", () => {
     expectTypeOf<ProjectToken>().toHaveProperty("revokedAt");
     expectTypeOf<SecurityIncident>().toHaveProperty("resolution");
     expectTypeOf<SessionBan>().toHaveProperty("status");
+    expectTypeOf<SessionBatchRequest>().toHaveProperty("sessionIds");
     expectTypeOf<CreateSessionRequest>().toHaveProperty("projectId");
     expectTypeOf<CreateChannelRequest>().toHaveProperty("picture");
     expectTypeOf<Channel>().toHaveProperty("lid");
@@ -216,6 +221,7 @@ describe("public exports", () => {
     expectTypeOf<TemplateDefinition>().toHaveProperty("variables");
     expectTypeOf<WebhookEvent>().toHaveProperty("event");
     expectTypeOf<UserSecurityCode>().toHaveProperty("numericCode");
+    expectTypeOf<WidgetSettings>().toHaveProperty("allowedOrigins");
     expectTypeOf<MessageReceivedEvent>().toHaveProperty("payload");
   });
 });

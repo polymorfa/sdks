@@ -20,6 +20,7 @@ import { ProjectsResource } from "./projects.js";
 import { SecurityIncidentsResource } from "./security-incidents.js";
 import { SessionBansResource } from "./session-bans.js";
 import { PlatformSessionsResource } from "./sessions.js";
+import { WidgetSettingsResource } from "./widget-settings.js";
 
 export class PlatformClient {
   readonly apiKeys: ApiKeysResource;
@@ -37,6 +38,7 @@ export class PlatformClient {
   readonly securityIncidents: SecurityIncidentsResource;
   readonly sessionBans: SessionBansResource;
   readonly sessions: PlatformSessionsResource;
+  readonly widgetSettings: WidgetSettingsResource;
   readonly raw: RawClient;
 
   constructor(options: PlatformClientOptions) {
@@ -67,6 +69,7 @@ export class PlatformClient {
     this.securityIncidents = new SecurityIncidentsResource(transport);
     this.sessionBans = new SessionBansResource(transport);
     this.sessions = new PlatformSessionsResource(transport);
+    this.widgetSettings = new WidgetSettingsResource(transport);
     this.raw = new RawClient(transport);
   }
 }

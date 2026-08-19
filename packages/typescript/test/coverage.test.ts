@@ -146,11 +146,38 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "f156af2dda13e62b6b106a542fdedb39524bdb66",
       total: 331,
-      covered: 194,
+      covered: 198,
       partial: 0,
-      missing: 71,
+      missing: 67,
       excluded: 66,
       changed: 0,
+    });
+  });
+
+  it("maps widget settings and batch session lifecycle to the organization-key client", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const operationIds = [
+      "getWidgetSettings",
+      "updateWidgetSettings",
+      "stopSessions",
+      "deleteSessions",
+    ];
+    const mappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ operationId }) => operationIds.includes(operationId))
+        .map(({ operationId, typescript }) => [operationId, typescript.method]),
+    );
+
+    expect(mappings).toEqual({
+      deleteSessions: "PlatformClient.sessions.deleteMany",
+      getWidgetSettings: "PlatformClient.widgetSettings.retrieve",
+      stopSessions: "PlatformClient.sessions.stopMany",
+      updateWidgetSettings: "PlatformClient.widgetSettings.update",
     });
   });
 

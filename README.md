@@ -156,8 +156,10 @@ The handwritten Platform resources in this milestone are:
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing, and update low-balance reminders
 - `projects`: list, create, request production enrollment, approve, and cancel
-- `sessions`: list, stop, delete, set tier override, and create a testing
-  session
+- `sessions`: list, stop or delete one session, stop or delete a bounded batch,
+  set tier override, and create a testing session
+- `widgetSettings`: retrieve organization or project Connect widget settings
+  and update the exact saved configuration fields
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and recipients
 - `audiences`: list, create, retrieve, delete, and create an upload URL
@@ -356,9 +358,9 @@ subpath exports an inert mount function.
 ## Coverage status
 
 `contracts/coverage.json` maps all 331 Messaging and Platform operations in the
-pinned contract. This milestone has 194 operations covered by handwritten
+pinned contract. This milestone has 198 operations covered by handwritten
 resources, 66 dashboard-only or staff routes excluded from the server
-credential surface, and 71 operations available through the raw escape hatch
+credential surface, and 67 operations available through the raw escape hatch
 while typed methods are added. Missing and structurally changed operations are reported
 individually; the ledger never presents raw access as typed parity.
 

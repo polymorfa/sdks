@@ -6,6 +6,9 @@ import type {
   ListPlatformSessionsParams,
   ManagedSession,
   PlatformSession,
+  SessionBatchRemoveResult,
+  SessionBatchRequest,
+  SessionBatchStopResult,
   SessionProjectContext,
   SessionRemoveResult,
   SessionStopResult,
@@ -42,6 +45,19 @@ export class PlatformSessionsResource {
     });
   }
 
+  /** Requests asynchronous stops for the matching 1 through 100 sessions. */
+  stopMany(
+    body: SessionBatchRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SessionBatchStopResult>>> {
+    return this.transport.request({
+      method: "POST",
+      path: "/v1/sessions/stop",
+      body,
+      ...options,
+    });
+  }
+
   delete(
     sessionId: string,
     options: RequestOptions = {},
@@ -49,6 +65,19 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "DELETE",
       path: sessionPath(sessionId),
+      ...options,
+    });
+  }
+
+  /** Permanently removes the matching 1 through 100 sessions. */
+  deleteMany(
+    body: SessionBatchRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SessionBatchRemoveResult>>> {
+    return this.transport.request({
+      method: "POST",
+      path: "/v1/sessions/delete",
+      body,
       ...options,
     });
   }

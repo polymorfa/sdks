@@ -21,6 +21,8 @@
 - Added typed organization-key resources for API-key metadata and deactivation,
   member reads, audit logs, session bans, security incidents, durable operation
   polling, and project-token metadata.
+- Added typed Connect widget settings retrieval and updates plus bounded batch
+  session stop and deletion for organization server keys.
 - Excluded dashboard-only member invitations, role changes, and deletion from
   the organization-key client.
 - Excluded dashboard-only template and Flow endpoints from the organization-key

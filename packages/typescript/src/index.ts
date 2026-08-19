@@ -406,6 +406,7 @@ export { ProjectsResource } from "./platform/projects.js";
 export { SecurityIncidentsResource } from "./platform/security-incidents.js";
 export { SessionBansResource } from "./platform/session-bans.js";
 export { PlatformSessionsResource } from "./platform/sessions.js";
+export { WidgetSettingsResource } from "./platform/widget-settings.js";
 export type {
   ApiKey,
   ApiKeyDeactivation,
@@ -440,6 +441,9 @@ export type {
   ProjectWithStats,
   SecurityIncident,
   SecurityIncidentAcknowledgement,
+  SessionBatchRemoveResult,
+  SessionBatchRequest,
+  SessionBatchStopResult,
   SessionBan,
   SessionBanStatus,
   SessionProjectContext,
@@ -449,6 +453,17 @@ export type {
   SessionTierOverrideRequest,
   TierPricing,
   UpdateBillingReminderSettingsRequest,
+  RetrieveWidgetSettingsParams,
+  UpdateWidgetSettingsRequest,
+  WidgetColorPalette,
+  WidgetColors,
+  WidgetHistorySync,
+  WidgetLogoMode,
+  WidgetMethod,
+  WidgetMode,
+  WidgetSettings,
+  WidgetShape,
+  WidgetTheme,
 } from "./platform/types.js";
 export { RawClient } from "./raw.js";
 export type {

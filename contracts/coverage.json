@@ -2820,9 +2820,8 @@
       "operationId": "getWidgetSettings",
       "fingerprint": "b8ca527c78e69322e2e4ea655cf6ba6c1c796da20a9a5571e1f37f34b72d90ba",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.widgetSettings.retrieve"
       }
     },
     {
@@ -3662,9 +3661,8 @@
       "operationId": "deleteSessions",
       "fingerprint": "2150d1fe457eebf3faddf85219ef4a18bc8fcb294210a6d4eb353aa3193c19ed",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.sessions.deleteMany"
       }
     },
     {
@@ -3674,9 +3672,8 @@
       "operationId": "stopSessions",
       "fingerprint": "040ec9cbadb4c095278cecae967f43c9d8c6fd296b0724671e38331b89d68b74",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.sessions.stopMany"
       }
     },
     {
@@ -3781,9 +3778,8 @@
       "operationId": "updateWidgetSettings",
       "fingerprint": "61b7ddd6c3953b63b1dc9f163aba1cc716b5ba86b4c5e5bf8f3fb53b15127be1",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.widgetSettings.update"
       }
     }
   ]
