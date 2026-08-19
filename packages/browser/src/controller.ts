@@ -1,5 +1,4 @@
 export interface ControllerSnapshot {
-  readonly status: string;
   readonly revision: number;
   readonly updatedAt: number;
 }
