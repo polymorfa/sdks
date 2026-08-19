@@ -96,6 +96,8 @@ The handwritten Messaging resources in this milestone are:
   chat's complete label set
 - `observationPolicies`: retrieve and update project ceilings and session
   overrides for presence, typing, and label observation
+- `quickReplies`: list, create, replace, and delete remembered Business App
+  quick replies
 - `templates`: list, create, retrieve, update, delete, preview, and submit to
   Meta
 - `webhooks`: list, create, retrieve, update, and delete
@@ -330,9 +332,9 @@ subpath exports an inert mount function.
 ## Coverage status
 
 `contracts/coverage.json` maps all 331 Messaging and Platform operations in the
-pinned contract. This milestone has 130 handwritten resource methods, 63
+pinned contract. This milestone has 134 handwritten resource methods, 63
 dashboard-only or staff routes excluded from the server credential surface,
-and 138 operations available through the raw escape hatch while typed methods
+and 134 operations available through the raw escape hatch while typed methods
 are added. Missing and structurally changed operations are reported
 individually; the ledger never presents raw access as typed parity.
 

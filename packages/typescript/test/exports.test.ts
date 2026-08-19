@@ -16,6 +16,7 @@ import {
   OptOutsResource,
   OperationsResource,
   ObservationPoliciesResource,
+  QuickRepliesResource,
   PlatformClient,
   PolymorfaAuthenticationError,
   PolymorfaCancelledError,
@@ -41,6 +42,7 @@ import {
   type GroupParticipant,
   type Label,
   type ProjectObservationPolicy,
+  type BusinessQuickReply,
   type MintClientTokenRequest,
   type MessageReceivedEvent,
   type MessagingClientOptions,
@@ -78,6 +80,7 @@ describe("public exports", () => {
       OptOutsResource,
       OperationsResource,
       ObservationPoliciesResource,
+      QuickRepliesResource,
       CursorPage,
       PolymorfaError,
       PolymorfaConfigurationError,
@@ -89,7 +92,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(26);
+    ]).toHaveLength(27);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -118,6 +121,7 @@ describe("public exports", () => {
     expectTypeOf<GroupParticipant>().toHaveProperty("isAdmin");
     expectTypeOf<Label>().toHaveProperty("color");
     expectTypeOf<ProjectObservationPolicy>().toHaveProperty("labelMode");
+    expectTypeOf<BusinessQuickReply>().toHaveProperty("shortcut");
     expectTypeOf<DisappearingTimerRequest>().toHaveProperty("durationSeconds");
     expectTypeOf<MintClientTokenRequest>().toHaveProperty("ephemeralId");
     expectTypeOf<PairCodeRequest>().toHaveProperty("phone");

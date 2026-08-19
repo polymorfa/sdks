@@ -9,6 +9,8 @@
   with binary-aware timeout and error handling.
 - Added typed Messaging label CRUD, full-set chat-label replacement, and
   project/session observation-policy resources.
+- Added typed Business App quick-reply listing, creation, replacement, and
+  deletion.
 - Added handwritten Platform clients for organizations, projects, and sessions.
 - Added handwritten Platform resources for campaigns, audiences, opt-outs, and
   media, covering 27 additional organization-key operations.

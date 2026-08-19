@@ -283,6 +283,54 @@ Neither labels nor observation policies appears in the client-token action
 allowlist. Use a server API key; the API rejects browser client tokens before
 route handling.
 
+## Business App quick replies
+
+`MessagingClient.quickReplies` exposes the complete four-operation quick-reply
+subfamily in the Business App contract. Listing requires `profile:read`;
+create, full replacement, and delete require `profile:write`.
+
+```ts
+const remembered = await messaging.quickReplies.list("support");
+
+const created = await messaging.quickReplies.create(
+  "support",
+  {
+    shortcut: "hours",
+    message: "We are open from 09:00 to 18:00.",
+    keywords: ["open", "hours"],
+  },
+  { idempotencyKey: "create-hours-quick-reply" },
+);
+
+await messaging.quickReplies.replace(
+  "support",
+  created.data.data.id,
+  {
+    shortcut: "openinghours",
+    message: "We are open weekdays from 09:00 to 18:00.",
+    keywords: ["open", "hours", "weekday"],
+    count: 0,
+  },
+  { idempotencyKey: "replace-hours-quick-reply" },
+);
+
+console.log(remembered.data.data.status, remembered.metadata.requestId);
+```
+
+The list response is a bounded observation collection containing policy,
+freshness status, and associated label IDs. It is not paginated. The update
+route replaces the complete quick reply, so the SDK names it `replace` instead
+of implying a partial update. The source exposes no retrieve-by-ID, send, or
+manual sync operation.
+
+The pinned public observation-policy request schemas do not include
+`quickReplyMode`, although policy responses contain that field. Quick-reply
+CRUD therefore does not alter observation policy, and the SDK does not add an
+undocumented policy update field.
+
+Quick-reply routes are absent from the browser client-token action allowlist.
+Use a server API key with the required profile scope.
+
 ## Chats
 
 `MessagingClient.chats` exposes the credential-compatible Linked Device chat

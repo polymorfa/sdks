@@ -51,9 +51,8 @@
       "operationId": "deleteBusinessQuickReply",
       "fingerprint": "6129e1ab72d705e57a19cfc730f6a8326b5d27872896b7f7d07c1266b86e9226",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.quickReplies.delete"
       }
     },
     {
@@ -272,9 +271,8 @@
       "operationId": "listBusinessQuickReplies",
       "fingerprint": "9af4e7087afe9fa06fe049607230ddf825566d6c5685dab860720432b8a5f0ae",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.quickReplies.list"
       }
     },
     {
@@ -972,9 +970,8 @@
       "operationId": "createBusinessQuickReply",
       "fingerprint": "94524d1ae8f4aba35db94e646efe36d89d3391f8c72cb3ad06fb8e4705adde9b",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.quickReplies.create"
       }
     },
     {
@@ -1624,9 +1621,8 @@
       "operationId": "setBusinessQuickReply",
       "fingerprint": "bf59537c8580fb0f834edde80034e2209871dbd8b8a7636dccc0f8afad358de4",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.quickReplies.replace"
       }
     },
     {

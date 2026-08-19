@@ -18,7 +18,7 @@ export class LabelsResource {
     session: string,
     params: ListLabelsParams = {},
     options: RequestOptions = {},
-  ): Promise<ApiResponse<GetChatLabelsResponse>> {
+  ): Promise<ApiResponse<ListLabelsResponse>> {
     return this.read(labelsPath(session), params, options);
   }
 
@@ -66,7 +66,7 @@ export class LabelsResource {
     chatId: string,
     params: ListLabelsParams = {},
     options: RequestOptions = {},
-  ): Promise<ApiResponse<ListLabelsResponse>> {
+  ): Promise<ApiResponse<GetChatLabelsResponse>> {
     return this.read(chatLabelsPath(session, chatId), params, options);
   }
 

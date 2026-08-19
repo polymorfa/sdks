@@ -32,6 +32,7 @@ export { MessagingMediaResource } from "./messaging/media.js";
 export { MessagesResource } from "./messaging/messages.js";
 export { ObservationPoliciesResource } from "./messaging/observation-policies.js";
 export { OperationsResource } from "./messaging/operations.js";
+export { QuickRepliesResource } from "./messaging/quick-replies.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
 export type {
@@ -41,6 +42,10 @@ export type {
   BusinessProfile,
   BusinessProfileCategory,
   BusinessProfileHours,
+  BusinessQuickReply,
+  BusinessQuickReplyCollection,
+  BusinessQuickReplyMutation,
+  BusinessQuickReplyObserved,
   CheckContactResult,
   CheckContactsResponse,
   DisappearingTimerDuration,
@@ -53,6 +58,7 @@ export type {
   ContactBlocklist,
   ContactProfilePicture,
   ContactUserInfo,
+  CreateBusinessQuickReplyResponse,
   CreateSessionRequest,
   CreateSessionResponse,
   CreateGroupRequest,
@@ -60,6 +66,8 @@ export type {
   CreateProjectTemplateRequest,
   CreateWebhookRequest,
   CreateWebhookResponse,
+  DeleteBusinessQuickReplyResponse,
+  DeletedBusinessQuickReply,
   EditMessageRequest,
   FlowDataExchangeMessageContent,
   FlowMessageContent,
@@ -105,6 +113,7 @@ export type {
   ListSessionsResponse,
   ListContactsResponse,
   ListGroupsResponse,
+  ListBusinessQuickRepliesResponse,
   ListMessageContent,
   ListMessageRow,
   ListMessageSection,
@@ -138,8 +147,11 @@ export type {
   ProductMessageMedia,
   QuotedMessage,
   QRCodeData,
+  QuickReplyObservationStatus,
+  QuickReplyUnknownReason,
   ProjectObservationPolicy,
   ReplaceChatLabelsRequest,
+  ReplaceBusinessQuickReplyResponse,
   ReactRequest,
   RevokeGroupInviteCodeResponse,
   RequestPairCodeResponse,
@@ -163,6 +175,7 @@ export type {
   SendTextMessageRequest,
   SetGroupFieldRequest,
   SetGroupPictureRequest,
+  SetBusinessQuickReplyResponse,
   SetClientRulesRequest,
   Session,
   SessionLabelObservationMode,

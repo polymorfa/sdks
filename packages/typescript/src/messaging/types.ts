@@ -269,6 +269,50 @@ export type GetSessionObservationPolicyResponse =
 export type UpdateSessionObservationPolicyResponse =
   SuccessEnvelope<SessionObservationPolicy>;
 
+export interface BusinessQuickReplyMutation {
+  readonly shortcut: string;
+  readonly message: string;
+  readonly keywords?: readonly string[];
+  readonly count?: number;
+}
+
+export interface BusinessQuickReply extends BusinessQuickReplyMutation {
+  readonly id: string;
+}
+
+export interface BusinessQuickReplyObserved extends BusinessQuickReply {
+  readonly associatedLabelIds: readonly string[];
+  readonly observedAt: string;
+}
+
+export type QuickReplyObservationStatus =
+  "disabled" | "unknown" | "partial" | "fresh";
+
+export type QuickReplyUnknownReason =
+  "observation_disabled" | "not_retained" | "not_observed";
+
+export interface BusinessQuickReplyCollection {
+  readonly policy: ObservationMode;
+  readonly status: QuickReplyObservationStatus;
+  readonly unknownReason?: QuickReplyUnknownReason;
+  readonly observedAt?: string;
+  readonly quickReplies: readonly BusinessQuickReplyObserved[];
+}
+
+export interface DeletedBusinessQuickReply {
+  readonly id: string;
+  readonly status: "DELETED";
+}
+
+export type CreateBusinessQuickReplyResponse =
+  SuccessEnvelope<BusinessQuickReply>;
+export type SetBusinessQuickReplyResponse = SuccessEnvelope<BusinessQuickReply>;
+export type ReplaceBusinessQuickReplyResponse = SetBusinessQuickReplyResponse;
+export type DeleteBusinessQuickReplyResponse =
+  SuccessEnvelope<DeletedBusinessQuickReply>;
+export type ListBusinessQuickRepliesResponse =
+  SuccessEnvelope<BusinessQuickReplyCollection>;
+
 export interface GroupParticipant {
   readonly lid: string;
   readonly phoneNumber?: string;
