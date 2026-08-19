@@ -1,0 +1,143 @@
+import { afterEach, describe, expect, it } from "vitest";
+
+import { MessagingClient } from "../src/messaging/client.js";
+import { startTestServer, type RecordedRequest, type TestServer } from "./support/http-server.js";
+
+const servers: TestServer[] = [];
+
+afterEach(async () => {
+  await Promise.all(servers.splice(0).map((server) => server.close()));
+});
+
+async function messagingServer(): Promise<{ client: MessagingClient; requests: RecordedRequest[] }> {
+  const server = await startTestServer(() => ({
+    status: 200,
+    headers: { "content-type": "application/json", "x-request-id": "req_messaging" },
+    body: '{"success":true,"data":{},"message":"accepted","operationId":"op_1"}',
+  }));
+  servers.push(server);
+  return {
+    requests: server.requests,
+    client: new MessagingClient({
+      credential: { type: "apiKey", value: "pmfa_example" },
+      baseUrl: server.url,
+      maxNetworkRetries: 0,
+    }),
+  };
+}
+
+describe("MessagingClient sessions", () => {
+  it("lists and creates sessions using the current routes", async () => {
+    const { client, requests } = await messagingServer();
+    await client.sessions.list();
+    const created = await client.sessions.create(
+      { projectId: "project_1", sessionId: "support", start: true },
+      { idempotencyKey: "session-support" },
+    );
+
+    expect(requests[0]).toMatchObject({ method: "GET", path: "/api/sessions", body: "" });
+    expect(requests[1]).toMatchObject({
+      method: "POST",
+      path: "/api/sessions",
+      body: '{"projectId":"project_1","sessionId":"support","start":true}',
+    });
+    expect(requests[1]?.headers["idempotency-key"]).toBe("session-support");
+    expect(created.metadata.requestId).toBe("req_messaging");
+  });
+
+  it("encodes session identifiers for lifecycle and account operations", async () => {
+    const { client, requests } = await messagingServer();
+    const id = "support/eu";
+    await client.sessions.retrieve(id);
+    await client.sessions.update(id, { config: { presence: true } });
+    await client.sessions.start(id);
+    await client.sessions.stop(id);
+    await client.sessions.restart(id);
+    await client.sessions.logout(id);
+    await client.sessions.delete(id);
+    await client.sessions.account(id);
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /api/sessions/support%2Feu",
+      "PUT /api/sessions/support%2Feu",
+      "POST /api/sessions/support%2Feu/start",
+      "POST /api/sessions/support%2Feu/stop",
+      "POST /api/sessions/support%2Feu/restart",
+      "POST /api/sessions/support%2Feu/logout",
+      "DELETE /api/sessions/support%2Feu",
+      "GET /api/sessions/support%2Feu/me",
+    ]);
+    expect(requests[1]?.body).toBe('{"config":{"presence":true}}');
+  });
+});
+
+describe("MessagingClient messages", () => {
+  it("sends messages and exposes the typed response envelope", async () => {
+    const { client, requests } = await messagingServer();
+    const response = await client.messages.send(
+      "support/eu",
+      { chatId: "15551234567@s.whatsapp.net", type: "text", text: "Hello" },
+      { idempotencyKey: "message-1" },
+    );
+
+    expect(requests[0]).toMatchObject({
+      method: "POST",
+      path: "/api/support%2Feu/messages/send",
+      body: '{"chatId":"15551234567@s.whatsapp.net","type":"text","text":"Hello"}',
+    });
+    expect(response.data.success).toBe(true);
+  });
+
+  it("maps seen, typing, reaction, and star actions", async () => {
+    const { client, requests } = await messagingServer();
+    await client.messages.markSeen("support", { chatId: "chat", messageId: "m1" });
+    await client.messages.setTyping("support", { chatId: "chat", state: "recording" });
+    await client.messages.react("support", { chatId: "chat", messageId: "m1", reaction: "👍" });
+    await client.messages.star("support", { chatId: "chat", messageId: "m1", star: true });
+
+    expect(requests.map(({ path }) => path)).toEqual([
+      "/api/support/messages/seen",
+      "/api/support/messages/typing",
+      "/api/support/messages/react",
+      "/api/support/messages/star",
+    ]);
+    expect(requests[1]?.body).toBe('{"chatId":"chat","state":"recording"}');
+  });
+});
+
+describe("MessagingClient webhooks", () => {
+  it("maps webhook CRUD operations without exposing the HMAC key in URLs", async () => {
+    const { client, requests } = await messagingServer();
+    await client.webhooks.list();
+    await client.webhooks.create({
+      session: "support",
+      url: "https://example.test/hooks",
+      events: ["message.received"],
+      hmacKey: "fixture-secret",
+    });
+    await client.webhooks.retrieve("hook/a");
+    await client.webhooks.update("hook/a", { enabled: false });
+    await client.webhooks.delete("hook/a");
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /api/webhooks",
+      "POST /api/webhooks",
+      "GET /api/webhooks/hook%2Fa",
+      "PUT /api/webhooks/hook%2Fa",
+      "DELETE /api/webhooks/hook%2Fa",
+    ]);
+    expect(requests[1]?.body).toContain('"hmacKey":"fixture-secret"');
+    expect(requests.every(({ path }) => !path.includes("fixture-secret"))).toBe(true);
+  });
+
+  it("uses a client token only when its discriminator matches", async () => {
+    const server = await startTestServer(() => ({ body: '{"success":true,"data":[]}' }));
+    servers.push(server);
+    const client = new MessagingClient({
+      credential: { type: "clientToken", value: "pmfa_ct_widget" },
+      baseUrl: server.url,
+    });
+    await client.sessions.list();
+    expect(server.requests[0]?.headers.authorization).toBe("Bearer pmfa_ct_widget");
+  });
+});
