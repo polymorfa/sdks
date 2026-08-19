@@ -2,6 +2,8 @@ export interface DataEnvelope<T> {
   readonly data: T;
 }
 
+export type PlatformPayload = Readonly<Record<string, unknown>>;
+
 export interface Organization {
   readonly id: string;
   readonly externalId: string;

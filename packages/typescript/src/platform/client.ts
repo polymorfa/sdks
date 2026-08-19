@@ -5,12 +5,14 @@ import {
 } from "../credentials.js";
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
+import { MediaResource } from "./media.js";
 import { OrganizationsResource } from "./organizations.js";
 import { ProjectsResource } from "./projects.js";
 import { PlatformSessionsResource } from "./sessions.js";
 
 export class PlatformClient {
   readonly organizations: OrganizationsResource;
+  readonly media: MediaResource;
   readonly projects: ProjectsResource;
   readonly sessions: PlatformSessionsResource;
   readonly raw: RawClient;
@@ -29,6 +31,7 @@ export class PlatformClient {
       ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
     });
     this.organizations = new OrganizationsResource(transport);
+    this.media = new MediaResource(transport);
     this.projects = new ProjectsResource(transport);
     this.sessions = new PlatformSessionsResource(transport);
     this.raw = new RawClient(transport);
