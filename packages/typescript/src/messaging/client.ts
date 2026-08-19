@@ -5,6 +5,7 @@ import {
 } from "../credentials.js";
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
+import { ChatsResource } from "./chats.js";
 import { ClientTokensResource } from "./client-tokens.js";
 import { ContactsResource } from "./contacts.js";
 import { MessagesResource } from "./messages.js";
@@ -13,6 +14,7 @@ import { TemplatesResource } from "./templates.js";
 import { WebhooksResource } from "./webhooks.js";
 
 export class MessagingClient {
+  readonly chats: ChatsResource;
   readonly clientTokens: ClientTokensResource;
   readonly contacts: ContactsResource;
   readonly sessions: SessionsResource;
@@ -34,6 +36,7 @@ export class MessagingClient {
         : { apiVersion: options.apiVersion }),
       ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
     });
+    this.chats = new ChatsResource(transport);
     this.clientTokens = new ClientTokensResource(transport);
     this.contacts = new ContactsResource(transport);
     this.sessions = new SessionsResource(transport);

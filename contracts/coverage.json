@@ -75,9 +75,8 @@
       "operationId": "deleteMessage",
       "fingerprint": "2febda227b12b4ccd2d941f77a496e5093cdcbd45f35d1e68baa47e061412902",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.chats.deleteMessage"
       }
     },
     {
@@ -1107,9 +1106,8 @@
       "operationId": "archiveChat",
       "fingerprint": "d2ae211432306b07ef560c028c076e83f2b01d24c6f8e599b462d4be70776a51",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.chats.archive"
       }
     },
     {
@@ -1119,9 +1117,8 @@
       "operationId": "unarchiveChat",
       "fingerprint": "29f175a1d8bf18a3d999d4e772178a98212dda2b0122da8cdcf7b072d931c3ee",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.chats.unarchive"
       }
     },
     {
@@ -1663,9 +1660,8 @@
       "operationId": "setChatDisappearingTimer",
       "fingerprint": "6f49c2ad67f5d3a9db5b17f329915171c20b7e81f2de7462217a666f3df31ce8",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.chats.setDisappearingTimer"
       }
     },
     {
@@ -1675,9 +1671,8 @@
       "operationId": "editMessage",
       "fingerprint": "3614efc608d1510aafc10decafb386d63bf3e64ed81ee5e866c4b3c56dae3f92",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.chats.editMessage"
       }
     },
     {

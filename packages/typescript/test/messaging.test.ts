@@ -231,6 +231,65 @@ describe("MessagingClient contacts", () => {
   });
 });
 
+describe("MessagingClient chats", () => {
+  it("maps message editing and deletion with fully encoded identifiers", async () => {
+    const { client, requests } = await messagingServer();
+    const session = "support/eu";
+    const chatId = "15551234567@g.us/team";
+    const messageId = "message/1";
+
+    await client.chats.editMessage(
+      session,
+      chatId,
+      messageId,
+      { text: "Corrected copy" },
+      { idempotencyKey: "edit-message-1" },
+    );
+    await client.chats.deleteMessage(session, chatId, messageId, {
+      idempotencyKey: "delete-message-1",
+    });
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "PUT /api/support%2Feu/chats/15551234567%40g.us%2Fteam/messages/message%2F1",
+      "DELETE /api/support%2Feu/chats/15551234567%40g.us%2Fteam/messages/message%2F1",
+    ]);
+    expect(requests[0]?.body).toBe('{"text":"Corrected copy"}');
+    expect(requests[0]?.headers["idempotency-key"]).toBe("edit-message-1");
+    expect(requests[1]?.headers["idempotency-key"]).toBe("delete-message-1");
+  });
+
+  it("maps archive state and the exact disappearing-message durations", async () => {
+    const { client, requests } = await messagingServer();
+    const session = "support";
+    const chatId = "15551234567@s.whatsapp.net";
+
+    await client.chats.archive(session, chatId, {
+      idempotencyKey: "archive-chat-1",
+    });
+    await client.chats.unarchive(session, chatId, {
+      idempotencyKey: "unarchive-chat-1",
+    });
+    await client.chats.setDisappearingTimer(
+      session,
+      chatId,
+      { durationSeconds: 604800 },
+      { idempotencyKey: "chat-timer-1" },
+    );
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "POST /api/support/chats/15551234567%40s.whatsapp.net/archive",
+      "POST /api/support/chats/15551234567%40s.whatsapp.net/unarchive",
+      "PUT /api/support/chats/15551234567%40s.whatsapp.net/disappearing",
+    ]);
+    expect(requests[2]?.body).toBe('{"durationSeconds":604800}');
+    expect(requests.map(({ headers }) => headers["idempotency-key"])).toEqual([
+      "archive-chat-1",
+      "unarchive-chat-1",
+      "chat-timer-1",
+    ]);
+  });
+});
+
 describe("MessagingClient templates", () => {
   it("maps canonical project-template CRUD, preview, and submission operations", async () => {
     const { client, requests } = await messagingServer();

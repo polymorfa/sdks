@@ -154,6 +154,16 @@ export type GetUserInfoResponse = SuccessEnvelope<ContactUserInfo>;
 export type GetUserDevicesResponse = SuccessEnvelope<readonly string[]>;
 export type GetBusinessProfileResponse = SuccessEnvelope<BusinessProfile>;
 
+export interface EditMessageRequest {
+  readonly text: string;
+}
+
+export type DisappearingTimerDuration = 0 | 86400 | 604800 | 7776000;
+
+export interface DisappearingTimerRequest {
+  readonly durationSeconds: DisappearingTimerDuration;
+}
+
 export interface MintClientTokenRequest {
   readonly session: string;
   readonly ephemeralId: string;

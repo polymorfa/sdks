@@ -88,6 +88,32 @@ The resource also provides `retrieve`, `picture`, `info`, `devices`,
 `businessProfile`, `blocklist`, and `unblock`. Contact operations are not
 available for Cloud API sessions.
 
+## Chats
+
+`MessagingClient.chats` exposes the credential-compatible Linked Device chat
+management surface. Every operation requires `chats:manage`.
+
+```ts
+await messaging.chats.editMessage(
+  "support",
+  "15551234567@s.whatsapp.net",
+  "message-id",
+  { text: "Corrected copy" },
+  { idempotencyKey: "edit-message-id" },
+);
+
+await messaging.chats.setDisappearingTimer(
+  "support",
+  "15551234567@s.whatsapp.net",
+  { durationSeconds: 604800 },
+);
+```
+
+The duration is typed to the four values accepted by the API: disabled, one
+day, one week, or 90 days. The resource also provides `deleteMessage`,
+`archive`, and `unarchive`. Chat operations are not available for Cloud API
+sessions.
+
 ## Platform automation
 
 Organization API keys can use handwritten campaign, audience, opt-out, and

@@ -23,6 +23,7 @@ export {
   type PolymorfaErrorOptions,
 } from "./errors.js";
 export { MessagingClient } from "./messaging/client.js";
+export { ChatsResource } from "./messaging/chats.js";
 export { ClientTokensResource } from "./messaging/client-tokens.js";
 export { ContactsResource } from "./messaging/contacts.js";
 export { MessagesResource } from "./messaging/messages.js";
@@ -35,6 +36,8 @@ export type {
   BusinessProfileHours,
   CheckContactResult,
   CheckContactsResponse,
+  DisappearingTimerDuration,
+  DisappearingTimerRequest,
   CloudApiCredentials,
   ClientRuleRateLimits,
   ClientRules,
@@ -48,6 +51,7 @@ export type {
   CreateProjectTemplateRequest,
   CreateWebhookRequest,
   CreateWebhookResponse,
+  EditMessageRequest,
   GetSessionAccountResponse,
   GetBlocklistResponse,
   GetBusinessProfileResponse,

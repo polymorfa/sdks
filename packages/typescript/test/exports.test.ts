@@ -3,6 +3,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import {
   AudiencesResource,
   CampaignsResource,
+  ChatsResource,
   ClientTokensResource,
   ContactsResource,
   CursorPage,
@@ -25,6 +26,8 @@ import {
   type CreateSessionRequest,
   type Contact,
   type ContactUserInfo,
+  type DisappearingTimerRequest,
+  type EditMessageRequest,
   type MintClientTokenRequest,
   type MessageReceivedEvent,
   type MessagingClientOptions,
@@ -46,6 +49,7 @@ describe("public exports", () => {
       PlatformClient,
       AudiencesResource,
       CampaignsResource,
+      ChatsResource,
       ClientTokensResource,
       ContactsResource,
       MediaResource,
@@ -61,7 +65,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(19);
+    ]).toHaveLength(20);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -78,6 +82,8 @@ describe("public exports", () => {
     expectTypeOf<CreateSessionRequest>().toHaveProperty("projectId");
     expectTypeOf<Contact>().toHaveProperty("lid");
     expectTypeOf<ContactUserInfo>().toHaveProperty("devices");
+    expectTypeOf<EditMessageRequest>().toHaveProperty("text");
+    expectTypeOf<DisappearingTimerRequest>().toHaveProperty("durationSeconds");
     expectTypeOf<MintClientTokenRequest>().toHaveProperty("ephemeralId");
     expectTypeOf<CreateProjectRequest>().toHaveProperty("name");
     expectTypeOf<SendMessageRequest>().toHaveProperty("chatId");
