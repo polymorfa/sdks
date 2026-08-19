@@ -8,6 +8,7 @@ import { HttpTransport } from "../transport/http.js";
 import { ChatsResource } from "./chats.js";
 import { ClientTokensResource } from "./client-tokens.js";
 import { ContactsResource } from "./contacts.js";
+import { GroupsResource } from "./groups.js";
 import { MessagesResource } from "./messages.js";
 import { OperationsResource } from "./operations.js";
 import { SessionsResource } from "./sessions.js";
@@ -18,6 +19,7 @@ export class MessagingClient {
   readonly chats: ChatsResource;
   readonly clientTokens: ClientTokensResource;
   readonly contacts: ContactsResource;
+  readonly groups: GroupsResource;
   readonly sessions: SessionsResource;
   readonly messages: MessagesResource;
   readonly operations: OperationsResource;
@@ -41,6 +43,7 @@ export class MessagingClient {
     this.chats = new ChatsResource(transport);
     this.clientTokens = new ClientTokensResource(transport);
     this.contacts = new ContactsResource(transport);
+    this.groups = new GroupsResource(transport);
     this.sessions = new SessionsResource(transport);
     this.messages = new MessagesResource(transport);
     this.operations = new OperationsResource(transport);

@@ -118,6 +118,44 @@ The resource also provides `retrieve`, `picture`, `info`, `devices`,
 `businessProfile`, `blocklist`, and `unblock`. Contact operations are not
 available for Cloud API sessions.
 
+## Groups
+
+`MessagingClient.groups` exposes all 21 operations in the pinned Groups tag.
+Reads require `groups:read`; mutations require `groups:manage`.
+
+```ts
+const groups = await messaging.groups.list("support");
+const group = groups.data.data[0];
+
+if (group) {
+  const participants = await messaging.groups.listParticipants(
+    "support",
+    group.id,
+  );
+
+  await messaging.groups.addParticipants(
+    "support",
+    group.id,
+    { participants: ["15551234567"] },
+    { idempotencyKey: "add-support-participant" },
+  );
+
+  console.log(participants.data.data, participants.metadata.requestId);
+}
+```
+
+The resource includes create and retrieve, invite-code lookup and revocation,
+join-info lookup, join and leave, participant add/remove/promote/demote,
+subject and description updates, profile pictures, and all four group
+permission settings. `delete` maps the API's DELETE leave alias; it does not
+delete the remote group for every participant. Group identifiers and session
+names are encoded as path segments, and every mutation accepts idempotency,
+timeout, cancellation, and API-version request options.
+
+The source exposes no pagination for group or participant lists. Browser client
+tokens cannot access Groups routes because no Groups action exists in the
+client-token allowlist; use a server API key with the required scope.
+
 ## Chats
 
 `MessagingClient.chats` exposes the credential-compatible Linked Device chat

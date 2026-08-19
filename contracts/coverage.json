@@ -86,9 +86,8 @@
       "operationId": "deleteGroup",
       "fingerprint": "55cbbcf2eb3afd7478cc7f328ba7b4b6266d5c1433b58750c618a525c290a2d3",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.delete"
       }
     },
     {
@@ -422,9 +421,8 @@
       "operationId": "listGroups",
       "fingerprint": "f83adc402119409f582d9b786b75ce922318436f93511d9fd70022dfd4356498",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.list"
       }
     },
     {
@@ -434,9 +432,8 @@
       "operationId": "getGroup",
       "fingerprint": "1e3a217b01e7780154411aac78d977cc67702739148001d8701fd25a7735d375",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.retrieve"
       }
     },
     {
@@ -446,9 +443,8 @@
       "operationId": "getGroupInviteCode",
       "fingerprint": "4dba8dd00adf419c03c47ca7ef5130df5f8c4a784913ee41021e5d644e8d909c",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.getInviteCode"
       }
     },
     {
@@ -458,9 +454,8 @@
       "operationId": "getGroupParticipants",
       "fingerprint": "53ceda0bed6c3b800e422a71788d6389a68c0f3e9454bc337de414ddef30a567",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.listParticipants"
       }
     },
     {
@@ -470,9 +465,8 @@
       "operationId": "getGroupJoinInfo",
       "fingerprint": "489a00bd78b80ac77b4e49c0a1a55316f3c1633a2c96c22e71c9d9d40b2f4812",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.getJoinInfo"
       }
     },
     {
@@ -1149,9 +1143,8 @@
       "operationId": "createGroup",
       "fingerprint": "366ef26caa8717ea2c099b0ad313be8c3470d6806a125b51ece6e005f7535913",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.create"
       }
     },
     {
@@ -1161,9 +1154,8 @@
       "operationId": "demoteGroupAdmin",
       "fingerprint": "a74bb92d43427fe3f4bfd3b6dd18186bc32e18b075268d0210d548f684ce5306",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.demoteParticipants"
       }
     },
     {
@@ -1173,9 +1165,8 @@
       "operationId": "promoteGroupAdmin",
       "fingerprint": "28c3a95d5fa392df27a48d0b5ce341c81ff9816edfb87634b6d565beb99718d8",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.promoteParticipants"
       }
     },
     {
@@ -1185,9 +1176,8 @@
       "operationId": "revokeGroupInviteCode",
       "fingerprint": "9f2eae6f33a41b08b8747ae4809ef86e05999b01162e7f46714da97323f04134",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.revokeInviteCode"
       }
     },
     {
@@ -1197,9 +1187,8 @@
       "operationId": "leaveGroup",
       "fingerprint": "3d5e477bfa8148ee765299f320b0ee2a98f2b7871cc2cc44346a4e59d0d3093b",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.leave"
       }
     },
     {
@@ -1209,9 +1198,8 @@
       "operationId": "addGroupParticipants",
       "fingerprint": "776dca05e6c56fe843acfe8d0101f9db8c1142c014e5953c19c121bf44b45a1d",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.addParticipants"
       }
     },
     {
@@ -1221,9 +1209,8 @@
       "operationId": "removeGroupParticipants",
       "fingerprint": "7c88e076afeea75ed921dd1b9b7af2c805268f816fc25bba7272622c0ab34136",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.removeParticipants"
       }
     },
     {
@@ -1233,9 +1220,8 @@
       "operationId": "joinGroup",
       "fingerprint": "7a18005ac220467333a78caf77de1bb7f248f01d8a88e79c79d7ee58ce71e22d",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.join"
       }
     },
     {
@@ -1681,9 +1667,8 @@
       "operationId": "setGroupDescription",
       "fingerprint": "efad57a48f0b41490ddcc58ed4ddc4f607bd3c1b902c72e25f2f5d964247f59c",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.setDescription"
       }
     },
     {
@@ -1693,9 +1678,8 @@
       "operationId": "setGroupPicture",
       "fingerprint": "e69b930eb613f1d1f066bf60bd0b7319939f01b07c4edaedc3220a9a4ae1de50",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.setPicture"
       }
     },
     {
@@ -1705,9 +1689,8 @@
       "operationId": "setGroupInfoEditing",
       "fingerprint": "b5ada85d398103321e9b3381d6bac484a0e9dc8d3c078be11806cde863845958",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.setInfoEditing"
       }
     },
     {
@@ -1717,9 +1700,8 @@
       "operationId": "setGroupJoinApproval",
       "fingerprint": "3b4db4a4c690e923ccb9f29e381fa36a23672e92ae088698683ce4be4c7c55bd",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.setJoinApproval"
       }
     },
     {
@@ -1729,9 +1711,8 @@
       "operationId": "setGroupMemberAddMode",
       "fingerprint": "f3baff2ba1a88c7bdead24ed9a66f6617c9ded180b6ddf04aa0cf6c63f4eff0b",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.setMemberAddMode"
       }
     },
     {
@@ -1741,9 +1722,8 @@
       "operationId": "setGroupMessaging",
       "fingerprint": "e71a3307cd07e834a9c30de4421d8dc7a12ac121f892e64ec8160a10c5f85a84",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.setMessaging"
       }
     },
     {
@@ -1753,9 +1733,8 @@
       "operationId": "setGroupSubject",
       "fingerprint": "e987c4f6e57de81d565381804091346b8e029097598ba1201057ac7752f6aa24",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.groups.setSubject"
       }
     },
     {

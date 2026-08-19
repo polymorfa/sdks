@@ -7,6 +7,7 @@ import {
   ChatsResource,
   ClientTokensResource,
   ContactsResource,
+  GroupsResource,
   CursorPage,
   MessagingClient,
   MediaResource,
@@ -33,6 +34,8 @@ import {
   type ContactUserInfo,
   type DisappearingTimerRequest,
   type EditMessageRequest,
+  type Group,
+  type GroupParticipant,
   type MintClientTokenRequest,
   type MessageReceivedEvent,
   type MessagingClientOptions,
@@ -63,6 +66,7 @@ describe("public exports", () => {
       ChatsResource,
       ClientTokensResource,
       ContactsResource,
+      GroupsResource,
       MediaResource,
       OptOutsResource,
       OperationsResource,
@@ -77,7 +81,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(22);
+    ]).toHaveLength(23);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -102,6 +106,8 @@ describe("public exports", () => {
     expectTypeOf<Contact>().toHaveProperty("lid");
     expectTypeOf<ContactUserInfo>().toHaveProperty("devices");
     expectTypeOf<EditMessageRequest>().toHaveProperty("text");
+    expectTypeOf<Group>().toHaveProperty("participants");
+    expectTypeOf<GroupParticipant>().toHaveProperty("isAdmin");
     expectTypeOf<DisappearingTimerRequest>().toHaveProperty("durationSeconds");
     expectTypeOf<MintClientTokenRequest>().toHaveProperty("ephemeralId");
     expectTypeOf<PairCodeRequest>().toHaveProperty("phone");

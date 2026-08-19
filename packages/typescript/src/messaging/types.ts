@@ -154,6 +154,85 @@ export type GetUserInfoResponse = SuccessEnvelope<ContactUserInfo>;
 export type GetUserDevicesResponse = SuccessEnvelope<readonly string[]>;
 export type GetBusinessProfileResponse = SuccessEnvelope<BusinessProfile>;
 
+export interface GroupParticipant {
+  readonly lid: string;
+  readonly phoneNumber?: string;
+  readonly isAdmin: boolean;
+  readonly isSuperAdmin: boolean;
+  readonly id?: string;
+  readonly username?: string;
+}
+
+export interface Group {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly ownerLid: string;
+  readonly createdAt: number;
+  readonly participants: readonly GroupParticipant[];
+  readonly ownerId?: string;
+}
+
+export interface GroupInviteInfo {
+  readonly id: string;
+  readonly subject: string;
+  readonly creatorLid: string;
+  readonly createdAt: number;
+  readonly size: number;
+  readonly participants: readonly GroupParticipant[];
+  readonly creatorId?: string;
+}
+
+export interface GroupInviteCode {
+  readonly code: string;
+}
+
+export interface CreateGroupRequest {
+  readonly name: string;
+  readonly participants: readonly string[];
+}
+
+export interface SetGroupFieldRequest {
+  readonly value: string;
+}
+
+export interface GroupParticipantsRequest {
+  readonly participants: readonly string[];
+}
+
+export interface SetGroupPictureRequest {
+  readonly url?: string;
+  readonly base64?: string;
+}
+
+export interface JoinGroupRequest {
+  readonly code: string;
+}
+
+export interface GroupAdminOnlySettingRequest {
+  readonly adminsOnly: boolean;
+}
+
+export type GroupMemberAddMode = "admin_add" | "all_member_add";
+
+export interface GroupMemberAddModeRequest {
+  readonly mode: GroupMemberAddMode;
+}
+
+export interface GroupJoinApprovalRequest {
+  readonly required: boolean;
+}
+
+export type ListGroupsResponse = SuccessEnvelope<readonly Group[]>;
+export type CreateGroupResponse = SuccessEnvelope<Group>;
+export type GetGroupResponse = SuccessEnvelope<Group>;
+export type GetGroupJoinInfoResponse = SuccessEnvelope<GroupInviteInfo>;
+export type GetGroupInviteCodeResponse = SuccessEnvelope<GroupInviteCode>;
+export type RevokeGroupInviteCodeResponse = SuccessEnvelope<GroupInviteCode>;
+export type GetGroupParticipantsResponse = SuccessEnvelope<
+  readonly GroupParticipant[]
+>;
+
 export interface EditMessageRequest {
   readonly text: string;
 }
