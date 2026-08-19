@@ -1,0 +1,34 @@
+{
+  "name": "@polymorfa/sdk",
+  "version": "0.1.0-dev.0",
+  "description": "Handwritten Polymorfa server SDK for TypeScript and Node.js",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./packages/typescript/dist/index.js",
+  "types": "./packages/typescript/dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./packages/typescript/dist/index.d.ts",
+      "import": "./packages/typescript/dist/index.js"
+    }
+  },
+  "files": [
+    "packages/typescript/dist",
+    "packages/typescript/README.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.7"
+  }
+}
