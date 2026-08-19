@@ -15,12 +15,17 @@ afterEach(async () => {
   await Promise.all(servers.splice(0).map((server) => server.close()));
 });
 
-async function paginatedClient(): Promise<{ raw: RawClient; server: TestServer }> {
+async function paginatedClient(): Promise<{
+  raw: RawClient;
+  server: TestServer;
+}> {
   const server = await startTestServer((request) => {
     if (request.path.includes("cursor=next_1")) {
       return { body: '{"data":[{"id":"three"}],"nextCursor":null}' };
     }
-    return { body: '{"data":[{"id":"one"},{"id":"two"}],"nextCursor":"next_1"}' };
+    return {
+      body: '{"data":[{"id":"one"},{"id":"two"}],"nextCursor":"next_1"}',
+    };
   });
   servers.push(server);
   return {
@@ -44,7 +49,10 @@ const decodePage = (data: unknown) => {
 describe("CursorPage", () => {
   it("exposes the first page and propagates the cursor to the next request", async () => {
     const { raw, server } = await paginatedClient();
-    const first = await raw.paginate<Item>({ method: "GET", path: "/v1/items" }, decodePage);
+    const first = await raw.paginate<Item>(
+      { method: "GET", path: "/v1/items" },
+      decodePage,
+    );
 
     expect(first.items).toEqual([{ id: "one" }, { id: "two" }]);
     expect(first.nextCursor).toBe("next_1");
@@ -59,7 +67,10 @@ describe("CursorPage", () => {
 
   it("iterates items across every page in stable order", async () => {
     const { raw } = await paginatedClient();
-    const page = await raw.paginate<Item>({ method: "GET", path: "/v1/items" }, decodePage);
+    const page = await raw.paginate<Item>(
+      { method: "GET", path: "/v1/items" },
+      decodePage,
+    );
     const ids: string[] = [];
     for await (const item of page) ids.push(item.id);
     expect(ids).toEqual(["one", "two", "three"]);
@@ -73,6 +84,8 @@ describe("CursorPage", () => {
       decodePage,
     );
     controller.abort();
-    await expect(page.nextPage()).rejects.toBeInstanceOf(PolymorfaCancelledError);
+    await expect(page.nextPage()).rejects.toBeInstanceOf(
+      PolymorfaCancelledError,
+    );
   });
 });

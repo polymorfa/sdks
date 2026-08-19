@@ -1,0 +1,6 @@
+node_modules/
+packages/*/dist/
+coverage/
+contracts/openapi.messaging.json
+contracts/openapi.platform.json
+package-lock.json

@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- The contract source is monorepo commit `f9b4473a0bf65c946565e9be6c85fee130fad2dd`, Messaging path `apps/api/docs/openapi.json`, Platform path `apps/api/docs/openapi.management.json`.
+- The contract source is monorepo commit `0d91ee0e396c18188f68b112ad852f16bb519ed3`, Messaging path `apps/api/docs/openapi.json`, Platform path `apps/api/docs/openapi.management.json`.
 - Graph-compatible APIs are excluded.
 - Runtime code is handwritten; OpenAPI must not generate runtime client source.
 - The package has no runtime dependency, private or public.
@@ -28,6 +28,7 @@
 ### Task 1: Package boundary and credential validation
 
 **Files:**
+
 - Create: `package.json`
 - Create: `tsconfig.json`
 - Create: `vitest.config.ts`
@@ -37,24 +38,35 @@
 - Create: `packages/typescript/test/credentials.test.ts`
 
 **Interfaces:**
+
 - Produces: `MessagingCredential`, `MessagingClientOptions`, `PlatformClientOptions`, `validateMessagingCredential()`, `validatePlatformApiKey()`, `SDK_VERSION`.
 
 - [ ] **Step 1: Write credential tests that fail because the package does not exist**
 
 ```ts
 import { describe, expect, it } from "vitest";
-import { validateMessagingCredential, validatePlatformApiKey } from "../src/credentials.js";
+import {
+  validateMessagingCredential,
+  validatePlatformApiKey,
+} from "../src/credentials.js";
 
 describe("credential validation", () => {
   it("accepts an explicit Messaging client token", () => {
-    expect(validateMessagingCredential({ type: "clientToken", value: "pmfa_ct_example" })).toEqual({
+    expect(
+      validateMessagingCredential({
+        type: "clientToken",
+        value: "pmfa_ct_example",
+      }),
+    ).toEqual({
       type: "clientToken",
       value: "pmfa_ct_example",
     });
   });
 
   it("rejects a project token as a Platform server key", () => {
-    expect(() => validatePlatformApiKey("pmfa_pt_example")).toThrow(/server API key/);
+    expect(() => validatePlatformApiKey("pmfa_pt_example")).toThrow(
+      /server API key/,
+    );
   });
 });
 ```
@@ -68,8 +80,15 @@ export type MessagingCredential =
   | { readonly type: "clientToken"; readonly value: string };
 
 export function validatePlatformApiKey(value: string): string {
-  if (!value.startsWith("pmfa_") || value.startsWith("pmfa_ct_") || value.startsWith("pmfa_pt_")) {
-    throw new PolymorfaConfigurationError("Platform requires a pmfa_ server API key.", "apiKey");
+  if (
+    !value.startsWith("pmfa_") ||
+    value.startsWith("pmfa_ct_") ||
+    value.startsWith("pmfa_pt_")
+  ) {
+    throw new PolymorfaConfigurationError(
+      "Platform requires a pmfa_ server API key.",
+      "apiKey",
+    );
   }
   return value;
 }
@@ -81,6 +100,7 @@ export function validatePlatformApiKey(value: string): string {
 ### Task 2: Typed errors, metadata, cancellation, and transport
 
 **Files:**
+
 - Create: `packages/typescript/src/errors.ts`
 - Create: `packages/typescript/src/transport/types.ts`
 - Create: `packages/typescript/src/transport/body.ts`
@@ -90,6 +110,7 @@ export function validatePlatformApiKey(value: string): string {
 - Create: `packages/typescript/test/support/http-server.ts`
 
 **Interfaces:**
+
 - Consumes: validated credential strings and `SDK_VERSION`.
 - Produces: `ApiResponse<T>`, `ResponseMetadata`, `RequestOptions`, `RawRequest`, `HttpTransport`, typed `PolymorfaError` subclasses.
 
@@ -99,14 +120,21 @@ export function validatePlatformApiKey(value: string): string {
 it("does not retry an unsafe request without an idempotency key", async () => {
   const server = await sequenceServer([503, 200]);
   const transport = makeTransport(server.url, { maxNetworkRetries: 2 });
-  await expect(transport.request({ method: "POST", path: "/messages", body: { text: "hello" } }))
-    .rejects.toBeInstanceOf(PolymorfaServerError);
+  await expect(
+    transport.request({
+      method: "POST",
+      path: "/messages",
+      body: { text: "hello" },
+    }),
+  ).rejects.toBeInstanceOf(PolymorfaServerError);
   expect(server.requests).toHaveLength(1);
 });
 
 it("retries an unsafe request carrying an idempotency key", async () => {
   const server = await sequenceServer([503, 200]);
-  const response = await makeTransport(server.url, { maxNetworkRetries: 2 }).request({
+  const response = await makeTransport(server.url, {
+    maxNetworkRetries: 2,
+  }).request({
     method: "POST",
     path: "/messages",
     body: { text: "hello" },
@@ -127,12 +155,14 @@ it("retries an unsafe request carrying an idempotency key", async () => {
 ### Task 3: Raw request escape hatch and pagination primitives
 
 **Files:**
+
 - Create: `packages/typescript/src/raw.ts`
 - Create: `packages/typescript/src/pagination.ts`
 - Create: `packages/typescript/test/raw.test.ts`
 - Create: `packages/typescript/test/pagination.test.ts`
 
 **Interfaces:**
+
 - Consumes: `HttpTransport.request<T>(request: RawRequest): Promise<ApiResponse<T>>`.
 - Produces: `RawClient.request<T>()`, `RawClient.paginate<T>()`, `CursorPage<T>`, `PageResult<T>`.
 
@@ -162,6 +192,7 @@ expect(response.metadata.requestId).toBe("req_raw");
 ### Task 4: Messaging client and handwritten resources
 
 **Files:**
+
 - Create: `packages/typescript/src/messaging/types.ts`
 - Create: `packages/typescript/src/messaging/sessions.ts`
 - Create: `packages/typescript/src/messaging/messages.ts`
@@ -170,6 +201,7 @@ expect(response.metadata.requestId).toBe("req_raw");
 - Create: `packages/typescript/test/messaging.test.ts`
 
 **Interfaces:**
+
 - Consumes: `HttpTransport`, `RawClient`, `RequestOptions`.
 - Produces: `MessagingClient`, `SessionsResource`, `MessagesResource`, `WebhooksResource`, and all public Messaging request/response types.
 
@@ -180,7 +212,10 @@ const response = await client.sessions.create(
   { projectId: "project_1", sessionId: "support", start: true },
   { idempotencyKey: "session-support" },
 );
-expect(response.data).toEqual({ success: true, data: { sessionId: "support" } });
+expect(response.data).toEqual({
+  success: true,
+  data: { sessionId: "support" },
+});
 expect(server.lastRequest.method).toBe("POST");
 expect(server.lastRequest.path).toBe("/api/sessions");
 ```
@@ -197,6 +232,7 @@ expect(server.lastRequest.path).toBe("/api/sessions");
 ### Task 5: Platform client and handwritten resources
 
 **Files:**
+
 - Create: `packages/typescript/src/platform/types.ts`
 - Create: `packages/typescript/src/platform/organizations.ts`
 - Create: `packages/typescript/src/platform/projects.ts`
@@ -205,6 +241,7 @@ expect(server.lastRequest.path).toBe("/api/sessions");
 - Create: `packages/typescript/test/platform.test.ts`
 
 **Interfaces:**
+
 - Consumes: `HttpTransport`, `RawClient`, `RequestOptions`.
 - Produces: `PlatformClient`, `OrganizationsResource`, `ProjectsResource`, `PlatformSessionsResource`, and public Platform request/response types.
 
@@ -227,19 +264,26 @@ expect(server.lastRequest.path).toBe("/v1/projects");
 ### Task 6: Raw-body webhook verification and typed events
 
 **Files:**
+
 - Create: `packages/typescript/src/webhooks/events.ts`
 - Create: `packages/typescript/src/webhooks/verify.ts`
 - Create: `packages/typescript/test/webhooks.test.ts`
 
 **Interfaces:**
+
 - Produces: `WebhookEvent`, `KnownWebhookEvent`, `UnknownWebhookEvent`, `WebhookSignatureError`, `verifyWebhookSignature()`, `constructWebhookEvent()`, `isEvent()`.
 
 - [ ] **Step 1: Write failing tests with hand-computed HMAC-SHA256 fixtures for valid raw bytes, mutated bytes, malformed hex, wrong secret, and `sha256=` compatibility**
 
 ```ts
-const raw = Buffer.from('{"type":"message.received","session":"support","timestamp":"2026-08-19T10:00:00Z","payload":{"id":"m1"}}');
-const signature = "6a58f9f6a2ecf7ce7fb8f55d8b92343d72893d87f9996b9d2c684d09f26a49d1";
-await expect(verifyWebhookSignature(raw, signature, "fixture-secret")).resolves.toBe(true);
+const raw = Buffer.from(
+  '{"type":"message.received","session":"support","timestamp":"2026-08-19T10:00:00Z","payload":{"id":"m1"}}',
+);
+const signature =
+  "6a58f9f6a2ecf7ce7fb8f55d8b92343d72893d87f9996b9d2c684d09f26a49d1";
+await expect(
+  verifyWebhookSignature(raw, signature, "fixture-secret"),
+).resolves.toBe(true);
 ```
 
 - [ ] **Step 2: Run the tests and verify failure on missing verification functions**
@@ -252,6 +296,7 @@ await expect(verifyWebhookSignature(raw, signature, "fixture-secret")).resolves.
 ### Task 7: Public exports, documentation, package integrity, and contract coverage
 
 **Files:**
+
 - Create: `packages/typescript/src/index.ts`
 - Create: `README.md`
 - Create: `packages/typescript/README.md`
@@ -264,6 +309,7 @@ await expect(verifyWebhookSignature(raw, signature, "fixture-secret")).resolves.
 - Create: `.github/workflows/ci.yml`
 
 **Interfaces:**
+
 - Consumes: all previous public modules and the two pinned OpenAPI inputs supplied as checker arguments.
 - Produces: package-root public API, CLI installation instructions, auditable coverage gaps, clean tarball.
 
@@ -280,7 +326,13 @@ import {
   type RequestOptions,
   type SendMessageRequest,
 } from "@polymorfa/sdk";
-void [MessagingClient, PlatformClient, PolymorfaError, CursorPage, constructWebhookEvent];
+void [
+  MessagingClient,
+  PlatformClient,
+  PolymorfaError,
+  CursorPage,
+  constructWebhookEvent,
+];
 ```
 
 - [ ] **Step 2: Run typecheck and verify missing root exports fail**
@@ -296,10 +348,12 @@ void [MessagingClient, PlatformClient, PolymorfaError, CursorPage, constructWebh
 ### Task 8: Development-branch handoff
 
 **Files:**
+
 - Modify: `package.json`
 - Modify: `CHANGELOG.md`
 
 **Interfaces:**
+
 - Produces: exact commit, version, Git install command, verification evidence, and explicit coverage gaps for the CLI task.
 
 - [ ] **Step 1: Set the development version to `0.1.0-dev.0` and record the usable contract in `CHANGELOG.md`**
@@ -307,4 +361,3 @@ void [MessagingClient, PlatformClient, PolymorfaError, CursorPage, constructWebh
 - [ ] **Step 3: Inspect `npm pack --json` and confirm the tarball has no runtime dependency or unintended file**
 - [ ] **Step 4: Commit with `chore: prepare TypeScript SDK development channel`**
 - [ ] **Step 5: Push `dev`, record the exact commit SHA, and send the CLI task the SHA, branch, install command, evidence, and coverage gaps**
-

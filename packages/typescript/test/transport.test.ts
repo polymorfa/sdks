@@ -53,7 +53,9 @@ describe("HttpTransport", () => {
       body: '{"ok":true}',
     }));
 
-    const response = await makeTransport(server.url, { apiVersion: "2026-08-19" }).request<{ ok: true }>({
+    const response = await makeTransport(server.url, {
+      apiVersion: "2026-08-19",
+    }).request<{ ok: true }>({
       method: "GET",
       path: "/v1/check",
       headers: { authorization: "Bearer attacker", "x-client-context": "cli" },
@@ -68,18 +70,29 @@ describe("HttpTransport", () => {
     });
     expect(response.metadata.headers["x-ratelimit-remaining"]).toBe("41");
     expect(Object.isFrozen(response.metadata)).toBe(true);
-    expect(server.requests[0]?.headers.authorization).toBe("Bearer pmfa_example");
+    expect(server.requests[0]?.headers.authorization).toBe(
+      "Bearer pmfa_example",
+    );
     expect(server.requests[0]?.headers["polymorfa-version"]).toBe("2026-08-19");
     expect(server.requests[0]?.headers["x-client-context"]).toBe("cli");
-    expect(server.requests[0]?.headers["user-agent"]).toMatch(/^polymorfa-node\//);
+    expect(server.requests[0]?.headers["user-agent"]).toMatch(
+      /^polymorfa-node\//,
+    );
   });
 
   it("encodes query arrays, JSON bodies, and per-request API versions", async () => {
-    const server = await serverFor(() => ({ status: 201, body: '{"created":true}' }));
+    const server = await serverFor(() => ({
+      status: 201,
+      body: '{"created":true}',
+    }));
     await makeTransport(server.url, { apiVersion: "2026-01-01" }).request({
       method: "POST",
       path: "/v1/projects",
-      query: { include: ["members", "keys"], archived: false, omitted: undefined },
+      query: {
+        include: ["members", "keys"],
+        archived: false,
+        omitted: undefined,
+      },
       body: { name: "Support" },
       apiVersion: "2026-08-19",
       idempotencyKey: "project-support",
@@ -90,8 +103,12 @@ describe("HttpTransport", () => {
       path: "/v1/projects?include=members&include=keys&archived=false",
       body: '{"name":"Support"}',
     });
-    expect(server.requests[0]?.headers["content-type"]).toBe("application/json");
-    expect(server.requests[0]?.headers["idempotency-key"]).toBe("project-support");
+    expect(server.requests[0]?.headers["content-type"]).toBe(
+      "application/json",
+    );
+    expect(server.requests[0]?.headers["idempotency-key"]).toBe(
+      "project-support",
+    );
     expect(server.requests[0]?.headers["polymorfa-version"]).toBe("2026-08-19");
   });
 
@@ -103,10 +120,14 @@ describe("HttpTransport", () => {
     );
 
     const transport = makeTransport(server.url);
-    await expect(transport.request<string>({ method: "GET", path: "/text" })).resolves.toMatchObject({
+    await expect(
+      transport.request<string>({ method: "GET", path: "/text" }),
+    ).resolves.toMatchObject({
       data: "ready",
     });
-    await expect(transport.request<void>({ method: "GET", path: "/empty" })).resolves.toMatchObject({
+    await expect(
+      transport.request<void>({ method: "GET", path: "/empty" }),
+    ).resolves.toMatchObject({
       data: undefined,
     });
   });
@@ -116,32 +137,55 @@ describe("HttpTransport", () => {
       if (request.path === "/unauthorized") {
         return {
           status: 401,
-          headers: { "content-type": "application/json", "x-request-id": "req_auth" },
+          headers: {
+            "content-type": "application/json",
+            "x-request-id": "req_auth",
+          },
           body: '{"error":"bad key","code":"invalid_key"}',
         };
       }
       return {
         status: 400,
-        headers: { "content-type": "application/json", "x-request-id": "req_validation" },
+        headers: {
+          "content-type": "application/json",
+          "x-request-id": "req_validation",
+        },
         body: '{"error":"invalid project"}',
       };
     });
     const transport = makeTransport(server.url);
 
-    const authError = await transport.request({ method: "GET", path: "/unauthorized" }).catch((error) => error);
+    const authError = await transport
+      .request({ method: "GET", path: "/unauthorized" })
+      .catch((error) => error);
     expect(authError).toBeInstanceOf(PolymorfaAuthenticationError);
-    expect(authError).toMatchObject({ status: 401, requestId: "req_auth", code: "invalid_key" });
+    expect(authError).toMatchObject({
+      status: 401,
+      requestId: "req_auth",
+      code: "invalid_key",
+    });
 
-    const validationError = await transport.request({ method: "GET", path: "/invalid" }).catch((error) => error);
+    const validationError = await transport
+      .request({ method: "GET", path: "/invalid" })
+      .catch((error) => error);
     expect(validationError).toBeInstanceOf(PolymorfaValidationError);
-    expect(validationError).toMatchObject({ status: 400, requestId: "req_validation" });
+    expect(validationError).toMatchObject({
+      status: 400,
+      requestId: "req_validation",
+    });
   });
 
   it("distinguishes SDK timeouts from caller cancellation", async () => {
-    const server = await serverFor(() => ({ delayMs: 100, body: '{"ok":true}' }));
+    const server = await serverFor(() => ({
+      delayMs: 100,
+      body: '{"ok":true}',
+    }));
 
     await expect(
-      makeTransport(server.url, { timeoutMs: 10 }).request({ method: "GET", path: "/slow" }),
+      makeTransport(server.url, { timeoutMs: 10 }).request({
+        method: "GET",
+        path: "/slow",
+      }),
     ).rejects.toBeInstanceOf(PolymorfaTimeoutError);
 
     const controller = new AbortController();
@@ -156,10 +200,14 @@ describe("HttpTransport", () => {
 
   it("retries a safe request and reports the attempt count", async () => {
     const server = await serverFor((_request, index) =>
-      index === 0 ? { status: 503, body: '{"error":"busy"}' } : { body: '{"ok":true}' },
+      index === 0
+        ? { status: 503, body: '{"error":"busy"}' }
+        : { body: '{"ok":true}' },
     );
 
-    const response = await makeTransport(server.url, { maxNetworkRetries: 2 }).request<{ ok: true }>({
+    const response = await makeTransport(server.url, {
+      maxNetworkRetries: 2,
+    }).request<{ ok: true }>({
       method: "GET",
       path: "/retry",
     });
@@ -170,7 +218,9 @@ describe("HttpTransport", () => {
 
   it("does not retry an unsafe request without an idempotency key", async () => {
     const server = await serverFor((_request, index) =>
-      index === 0 ? { status: 503, body: '{"error":"busy"}' } : { body: '{"ok":true}' },
+      index === 0
+        ? { status: 503, body: '{"error":"busy"}' }
+        : { body: '{"ok":true}' },
     );
 
     await expect(
@@ -185,10 +235,14 @@ describe("HttpTransport", () => {
 
   it("retries an unsafe request carrying an idempotency key", async () => {
     const server = await serverFor((_request, index) =>
-      index === 0 ? { status: 503, body: '{"error":"busy"}' } : { body: '{"ok":true}' },
+      index === 0
+        ? { status: 503, body: '{"error":"busy"}' }
+        : { body: '{"ok":true}' },
     );
 
-    const response = await makeTransport(server.url, { maxNetworkRetries: 2 }).request({
+    const response = await makeTransport(server.url, {
+      maxNetworkRetries: 2,
+    }).request({
       method: "POST",
       path: "/messages",
       body: { text: "hello" },
@@ -216,22 +270,28 @@ describe("HttpTransport", () => {
   });
 
   it("surfaces a terminal rate limit when retries are disabled", async () => {
-    const server = await serverFor(() => ({ status: 429, body: '{"error":"slow down"}' }));
-    await expect(makeTransport(server.url).request({ method: "GET", path: "/limited" })).rejects.toBeInstanceOf(
-      PolymorfaRateLimitError,
-    );
+    const server = await serverFor(() => ({
+      status: 429,
+      body: '{"error":"slow down"}',
+    }));
+    await expect(
+      makeTransport(server.url).request({ method: "GET", path: "/limited" }),
+    ).rejects.toBeInstanceOf(PolymorfaRateLimitError);
   });
 
   it("rejects absolute raw URLs before credentials can leave the configured host", async () => {
     const transport = makeTransport("http://127.0.0.1:1");
-    await expect(transport.request({ method: "GET", path: "https://example.com/steal" })).rejects.toBeInstanceOf(
-      PolymorfaValidationError,
-    );
+    await expect(
+      transport.request({ method: "GET", path: "https://example.com/steal" }),
+    ).rejects.toBeInstanceOf(PolymorfaValidationError);
   });
 
   it("maps unreachable hosts to a connection error", async () => {
     await expect(
-      makeTransport("http://127.0.0.1:1", { timeoutMs: 100 }).request({ method: "GET", path: "/unreachable" }),
+      makeTransport("http://127.0.0.1:1", { timeoutMs: 100 }).request({
+        method: "GET",
+        path: "/unreachable",
+      }),
     ).rejects.toBeInstanceOf(PolymorfaConnectionError);
   });
 });

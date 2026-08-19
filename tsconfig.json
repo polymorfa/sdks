@@ -11,5 +11,9 @@
     "types": ["node", "vitest/globals"],
     "skipLibCheck": true
   },
-  "include": ["packages/typescript/src/**/*.ts", "packages/typescript/test/**/*.ts", "vitest.config.ts"]
+  "include": [
+    "packages/typescript/src/**/*.ts",
+    "packages/typescript/test/**/*.ts",
+    "vitest.config.ts"
+  ]
 }

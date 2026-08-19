@@ -14,16 +14,37 @@ import type {
 export class SessionsResource {
   constructor(private readonly transport: HttpTransport) {}
 
-  list(options: RequestOptions = {}): Promise<ApiResponse<ListSessionsResponse>> {
-    return this.transport.request({ method: "GET", path: "/api/sessions", ...options });
+  list(
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<ListSessionsResponse>> {
+    return this.transport.request({
+      method: "GET",
+      path: "/api/sessions",
+      ...options,
+    });
   }
 
-  create(body: CreateSessionRequest, options: RequestOptions = {}): Promise<ApiResponse<CreateSessionResponse>> {
-    return this.transport.request({ method: "POST", path: "/api/sessions", body, ...options });
+  create(
+    body: CreateSessionRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CreateSessionResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: "/api/sessions",
+      body,
+      ...options,
+    });
   }
 
-  retrieve(session: string, options: RequestOptions = {}): Promise<ApiResponse<GetSessionResponse>> {
-    return this.transport.request({ method: "GET", path: sessionPath(session), ...options });
+  retrieve(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<GetSessionResponse>> {
+    return this.transport.request({
+      method: "GET",
+      path: sessionPath(session),
+      ...options,
+    });
   }
 
   update(
@@ -31,31 +52,62 @@ export class SessionsResource {
     body: UpdateSessionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UpdateSessionResponse>> {
-    return this.transport.request({ method: "PUT", path: sessionPath(session), body, ...options });
+    return this.transport.request({
+      method: "PUT",
+      path: sessionPath(session),
+      body,
+      ...options,
+    });
   }
 
-  delete(session: string, options: RequestOptions = {}): Promise<ApiResponse<OperationAccepted>> {
-    return this.transport.request({ method: "DELETE", path: sessionPath(session), ...options });
+  delete(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<OperationAccepted>> {
+    return this.transport.request({
+      method: "DELETE",
+      path: sessionPath(session),
+      ...options,
+    });
   }
 
-  start(session: string, options: RequestOptions = {}): Promise<ApiResponse<OperationAccepted>> {
+  start(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<OperationAccepted>> {
     return this.action(session, "start", options);
   }
 
-  stop(session: string, options: RequestOptions = {}): Promise<ApiResponse<OperationAccepted>> {
+  stop(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<OperationAccepted>> {
     return this.action(session, "stop", options);
   }
 
-  restart(session: string, options: RequestOptions = {}): Promise<ApiResponse<OperationAccepted>> {
+  restart(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<OperationAccepted>> {
     return this.action(session, "restart", options);
   }
 
-  logout(session: string, options: RequestOptions = {}): Promise<ApiResponse<OperationAccepted>> {
+  logout(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<OperationAccepted>> {
     return this.action(session, "logout", options);
   }
 
-  account(session: string, options: RequestOptions = {}): Promise<ApiResponse<GetSessionAccountResponse>> {
-    return this.transport.request({ method: "GET", path: `${sessionPath(session)}/me`, ...options });
+  account(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<GetSessionAccountResponse>> {
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionPath(session)}/me`,
+      ...options,
+    });
   }
 
   private action(
@@ -63,7 +115,11 @@ export class SessionsResource {
     action: "start" | "stop" | "restart" | "logout",
     options: RequestOptions,
   ): Promise<ApiResponse<OperationAccepted>> {
-    return this.transport.request({ method: "POST", path: `${sessionPath(session)}/${action}`, ...options });
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionPath(session)}/${action}`,
+      ...options,
+    });
   }
 }
 

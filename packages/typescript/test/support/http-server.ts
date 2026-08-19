@@ -38,7 +38,10 @@ export async function startTestServer(
       const index = requests.push(recorded) - 1;
       const result = respond(recorded, index);
       const send = () => {
-        response.writeHead(result.status ?? 200, result.headers ?? { "content-type": "application/json" });
+        response.writeHead(
+          result.status ?? 200,
+          result.headers ?? { "content-type": "application/json" },
+        );
         response.end(result.body ?? "");
       };
       if (result.delayMs !== undefined) {

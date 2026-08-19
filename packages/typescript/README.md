@@ -1,0 +1,27 @@
+# `@polymorfa/sdk`
+
+The handwritten Polymorfa server SDK for TypeScript and Node.js.
+
+Install the development branch:
+
+```bash
+npm install github:polymorfa/sdks#dev
+```
+
+Import Messaging and Platform clients, errors, response metadata, request
+options, pagination, webhook utilities, and all public request/response types
+from the package root:
+
+```ts
+import {
+  MessagingClient,
+  PlatformClient,
+  PolymorfaError,
+  constructWebhookEvent,
+  type RequestOptions,
+} from "@polymorfa/sdk";
+```
+
+See the repository README for the complete development contract and current
+typed-resource coverage. This package has no runtime dependencies and requires
+Node.js 20 or newer.

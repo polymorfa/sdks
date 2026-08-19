@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
+import { PolymorfaValidationError } from "../src/errors.js";
 import { RawClient } from "../src/raw.js";
 import { HttpTransport } from "../src/transport/http.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
@@ -49,5 +50,26 @@ describe("RawClient", () => {
       body: '{"enabled":true}',
     });
     expect(server.requests[0]?.headers["x-trace"]).toBe("cli");
+  });
+
+  it("rejects backslash network paths before credentials can reach another host", async () => {
+    let calls = 0;
+    const raw = new RawClient(
+      new HttpTransport({
+        baseUrl: "https://api.polymorfa.com",
+        authorization: "Bearer pmfa_example",
+        timeoutMs: 500,
+        maxNetworkRetries: 0,
+        fetch: async () => {
+          calls += 1;
+          return new Response();
+        },
+      }),
+    );
+
+    await expect(
+      raw.request({ method: "GET", path: "/\\evil.example/path" }),
+    ).rejects.toBeInstanceOf(PolymorfaValidationError);
+    expect(calls).toBe(0);
   });
 });

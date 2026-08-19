@@ -1,0 +1,3952 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "0d91ee0e396c18188f68b112ad852f16bb519ed3",
+  "excludedContracts": [
+    {
+      "family": "graph",
+      "reason": "Graph-compatible APIs are outside the initial SDK scope."
+    }
+  ],
+  "operations": [
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/{session}/business/collections/{collectionId}",
+      "operationId": "deleteBusinessCollection",
+      "fingerprint": "0f092de90dae553d9af58b63410078d0a135c82e3a277c7f5f5e6619ba0e85a8",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/{session}/business/products/{productId}",
+      "operationId": "deleteBusinessProduct",
+      "fingerprint": "881e214d7ca6d6e0d7143e4e3fc3abc271a016216eb47ca5aecdfd764fccf130",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/{session}/business/profile/cover-photo/{coverPhotoId}",
+      "operationId": "deleteBusinessCoverPhoto",
+      "fingerprint": "9fa339e0af9875c8f5587203e5fb7abe61cde1c0ec9e0b8c68727ce5687a17e9",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/{session}/business/quick-replies/{quickReplyId}",
+      "operationId": "deleteBusinessQuickReply",
+      "fingerprint": "6129e1ab72d705e57a19cfc730f6a8326b5d27872896b7f7d07c1266b86e9226",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/{session}/channels/{id}",
+      "operationId": "deleteChannel",
+      "fingerprint": "a987a4363b9a650f92ddd13b80d9f80a2af5de281d2940b1b9a42c2f2e2be61c",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/{session}/chats/{chatId}/messages/{messageId}",
+      "operationId": "deleteMessage",
+      "fingerprint": "2febda227b12b4ccd2d941f77a496e5093cdcbd45f35d1e68baa47e061412902",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/{session}/groups/{id}",
+      "operationId": "deleteGroup",
+      "fingerprint": "55cbbcf2eb3afd7478cc7f328ba7b4b6266d5c1433b58750c618a525c290a2d3",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/{session}/labels/{labelId}",
+      "operationId": "deleteLabel",
+      "fingerprint": "34d3be451e21056abfa8c2310e4e92edc4f448f58c7aad51d5d7f399f9406acd",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/{session}/profile/picture",
+      "operationId": "deleteProfilePicture",
+      "fingerprint": "3e1893187f61ecf1ef7c1910a70677dd0f5bb5b1fdab247bafee9dfe3613be82",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/projects/{projectSlug}/templates/{id}",
+      "operationId": "deleteProjectTemplate",
+      "fingerprint": "cd2c6b07f251df24cc5c3df259dba804846f5e26e9364fb02ff234626ad2df61",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/sessions/{session}",
+      "operationId": "deleteSession",
+      "fingerprint": "80fc4cf96d1f378bcc4269bcec2d581548463f787f1ddcbe3ee21dc0c7bb382b",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.sessions.delete"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/sessions/{session}/client-rules",
+      "operationId": "deleteClientRules",
+      "fingerprint": "5e776e131aeff24de634c8c23228b96ea9db5f39ef12032934cd95440bd3fd93",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/webhooks/{id}",
+      "operationId": "deleteWebhook",
+      "fingerprint": "1752b4716afc7d953a21b94ae8248b82a16cb91917349b4f6f0a9a8b3d17c1b7",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.webhooks.delete"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/widget/sessions/{id}",
+      "operationId": "cancelWidgetSession",
+      "fingerprint": "2fd55587eeedac38f66426d64d6a21a79d41efa723ec76ed80c37b8c2fb23af3",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/business/catalog",
+      "operationId": "getBusinessCatalog",
+      "fingerprint": "81b976c1d41e664e5e9492baaebea123815dc29f346066bbfa30b9c4835c4691",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/business/collections",
+      "operationId": "getBusinessCollections",
+      "fingerprint": "6d63ab37e5c322c0df2eef6c5d7078144580f3319fb12a4cf31847e640030543",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/business/collections/{collectionId}",
+      "operationId": "getBusinessCollection",
+      "fingerprint": "74fba00717011f85cc4a3f74548ca0d8fd9347f0c4c611720c6720ec3c5f5e63",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/business/compliance",
+      "operationId": "getBusinessMerchantCompliance",
+      "fingerprint": "b65a7caab156684d46867d1bcbed688949d60c41e9effb3afd7abec584644715",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/business/eligibility",
+      "operationId": "getBusinessEligibility",
+      "fingerprint": "80e0461c1fd88189fc56bf048658de318d0440931f72730eb22273cd6294c430",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/business/linked-accounts",
+      "operationId": "getBusinessLinkedAccounts",
+      "fingerprint": "d55ac4970205cf32a07888f0fa3b4f75dcf997c7e4d6e961097200eee7b43357",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/business/products/{productId}",
+      "operationId": "getBusinessProduct",
+      "fingerprint": "e4e0300d7303c30091004d3829968d0f30717570b7de9687fdafdcdd3985c476",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/business/profile",
+      "operationId": "getOwnBusinessProfile",
+      "fingerprint": "29f5b708286a8928ac22f3326f7c94c5557202e4b55c5ae36ffed7bee35804d6",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/business/quick-replies",
+      "operationId": "listBusinessQuickReplies",
+      "fingerprint": "9af4e7087afe9fa06fe049607230ddf825566d6c5685dab860720432b8a5f0ae",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/channels",
+      "operationId": "listChannels",
+      "fingerprint": "cfa70db490a78120b6e7d018648d6f5581955aecd7b76d630799bc3bce68f14c",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/channels/{id}",
+      "operationId": "getChannel",
+      "fingerprint": "6bd5cd5b4fa6712e01154305a058311ce3f4e4df4f9e095a98f50b473d670de3",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/channels/{id}/message-updates",
+      "operationId": "listChannelMessageUpdates",
+      "fingerprint": "9f960db09f382e57aaa31638a350eab383c4ddf13628a499eb7d7b41320f8096",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/channels/{id}/messages",
+      "operationId": "listChannelMessages",
+      "fingerprint": "d6b12beb5e721daf823ae6ec78d8ef7a5b62a68124e4a940dcc1b37fb79a6845",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/contacts",
+      "operationId": "listContacts",
+      "fingerprint": "809f399acf6230c7ae4e84a34f9143d71a891cd87b7f00cd928cbe8efde8657d",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/contacts/{contactId}",
+      "operationId": "getContact",
+      "fingerprint": "42d4a8c0ae7095f7afb26f6c3ee3ec3b7e3f990cf83b54cbcc203cfa296aade7",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/contacts/{contactId}/business-profile",
+      "operationId": "getBusinessProfile",
+      "fingerprint": "203d6e5f788a3561199b42b379ed952841f90a1b9de4b5f0849c820f971fe3bb",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/contacts/{contactId}/devices",
+      "operationId": "getUserDevices",
+      "fingerprint": "9474516031a4e478539403f38d86fffc6a6394a1db94f8a409321eae6239a33f",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/contacts/{contactId}/info",
+      "operationId": "getUserInfo",
+      "fingerprint": "7ec0cf63f34b452f0594c9d2826cbd4f2f08523792f011e51977591ff9bb2c07",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/contacts/{contactId}/picture",
+      "operationId": "getContactPicture",
+      "fingerprint": "747faa8ded343ea9545e3140ac199588457e686dbab3a7ed43fd1f5943d29aab",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/contacts/blocked",
+      "operationId": "getBlocklist",
+      "fingerprint": "16fc9eaddef4c1a05ba9983961b120603b299cc85a1796fd25ca0f01e74ed39d",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/contacts/check",
+      "operationId": "checkContacts",
+      "fingerprint": "e9f7c2578adfb98d309750e55b902f1e833f4652fade0ef8060c5276eba9454e",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/groups",
+      "operationId": "listGroups",
+      "fingerprint": "f83adc402119409f582d9b786b75ce922318436f93511d9fd70022dfd4356498",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/groups/{id}",
+      "operationId": "getGroup",
+      "fingerprint": "1e3a217b01e7780154411aac78d977cc67702739148001d8701fd25a7735d375",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/groups/{id}/invite-code",
+      "operationId": "getGroupInviteCode",
+      "fingerprint": "4dba8dd00adf419c03c47ca7ef5130df5f8c4a784913ee41021e5d644e8d909c",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/groups/{id}/participants",
+      "operationId": "getGroupParticipants",
+      "fingerprint": "53ceda0bed6c3b800e422a71788d6389a68c0f3e9454bc337de414ddef30a567",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/groups/join-info",
+      "operationId": "getGroupJoinInfo",
+      "fingerprint": "489a00bd78b80ac77b4e49c0a1a55316f3c1633a2c96c22e71c9d9d40b2f4812",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/labels",
+      "operationId": "listLabels",
+      "fingerprint": "2f74258c59cec3e09e886ba9f763e7e304acc3de02c027ad1db8afa6e126ebc5",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/labels/chats/{chatId}",
+      "operationId": "getChatLabels",
+      "fingerprint": "75b39310da52b1b1e09447959db8071660f6a8ca139a3e9552825884007ddec2",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/lids/resolve",
+      "operationId": "resolveLIDs",
+      "fingerprint": "d4d813f817fe7ab3fe910b6add9cc4799b15196ad2ae1b357392d793681f935a",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/observation-policy",
+      "operationId": "getSessionObservationPolicy",
+      "fingerprint": "dfd507e647b3d644e9c8e37f88359fa56389f655a08feeee4ae6c145c6a4bcc2",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/pair/qr",
+      "operationId": "getQRCode",
+      "fingerprint": "56349c5cd5de0f0bcc87fa128e7a012530ca357a75ff06776ea1d3bc5b8a289e",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/presence",
+      "operationId": "getPresence",
+      "fingerprint": "e7c220944f62dcd52d21f9027e86b2cc419ed005796e6e276a1c375bab79fb7a",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/presence/{chatId}",
+      "operationId": "getChatPresence",
+      "fingerprint": "9cc4a7f0e3b7ddd91b43f5e35f2e0bf4ee7d671f709fea370bf6dd38b6f91c9b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/privacy",
+      "operationId": "getPrivacySettings",
+      "fingerprint": "23b23f6425b483d786b1edc5d5541957abf48c60978a76fadaf21c8ef0c25307",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/profile",
+      "operationId": "getProfile",
+      "fingerprint": "4ef879df292d150307430b6d0ba28d9f8145e7fd3d3bcf0994a6f91d3bcf1616",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/users/{id}/security-code",
+      "operationId": "getUserSecurityCode",
+      "fingerprint": "8137c11491c0261b2aabd8104c0b6bfa40e474eb78975482560beae36310e01f",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/info/status",
+      "operationId": "getStatus",
+      "fingerprint": "d718b1693efe722ebf046a8fe6525eccb179052320870a2ce40dbeb63e612f87",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/info/version",
+      "operationId": "getVersion",
+      "fingerprint": "2ab7906884ffa07c978e9378490a193652ce1e1e960459908e23c4ab76838996",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/media/{id}",
+      "operationId": "downloadMedia",
+      "fingerprint": "60067d01771c53dba1a7ab71cc768f8bd2ca92cefd4cddbef887d0088a4395d9",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/media/{id}/info",
+      "operationId": "getMediaInfo",
+      "fingerprint": "8de9ff6257a2fed2ce72a97ec883dba64859cb938683ee12bda1c2bd95457fe5",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/operations/{operation}",
+      "operationId": "getOperation",
+      "fingerprint": "e13cfd45b2d6b3256c3fa832aca786242656ae6dc71d2d161ac4ab434d5e6688",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/projects/{projectId}/observation-policy",
+      "operationId": "getProjectObservationPolicy",
+      "fingerprint": "d54ca3815c88eec4211dd5f89b6d55487de4a43b78be1d1511eb31db74053a9b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/projects/{projectSlug}/campaigns",
+      "operationId": "listCampaigns",
+      "fingerprint": "edf002e4bf2e07dbe019805e1b0180fc9f4aab8ea58e1e93bc3bf9d8f9ec6f12",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/projects/{projectSlug}/campaigns/{id}",
+      "operationId": "getCampaign",
+      "fingerprint": "ae8e220be5c1aaac15befd796c43f4fcc3fd61e68b7c954193e73a0082a4eefb",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/projects/{projectSlug}/campaigns/{id}/analytics",
+      "operationId": "getCampaignAnalytics",
+      "fingerprint": "07ed01febe6421b7722f0d3679463d787ed653d60d677744e4bbd5fde524b371",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/projects/{projectSlug}/templates",
+      "operationId": "listProjectTemplates",
+      "fingerprint": "d9c2a54361638c27c36cfa0c9c2f5d92daee3ee47f5ae7c7f0b1c4d316b22360",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/projects/{projectSlug}/templates/{id}",
+      "operationId": "getProjectTemplate",
+      "fingerprint": "cb60900192a486c16562867a1cfb3b595444a467b7d91b43ea7aa107faf951c1",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/sessions",
+      "operationId": "listSessions",
+      "fingerprint": "d97bd519e00e186ad88bdc449f6a5138b2c384fa31b1f19bf5d27d3c5fbe5c65",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.sessions.list"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/sessions/{session}",
+      "operationId": "getSession",
+      "fingerprint": "44932148368b9db333d13748336ea655e2405af69a10e69c542d3e5e5d85250c",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.sessions.retrieve"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/sessions/{session}/client-rules",
+      "operationId": "getClientRules",
+      "fingerprint": "f878fc588bcf2c51faa82d6c1d7e2bf2a3765c01affd9513a7b0004b07e3b5ec",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/sessions/{session}/me",
+      "operationId": "getSessionAccount",
+      "fingerprint": "b989986752df43ace50259ecd84b655ad9b01e504a46c9b2b449a3c6e23adc00",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.sessions.account"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/webhooks",
+      "operationId": "listWebhooks",
+      "fingerprint": "8bda5679f018323e4fb249df16a541ae9ebe812121f7c64974d4665d3d407eac",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.webhooks.list"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/webhooks/{id}",
+      "operationId": "getWebhook",
+      "fingerprint": "08a27c707cd6c742eff86a527ef3ef399fab813a117d49ae1e6c1911f49a4245",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.webhooks.retrieve"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/health",
+      "operationId": "getHealth",
+      "fingerprint": "05bab58b71b5692f804870852a686a9b4e140255899a6058b9aa284b5a0ed45c",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/ping",
+      "operationId": "ping",
+      "fingerprint": "59aa902499566c7e84335b9f53e2ef306e5732bdf1228f03d571c03077c7b329",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/v1/bridge/route",
+      "operationId": "getBridgeRoute",
+      "fingerprint": "c6e3c36cb20cdcf0c6c6991a495c676891c1e6d5f53ef83e754d4c9d66a2d801",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/widget/handoff/{token}/state",
+      "operationId": "getWidgetHandoffState",
+      "fingerprint": "98c32cc9d5796d5b40130bacadb9e8478b07ee9dd10c2cb39f1080f79ecd9123",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/api/{session}/business/catalog/cart",
+      "operationId": "setBusinessCartEnabled",
+      "fingerprint": "c722b6d4949d08ee650dc17d1cb7d94795946f28b22174a989e4171077ff7b33",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/api/{session}/business/collections/{collectionId}",
+      "operationId": "updateBusinessCollection",
+      "fingerprint": "5d819b79b3cfd24695ea47ba4077386a0202fe4756c93e0d597059355393fa9f",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/api/{session}/business/products/{productId}/visibility",
+      "operationId": "setBusinessProductVisibility",
+      "fingerprint": "0597624ac4fdfc718209b28cc895e607e07c2f35013274097e0bc4cd9611afce",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/api/{session}/business/profile",
+      "operationId": "updateBusinessProfile",
+      "fingerprint": "bd9456ce05df5424f49b0b70bc9d263a4539a121c72169e5885101cab96101b6",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/api/projects/{projectSlug}/templates/{id}",
+      "operationId": "updateProjectTemplate",
+      "fingerprint": "e5a4d23a8452afb1149308858f5a27a26f5ab89ca2e2d6bb24a04bcf0f0c8b87",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/business/catalog",
+      "operationId": "createBusinessCatalog",
+      "fingerprint": "e3be22d67f4f6dd33d5db5d91f246591fe12a09e2409e261b1d5b9f9068d5e91",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/business/collections",
+      "operationId": "createBusinessCollection",
+      "fingerprint": "91df7f96088c9987942e3dd9c6d673aa58e6bd84d28ae42a7d3e9498e31d2888",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/business/collections/{collectionId}/appeal",
+      "operationId": "appealBusinessCollection",
+      "fingerprint": "0ae828304df8b8592f54cd2b97b44bad989298f8e3387c720c014b0e390fb571",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/business/collections/reorder",
+      "operationId": "reorderBusinessCollections",
+      "fingerprint": "cf299c93ea096eb0155584f2edca82ac5eb4054eecaba5246c36f6a3234779f8",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/business/orders/{orderId}/lookup",
+      "operationId": "getBusinessOrder",
+      "fingerprint": "48778694dd18d3ae7fcff8d2135f474899e844a9a6af0d6b22a064e21a9be78c",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/business/products",
+      "operationId": "createBusinessProduct",
+      "fingerprint": "375d3ef11db63e51d3e30a578a1dd107a153f31660a6207d07014c698123b531",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/business/products/{productId}/appeal",
+      "operationId": "appealBusinessProduct",
+      "fingerprint": "b15415e4c99cb659acc5307f9826868f4c897fef0e7aa35240671e72d170f40e",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/business/quick-replies",
+      "operationId": "createBusinessQuickReply",
+      "fingerprint": "94524d1ae8f4aba35db94e646efe36d89d3391f8c72cb3ad06fb8e4705adde9b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/calls/{callId}/reject",
+      "operationId": "rejectCall",
+      "fingerprint": "b299f698991f7b28ea16c7adfdea992eff458fc7fa9d117e35aa9988229f1bdd",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/channels",
+      "operationId": "createChannel",
+      "fingerprint": "943d8c11521f3ad8b7ce6c57f454149b964e389ab77a99f28baed91fd37642af",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/channels/{id}/follow",
+      "operationId": "followChannel",
+      "fingerprint": "d4cc30c29721dc943f6769c0c82ed88a7b523656fb5fb9381e160e2e30e86986",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/channels/{id}/live-updates",
+      "operationId": "subscribeChannelLiveUpdates",
+      "fingerprint": "eec318d35dccdf7ecdbc3174deccfc0183dd358e8d585bc8375b80a4b3a1ea67",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/channels/{id}/messages/{serverId}/reaction",
+      "operationId": "reactToChannelMessage",
+      "fingerprint": "3143227ba439b0b629982026a01096ef94a82b5191b384087be7affcb3f7762b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/channels/{id}/messages/{serverId}/viewed",
+      "operationId": "markChannelMessageViewed",
+      "fingerprint": "cd59c96a7c15fe45e989a880f727246e3dabcada935fd6abb05d14443a84df2b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/channels/{id}/mute",
+      "operationId": "muteChannel",
+      "fingerprint": "99b2a14f0bae4a2d056d65cb7594ea37008d9939ff791519c183588b3b79c033",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/channels/{id}/unfollow",
+      "operationId": "unfollowChannel",
+      "fingerprint": "4c057ba5650ae687b821fa1fa5746a3c5c90cef9889a18dc518aca0feb6db375",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/channels/{id}/unmute",
+      "operationId": "unmuteChannel",
+      "fingerprint": "cf904451a41ee9a143dd91ede7c571dfda3a1d2fc33a1ea0fd431747b4bf3ded",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/chats/{chatId}/archive",
+      "operationId": "archiveChat",
+      "fingerprint": "d2ae211432306b07ef560c028c076e83f2b01d24c6f8e599b462d4be70776a51",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/chats/{chatId}/unarchive",
+      "operationId": "unarchiveChat",
+      "fingerprint": "29f175a1d8bf18a3d999d4e772178a98212dda2b0122da8cdcf7b072d931c3ee",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/contacts/{contactId}/block",
+      "operationId": "blockContact",
+      "fingerprint": "aaa52ccd04944c9ae8a0aaf17bbb4828e276f14c15870106f9fcc0d2109cd784",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/contacts/{contactId}/unblock",
+      "operationId": "unblockContact",
+      "fingerprint": "25ef3e351b57a916385e82a58d002b468f6ef03f16000e4eb2203cc384d53213",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/groups",
+      "operationId": "createGroup",
+      "fingerprint": "366ef26caa8717ea2c099b0ad313be8c3470d6806a125b51ece6e005f7535913",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/groups/{id}/admin/demote",
+      "operationId": "demoteGroupAdmin",
+      "fingerprint": "a74bb92d43427fe3f4bfd3b6dd18186bc32e18b075268d0210d548f684ce5306",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/groups/{id}/admin/promote",
+      "operationId": "promoteGroupAdmin",
+      "fingerprint": "28c3a95d5fa392df27a48d0b5ce341c81ff9816edfb87634b6d565beb99718d8",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/groups/{id}/invite-code/revoke",
+      "operationId": "revokeGroupInviteCode",
+      "fingerprint": "9f2eae6f33a41b08b8747ae4809ef86e05999b01162e7f46714da97323f04134",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/groups/{id}/leave",
+      "operationId": "leaveGroup",
+      "fingerprint": "3d5e477bfa8148ee765299f320b0ee2a98f2b7871cc2cc44346a4e59d0d3093b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/groups/{id}/participants/add",
+      "operationId": "addGroupParticipants",
+      "fingerprint": "776dca05e6c56fe843acfe8d0101f9db8c1142c014e5953c19c121bf44b45a1d",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/groups/{id}/participants/remove",
+      "operationId": "removeGroupParticipants",
+      "fingerprint": "7c88e076afeea75ed921dd1b9b7af2c805268f816fc25bba7272622c0ab34136",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/groups/join",
+      "operationId": "joinGroup",
+      "fingerprint": "7a18005ac220467333a78caf77de1bb7f248f01d8a88e79c79d7ee58ce71e22d",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/labels",
+      "operationId": "createLabel",
+      "fingerprint": "b41a855b6255ff4e8aa42979750a466ee93314bfbba8407a5871645760dff093",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/messages/react",
+      "operationId": "sendReaction",
+      "fingerprint": "025bf31c7a9ae610b47973d79a888fdc42c9f0b9655c1a6d2a6145a05d90873e",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.messages.react"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/messages/seen",
+      "operationId": "sendSeen",
+      "fingerprint": "f5b1670a29fb7283855dd60ec913598a23bd6fc71ab22b1ccf77373a863c4d32",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.messages.markSeen"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/messages/send",
+      "operationId": "sendMessage",
+      "fingerprint": "149acab941b5074fd94d16cad1e13dd145356f34df9ca3f9140ff9bd6ade242d",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.messages.send"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/messages/star",
+      "operationId": "starMessage",
+      "fingerprint": "6761078239a790e8a8125a0f93f0befbc8d65100868430c77606f56bc8f9320b",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.messages.star"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/messages/typing",
+      "operationId": "setTyping",
+      "fingerprint": "6c3657553c807f8cce165261d97104ed70dd5cebaf441f643a7cfdc3ad27a5de",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.messages.setTyping"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/pair/code",
+      "operationId": "requestPairCode",
+      "fingerprint": "d4774a595bd04d1cbafe5db65b2906df222e2c36234c6b50d3c632e8c4703229",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/presence",
+      "operationId": "setPresence",
+      "fingerprint": "2501ea1a48b6bb092815692d750da1f38def3149b05d3be93117b7cdab24c25b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/{session}/presence/{chatId}/subscribe",
+      "operationId": "subscribePresence",
+      "fingerprint": "97f054a6911457b6b0920869f4b82513b6a77394d350c7f377c6099e86b9c01b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/client-tokens",
+      "operationId": "mintClientToken",
+      "fingerprint": "26489877b93f4b1b7ef2845f195489e5baf5400f5c5ba5a01e18ba6701146f26",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/media/{id}/download-and-save",
+      "operationId": "downloadAndSaveMedia",
+      "fingerprint": "16cf1251cfb5957845ed98a794f97c08065e0f4eb11ee76b5884276b4291945e",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/projects/{projectSlug}/campaigns",
+      "operationId": "createCampaign",
+      "fingerprint": "0635c38e1ebb410295a6f75fba03e7cc74f21f2d97c58590215104b2efc89ca2",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/projects/{projectSlug}/campaigns/{id}/launch",
+      "operationId": "launchCampaign",
+      "fingerprint": "a44bb8dd674e63cbc77bf3762a770543b3b0b3d9d591ed8fd6a59606dd6e8311",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/projects/{projectSlug}/campaigns/{id}/pause",
+      "operationId": "pauseCampaign",
+      "fingerprint": "fc1b49e0f1211bead63f6a8d5a54d75127f7ad96ee998dcda9262cfc5c48c42b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/projects/{projectSlug}/campaigns/{id}/requeue",
+      "operationId": "requeueCampaign",
+      "fingerprint": "c2c71270f6a810c29b46c8f24931538b33440b17a35e50c6460c5e0c9f1f44d3",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/projects/{projectSlug}/campaigns/{id}/resume",
+      "operationId": "resumeCampaign",
+      "fingerprint": "1e20868be51fe11638ae6a4f764b7c49777bf380c7b7db0689870a3b20f9b185",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/projects/{projectSlug}/campaigns/{id}/stop",
+      "operationId": "stopCampaign",
+      "fingerprint": "91b60609041f8f81ae075541f79ef03b762956444b45f064ca08b6d6cc214e47",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/projects/{projectSlug}/templates",
+      "operationId": "createProjectTemplate",
+      "fingerprint": "8db3ee69f49508f8c359cc55fd8e0cdf4c5217e408c5d792b55366c7e61a5325",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/projects/{projectSlug}/templates/{id}/preview",
+      "operationId": "previewProjectTemplate",
+      "fingerprint": "4182fbd31c05d34d43b537ba52ba3f8afca01d023ff5e716cd4b15c0402cd6d9",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/projects/{projectSlug}/templates/{id}/submit",
+      "operationId": "submitProjectTemplateToMeta",
+      "fingerprint": "d98badffd8b1588ab3d9fe57698e18c940676a690a0339900928fff52427ff4f",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/sessions",
+      "operationId": "createSession",
+      "fingerprint": "8e1ae014f98f524c3d8f89b0cf5ec8c674094ee7e01243251d220a139cdc92cb",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.sessions.create"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/sessions/{session}/handoff-ack",
+      "operationId": "sessionHandoffAck",
+      "fingerprint": "24eb38203f6a285b118bc82facb5351a42fe70243ef790cef65be01fd6d71139",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/sessions/{session}/handoff-import",
+      "operationId": "sessionHandoffImport",
+      "fingerprint": "8912116b0231eb1a64c7d45aedb45aa11c9251c8fed13a0db8e7ca936a4ba5bf",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/sessions/{session}/handoff-keys",
+      "operationId": "sessionHandoffKeys",
+      "fingerprint": "a528ac23c017ee7e74576d55862bd80793b4bbecf68bb1e353d38b7a3f647fc7",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/sessions/{session}/logout",
+      "operationId": "logoutSession",
+      "fingerprint": "9e0a95cbaa8d0683ee4a6a6e698a6916d1024a88adb6aad4d69ff44fc78ca7c1",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.sessions.logout"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/sessions/{session}/restart",
+      "operationId": "restartSession",
+      "fingerprint": "0d146d7ee529b38fe399ee5fa5379cf3671fcaf1ef18ffe1e198c80b51f5b32e",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.sessions.restart"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/sessions/{session}/start",
+      "operationId": "startSession",
+      "fingerprint": "e802cd6c357a379fffb7349e5eef0fbdcb532b3696bef07be941362025d3962c",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.sessions.start"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/sessions/{session}/stop",
+      "operationId": "stopSession",
+      "fingerprint": "3053c511919b8c23fe9bbaee3c31f60c8c1dd818540db6b67857a1979579d68f",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.sessions.stop"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/sessions/{session}/upload-appstate-keys",
+      "operationId": "sessionUploadAppStateKeys",
+      "fingerprint": "dcfe439c4855dd14296883928f3fa9a3b0d9b1a2e75394c361880f3dc7dd5af2",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/webhooks",
+      "operationId": "createWebhook",
+      "fingerprint": "7c827e91f436da0396a50e609d52b4ec85cec7afdc577234e29cad05d04b8b28",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.webhooks.create"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/widget/sessions",
+      "operationId": "createWidgetSession",
+      "fingerprint": "9778c1bcc5fa875a6e012bdc04551009ba06bf8039436e9d11edf646b94bcb86",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/widget/sessions/{id}/handoff",
+      "operationId": "createWidgetHandoff",
+      "fingerprint": "2b6bc4390e3f157b0e425e3eb71521dc9c007accd1211fc10edc03a9c858aefa",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/business/compliance",
+      "operationId": "setBusinessMerchantCompliance",
+      "fingerprint": "d5e1dde8297edb25dd2b46d00690c3cd11d470c8508518e20d0d338849aff5dc",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/business/products/{productId}",
+      "operationId": "updateBusinessProduct",
+      "fingerprint": "56b1ab82dd263be59350de2f2099bfa898d2e1176fcf46c8bf4d7eb12d6cdc04",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/business/profile/cover-photo",
+      "operationId": "setBusinessCoverPhoto",
+      "fingerprint": "80a41142d261e8867ebc35f77f75fba09b155e4733040f34f37c69e5159ae58a",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/business/quick-replies/{quickReplyId}",
+      "operationId": "setBusinessQuickReply",
+      "fingerprint": "bf59537c8580fb0f834edde80034e2209871dbd8b8a7636dccc0f8afad358de4",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/chats/{chatId}/disappearing",
+      "operationId": "setChatDisappearingTimer",
+      "fingerprint": "6f49c2ad67f5d3a9db5b17f329915171c20b7e81f2de7462217a666f3df31ce8",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/chats/{chatId}/messages/{messageId}",
+      "operationId": "editMessage",
+      "fingerprint": "3614efc608d1510aafc10decafb386d63bf3e64ed81ee5e866c4b3c56dae3f92",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/groups/{id}/description",
+      "operationId": "setGroupDescription",
+      "fingerprint": "efad57a48f0b41490ddcc58ed4ddc4f607bd3c1b902c72e25f2f5d964247f59c",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/groups/{id}/picture",
+      "operationId": "setGroupPicture",
+      "fingerprint": "e69b930eb613f1d1f066bf60bd0b7319939f01b07c4edaedc3220a9a4ae1de50",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/groups/{id}/settings/info-edit",
+      "operationId": "setGroupInfoEditing",
+      "fingerprint": "b5ada85d398103321e9b3381d6bac484a0e9dc8d3c078be11806cde863845958",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/groups/{id}/settings/join-approval",
+      "operationId": "setGroupJoinApproval",
+      "fingerprint": "3b4db4a4c690e923ccb9f29e381fa36a23672e92ae088698683ce4be4c7c55bd",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/groups/{id}/settings/member-add",
+      "operationId": "setGroupMemberAddMode",
+      "fingerprint": "f3baff2ba1a88c7bdead24ed9a66f6617c9ded180b6ddf04aa0cf6c63f4eff0b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/groups/{id}/settings/messages",
+      "operationId": "setGroupMessaging",
+      "fingerprint": "e71a3307cd07e834a9c30de4421d8dc7a12ac121f892e64ec8160a10c5f85a84",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/groups/{id}/subject",
+      "operationId": "setGroupSubject",
+      "fingerprint": "e987c4f6e57de81d565381804091346b8e029097598ba1201057ac7752f6aa24",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/labels/{labelId}",
+      "operationId": "updateLabel",
+      "fingerprint": "16576f2d9f30772d1ced87422362deaf496218793989a3b0c9f7954d9b11be3d",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/labels/chats/{chatId}",
+      "operationId": "setChatLabels",
+      "fingerprint": "dc3e0855fa95ecf2ce2887571a09e092a0e6fc6cfe723cdf1776026b5d9adffa",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/observation-policy",
+      "operationId": "updateSessionObservationPolicy",
+      "fingerprint": "a18bae02ded6d67ad83b199f8afd280fc48d5ce8ae9b8a50640a63e4c5909dac",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/privacy/{setting}",
+      "operationId": "setPrivacySetting",
+      "fingerprint": "ca1f4d9feff32014c99af243dde71b41fd7ea6da4fc0dd889657d75a6f99f0d2",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/privacy/disappearing/default",
+      "operationId": "setDefaultDisappearingTimer",
+      "fingerprint": "eb74a53d1f5b2873e3da588aadf68e9563c3939899e246fabf066e117dbbc3fd",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/profile/name",
+      "operationId": "setProfileName",
+      "fingerprint": "41397daf7a15da8d5358130e7e0f6217b1137ac323a2a22b00cc2c3e6778aa09",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/profile/picture",
+      "operationId": "setProfilePicture",
+      "fingerprint": "d1577f63e542eecb626bcb87f09c859f78d37e798df79aaccf9731161acf8e82",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/{session}/profile/status",
+      "operationId": "setProfileStatus",
+      "fingerprint": "87af45d88572fbc40d862ae9c51a69ba3143c36459743a83b50f185bb3b1465a",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/projects/{projectId}/observation-policy",
+      "operationId": "updateProjectObservationPolicy",
+      "fingerprint": "ccb277848728d1b1de46ab4a1def9ada9a92d2dd20710f2040fb2fd5c7945505",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/sessions/{session}",
+      "operationId": "updateSession",
+      "fingerprint": "e3c595947049d4f125135e8bcf4902f7632164efd63a14dae5e60e7dbd0d8a7e",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.sessions.update"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/sessions/{session}/client-rules",
+      "operationId": "setClientRules",
+      "fingerprint": "322a2571256b5bd75b030eeffbfd6b69664530debe3e644685bb879657e431b3",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/api/webhooks/{id}",
+      "operationId": "updateWebhook",
+      "fingerprint": "c6e5866c9bc1bf2174b159d4d9c8e081a20d4afbb5d8d89cc2f9a2354def2ee3",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.webhooks.update"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/admin/keys/{keyId}",
+      "operationId": "adminRevokeApiKeyApiKey",
+      "fingerprint": "6ecb2072e1669b07c1242db63f9da1184f529aaf14c663a9142d0ad76d4939f3",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/admin/members/{memberId}",
+      "operationId": "adminRemoveMember",
+      "fingerprint": "671621e00f4f42acac0bd89087979abfd1a093f802754cc99e5e513118dc4bb4",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/admin/organization-invitations/{invitationId}",
+      "operationId": "adminRevokeOrganizationInvitation",
+      "fingerprint": "1e2c41320db02996362e67f1a7dcec06f64f20b4fcb137aa087be0b8450fc57f",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/admin/orgs/{orgId}",
+      "operationId": "adminCascadeDeleteOrganization",
+      "fingerprint": "27c4f0f969facecba409df8b21f7fb4c58a31a5afba97f8000b468a72e3c73b3",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/admin/sessions/{sessionId}",
+      "operationId": "adminForceDeleteSession",
+      "fingerprint": "9c06026466372625c3c92c4ed35acee75b313fc759f14915eb829df652f40ab9",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/admin/users/{userId}/onboarding",
+      "operationId": "adminResetOnboardingUser",
+      "fingerprint": "5574da77ee0d5e6803909ef96ca489ec7a0af0609a4bf3eb0489e79fb51b0987",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/auth/factors/{factorId}",
+      "operationId": "deleteUserProfileAuthFactor",
+      "fingerprint": "8ba5e5d34e89462bddae8ea83a658d08191c03ada30926dc6ac4bac3b29dd492",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/auth/providers/{provider}",
+      "operationId": "disconnectProviderUserProfile",
+      "fingerprint": "98178b17c187c2d31e3405a33aa2dad63ff979d66eab7875a1744e55338a4b8e",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/organization/avatar",
+      "operationId": "removeAvatarOrganization",
+      "fingerprint": "3b33524ffebb6d5fc5e4861fb5c42427777bc0cd039164cc1830adb1c7909140",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/profile/avatar",
+      "operationId": "removeAvatarUserProfile",
+      "fingerprint": "7aac49acf2b8a1422ef1382881315700423b09015237893c144545a15afaf8a1",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/webhooks/{webhookId}",
+      "operationId": "deleteWebhook",
+      "fingerprint": "9267ae6441a3d7468077889a42382ad3b551ce9b4d63f59909c0859b6bb01d2e",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/widget/logo",
+      "operationId": "removeLogoWidgetSettings",
+      "fingerprint": "59087b96550978cf36ebd54e34066d9c74a2aac552315c136730b98ece441c4e",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/v1/audiences/{listId}",
+      "operationId": "deleteAudience",
+      "fingerprint": "7a3fa2bd90c018fa34736074baced7b9d42dfc7956317ae09a9644bf48d2f301",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/v1/campaigns/{campaignId}",
+      "operationId": "deleteCampaign",
+      "fingerprint": "fb5cef90dbfa756213c870fd1ef4461b6c8e062da069cf88b3830e5e71e31413",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/v1/flows/{flowId}",
+      "operationId": "deleteFlow",
+      "fingerprint": "9efdd6ef0c41a42ad17c60d85dcd07bf6e97067f3d27bb959a5d1c9ad9df191b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/v1/keys/{keyId}",
+      "operationId": "deactivateApiKey",
+      "fingerprint": "fbb9ab38051753fe81ee74632b9e4bc98b1d2c8bc0702dd9decc280a07ea77d4",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/v1/media/{mediaId}",
+      "operationId": "deleteMedia",
+      "fingerprint": "bc8a28796934144374417e53862df9309dc502753312658570d6e08b68a810c3",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/v1/members/{memberId}",
+      "operationId": "deleteMember",
+      "fingerprint": "df5037db2a58bed2a74ff8609a89333a4e01d02351a0729d5a87dece5fa85134",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/v1/optouts/{phone}",
+      "operationId": "deleteOptOut",
+      "fingerprint": "e5a79337a1d32509cf310a55213fe99c46000c3d36c9691ec655ffe9c18ac216",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/v1/sessions/{sessionId}",
+      "operationId": "deletePlatformSession",
+      "fingerprint": "fb8833af87056a96d80afcd557c814acae4bdbc5231b6300058014cb792a42f3",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.sessions.delete"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/v1/templates/{templateId}",
+      "operationId": "deleteMessageTemplate",
+      "fingerprint": "39e3af44591cbd8b148aae94d965156a88ccb71f6fa97f0017893365272de91b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/audit",
+      "operationId": "adminListAuditLogGlobal",
+      "fingerprint": "d57d969a246643bd531c520741e441757b36678f8a65ebcde9a6857bd821a2a6",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/audit/actions",
+      "operationId": "adminListAuditLogAdminActions",
+      "fingerprint": "912d4ae68ad6597e4a067cd85b957047bf946be83454e0b5f36d101726e4a0bc",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/bans",
+      "operationId": "adminListRecentSessionBans",
+      "fingerprint": "36af9736402bf8f2c61a7cb8cd90a547ced0c5af74b7a8acc403a15d102a423c",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/billing/leaderboard",
+      "operationId": "adminTopOrgsByRevenueBilling",
+      "fingerprint": "4cba59bd6aff3acdccf3c79258cda3a7c9af00595bbdf75131db8071ad51f505",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/billing/lowbalance",
+      "operationId": "adminLowBalanceOrgsBilling",
+      "fingerprint": "76147c7c4b7770a21f75dc99e21cd49db9db1ab4ca451fe87711c086cbd9070e",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/billing/revenue",
+      "operationId": "adminPlatformRevenueBilling",
+      "fingerprint": "a5f18a66427768c834d9208f8bda487be309ceb3a85065afcbce71c47912cf01",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/campaigns",
+      "operationId": "adminListCampaigns",
+      "fingerprint": "8efc4de29777080762f84c6b7d86c11b4cd9c036f52d096f085d999faa91e1b8",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/campaigns/optouts",
+      "operationId": "adminOptOutLeaderboardCampaign",
+      "fingerprint": "d2db2b2590f714df21747b239f479b6ea810269dbb712dfc6c127ce714676021",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/keys",
+      "operationId": "adminListApiKeys",
+      "fingerprint": "c996e273e094a4eeb01f5528d7fa915a06032a553a66552b2c2b9372cda34122",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/kpis",
+      "operationId": "adminPlatformKpisPlatform",
+      "fingerprint": "9bbd6a309055dbccc89e1ed40bf690597a3019124b4cd6f9579dda4026bc83f2",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/organization-invitations",
+      "operationId": "adminListOrganizationInvitations",
+      "fingerprint": "d31cccbd47f3234df4129a3da9106c7cb6fc29fd762c931b1d8716dee2d5f263",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/orgs",
+      "operationId": "adminListOrganizations",
+      "fingerprint": "f04485a0cc74b465d96ba60599b2b4df70d4f9ce368d8b1ba7bc1318f12fa2f6",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/orgs/{orgId}",
+      "operationId": "adminGetOrganization",
+      "fingerprint": "036ed57d494d22f97c18c13025382cb088ae519ae3d0cdb509eff43c45470042",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/orgs/features",
+      "operationId": "adminListOrganizationFeatureGroups",
+      "fingerprint": "7fdd410965e89279f69ff102ff9a0f69838d25f226b5f1e389a98a7ee9575ca3",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/pricing",
+      "operationId": "adminListPricing",
+      "fingerprint": "fae20bb216793def9745f300643544a11492462f1a5b69100478237b9799d633",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/sessions",
+      "operationId": "adminListSessions",
+      "fingerprint": "5b9856036ad38ba90abc30f960d0265db8200ee1f36f6d67c29c95a7754b2982",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/signups",
+      "operationId": "adminRecentSignupsPlatform",
+      "fingerprint": "053ac5899e5dbf7903276efde73f8b29d7f5bfa375d2e89a88e7c8de5805868c",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/tenants",
+      "operationId": "adminListTenants",
+      "fingerprint": "c60f6ca73ae1c839448f8be6e88dcf994e5802637e6fd2758041d21e627db8e9",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/users",
+      "operationId": "adminSearchUser",
+      "fingerprint": "fb2726a16da0f75fd3f95593c7caa33ded0a70f147452194fff10551ea278ebd",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/users/{userId}",
+      "operationId": "adminGetUser",
+      "fingerprint": "1655f9325e118f9f0d3a4d444181017d038724a2182405359c8608c4910a0934",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/admin/webhooks",
+      "operationId": "adminListWebhooks",
+      "fingerprint": "ee329ac7479b1f039181f328aff30c47d00dcf22923a0413caf7dfb0ade5b77e",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/auth/methods",
+      "operationId": "getUserProfileAuthMethods",
+      "fingerprint": "a737c8cb84a7935c1e65012762a01b1e05401057918cb53fbf4d4ae440c303b8",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/auth/providers",
+      "operationId": "getUserProfileProviderConnectionUrl",
+      "fingerprint": "6b899f435977261ba00ec93e0634a38838417d7b730b4cc585d5b09ffabfdbfb",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/deployments",
+      "operationId": "listDeployments",
+      "fingerprint": "011f164af45fd831283c8b63abcaa064c6bd5468f6a1bdc81fa2941ea7f1a8ff",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/analytics",
+      "operationId": "analyticsInsight",
+      "fingerprint": "2086db701e228e18308d118de0035261b620c294c90b914cfc7a461f42e41d9e",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/logs",
+      "operationId": "logsInsight",
+      "fingerprint": "9ed5e7c3e6514445b08c593d89a6a52ac177719d673e0e536ec804fd3ec4f761",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/preferences",
+      "operationId": "getInsightPreferences",
+      "fingerprint": "fb0335423413358fd9332ab2265cf7dbe5804700c8533f929dd597e5b4898ef3",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/usage",
+      "operationId": "usageInsight",
+      "fingerprint": "972da218ad42a45b146e6ae61906bdf8a8ee88293ab21a25fafd9c784f4f2b4d",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications",
+      "operationId": "listNotificationInbox",
+      "fingerprint": "692a7b0c47f64e1fae63a2b74f5cb625506584c3811ee3083ff8f4509e234bf5",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications/archived",
+      "operationId": "listNotificationArchived",
+      "fingerprint": "bce4e842c13d376238598e1cb7964825e70f3f4a556d7789423b9a314796238d",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications/count",
+      "operationId": "unreadCountNotification",
+      "fingerprint": "893313e46bc52e8576e3a8d5028ab4f005e534644532a0c18d8b870278423811",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications/preferences",
+      "operationId": "getNotificationPreferences",
+      "fingerprint": "2730b43eea282c140d79d65f54dce7de191f2a6e69be5f6e689ff992533231ff",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/organizations/{slug}",
+      "operationId": "getOrganizationBySlug",
+      "fingerprint": "c9f40f0815d7dd7eeaf9b2b6d45482b29cc4cca66da22564aada0e61f2cd32fa",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/profile",
+      "operationId": "getUserProfile",
+      "fingerprint": "eef7bd6da2d98555b1830cf5863a56de4705ac25defd1be474b94076fe5b2a62",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sandbox/pool",
+      "operationId": "getSandboxProjectPool",
+      "fingerprint": "330a8642ba195267dfadd9e2598b95866fb058c079dcc2c8711f121d29181e6b",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/teams",
+      "operationId": "listUserProfileTeams",
+      "fingerprint": "884d5e8c868dfc7c884fe79626d2a0286345e5a8433eff4bf849fb293113a086",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/webhooks",
+      "operationId": "listWebhooks",
+      "fingerprint": "cf49a2ff1e6c5ba9160c3fe1ce53a2c51238fcd6f32abecedab8905df860fcc4",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/audiences",
+      "operationId": "listAudiences",
+      "fingerprint": "c9b7fea6681bda1193d6644e3d8bbecbfe9d3209d92e488709809fd5bdd9ea8f",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/audiences/{listId}",
+      "operationId": "getAudience",
+      "fingerprint": "d112bac7a31b48726e5b733b4ccefd1176d18e46b98a955637998e11da393b7e",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/audit",
+      "operationId": "listAuditLogs",
+      "fingerprint": "999c49da6658727309d20ff21be19ec3e1b32b0109d4de7e28a58f125bf7783d",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/bans",
+      "operationId": "listSessionBans",
+      "fingerprint": "084cee0e03641281ed8289eaac93ee2a568c08a7b58fe6a91f38160f0cdb26a9",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/bans/active",
+      "operationId": "listActiveSessionBans",
+      "fingerprint": "156741d1e35d99996ed69dafb4c7b5978a51ad1bc13c5946a3f10eebbe2f2482",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/billing",
+      "operationId": "getBilling",
+      "fingerprint": "d02dff1f6a9982c73eaca4bd8ae1cb54c374c59ae8cc07dbff709f1ad4a84cc7",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/billing/pricing",
+      "operationId": "listTierPricing",
+      "fingerprint": "11fd2a21332fc6cc122e2453819b5832e03fa24a2ae035700a040749889db798",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/billing/transactions",
+      "operationId": "listBillingTransactions",
+      "fingerprint": "dcd05457f7da5d5133e1283af495c541527d091d9f89cba7fad999692aa8c034",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/billing/usage",
+      "operationId": "listUsageMeters",
+      "fingerprint": "608b3ae4cc856505bca3f0295432a4d27070cfc86e44b99a8d65a717c6587548",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/campaigns",
+      "operationId": "listPlatformCampaigns",
+      "fingerprint": "93e1ad98cea3e0c386e94259f325bfa164e730e6ad367e42ab9b2607ebe04dbb",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/campaigns/{campaignId}",
+      "operationId": "getPlatformCampaign",
+      "fingerprint": "da6692869d64aa37690d8547d7b4a9ec27af091c309ccb44e04681a051fcc20e",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/campaigns/{campaignId}/analytics",
+      "operationId": "getPlatformCampaignAnalytics",
+      "fingerprint": "810a9a1d4da4ac527ff5e1bda34d4b17fb740060c9655762cdb4e19cfa794a43",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/campaigns/{campaignId}/events",
+      "operationId": "listCampaignEvents",
+      "fingerprint": "503b8fe2d1ef229b5fb3c39aab4e0d679f5ac3a97967b5b52113f83fca8062d8",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/campaigns/{campaignId}/recipients",
+      "operationId": "listCampaignRecipients",
+      "fingerprint": "8a157a2a3454a6445153b60fce01f2c89748afb3d5fb050782767fec5fd494ff",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/flows",
+      "operationId": "listFlows",
+      "fingerprint": "ca6c44c532123d6270b56b090b52629605d6dddc151fd3a9381c8145dec3c303",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/flows/{flowId}",
+      "operationId": "getFlow",
+      "fingerprint": "26e16fe0f8d5124e2b9538eff308676aa8253370a115373a882d3aa65b82abfb",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/incidents",
+      "operationId": "listSecurityIncidents",
+      "fingerprint": "882607c0cff97814db0ad77543491994ef7b67d0e867f5c542b5135d57f4d7b8",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/keys",
+      "operationId": "listApiKeys",
+      "fingerprint": "a6a4001725caf40d91f2f3fa123df5d9bf3cd6ca3d2e4886950989c9b2d386a6",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/media/{mediaId}",
+      "operationId": "getMediaUrl",
+      "fingerprint": "b3ebfeb65b98896c8e12a16e93d195891f106629c36af1035ce147250587c59b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/members",
+      "operationId": "listMembers",
+      "fingerprint": "cdc51521bfce0d50de725df0000e54ceb9302d4814f888903adeb9662ab10182",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/operations/{operationId}",
+      "operationId": "getPlatformOperation",
+      "fingerprint": "1525631606ad8d0572664199c617d398036b7a6a8e31bc1851b1b8805820df91",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/optouts",
+      "operationId": "listOptOuts",
+      "fingerprint": "f35a9d0aba83389d3f301c7b6e2fcf74848ecf24da6762de0764f8f57df5e923",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/organization",
+      "operationId": "getOrganization",
+      "fingerprint": "b028772e48352c90c8e6a7129105a74984c119f6b3b10664b3dd38dcf83ada76",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.organizations.retrieve"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/projects",
+      "operationId": "listProjects",
+      "fingerprint": "0122a1ccd2d1e67ab67da00897bcefbb3484f6f06ce5e70fe271e4595279817a",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.projects.list"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/sessions",
+      "operationId": "listPlatformSessions",
+      "fingerprint": "23d0ef983428e45d7d6b0f7b059a3d6854d36f407f42832a20d6ca62cc3ead7a",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.sessions.list"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/templates",
+      "operationId": "listMessageTemplates",
+      "fingerprint": "a922df1848c0555fa235eae538b5c3e99a39ba1900821014ce4066e9d5591910",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/templates/{templateId}",
+      "operationId": "getMessageTemplate",
+      "fingerprint": "b5a28dc474e45626de59a6d45295860f3f06112d3e9283acc13f86bae59c9f3e",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/tokens",
+      "operationId": "listPolymorfaTokens",
+      "fingerprint": "7e8644a38ef0b08cfa71b7b08ad21aab69d22df186fe8c22bdb5fd3b25d96032",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/widget",
+      "operationId": "getWidgetSettings",
+      "fingerprint": "b8ca527c78e69322e2e4ea655cf6ba6c1c796da20a9a5571e1f37f34b72d90ba",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/admin/members/{memberId}",
+      "operationId": "adminSetMemberRole",
+      "fingerprint": "cc3604ea1e3a1e5751c7110835be4d91bb7135acbba1e8846529a6ba7190251e",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/admin/orgs/{orgId}",
+      "operationId": "adminRenameOrganization",
+      "fingerprint": "af9395d65cd5cef0ed8c6d2f3aa9f623dc961825b522985d97211ae7576d6907",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/admin/orgs/{orgId}/features",
+      "operationId": "adminSetOrganizationFeatureGroups",
+      "fingerprint": "b1d524f641c32aa47c8ca5acff5aef7553c678bc81f273d21448c02777fe1ccb",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/admin/pricing/{tier}",
+      "operationId": "adminSetPricingActive",
+      "fingerprint": "9a32bf4835ae7cda6d1866886a75cd0313bb3e9b80cf0b44394b96b62cadf550",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/admin/tenants/{tenantId}",
+      "operationId": "adminSetTenantActive",
+      "fingerprint": "9dba78ce971063568a2516c17b9a889a03faabf29e204dbc6917ba6ca84b8292",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/profile",
+      "operationId": "updateUserProfileField",
+      "fingerprint": "4ca796cf59071fe5f5e76c592a8d5b748c710de5266237780474fba1256b7a70",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/webhooks/{webhookId}",
+      "operationId": "updateWebhook",
+      "fingerprint": "0c26fe3c4a9b8d786e6174c8503ea1e9a38bd5947af012a0856315fa1802dfc2",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/v1/billing/reminders",
+      "operationId": "updateBillingReminderSettings",
+      "fingerprint": "e4daaaab1908b0be01151e3b76ad71321e1948550f0c9ad6d51a007fcebb23f5",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/v1/campaigns/{campaignId}",
+      "operationId": "updateCampaign",
+      "fingerprint": "939a5e4ab9df46828313043f36cbef0b04edfe40600518bd5728465f68242056",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/v1/flows/{flowId}",
+      "operationId": "updateFlow",
+      "fingerprint": "cb1d868db9fe129780ac228b857655ba0b8335df0309ca8580b5a3f93b62ecf1",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/v1/members/{memberId}",
+      "operationId": "updateMemberRole",
+      "fingerprint": "4ee4c993b6c6ddf57bc843ccab868bafadb6a837dd42bc3f17634b60e2089742",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/v1/organization",
+      "operationId": "updateOrganization",
+      "fingerprint": "2bebc7153acadcdd51c38194d1953ab83faad44217c89a6024432ac2dd1dc33f",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.organizations.update"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/v1/sessions/{sessionId}",
+      "operationId": "setSessionTierOverride",
+      "fingerprint": "97d9b6847397ece0d3f8ce97c327543f57906d4fa1d3ccfc5abe82bbc0421220",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.sessions.setTierOverride"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/v1/templates/{templateId}",
+      "operationId": "updateMessageTemplate",
+      "fingerprint": "8c142f1a22edc5362f12344d7472b8b81d08fe7ae15b31215e5c7d8f201aa41b",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/billing/credits",
+      "operationId": "adminCompCreditsBilling",
+      "fingerprint": "05a39871bd6ef6c3157dba0a596a80bd375d26235faf5c8dcc20f60baf5d6abf",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/billing/refunds",
+      "operationId": "adminRefundBilling",
+      "fingerprint": "a56b5568ca8ab8681ed6d8956f72c663284f64b4108d04291107dc906fb7cd01",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/campaigns/{campaignId}/pause",
+      "operationId": "adminForcePauseCampaign",
+      "fingerprint": "d394b3659598f1eb52bc1a2b263c9afd0610a8a626177b5edbe0cebd67dde65e",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/campaigns/{campaignId}/stop",
+      "operationId": "adminForceStopCampaign",
+      "fingerprint": "a2dba0f7a9e167ca271455b1741565e7eb52bfef47df6161a0631f7cc5d45804",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/members/invites",
+      "operationId": "adminInviteMember",
+      "fingerprint": "a7896e67e3be5efb081ce5dda15d03325a296ffe585807c9feed344349baa822",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/organization-invitations",
+      "operationId": "adminCreateOrganizationInvitation",
+      "fingerprint": "feff3a406cf318ff6bb2d5e06c12de33eeb676928ade641af8d0838bb52b79ee",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/orgs/{orgId}/freeze",
+      "operationId": "adminFreezeOrganization",
+      "fingerprint": "c005672850694fedfe9b4a218c60809b04c857e6f8c998e6683cd0d66f3170b8",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/orgs/{orgId}/unfreeze",
+      "operationId": "adminUnfreezeOrganization",
+      "fingerprint": "ae1a6119aecced8d7bc44c631a87d6c9d8677c83aa38d9eac8686c30ab842ca9",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/sessions/{sessionId}/comp",
+      "operationId": "adminCompSessionDaySession",
+      "fingerprint": "073099cf9e819fabe11227e9e6168a259a89c5e77be0392f196349f08c4295fd",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/sessions/{sessionId}/stop",
+      "operationId": "adminForceStopSession",
+      "fingerprint": "40d86d63ee503ea5a27786afdfc56e8af2bbafe71556766672488f905789f903",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/sync",
+      "operationId": "adminEnsureCurrentUserStaffSyncStaffSync",
+      "fingerprint": "e4b3469c69aa71739eab0920dc8c39751e925e69cee53d08d718d3bd3437713c",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/users/{userId}/signout",
+      "operationId": "adminForceSignOutUser",
+      "fingerprint": "5c24c07e84215784928944b73ae27454e258a026b47fa4a0edf7f37ce9b14d9f",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/users/{userId}/suspend",
+      "operationId": "adminSuspendUser",
+      "fingerprint": "93865085071a0b333eecbd72876135780145e994dd6e82abc9c6b79007aef025",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/users/{userId}/unsuspend",
+      "operationId": "adminUnsuspendUser",
+      "fingerprint": "0a246aaf40a593c66447efdd17134ff3541d8b9b36e35bd4b6f56a62d6a5e97f",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/admin/webhooks/{webhookId}/disable",
+      "operationId": "adminForceDisableWebhook",
+      "fingerprint": "09b2e93d9bb1fbb2ada4b97e0ba009a1c98aa8961d55749c2c94644e4e6a8e0c",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/auth/totp",
+      "operationId": "enrollTotpUserProfile",
+      "fingerprint": "82f001e9c63ce68224b5af6dfa54160f0562807e9eb22f703047755041d8b500",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/auth/totp/verify",
+      "operationId": "verifyTotpUserProfile",
+      "fingerprint": "4eb76608fc9dacbc0f912914fd8733761b4faf2471c3a3230f2970585b627c5a",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/billing/topup",
+      "operationId": "topUpBilling",
+      "fingerprint": "e34c9e90589f3c0438feb5c40927c5c326e60e2cb1b426ab8b7e3aaf22689e41",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/keys",
+      "operationId": "mintForConsoleApiKey",
+      "fingerprint": "5c675dc96eb0750abdcfe50df815b528b80a2566138dd3c4b75a5da3bf4153e3",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/{notificationId}/archive",
+      "operationId": "archiveNotification",
+      "fingerprint": "f9635c51afbcc35ab725a862ff1f8d7d519cf7d0a9e81b6b17216913450055ab",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/{notificationId}/read",
+      "operationId": "markReadNotification",
+      "fingerprint": "fadd58321a663ea73087c3f78608171baa796c5ac776148fabfd683a1ae06ac5",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/archive",
+      "operationId": "archiveAllNotification",
+      "fingerprint": "d5bc4463530e8041f76ec16b73da4a5119d71ef5a88e43d5e8819c81e5f433a1",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/read",
+      "operationId": "markAllReadNotification",
+      "fingerprint": "234c8f0889c457657a527fcdd9648981414dfb3a0780430f653293d85574018f",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/test",
+      "operationId": "sendTestNotificationEmail",
+      "fingerprint": "8df8e25b344167f8c58c4670faa5c93a0deda32a17553170a06d3861d63e18d3",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/organization-invitations/{invitationId}/accept",
+      "operationId": "acceptOrganizationInvitation",
+      "fingerprint": "24e5b1a8d33ffdd3de5254818dcfdfcfc843747f0f5122decd054ee53f5f5d12",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/organization/avatar/uploads",
+      "operationId": "generateOrganizationAvatarUploadUrl",
+      "fingerprint": "3e2c0d152abdcc88afc64ff52d62028d1081da68b022161d1cee46fa342effd6",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/organizations/ensure",
+      "operationId": "ensureForCurrentUserOrganization",
+      "fingerprint": "1c2e34389d45336ec7d821487e7d9868ef68cda0998171e7a249d6b0e30dab9f",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/profile/avatar/uploads",
+      "operationId": "generateUserProfileAvatarUploadUrl",
+      "fingerprint": "36bfb0f768b47bfe3a4b15aec4a7e5060ec648eacf20e9f17a9dc6d984541903",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/profile/ensure",
+      "operationId": "ensureProfileUserProfile",
+      "fingerprint": "ebe9b146d650decac4b30ab2494d39150f612f91ba8f5e39c1caf4cc5563226b",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/icon",
+      "operationId": "generateProjectUploadUrl",
+      "fingerprint": "2cd32d596b851b4720ef5a38a75f9f57b2996f5b18dcaf02bb2da5ee468efa87",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/teams/{teamId}/delete",
+      "operationId": "deleteUserProfileTeam",
+      "fingerprint": "2e560a2d3d51411d62098074c2d18c0b586bcb48a270512a951d09893932df23",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/teams/leave",
+      "operationId": "leaveTeamUserProfile",
+      "fingerprint": "2ee2412690ca6ac2379fe9739eec713e9c0ec4f40325ae71912d0579109ab0a4",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/webhooks",
+      "operationId": "createWebhook",
+      "fingerprint": "23466ce79517195946c9b56f3450bd07a0f775a883c67d6b12f8b57332ada9c0",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/widget/logo/org",
+      "operationId": "useOrgLogoWidgetSettings",
+      "fingerprint": "75869aa902ccb6827e4a5c40a590fda4b4f3c148c3a2ad0f27d8e869f14b0d0d",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/widget/logo/project",
+      "operationId": "useProjectIconWidgetSettings",
+      "fingerprint": "47a2a33aa12946c7e03be08477a4a2d5ff63e6ffa9bdce7f9e1386144bda49b4",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/widget/logo/uploads",
+      "operationId": "generateWidgetSettingsLogoUploadUrl",
+      "fingerprint": "ee6a45ced39cbdb520030b15bc8f9140a28ff78c92df748c52e1a3985b48ecdf",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/audiences",
+      "operationId": "createAudience",
+      "fingerprint": "d86398c7616c06d22361b587d9f104209abac626a928abe70e0db75315f21248",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/audiences/uploads",
+      "operationId": "createAudienceUploadUrl",
+      "fingerprint": "46664ac229f2cc30ff2b46acbebd13b5f846fcc51a5a1349d461cfa5dd9e573d",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/campaigns",
+      "operationId": "createPlatformCampaign",
+      "fingerprint": "cbe45541fca28a1139361507914313f69f597e1827b4b39a04920693d38379aa",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/campaigns/{campaignId}/archive",
+      "operationId": "archiveCampaign",
+      "fingerprint": "7b25f8b0fee06d3b5abf8d7533e8c3589050869d348695fe8a7ce2a651dc8720",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/campaigns/{campaignId}/duplicate",
+      "operationId": "duplicateCampaign",
+      "fingerprint": "a938db2b4e224d593324a3af88e098205033ab4a8120129130db957e443f5129",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/campaigns/{campaignId}/launch",
+      "operationId": "launchPlatformCampaign",
+      "fingerprint": "3c044ffdaad17d7801459768cd868545f7c1dcc11885803f05f13a3aa8b13763",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/campaigns/{campaignId}/pause",
+      "operationId": "pausePlatformCampaign",
+      "fingerprint": "d774b78c26421d27bcbb3bfae14a138db186efac3c93ed8847245ca51e42502f",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/campaigns/{campaignId}/requeue",
+      "operationId": "requeueFailedCampaign",
+      "fingerprint": "90a421bd466de36f55321f83216983219ba9e065d99aeeb0778086ddb1b63fee",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/campaigns/{campaignId}/resume",
+      "operationId": "resumePlatformCampaign",
+      "fingerprint": "3d65dffea539f5f962287df721fcae3b3123ca04b35553a17a7d6d3b6f839e7c",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/campaigns/{campaignId}/stop",
+      "operationId": "stopPlatformCampaign",
+      "fingerprint": "19bf2cd48aae4aea95daf7a3399c4876bee66723a74ad60382b567c569614e69",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/flows",
+      "operationId": "createFlow",
+      "fingerprint": "413a774608f29e1c32ae00b761506f038e958c70aaea25ae23240ea2b45ea692",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/incidents/{incidentId}/acknowledge",
+      "operationId": "acknowledgeSecurityIncident",
+      "fingerprint": "a5366ffa31645927c2cdf22b8cb482f16c1b328592ccd7a2e7a1dc9ba5239c7f",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/media/uploads",
+      "operationId": "createMediaUploadUrl",
+      "fingerprint": "29f21fbe7dc3e1c291f6c8d771e9cb5ee3cb3b30eabdd1099897111dd422f6da",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/members/invites",
+      "operationId": "inviteMember",
+      "fingerprint": "29bf6c458801a53ef5188da13122013563995a9188517172aaa6b5d603c9a391",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/optouts",
+      "operationId": "createOptOut",
+      "fingerprint": "4872a99a6210546ffd0a1e49574935cd90d905e7bdcda12101fd39d63185bd05",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/optouts/batch",
+      "operationId": "createOptOuts",
+      "fingerprint": "1e35d121e42a7a602cc585774e8792db92ea2f4ad4378f76ca2b41f06bd2ee0a",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/projects",
+      "operationId": "createProject",
+      "fingerprint": "4483d314cabf80e61f321a873a186b5003ea0dc38dc979f449f77a1118fed57f",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.projects.create"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/projects/{projectId}/production-enrollments/{operationId}/approve",
+      "operationId": "approveProductionEnrollment",
+      "fingerprint": "b66b919fd3eeee77b5fc24ebd4404bcd55bc40cf7d6df0aa2a2606d12b260843",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.projects.approveProductionEnrollment"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/projects/{projectId}/production-enrollments/{operationId}/cancel",
+      "operationId": "cancelProductionEnrollment",
+      "fingerprint": "2aa59e8a082526f895d8cbb8f45a15ec61d45f9fe593d38712597d6522422924",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.projects.cancelProductionEnrollment"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/projects/{projectId}/promote",
+      "operationId": "requestProductionEnrollment",
+      "fingerprint": "6588e169b039b3f441f7ac3ee6299e405b704296944505931efa44a8279db248",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.projects.requestProductionEnrollment"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/sessions/{sessionId}/stop",
+      "operationId": "stopPlatformSession",
+      "fingerprint": "ab9c3026a29516462fd223e2aeba20edd6d8447e6bbf5d871e753f2a52df606b",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.sessions.stop"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/sessions/delete",
+      "operationId": "deleteSessions",
+      "fingerprint": "2150d1fe457eebf3faddf85219ef4a18bc8fcb294210a6d4eb353aa3193c19ed",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/sessions/stop",
+      "operationId": "stopSessions",
+      "fingerprint": "040ec9cbadb4c095278cecae967f43c9d8c6fd296b0724671e38331b89d68b74",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/sessions/testing",
+      "operationId": "createTestingSession",
+      "fingerprint": "6164760a9b74570debfdc06164473427d692857d600f340b53d54e95592c4482",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.sessions.createTesting"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/templates",
+      "operationId": "createMessageTemplate",
+      "fingerprint": "b600a82bba354e631778da9b1024152a5f14b7bded099a306c1e8a6596412243",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/admin/pricing/{tier}",
+      "operationId": "adminUpdatePricing",
+      "fingerprint": "864738a22657a6f413ebf1a3c808925f9c1846c8afe76670bb7d1917609530c0",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/insights/preferences",
+      "operationId": "updateInsightPreferences",
+      "fingerprint": "8880397b1c2c9cb43fcb736fddce503db77ca5f78aeae96f60ea3fc427b682e4",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/notifications/preferences",
+      "operationId": "updateNotificationPreferences",
+      "fingerprint": "55542ed453866e508a2849150579fbd8f7ad8687f72b6c2f1087db262bcf7c29",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/organization/avatar",
+      "operationId": "saveAvatarOrganization",
+      "fingerprint": "36f51bd023d7eee2470d00ea89d535b76f8d4a9bda58d04d0c9f359195c654e0",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/profile/avatar",
+      "operationId": "saveAvatarUserProfile",
+      "fingerprint": "bc10246081a092f1f2505999efe0038708fe4e89194f31f1857043ea7d3834ac",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/widget/logo",
+      "operationId": "attachLogoWidgetSettings",
+      "fingerprint": "e56adb74a4d3077cceca942ba2f9dfe1d1bac71f0750d556f8590d08cda16de7",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/v1/widget",
+      "operationId": "updateWidgetSettings",
+      "fingerprint": "61b7ddd6c3953b63b1dc9f163aba1cc716b5ba86b4c5e5bf8f3fb53b15127be1",
+      "typescript": {
+        "status": "missing",
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    }
+  ]
+}

@@ -4,6 +4,20 @@
   "description": "Handwritten Polymorfa server SDK for TypeScript and Node.js",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polymorfa/sdks.git"
+  },
+  "bugs": {
+    "url": "https://github.com/polymorfa/sdks/issues"
+  },
+  "homepage": "https://github.com/polymorfa/sdks#readme",
+  "keywords": [
+    "polymorfa",
+    "messaging",
+    "sdk"
+  ],
+  "sideEffects": false,
   "engines": {
     "node": ">=20"
   },
@@ -23,12 +37,26 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "check:coverage": "node scripts/check-coverage.mjs --messaging contracts/openapi.messaging.json --platform contracts/openapi.platform.json --ledger contracts/coverage.json --strict",
+    "check:names": "node scripts/check-retired-name.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint \"packages/**/*.ts\" vitest.config.ts",
+    "prepare": "npm run build",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.0.0",
+    "eslint": "^10.8.1",
+    "prettier": "^3.9.6",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.67.0",
     "vitest": "^3.2.7"
   }
 }

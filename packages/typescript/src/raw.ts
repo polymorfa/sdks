@@ -27,7 +27,10 @@ export class RawClient {
     cursorParameter: string,
     cursor?: string,
   ): Promise<CursorPage<T>> {
-    const query = cursor === undefined ? request.query : { ...request.query, [cursorParameter]: cursor };
+    const query =
+      cursor === undefined
+        ? request.query
+        : { ...request.query, [cursorParameter]: cursor };
     const response = await this.request<unknown>({
       ...request,
       ...(query === undefined ? {} : { query }),
@@ -41,7 +44,8 @@ export class RawClient {
       ...(nextCursor === undefined
         ? {}
         : {
-            loadNext: () => this.#loadPage(request, decode, cursorParameter, nextCursor),
+            loadNext: () =>
+              this.#loadPage(request, decode, cursorParameter, nextCursor),
           }),
     });
   }

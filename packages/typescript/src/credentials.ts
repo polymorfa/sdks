@@ -20,9 +20,14 @@ export interface PlatformClientOptions extends SharedClientOptions {
   readonly apiKey: string;
 }
 
-export function validateMessagingCredential(credential: MessagingCredential): MessagingCredential {
+export function validateMessagingCredential(
+  credential: MessagingCredential,
+): MessagingCredential {
   if (credential.type === "clientToken") {
-    if (!credential.value.startsWith("pmfa_ct_") || credential.value.length <= "pmfa_ct_".length) {
+    if (
+      !credential.value.startsWith("pmfa_ct_") ||
+      credential.value.length <= "pmfa_ct_".length
+    ) {
       throw new PolymorfaConfigurationError(
         "Messaging client token must use the pmfa_ct_ prefix.",
         "credential",
@@ -32,23 +37,34 @@ export function validateMessagingCredential(credential: MessagingCredential): Me
   }
 
   if (!isServerApiKey(credential.value)) {
-    throw new PolymorfaConfigurationError("Messaging API key must be a pmfa_ server API key.", "credential");
+    throw new PolymorfaConfigurationError(
+      "Messaging API key must be a pmfa_ server API key.",
+      "credential",
+    );
   }
   return credential;
 }
 
 export function validatePlatformApiKey(value: string): string {
   if (!isServerApiKey(value)) {
-    throw new PolymorfaConfigurationError("Platform server API key must use the pmfa_ prefix.", "apiKey");
+    throw new PolymorfaConfigurationError(
+      "Platform server API key must use the pmfa_ prefix.",
+      "apiKey",
+    );
   }
   return value;
 }
 
 export function assertServerRuntime(
-  runtime: { readonly window?: unknown } = globalThis as { readonly window?: unknown },
+  runtime: { readonly window?: unknown } = globalThis as {
+    readonly window?: unknown;
+  },
 ): void {
   if (typeof runtime.window !== "undefined") {
-    throw new PolymorfaConfigurationError("Polymorfa server API keys cannot be used in browsers.", "runtime");
+    throw new PolymorfaConfigurationError(
+      "Polymorfa server API keys cannot be used in browsers.",
+      "runtime",
+    );
   }
 }
 

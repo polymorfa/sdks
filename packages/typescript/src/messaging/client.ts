@@ -23,7 +23,9 @@ export class MessagingClient {
       authorization: `Bearer ${credential.value}`,
       timeoutMs: options.timeoutMs ?? 30_000,
       maxNetworkRetries: options.maxNetworkRetries ?? 2,
-      ...(options.apiVersion === undefined ? {} : { apiVersion: options.apiVersion }),
+      ...(options.apiVersion === undefined
+        ? {}
+        : { apiVersion: options.apiVersion }),
       ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
     });
     this.sessions = new SessionsResource(transport);

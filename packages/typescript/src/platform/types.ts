@@ -86,7 +86,8 @@ export interface ProductionEnrollmentResult {
   readonly slug: string;
   readonly stage: "development";
   readonly operationId: string;
-  readonly enrollmentStatus: "requested" | "approval_required" | "provisioning" | "ready";
+  readonly enrollmentStatus:
+    "requested" | "approval_required" | "provisioning" | "ready";
 }
 
 export interface ProductionEnrollmentCommandResult {
