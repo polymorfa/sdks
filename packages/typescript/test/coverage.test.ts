@@ -146,9 +146,9 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "f156af2dda13e62b6b106a542fdedb39524bdb66",
       total: 331,
-      covered: 142,
+      covered: 143,
       partial: 0,
-      missing: 126,
+      missing: 125,
       excluded: 63,
       changed: 0,
     });
@@ -181,6 +181,34 @@ describe("coverage checker", () => {
       }
       expect(value, operation.typescript.method).toBeTypeOf("function");
     }
+  });
+
+  it("maps every Presence operation to the server resource", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const presenceMappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ operationId }) =>
+          [
+            "setPresence",
+            "getPresence",
+            "getChatPresence",
+            "subscribePresence",
+          ].includes(operationId),
+        )
+        .map(({ operationId, typescript }) => [operationId, typescript.method]),
+    );
+
+    expect(presenceMappings).toEqual({
+      getPresence: "MessagingClient.presence.get",
+      getChatPresence: "MessagingClient.presence.getForChat",
+      setPresence: "MessagingClient.presence.set",
+      subscribePresence: "MessagingClient.presence.subscribe",
+    });
   });
 
   it("accepts a complete ledger and emits machine-readable counts", () => {

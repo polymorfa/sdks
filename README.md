@@ -100,6 +100,8 @@ The handwritten Messaging resources in this milestone are:
   URL/base64 picture source, plus delete the picture
 - `privacy`: retrieve account privacy, update setting-specific values, and set
   the account default disappearing-message timer
+- `presence`: set and inspect the session's own non-authoritative presence
+  snapshot, inspect retained chat observations, and subscribe to user presence
 - `quickReplies`: list, create, replace, and delete remembered Business App
   quick replies
 - `templates`: list, create, retrieve, update, delete, preview, and submit to
@@ -336,9 +338,9 @@ subpath exports an inert mount function.
 ## Coverage status
 
 `contracts/coverage.json` maps all 331 Messaging and Platform operations in the
-pinned contract. This milestone has 142 handwritten resource methods, 63
+pinned contract. This milestone has 143 handwritten resource methods, 63
 dashboard-only or staff routes excluded from the server credential surface,
-and 126 operations available through the raw escape hatch while typed methods
+and 125 operations available through the raw escape hatch while typed methods
 are added. Missing and structurally changed operations are reported
 individually; the ledger never presents raw access as typed parity.
 

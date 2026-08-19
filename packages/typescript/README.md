@@ -413,6 +413,72 @@ Privacy routes are absent from the browser client-token action allowlist. Use a
 server API key with the required profile scope. The Privacy tag has no privacy
 history, allowlist/blacklist member-management, or pagination operation.
 
+## Presence
+
+`MessagingClient.presence` exposes the complete four-operation Presence tag
+for Linked Device sessions. `get` and `getForChat` require `presence:read`,
+`set` requires `presence:write`, and `subscribe` requires `presence:observe`.
+
+```ts
+const self = await messaging.presence.get("support");
+
+await messaging.presence.set(
+  "support",
+  { presence: "available" },
+  { idempotencyKey: "presence-self-2026-08-20" },
+);
+
+const subscription = await messaging.presence.subscribe(
+  "support",
+  "15551234567@s.whatsapp.net",
+  { idempotencyKey: "presence-subscription-2026-08-20" },
+);
+const observed = await messaging.presence.getForChat(
+  "support",
+  "15551234567@s.whatsapp.net",
+);
+
+console.log(
+  self.data.data,
+  observed.data.data,
+  subscription.metadata.requestId,
+);
+```
+
+`PRESENCE_STATES`, `PRESENCE_OBSERVATION_STATUSES`,
+`PRESENCE_UNKNOWN_REASONS`, and `PRESENCE_CHAT_STATES` are root runtime
+exports for input validation and response narrowing. Self presence is the
+runner's remembered desired and last successfully sent value. Its
+`authoritative` field is always `false`; `get` does not query remote account
+state.
+
+Chat presence is also not a live query. `getForChat` reads the bounded
+observation projection controlled by `MessagingClient.observationPolicies`.
+`off` and `events` modes can return an unknown state without retained presence;
+`cache` mode returns `fresh` or `stale` cached observations. Typing observation
+is reported alongside presence but remains distinct from
+`MessagingClient.messages.setTyping`.
+
+The pinned runtime makes each successful subscription or renewal valid for 120
+seconds and returns the exact `expiresAt`; consumers must use that timestamp
+rather than assuming a fixed lifetime. Subscriptions accept user and LID
+identifiers, while chat reads also accept groups. Observation limits can return
+429 and place presence subscriptions in a temporary suspension window. The
+source exposes no stream, watch, history, polling helper, or unsubscribe route.
+
+Browser client tokens can call `get` and `getForChat` with the
+`read_presence` action and `subscribe` with `subscribe_presence`. They cannot
+call `set`; that route requires a server API key. Client-token rules also bind
+the request to the token's session. The server SDK accepts either credential
+kind and leaves the live action check to the API.
+
+The pinned OpenAPI describes the synchronous `set` result as a generic
+`SuccessResponse`, while the pinned live RPC handler returns
+`{ success: true, data: { status: "OK" } }`. `SetPresenceResponse` represents
+both shapes, plus the documented async-accepted envelope. The subscription
+type likewise includes its documented async response when callers explicitly
+send `Prefer: respond-async`.
+
 ## Chats
 
 `MessagingClient.chats` exposes the credential-compatible Linked Device chat

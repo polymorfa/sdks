@@ -34,13 +34,21 @@ export { ObservationPoliciesResource } from "./messaging/observation-policies.js
 export { OperationsResource } from "./messaging/operations.js";
 export { ProfileResource } from "./messaging/profile.js";
 export { PrivacyResource } from "./messaging/privacy.js";
+export { PresenceResource } from "./messaging/presence.js";
 export { PRIVACY_SETTING_VALUES } from "./messaging/types.js";
+export {
+  PRESENCE_CHAT_STATES,
+  PRESENCE_OBSERVATION_STATUSES,
+  PRESENCE_STATES,
+  PRESENCE_UNKNOWN_REASONS,
+} from "./messaging/types.js";
 export { QuickRepliesResource } from "./messaging/quick-replies.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
 export type {
   AddressMessageContent,
   BartenderMode,
+  AsyncAcceptedData,
   ButtonsMessageContent,
   BusinessProfile,
   BusinessProfileCategory,
@@ -51,6 +59,7 @@ export type {
   BusinessQuickReplyObserved,
   CheckContactResult,
   CheckContactsResponse,
+  ChatPresenceData,
   DisappearingTimerDuration,
   DisappearingTimerRequest,
   CloudApiCredentials,
@@ -91,6 +100,8 @@ export type {
   GetMessagingMediaInfoResponse,
   GetOperationResponse,
   GetProfileResponse,
+  GetPresenceResponse,
+  GetChatPresenceResponse,
   GetPrivacySettingsResponse,
   GetQRCodeResponse,
   GetClientRulesResponse,
@@ -158,6 +169,14 @@ export type {
   QuickReplyUnknownReason,
   ProjectObservationPolicy,
   ProfileData,
+  PresenceChatState,
+  PresenceChatStateValue,
+  PresenceData,
+  PresenceObservationStatus,
+  PresenceSetResult,
+  PresenceState,
+  PresenceSubscriptionData,
+  PresenceUnknownReason,
   PrivacySettingMutation,
   PrivacySettingName,
   PrivacySettingValue,
@@ -189,6 +208,8 @@ export type {
   SetGroupFieldRequest,
   SetGroupPictureRequest,
   SetProfileNameRequest,
+  SetPresenceRequest,
+  SetPresenceResponse,
   SetProfileNameResponse,
   SetProfilePictureRequest,
   SetProfilePictureResponse,
@@ -211,6 +232,7 @@ export type {
   SuccessEnvelope,
   SuccessResponse,
   SubmitProjectTemplateRequest,
+  SubscribePresenceResponse,
   TemplateButton,
   TemplateCarouselCard,
   TemplateCategory,

@@ -17,10 +17,15 @@ import {
   OperationsResource,
   ObservationPoliciesResource,
   ProfileResource,
+  PresenceResource,
   PrivacyResource,
   QuickRepliesResource,
   PlatformClient,
   PRIVACY_SETTING_VALUES,
+  PRESENCE_CHAT_STATES,
+  PRESENCE_OBSERVATION_STATUSES,
+  PRESENCE_STATES,
+  PRESENCE_UNKNOWN_REASONS,
   PolymorfaAuthenticationError,
   PolymorfaCancelledError,
   PolymorfaConfigurationError,
@@ -46,6 +51,8 @@ import {
   type Label,
   type ProjectObservationPolicy,
   type ProfileData,
+  type ChatPresenceData,
+  type PresenceData,
   type PrivacySettings,
   type BusinessQuickReply,
   type MintClientTokenRequest,
@@ -71,7 +78,12 @@ describe("public exports", () => {
   it("exposes every runtime dependency required by the CLI", () => {
     expect(ProfileResource).toBeTypeOf("function");
     expect(PrivacyResource).toBeTypeOf("function");
+    expect(PresenceResource).toBeTypeOf("function");
     expect(PRIVACY_SETTING_VALUES.online).toContain("match_last_seen");
+    expect(PRESENCE_STATES).toEqual(["available", "unavailable"]);
+    expect(PRESENCE_OBSERVATION_STATUSES).toContain("stale");
+    expect(PRESENCE_UNKNOWN_REASONS).toContain("suspended");
+    expect(PRESENCE_CHAT_STATES).toEqual(["composing", "paused"]);
     expect([
       MessagingClient,
       MessagingMediaResource,
@@ -90,6 +102,7 @@ describe("public exports", () => {
       ObservationPoliciesResource,
       ProfileResource,
       PrivacyResource,
+      PresenceResource,
       QuickRepliesResource,
       CursorPage,
       PolymorfaError,
@@ -102,7 +115,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(29);
+    ]).toHaveLength(30);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -133,6 +146,8 @@ describe("public exports", () => {
     expectTypeOf<ProjectObservationPolicy>().toHaveProperty("labelMode");
     expectTypeOf<ProfileData>().toHaveProperty("status");
     expectTypeOf<PrivacySettings>().toHaveProperty("readReceipts");
+    expectTypeOf<PresenceData>().toHaveProperty("authoritative");
+    expectTypeOf<ChatPresenceData>().toHaveProperty("typingStatus");
     expectTypeOf<BusinessQuickReply>().toHaveProperty("shortcut");
     expectTypeOf<DisappearingTimerRequest>().toHaveProperty("durationSeconds");
     expectTypeOf<MintClientTokenRequest>().toHaveProperty("ephemeralId");

@@ -529,7 +529,7 @@
       "fingerprint": "e7c220944f62dcd52d21f9027e86b2cc419ed005796e6e276a1c375bab79fb7a",
       "typescript": {
         "status": "covered",
-        "method": "BrowserMessagingClient.presence.retrieve"
+        "method": "MessagingClient.presence.get"
       }
     },
     {
@@ -540,7 +540,7 @@
       "fingerprint": "9cc4a7f0e3b7ddd91b43f5e35f2e0bf4ee7d671f709fea370bf6dd38b6f91c9b",
       "typescript": {
         "status": "covered",
-        "method": "BrowserMessagingClient.presence.retrieveChat"
+        "method": "MessagingClient.presence.getForChat"
       }
     },
     {
@@ -1295,9 +1295,8 @@
       "operationId": "setPresence",
       "fingerprint": "2501ea1a48b6bb092815692d750da1f38def3149b05d3be93117b7cdab24c25b",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.presence.set"
       }
     },
     {
@@ -1308,7 +1307,7 @@
       "fingerprint": "97f054a6911457b6b0920869f4b82513b6a77394d350c7f377c6099e86b9c01b",
       "typescript": {
         "status": "covered",
-        "method": "BrowserMessagingClient.presence.subscribe"
+        "method": "MessagingClient.presence.subscribe"
       }
     },
     {

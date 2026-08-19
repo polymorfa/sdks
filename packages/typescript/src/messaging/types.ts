@@ -245,6 +245,92 @@ export type LabelObservationMode = ObservationMode | "project";
 export type SessionObservationMode = ObservationMode | "inherit";
 export type SessionLabelObservationMode = LabelObservationMode | "inherit";
 
+export const PRESENCE_STATES = ["available", "unavailable"] as const;
+export const PRESENCE_OBSERVATION_STATUSES = [
+  "unknown",
+  "fresh",
+  "stale",
+] as const;
+export const PRESENCE_UNKNOWN_REASONS = [
+  "disabled",
+  "not_observed",
+  "suspended",
+] as const;
+export const PRESENCE_CHAT_STATES = ["composing", "paused"] as const;
+
+export type PresenceState = (typeof PRESENCE_STATES)[number];
+export type PresenceObservationStatus =
+  (typeof PRESENCE_OBSERVATION_STATUSES)[number];
+export type PresenceUnknownReason = (typeof PRESENCE_UNKNOWN_REASONS)[number];
+export type PresenceChatStateValue = (typeof PRESENCE_CHAT_STATES)[number];
+
+export interface SetPresenceRequest {
+  readonly presence: PresenceState;
+}
+
+/**
+ * The runner's remembered intent and last successful send, not authoritative
+ * remote account state.
+ */
+export interface PresenceData {
+  readonly desired?: PresenceState;
+  readonly desiredAt?: string;
+  readonly lastSent?: PresenceState;
+  readonly lastSentAt?: string;
+  readonly authoritative: false;
+}
+
+export interface PresenceChatState {
+  readonly sender: string;
+  readonly state: PresenceChatStateValue;
+  readonly media?: string;
+  readonly observedAt: string;
+  readonly stale: boolean;
+}
+
+/** Policy-governed retained observation state; this is not a live query. */
+export interface ChatPresenceData {
+  readonly policy: ObservationMode;
+  readonly status: PresenceObservationStatus;
+  readonly unknownReason?: PresenceUnknownReason;
+  readonly available?: boolean;
+  readonly lastSeen?: string;
+  readonly observedAt?: string;
+  readonly subscriptionExpiresAt?: string;
+  readonly stale: boolean;
+  readonly typingPolicy: ObservationMode;
+  readonly typingStatus: PresenceObservationStatus;
+  readonly typingUnknownReason?: PresenceUnknownReason;
+  readonly chatState?: PresenceChatState;
+}
+
+export interface PresenceSubscriptionData {
+  readonly status: "SUBSCRIBED";
+  readonly expiresAt: string;
+}
+
+export interface PresenceSetResult {
+  readonly status: "OK";
+}
+
+export interface AsyncAcceptedData {
+  readonly requestId: string;
+}
+
+export type GetPresenceResponse = SuccessEnvelope<PresenceData>;
+export type GetChatPresenceResponse = SuccessEnvelope<ChatPresenceData>;
+/**
+ * The pinned OpenAPI declares SuccessResponse; the pinned live RPC handler
+ * returns a data envelope. Both are represented until the source converges.
+ */
+export type SetPresenceResponse =
+  | SuccessResponse
+  | SuccessEnvelope<PresenceSetResult>
+  | SuccessEnvelope<AsyncAcceptedData>;
+export type SubscribePresenceResponse =
+  | SuccessEnvelope<PresenceSubscriptionData>
+  | SuccessEnvelope<AsyncAcceptedData>;
+
 export interface Label {
   readonly id: string;
   readonly name: string;

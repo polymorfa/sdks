@@ -50,10 +50,10 @@ describe("npm package", () => {
     writeFileSync(
       consumer,
       [
-        'import { MessagingClient, PlatformClient, PRIVACY_SETTING_VALUES, SDK_VERSION } from "@polymorfa/sdk";',
+        'import { MessagingClient, PlatformClient, PRESENCE_STATES, PRIVACY_SETTING_VALUES, SDK_VERSION } from "@polymorfa/sdk";',
         'const messaging = new MessagingClient({ credential: { type: "apiKey", value: "pmfa_fixture" } });',
         'const platform = new PlatformClient({ apiKey: "pmfa_fixture" });',
-        "console.log(JSON.stringify({ version: SDK_VERSION, messaging: !!messaging.raw, messagingMedia: typeof messaging.media.download, chats: typeof messaging.chats.editMessage, contacts: typeof messaging.contacts.list, groups: typeof messaging.groups.list, labels: typeof messaging.labels.list, observationPolicies: typeof messaging.observationPolicies.retrieveForProject, profile: typeof messaging.profile.get, privacy: typeof messaging.privacy.set, privacyValues: PRIVACY_SETTING_VALUES.defense, quickReplies: typeof messaging.quickReplies.list, pairing: typeof messaging.sessions.requestPairingCode, operations: typeof messaging.operations.retrieve, templates: typeof messaging.templates.create, platform: !!platform.raw, billing: typeof platform.billing.usage, organizationUpdate: typeof platform.organizations.update }));",
+        "console.log(JSON.stringify({ version: SDK_VERSION, messaging: !!messaging.raw, messagingMedia: typeof messaging.media.download, chats: typeof messaging.chats.editMessage, contacts: typeof messaging.contacts.list, groups: typeof messaging.groups.list, labels: typeof messaging.labels.list, observationPolicies: typeof messaging.observationPolicies.retrieveForProject, profile: typeof messaging.profile.get, privacy: typeof messaging.privacy.set, privacyValues: PRIVACY_SETTING_VALUES.defense, presence: typeof messaging.presence.getForChat, presenceStates: PRESENCE_STATES, quickReplies: typeof messaging.quickReplies.list, pairing: typeof messaging.sessions.requestPairingCode, operations: typeof messaging.operations.retrieve, templates: typeof messaging.templates.create, platform: !!platform.raw, billing: typeof platform.billing.usage, organizationUpdate: typeof platform.organizations.update }));",
       ].join("\n"),
     );
     const imported = spawnSync(process.execPath, [consumer], {
@@ -73,6 +73,8 @@ describe("npm package", () => {
       profile: "function",
       privacy: "function",
       privacyValues: ["on_standard", "off"],
+      presence: "function",
+      presenceStates: ["available", "unavailable"],
       quickReplies: "function",
       pairing: "function",
       operations: "function",
