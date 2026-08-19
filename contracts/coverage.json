@@ -634,9 +634,8 @@
       "operationId": "listCampaigns",
       "fingerprint": "edf002e4bf2e07dbe019805e1b0180fc9f4aab8ea58e1e93bc3bf9d8f9ec6f12",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.campaigns.list"
       }
     },
     {
@@ -646,9 +645,8 @@
       "operationId": "getCampaign",
       "fingerprint": "ae8e220be5c1aaac15befd796c43f4fcc3fd61e68b7c954193e73a0082a4eefb",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.campaigns.retrieve"
       }
     },
     {
@@ -658,9 +656,8 @@
       "operationId": "getCampaignAnalytics",
       "fingerprint": "07ed01febe6421b7722f0d3679463d787ed653d60d677744e4bbd5fde524b371",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.campaigns.analytics"
       }
     },
     {
@@ -1301,9 +1298,8 @@
       "operationId": "createCampaign",
       "fingerprint": "0635c38e1ebb410295a6f75fba03e7cc74f21f2d97c58590215104b2efc89ca2",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.campaigns.create"
       }
     },
     {
@@ -1313,9 +1309,8 @@
       "operationId": "launchCampaign",
       "fingerprint": "a44bb8dd674e63cbc77bf3762a770543b3b0b3d9d591ed8fd6a59606dd6e8311",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.campaigns.launch"
       }
     },
     {
@@ -1325,9 +1320,8 @@
       "operationId": "pauseCampaign",
       "fingerprint": "fc1b49e0f1211bead63f6a8d5a54d75127f7ad96ee998dcda9262cfc5c48c42b",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.campaigns.pause"
       }
     },
     {
@@ -1337,9 +1331,8 @@
       "operationId": "requeueCampaign",
       "fingerprint": "c2c71270f6a810c29b46c8f24931538b33440b17a35e50c6460c5e0c9f1f44d3",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.campaigns.requeue"
       }
     },
     {
@@ -1349,9 +1342,8 @@
       "operationId": "resumeCampaign",
       "fingerprint": "1e20868be51fe11638ae6a4f764b7c49777bf380c7b7db0689870a3b20f9b185",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.campaigns.resume"
       }
     },
     {
@@ -1361,9 +1353,8 @@
       "operationId": "stopCampaign",
       "fingerprint": "91b60609041f8f81ae075541f79ef03b762956444b45f064ca08b6d6cc214e47",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.campaigns.stop"
       }
     },
     {

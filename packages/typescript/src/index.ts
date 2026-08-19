@@ -27,6 +27,7 @@ export { ChatsResource } from "./messaging/chats.js";
 export { ChannelsResource } from "./messaging/channels.js";
 export { BusinessResource } from "./messaging/business.js";
 export { CallsResource } from "./messaging/calls.js";
+export { MessagingCampaignsResource } from "./messaging/campaigns.js";
 export type {
   AppealBusinessCollectionResponse,
   AppealBusinessProductResponse,
@@ -152,6 +153,13 @@ export type {
   BusinessQuickReplyCollection,
   BusinessQuickReplyMutation,
   BusinessQuickReplyObserved,
+  Campaign,
+  CampaignAnalytics,
+  CampaignAnalyticsResponse,
+  CampaignOperation,
+  CampaignOperationResponse,
+  CampaignRequeueResponse,
+  CampaignRequeueResult,
   Channel,
   ChannelActionResponse,
   ChannelActionResult,
@@ -176,6 +184,8 @@ export type {
   ContactProfilePicture,
   ContactUserInfo,
   CreateBusinessQuickReplyResponse,
+  CreateCampaignRequest,
+  CreateCampaignResponse,
   CreateChannelRequest,
   CreateChannelResponse,
   CreateSessionRequest,
@@ -198,6 +208,7 @@ export type {
   GetSessionAccountResponse,
   GetBlocklistResponse,
   GetBusinessProfileResponse,
+  GetCampaignResponse,
   GetContactPictureResponse,
   GetContactResponse,
   GetChannelResponse,
@@ -237,6 +248,7 @@ export type {
   LabelObservationStatus,
   LabelReadData,
   LabelUnknownReason,
+  LaunchCampaignRequest,
   ListLabelsParams,
   ListChannelMessagesResponse,
   ListChannelMessageUpdatesResponse,
@@ -246,6 +258,7 @@ export type {
   ListContactsResponse,
   ListGroupsResponse,
   ListBusinessQuickRepliesResponse,
+  ListCampaignsResponse,
   ListMessageContent,
   ListMessageRow,
   ListMessageSection,
@@ -308,6 +321,7 @@ export type {
   ResolveLidResult,
   ResolveLidsResponse,
   ReactToChannelMessageResponse,
+  RequeueCampaignRequest,
   RevokeGroupInviteCodeResponse,
   RequestPairCodeResponse,
   SeenRequest,

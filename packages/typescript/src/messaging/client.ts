@@ -8,6 +8,7 @@ import { HttpTransport } from "../transport/http.js";
 import { ChatsResource } from "./chats.js";
 import { BusinessResource } from "./business.js";
 import { CallsResource } from "./calls.js";
+import { MessagingCampaignsResource } from "./campaigns.js";
 import { ChannelsResource } from "./channels.js";
 import { ClientTokensResource } from "./client-tokens.js";
 import { ContactsResource } from "./contacts.js";
@@ -30,6 +31,7 @@ import { WebhooksResource } from "./webhooks.js";
 export class MessagingClient {
   readonly business: BusinessResource;
   readonly calls: CallsResource;
+  readonly campaigns: MessagingCampaignsResource;
   readonly chats: ChatsResource;
   readonly channels: ChannelsResource;
   readonly clientTokens: ClientTokensResource;
@@ -66,6 +68,7 @@ export class MessagingClient {
     });
     this.business = new BusinessResource(transport);
     this.calls = new CallsResource(transport);
+    this.campaigns = new MessagingCampaignsResource(transport);
     this.chats = new ChatsResource(transport);
     this.channels = new ChannelsResource(transport);
     this.clientTokens = new ClientTokensResource(transport);

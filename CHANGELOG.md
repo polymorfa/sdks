@@ -23,6 +23,9 @@
   polling, and project-token metadata.
 - Added typed Connect widget settings retrieval and updates plus bounded batch
   session stop and deletion for organization server keys.
+- Added the complete Messaging project campaign workflow: list, create,
+  retrieve, analytics, durable launch/pause/resume/stop commands, and direct
+  failed-recipient requeueing.
 - Excluded dashboard-only member invitations, role changes, and deletion from
   the organization-key client.
 - Excluded dashboard-only template and Flow endpoints from the organization-key

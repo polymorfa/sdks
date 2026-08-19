@@ -758,6 +758,85 @@ validation and still receive a 400 response. Empty reaction text is preserved
 and removes the caller's reaction upstream. Channel, session, and numeric
 message identifiers are URL-encoded by the SDK.
 
+## Messaging campaigns
+
+`MessagingClient.campaigns` exposes the complete nine-operation project-slug
+campaign workflow: `list`, `create`, `retrieve`, `analytics`, `launch`,
+`pause`, `resume`, `stop`, and `requeue`. Reads require `campaigns:read`;
+creation and lifecycle changes require `campaigns:manage`.
+
+```ts
+const created = await messaging.campaigns.create(
+  "support",
+  {
+    name: "August launch",
+    templateId: "order-ready",
+    recipientListId: "active-customers",
+    scheduledAt: Date.parse("2026-08-25T09:00:00Z"),
+  },
+  { idempotencyKey: "campaign-august-create" },
+);
+
+const launched = await messaging.campaigns.launch(
+  "support",
+  created.data.data.id,
+  {},
+  { idempotencyKey: "campaign-august-launch" },
+);
+
+const operation = await messaging.operations.retrieve(
+  launched.data.data.operationId,
+);
+console.log(operation.data.data.status, launched.metadata.requestId);
+```
+
+Launch, pause, resume, and stop append durable lifecycle commands and return the
+campaign's current persisted state plus an `operationId`. They do not wait for
+the campaign state to change. Poll that identifier with
+`MessagingClient.operations.retrieve`; the API does not expose a campaign
+watcher, stream, or command-cancellation route. Launch accepts an optional
+epoch-millisecond schedule. Pause requires a running campaign, resume requires
+a paused campaign, and stop accepts draft, running, or paused campaigns.
+
+`requeue` is a direct transaction, not a durable operation. It moves failed
+recipients back to pending and can also include recipients skipped with an
+error. Its `{ requeued }` result is the number actually moved. Lists are
+complete newest-first arrays; the source exposes no cursor, page token, search,
+event history, replay, or delivery-listener endpoint.
+
+This Messaging family is distinct from `PlatformClient.campaigns`, which maps
+the Management API's organization-key campaign model. The Messaging routes
+accept organization API keys. Their live authorization layer also accepts a
+project token only when it is bound to the exact path project, but the public
+`MessagingClient` credential contract does not accept project tokens, so this
+resource deliberately remains organization-key-only. Browser client tokens
+are not allowlisted for any campaign action and fail before the handler.
+Campaigns are project control-plane objects and have no Linked Device versus
+Cloud session-mode discriminator.
+
+For organization-key calls, the live list and create handlers resolve the path
+project slug. The other seven handlers currently authorize the organization
+and campaign ID but do not verify that the campaign belongs to the supplied
+slug. Callers must still supply the intended project slug; the SDK encodes it
+and does not weaken this source behavior. The pinned OpenAPI campaign schema
+omits several JSON repository fields and leaves analytics untyped. The SDK
+exports the exact live analytics counters and preserves the extra campaign
+fields as optional `unknown` values rather than asserting undocumented shapes.
+
+The transport retries these mutations only when an idempotency key is
+provided, but the pinned handlers do not persist that header. A create retry
+after an unseen success can create another campaign. Repeating a lifecycle
+command can conflict with the resulting state or append another intent;
+repeating requeue normally reports zero after the matching recipients have
+already moved. The live API reports entitlement failures as `402` and invalid
+lifecycle state conflicts as `400`, rather than the more specific statuses
+suggested by their semantics.
+
+The source exposes no Messaging campaign update, deletion, archive, duplicate,
+recipient listing, or campaign event inspection operation. The SDK does not
+substitute similarly named Management API routes or `raw.request` calls for
+those gaps.
+
 ## Chats
 
 `MessagingClient.chats` exposes the credential-compatible Linked Device chat

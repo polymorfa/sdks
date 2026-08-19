@@ -17,6 +17,7 @@ import {
   LidsResource,
   CursorPage,
   MessagingClient,
+  MessagingCampaignsResource,
   MessagingMediaResource,
   MediaResource,
   MembersResource,
@@ -55,9 +56,12 @@ import {
   type BillingBalance,
   type BillingTransaction,
   type BillingUsage,
+  type Campaign,
+  type CampaignAnalytics,
   type Channel,
   type ChannelMessage,
   type CreateProjectRequest,
+  type CreateCampaignRequest,
   type CreateChannelRequest,
   type CreateSessionRequest,
   type Contact,
@@ -117,6 +121,7 @@ describe("public exports", () => {
     expect(PRESENCE_CHAT_STATES).toEqual(["composing", "paused"]);
     expect([
       MessagingClient,
+      MessagingCampaignsResource,
       MessagingMediaResource,
       PlatformClient,
       ApiKeysResource,
@@ -159,7 +164,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(43);
+    ]).toHaveLength(44);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -169,6 +174,9 @@ describe("public exports", () => {
     expectTypeOf<BillingBalance>().toHaveProperty("balanceCents");
     expectTypeOf<BillingUsage>().toHaveProperty("activeNumbers");
     expectTypeOf<BillingTransaction>().toHaveProperty("balanceAfterCents");
+    expectTypeOf<Campaign>().toHaveProperty("recipientCount");
+    expectTypeOf<CampaignAnalytics>().toHaveProperty("responseRate");
+    expectTypeOf<CreateCampaignRequest>().toHaveProperty("name");
     expectTypeOf<TierPricing>().toHaveProperty("dailyRateCents");
     expectTypeOf<UpdateBillingReminderSettingsRequest>().toHaveProperty(
       "lowBalanceThresholdCents",

@@ -84,6 +84,8 @@ The handwritten Messaging resources in this milestone are:
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call
+- `campaigns`: list, create, retrieve, inspect analytics, launch, pause, resume,
+  stop, and requeue project campaigns through the Messaging control plane
 - `messages`: send every contract-defined message kind through one typed send
   union, mark seen, set typing state, react, and star
 - `media`: download binary media, retrieve metadata, and request durable object
@@ -358,9 +360,9 @@ subpath exports an inert mount function.
 ## Coverage status
 
 `contracts/coverage.json` maps all 331 Messaging and Platform operations in the
-pinned contract. This milestone has 198 operations covered by handwritten
+pinned contract. This milestone has 207 operations covered by handwritten
 resources, 66 dashboard-only or staff routes excluded from the server
-credential surface, and 67 operations available through the raw escape hatch
+credential surface, and 58 operations available through the raw escape hatch
 while typed methods are added. Missing and structurally changed operations are reported
 individually; the ledger never presents raw access as typed parity.
 

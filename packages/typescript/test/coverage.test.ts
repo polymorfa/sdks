@@ -146,11 +146,48 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "f156af2dda13e62b6b106a542fdedb39524bdb66",
       total: 331,
-      covered: 198,
+      covered: 207,
       partial: 0,
-      missing: 67,
+      missing: 58,
       excluded: 66,
       changed: 0,
+    });
+  });
+
+  it("maps the complete Messaging campaign workflow", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const operationIds = [
+      "listCampaigns",
+      "createCampaign",
+      "getCampaign",
+      "getCampaignAnalytics",
+      "launchCampaign",
+      "pauseCampaign",
+      "resumeCampaign",
+      "stopCampaign",
+      "requeueCampaign",
+    ];
+    const mappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ operationId }) => operationIds.includes(operationId))
+        .map(({ operationId, typescript }) => [operationId, typescript.method]),
+    );
+
+    expect(mappings).toEqual({
+      createCampaign: "MessagingClient.campaigns.create",
+      getCampaign: "MessagingClient.campaigns.retrieve",
+      getCampaignAnalytics: "MessagingClient.campaigns.analytics",
+      launchCampaign: "MessagingClient.campaigns.launch",
+      listCampaigns: "MessagingClient.campaigns.list",
+      pauseCampaign: "MessagingClient.campaigns.pause",
+      requeueCampaign: "MessagingClient.campaigns.requeue",
+      resumeCampaign: "MessagingClient.campaigns.resume",
+      stopCampaign: "MessagingClient.campaigns.stop",
     });
   });
 

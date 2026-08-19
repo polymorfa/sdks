@@ -78,6 +78,82 @@ export interface SuccessResponse {
   readonly message?: string;
 }
 
+/** Project-scoped campaign summary returned by the Messaging API. */
+export interface Campaign {
+  readonly id: string;
+  readonly name: string;
+  /** The pinned contract deliberately leaves campaign states forward-compatible. */
+  readonly status: string;
+  readonly templateId: string | null;
+  readonly recipientListId: string | null;
+  readonly recipientCount: number;
+  readonly sentCount: number;
+  readonly deliveredCount: number;
+  readonly readCount: number;
+  readonly failedCount: number;
+  readonly skippedCount: number;
+  /** Epoch milliseconds, or null when the lifecycle timestamp is absent. */
+  readonly scheduledAt: number | null;
+  readonly launchedAt: number | null;
+  readonly completedAt: number | null;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  /** Additional live repository fields omitted from the pinned OpenAPI schema. */
+  readonly composerBlueprint?: unknown;
+  readonly messages?: unknown;
+  readonly audienceRef?: unknown;
+  readonly senderConfig?: unknown;
+  readonly complianceConfig?: unknown;
+  readonly variants?: unknown;
+  readonly variantStrategy?: unknown;
+}
+
+export interface CampaignAnalytics {
+  readonly campaignId: string;
+  readonly recipientCount: number;
+  readonly sentCount: number;
+  readonly deliveredCount: number;
+  readonly readCount: number;
+  readonly failedCount: number;
+  readonly skippedCount: number;
+  readonly respondedCount: number;
+  readonly responseRate: number;
+}
+
+export interface CreateCampaignRequest {
+  readonly name: string;
+  readonly templateId?: string;
+  readonly recipientListId?: string;
+  readonly senderConfig?: Readonly<Record<string, unknown>>;
+  /** Epoch milliseconds. */
+  readonly scheduledAt?: number;
+}
+
+export interface LaunchCampaignRequest {
+  /** Epoch milliseconds. */
+  readonly scheduledAt?: number;
+}
+
+export interface RequeueCampaignRequest {
+  readonly includeSkippedError?: boolean;
+}
+
+export interface CampaignOperation extends Campaign {
+  /** Durable lifecycle operation that can be read through `operations.retrieve`. */
+  readonly operationId: string;
+}
+
+export interface CampaignRequeueResult {
+  readonly requeued: number;
+}
+
+export type ListCampaignsResponse = SuccessEnvelope<readonly Campaign[]>;
+export type GetCampaignResponse = SuccessEnvelope<Campaign>;
+export type CreateCampaignResponse = SuccessEnvelope<Campaign>;
+export type CampaignAnalyticsResponse = SuccessEnvelope<CampaignAnalytics>;
+export type CampaignOperationResponse = SuccessEnvelope<CampaignOperation>;
+export type CampaignRequeueResponse = SuccessEnvelope<CampaignRequeueResult>;
+
 export interface RejectCallRequest {
   /** JID of the incoming caller. */
   readonly from: string;
