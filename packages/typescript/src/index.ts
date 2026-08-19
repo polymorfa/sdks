@@ -67,6 +67,7 @@ export type {
 } from "./messaging/types.js";
 export { WebhooksResource } from "./messaging/webhooks.js";
 export { CursorPage, type PageDecoder, type PageResult } from "./pagination.js";
+export { AudiencesResource } from "./platform/audiences.js";
 export { PlatformClient } from "./platform/client.js";
 export { MediaResource } from "./platform/media.js";
 export { OptOutsResource } from "./platform/opt-outs.js";
