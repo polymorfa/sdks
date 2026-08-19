@@ -145,6 +145,14 @@ tokens and project tokens before making a request.
 The handwritten Platform resources in this milestone are:
 
 - `organizations`: retrieve the organization visible to the API key
+- `apiKeys`: list key metadata and deactivate an organization API key
+- `members`: list organization members
+- `auditLogs`: list the organization audit trail with live action, resource,
+  and limit filters
+- `sessionBans`: list all or active session bans
+- `securityIncidents`: list and acknowledge leaked-credential incidents
+- `operations`: retrieve durable asynchronous operation state
+- `projectTokens`: list token metadata for an explicit project
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing, and update low-balance reminders
 - `projects`: list, create, request production enrollment, approve, and cancel
@@ -348,10 +356,10 @@ subpath exports an inert mount function.
 ## Coverage status
 
 `contracts/coverage.json` maps all 331 Messaging and Platform operations in the
-pinned contract. This milestone has 184 handwritten resource methods, 63
-dashboard-only or staff routes excluded from the server credential surface,
-and 84 operations available through the raw escape hatch while typed methods
-are added. Missing and structurally changed operations are reported
+pinned contract. This milestone has 194 operations covered by handwritten
+resources, 66 dashboard-only or staff routes excluded from the server
+credential surface, and 71 operations available through the raw escape hatch
+while typed methods are added. Missing and structurally changed operations are reported
 individually; the ledger never presents raw access as typed parity.
 
 ## Development

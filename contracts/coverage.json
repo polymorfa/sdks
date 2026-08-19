@@ -1996,9 +1996,8 @@
       "operationId": "deactivateApiKey",
       "fingerprint": "fbb9ab38051753fe81ee74632b9e4bc98b1d2c8bc0702dd9decc280a07ea77d4",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.apiKeys.deactivate"
       }
     },
     {
@@ -2019,9 +2018,9 @@
       "operationId": "deleteMember",
       "fingerprint": "df5037db2a58bed2a74ff8609a89333a4e01d02351a0729d5a87dece5fa85134",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This dashboard-only member mutation accepts ConsoleSession authentication and rejects the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2531,9 +2530,8 @@
       "operationId": "listAuditLogs",
       "fingerprint": "999c49da6658727309d20ff21be19ec3e1b32b0109d4de7e28a58f125bf7783d",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.auditLogs.list"
       }
     },
     {
@@ -2543,9 +2541,8 @@
       "operationId": "listSessionBans",
       "fingerprint": "084cee0e03641281ed8289eaac93ee2a568c08a7b58fe6a91f38160f0cdb26a9",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.sessionBans.list"
       }
     },
     {
@@ -2555,9 +2552,8 @@
       "operationId": "listActiveSessionBans",
       "fingerprint": "156741d1e35d99996ed69dafb4c7b5978a51ad1bc13c5946a3f10eebbe2f2482",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.sessionBans.listActive"
       }
     },
     {
@@ -2690,9 +2686,8 @@
       "operationId": "listSecurityIncidents",
       "fingerprint": "882607c0cff97814db0ad77543491994ef7b67d0e867f5c542b5135d57f4d7b8",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.securityIncidents.list"
       }
     },
     {
@@ -2702,9 +2697,8 @@
       "operationId": "listApiKeys",
       "fingerprint": "a6a4001725caf40d91f2f3fa123df5d9bf3cd6ca3d2e4886950989c9b2d386a6",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.apiKeys.list"
       }
     },
     {
@@ -2725,9 +2719,8 @@
       "operationId": "listMembers",
       "fingerprint": "cdc51521bfce0d50de725df0000e54ceb9302d4814f888903adeb9662ab10182",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.members.list"
       }
     },
     {
@@ -2737,9 +2730,8 @@
       "operationId": "getPlatformOperation",
       "fingerprint": "1525631606ad8d0572664199c617d398036b7a6a8e31bc1851b1b8805820df91",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.operations.retrieve"
       }
     },
     {
@@ -2817,9 +2809,8 @@
       "operationId": "listPolymorfaTokens",
       "fingerprint": "7e8644a38ef0b08cfa71b7b08ad21aab69d22df186fe8c22bdb5fd3b25d96032",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.projectTokens.list"
       }
     },
     {
@@ -2959,9 +2950,9 @@
       "operationId": "updateMemberRole",
       "fingerprint": "4ee4c993b6c6ddf57bc843ccab868bafadb6a837dd42bc3f17634b60e2089742",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This dashboard-only member mutation accepts ConsoleSession authentication and rejects the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3560,9 +3551,8 @@
       "operationId": "acknowledgeSecurityIncident",
       "fingerprint": "a5366ffa31645927c2cdf22b8cb482f16c1b328592ccd7a2e7a1dc9ba5239c7f",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.securityIncidents.acknowledge"
       }
     },
     {
@@ -3583,9 +3573,9 @@
       "operationId": "inviteMember",
       "fingerprint": "29bf6c458801a53ef5188da13122013563995a9188517172aaa6b5d603c9a391",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This dashboard-only invitation accepts ConsoleSession authentication and rejects the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {

@@ -146,10 +146,10 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "f156af2dda13e62b6b106a542fdedb39524bdb66",
       total: 331,
-      covered: 184,
+      covered: 194,
       partial: 0,
-      missing: 84,
-      excluded: 63,
+      missing: 71,
+      excluded: 66,
       changed: 0,
     });
   });
@@ -423,6 +423,81 @@ describe("coverage checker", () => {
       getUserSecurityCode: "MessagingClient.users.getSecurityCode",
       rejectCall: "MessagingClient.calls.reject",
       resolveLIDs: "MessagingClient.lids.resolve",
+    });
+  });
+
+  it("maps the organization-key Platform access family and excludes dashboard member mutations", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const operationIds = [
+      "deactivateApiKey",
+      "listApiKeys",
+      "listMembers",
+      "listAuditLogs",
+      "listSessionBans",
+      "listActiveSessionBans",
+      "listSecurityIncidents",
+      "acknowledgeSecurityIncident",
+      "getPlatformOperation",
+      "listPolymorfaTokens",
+      "inviteMember",
+      "updateMemberRole",
+      "deleteMember",
+    ];
+    const mappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ operationId }) => operationIds.includes(operationId))
+        .map(({ operationId, typescript }) => [operationId, typescript]),
+    );
+
+    expect(mappings).toMatchObject({
+      deactivateApiKey: {
+        status: "covered",
+        method: "PlatformClient.apiKeys.deactivate",
+      },
+      listApiKeys: {
+        status: "covered",
+        method: "PlatformClient.apiKeys.list",
+      },
+      listMembers: {
+        status: "covered",
+        method: "PlatformClient.members.list",
+      },
+      listAuditLogs: {
+        status: "covered",
+        method: "PlatformClient.auditLogs.list",
+      },
+      listSessionBans: {
+        status: "covered",
+        method: "PlatformClient.sessionBans.list",
+      },
+      listActiveSessionBans: {
+        status: "covered",
+        method: "PlatformClient.sessionBans.listActive",
+      },
+      listSecurityIncidents: {
+        status: "covered",
+        method: "PlatformClient.securityIncidents.list",
+      },
+      acknowledgeSecurityIncident: {
+        status: "covered",
+        method: "PlatformClient.securityIncidents.acknowledge",
+      },
+      getPlatformOperation: {
+        status: "covered",
+        method: "PlatformClient.operations.retrieve",
+      },
+      listPolymorfaTokens: {
+        status: "covered",
+        method: "PlatformClient.projectTokens.list",
+      },
+      inviteMember: { status: "excluded" },
+      updateMemberRole: { status: "excluded" },
+      deleteMember: { status: "excluded" },
     });
   });
 

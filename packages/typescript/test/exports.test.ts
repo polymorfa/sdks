@@ -1,6 +1,8 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {
+  ApiKeysResource,
+  AuditLogsResource,
   AudiencesResource,
   BillingResource,
   BusinessResource,
@@ -17,6 +19,7 @@ import {
   MessagingClient,
   MessagingMediaResource,
   MediaResource,
+  MembersResource,
   OptOutsResource,
   OperationsResource,
   ObservationPoliciesResource,
@@ -25,6 +28,8 @@ import {
   PrivacyResource,
   QuickRepliesResource,
   PlatformClient,
+  PlatformOperationsResource,
+  ProjectTokensResource,
   PRIVACY_SETTING_VALUES,
   PRESENCE_CHAT_STATES,
   PRESENCE_OBSERVATION_STATUSES,
@@ -36,12 +41,16 @@ import {
   PolymorfaError,
   PolymorfaRateLimitError,
   PolymorfaTimeoutError,
+  SecurityIncidentsResource,
+  SessionBansResource,
   TemplatesResource,
   UsersResource,
   constructWebhookEvent,
   isEvent,
   verifyWebhookSignature,
+  type ApiKey,
   type ApiResponse,
+  type AuditLog,
   type BillingBalance,
   type BillingTransaction,
   type BillingUsage,
@@ -74,12 +83,17 @@ import {
   type PairCodeRequest,
   type QRCodeData,
   type ListCampaignsParams,
+  type ManagementOperation,
+  type OrganizationMember,
   type PlatformPayload,
   type PlatformClientOptions,
+  type ProjectToken,
   type RawRequest,
   type RequestOptions,
   type ResolveLidParams,
   type ResponseMetadata,
+  type SecurityIncident,
+  type SessionBan,
   type SendMessageRequest,
   type TemplateDefinition,
   type TierPricing,
@@ -102,6 +116,8 @@ describe("public exports", () => {
       MessagingClient,
       MessagingMediaResource,
       PlatformClient,
+      ApiKeysResource,
+      AuditLogsResource,
       AudiencesResource,
       BillingResource,
       BusinessResource,
@@ -115,6 +131,7 @@ describe("public exports", () => {
       LabelsResource,
       LidsResource,
       MediaResource,
+      MembersResource,
       OptOutsResource,
       OperationsResource,
       ObservationPoliciesResource,
@@ -122,6 +139,8 @@ describe("public exports", () => {
       PrivacyResource,
       PresenceResource,
       QuickRepliesResource,
+      PlatformOperationsResource,
+      ProjectTokensResource,
       CursorPage,
       PolymorfaError,
       PolymorfaConfigurationError,
@@ -129,16 +148,20 @@ describe("public exports", () => {
       PolymorfaRateLimitError,
       PolymorfaTimeoutError,
       PolymorfaCancelledError,
+      SecurityIncidentsResource,
+      SessionBansResource,
       TemplatesResource,
       UsersResource,
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(35);
+    ]).toHaveLength(42);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
     expectTypeOf<ApiResponse<unknown>>().toHaveProperty("metadata");
+    expectTypeOf<ApiKey>().toHaveProperty("last4");
+    expectTypeOf<AuditLog>().toHaveProperty("actorEmail");
     expectTypeOf<BillingBalance>().toHaveProperty("balanceCents");
     expectTypeOf<BillingUsage>().toHaveProperty("activeNumbers");
     expectTypeOf<BillingTransaction>().toHaveProperty("balanceAfterCents");
@@ -155,9 +178,14 @@ describe("public exports", () => {
     expectTypeOf<MessagingClientOptions>().toHaveProperty("credential");
     expectTypeOf<PlatformClientOptions>().toHaveProperty("apiKey");
     expectTypeOf<ListCampaignsParams>().toHaveProperty("projectId");
+    expectTypeOf<ManagementOperation>().toHaveProperty("status");
+    expectTypeOf<OrganizationMember>().toHaveProperty("role");
     expectTypeOf<PlatformPayload>().toMatchTypeOf<
       Readonly<Record<string, unknown>>
     >();
+    expectTypeOf<ProjectToken>().toHaveProperty("revokedAt");
+    expectTypeOf<SecurityIncident>().toHaveProperty("resolution");
+    expectTypeOf<SessionBan>().toHaveProperty("status");
     expectTypeOf<CreateSessionRequest>().toHaveProperty("projectId");
     expectTypeOf<CreateChannelRequest>().toHaveProperty("picture");
     expectTypeOf<Channel>().toHaveProperty("lid");

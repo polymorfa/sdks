@@ -18,6 +18,11 @@
 - Added handwritten Platform clients for organizations, projects, and sessions.
 - Added handwritten Platform resources for campaigns, audiences, opt-outs, and
   media, covering 27 additional organization-key operations.
+- Added typed organization-key resources for API-key metadata and deactivation,
+  member reads, audit logs, session bans, security incidents, durable operation
+  polling, and project-token metadata.
+- Excluded dashboard-only member invitations, role changes, and deletion from
+  the organization-key client.
 - Excluded dashboard-only template and Flow endpoints from the organization-key
   server client instead of exposing methods with an incompatible credential.
 - Added typed errors, response metadata, timeouts, cancellation, safe retries,

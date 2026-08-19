@@ -74,6 +74,134 @@ export interface BillingReminderSettings {
   readonly reminderChannels: readonly BillingReminderChannel[];
 }
 
+/** Metadata for an organization server API key. Raw key material is never returned. */
+export interface ApiKey {
+  readonly _id: string;
+  readonly _creationTime: number;
+  readonly id: string;
+  readonly keyId: string;
+  readonly start: string;
+  readonly last4: string;
+  readonly orgId: string;
+  readonly label: string;
+  readonly scopes: number;
+  readonly source: string;
+  readonly expiresAt: number;
+  readonly lastUsed?: number;
+  readonly isActive: boolean;
+}
+
+export interface ApiKeyDeactivation {
+  readonly ok: true;
+  readonly keyId: string;
+}
+
+export type OrganizationMemberRole = "owner" | "admin" | "member";
+
+export interface OrganizationMember {
+  readonly _id: string;
+  readonly _creationTime: number;
+  readonly orgId: string;
+  readonly userId: string;
+  readonly email: string;
+  readonly name: string | null;
+  readonly role: OrganizationMemberRole;
+  readonly status: string;
+  readonly invitedAt: number | null;
+  readonly joinedAt: number | null;
+}
+
+export interface ListAuditLogsParams {
+  readonly action?: string;
+  readonly resource?: string;
+  /** The live API bounds this value to 1 through 500 and defaults it to 100. */
+  readonly limit?: number;
+}
+
+export interface AuditLog {
+  readonly id: string;
+  readonly actorEmail: string;
+  readonly actorUserId: string | null;
+  readonly actorRole: string | null;
+  readonly action: string;
+  readonly resource: string;
+  readonly projectId: string | null;
+  readonly projectName: string | null;
+  readonly ip: string | null;
+  readonly userAgent: string | null;
+  readonly duration: number | null;
+  readonly source: string | null;
+  readonly description: string | null;
+  readonly result: string;
+  readonly metadata: unknown;
+  readonly createdAt: number;
+}
+
+export type SessionBanStatus = "active" | "lifted";
+
+export interface SessionBan {
+  readonly id: string;
+  readonly sessionName: string;
+  readonly banCode: number | null;
+  readonly banReason: string | null;
+  readonly banExpiresAt: number | null;
+  readonly occurredAt: number;
+  readonly status: SessionBanStatus;
+}
+
+export interface SecurityIncident {
+  readonly id: string;
+  readonly keyId: string;
+  readonly tokenType: string;
+  readonly source: string;
+  readonly url: string | null;
+  readonly ref: string | null;
+  readonly resolution: string;
+  readonly detectedAt: number;
+  readonly acknowledgedAt: number | null;
+  readonly acknowledgedBy: string | null;
+  readonly createdAt: number;
+}
+
+export interface SecurityIncidentAcknowledgement {
+  readonly acknowledged: true;
+}
+
+export type ManagementOperationStatus =
+  | "pending"
+  | "running"
+  | "action_required"
+  | "succeeded"
+  | "failed"
+  | "cancelled";
+
+export interface ManagementOperation {
+  readonly id: string;
+  readonly kind: string;
+  readonly resourceType: string;
+  readonly resourceId: string;
+  readonly projectId: string | null;
+  readonly status: ManagementOperationStatus;
+  readonly progressCode: string | null;
+  readonly failureCode: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly completedAt: string | null;
+}
+
+/** Project-token metadata. The bearer token itself is never returned. */
+export interface ProjectToken {
+  readonly id: string;
+  readonly start: string;
+  readonly last4: string;
+  readonly label: string | null;
+  readonly scopes: number;
+  readonly expiresAt: number | null;
+  readonly createdAt: number;
+  readonly lastUsedAt: number | null;
+  readonly revokedAt: number | null;
+}
+
 export interface ProjectIcon {
   readonly type: string;
   readonly value: string;

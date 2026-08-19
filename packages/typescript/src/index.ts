@@ -391,15 +391,25 @@ export type {
 export { WebhooksResource } from "./messaging/webhooks.js";
 export { CursorPage, type PageDecoder, type PageResult } from "./pagination.js";
 export { AudiencesResource } from "./platform/audiences.js";
+export { ApiKeysResource } from "./platform/api-keys.js";
+export { AuditLogsResource } from "./platform/audit-logs.js";
 export { BillingResource } from "./platform/billing.js";
 export { CampaignsResource } from "./platform/campaigns.js";
 export { PlatformClient } from "./platform/client.js";
 export { MediaResource } from "./platform/media.js";
+export { MembersResource } from "./platform/members.js";
 export { OptOutsResource } from "./platform/opt-outs.js";
+export { PlatformOperationsResource } from "./platform/operations.js";
 export { OrganizationsResource } from "./platform/organizations.js";
+export { ProjectTokensResource } from "./platform/project-tokens.js";
 export { ProjectsResource } from "./platform/projects.js";
+export { SecurityIncidentsResource } from "./platform/security-incidents.js";
+export { SessionBansResource } from "./platform/session-bans.js";
 export { PlatformSessionsResource } from "./platform/sessions.js";
 export type {
+  ApiKey,
+  ApiKeyDeactivation,
+  AuditLog,
   BillingBalance,
   BillingCurrency,
   BillingReminderChannel,
@@ -409,10 +419,15 @@ export type {
   CreateProjectRequest,
   CreateTestingSessionRequest,
   DataEnvelope,
+  ListAuditLogsParams,
   ListPlatformSessionsParams,
   ListCampaignsParams,
+  ManagementOperation,
+  ManagementOperationStatus,
   ManagedSession,
   Organization,
+  OrganizationMember,
+  OrganizationMemberRole,
   PlatformSession,
   PlatformPayload,
   ProductionBusiness,
@@ -421,7 +436,12 @@ export type {
   ProductionEnrollmentResult,
   Project,
   ProjectIcon,
+  ProjectToken,
   ProjectWithStats,
+  SecurityIncident,
+  SecurityIncidentAcknowledgement,
+  SessionBan,
+  SessionBanStatus,
   SessionProjectContext,
   SessionRemoveResult,
   SessionStopResult,
