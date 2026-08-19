@@ -34,6 +34,7 @@ export { ObservationPoliciesResource } from "./messaging/observation-policies.js
 export { OperationsResource } from "./messaging/operations.js";
 export { ProfileResource } from "./messaging/profile.js";
 export { PrivacyResource } from "./messaging/privacy.js";
+export { PRIVACY_SETTING_VALUES } from "./messaging/types.js";
 export { QuickRepliesResource } from "./messaging/quick-replies.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";

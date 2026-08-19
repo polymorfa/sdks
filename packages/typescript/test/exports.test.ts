@@ -20,6 +20,7 @@ import {
   PrivacyResource,
   QuickRepliesResource,
   PlatformClient,
+  PRIVACY_SETTING_VALUES,
   PolymorfaAuthenticationError,
   PolymorfaCancelledError,
   PolymorfaConfigurationError,
@@ -70,6 +71,7 @@ describe("public exports", () => {
   it("exposes every runtime dependency required by the CLI", () => {
     expect(ProfileResource).toBeTypeOf("function");
     expect(PrivacyResource).toBeTypeOf("function");
+    expect(PRIVACY_SETTING_VALUES.online).toContain("match_last_seen");
     expect([
       MessagingClient,
       MessagingMediaResource,

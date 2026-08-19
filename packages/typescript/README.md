@@ -391,7 +391,8 @@ console.log(privacy.data.data, privacy.metadata.requestId);
 ```
 
 `PrivacySettingMutation` is discriminated by `setting`; incompatible values
-fail type checking:
+fail type checking. `PRIVACY_SETTING_VALUES` exposes the same matrix at runtime
+for command parsers and validation:
 
 | Setting                                 | Accepted values                                |
 | --------------------------------------- | ---------------------------------------------- |

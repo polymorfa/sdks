@@ -169,8 +169,21 @@ export type SetProfileStatusResponse = SuccessResponse;
 export type SetProfilePictureResponse = SuccessResponse;
 export type DeleteProfilePictureResponse = SuccessResponse;
 
+export const PRIVACY_SETTING_VALUES = {
+  groupadd: ["all", "contacts", "contact_blacklist", "none"],
+  last: ["all", "contacts", "contact_blacklist", "none"],
+  status: ["all", "contacts", "contact_blacklist", "none"],
+  profile: ["all", "contacts", "contact_blacklist", "none"],
+  readreceipts: ["all", "none"],
+  online: ["all", "match_last_seen"],
+  calladd: ["all", "known"],
+  messages: ["all", "contacts"],
+  defense: ["on_standard", "off"],
+  stickers: ["contacts", "contact_allowlist", "none"],
+} as const;
+
 export type StandardPrivacyAudience =
-  "all" | "contacts" | "contact_blacklist" | "none";
+  (typeof PRIVACY_SETTING_VALUES)["groupadd"][number];
 
 export interface PrivacySettings {
   readonly groupAdd: StandardPrivacyAudience;
@@ -185,18 +198,11 @@ export interface PrivacySettings {
   readonly stickers: "contacts" | "contact_allowlist" | "none";
 }
 
-export interface PrivacySettingValueMap {
-  readonly groupadd: StandardPrivacyAudience;
-  readonly last: StandardPrivacyAudience;
-  readonly status: StandardPrivacyAudience;
-  readonly profile: StandardPrivacyAudience;
-  readonly readreceipts: "all" | "none";
-  readonly online: "all" | "match_last_seen";
-  readonly calladd: "all" | "known";
-  readonly messages: "all" | "contacts";
-  readonly defense: "on_standard" | "off";
-  readonly stickers: "contacts" | "contact_allowlist" | "none";
-}
+export type PrivacySettingValueMap = {
+  readonly [
+    Setting in keyof typeof PRIVACY_SETTING_VALUES
+  ]: (typeof PRIVACY_SETTING_VALUES)[Setting][number];
+};
 
 export type PrivacySettingName = keyof PrivacySettingValueMap;
 export type PrivacySettingMutation = {

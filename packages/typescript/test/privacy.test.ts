@@ -2,6 +2,7 @@ import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
   MessagingClient,
+  PRIVACY_SETTING_VALUES,
   PrivacyResource,
   type ApiResponse,
   type DefaultDisappearingTimerRequest,
@@ -64,6 +65,21 @@ async function privacyServer(): Promise<{
 }
 
 describe("MessagingClient privacy", () => {
+  it("exports the setting matrix for runtime CLI validation", () => {
+    expect(PRIVACY_SETTING_VALUES).toEqual({
+      groupadd: ["all", "contacts", "contact_blacklist", "none"],
+      last: ["all", "contacts", "contact_blacklist", "none"],
+      status: ["all", "contacts", "contact_blacklist", "none"],
+      profile: ["all", "contacts", "contact_blacklist", "none"],
+      readreceipts: ["all", "none"],
+      online: ["all", "match_last_seen"],
+      calladd: ["all", "known"],
+      messages: ["all", "contacts"],
+      defense: ["on_standard", "off"],
+      stickers: ["contacts", "contact_allowlist", "none"],
+    });
+  });
+
   it("exports the exact setting-specific value matrix", () => {
     expectTypeOf<PrivacySettingValueMap>().toEqualTypeOf<{
       readonly groupadd: "all" | "contacts" | "contact_blacklist" | "none";
