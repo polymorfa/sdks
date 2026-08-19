@@ -78,6 +78,82 @@ export interface SuccessResponse {
   readonly message?: string;
 }
 
+export interface Contact {
+  readonly lid: string;
+  readonly phoneNumber?: string;
+  readonly name: string;
+  readonly pushName: string;
+  readonly businessName?: string;
+  readonly profileUrl?: string;
+  readonly id?: string;
+  readonly username?: string;
+}
+
+export interface CheckContactResult {
+  readonly exists: boolean;
+  readonly lid?: string;
+  readonly phoneNumber?: string;
+  readonly id?: string;
+  readonly username?: string;
+}
+
+export interface ContactBlocklist {
+  readonly hash: string;
+  readonly jids: readonly string[];
+}
+
+export interface BusinessProfileCategory {
+  readonly id: string;
+  readonly name: string;
+}
+
+export interface BusinessProfileHours {
+  readonly dayOfWeek: string;
+  readonly mode: string;
+  readonly openTime: string;
+  readonly closeTime: string;
+}
+
+export interface BusinessProfile {
+  readonly jid: string;
+  readonly address: string;
+  readonly email: string;
+  readonly description: string;
+  readonly websites: readonly string[];
+  readonly coverPhotoId: string;
+  readonly categories: readonly BusinessProfileCategory[];
+  readonly options: Readonly<Record<string, string>>;
+  readonly hoursTimeZone: string;
+  readonly hours: readonly BusinessProfileHours[];
+}
+
+export interface ContactUserInfo {
+  readonly jid: string;
+  readonly lid: string;
+  readonly status: string;
+  readonly pictureId: string;
+  readonly verifiedName: string;
+  readonly devices: readonly string[];
+  readonly id?: string;
+  readonly phoneNumber?: string;
+  readonly username?: string;
+}
+
+export interface ContactProfilePicture {
+  readonly url: string;
+}
+
+export type ListContactsResponse = SuccessEnvelope<readonly Contact[]>;
+export type CheckContactsResponse = SuccessEnvelope<
+  readonly CheckContactResult[]
+>;
+export type GetContactResponse = SuccessEnvelope<Contact>;
+export type GetContactPictureResponse = SuccessEnvelope<ContactProfilePicture>;
+export type GetBlocklistResponse = SuccessEnvelope<ContactBlocklist>;
+export type GetUserInfoResponse = SuccessEnvelope<ContactUserInfo>;
+export type GetUserDevicesResponse = SuccessEnvelope<readonly string[]>;
+export type GetBusinessProfileResponse = SuccessEnvelope<BusinessProfile>;
+
 export interface MintClientTokenRequest {
   readonly session: string;
   readonly ephemeralId: string;

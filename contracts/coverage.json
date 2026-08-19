@@ -336,7 +336,7 @@
       "fingerprint": "809f399acf6230c7ae4e84a34f9143d71a891cd87b7f00cd928cbe8efde8657d",
       "typescript": {
         "status": "covered",
-        "method": "BrowserMessagingClient.contacts.list"
+        "method": "MessagingClient.contacts.list"
       }
     },
     {
@@ -347,7 +347,7 @@
       "fingerprint": "42d4a8c0ae7095f7afb26f6c3ee3ec3b7e3f990cf83b54cbcc203cfa296aade7",
       "typescript": {
         "status": "covered",
-        "method": "BrowserMessagingClient.contacts.retrieve"
+        "method": "MessagingClient.contacts.retrieve"
       }
     },
     {
@@ -357,9 +357,8 @@
       "operationId": "getBusinessProfile",
       "fingerprint": "203d6e5f788a3561199b42b379ed952841f90a1b9de4b5f0849c820f971fe3bb",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.contacts.businessProfile"
       }
     },
     {
@@ -369,9 +368,8 @@
       "operationId": "getUserDevices",
       "fingerprint": "9474516031a4e478539403f38d86fffc6a6394a1db94f8a409321eae6239a33f",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.contacts.devices"
       }
     },
     {
@@ -381,9 +379,8 @@
       "operationId": "getUserInfo",
       "fingerprint": "7ec0cf63f34b452f0594c9d2826cbd4f2f08523792f011e51977591ff9bb2c07",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.contacts.info"
       }
     },
     {
@@ -394,7 +391,7 @@
       "fingerprint": "747faa8ded343ea9545e3140ac199588457e686dbab3a7ed43fd1f5943d29aab",
       "typescript": {
         "status": "covered",
-        "method": "BrowserMessagingClient.contacts.picture"
+        "method": "MessagingClient.contacts.picture"
       }
     },
     {
@@ -404,9 +401,8 @@
       "operationId": "getBlocklist",
       "fingerprint": "16fc9eaddef4c1a05ba9983961b120603b299cc85a1796fd25ca0f01e74ed39d",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.contacts.blocklist"
       }
     },
     {
@@ -417,7 +413,7 @@
       "fingerprint": "e9f7c2578adfb98d309750e55b902f1e833f4652fade0ef8060c5276eba9454e",
       "typescript": {
         "status": "covered",
-        "method": "BrowserMessagingClient.contacts.check"
+        "method": "MessagingClient.contacts.check"
       }
     },
     {
@@ -1135,9 +1131,8 @@
       "operationId": "blockContact",
       "fingerprint": "aaa52ccd04944c9ae8a0aaf17bbb4828e276f14c15870106f9fcc0d2109cd784",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.contacts.block"
       }
     },
     {
@@ -1147,9 +1142,8 @@
       "operationId": "unblockContact",
       "fingerprint": "25ef3e351b57a916385e82a58d002b468f6ef03f16000e4eb2203cc384d53213",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.contacts.unblock"
       }
     },
     {

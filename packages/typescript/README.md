@@ -61,6 +61,33 @@ await messaging.templates.preview("support", created.data.data.id, {
 Keep this client on the server. Browser builders use an application-owned
 route, such as `createTemplateBuilderRoute` from `@polymorfa/nextjs`.
 
+## Contacts
+
+`MessagingClient.contacts` exposes the complete Linked Device contact surface.
+Read operations require `contacts:read`; blocking and unblocking require
+`contacts:manage`.
+
+```ts
+const contacts = await messaging.contacts.list("support");
+const registrations = await messaging.contacts.check("support", [
+  "+15551234567",
+  "+15557654321",
+]);
+
+const firstRegistration = registrations.data.data[0];
+if (firstRegistration?.exists && firstRegistration.id) {
+  await messaging.contacts.block("support", firstRegistration.id, {
+    idempotencyKey: "block-abusive-contact",
+  });
+}
+
+console.log(contacts.data.data, contacts.metadata.requestId);
+```
+
+The resource also provides `retrieve`, `picture`, `info`, `devices`,
+`businessProfile`, `blocklist`, and `unblock`. Contact operations are not
+available for Cloud API sessions.
+
 ## Platform automation
 
 Organization API keys can use handwritten campaign, audience, opt-out, and

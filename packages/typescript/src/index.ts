@@ -24,26 +24,43 @@ export {
 } from "./errors.js";
 export { MessagingClient } from "./messaging/client.js";
 export { ClientTokensResource } from "./messaging/client-tokens.js";
+export { ContactsResource } from "./messaging/contacts.js";
 export { MessagesResource } from "./messaging/messages.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
 export type {
   BartenderMode,
+  BusinessProfile,
+  BusinessProfileCategory,
+  BusinessProfileHours,
+  CheckContactResult,
+  CheckContactsResponse,
   CloudApiCredentials,
   ClientRuleRateLimits,
   ClientRules,
   ClientTokenValue,
+  Contact,
+  ContactBlocklist,
+  ContactProfilePicture,
+  ContactUserInfo,
   CreateSessionRequest,
   CreateSessionResponse,
   CreateProjectTemplateRequest,
   CreateWebhookRequest,
   CreateWebhookResponse,
   GetSessionAccountResponse,
+  GetBlocklistResponse,
+  GetBusinessProfileResponse,
+  GetContactPictureResponse,
+  GetContactResponse,
   GetClientRulesResponse,
   GetSessionResponse,
+  GetUserDevicesResponse,
+  GetUserInfoResponse,
   GetWebhookResponse,
   HistorySyncPolicy,
   ListSessionsResponse,
+  ListContactsResponse,
   ListProjectTemplatesResponse,
   ListWebhooksResponse,
   MessageKind,

@@ -4,6 +4,7 @@ import {
   AudiencesResource,
   CampaignsResource,
   ClientTokensResource,
+  ContactsResource,
   CursorPage,
   MessagingClient,
   MediaResource,
@@ -22,6 +23,8 @@ import {
   type ApiResponse,
   type CreateProjectRequest,
   type CreateSessionRequest,
+  type Contact,
+  type ContactUserInfo,
   type MintClientTokenRequest,
   type MessageReceivedEvent,
   type MessagingClientOptions,
@@ -44,6 +47,7 @@ describe("public exports", () => {
       AudiencesResource,
       CampaignsResource,
       ClientTokensResource,
+      ContactsResource,
       MediaResource,
       OptOutsResource,
       CursorPage,
@@ -57,7 +61,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(18);
+    ]).toHaveLength(19);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -72,6 +76,8 @@ describe("public exports", () => {
       Readonly<Record<string, unknown>>
     >();
     expectTypeOf<CreateSessionRequest>().toHaveProperty("projectId");
+    expectTypeOf<Contact>().toHaveProperty("lid");
+    expectTypeOf<ContactUserInfo>().toHaveProperty("devices");
     expectTypeOf<MintClientTokenRequest>().toHaveProperty("ephemeralId");
     expectTypeOf<CreateProjectRequest>().toHaveProperty("name");
     expectTypeOf<SendMessageRequest>().toHaveProperty("chatId");

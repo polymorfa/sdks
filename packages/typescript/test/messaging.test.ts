@@ -174,6 +174,63 @@ describe("MessagingClient client tokens", () => {
   });
 });
 
+describe("MessagingClient contacts", () => {
+  it("maps the complete contact directory and metadata read surface", async () => {
+    const { client, requests } = await messagingServer();
+    const session = "support/eu";
+    const contactId = "15551234567/1@lid";
+
+    await client.contacts.list(session);
+    await client.contacts.check(session, ["+15551234567", "+15557654321"]);
+    await client.contacts.blocklist(session);
+    await client.contacts.retrieve(session, contactId);
+    await client.contacts.picture(session, contactId);
+    await client.contacts.info(session, contactId);
+    await client.contacts.devices(session, contactId);
+    await client.contacts.businessProfile(session, contactId);
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /api/support%2Feu/contacts",
+      "GET /api/support%2Feu/contacts/check?phone=%2B15551234567%2C%2B15557654321",
+      "GET /api/support%2Feu/contacts/blocked",
+      "GET /api/support%2Feu/contacts/15551234567%2F1%40lid",
+      "GET /api/support%2Feu/contacts/15551234567%2F1%40lid/picture",
+      "GET /api/support%2Feu/contacts/15551234567%2F1%40lid/info",
+      "GET /api/support%2Feu/contacts/15551234567%2F1%40lid/devices",
+      "GET /api/support%2Feu/contacts/15551234567%2F1%40lid/business-profile",
+    ]);
+  });
+
+  it("maps block and unblock mutations without putting contact data in a body", async () => {
+    const { client, requests } = await messagingServer();
+    const contactId = "15551234567@lid";
+
+    await client.contacts.block("support", contactId, {
+      idempotencyKey: "block-contact-1",
+    });
+    await client.contacts.unblock("support", contactId, {
+      idempotencyKey: "unblock-contact-1",
+    });
+
+    expect(
+      requests.map(({ method, path, body }) => ({ method, path, body })),
+    ).toEqual([
+      {
+        method: "POST",
+        path: "/api/support/contacts/15551234567%40lid/block",
+        body: "",
+      },
+      {
+        method: "POST",
+        path: "/api/support/contacts/15551234567%40lid/unblock",
+        body: "",
+      },
+    ]);
+    expect(requests[0]?.headers["idempotency-key"]).toBe("block-contact-1");
+    expect(requests[1]?.headers["idempotency-key"]).toBe("unblock-contact-1");
+  });
+});
+
 describe("MessagingClient templates", () => {
   it("maps canonical project-template CRUD, preview, and submission operations", async () => {
     const { client, requests } = await messagingServer();
