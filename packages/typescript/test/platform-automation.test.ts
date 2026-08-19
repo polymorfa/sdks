@@ -105,3 +105,67 @@ describe("PlatformClient audiences", () => {
     expect(requests[4]?.body).toBe('{"filename":"audience.csv"}');
   });
 });
+
+describe("PlatformClient campaigns", () => {
+  it("maps collection, encoded item, and project query operations", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.list({
+      projectId: "project/a",
+      projectSlug: "support",
+    });
+    await client.campaigns.create(
+      { projectId: "project/a", name: "August" },
+      { idempotencyKey: "campaign-1" },
+    );
+    await client.campaigns.retrieve("campaign/a");
+    await client.campaigns.update("campaign/a", { name: "September" });
+    await client.campaigns.delete("campaign/a");
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /v1/campaigns?projectId=project%2Fa&projectSlug=support",
+      "POST /v1/campaigns",
+      "GET /v1/campaigns/campaign%2Fa",
+      "PATCH /v1/campaigns/campaign%2Fa",
+      "DELETE /v1/campaigns/campaign%2Fa",
+    ]);
+    expect(requests[1]?.body).toBe('{"projectId":"project/a","name":"August"}');
+    expect(requests[1]?.headers["idempotency-key"]).toBe("campaign-1");
+    expect(requests[3]?.body).toBe('{"name":"September"}');
+  });
+
+  it("maps lifecycle actions and read subresources", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.launch("campaign/a", { reason: "launch" });
+    await client.campaigns.pause("campaign/a", { reason: "pause" });
+    await client.campaigns.resume("campaign/a", { reason: "resume" });
+    await client.campaigns.stop("campaign/a", { reason: "stop" });
+    await client.campaigns.archive("campaign/a", { reason: "archive" });
+    await client.campaigns.duplicate("campaign/a", { reason: "duplicate" });
+    await client.campaigns.requeue("campaign/a", { reason: "requeue" });
+    await client.campaigns.analytics("campaign/a");
+    await client.campaigns.events("campaign/a");
+    await client.campaigns.recipients("campaign/a");
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "POST /v1/campaigns/campaign%2Fa/launch",
+      "POST /v1/campaigns/campaign%2Fa/pause",
+      "POST /v1/campaigns/campaign%2Fa/resume",
+      "POST /v1/campaigns/campaign%2Fa/stop",
+      "POST /v1/campaigns/campaign%2Fa/archive",
+      "POST /v1/campaigns/campaign%2Fa/duplicate",
+      "POST /v1/campaigns/campaign%2Fa/requeue",
+      "GET /v1/campaigns/campaign%2Fa/analytics",
+      "GET /v1/campaigns/campaign%2Fa/events",
+      "GET /v1/campaigns/campaign%2Fa/recipients",
+    ]);
+    expect(requests.slice(0, 7).map(({ body }) => body)).toEqual([
+      '{"reason":"launch"}',
+      '{"reason":"pause"}',
+      '{"reason":"resume"}',
+      '{"reason":"stop"}',
+      '{"reason":"archive"}',
+      '{"reason":"duplicate"}',
+      '{"reason":"requeue"}',
+    ]);
+  });
+});

@@ -4,6 +4,11 @@ export interface DataEnvelope<T> {
 
 export type PlatformPayload = Readonly<Record<string, unknown>>;
 
+export interface ListCampaignsParams {
+  readonly projectId: string;
+  readonly projectSlug?: string;
+}
+
 export interface Organization {
   readonly id: string;
   readonly externalId: string;
