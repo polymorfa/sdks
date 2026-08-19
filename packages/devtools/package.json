@@ -1,0 +1,39 @@
+{
+  "name": "@polymorfa/devtools",
+  "version": "0.1.0-dev.0",
+  "description": "Production-gated configuration, theming, and diagnostics assistant for Polymorfa UI",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./production": {
+      "types": "./dist/production.d.ts",
+      "import": "./dist/production.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@polymorfa/ui": "0.1.0-dev.0"
+  },
+  "peerDependencies": {
+    "@polymorfa/browser": "0.1.0-dev.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
