@@ -1,0 +1,37 @@
+{
+  "name": "@polymorfa/nextjs",
+  "version": "0.1.0-dev.0",
+  "description": "Server-only Next.js helpers for Polymorfa client tokens and webhooks",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "@polymorfa/sdk": ">=0.1.0-dev.0 <1"
+  },
+  "peerDependenciesMeta": {
+    "@polymorfa/sdk": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
