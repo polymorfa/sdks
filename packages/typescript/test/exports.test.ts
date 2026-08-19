@@ -15,6 +15,7 @@ import {
   PolymorfaError,
   PolymorfaRateLimitError,
   PolymorfaTimeoutError,
+  TemplatesResource,
   constructWebhookEvent,
   isEvent,
   verifyWebhookSignature,
@@ -31,6 +32,7 @@ import {
   type RequestOptions,
   type ResponseMetadata,
   type SendMessageRequest,
+  type TemplateDefinition,
   type WebhookEvent,
 } from "../src/index.js";
 
@@ -51,10 +53,11 @@ describe("public exports", () => {
       PolymorfaRateLimitError,
       PolymorfaTimeoutError,
       PolymorfaCancelledError,
+      TemplatesResource,
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(17);
+    ]).toHaveLength(18);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -72,6 +75,7 @@ describe("public exports", () => {
     expectTypeOf<MintClientTokenRequest>().toHaveProperty("ephemeralId");
     expectTypeOf<CreateProjectRequest>().toHaveProperty("name");
     expectTypeOf<SendMessageRequest>().toHaveProperty("chatId");
+    expectTypeOf<TemplateDefinition>().toHaveProperty("variables");
     expectTypeOf<WebhookEvent>().toHaveProperty("event");
     expectTypeOf<MessageReceivedEvent>().toHaveProperty("payload");
   });

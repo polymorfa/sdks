@@ -1,11 +1,13 @@
 // @vitest-environment happy-dom
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { createLocale } from "@polymorfa/ui";
+import { TemplateBuilderController } from "@polymorfa/browser";
 import {
   definePolymorfaElements,
   type ElementController,
   PolymorfaQuickLinkElement,
   PolymorfaChatDrawerElement,
+  PolymorfaTemplateBuilderElement,
 } from "../src/index.js";
 
 function fixtureController<T extends object>(initial: T) {
@@ -97,5 +99,72 @@ describe("portable elements", () => {
     ).click();
     expect(closed).toHaveBeenCalledTimes(1);
     expect(document.activeElement).toBe(opener);
+  });
+  it("renders canonical template fields and structured previews", async () => {
+    const templateDocument = {
+      id: "tpl-1",
+      name: "order_ready",
+      category: "UTILITY",
+      language: "en_US",
+      status: "draft",
+      kind: "standard",
+      definition: {
+        version: 1 as const,
+        kind: "standard" as const,
+        category: "UTILITY" as const,
+        language: "en_US",
+        header: { format: "text" as const, text: "Order {{order_id}}" },
+        body: "Hello {{name}}",
+        buttons: [{ type: "quick_reply" as const, text: "Track order" }],
+        variables: [
+          { name: "order_id", type: "text" as const, example: "A-100" },
+          { name: "name", type: "text" as const, example: "Ada" },
+        ],
+      },
+      sampleValues: { order_id: "A-100", name: "Ada" },
+      cloudLinks: [],
+      createdAt: 1,
+      updatedAt: 2,
+    };
+    const controller = new TemplateBuilderController({
+      load: async () => templateDocument,
+      save: async () => templateDocument,
+      preview: async () => ({
+        surface: "preview",
+        rendered: {
+          kind: "standard",
+          category: "UTILITY",
+          header: { format: "text", text: "Order A-100" },
+          body: "Hello Ada",
+          buttons: [{ type: "quick_reply", text: "Track order" }],
+          cards: [],
+        },
+      }),
+      submitToMeta: async () => ({ ...templateDocument, status: "PENDING" }),
+      delete: async () => undefined,
+    });
+    await controller.load("tpl-1");
+    const node = document.createElement(
+      "pmfa-template-builder",
+    ) as PolymorfaTemplateBuilderElement;
+    node.controller = controller;
+    document.body.append(node);
+
+    expect(
+      node.shadowRoot?.querySelector('[aria-label="Header text"]'),
+    ).not.toBeNull();
+    expect(
+      (
+        node.shadowRoot?.querySelector(
+          '[aria-label="Template body"]',
+        ) as HTMLTextAreaElement
+      ).value,
+    ).toBe("Hello {{name}}");
+    await controller.refreshPreview();
+    expect(node.shadowRoot?.textContent).toContain("Hello Ada");
+    expect(node.shadowRoot?.textContent).toContain("Track order");
+    expect(node.shadowRoot?.textContent).toContain("Save draft");
+    expect(node.shadowRoot?.textContent).toContain("Submit to Meta");
+    node.remove();
   });
 });

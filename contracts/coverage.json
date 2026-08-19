@@ -123,9 +123,8 @@
       "operationId": "deleteProjectTemplate",
       "fingerprint": "cd2c6b07f251df24cc5c3df259dba804846f5e26e9364fb02ff234626ad2df61",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.templates.delete"
       }
     },
     {
@@ -713,9 +712,8 @@
       "operationId": "listProjectTemplates",
       "fingerprint": "d9c2a54361638c27c36cfa0c9c2f5d92daee3ee47f5ae7c7f0b1c4d316b22360",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.templates.list"
       }
     },
     {
@@ -725,9 +723,8 @@
       "operationId": "getProjectTemplate",
       "fingerprint": "cb60900192a486c16562867a1cfb3b595444a467b7d91b43ea7aa107faf951c1",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.templates.retrieve"
       }
     },
     {
@@ -899,9 +896,8 @@
       "operationId": "updateProjectTemplate",
       "fingerprint": "e5a4d23a8452afb1149308858f5a27a26f5ab89ca2e2d6bb24a04bcf0f0c8b87",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.templates.update"
       }
     },
     {
@@ -1455,9 +1451,8 @@
       "operationId": "createProjectTemplate",
       "fingerprint": "8db3ee69f49508f8c359cc55fd8e0cdf4c5217e408c5d792b55366c7e61a5325",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.templates.create"
       }
     },
     {
@@ -1467,9 +1462,8 @@
       "operationId": "previewProjectTemplate",
       "fingerprint": "4182fbd31c05d34d43b537ba52ba3f8afca01d023ff5e716cd4b15c0402cd6d9",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.templates.preview"
       }
     },
     {
@@ -1479,9 +1473,8 @@
       "operationId": "submitProjectTemplateToMeta",
       "fingerprint": "d98badffd8b1588ab3d9fe57698e18c940676a690a0339900928fff52427ff4f",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.templates.submit"
       }
     },
     {

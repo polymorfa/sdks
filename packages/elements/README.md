@@ -20,3 +20,8 @@ Every element uses an open shadow root, stable CSS parts, keyboard-native
 controls, live-region status, direction propagation, and controller unbinding
 when disconnected. Vue, Svelte and other frameworks can use the elements
 without a React runtime.
+
+`pmfa-template-builder` uses the same canonical template controller as the
+React binding. Its open shadow root exposes stable parts for the editor,
+validation messages, preview buttons/cards, save action, preview action, and
+Meta submission action.

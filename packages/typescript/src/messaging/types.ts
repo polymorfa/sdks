@@ -267,3 +267,127 @@ export type ListWebhooksResponse = SuccessEnvelope<readonly Webhook[]>;
 export type CreateWebhookResponse = SuccessEnvelope<Webhook>;
 export type GetWebhookResponse = SuccessEnvelope<Webhook>;
 export type UpdateWebhookResponse = SuccessEnvelope<Webhook>;
+
+export type TemplateSurface = "cloud" | "whatsmeow" | "sandbox";
+export type TemplateCategory = "MARKETING" | "UTILITY" | "AUTHENTICATION";
+export type TemplateKind =
+  "standard" | "carousel" | "authentication" | "limited_time_offer";
+export type TemplateVariableType = "text" | "number" | "currency" | "date_time";
+
+export interface TemplateVariable {
+  readonly name: string;
+  readonly type: TemplateVariableType;
+  readonly example: string;
+}
+
+export type TemplateHeader =
+  | { readonly format: "none" }
+  | { readonly format: "text"; readonly text: string }
+  | {
+      readonly format: "image" | "video" | "document";
+      readonly example?: string;
+      readonly filename?: string;
+    }
+  | {
+      readonly format: "location";
+      readonly example?: {
+        readonly latitude: number;
+        readonly longitude: number;
+        readonly name?: string;
+        readonly address?: string;
+      };
+    };
+
+export type TemplateButton =
+  | { readonly type: "quick_reply"; readonly text: string }
+  | {
+      readonly type: "url";
+      readonly text: string;
+      readonly url: string;
+    }
+  | {
+      readonly type: "phone";
+      readonly text: string;
+      readonly phone: string;
+    }
+  | {
+      readonly type: "copy_code";
+      readonly text?: string;
+      readonly example?: string;
+    };
+
+export interface TemplateCarouselCard {
+  readonly header: Extract<
+    TemplateHeader,
+    { readonly format: "image" | "video" | "document" }
+  >;
+  readonly body: string;
+  readonly buttons?: readonly TemplateButton[];
+}
+
+export interface TemplateDefinition {
+  readonly version: 1;
+  readonly kind: TemplateKind;
+  readonly category: TemplateCategory;
+  readonly language: string;
+  readonly header?: TemplateHeader;
+  readonly body: string;
+  readonly footer?: string;
+  readonly buttons?: readonly TemplateButton[];
+  readonly carousel?: { readonly cards: readonly TemplateCarouselCard[] };
+  readonly authentication?: {
+    readonly otpType: "copy_code" | "one_tap";
+    readonly codeExample?: string;
+    readonly addSecurityRecommendation?: boolean;
+    readonly codeExpirationMinutes?: number;
+  };
+  readonly limitedTimeOffer?: {
+    readonly text: string;
+    readonly hasExpiration: boolean;
+  };
+  readonly variables: readonly TemplateVariable[];
+}
+
+export interface ProjectTemplate {
+  readonly id: string;
+  readonly name: string;
+  readonly category: string;
+  readonly language: string;
+  readonly status: string;
+  readonly kind: string;
+  readonly definition?: TemplateDefinition | null;
+  readonly sampleValues?: Readonly<Record<string, string>> | null;
+  readonly cloudLinks: readonly unknown[];
+  readonly createdAt: number;
+  readonly updatedAt: number;
+}
+
+export interface CreateProjectTemplateRequest {
+  readonly name: string;
+  readonly definition: TemplateDefinition;
+  readonly sampleValues?: Readonly<Record<string, string>>;
+}
+
+export interface UpdateProjectTemplateRequest {
+  readonly name?: string;
+  readonly status?: string;
+  readonly definition?: TemplateDefinition;
+  readonly sampleValues?: Readonly<Record<string, string>>;
+}
+
+export interface PreviewProjectTemplateRequest {
+  readonly values?: Readonly<Record<string, string>>;
+  readonly surface?: TemplateSurface;
+}
+
+export interface SubmitProjectTemplateRequest {
+  readonly session: string;
+}
+
+export type ListProjectTemplatesResponse = SuccessEnvelope<
+  readonly ProjectTemplate[]
+>;
+export type ProjectTemplateResponse = SuccessEnvelope<ProjectTemplate>;
+export type ProjectTemplateOperationResponse = SuccessEnvelope<
+  Readonly<Record<string, unknown>>
+>;

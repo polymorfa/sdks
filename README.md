@@ -81,6 +81,8 @@ The handwritten Messaging resources in this milestone are:
 - `sessions`: list, create, retrieve, update, delete, start, stop, restart,
   logout, and account
 - `messages`: send, mark seen, set typing state, react, and star
+- `templates`: list, create, retrieve, update, delete, preview, and submit to
+  Meta
 - `webhooks`: list, create, retrieve, update, and delete
 
 ## Platform client
@@ -258,6 +260,14 @@ text/reply compose boxes to that client. Conversation history, template
 management, media upload, and call lifecycle/control stay behind explicit
 application-owned adapters because client tokens cannot call those routes.
 
+The canonical template builder is the paired path for template management:
+`MessagingClient.templates` performs server operations,
+`createTemplateBuilderRoute` authorizes and scopes same-origin browser actions,
+and `createSameOriginTemplateBuilderTransport` connects the framework-neutral
+controller without exposing a server key, project slug, or submission session.
+The controller models standard, carousel, authentication, and limited-time
+offer definitions and keeps saving separate from Meta submission.
+
 `@polymorfa/elements` provides custom elements for plain HTML and for frameworks
 that interoperate with the Custom Elements standard. `@polymorfa/react`
 provides idiomatic hooks and components, including controlled and SDK-owned
@@ -280,6 +290,10 @@ runtime dependency. Applications provide their own authorization and minting
 logic; webhook helpers read raw bytes once and delegate verification to
 `constructWebhookEvent` from the server SDK.
 
+Template routes use the same application-owned authorization boundary. Project
+scope and Cloud API session selection are resolver callbacks that run only on
+the server; browser-provided replacements are ignored.
+
 `@polymorfa/devtools` provides an explicit development overlay for appearance,
 RTL, motion, viewport and network testing plus redacted request diagnostics. It
 only enables when trusted build and token environments match and are both
@@ -289,9 +303,9 @@ subpath exports an inert mount function.
 ## Coverage status
 
 `contracts/coverage.json` maps all 331 Messaging and Platform operations in the
-pinned contract. This milestone has 73 handwritten resource methods, 60
+pinned contract. This milestone has 80 handwritten resource methods, 60
 dashboard-only or staff routes excluded from the server credential surface,
-and 198 operations available through the raw escape hatch while typed methods
+and 191 operations available through the raw escape hatch while typed methods
 are added. Missing and structurally changed operations are reported
 individually; the ledger never presents raw access as typed parity.
 

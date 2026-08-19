@@ -51,14 +51,14 @@ describe("@polymorfa/browser package", () => {
     const consumer = join(directory, "consumer.mjs");
     writeFileSync(
       consumer,
-      'import { BrowserMessagingClient, ClientTokenManager } from "@polymorfa/browser"; const token = await new ClientTokenManager(async () => "pmfa_ct_fixture").get(); const client = new BrowserMessagingClient({ session: "support", getClientToken: async () => token }); console.log(token, typeof client.messages.send);',
+      'import { BrowserMessagingClient, ClientTokenManager, createSameOriginTemplateBuilderTransport } from "@polymorfa/browser"; const token = await new ClientTokenManager(async () => "pmfa_ct_fixture").get(); const client = new BrowserMessagingClient({ session: "support", getClientToken: async () => token }); const templates = createSameOriginTemplateBuilderTransport(); console.log(token, typeof client.messages.send, typeof templates.save);',
     );
     const imported = spawnSync(process.execPath, [consumer], {
       cwd: directory,
       encoding: "utf8",
     });
     expect(imported.status, imported.stderr).toBe(0);
-    expect(imported.stdout.trim()).toBe("pmfa_ct_fixture function");
+    expect(imported.stdout.trim()).toBe("pmfa_ct_fixture function function");
     const manifest = JSON.parse(
       readFileSync(
         join(

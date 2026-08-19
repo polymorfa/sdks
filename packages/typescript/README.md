@@ -33,6 +33,34 @@ session rules that authorize them. Use it only on the server. The browser-safe
 transport and allowed-action resources live in `@polymorfa/browser`; the
 Next.js-compatible route adapter lives in `@polymorfa/nextjs`.
 
+## Project templates
+
+`MessagingClient.templates` provides the seven canonical project-template
+operations: list, create, retrieve, update, delete, preview, and submit to Meta.
+Definitions use the exported `TemplateDefinition` model instead of generic
+component objects.
+
+```ts
+const created = await messaging.templates.create("support", {
+  name: "order_ready",
+  definition: {
+    version: 1,
+    kind: "standard",
+    category: "UTILITY",
+    language: "en_US",
+    body: "Hello {{name}}, your order is ready.",
+    variables: [{ name: "name", type: "text", example: "Ada" }],
+  },
+});
+
+await messaging.templates.preview("support", created.data.data.id, {
+  values: { name: "Grace" },
+});
+```
+
+Keep this client on the server. Browser builders use an application-owned
+route, such as `createTemplateBuilderRoute` from `@polymorfa/nextjs`.
+
 ## Platform automation
 
 Organization API keys can use handwritten campaign, audience, opt-out, and

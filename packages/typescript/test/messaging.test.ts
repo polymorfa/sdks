@@ -174,6 +174,79 @@ describe("MessagingClient client tokens", () => {
   });
 });
 
+describe("MessagingClient templates", () => {
+  it("maps canonical project-template CRUD, preview, and submission operations", async () => {
+    const { client, requests } = await messagingServer();
+    const definition = {
+      version: 1 as const,
+      kind: "standard" as const,
+      category: "UTILITY" as const,
+      language: "en_US",
+      header: { format: "text" as const, text: "Order {{order_id}}" },
+      body: "Hello {{name}}, your order is ready.",
+      buttons: [
+        {
+          type: "url" as const,
+          text: "Track order",
+          url: "https://example.test/orders/{{order_id}}",
+        },
+      ],
+      variables: [
+        { name: "order_id", type: "text" as const, example: "A-100" },
+        { name: "name", type: "text" as const, example: "Ada" },
+      ],
+    };
+
+    await client.templates.list("support/eu");
+    await client.templates.create(
+      "support/eu",
+      {
+        name: "order_ready",
+        definition,
+        sampleValues: { order_id: "A-100", name: "Ada" },
+      },
+      { idempotencyKey: "template-order-ready" },
+    );
+    await client.templates.retrieve("support/eu", "template/1");
+    await client.templates.update("support/eu", "template/1", {
+      status: "draft",
+      definition: { ...definition, footer: "Reply STOP to opt out" },
+    });
+    await client.templates.delete("support/eu", "template/1");
+    await client.templates.preview("support/eu", "template/1", {
+      values: { name: "Grace", order_id: "A-200" },
+      surface: "sandbox",
+    });
+    await client.templates.submit("support/eu", "template/1", {
+      session: "cloud/support",
+    });
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /api/projects/support%2Feu/templates",
+      "POST /api/projects/support%2Feu/templates",
+      "GET /api/projects/support%2Feu/templates/template%2F1",
+      "PATCH /api/projects/support%2Feu/templates/template%2F1",
+      "DELETE /api/projects/support%2Feu/templates/template%2F1",
+      "POST /api/projects/support%2Feu/templates/template%2F1/preview",
+      "POST /api/projects/support%2Feu/templates/template%2F1/submit",
+    ]);
+    expect(requests[1]?.headers["idempotency-key"]).toBe(
+      "template-order-ready",
+    );
+    expect(requests[1]?.body).toBe(
+      JSON.stringify({
+        name: "order_ready",
+        definition,
+        sampleValues: { order_id: "A-100", name: "Ada" },
+      }),
+    );
+    expect(requests[5]?.body).toBe(
+      '{"values":{"name":"Grace","order_id":"A-200"},"surface":"sandbox"}',
+    );
+    expect(requests[6]?.body).toBe('{"session":"cloud/support"}');
+  });
+});
+
 describe("MessagingClient webhooks", () => {
   it("maps webhook CRUD operations without exposing the HMAC key in URLs", async () => {
     const { client, requests } = await messagingServer();

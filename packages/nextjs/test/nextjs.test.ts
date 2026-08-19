@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
+import { MessagingClient } from "../../typescript/src/index.js";
 import {
   createClientTokenRoute,
   createMessagingClientTokenMint,
+  createTemplateBuilderRoute,
   readVerifiedWebhook,
 } from "../src/index.js";
 
@@ -105,6 +107,159 @@ describe("createMessagingClientTokenMint", () => {
         new Request("https://app.test/token", { method: "POST" }),
       ),
     ).rejects.toThrow("invalid client token response");
+  });
+});
+
+describe("createTemplateBuilderRoute", () => {
+  it("accepts the handwritten server SDK templates resource without an adapter", () => {
+    const messaging = new MessagingClient({
+      credential: { type: "apiKey", value: "pmfa_fixture" },
+    });
+    expect(() =>
+      createTemplateBuilderRoute({
+        templates: messaging.templates,
+        authorize: () => ({ userId: "user_1" }),
+        resolveProjectSlug: () => "support",
+        resolveSubmissionSession: () => "cloud",
+      }),
+    ).not.toThrow();
+  });
+
+  it("keeps project scope and the submission session under application control", async () => {
+    const createdTemplate = {
+      id: "tpl_1",
+      name: "order_ready",
+      category: "UTILITY",
+      language: "en_US",
+      status: "draft",
+      kind: "standard",
+      definition: {
+        version: 1 as const,
+        kind: "standard",
+        category: "UTILITY",
+        language: "en_US",
+        body: "Hello {{name}}",
+        variables: [{ name: "name", type: "text", example: "Ada" }],
+      },
+      sampleValues: { name: "Ada" },
+      cloudLinks: [],
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    const create = vi.fn(async () => ({
+      data: { success: true as const, data: createdTemplate },
+    }));
+    const submit = vi.fn(async () => ({
+      data: {
+        success: true as const,
+        data: { ...createdTemplate, status: "PENDING" },
+      },
+    }));
+    const route = createTemplateBuilderRoute({
+      authorize: async () => ({ userId: "user_1", projectId: "project_1" }),
+      resolveProjectSlug: async () => "support/eu",
+      resolveSubmissionSession: async () => "cloud/support",
+      templates: {
+        create,
+        retrieve: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        preview: vi.fn(),
+        submit,
+      },
+    });
+
+    const saveResponse = await route(
+      new Request("https://app.test/api/templates", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "save",
+          projectSlug: "attacker-controlled",
+          draft: {
+            name: "order_ready",
+            definition: createdTemplate.definition,
+            sampleValues: { name: "Ada" },
+          },
+        }),
+      }),
+    );
+    const submitResponse = await route(
+      new Request("https://app.test/api/templates", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "submit",
+          templateId: "tpl_1",
+          session: "attacker-controlled",
+        }),
+      }),
+    );
+
+    expect(saveResponse.status).toBe(200);
+    expect(saveResponse.headers.get("cache-control")).toContain("no-store");
+    await expect(saveResponse.json()).resolves.toEqual({
+      template: createdTemplate,
+    });
+    expect(create).toHaveBeenCalledWith(
+      "support/eu",
+      {
+        name: "order_ready",
+        definition: createdTemplate.definition,
+        sampleValues: { name: "Ada" },
+      },
+      { signal: expect.any(AbortSignal) },
+    );
+    expect(submitResponse.status).toBe(200);
+    expect(submit).toHaveBeenCalledWith(
+      "support/eu",
+      "tpl_1",
+      { session: "cloud/support" },
+      { signal: expect.any(AbortSignal) },
+    );
+  });
+
+  it("authorizes before SDK access and does not leak server failures", async () => {
+    const retrieve = vi.fn(async () => {
+      throw new Error("pmfa_secret_database_password");
+    });
+    const templates = {
+      create: vi.fn(),
+      retrieve,
+      update: vi.fn(),
+      delete: vi.fn(),
+      preview: vi.fn(),
+      submit: vi.fn(),
+    };
+    const unauthorized = createTemplateBuilderRoute({
+      authorize: async () => null,
+      resolveProjectSlug: async () => "support",
+      resolveSubmissionSession: async () => "cloud",
+      templates,
+    });
+    const denied = await unauthorized(
+      new Request("https://app.test/api/templates", {
+        method: "POST",
+        body: JSON.stringify({ action: "load", templateId: "tpl_1" }),
+      }),
+    );
+    expect(denied.status).toBe(401);
+    expect(retrieve).not.toHaveBeenCalled();
+
+    const failing = createTemplateBuilderRoute({
+      authorize: async () => ({ userId: "user_1" }),
+      resolveProjectSlug: async () => "support",
+      resolveSubmissionSession: async () => "cloud",
+      templates,
+    });
+    const failed = await failing(
+      new Request("https://app.test/api/templates", {
+        method: "POST",
+        body: JSON.stringify({ action: "load", templateId: "tpl_1" }),
+      }),
+    );
+    expect(failed.status).toBe(500);
+    expect(await failed.text()).not.toContain("pmfa_secret_database_password");
   });
 });
 

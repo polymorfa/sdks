@@ -53,7 +53,7 @@ describe("npm package", () => {
         'import { MessagingClient, PlatformClient, SDK_VERSION } from "@polymorfa/sdk";',
         'const messaging = new MessagingClient({ credential: { type: "apiKey", value: "pmfa_fixture" } });',
         'const platform = new PlatformClient({ apiKey: "pmfa_fixture" });',
-        "console.log(JSON.stringify({ version: SDK_VERSION, messaging: !!messaging.raw, platform: !!platform.raw }));",
+        "console.log(JSON.stringify({ version: SDK_VERSION, messaging: !!messaging.raw, templates: typeof messaging.templates.create, platform: !!platform.raw }));",
       ].join("\n"),
     );
     const imported = spawnSync(process.execPath, [consumer], {
@@ -64,6 +64,7 @@ describe("npm package", () => {
     expect(JSON.parse(imported.stdout)).toEqual({
       version: "0.1.0-dev.0",
       messaging: true,
+      templates: "function",
       platform: true,
     });
 

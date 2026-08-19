@@ -2,7 +2,13 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import { PolymorfaProvider, QuickLink, useController } from "../src/index.js";
+import { TemplateBuilderController } from "@polymorfa/browser";
+import {
+  PolymorfaProvider,
+  QuickLink,
+  TemplateBuilder,
+  useController,
+} from "../src/index.js";
 
 (
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -64,5 +70,72 @@ describe("React bindings", () => {
     );
     act(() => root.unmount());
     expect(controller.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("edits and previews canonical template structures", async () => {
+    const templateDocument = {
+      id: "tpl-1",
+      name: "order_ready",
+      category: "UTILITY",
+      language: "en_US",
+      status: "draft",
+      kind: "standard",
+      definition: {
+        version: 1 as const,
+        kind: "standard" as const,
+        category: "UTILITY" as const,
+        language: "en_US",
+        header: { format: "text" as const, text: "Order {{order_id}}" },
+        body: "Hello {{name}}",
+        footer: "Thanks",
+        buttons: [{ type: "quick_reply" as const, text: "Track order" }],
+        variables: [
+          { name: "order_id", type: "text" as const, example: "A-100" },
+          { name: "name", type: "text" as const, example: "Ada" },
+        ],
+      },
+      sampleValues: { order_id: "A-100", name: "Ada" },
+      cloudLinks: [],
+      createdAt: 1,
+      updatedAt: 2,
+    };
+    const controller = new TemplateBuilderController({
+      load: async () => templateDocument,
+      save: async () => templateDocument,
+      preview: async () => ({
+        surface: "preview",
+        rendered: {
+          kind: "standard",
+          category: "UTILITY",
+          header: { format: "text", text: "Order A-100" },
+          body: "Hello Ada",
+          footer: "Thanks",
+          buttons: [{ type: "quick_reply", text: "Track order" }],
+          cards: [],
+        },
+      }),
+      submitToMeta: async () => ({ ...templateDocument, status: "PENDING" }),
+      delete: async () => undefined,
+    });
+    await controller.load("tpl-1");
+    const host = document.createElement("div");
+    const root = createRoot(host);
+    act(() => root.render(<TemplateBuilder controller={controller} />));
+
+    expect(host.querySelector('[aria-label="Header text"]')).not.toBeNull();
+    const body = host.querySelector(
+      '[aria-label="Template body"]',
+    ) as HTMLTextAreaElement;
+    expect(body.value).toBe("Hello {{name}}");
+    expect(
+      host.querySelector('[aria-label="Variable name example"]'),
+    ).not.toBeNull();
+
+    await act(async () => controller.refreshPreview());
+    expect(host.querySelector("output")?.textContent).toContain("Hello Ada");
+    expect(host.querySelector("output")?.textContent).toContain("Track order");
+    expect(host.textContent).toContain("Save draft");
+    expect(host.textContent).toContain("Submit to Meta");
+    act(() => root.unmount());
   });
 });

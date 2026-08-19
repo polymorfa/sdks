@@ -4,6 +4,7 @@ import type {
   ConversationMessage,
   MessageComposerController,
   QuickLinkController,
+  RenderedTemplate,
   TemplateBuilderController,
 } from "@polymorfa/browser";
 import { appearanceToCssVariables } from "@polymorfa/ui";
@@ -154,7 +155,7 @@ export function ChatDrawer({
 }
 
 export interface TemplateBuilderProps extends ControllerProps<TemplateBuilderController> {
-  readonly renderPreview?: (text: string) => ReactNode;
+  readonly renderPreview?: (preview: RenderedTemplate) => ReactNode;
 }
 export function TemplateBuilder({
   controller,
@@ -172,29 +173,146 @@ export function TemplateBuilder({
         value={snapshot.draft?.name ?? ""}
         onChange={(event) => resolved.setName(event.currentTarget.value)}
       />
-      {snapshot.draft?.components.map((component) => (
+      {snapshot.draft?.definition.header?.format === "text" && (
         <textarea
-          key={component.id}
-          aria-label={`${component.type} content`}
-          value={component.text ?? ""}
+          aria-label="Header text"
+          value={snapshot.draft.definition.header.text}
           onChange={(event) =>
-            resolved.updateComponent(component.id, {
-              text: event.currentTarget.value,
+            resolved.updateDefinition({
+              header: {
+                format: "text",
+                text: event.currentTarget.value,
+              },
             })
           }
         />
+      )}
+      <textarea
+        aria-label="Template body"
+        value={snapshot.draft?.definition.body ?? ""}
+        onChange={(event) => resolved.setBody(event.currentTarget.value)}
+      />
+      {snapshot.draft?.definition.footer !== undefined && (
+        <textarea
+          aria-label="Template footer"
+          value={snapshot.draft.definition.footer}
+          onChange={(event) =>
+            resolved.updateDefinition({ footer: event.currentTarget.value })
+          }
+        />
+      )}
+      {snapshot.draft?.definition.variables.map((variable) => (
+        <label key={variable.name}>
+          {variable.name}
+          <input
+            aria-label={`Variable ${variable.name} example`}
+            value={variable.example}
+            onChange={(event) =>
+              resolved.setVariableExample(
+                variable.name,
+                event.currentTarget.value,
+              )
+            }
+          />
+        </label>
       ))}
-      <button type="button" onClick={() => void resolved.refreshPreview()}>
+      {snapshot.draft?.definition.buttons?.map((templateButton, index) => (
+        <label key={`${templateButton.type}-${index}`}>
+          {templateButton.type}
+          <input
+            aria-label={`Button ${index + 1} text`}
+            value={templateButton.text ?? ""}
+            onChange={(event) => {
+              const buttons = [...(snapshot.draft?.definition.buttons ?? [])];
+              const current = buttons[index];
+              if (current !== undefined)
+                buttons[index] = {
+                  ...current,
+                  text: event.currentTarget.value,
+                };
+              resolved.updateDefinition({ buttons });
+            }}
+          />
+        </label>
+      ))}
+      {snapshot.draft?.definition.carousel?.cards.map((card, index) => (
+        <textarea
+          key={`card-${index}`}
+          aria-label={`Carousel card ${index + 1} body`}
+          value={card.body}
+          onChange={(event) => {
+            const cards = [
+              ...(snapshot.draft?.definition.carousel?.cards ?? []),
+            ];
+            const current = cards[index];
+            if (current !== undefined)
+              cards[index] = { ...current, body: event.currentTarget.value };
+            resolved.updateDefinition({ carousel: { cards } });
+          }}
+        />
+      ))}
+      <button
+        type="button"
+        disabled={
+          snapshot.draft === undefined || snapshot.localIssues.length > 0
+        }
+        onClick={() => void resolved.save()}
+      >
+        Save draft
+      </button>
+      <button
+        type="button"
+        disabled={snapshot.templateId === undefined || snapshot.dirty}
+        onClick={() => void resolved.refreshPreview()}
+      >
         Preview
       </button>
-      <button type="button" onClick={() => void resolved.submit()}>
-        Submit
+      <button
+        type="button"
+        disabled={snapshot.templateId === undefined || snapshot.dirty}
+        onClick={() => void resolved.submitToMeta()}
+      >
+        Submit to Meta
       </button>
       {snapshot.preview &&
-        (renderPreview?.(snapshot.preview.text) ?? (
-          <output>{snapshot.preview.text}</output>
+        (renderPreview?.(snapshot.preview.rendered) ?? (
+          <TemplatePreviewOutput preview={snapshot.preview.rendered} />
         ))}
+      {snapshot.localIssues.map((issue) => (
+        <p key={`${issue.code}-${issue.path ?? ""}`} role="alert">
+          {issue.message}
+        </p>
+      ))}
     </section>
+  );
+}
+
+function TemplatePreviewOutput({
+  preview,
+}: {
+  readonly preview: RenderedTemplate;
+}) {
+  return (
+    <output>
+      {preview.header?.text && <strong>{preview.header.text}</strong>}
+      <p>{preview.body}</p>
+      {preview.footer && <small>{preview.footer}</small>}
+      {preview.buttons.map((templateButton, index) => (
+        <button key={`${templateButton.type}-${index}`} type="button">
+          {templateButton.text}
+        </button>
+      ))}
+      {preview.cards.map((card, index) => (
+        <article key={`card-${index}`}>
+          <p>{card.body}</p>
+          {card.buttons.map((templateButton, buttonIndex) => (
+            <button key={`${templateButton.type}-${buttonIndex}`} type="button">
+              {templateButton.text}
+            </button>
+          ))}
+        </article>
+      ))}
+    </output>
   );
 }
 

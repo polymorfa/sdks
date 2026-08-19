@@ -32,6 +32,31 @@ export const POST = createClientTokenRoute({
 });
 ```
 
+`createTemplateBuilderRoute` pairs the browser template transport with
+`MessagingClient.templates`. The application authorizes every request and
+resolves both project scope and the Cloud API submission session on the server.
+
+```ts
+import { MessagingClient } from "@polymorfa/sdk";
+import { createTemplateBuilderRoute } from "@polymorfa/nextjs";
+
+const messaging = new MessagingClient({
+  credential: { type: "apiKey", value: process.env.POLYMORFA_API_KEY! },
+});
+
+export const POST = createTemplateBuilderRoute({
+  templates: messaging.templates,
+  authorize: async (request) => authorizeApplicationUser(request),
+  resolveProjectSlug: async (subject) => projectSlugFor(subject.projectId),
+  resolveSubmissionSession: async (subject) =>
+    cloudSessionFor(subject.projectId),
+});
+```
+
+Browser request bodies cannot override either resolver. Responses are private,
+non-cacheable, and server failures are returned without credential or internal
+error details.
+
 `readVerifiedWebhook` preserves the raw request body and delegates verification
 to `constructWebhookEvent` from `@polymorfa/sdk`.
 
