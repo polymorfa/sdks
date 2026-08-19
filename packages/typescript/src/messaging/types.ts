@@ -166,6 +166,109 @@ export interface MessagingMediaInfo {
 
 export type GetMessagingMediaInfoResponse = SuccessEnvelope<MessagingMediaInfo>;
 
+export type ObservationMode = "off" | "events" | "cache";
+export type LabelObservationMode = ObservationMode | "project";
+export type SessionObservationMode = ObservationMode | "inherit";
+export type SessionLabelObservationMode = LabelObservationMode | "inherit";
+
+export interface Label {
+  readonly id: string;
+  readonly name: string;
+  readonly color: number;
+  readonly orderIndex?: number;
+  readonly chatCount?: number;
+  readonly observedAt?: string;
+}
+
+export type LabelObservationStatus =
+  "disabled" | "unknown" | "partial" | "fresh";
+
+export type LabelUnknownReason =
+  "observation_disabled" | "not_retained" | "not_observed" | "expired";
+
+export interface LabelCollection {
+  readonly policy: LabelObservationMode;
+  readonly status: LabelObservationStatus;
+  readonly unknownReason?: LabelUnknownReason;
+  readonly observedAt?: string;
+  readonly expiresAt?: string;
+  readonly labels: readonly Label[];
+}
+
+export type LabelReadData = readonly Label[] | LabelCollection;
+
+export interface ListLabelsParams {
+  readonly includeObservation?: boolean;
+}
+
+export interface CreateLabelRequest {
+  readonly name: string;
+  readonly color?: number;
+}
+
+export type UpdateLabelRequest =
+  | { readonly name: string; readonly color?: number }
+  | { readonly name?: string; readonly color: number };
+
+export interface ReplaceChatLabelsRequest {
+  readonly labels: readonly string[];
+}
+
+export type ListLabelsResponse = SuccessEnvelope<LabelReadData>;
+export type GetChatLabelsResponse = SuccessEnvelope<LabelReadData>;
+export type CreateLabelResponse = SuccessEnvelope<Label>;
+
+export interface ProjectObservationPolicy {
+  readonly projectId: string;
+  readonly presenceMode: ObservationMode;
+  readonly typingMode: ObservationMode;
+  readonly labelMode: LabelObservationMode;
+  readonly quickReplyMode?: ObservationMode;
+}
+
+export interface SessionObservationPolicyValues {
+  readonly presenceMode: ObservationMode;
+  readonly typingMode: ObservationMode;
+  readonly labelMode: LabelObservationMode;
+  readonly quickReplyMode?: ObservationMode;
+}
+
+export interface SessionObservationPolicyOverrides {
+  readonly presenceMode: SessionObservationMode;
+  readonly typingMode: SessionObservationMode;
+  readonly labelMode: SessionLabelObservationMode;
+  readonly quickReplyMode?: SessionObservationMode;
+}
+
+export interface SessionObservationPolicy {
+  readonly sessionName: string;
+  readonly projectId: string;
+  readonly project: SessionObservationPolicyValues;
+  readonly override: SessionObservationPolicyOverrides;
+  readonly effective: SessionObservationPolicyValues;
+}
+
+export interface UpdateProjectObservationPolicyRequest {
+  readonly presenceMode: ObservationMode;
+  readonly typingMode: ObservationMode;
+  readonly labelMode?: LabelObservationMode;
+}
+
+export interface UpdateSessionObservationPolicyRequest {
+  readonly presenceMode: SessionObservationMode;
+  readonly typingMode: SessionObservationMode;
+  readonly labelMode?: SessionLabelObservationMode;
+}
+
+export type GetProjectObservationPolicyResponse =
+  SuccessEnvelope<ProjectObservationPolicy>;
+export type UpdateProjectObservationPolicyResponse =
+  SuccessEnvelope<ProjectObservationPolicy>;
+export type GetSessionObservationPolicyResponse =
+  SuccessEnvelope<SessionObservationPolicy>;
+export type UpdateSessionObservationPolicyResponse =
+  SuccessEnvelope<SessionObservationPolicy>;
+
 export interface GroupParticipant {
   readonly lid: string;
   readonly phoneNumber?: string;

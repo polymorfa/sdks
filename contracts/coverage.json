@@ -97,9 +97,8 @@
       "operationId": "deleteLabel",
       "fingerprint": "34d3be451e21056abfa8c2310e4e92edc4f448f58c7aad51d5d7f399f9406acd",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.labels.delete"
       }
     },
     {
@@ -476,9 +475,8 @@
       "operationId": "listLabels",
       "fingerprint": "2f74258c59cec3e09e886ba9f763e7e304acc3de02c027ad1db8afa6e126ebc5",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.labels.list"
       }
     },
     {
@@ -488,9 +486,8 @@
       "operationId": "getChatLabels",
       "fingerprint": "75b39310da52b1b1e09447959db8071660f6a8ca139a3e9552825884007ddec2",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.labels.listForChat"
       }
     },
     {
@@ -512,9 +509,8 @@
       "operationId": "getSessionObservationPolicy",
       "fingerprint": "dfd507e647b3d644e9c8e37f88359fa56389f655a08feeee4ae6c145c6a4bcc2",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.observationPolicies.retrieveForSession"
       }
     },
     {
@@ -650,9 +646,8 @@
       "operationId": "getProjectObservationPolicy",
       "fingerprint": "d54ca3815c88eec4211dd5f89b6d55487de4a43b78be1d1511eb31db74053a9b",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.observationPolicies.retrieveForProject"
       }
     },
     {
@@ -1229,9 +1224,8 @@
       "operationId": "createLabel",
       "fingerprint": "b41a855b6255ff4e8aa42979750a466ee93314bfbba8407a5871645760dff093",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.labels.create"
       }
     },
     {
@@ -1741,9 +1735,8 @@
       "operationId": "updateLabel",
       "fingerprint": "16576f2d9f30772d1ced87422362deaf496218793989a3b0c9f7954d9b11be3d",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.labels.update"
       }
     },
     {
@@ -1753,9 +1746,8 @@
       "operationId": "setChatLabels",
       "fingerprint": "dc3e0855fa95ecf2ce2887571a09e092a0e6fc6cfe723cdf1776026b5d9adffa",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.labels.replaceForChat"
       }
     },
     {
@@ -1765,9 +1757,8 @@
       "operationId": "updateSessionObservationPolicy",
       "fingerprint": "a18bae02ded6d67ad83b199f8afd280fc48d5ce8ae9b8a50640a63e4c5909dac",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.observationPolicies.updateForSession"
       }
     },
     {
@@ -1837,9 +1828,8 @@
       "operationId": "updateProjectObservationPolicy",
       "fingerprint": "ccb277848728d1b1de46ab4a1def9ada9a92d2dd20710f2040fb2fd5c7945505",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.observationPolicies.updateForProject"
       }
     },
     {

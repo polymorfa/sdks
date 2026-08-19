@@ -27,8 +27,10 @@ export { ChatsResource } from "./messaging/chats.js";
 export { ClientTokensResource } from "./messaging/client-tokens.js";
 export { ContactsResource } from "./messaging/contacts.js";
 export { GroupsResource } from "./messaging/groups.js";
+export { LabelsResource } from "./messaging/labels.js";
 export { MessagingMediaResource } from "./messaging/media.js";
 export { MessagesResource } from "./messaging/messages.js";
+export { ObservationPoliciesResource } from "./messaging/observation-policies.js";
 export { OperationsResource } from "./messaging/operations.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
@@ -71,11 +73,14 @@ export type {
   GetGroupJoinInfoResponse,
   GetGroupParticipantsResponse,
   GetGroupResponse,
+  GetChatLabelsResponse,
+  GetProjectObservationPolicyResponse,
   GetMessagingMediaInfoResponse,
   GetOperationResponse,
   GetQRCodeResponse,
   GetClientRulesResponse,
   GetSessionResponse,
+  GetSessionObservationPolicyResponse,
   GetUserDevicesResponse,
   GetUserInfoResponse,
   GetWebhookResponse,
@@ -89,6 +94,14 @@ export type {
   GroupMemberAddModeRequest,
   GroupParticipant,
   GroupParticipantsRequest,
+  Label,
+  LabelCollection,
+  LabelObservationMode,
+  LabelObservationStatus,
+  LabelReadData,
+  LabelUnknownReason,
+  ListLabelsParams,
+  ListLabelsResponse,
   ListSessionsResponse,
   ListContactsResponse,
   ListGroupsResponse,
@@ -107,6 +120,7 @@ export type {
   MintClientTokenRequest,
   MintClientTokenResponse,
   MessagingConnection,
+  ObservationMode,
   OperationAccepted,
   Operation,
   OperationStatus,
@@ -124,6 +138,8 @@ export type {
   ProductMessageMedia,
   QuotedMessage,
   QRCodeData,
+  ProjectObservationPolicy,
+  ReplaceChatLabelsRequest,
   ReactRequest,
   RevokeGroupInviteCodeResponse,
   RequestPairCodeResponse,
@@ -149,6 +165,11 @@ export type {
   SetGroupPictureRequest,
   SetClientRulesRequest,
   Session,
+  SessionLabelObservationMode,
+  SessionObservationMode,
+  SessionObservationPolicy,
+  SessionObservationPolicyOverrides,
+  SessionObservationPolicyValues,
   SessionOperation,
   StarMessageResponse,
   StarRequest,
@@ -167,6 +188,11 @@ export type {
   TypingRequest,
   UpdateSessionRequest,
   UpdateSessionResponse,
+  UpdateLabelRequest,
+  UpdateProjectObservationPolicyRequest,
+  UpdateProjectObservationPolicyResponse,
+  UpdateSessionObservationPolicyRequest,
+  UpdateSessionObservationPolicyResponse,
   UpdateProjectTemplateRequest,
   UpdateWebhookRequest,
   UpdateWebhookResponse,
@@ -175,6 +201,8 @@ export type {
   WebhookHeader,
   WebhookRetryConfig,
   WhatsAppAccount,
+  CreateLabelRequest,
+  CreateLabelResponse,
 } from "./messaging/types.js";
 export { WebhooksResource } from "./messaging/webhooks.js";
 export { CursorPage, type PageDecoder, type PageResult } from "./pagination.js";

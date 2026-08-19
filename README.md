@@ -92,6 +92,10 @@ The handwritten Messaging resources in this milestone are:
   block or unblock a contact
 - `groups`: list, retrieve, create, join, leave, manage invite codes and
   participants, and update group profile and permission settings
+- `labels`: list, create, update, delete, list a chat's labels, and replace a
+  chat's complete label set
+- `observationPolicies`: retrieve and update project ceilings and session
+  overrides for presence, typing, and label observation
 - `templates`: list, create, retrieve, update, delete, preview, and submit to
   Meta
 - `webhooks`: list, create, retrieve, update, and delete
@@ -326,9 +330,9 @@ subpath exports an inert mount function.
 ## Coverage status
 
 `contracts/coverage.json` maps all 331 Messaging and Platform operations in the
-pinned contract. This milestone has 120 handwritten resource methods, 63
+pinned contract. This milestone has 130 handwritten resource methods, 63
 dashboard-only or staff routes excluded from the server credential surface,
-and 148 operations available through the raw escape hatch while typed methods
+and 138 operations available through the raw escape hatch while typed methods
 are added. Missing and structurally changed operations are reported
 individually; the ledger never presents raw access as typed parity.
 

@@ -8,12 +8,14 @@ import {
   ClientTokensResource,
   ContactsResource,
   GroupsResource,
+  LabelsResource,
   CursorPage,
   MessagingClient,
   MessagingMediaResource,
   MediaResource,
   OptOutsResource,
   OperationsResource,
+  ObservationPoliciesResource,
   PlatformClient,
   PolymorfaAuthenticationError,
   PolymorfaCancelledError,
@@ -37,6 +39,8 @@ import {
   type EditMessageRequest,
   type Group,
   type GroupParticipant,
+  type Label,
+  type ProjectObservationPolicy,
   type MintClientTokenRequest,
   type MessageReceivedEvent,
   type MessagingClientOptions,
@@ -69,9 +73,11 @@ describe("public exports", () => {
       ClientTokensResource,
       ContactsResource,
       GroupsResource,
+      LabelsResource,
       MediaResource,
       OptOutsResource,
       OperationsResource,
+      ObservationPoliciesResource,
       CursorPage,
       PolymorfaError,
       PolymorfaConfigurationError,
@@ -83,7 +89,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(24);
+    ]).toHaveLength(26);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -110,6 +116,8 @@ describe("public exports", () => {
     expectTypeOf<EditMessageRequest>().toHaveProperty("text");
     expectTypeOf<Group>().toHaveProperty("participants");
     expectTypeOf<GroupParticipant>().toHaveProperty("isAdmin");
+    expectTypeOf<Label>().toHaveProperty("color");
+    expectTypeOf<ProjectObservationPolicy>().toHaveProperty("labelMode");
     expectTypeOf<DisappearingTimerRequest>().toHaveProperty("durationSeconds");
     expectTypeOf<MintClientTokenRequest>().toHaveProperty("ephemeralId");
     expectTypeOf<PairCodeRequest>().toHaveProperty("phone");

@@ -7,6 +7,8 @@
   every send kind and aligned quoted replies with the current API contract.
 - Added Messaging media metadata, binary download, and persistence operations
   with binary-aware timeout and error handling.
+- Added typed Messaging label CRUD, full-set chat-label replacement, and
+  project/session observation-policy resources.
 - Added handwritten Platform clients for organizations, projects, and sessions.
 - Added handwritten Platform resources for campaigns, audiences, opt-outs, and
   media, covering 27 additional organization-key operations.

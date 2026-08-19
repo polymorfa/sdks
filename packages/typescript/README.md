@@ -245,6 +245,44 @@ standard `RequestOptions`.
 before persistence even though the generated schema marks the field as
 optional. The SDK type reflects the verified response.
 
+## Labels and observation policies
+
+`MessagingClient.labels` covers all six direct Linked Device label operations.
+Reads require `labels:read`; create, update, delete, and chat-label replacement
+require `labels:manage`.
+
+```ts
+const labels = await messaging.labels.list("support", {
+  includeObservation: true,
+});
+
+await messaging.labels.replaceForChat(
+  "support",
+  "15551234567@s.whatsapp.net",
+  { labels: ["priority", "customer"] },
+  { idempotencyKey: "replace-customer-labels" },
+);
+
+console.log(labels.data.data, labels.metadata.requestId);
+```
+
+`replaceForChat` maps the source `setChatLabels` operation and replaces the
+complete label set. Passing an empty array detaches every label. The source has
+no incremental attach/detach route and no message-label route. Label reads are
+not paginated; `includeObservation` selects either the legacy label array or
+the typed observation envelope.
+
+The Labels tag also includes the cross-cutting policy routes exposed as
+`MessagingClient.observationPolicies`. Project methods require
+`presence:read` or `presence:observe`; setting `labelMode` additionally requires
+`labels:manage`. Session methods carry the same scopes and are Linked Device
+only. Policy updates replace the supplied presence and typing modes while the
+label mode remains optional in the pinned request schema.
+
+Neither labels nor observation policies appears in the client-token action
+allowlist. Use a server API key; the API rejects browser client tokens before
+route handling.
+
 ## Chats
 
 `MessagingClient.chats` exposes the credential-compatible Linked Device chat
