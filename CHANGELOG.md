@@ -10,5 +10,12 @@
 - Added raw-body webhook signature verification and typed event parsing.
 - Added explicit contract coverage reporting against the pinned Messaging and
   Platform specifications.
+- Added a framework-neutral browser transport and controllers for QuickLink,
+  conversations, composing, template building, and one-to-one calls.
+- Added shared UI contracts, portable Web Components, React bindings, and thin
+  Next.js server helpers.
+- Added a production-gated configuration, theming, network simulation, and
+  redacted diagnostics assistant.
+- Aligned call signaling and media behavior with the `voip-v2` implementation.
 
 This is a Git development channel. No npm package has been published.

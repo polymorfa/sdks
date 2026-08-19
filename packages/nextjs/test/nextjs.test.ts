@@ -50,7 +50,7 @@ describe("readVerifiedWebhook", () => {
     );
     const request = new Request("https://app.test/webhook", {
       method: "POST",
-      headers: { "x-polymorfa-signature": "sha256=fixture" },
+      headers: { "x-webhook-signature": "sha256=fixture" },
       body: '{"exact": "bytes"}',
     });
     await expect(

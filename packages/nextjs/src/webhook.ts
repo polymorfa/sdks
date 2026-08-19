@@ -22,7 +22,7 @@ export async function readVerifiedWebhook<TEvent>(
   if (options.secret.length === 0) {
     throw new TypeError("Webhook secret must not be empty.");
   }
-  const headerName = options.signatureHeader ?? "x-polymorfa-signature";
+  const headerName = options.signatureHeader ?? "x-webhook-signature";
   const signature = request.headers.get(headerName);
   if (signature === null || signature.length === 0) {
     throw new TypeError(`Missing webhook signature header: ${headerName}.`);

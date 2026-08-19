@@ -28,6 +28,9 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - run: npm run build:workspaces
       - run: npm run check:coverage
       - run: npm run check:names
       - run: npm pack --dry-run --ignore-scripts
+      - run: npm pack --dry-run --workspaces --ignore-scripts
+      - run: npm audit --omit=dev

@@ -6,6 +6,10 @@
     "jsx": "react-jsx",
     "paths": {
       "@polymorfa/browser": ["./packages/browser/src/index.ts"],
+      "@polymorfa/devtools": ["./packages/devtools/src/index.ts"],
+      "@polymorfa/elements": ["./packages/elements/src/index.ts"],
+      "@polymorfa/nextjs": ["./packages/nextjs/src/index.ts"],
+      "@polymorfa/react": ["./packages/react/src/index.ts"],
       "@polymorfa/ui": ["./packages/ui/src/index.ts"]
     },
     "strict": true,
@@ -21,6 +25,8 @@
     "packages/*/src/**/*.tsx",
     "packages/*/test/**/*.ts",
     "packages/*/test/**/*.tsx",
+    "examples/**/*.ts",
+    "examples/**/*.tsx",
     "vitest.config.ts"
   ]
 }
