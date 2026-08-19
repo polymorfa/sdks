@@ -69,6 +69,7 @@ export { WebhooksResource } from "./messaging/webhooks.js";
 export { CursorPage, type PageDecoder, type PageResult } from "./pagination.js";
 export { PlatformClient } from "./platform/client.js";
 export { MediaResource } from "./platform/media.js";
+export { OptOutsResource } from "./platform/opt-outs.js";
 export { OrganizationsResource } from "./platform/organizations.js";
 export { ProjectsResource } from "./platform/projects.js";
 export { PlatformSessionsResource } from "./platform/sessions.js";

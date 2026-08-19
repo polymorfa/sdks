@@ -6,6 +6,7 @@ import {
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
 import { MediaResource } from "./media.js";
+import { OptOutsResource } from "./opt-outs.js";
 import { OrganizationsResource } from "./organizations.js";
 import { ProjectsResource } from "./projects.js";
 import { PlatformSessionsResource } from "./sessions.js";
@@ -13,6 +14,7 @@ import { PlatformSessionsResource } from "./sessions.js";
 export class PlatformClient {
   readonly organizations: OrganizationsResource;
   readonly media: MediaResource;
+  readonly optOuts: OptOutsResource;
   readonly projects: ProjectsResource;
   readonly sessions: PlatformSessionsResource;
   readonly raw: RawClient;
@@ -32,6 +34,7 @@ export class PlatformClient {
     });
     this.organizations = new OrganizationsResource(transport);
     this.media = new MediaResource(transport);
+    this.optOuts = new OptOutsResource(transport);
     this.projects = new ProjectsResource(transport);
     this.sessions = new PlatformSessionsResource(transport);
     this.raw = new RawClient(transport);

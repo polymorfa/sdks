@@ -57,3 +57,26 @@ describe("PlatformClient media", () => {
     expect(retrieved.metadata.requestId).toBe("req_platform_automation");
   });
 });
+
+describe("PlatformClient opt-outs", () => {
+  it("maps list, single, batch, and encoded delete operations", async () => {
+    const { client, requests } = await platformServer();
+    await client.optOuts.list();
+    await client.optOuts.create(
+      { phone: "+1 555" },
+      { idempotencyKey: "opt-out-1" },
+    );
+    await client.optOuts.createBatch({ phones: ["+1 555", "+44 20"] });
+    await client.optOuts.delete("+1/555");
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /v1/optouts",
+      "POST /v1/optouts",
+      "POST /v1/optouts/batch",
+      "DELETE /v1/optouts/%2B1%2F555",
+    ]);
+    expect(requests[1]?.body).toBe('{"phone":"+1 555"}');
+    expect(requests[1]?.headers["idempotency-key"]).toBe("opt-out-1");
+    expect(requests[2]?.body).toBe('{"phones":["+1 555","+44 20"]}');
+  });
+});
