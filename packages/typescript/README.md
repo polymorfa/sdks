@@ -144,6 +144,34 @@ day, one week, or 90 days. The resource also provides `deleteMessage`,
 `archive`, and `unarchive`. Chat operations are not available for Cloud API
 sessions.
 
+## Webhooks and events
+
+`MessagingClient.webhooks` lists, creates, retrieves, updates, and deletes
+webhook registrations with a server credential carrying `webhooks:manage`.
+Webhook mutations accept the same `RequestOptions` as every other resource,
+including idempotency keys, cancellation, timeouts, and API-version overrides.
+
+Use `constructWebhookEvent` with the exact raw request bytes before inspecting
+an inbound delivery. `isEvent` narrows all 33 event names in the pinned
+Messaging contract to their exported payload types:
+
+```ts
+const event = await constructWebhookEvent(rawBody, signature, webhookSecret);
+
+if (isEvent(event, "history.sync")) {
+  console.log(event.payload.syncType, event.payload.progress);
+} else if (isEvent(event, "call.received")) {
+  console.log(event.payload.callId, event.payload.from.id);
+}
+```
+
+The Platform contract exposes campaign events through
+`PlatformClient.campaigns.events`. It does not expose key-authenticated webhook
+delivery inspection, replay, test delivery, or a general event list. Console
+webhook settings require a dashboard identity; staff webhook inspection and
+disable operations require a staff identity. Those routes are intentionally
+absent from the server client, including its raw-request guidance.
+
 ## Platform automation
 
 Organization API keys can use handwritten campaign, audience, opt-out, and

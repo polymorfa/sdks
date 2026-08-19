@@ -148,8 +148,8 @@ describe("coverage checker", () => {
       total: 331,
       covered: 96,
       partial: 0,
-      missing: 174,
-      excluded: 61,
+      missing: 172,
+      excluded: 63,
       changed: 0,
     });
   });

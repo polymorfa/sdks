@@ -2393,9 +2393,9 @@
       "operationId": "adminListWebhooks",
       "fingerprint": "ee329ac7479b1f039181f328aff30c47d00dcf22923a0413caf7dfb0ade5b77e",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This Polymorfa staff route requires a staff dashboard identity and never accepts server credentials.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3262,9 +3262,9 @@
       "operationId": "adminForceDisableWebhook",
       "fingerprint": "09b2e93d9bb1fbb2ada4b97e0ba009a1c98aa8961d55749c2c94644e4e6a8e0c",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This Polymorfa staff route requires a staff dashboard identity and never accepts server credentials.",
+        "milestone": "credential-boundary"
       }
     },
     {

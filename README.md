@@ -230,8 +230,18 @@ if (isEvent(event, "message.received")) {
 Native deliveries use the hexadecimal `X-Webhook-Signature` value. The helper
 also accepts the `sha256=<hex>` compatibility form. Verification uses
 HMAC-SHA256 and constant-time comparison over the unmodified bytes. Known
-events narrow to exported payload types; unknown event names and payloads are
-preserved for forward compatibility.
+events narrow to exported payload types for all 33 event schemas in the pinned
+Messaging contract, including messages, sessions, groups, presence, contacts,
+chats, calls, labels, history sync, command results, and business quick
+replies. Unknown event names and payloads are preserved for forward
+compatibility.
+
+Messaging server credentials can manage webhook registrations through
+`MessagingClient.webhooks`. The Platform contract has no server-credential
+event listing, webhook delivery inspection, replay, or test-delivery endpoint.
+Its console webhook settings require a dashboard session, and its cross-org
+webhook controls require a staff identity, so neither surface is exposed by
+`PlatformClient` or counted as missing server SDK coverage.
 
 ## Browser controllers and UI
 
@@ -311,9 +321,9 @@ subpath exports an inert mount function.
 ## Coverage status
 
 `contracts/coverage.json` maps all 331 Messaging and Platform operations in the
-pinned contract. This milestone has 96 handwritten resource methods, 61
+pinned contract. This milestone has 96 handwritten resource methods, 63
 dashboard-only or staff routes excluded from the server credential surface,
-and 174 operations available through the raw escape hatch while typed methods
+and 172 operations available through the raw escape hatch while typed methods
 are added. Missing and structurally changed operations are reported
 individually; the ledger never presents raw access as typed parity.
 
