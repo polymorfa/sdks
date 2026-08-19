@@ -156,6 +156,55 @@ The source exposes no pagination for group or participant lists. Browser client
 tokens cannot access Groups routes because no Groups action exists in the
 client-token allowlist; use a server API key with the required scope.
 
+## Messages
+
+`MessagingClient.messages` maps the complete five-operation Messages tag:
+`send`, `markSeen`, `setTyping`, `react`, and `star`. All five require
+`messages:write` when called with a server API key and accept the standard
+`RequestOptions`, including idempotency, cancellation, timeouts, custom
+headers, and API-version overrides.
+
+The source has one send route rather than separate routes for each message
+kind. `SendMessageRequest` is therefore a union of the exact typed payloads for
+text, image/file/voice/video media, polls, locations, contacts, phone-number
+requests, products, product lists, orders, lists, buttons, address messages,
+and flows. Template sends use `SendTemplateMessageRequest`; the API requires a
+`type` value but ignores it when `template` is present.
+
+```ts
+await messaging.messages.send(
+  "support",
+  {
+    chatId: "15551234567@s.whatsapp.net",
+    type: "buttons",
+    buttons: {
+      body: "Continue with this request?",
+      buttons: [
+        { type: "reply", text: "Continue", id: "continue" },
+        { type: "reply", text: "Cancel", id: "cancel" },
+      ],
+    },
+    quotedMessage: {
+      messageId: "message-id",
+      participant: "15551234567@s.whatsapp.net",
+    },
+  },
+  { idempotencyKey: "reply-to-message-id" },
+);
+```
+
+Reply context uses `quotedMessage`; forwarding is represented by
+`isForwarded`. Neither is a separate endpoint. The pinned contract exposes no
+message history, list, search, or standalone forward/reply route.
+
+Client tokens can call all five Messages operations only when the corresponding
+live rule is enabled: `send_message` for send and star, `send_reaction` for
+react, `send_typing` for typing, and `send_seen` for seen markers. Send and
+reaction are also subject to recipient rules and send limits. Edit and delete
+are not Messages routes: they remain `MessagingClient.chats.editMessage` and
+`deleteMessage`, require `chats:manage` with a server key, and are not in the
+client-token allowlist.
+
 ## Chats
 
 `MessagingClient.chats` exposes the credential-compatible Linked Device chat

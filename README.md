@@ -81,7 +81,8 @@ The handwritten Messaging resources in this milestone are:
 - `sessions`: list, create, retrieve, update, delete, start, stop, restart,
   logout, account, JSON QR retrieval, and phone pairing codes
 - `operations`: retrieve durable lifecycle operation status
-- `messages`: send, mark seen, set typing state, react, and star
+- `messages`: send every contract-defined message kind through one typed send
+  union, mark seen, set typing state, react, and star
 - `chats`: edit or delete sent messages, archive or unarchive chats, and set
   disappearing-message timers
 - `contacts`: list, check registration, retrieve contact metadata, inspect the

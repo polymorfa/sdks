@@ -344,9 +344,10 @@ export type MessageKind =
   | "flow";
 
 export interface QuotedMessage {
-  readonly id: string;
-  readonly chatId?: string;
-  readonly sender?: string;
+  readonly messageId: string;
+  readonly participant: string;
+  readonly type?: string;
+  readonly text?: string;
 }
 
 export interface MessageTemplateSend {
@@ -355,35 +356,252 @@ export interface MessageTemplateSend {
   readonly components?: readonly unknown[];
 }
 
-export interface SendMessageRequest {
+export type ProductMessageMedia =
+  | {
+      readonly url: string;
+      readonly base64?: never;
+      readonly mimeType?: string;
+    }
+  | {
+      readonly url?: never;
+      readonly base64: string;
+      readonly mimeType?: string;
+    };
+
+export interface ProductMessageContent {
+  readonly businessOwnerJid: string;
+  readonly id: string;
+  readonly title: string;
+  readonly description?: string;
+  readonly currencyCode: string;
+  readonly priceAmount1000: number;
+  readonly salePriceAmount1000?: number;
+  readonly retailerId?: string;
+  readonly url?: string;
+  readonly imageCount?: number;
+  readonly image?: ProductMessageMedia;
+  readonly body?: string;
+  readonly footer?: string;
+}
+
+export interface ProductListMessageSection {
+  readonly title?: string;
+  readonly productIds: readonly string[];
+}
+
+export interface ProductListMessageContent {
+  readonly businessOwnerJid: string;
+  readonly title: string;
+  readonly description?: string;
+  readonly buttonText: string;
+  readonly footer?: string;
+  readonly sections: readonly ProductListMessageSection[];
+}
+
+export type OrderMessageStatus = "inquiry" | "accepted" | "declined";
+
+export interface OrderMessageContent {
+  readonly id: string;
+  readonly thumbnailBase64?: string;
+  readonly itemCount: number;
+  readonly status: OrderMessageStatus;
+  readonly message?: string;
+  readonly title?: string;
+  readonly sellerJid: string;
+  readonly token?: string;
+  readonly totalAmount1000: number;
+  readonly totalCurrencyCode: string;
+  readonly catalogType?: string;
+}
+
+export interface ListMessageRow {
+  readonly id: string;
+  readonly title: string;
+  readonly description?: string;
+}
+
+export interface ListMessageSection {
+  readonly title?: string;
+  readonly rows: readonly ListMessageRow[];
+}
+
+export interface ListMessageContent {
+  readonly title: string;
+  readonly description?: string;
+  readonly buttonText: string;
+  readonly footer?: string;
+  readonly sections: readonly ListMessageSection[];
+}
+
+export type MessageButton =
+  | {
+      readonly type: "url";
+      readonly text: string;
+      readonly url: string;
+    }
+  | {
+      readonly type: "call";
+      readonly text: string;
+      readonly phoneNumber: string;
+    }
+  | {
+      readonly type: "reply";
+      readonly text: string;
+      readonly id: string;
+    }
+  | {
+      readonly type: "copy";
+      readonly text: string;
+      readonly copyCode: string;
+    }
+  | {
+      readonly type: "catalog";
+      readonly text: string;
+      readonly businessPhoneNumber: string;
+      readonly catalogProductId?: string;
+    };
+
+export interface ButtonsMessageContent {
+  readonly title?: string;
+  readonly body: string;
+  readonly footer?: string;
+  readonly buttons: readonly MessageButton[];
+}
+
+export interface AddressMessageContent {
+  readonly body: string;
+  readonly buttonText?: string;
+  readonly footer?: string;
+  readonly country?: string;
+}
+
+export interface FlowNavigateMessageContent {
+  readonly body: string;
+  readonly buttonText: string;
+  readonly footer?: string;
+  readonly id: string;
+  readonly token: string;
+  readonly action: "navigate";
+  readonly screen: string;
+  readonly dataJson?: string;
+}
+
+export interface FlowDataExchangeMessageContent {
+  readonly body: string;
+  readonly buttonText: string;
+  readonly footer?: string;
+  readonly id: string;
+  readonly token: string;
+  readonly action: "data_exchange";
+  readonly screen?: never;
+  readonly dataJson?: never;
+}
+
+export type FlowMessageContent =
+  FlowNavigateMessageContent | FlowDataExchangeMessageContent;
+
+export interface MessageSendContext {
   readonly chatId: string;
-  readonly type?: MessageKind;
+  readonly isForwarded?: boolean;
+  readonly mentions?: readonly string[];
+  readonly quotedMessage?: QuotedMessage;
+}
+
+export interface SendTextMessageRequest extends MessageSendContext {
+  readonly type: "text";
   readonly text?: string;
+}
+
+export type MediaMessageKind = "image" | "file" | "voice" | "video";
+
+export interface SendMediaMessageRequest extends MessageSendContext {
+  readonly type: MediaMessageKind;
   readonly url?: string;
   readonly base64?: string;
   readonly mimeType?: string;
   readonly filename?: string;
   readonly caption?: string;
   readonly ptt?: boolean;
+}
+
+export interface SendPollMessageRequest extends MessageSendContext {
+  readonly type: "poll";
   readonly pollTitle?: string;
   readonly pollOptions?: readonly string[];
   readonly pollMultiSelect?: boolean;
+}
+
+export interface SendLocationMessageRequest extends MessageSendContext {
+  readonly type: "location";
   readonly latitude?: number;
   readonly longitude?: number;
   readonly address?: string;
-  readonly vcard?: string;
-  readonly isForwarded?: boolean;
-  readonly mentions?: readonly string[];
-  readonly quotedMessage?: QuotedMessage;
-  readonly template?: MessageTemplateSend;
-  readonly product?: Readonly<Record<string, unknown>>;
-  readonly productList?: Readonly<Record<string, unknown>>;
-  readonly order?: Readonly<Record<string, unknown>>;
-  readonly list?: Readonly<Record<string, unknown>>;
-  readonly buttons?: Readonly<Record<string, unknown>>;
-  readonly addressMessage?: Readonly<Record<string, unknown>>;
-  readonly flow?: Readonly<Record<string, unknown>>;
 }
+
+export interface SendContactMessageRequest extends MessageSendContext {
+  readonly type: "contact";
+  readonly vcard?: string;
+}
+
+export interface SendPhoneNumberRequest extends MessageSendContext {
+  readonly type: "request_phone_number";
+}
+
+export interface SendProductMessageRequest extends MessageSendContext {
+  readonly type: "product";
+  readonly product: ProductMessageContent;
+}
+
+export interface SendProductListMessageRequest extends MessageSendContext {
+  readonly type: "product_list";
+  readonly productList: ProductListMessageContent;
+}
+
+export interface SendOrderMessageRequest extends MessageSendContext {
+  readonly type: "order";
+  readonly order: OrderMessageContent;
+}
+
+export interface SendListMessageRequest extends MessageSendContext {
+  readonly type: "list";
+  readonly list: ListMessageContent;
+}
+
+export interface SendButtonsMessageRequest extends MessageSendContext {
+  readonly type: "buttons";
+  readonly buttons: ButtonsMessageContent;
+}
+
+export interface SendAddressMessageRequest extends MessageSendContext {
+  readonly type: "address_message";
+  readonly addressMessage: AddressMessageContent;
+}
+
+export interface SendFlowMessageRequest extends MessageSendContext {
+  readonly type: "flow";
+  readonly flow: FlowMessageContent;
+}
+
+export interface SendTemplateMessageRequest extends MessageSendContext {
+  readonly type: MessageKind;
+  readonly template: MessageTemplateSend;
+}
+
+export type SendMessageRequest =
+  | SendTextMessageRequest
+  | SendMediaMessageRequest
+  | SendPollMessageRequest
+  | SendLocationMessageRequest
+  | SendContactMessageRequest
+  | SendPhoneNumberRequest
+  | SendProductMessageRequest
+  | SendProductListMessageRequest
+  | SendOrderMessageRequest
+  | SendListMessageRequest
+  | SendButtonsMessageRequest
+  | SendAddressMessageRequest
+  | SendFlowMessageRequest
+  | SendTemplateMessageRequest;
 
 export interface MessageResponse {
   readonly id: string;
