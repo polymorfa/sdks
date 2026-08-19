@@ -25,3 +25,28 @@ import {
 See the repository README for the complete development contract and current
 typed-resource coverage. This package has no runtime dependencies and requires
 Node.js 20 or newer.
+
+## Platform automation
+
+Organization API keys can use handwritten campaign, audience, opt-out, and
+media resources:
+
+```ts
+const campaign = await platform.campaigns.create(
+  {
+    projectId: "project_123",
+    name: "August launch",
+  },
+  {
+    idempotencyKey: "campaign-august-2026",
+    timeoutMs: 10_000,
+  },
+);
+
+console.log(campaign.data.data, campaign.metadata.requestId);
+```
+
+The pinned contract defines these operation payloads as open objects, exposed
+as `PlatformPayload`. Templates and Flows are not methods on `PlatformClient`:
+their endpoints require a dashboard bearer and reject the organization API key
+used by the server client.

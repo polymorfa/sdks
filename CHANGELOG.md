@@ -4,6 +4,10 @@
 
 - Added handwritten Messaging clients for sessions, messages, and webhooks.
 - Added handwritten Platform clients for organizations, projects, and sessions.
+- Added handwritten Platform resources for campaigns, audiences, opt-outs, and
+  media, covering 27 additional organization-key operations.
+- Excluded dashboard-only template and Flow endpoints from the organization-key
+  server client instead of exposing methods with an incompatible credential.
 - Added typed errors, response metadata, timeouts, cancellation, safe retries,
   idempotency support, per-request API versions, and raw requests.
 - Added cursor pagination primitives.

@@ -96,6 +96,12 @@ const projects = await platform.projects.list();
 const sessions = await platform.sessions.list({
   projectId: projects.data.data[0]?._id,
 });
+
+const campaign = await platform.campaigns.create(
+  { projectId: projects.data.data[0]?._id, name: "August launch" },
+  { idempotencyKey: crypto.randomUUID() },
+);
+console.log(campaign.data.data, campaign.metadata.requestId);
 ```
 
 The Platform client accepts only `pmfa_` server API keys. It rejects client
@@ -107,6 +113,20 @@ The handwritten Platform resources in this milestone are:
 - `projects`: list, create, request production enrollment, approve, and cancel
 - `sessions`: list, stop, delete, set tier override, and create a testing
   session
+- `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
+  analytics, events, and recipients
+- `audiences`: list, create, retrieve, delete, and create an upload URL
+- `optOuts`: list, create one, create a batch, and delete by phone number
+- `media`: retrieve a URL, delete, and create an upload URL
+
+The pinned campaign, audience, opt-out, and media contracts expose their
+operation payloads as open objects. These methods therefore use the exported
+`PlatformPayload` type instead of claiming fields the contract does not define.
+
+Platform template and Flow endpoints require a live dashboard bearer and reject
+organization server keys. They are intentionally absent from `PlatformClient`;
+browser template tooling must reach them through an application-owned server
+adapter that authorizes the signed-in user.
 
 ## Response metadata and errors
 
@@ -258,11 +278,11 @@ subpath exports an inert mount function.
 ## Coverage status
 
 `contracts/coverage.json` maps all 331 Messaging and Platform operations in the
-pinned contract. This milestone has 32 handwritten resource methods, 50
-dashboard/staff routes excluded from the server credential surface, and 249
-operations available through the raw escape hatch while typed methods are
-added. Missing and structurally changed operations are reported individually;
-the ledger never presents raw access as typed parity.
+pinned contract. This milestone has 59 handwritten resource methods, 60
+dashboard-only or staff routes excluded from the server credential surface,
+and 212 operations available through the raw escape hatch while typed methods
+are added. Missing and structurally changed operations are reported
+individually; the ledger never presents raw access as typed parity.
 
 ## Development
 
