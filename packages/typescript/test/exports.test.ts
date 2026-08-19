@@ -10,6 +10,7 @@ import {
   GroupsResource,
   CursorPage,
   MessagingClient,
+  MessagingMediaResource,
   MediaResource,
   OptOutsResource,
   OperationsResource,
@@ -59,6 +60,7 @@ describe("public exports", () => {
   it("exposes every runtime dependency required by the CLI", () => {
     expect([
       MessagingClient,
+      MessagingMediaResource,
       PlatformClient,
       AudiencesResource,
       BillingResource,
@@ -81,7 +83,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(23);
+    ]).toHaveLength(24);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {

@@ -205,6 +205,46 @@ are not Messages routes: they remain `MessagingClient.chats.editMessage` and
 `deleteMessage`, require `chats:manage` with a server key, and are not in the
 client-token allowlist.
 
+## Messaging media
+
+`MessagingClient.media` is distinct from `PlatformClient.media`. It exposes all
+three operations in the Messaging Media tag for Linked Device sessions:
+
+- `download(mediaId)` returns `ApiResponse<ArrayBuffer>` and requires
+  `media:read`.
+- `retrieve(mediaId)` returns `MessagingMediaInfo` and requires `media:read`.
+- `persist(mediaId)` asks the server to download and save the object to the
+  tenant's configured object storage and requires `media:manage`.
+
+```ts
+const info = await messaging.media.retrieve("media-id");
+const downloaded = await messaging.media.download("media-id", {
+  timeoutMs: 30_000,
+});
+
+await writeFile("attachment.bin", new Uint8Array(downloaded.data));
+console.log(info.data.data.mimeType, downloaded.metadata.requestId);
+```
+
+The API can stream bytes directly or redirect to object storage. The SDK
+follows the platform fetch implementation's redirect behavior and buffers the
+successful response into an `ArrayBuffer`; it does not represent the result as
+JSON or claim streaming semantics. Timeout and cancellation remain active
+while the body is buffered. Content type, content length, and content
+disposition remain available in `response.metadata.headers`.
+
+The pinned source specifies no maximum download size. Retrieve metadata first
+when an application must enforce its own memory limit. It exposes no Messaging
+media upload, deletion, resumable upload, range-download, or list endpoint.
+Message-send `url` and `base64` fields are send inputs, not media-upload APIs.
+Media routes are absent from the client-token allowlist, so all three methods
+require a server API key. `persist` accepts an idempotency key through the
+standard `RequestOptions`.
+
+`MessagingMediaInfo.s3Url` includes `null` because the API returns a null value
+before persistence even though the generated schema marks the field as
+optional. The SDK type reflects the verified response.
+
 ## Chats
 
 `MessagingClient.chats` exposes the credential-compatible Linked Device chat

@@ -27,6 +27,7 @@ export { ChatsResource } from "./messaging/chats.js";
 export { ClientTokensResource } from "./messaging/client-tokens.js";
 export { ContactsResource } from "./messaging/contacts.js";
 export { GroupsResource } from "./messaging/groups.js";
+export { MessagingMediaResource } from "./messaging/media.js";
 export { MessagesResource } from "./messaging/messages.js";
 export { OperationsResource } from "./messaging/operations.js";
 export { SessionsResource } from "./messaging/sessions.js";
@@ -70,6 +71,7 @@ export type {
   GetGroupJoinInfoResponse,
   GetGroupParticipantsResponse,
   GetGroupResponse,
+  GetMessagingMediaInfoResponse,
   GetOperationResponse,
   GetQRCodeResponse,
   GetClientRulesResponse,
@@ -98,6 +100,7 @@ export type {
   MediaMessageKind,
   MessageButton,
   MessageKind,
+  MessagingMediaInfo,
   MessageResponse,
   MessageSendContext,
   MessageTemplateSend,

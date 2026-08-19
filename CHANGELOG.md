@@ -5,6 +5,8 @@
 - Added handwritten Messaging clients for sessions, messages, and webhooks.
 - Replaced open-ended structured message objects with root-exported types for
   every send kind and aligned quoted replies with the current API contract.
+- Added Messaging media metadata, binary download, and persistence operations
+  with binary-aware timeout and error handling.
 - Added handwritten Platform clients for organizations, projects, and sessions.
 - Added handwritten Platform resources for campaigns, audiences, opt-outs, and
   media, covering 27 additional organization-key operations.

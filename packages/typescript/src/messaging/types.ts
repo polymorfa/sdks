@@ -154,6 +154,18 @@ export type GetUserInfoResponse = SuccessEnvelope<ContactUserInfo>;
 export type GetUserDevicesResponse = SuccessEnvelope<readonly string[]>;
 export type GetBusinessProfileResponse = SuccessEnvelope<BusinessProfile>;
 
+export interface MessagingMediaInfo {
+  readonly id: string;
+  readonly session: string;
+  readonly messageId: string;
+  readonly mimeType: string;
+  readonly fileLength: number;
+  readonly persisted: boolean;
+  readonly s3Url?: string | null;
+}
+
+export type GetMessagingMediaInfoResponse = SuccessEnvelope<MessagingMediaInfo>;
+
 export interface GroupParticipant {
   readonly lid: string;
   readonly phoneNumber?: string;

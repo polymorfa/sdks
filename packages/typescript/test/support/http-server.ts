@@ -11,8 +11,9 @@ export interface RecordedRequest {
 export interface TestResponse {
   readonly status?: number;
   readonly headers?: Readonly<Record<string, string>>;
-  readonly body?: string;
+  readonly body?: string | Uint8Array;
   readonly delayMs?: number;
+  readonly bodyDelayMs?: number;
 }
 
 export interface TestServer {
@@ -37,12 +38,17 @@ export async function startTestServer(
       };
       const index = requests.push(recorded) - 1;
       const result = respond(recorded, index);
+      const sendBody = () => response.end(result.body ?? "");
       const send = () => {
         response.writeHead(
           result.status ?? 200,
           result.headers ?? { "content-type": "application/json" },
         );
-        response.end(result.body ?? "");
+        if (result.bodyDelayMs !== undefined) {
+          setTimeout(sendBody, result.bodyDelayMs);
+        } else {
+          sendBody();
+        }
       };
       if (result.delayMs !== undefined) {
         setTimeout(send, result.delayMs);

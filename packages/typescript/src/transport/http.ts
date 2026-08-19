@@ -60,6 +60,23 @@ export class HttpTransport {
   }
 
   async request<T>(request: RawRequest): Promise<ApiResponse<T>> {
+    return this.#request(request, decodeResponseBody, "application/json");
+  }
+
+  async requestBinary(request: RawRequest): Promise<ApiResponse<ArrayBuffer>> {
+    return this.#request(
+      request,
+      async (response) =>
+        response.ok ? response.arrayBuffer() : decodeResponseBody(response),
+      "application/octet-stream, */*",
+    );
+  }
+
+  async #request<T>(
+    request: RawRequest,
+    decode: (response: Response) => Promise<unknown>,
+    accept: string,
+  ): Promise<ApiResponse<T>> {
     validatePath(request.path);
     const retries = assertNonNegativeInteger(
       request.maxNetworkRetries ?? this.#maxNetworkRetries,
@@ -73,8 +90,9 @@ export class HttpTransport {
       attempt += 1;
       let response: Response | undefined;
       try {
-        response = await this.#perform(request);
-        const data = await decodeResponseBody(response);
+        const performed = await this.#perform(request, decode, accept);
+        response = performed.response;
+        const data = performed.data;
         const metadata = responseMetadata(response, attempt);
         if (response.ok) {
           return Object.freeze({ data: data as T, metadata });
@@ -138,10 +156,14 @@ export class HttpTransport {
     }
   }
 
-  async #perform(request: RawRequest): Promise<Response> {
+  async #perform(
+    request: RawRequest,
+    decode: (response: Response) => Promise<unknown>,
+    accept: string,
+  ): Promise<{ readonly response: Response; readonly data: unknown }> {
     const url = requestUrl(this.#baseUrl, request.path, request.query);
     const headers = new Headers(request.headers);
-    headers.set("accept", "application/json");
+    if (!headers.has("accept")) headers.set("accept", accept);
     headers.set("authorization", this.#authorization);
     headers.set("user-agent", `polymorfa-node/${SDK_VERSION}`);
     const apiVersion = request.apiVersion ?? this.#apiVersion;
@@ -175,12 +197,13 @@ export class HttpTransport {
     }
 
     try {
-      return await this.#fetch(url, {
+      const response = await this.#fetch(url, {
         method: request.method,
         headers,
         ...(encoded.body === undefined ? {} : { body: encoded.body }),
         signal: controller.signal,
       });
+      return { response, data: await decode(response) };
     } catch (error) {
       if (timedOut) {
         throw new RequestTimeout(timeoutMs, error);

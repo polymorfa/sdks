@@ -617,9 +617,8 @@
       "operationId": "downloadMedia",
       "fingerprint": "60067d01771c53dba1a7ab71cc768f8bd2ca92cefd4cddbef887d0088a4395d9",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.media.download"
       }
     },
     {
@@ -629,9 +628,8 @@
       "operationId": "getMediaInfo",
       "fingerprint": "8de9ff6257a2fed2ce72a97ec883dba64859cb938683ee12bda1c2bd95457fe5",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.media.retrieve"
       }
     },
     {
@@ -1343,9 +1341,8 @@
       "operationId": "downloadAndSaveMedia",
       "fingerprint": "16cf1251cfb5957845ed98a794f97c08065e0f4eb11ee76b5884276b4291945e",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.media.persist"
       }
     },
     {
