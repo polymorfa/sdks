@@ -531,7 +531,7 @@
       "fingerprint": "56349c5cd5de0f0bcc87fa128e7a012530ca357a75ff06776ea1d3bc5b8a289e",
       "typescript": {
         "status": "covered",
-        "method": "BrowserMessagingClient.widget.qr"
+        "method": "MessagingClient.sessions.qr"
       }
     },
     {
@@ -647,9 +647,8 @@
       "operationId": "getOperation",
       "fingerprint": "e13cfd45b2d6b3256c3fa832aca786242656ae6dc71d2d161ac4ab434d5e6688",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.operations.retrieve"
       }
     },
     {
@@ -1314,7 +1313,7 @@
       "fingerprint": "d4774a595bd04d1cbafe5db65b2906df222e2c36234c6b50d3c632e8c4703229",
       "typescript": {
         "status": "covered",
-        "method": "BrowserMessagingClient.widget.requestPairingCode"
+        "method": "MessagingClient.sessions.requestPairingCode"
       }
     },
     {

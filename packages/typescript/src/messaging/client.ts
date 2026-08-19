@@ -9,6 +9,7 @@ import { ChatsResource } from "./chats.js";
 import { ClientTokensResource } from "./client-tokens.js";
 import { ContactsResource } from "./contacts.js";
 import { MessagesResource } from "./messages.js";
+import { OperationsResource } from "./operations.js";
 import { SessionsResource } from "./sessions.js";
 import { TemplatesResource } from "./templates.js";
 import { WebhooksResource } from "./webhooks.js";
@@ -19,6 +20,7 @@ export class MessagingClient {
   readonly contacts: ContactsResource;
   readonly sessions: SessionsResource;
   readonly messages: MessagesResource;
+  readonly operations: OperationsResource;
   readonly templates: TemplatesResource;
   readonly webhooks: WebhooksResource;
   readonly raw: RawClient;
@@ -41,6 +43,7 @@ export class MessagingClient {
     this.contacts = new ContactsResource(transport);
     this.sessions = new SessionsResource(transport);
     this.messages = new MessagesResource(transport);
+    this.operations = new OperationsResource(transport);
     this.templates = new TemplatesResource(transport);
     this.webhooks = new WebhooksResource(transport);
     this.raw = new RawClient(transport);

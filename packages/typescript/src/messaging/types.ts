@@ -164,6 +164,46 @@ export interface DisappearingTimerRequest {
   readonly durationSeconds: DisappearingTimerDuration;
 }
 
+export interface QRCodeData {
+  readonly qr?: string;
+  readonly event?: string;
+}
+
+export interface PairCodeRequest {
+  readonly phone: string;
+}
+
+export interface PairCodeData {
+  readonly code: string;
+}
+
+export type GetQRCodeResponse = SuccessEnvelope<QRCodeData>;
+export type RequestPairCodeResponse = SuccessEnvelope<PairCodeData>;
+
+export type OperationStatus =
+  | "pending"
+  | "running"
+  | "action_required"
+  | "succeeded"
+  | "failed"
+  | "cancelled";
+
+export interface Operation {
+  readonly id: string;
+  readonly kind: string;
+  readonly resourceType: string;
+  readonly resourceId: string;
+  readonly projectId: string | null;
+  readonly status: OperationStatus;
+  readonly progressCode: string | null;
+  readonly failureCode: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly completedAt: string | null;
+}
+
+export type GetOperationResponse = SuccessEnvelope<Operation>;
+
 export interface MintClientTokenRequest {
   readonly session: string;
   readonly ephemeralId: string;

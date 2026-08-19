@@ -33,6 +33,36 @@ session rules that authorize them. Use it only on the server. The browser-safe
 transport and allowed-action resources live in `@polymorfa/browser`; the
 Next.js-compatible route adapter lives in `@polymorfa/nextjs`.
 
+## Session connection lifecycle
+
+Start a Linked Device session, retrieve its JSON QR payload or request a phone
+pairing code, then poll the returned durable lifecycle operation. Pairing
+requires `sessions:manage`; operation retrieval accepts any of
+`sessions:read`, `campaigns:read`, or `webhooks:manage`.
+
+```ts
+const started = await messaging.sessions.start("support", {
+  idempotencyKey: "start-support",
+});
+
+const qr = await messaging.sessions.qr("support");
+console.log(qr.data.data.qr, qr.metadata.requestId);
+
+const pairingCode = await messaging.sessions.requestPairingCode(
+  "support",
+  { phone: "+15551234567" },
+  { idempotencyKey: "pair-support-phone" },
+);
+
+const operation = await messaging.operations.retrieve(started.data.operationId);
+console.log(pairingCode.data.data.code, operation.data.data.status);
+```
+
+`sessions.retrieve` is the typed source of session connection status. The
+pinned API contract does not expose session logs or a separate
+connection-status endpoint. QR image rendering remains an application concern;
+the server SDK deliberately requests the typed JSON QR representation.
+
 ## Project templates
 
 `MessagingClient.templates` provides the seven canonical project-template

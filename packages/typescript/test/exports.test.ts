@@ -10,6 +10,7 @@ import {
   MessagingClient,
   MediaResource,
   OptOutsResource,
+  OperationsResource,
   PlatformClient,
   PolymorfaAuthenticationError,
   PolymorfaCancelledError,
@@ -31,6 +32,9 @@ import {
   type MintClientTokenRequest,
   type MessageReceivedEvent,
   type MessagingClientOptions,
+  type Operation,
+  type PairCodeRequest,
+  type QRCodeData,
   type ListCampaignsParams,
   type PlatformPayload,
   type PlatformClientOptions,
@@ -54,6 +58,7 @@ describe("public exports", () => {
       ContactsResource,
       MediaResource,
       OptOutsResource,
+      OperationsResource,
       CursorPage,
       PolymorfaError,
       PolymorfaConfigurationError,
@@ -65,7 +70,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(20);
+    ]).toHaveLength(21);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -85,6 +90,9 @@ describe("public exports", () => {
     expectTypeOf<EditMessageRequest>().toHaveProperty("text");
     expectTypeOf<DisappearingTimerRequest>().toHaveProperty("durationSeconds");
     expectTypeOf<MintClientTokenRequest>().toHaveProperty("ephemeralId");
+    expectTypeOf<PairCodeRequest>().toHaveProperty("phone");
+    expectTypeOf<QRCodeData>().toHaveProperty("qr");
+    expectTypeOf<Operation>().toHaveProperty("status");
     expectTypeOf<CreateProjectRequest>().toHaveProperty("name");
     expectTypeOf<SendMessageRequest>().toHaveProperty("chatId");
     expectTypeOf<TemplateDefinition>().toHaveProperty("variables");

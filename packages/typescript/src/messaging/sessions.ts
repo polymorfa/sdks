@@ -5,8 +5,11 @@ import type {
   CreateSessionResponse,
   GetSessionAccountResponse,
   GetSessionResponse,
+  GetQRCodeResponse,
   ListSessionsResponse,
   OperationAccepted,
+  PairCodeRequest,
+  RequestPairCodeResponse,
   UpdateSessionRequest,
   UpdateSessionResponse,
 } from "./types.js";
@@ -106,6 +109,31 @@ export class SessionsResource {
     return this.transport.request({
       method: "GET",
       path: `${sessionPath(session)}/me`,
+      ...options,
+    });
+  }
+
+  qr(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<GetQRCodeResponse>> {
+    return this.transport.request({
+      method: "GET",
+      path: `/api/${encodeURIComponent(session)}/pair/qr`,
+      query: { format: "json" },
+      ...options,
+    });
+  }
+
+  requestPairingCode(
+    session: string,
+    body: PairCodeRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<RequestPairCodeResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: `/api/${encodeURIComponent(session)}/pair/code`,
+      body,
       ...options,
     });
   }

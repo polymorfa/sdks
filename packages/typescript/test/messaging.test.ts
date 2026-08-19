@@ -83,6 +83,39 @@ describe("MessagingClient sessions", () => {
     ]);
     expect(requests[1]?.body).toBe('{"config":{"presence":true}}');
   });
+
+  it("retrieves JSON pairing data and requests a phone pairing code", async () => {
+    const { client, requests } = await messagingServer();
+
+    const qr = await client.sessions.qr("support/eu", { timeoutMs: 5_000 });
+    await client.sessions.requestPairingCode(
+      "support/eu",
+      { phone: "+15551234567" },
+      { idempotencyKey: "pair-support-phone" },
+    );
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /api/support%2Feu/pair/qr?format=json",
+      "POST /api/support%2Feu/pair/code",
+    ]);
+    expect(qr.metadata.requestId).toBe("req_messaging");
+    expect(requests[1]?.body).toBe('{"phone":"+15551234567"}');
+    expect(requests[1]?.headers["idempotency-key"]).toBe("pair-support-phone");
+  });
+});
+
+describe("MessagingClient operations", () => {
+  it("retrieves a durable lifecycle operation with an encoded identifier", async () => {
+    const { client, requests } = await messagingServer();
+
+    await client.operations.retrieve("operation/123", { apiVersion: "next" });
+
+    expect(requests[0]).toMatchObject({
+      method: "GET",
+      path: "/api/operations/operation%2F123",
+    });
+    expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
+  });
 });
 
 describe("MessagingClient messages", () => {

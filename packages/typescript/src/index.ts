@@ -27,6 +27,7 @@ export { ChatsResource } from "./messaging/chats.js";
 export { ClientTokensResource } from "./messaging/client-tokens.js";
 export { ContactsResource } from "./messaging/contacts.js";
 export { MessagesResource } from "./messaging/messages.js";
+export { OperationsResource } from "./messaging/operations.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
 export type {
@@ -57,6 +58,8 @@ export type {
   GetBusinessProfileResponse,
   GetContactPictureResponse,
   GetContactResponse,
+  GetOperationResponse,
+  GetQRCodeResponse,
   GetClientRulesResponse,
   GetSessionResponse,
   GetUserDevicesResponse,
@@ -74,12 +77,18 @@ export type {
   MintClientTokenResponse,
   MessagingConnection,
   OperationAccepted,
+  Operation,
+  OperationStatus,
+  PairCodeData,
+  PairCodeRequest,
   PreviewProjectTemplateRequest,
   ProjectTemplate,
   ProjectTemplateOperationResponse,
   ProjectTemplateResponse,
   QuotedMessage,
+  QRCodeData,
   ReactRequest,
+  RequestPairCodeResponse,
   SeenRequest,
   SendMessageRequest,
   SendMessageResponse,
