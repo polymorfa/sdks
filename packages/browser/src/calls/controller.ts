@@ -2,342 +2,192 @@ import {
   ObservableController,
   type ControllerSnapshot,
 } from "../controller.js";
+import type { CallMediaFactory, CallMediaSession } from "./media.js";
 
-export type CallDirection = "incoming" | "outgoing";
-export type CallMediaKind = "audio" | "video";
-export type CallPhase =
+export type CallStatus =
   | "idle"
-  | "initializing"
   | "ready"
   | "incoming"
   | "ringing"
-  | "waiting_room"
+  | "accepted"
   | "connecting"
-  | "active"
-  | "reconnecting"
-  | "permission_denied"
-  | "devices_unavailable"
-  | "ending"
+  | "connected"
   | "ended"
   | "error";
 export type CallEndReason =
-  "local_hangup" | "remote_hangup" | "rejected" | "missed" | "busy" | "failed";
-export type MediaPermission = "prompt" | "granted" | "denied" | "unavailable";
-
-export interface CallCapabilities {
+  | "hangup"
+  | "rejected"
+  | "missed"
+  | "busy"
+  | "connection_failed"
+  | "ice_timeout"
+  | "capacity"
+  | "remote_hangup"
+  | (string & {});
+export interface IncomingCall {
+  readonly callId: string;
+  readonly from: string;
   readonly video: boolean;
-  readonly waitingRoom: boolean;
-  readonly reactions: boolean;
-  readonly handRaise: boolean;
 }
-export interface MediaDevice {
-  readonly id: string;
-  readonly kind: "audio_input" | "audio_output" | "video_input";
-  readonly label: string;
-}
-export interface MediaPermissions {
-  readonly microphone: MediaPermission;
-  readonly camera: MediaPermission;
-}
-export interface CallParticipant {
-  readonly id: string;
-  readonly displayName: string;
-  readonly role: "host" | "participant";
-  readonly state: "invited" | "waiting" | "connecting" | "connected" | "left";
-  readonly muted?: boolean;
-  readonly videoEnabled?: boolean;
-  readonly activeSpeaker?: boolean;
-  readonly handRaised?: boolean;
-}
-export interface StartCallInput {
-  readonly conversationId: string;
-  readonly mediaKind: CallMediaKind;
-  readonly participantIds?: readonly string[];
-}
-
-export type CallEvent =
+export type CallLifecycleEvent =
+  | { readonly type: "incomingCall"; readonly call: IncomingCall }
   | {
-      readonly type: "incoming";
+      readonly type: "ringing" | "accepted" | "connected";
       readonly callId: string;
-      readonly conversationId: string;
-      readonly mediaKind: CallMediaKind;
-    }
-  | {
-      readonly type: "phase";
-      readonly callId: string;
-      readonly phase:
-        "ringing" | "waiting_room" | "connecting" | "active" | "reconnecting";
-    }
-  | {
-      readonly type: "participants";
-      readonly callId: string;
-      readonly participants: readonly CallParticipant[];
     }
   | {
       readonly type: "ended";
       readonly callId: string;
-      readonly reason: CallEndReason;
+      readonly reason?: CallEndReason;
     }
-  | { readonly type: "devices"; readonly devices: readonly MediaDevice[] }
-  | { readonly type: "permission"; readonly permissions: MediaPermissions }
   | {
-      readonly type: "failure";
-      readonly callId?: string;
-      readonly code: string;
-      readonly message: string;
-      readonly recoverable: boolean;
+      readonly type: "videostate";
+      readonly callId: string;
+      readonly video: boolean;
     };
-
-export interface CallsTransport {
-  initialize(signal: AbortSignal): Promise<{
-    readonly capabilities: CallCapabilities;
-    readonly devices: readonly MediaDevice[];
-    readonly permissions: MediaPermissions;
-  }>;
-  subscribe(listener: (event: CallEvent) => void): () => void;
-  start(
-    input: StartCallInput,
+export interface PlaceCallInput {
+  readonly to: string;
+  readonly video: boolean;
+  readonly idempotencyKey: string;
+}
+export interface CallsBackend {
+  subscribe(listener: (event: CallLifecycleEvent) => void): () => void;
+  place(
+    input: PlaceCallInput,
     signal: AbortSignal,
   ): Promise<{ readonly callId: string }>;
   answer(callId: string, signal: AbortSignal): Promise<void>;
   reject(callId: string, signal: AbortSignal): Promise<void>;
-  hangUp(callId: string, signal: AbortSignal): Promise<void>;
-  setDevice(
-    callId: string,
-    kind: MediaDevice["kind"],
-    deviceId: string,
-    signal: AbortSignal,
-  ): Promise<void>;
-  setMuted(callId: string, muted: boolean, signal: AbortSignal): Promise<void>;
-  setVideoEnabled(
-    callId: string,
-    enabled: boolean,
-    signal: AbortSignal,
-  ): Promise<void>;
-  sendReaction(
-    callId: string,
-    emoji: string,
-    signal: AbortSignal,
-  ): Promise<void>;
-  setHandRaised(
-    callId: string,
-    raised: boolean,
-    signal: AbortSignal,
-  ): Promise<void>;
-  admit(
-    callId: string,
-    participantId: string,
-    signal: AbortSignal,
-  ): Promise<void>;
-  deny(
-    callId: string,
-    participantId: string,
-    signal: AbortSignal,
-  ): Promise<void>;
-  selectVideoParticipant(
-    callId: string,
-    participantId: string | undefined,
-    signal: AbortSignal,
-  ): Promise<void>;
-  releaseMedia(callId?: string): Promise<void> | void;
-}
-
-export interface CallError {
-  readonly code: string;
-  readonly message: string;
-  readonly recoverable: boolean;
+  hangup(callId: string, signal: AbortSignal): Promise<void>;
 }
 export interface CallsSnapshot extends ControllerSnapshot {
-  readonly phase: CallPhase;
+  readonly status: CallStatus;
   readonly callId?: string;
-  readonly conversationId?: string;
-  readonly direction?: CallDirection;
-  readonly mediaKind?: CallMediaKind;
-  readonly capabilities?: CallCapabilities;
-  readonly devices: readonly MediaDevice[];
-  readonly permissions: MediaPermissions;
-  readonly participants: readonly CallParticipant[];
-  readonly selectedVideoParticipantId?: string;
-  readonly muted: boolean;
-  readonly videoEnabled: boolean;
-  readonly handRaised: boolean;
+  readonly peer?: string;
+  readonly direction?: "incoming" | "outgoing";
+  readonly video: boolean;
+  readonly audioMuted: boolean;
+  readonly videoMuted: boolean;
   readonly endReason?: CallEndReason;
-  readonly error?: CallError;
+  readonly error?: {
+    readonly code: string;
+    readonly message: string;
+    readonly recoverable: boolean;
+  };
+}
+export interface CallsControllerOptions {
+  readonly createIdempotencyKey?: () => string;
+  readonly now?: () => number;
 }
 
-const DEFAULT_PERMISSIONS: MediaPermissions = {
-  microphone: "prompt",
-  camera: "prompt",
-};
-
 export class CallsController extends ObservableController<CallsSnapshot> {
-  readonly #transport: CallsTransport;
+  readonly #backend: CallsBackend;
+  readonly #mediaFactory: CallMediaFactory;
+  readonly #createKey: () => string;
   #abort = new AbortController();
   #unsubscribe: (() => void) | undefined;
+  #media: CallMediaSession | undefined;
   #operation = 0;
-  #commands: Promise<void> = Promise.resolve();
-  #lastStart: StartCallInput | undefined;
 
-  constructor(transport: CallsTransport, now: () => number = Date.now) {
+  constructor(
+    backend: CallsBackend,
+    mediaFactory: CallMediaFactory,
+    options: CallsControllerOptions = {},
+  ) {
     super(
-      {
-        phase: "idle",
-        devices: [],
-        permissions: DEFAULT_PERMISSIONS,
-        participants: [],
-        muted: false,
-        videoEnabled: false,
-        handRaised: false,
-      },
-      now,
+      { status: "idle", video: false, audioMuted: false, videoMuted: false },
+      options.now,
     );
-    this.#transport = transport;
+    this.#backend = backend;
+    this.#mediaFactory = mediaFactory;
+    this.#createKey =
+      options.createIdempotencyKey ?? (() => crypto.randomUUID());
   }
 
-  async initialize(): Promise<void> {
-    const operation = this.#beginOperation();
-    this.transition({
-      ...callFields(this.getSnapshot()),
-      phase: "initializing",
-    });
-    try {
-      const initialized = await this.#transport.initialize(this.#abort.signal);
-      if (operation !== this.#operation) return;
-      this.transition({
-        ...callFields(this.getSnapshot()),
-        phase: permissionPhase(initialized.permissions, initialized.devices),
-        ...initialized,
-      });
-      this.#unsubscribe?.();
-      this.#unsubscribe = this.#transport.subscribe((event) =>
-        this.#receive(event),
-      );
-    } catch (cause) {
-      this.#fail(cause, operation, "initialization_failed");
-    }
-  }
-
-  async start(input: StartCallInput): Promise<void> {
+  initialize(): void {
     this.assertActive();
-    this.#lastStart = {
-      ...input,
-      ...(input.participantIds === undefined
-        ? {}
-        : { participantIds: [...input.participantIds] }),
-    };
-    const operation = ++this.#operation;
-    this.transition({
-      ...callFields(this.getSnapshot()),
-      phase: "connecting",
-      conversationId: input.conversationId,
-      direction: "outgoing",
-      mediaKind: input.mediaKind,
-    });
+    if (this.#unsubscribe !== undefined) return;
+    this.#unsubscribe = this.#backend.subscribe((event) =>
+      this.#receive(event),
+    );
+    this.transition({ ...callFields(this.getSnapshot()), status: "ready" });
+  }
+
+  async place(
+    to: string,
+    options: { readonly video?: boolean } = {},
+  ): Promise<void> {
+    const operation = this.#begin();
+    const video = options.video ?? false;
     try {
-      const call = await this.#transport.start(input, this.#abort.signal);
+      const { callId } = await this.#backend.place(
+        { to, video, idempotencyKey: this.#createKey() },
+        this.#abort.signal,
+      );
       if (operation !== this.#operation) return;
       this.transition({
-        ...callFields(this.getSnapshot()),
-        phase: "ringing",
-        callId: call.callId,
-        conversationId: input.conversationId,
+        status: "ringing",
+        callId,
+        peer: to,
         direction: "outgoing",
-        mediaKind: input.mediaKind,
+        video,
+        audioMuted: false,
+        videoMuted: false,
       });
+      await this.#openMedia(callId, video, operation);
     } catch (cause) {
-      this.#fail(cause, operation, "start_failed");
+      this.#fail(cause, operation, "place_failed");
     }
   }
 
-  async retry(): Promise<void> {
-    if (this.#lastStart === undefined)
-      throw new Error("No outgoing call is available to retry.");
-    await this.start(this.#lastStart);
+  async answer(options: { readonly video?: boolean } = {}): Promise<void> {
+    const current = this.getSnapshot();
+    if (current.status !== "incoming" || current.callId === undefined)
+      throw new Error("No incoming call is available to answer.");
+    const operation = this.#begin(false);
+    const video = options.video ?? current.video;
+    try {
+      await this.#backend.answer(current.callId, this.#abort.signal);
+      if (operation !== this.#operation) return;
+      this.transition({ ...callFields(current), status: "accepted", video });
+      await this.#openMedia(current.callId, video, operation);
+    } catch (cause) {
+      this.#fail(cause, operation, "answer_failed");
+    }
   }
-  async answer(): Promise<void> {
-    const callId = this.#requireCall();
-    await this.#command((signal) => this.#transport.answer(callId, signal));
-    this.transition({ ...callFields(this.getSnapshot()), phase: "connecting" });
-  }
+
   async reject(): Promise<void> {
-    await this.#finish("rejected", (id, signal) =>
-      this.#transport.reject(id, signal),
+    const current = this.#requireIncoming();
+    await this.#finish(current.callId, "rejected", (signal) =>
+      this.#backend.reject(current.callId, signal),
     );
   }
-  async hangUp(): Promise<void> {
-    await this.#finish("local_hangup", (id, signal) =>
-      this.#transport.hangUp(id, signal),
-    );
+  async hangup(): Promise<void> {
+    const callId = this.getSnapshot().callId;
+    if (callId !== undefined)
+      await this.#finish(callId, "hangup", (signal) =>
+        this.#backend.hangup(callId, signal),
+      );
   }
-  setDevice(kind: MediaDevice["kind"], deviceId: string): Promise<void> {
-    const id = this.#requireCall();
-    return this.#command((signal) =>
-      this.#transport.setDevice(id, kind, deviceId, signal),
-    );
-  }
-  async setMuted(muted: boolean): Promise<void> {
-    const id = this.#requireCall();
-    await this.#command((signal) =>
-      this.#transport.setMuted(id, muted, signal),
-    );
-    const current = this.getSnapshot();
-    this.transition({ ...callFields(current), phase: current.phase, muted });
-  }
-  async setVideoEnabled(videoEnabled: boolean): Promise<void> {
-    const id = this.#requireCall();
-    await this.#command((signal) =>
-      this.#transport.setVideoEnabled(id, videoEnabled, signal),
-    );
+  setMuted(muted: {
+    readonly audio?: boolean;
+    readonly video?: boolean;
+  }): void {
+    this.assertActive();
+    this.#media?.setMuted(muted);
     const current = this.getSnapshot();
     this.transition({
       ...callFields(current),
-      phase: current.phase,
-      videoEnabled,
+      status: current.status,
+      audioMuted: muted.audio ?? current.audioMuted,
+      videoMuted: muted.video ?? current.videoMuted,
     });
   }
-  sendReaction(emoji: string): Promise<void> {
-    const id = this.#requireCall();
-    return this.#command((signal) =>
-      this.#transport.sendReaction(id, emoji, signal),
-    );
+  get localStream(): MediaStream | undefined {
+    return this.#media?.localStream;
   }
-  async setHandRaised(handRaised: boolean): Promise<void> {
-    const id = this.#requireCall();
-    await this.#command((signal) =>
-      this.#transport.setHandRaised(id, handRaised, signal),
-    );
-    const current = this.getSnapshot();
-    this.transition({
-      ...callFields(current),
-      phase: current.phase,
-      handRaised,
-    });
-  }
-  admit(participantId: string): Promise<void> {
-    const id = this.#requireCall();
-    return this.#command((signal) =>
-      this.#transport.admit(id, participantId, signal),
-    );
-  }
-  deny(participantId: string): Promise<void> {
-    const id = this.#requireCall();
-    return this.#command((signal) =>
-      this.#transport.deny(id, participantId, signal),
-    );
-  }
-  async selectVideoParticipant(participantId?: string): Promise<void> {
-    const id = this.#requireCall();
-    await this.#command((signal) =>
-      this.#transport.selectVideoParticipant(id, participantId, signal),
-    );
-    const current = this.getSnapshot();
-    this.transition({
-      ...callFieldsWithoutSelection(current),
-      phase: current.phase,
-      ...(participantId === undefined
-        ? {}
-        : { selectedVideoParticipantId: participantId }),
-    });
+  get remoteStream(): MediaStream | undefined {
+    return this.#media?.remoteStream;
   }
 
   protected override onDispose(): void {
@@ -345,180 +195,157 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     this.#abort.abort();
     this.#unsubscribe?.();
     this.#unsubscribe = undefined;
-    void this.#transport.releaseMedia(this.getSnapshot().callId);
+    void this.#closeMedia();
   }
-  #beginOperation(): number {
+
+  #begin(closeMedia = true): number {
     this.assertActive();
     this.#operation += 1;
     this.#abort.abort();
     this.#abort = new AbortController();
+    if (closeMedia) void this.#closeMedia();
     return this.#operation;
   }
-  #requireCall(): string {
-    this.assertActive();
-    const id = this.getSnapshot().callId;
-    if (id === undefined) throw new Error("No call is active.");
-    return id;
-  }
-  #command(action: (signal: AbortSignal) => Promise<void>): Promise<void> {
-    const task = this.#commands.then(() => action(this.#abort.signal));
-    this.#commands = task.catch((cause) => {
-      this.#transitionError(cause, "command_failed");
-    });
-    return task;
-  }
-  async #finish(
-    reason: CallEndReason,
-    action: (callId: string, signal: AbortSignal) => Promise<void>,
+  async #openMedia(
+    callId: string,
+    video: boolean,
+    operation: number,
   ): Promise<void> {
-    const callId = this.#requireCall();
-    this.transition({ ...callFields(this.getSnapshot()), phase: "ending" });
-    try {
-      await this.#command((signal) => action(callId, signal));
+    this.transition({
+      ...callFields(this.getSnapshot()),
+      status: "connecting",
+    });
+    const media = await this.#mediaFactory.open(
+      callId,
+      video,
+      {
+        onConnectionState: (state) => this.#connection(callId, state),
+        onRemoteStream: () => {
+          const current = this.getSnapshot();
+          if (current.callId === callId)
+            this.transition({ ...callFields(current), status: current.status });
+        },
+      },
+      this.#abort.signal,
+    );
+    if (operation !== this.#operation) {
+      await media.close();
+      return;
+    }
+    this.#media = media;
+  }
+  #connection(callId: string, state: RTCPeerConnectionState): void {
+    const current = this.getSnapshot();
+    if (current.callId !== callId) return;
+    if (state === "connected")
+      this.transition({ ...callFields(current), status: "connected" });
+    else if (state === "failed" || state === "closed") {
+      void this.#closeMedia();
       this.transition({
-        ...callFields(this.getSnapshot()),
-        phase: "ended",
-        endReason: reason,
+        ...callFields(current),
+        status: "ended",
+        endReason: "connection_failed",
       });
-    } finally {
-      await this.#transport.releaseMedia(callId);
     }
   }
-  #receive(event: CallEvent): void {
+  async #finish(
+    callId: string,
+    reason: CallEndReason,
+    action: (signal: AbortSignal) => Promise<void>,
+  ): Promise<void> {
+    const operation = ++this.#operation;
+    try {
+      await action(this.#abort.signal);
+    } catch (cause) {
+      this.#fail(cause, operation, "call_control_failed");
+      return;
+    }
+    await this.#closeMedia();
+    if (operation === this.#operation)
+      this.transition({
+        ...callFields(this.getSnapshot()),
+        status: "ended",
+        endReason: reason,
+      });
+  }
+  #receive(event: CallLifecycleEvent): void {
     const current = this.getSnapshot();
     if (
-      "callId" in event &&
-      event.type !== "incoming" &&
+      event.type !== "incomingCall" &&
       current.callId !== undefined &&
-      event.callId !== undefined &&
       event.callId !== current.callId
     )
       return;
-    if (event.type === "incoming")
+    if (event.type === "incomingCall") {
+      if (!["idle", "ready", "ended"].includes(current.status)) return;
       this.transition({
-        ...callFields(current),
-        phase: "incoming",
-        callId: event.callId,
-        conversationId: event.conversationId,
+        status: "incoming",
+        callId: event.call.callId,
+        peer: event.call.from,
         direction: "incoming",
-        mediaKind: event.mediaKind,
+        video: event.call.video,
+        audioMuted: false,
+        videoMuted: false,
       });
-    else if (event.type === "phase")
+    } else if (event.type === "ended") {
+      void this.#closeMedia();
       this.transition({
         ...callFields(current),
-        phase: event.phase,
-        callId: event.callId,
+        status: "ended",
+        ...(event.reason === undefined ? {} : { endReason: event.reason }),
       });
-    else if (event.type === "participants")
+    } else if (event.type === "videostate") {
       this.transition({
         ...callFields(current),
-        phase: current.phase,
-        participants: event.participants,
+        status: current.status,
+        video: event.video,
       });
-    else if (event.type === "permission")
-      this.transition({
-        ...callFields(current),
-        phase: permissionPhase(event.permissions, current.devices),
-        permissions: event.permissions,
-      });
-    else if (event.type === "devices")
-      this.transition({
-        ...callFields(current),
-        phase: permissionPhase(current.permissions, event.devices),
-        devices: event.devices,
-      });
-    else if (event.type === "ended") {
-      this.transition({
-        ...callFields(current),
-        phase: "ended",
-        endReason: event.reason,
-      });
-      void this.#transport.releaseMedia(event.callId);
     } else {
-      this.#transitionError(event, event.code);
-      void this.#transport.releaseMedia(current.callId);
+      this.transition({ ...callFields(current), status: event.type });
     }
+  }
+  #requireIncoming(): CallsSnapshot & { callId: string } {
+    const current = this.getSnapshot();
+    if (current.status !== "incoming" || current.callId === undefined)
+      throw new Error("No incoming call is available to reject.");
+    return current as CallsSnapshot & { callId: string };
+  }
+  async #closeMedia(): Promise<void> {
+    const media = this.#media;
+    this.#media = undefined;
+    await media?.close();
   }
   #fail(cause: unknown, operation: number, code: string): void {
     if (operation !== this.#operation || this.#abort.signal.aborted) return;
-    this.#transitionError(cause, code);
-    void this.#transport.releaseMedia(this.getSnapshot().callId);
-  }
-  #transitionError(cause: unknown, code: string): void {
-    const error = isCallFailure(cause)
-      ? {
-          code: cause.code,
-          message: cause.message,
-          recoverable: cause.recoverable,
-        }
-      : {
-          code,
-          message:
-            cause instanceof Error ? cause.message : "Call operation failed.",
-          recoverable: true,
-        };
+    void this.#closeMedia();
     this.transition({
       ...callFields(this.getSnapshot()),
-      phase: "error",
-      error,
+      status: "error",
+      error: {
+        code,
+        message:
+          cause instanceof Error ? cause.message : "Call operation failed.",
+        recoverable: true,
+      },
     });
   }
 }
 
 function callFields(
   snapshot: CallsSnapshot,
-): Omit<CallsSnapshot, "revision" | "updatedAt" | "phase"> {
+): Omit<CallsSnapshot, "revision" | "updatedAt" | "status"> {
   return {
     ...(snapshot.callId === undefined ? {} : { callId: snapshot.callId }),
-    ...(snapshot.conversationId === undefined
-      ? {}
-      : { conversationId: snapshot.conversationId }),
+    ...(snapshot.peer === undefined ? {} : { peer: snapshot.peer }),
     ...(snapshot.direction === undefined
       ? {}
       : { direction: snapshot.direction }),
-    ...(snapshot.mediaKind === undefined
-      ? {}
-      : { mediaKind: snapshot.mediaKind }),
-    ...(snapshot.capabilities === undefined
-      ? {}
-      : { capabilities: snapshot.capabilities }),
-    devices: snapshot.devices,
-    permissions: snapshot.permissions,
-    participants: snapshot.participants,
-    ...(snapshot.selectedVideoParticipantId === undefined
-      ? {}
-      : { selectedVideoParticipantId: snapshot.selectedVideoParticipantId }),
-    muted: snapshot.muted,
-    videoEnabled: snapshot.videoEnabled,
-    handRaised: snapshot.handRaised,
+    video: snapshot.video,
+    audioMuted: snapshot.audioMuted,
+    videoMuted: snapshot.videoMuted,
     ...(snapshot.endReason === undefined
       ? {}
       : { endReason: snapshot.endReason }),
     ...(snapshot.error === undefined ? {} : { error: snapshot.error }),
   };
-}
-function callFieldsWithoutSelection(snapshot: CallsSnapshot) {
-  const fields = { ...callFields(snapshot) };
-  delete fields.selectedVideoParticipantId;
-  return fields;
-}
-function permissionPhase(
-  permissions: MediaPermissions,
-  devices: readonly MediaDevice[],
-): CallPhase {
-  if (permissions.microphone === "denied" || permissions.camera === "denied")
-    return "permission_denied";
-  if (devices.length === 0 || permissions.microphone === "unavailable")
-    return "devices_unavailable";
-  return "ready";
-}
-function isCallFailure(
-  value: unknown,
-): value is Extract<CallEvent, { type: "failure" }> {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "type" in value &&
-    value.type === "failure"
-  );
 }

@@ -1,178 +1,145 @@
 import { describe, expect, it, vi } from "vitest";
-
 import {
+  BrowserTransport,
   CallsController,
-  type CallEvent,
-  type CallsTransport,
+  CallsSignalingClient,
+  type CallLifecycleEvent,
+  type CallMediaFactory,
+  type CallMediaSession,
+  type CallsBackend,
 } from "../src/index.js";
 
-function fixtureTransport() {
-  let listener: ((event: CallEvent) => void) | undefined;
-  const unsubscribe = vi.fn();
-  const transport: CallsTransport = {
-    initialize: vi.fn(async () => ({
-      capabilities: {
-        video: true,
-        waitingRoom: true,
-        reactions: true,
-        handRaise: true,
-      },
-      devices: [
-        {
-          id: "mic-1",
-          kind: "audio_input" as const,
-          label: "Microphone",
-        },
-      ],
-      permissions: {
-        microphone: "granted" as const,
-        camera: "prompt" as const,
-      },
-    })),
-    subscribe: vi.fn((next) => {
-      listener = next;
-      return unsubscribe;
+function fixture() {
+  let emit: ((event: CallLifecycleEvent) => void) | undefined;
+  let connection: ((state: RTCPeerConnectionState) => void) | undefined;
+  const session: CallMediaSession = {
+    localStream: {} as MediaStream,
+    remoteStream: {} as MediaStream,
+    setMuted: vi.fn(),
+    audioEnabled: () => true,
+    videoEnabled: () => true,
+    close: vi.fn(async () => undefined),
+  };
+  const backend: CallsBackend = {
+    subscribe: vi.fn((listener) => {
+      emit = listener;
+      return vi.fn();
     }),
-    start: vi.fn(async () => ({ callId: "call-1" })),
+    place: vi.fn(async () => ({ callId: "call-1" })),
     answer: vi.fn(async () => undefined),
     reject: vi.fn(async () => undefined),
-    hangUp: vi.fn(async () => undefined),
-    setDevice: vi.fn(async () => undefined),
-    setMuted: vi.fn(async () => undefined),
-    setVideoEnabled: vi.fn(async () => undefined),
-    sendReaction: vi.fn(async () => undefined),
-    setHandRaised: vi.fn(async () => undefined),
-    admit: vi.fn(async () => undefined),
-    deny: vi.fn(async () => undefined),
-    selectVideoParticipant: vi.fn(async () => undefined),
-    releaseMedia: vi.fn(async () => undefined),
+    hangup: vi.fn(async () => undefined),
+  };
+  const media: CallMediaFactory = {
+    open: vi.fn(async (_id, _video, callbacks) => {
+      connection = callbacks.onConnectionState;
+      return session;
+    }),
   };
   return {
-    transport,
-    emit: (event: CallEvent) => listener?.(event),
-    unsubscribe,
+    backend,
+    media,
+    session,
+    emit: (event: CallLifecycleEvent) => emit?.(event),
+    connect: (state: RTCPeerConnectionState) => connection?.(state),
   };
 }
 
-describe("CallsController", () => {
-  it("discovers capabilities and moves an outgoing call through reconnecting without ending it", async () => {
-    const fixture = fixtureTransport();
-    const controller = new CallsController(fixture.transport);
-    await controller.initialize();
-    await controller.start({ conversationId: "chat-1", mediaKind: "video" });
-    expect(controller.getSnapshot()).toMatchObject({
-      phase: "ringing",
-      direction: "outgoing",
-      callId: "call-1",
+describe("CallsController (voip-v2 contract)", () => {
+  it("receives and answers an incoming WebRTC call", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "call-1", from: "+12025550123", video: true },
     });
-    fixture.emit({ type: "phase", callId: "call-1", phase: "connecting" });
-    fixture.emit({ type: "phase", callId: "call-1", phase: "active" });
-    fixture.emit({ type: "phase", callId: "call-1", phase: "reconnecting" });
-    expect(controller.getSnapshot().phase).toBe("reconnecting");
-    expect(controller.getSnapshot().endReason).toBeUndefined();
-    fixture.emit({ type: "phase", callId: "call-1", phase: "active" });
-    expect(controller.getSnapshot().phase).toBe("active");
-  });
-
-  it("handles incoming waiting-room calls, participants, hand raise and selection", async () => {
-    const fixture = fixtureTransport();
-    const controller = new CallsController(fixture.transport);
-    await controller.initialize();
-    fixture.emit({
-      type: "incoming",
-      callId: "call-2",
-      mediaKind: "audio",
-      conversationId: "chat-2",
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "incoming",
+      direction: "incoming",
+      video: true,
     });
     await controller.answer();
-    fixture.emit({ type: "phase", callId: "call-2", phase: "waiting_room" });
-    fixture.emit({
-      type: "participants",
-      callId: "call-2",
-      participants: [
-        {
-          id: "p-1",
-          displayName: "Ada",
-          role: "host",
-          state: "connected",
-          handRaised: true,
-        },
-      ],
-    });
-    await controller.admit("p-1");
-    await controller.setHandRaised(true);
-    await controller.selectVideoParticipant("p-1");
-    expect(fixture.transport.admit).toHaveBeenCalledWith(
-      "call-2",
-      "p-1",
+    expect(f.backend.answer).toHaveBeenCalledWith(
+      "call-1",
       expect.any(AbortSignal),
     );
-    expect(controller.getSnapshot()).toMatchObject({
-      phase: "waiting_room",
-      selectedVideoParticipantId: "p-1",
-    });
+    expect(controller.getSnapshot().status).toBe("connecting");
+    f.connect("connected");
+    expect(controller.getSnapshot().status).toBe("connected");
+    expect(controller.localStream).toBe(f.session.localStream);
   });
-
-  it("surfaces permission and device loss separately from signaling failures", async () => {
-    const fixture = fixtureTransport();
-    const controller = new CallsController(fixture.transport);
-    await controller.initialize();
-    fixture.emit({
-      type: "permission",
-      permissions: { microphone: "denied", camera: "unavailable" },
+  it("places with an idempotency key, mutes tracks, and hangs up", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media, {
+      createIdempotencyKey: () => "idem-1",
     });
-    expect(controller.getSnapshot()).toMatchObject({
-      phase: "permission_denied",
-    });
-    fixture.emit({
-      type: "permission",
-      permissions: { microphone: "granted", camera: "prompt" },
-    });
-    fixture.emit({ type: "devices", devices: [] });
-    expect(controller.getSnapshot()).toMatchObject({
-      phase: "devices_unavailable",
-      devices: [],
-    });
-    fixture.emit({
-      type: "failure",
-      code: "signaling_failed",
-      message: "offline",
-      recoverable: true,
-    });
-    expect(controller.getSnapshot()).toMatchObject({
-      phase: "error",
-      error: { code: "signaling_failed" },
-    });
-  });
-
-  it("serializes media commands and releases media on end and disposal", async () => {
-    const fixture = fixtureTransport();
-    const order: string[] = [];
-    vi.mocked(fixture.transport.setMuted).mockImplementation(async () => {
-      order.push("mute-start");
-      await Promise.resolve();
-      order.push("mute-end");
-    });
-    vi.mocked(fixture.transport.setVideoEnabled).mockImplementation(
-      async () => {
-        order.push("video");
-      },
+    controller.initialize();
+    await controller.place("+12025550123", { video: true });
+    expect(f.backend.place).toHaveBeenCalledWith(
+      { to: "+12025550123", video: true, idempotencyKey: "idem-1" },
+      expect.any(AbortSignal),
     );
-    const controller = new CallsController(fixture.transport);
-    await controller.initialize();
-    await controller.start({ conversationId: "chat-1", mediaKind: "video" });
-    await Promise.all([
-      controller.setMuted(true),
-      controller.setVideoEnabled(false),
-    ]);
-    expect(order).toEqual(["mute-start", "mute-end", "video"]);
-    fixture.emit({ type: "ended", callId: "call-1", reason: "remote_hangup" });
-    expect(controller.getSnapshot()).toMatchObject({
-      phase: "ended",
-      endReason: "remote_hangup",
+    controller.setMuted({ audio: true, video: true });
+    expect(f.session.setMuted).toHaveBeenCalledWith({
+      audio: true,
+      video: true,
     });
-    expect(fixture.transport.releaseMedia).toHaveBeenCalledTimes(1);
-    controller.dispose();
-    expect(fixture.unsubscribe).toHaveBeenCalledTimes(1);
+    await controller.hangup();
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      endReason: "hangup",
+    });
+    expect(f.session.close).toHaveBeenCalledTimes(1);
+  });
+  it("rejects incoming calls and ignores stale lifecycle events", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "call-1", from: "+1", video: false },
+    });
+    await controller.reject();
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      endReason: "rejected",
+    });
+    f.emit({ type: "connected", callId: "old-call" });
+    expect(controller.getSnapshot().status).toBe("ended");
+  });
+});
+
+describe("CallsSignalingClient", () => {
+  it("uses the voip-v2 REST offer, ICE, polling, and teardown paths", async () => {
+    const fetch = vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      const body = url.endsWith("/offer")
+        ? { data: { sdp: "answer", iceServers: [] } }
+        : url.endsWith("/candidates")
+          ? { data: { candidates: [] } }
+          : { success: true };
+      return new Response(JSON.stringify(body), {
+        status: url.endsWith("/candidate") ? 202 : 200,
+        headers: { "content-type": "application/json" },
+      });
+    });
+    const transport = new BrowserTransport({
+      baseUrl: "https://api.polymorfa.test",
+      getClientToken: async () => "pmfa_ct_test",
+      fetch,
+      maxNetworkRetries: 0,
+    });
+    const signaling = new CallsSignalingClient(transport);
+    await signaling.offer("call/1", "offer");
+    await signaling.candidate("call/1", { candidate: "ice" });
+    await signaling.candidates("call/1");
+    await signaling.teardown("call/1");
+    expect(fetch.mock.calls.map(([input]) => String(input))).toEqual([
+      "https://api.polymorfa.test/api/voip/calls/call%2F1/offer",
+      "https://api.polymorfa.test/api/voip/calls/call%2F1/candidate",
+      "https://api.polymorfa.test/api/voip/calls/call%2F1/candidates",
+      "https://api.polymorfa.test/api/voip/calls/call%2F1",
+    ]);
   });
 });
