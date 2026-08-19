@@ -23,6 +23,7 @@ export {
 } from "./errors.js";
 export * from "./chat/index.js";
 export * from "./calls/index.js";
+export * from "./messaging/index.js";
 export {
   ClientTokenManager,
   createClientTokenProvider,

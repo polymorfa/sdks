@@ -31,7 +31,7 @@ The direct browser client may expose only:
 - message send, reaction, typing, seen, and star actions;
 - presence reads and subscriptions;
 - contact list, retrieve, picture, and check reads;
-- widget start, status, QR, pairing code, embedded signup, and handoff actions.
+- widget start, status, QR, pairing code, and handoff actions.
 
 The client binds one session at construction. Every path segment is encoded,
 and mutation retries remain opt-in through an idempotency key.

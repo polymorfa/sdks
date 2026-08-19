@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 import { describe, expect, it } from "vitest";
+import { BrowserMessagingClient } from "../../browser/src/index.js";
 import { MessagingClient, PlatformClient } from "../src/index.js";
 
 const checker = fileURLToPath(
@@ -145,9 +146,9 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "f156af2dda13e62b6b106a542fdedb39524bdb66",
       total: 331,
-      covered: 63,
+      covered: 73,
       partial: 0,
-      missing: 208,
+      missing: 198,
       excluded: 60,
       changed: 0,
     });
@@ -164,6 +165,10 @@ describe("coverage checker", () => {
         credential: { type: "apiKey", value: "pmfa_messaging" },
       }),
       PlatformClient: new PlatformClient({ apiKey: "pmfa_platform" }),
+      BrowserMessagingClient: new BrowserMessagingClient({
+        session: "coverage",
+        getClientToken: async () => "pmfa_ct_coverage",
+      }),
     };
 
     for (const operation of ledger.operations) {
