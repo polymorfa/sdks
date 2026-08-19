@@ -36,10 +36,9 @@ export class CursorPage<T> implements AsyncIterable<T> {
   }
 
   async *[Symbol.asyncIterator](): AsyncIterator<T> {
-    let page: CursorPage<T> | null = this;
-    while (page !== null) {
-      for (const item of page.items) yield item;
-      page = await page.nextPage();
-    }
+    for (const item of this.items) yield item;
+    const next = await this.nextPage();
+    if (next === null) return;
+    for await (const item of next) yield item;
   }
 }

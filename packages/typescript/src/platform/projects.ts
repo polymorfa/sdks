@@ -13,12 +13,26 @@ import type {
 export class ProjectsResource {
   constructor(private readonly transport: HttpTransport) {}
 
-  list(options: RequestOptions = {}): Promise<ApiResponse<DataEnvelope<readonly ProjectWithStats[]>>> {
-    return this.transport.request({ method: "GET", path: "/v1/projects", ...options });
+  list(
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<readonly ProjectWithStats[]>>> {
+    return this.transport.request({
+      method: "GET",
+      path: "/v1/projects",
+      ...options,
+    });
   }
 
-  create(body: CreateProjectRequest, options: RequestOptions = {}): Promise<ApiResponse<DataEnvelope<Project>>> {
-    return this.transport.request({ method: "POST", path: "/v1/projects", body, ...options });
+  create(
+    body: CreateProjectRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<Project>>> {
+    return this.transport.request({
+      method: "POST",
+      path: "/v1/projects",
+      body,
+      ...options,
+    });
   }
 
   requestProductionEnrollment(

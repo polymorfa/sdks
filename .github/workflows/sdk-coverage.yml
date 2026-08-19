@@ -1,0 +1,122 @@
+name: SDK coverage
+
+on:
+  workflow_call:
+    inputs:
+      source_repository:
+        description: Source repository containing the API contracts
+        required: true
+        type: string
+      source_sha:
+        description: Exact source revision to inspect
+        required: true
+        type: string
+      source_branch:
+        description: Source branch whose contract changed
+        required: true
+        type: string
+      sdk_target_branch:
+        description: Matching SDK branch and coverage ledger
+        required: true
+        type: string
+      messaging_spec_path:
+        description: Repository-relative Messaging OpenAPI path
+        required: true
+        type: string
+      platform_spec_path:
+        description: Repository-relative Platform OpenAPI path
+        required: true
+        type: string
+    secrets:
+      SDK_COVERAGE_APP_ID:
+        required: true
+      SDK_COVERAGE_APP_PRIVATE_KEY:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  synchronize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce branch parity
+        env:
+          SOURCE_BRANCH: ${{ inputs.source_branch }}
+          SDK_TARGET_BRANCH: ${{ inputs.sdk_target_branch }}
+        run: |
+          if [[ "$SOURCE_BRANCH" != "dev" && "$SOURCE_BRANCH" != "main" ]]; then
+            echo "source_branch must be dev or main" >&2
+            exit 1
+          fi
+          if [[ "$SOURCE_BRANCH" != "$SDK_TARGET_BRANCH" ]]; then
+            echo "source_branch and sdk_target_branch must match" >&2
+            exit 1
+          fi
+
+      - name: Check out source contracts
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.source_repository }}
+          ref: ${{ inputs.source_sha }}
+          path: source
+          persist-credentials: false
+
+      - name: Create SDK repository token
+        id: sdk-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.SDK_COVERAGE_APP_ID }}
+          private-key: ${{ secrets.SDK_COVERAGE_APP_PRIVATE_KEY }}
+          owner: polymorfa
+          repositories: sdks
+          permission-contents: read
+          permission-issues: write
+
+      - name: Check out SDK coverage ledger
+        uses: actions/checkout@v6
+        with:
+          repository: polymorfa/sdks
+          ref: ${{ inputs.sdk_target_branch }}
+          path: sdk
+          token: ${{ steps.sdk-token.outputs.token }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: sdk/package-lock.json
+
+      - name: Install SDK tooling
+        working-directory: sdk
+        run: npm ci
+
+      - name: Compare contracts with handwritten coverage
+        env:
+          MESSAGING_SPEC_PATH: ${{ inputs.messaging_spec_path }}
+          PLATFORM_SPEC_PATH: ${{ inputs.platform_spec_path }}
+        working-directory: sdk
+        run: |
+          node scripts/check-coverage.mjs \
+            --messaging "../source/$MESSAGING_SPEC_PATH" \
+            --platform "../source/$PLATFORM_SPEC_PATH" \
+            --ledger contracts/coverage.json \
+            --report "$RUNNER_TEMP/sdk-coverage.json"
+
+      - name: Synchronize coverage issues
+        env:
+          GITHUB_TOKEN: ${{ steps.sdk-token.outputs.token }}
+          SDK_TARGET_BRANCH: ${{ inputs.sdk_target_branch }}
+          SOURCE_REPOSITORY: ${{ inputs.source_repository }}
+          SOURCE_BRANCH: ${{ inputs.source_branch }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        working-directory: sdk
+        run: |
+          node scripts/sync-coverage-issues.mjs \
+            --report "$RUNNER_TEMP/sdk-coverage.json" \
+            --repository polymorfa/sdks \
+            --target-branch "$SDK_TARGET_BRANCH" \
+            --source-repository "$SOURCE_REPOSITORY" \
+            --source-branch "$SOURCE_BRANCH" \
+            --source-sha "$SOURCE_SHA"

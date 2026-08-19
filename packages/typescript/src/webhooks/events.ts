@@ -70,7 +70,8 @@ export interface CloudMessagePayload {
   readonly [key: string]: unknown;
 }
 
-export type MessageReceivedPayload = LinkedDeviceMessagePayload | CloudMessagePayload;
+export type MessageReceivedPayload =
+  LinkedDeviceMessagePayload | CloudMessagePayload;
 
 export interface MessageSentPayload {
   readonly id: string;
@@ -154,10 +155,16 @@ export interface WebhookEventOf<TEvent extends string, TPayload> {
 }
 
 export type KnownWebhookEvent = {
-  [TEvent in KnownWebhookEventType]: WebhookEventOf<TEvent, WebhookPayloadMap[TEvent]>;
+  [TEvent in KnownWebhookEventType]: WebhookEventOf<
+    TEvent,
+    WebhookPayloadMap[TEvent]
+  >;
 }[KnownWebhookEventType];
 
-export type MessageReceivedEvent = WebhookEventOf<"message.received", MessageReceivedPayload>;
+export type MessageReceivedEvent = WebhookEventOf<
+  "message.received",
+  MessageReceivedPayload
+>;
 export type UnknownWebhookEvent = WebhookEventOf<string, unknown>;
 export type WebhookEvent = KnownWebhookEvent | UnknownWebhookEvent;
 

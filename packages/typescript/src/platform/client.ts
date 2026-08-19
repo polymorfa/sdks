@@ -1,4 +1,8 @@
-import { assertServerRuntime, validatePlatformApiKey, type PlatformClientOptions } from "../credentials.js";
+import {
+  assertServerRuntime,
+  validatePlatformApiKey,
+  type PlatformClientOptions,
+} from "../credentials.js";
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
 import { OrganizationsResource } from "./organizations.js";
@@ -19,7 +23,9 @@ export class PlatformClient {
       authorization: `Bearer ${apiKey}`,
       timeoutMs: options.timeoutMs ?? 30_000,
       maxNetworkRetries: options.maxNetworkRetries ?? 2,
-      ...(options.apiVersion === undefined ? {} : { apiVersion: options.apiVersion }),
+      ...(options.apiVersion === undefined
+        ? {}
+        : { apiVersion: options.apiVersion }),
       ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
     });
     this.organizations = new OrganizationsResource(transport);

@@ -1,7 +1,9 @@
-export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
+export type HttpMethod =
+  "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
 
 export type QueryPrimitive = string | number | boolean;
-export type QueryValue = QueryPrimitive | readonly QueryPrimitive[] | null | undefined;
+export type QueryValue =
+  QueryPrimitive | readonly QueryPrimitive[] | null | undefined;
 
 export interface RequestOptions {
   readonly apiVersion?: string;
@@ -39,6 +41,9 @@ export interface TransportOptions {
   readonly timeoutMs: number;
   readonly maxNetworkRetries: number;
   readonly fetch?: typeof globalThis.fetch;
-  readonly sleep?: (milliseconds: number, signal?: AbortSignal) => Promise<void>;
+  readonly sleep?: (
+    milliseconds: number,
+    signal?: AbortSignal,
+  ) => Promise<void>;
   readonly random?: () => number;
 }

@@ -9,7 +9,10 @@ export async function decodeResponseBody(response: Response): Promise<unknown> {
   }
 
   const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
-  if (contentType.includes("application/json") || contentType.includes("+json")) {
+  if (
+    contentType.includes("application/json") ||
+    contentType.includes("+json")
+  ) {
     try {
       return JSON.parse(text) as unknown;
     } catch {
@@ -19,7 +22,10 @@ export async function decodeResponseBody(response: Response): Promise<unknown> {
   return text;
 }
 
-export function encodeRequestBody(body: unknown): { body: BodyInit | undefined; contentType?: string } {
+export function encodeRequestBody(body: unknown): {
+  body: BodyInit | undefined;
+  contentType?: string;
+} {
   if (body === undefined) {
     return { body: undefined };
   }

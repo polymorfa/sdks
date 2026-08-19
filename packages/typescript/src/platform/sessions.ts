@@ -22,7 +22,9 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "GET",
       path: "/v1/sessions",
-      ...(params.projectId === undefined ? {} : { query: { projectId: params.projectId } }),
+      ...(params.projectId === undefined
+        ? {}
+        : { query: { projectId: params.projectId } }),
       ...options,
     });
   }
@@ -32,11 +34,23 @@ export class PlatformSessionsResource {
     body: SessionProjectContext = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<SessionStopResult>>> {
-    return this.transport.request({ method: "POST", path: `${sessionPath(sessionId)}/stop`, body, ...options });
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionPath(sessionId)}/stop`,
+      body,
+      ...options,
+    });
   }
 
-  delete(sessionId: string, options: RequestOptions = {}): Promise<ApiResponse<DataEnvelope<SessionRemoveResult>>> {
-    return this.transport.request({ method: "DELETE", path: sessionPath(sessionId), ...options });
+  delete(
+    sessionId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SessionRemoveResult>>> {
+    return this.transport.request({
+      method: "DELETE",
+      path: sessionPath(sessionId),
+      ...options,
+    });
   }
 
   setTierOverride(
@@ -44,14 +58,24 @@ export class PlatformSessionsResource {
     body: SessionTierOverrideRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<ManagedSession>>> {
-    return this.transport.request({ method: "PATCH", path: sessionPath(sessionId), body, ...options });
+    return this.transport.request({
+      method: "PATCH",
+      path: sessionPath(sessionId),
+      body,
+      ...options,
+    });
   }
 
   createTesting(
     body: CreateTestingSessionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<string>>> {
-    return this.transport.request({ method: "POST", path: "/v1/sessions/testing", body, ...options });
+    return this.transport.request({
+      method: "POST",
+      path: "/v1/sessions/testing",
+      body,
+      ...options,
+    });
   }
 }
 

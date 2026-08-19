@@ -17,7 +17,10 @@ export class PolymorfaError extends Error {
   readonly metadata: ResponseMetadata | undefined;
 
   constructor(message: string, options: PolymorfaErrorOptions = {}) {
-    super(message, options.cause === undefined ? undefined : { cause: options.cause });
+    super(
+      message,
+      options.cause === undefined ? undefined : { cause: options.cause },
+    );
     this.name = new.target.name;
     this.code = options.code;
     this.status = options.status;

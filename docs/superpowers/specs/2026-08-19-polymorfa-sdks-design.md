@@ -94,20 +94,20 @@ build and test tools. No package imports unpublished repository internals.
 
 ## Published package identities
 
-| Surface | Package identity | Initial priority |
-|---|---|---|
-| TypeScript server client | `@polymorfa/sdk` | Required |
-| Browser controllers | `@polymorfa/browser` | Required |
-| Shared UI contract | `@polymorfa/ui` | Required |
-| Web Components | `@polymorfa/elements` | Required |
-| React bindings | `@polymorfa/react` | Required |
-| Next.js helpers | `@polymorfa/nextjs` | Required |
-| Development assistant | `@polymorfa/devtools` | Required |
-| Python | distribution `polymorfa-sdk`, import `polymorfa` | Required |
-| Go | `github.com/polymorfa/sdks/go` | Required |
-| PHP | `polymorfa/sdk` | Required |
-| .NET | `Polymorfa.Sdk` | Required |
-| Rust | `polymorfa-sdk` | Required |
+| Surface                  | Package identity                                 | Initial priority |
+| ------------------------ | ------------------------------------------------ | ---------------- |
+| TypeScript server client | `@polymorfa/sdk`                                 | Required         |
+| Browser controllers      | `@polymorfa/browser`                             | Required         |
+| Shared UI contract       | `@polymorfa/ui`                                  | Required         |
+| Web Components           | `@polymorfa/elements`                            | Required         |
+| React bindings           | `@polymorfa/react`                               | Required         |
+| Next.js helpers          | `@polymorfa/nextjs`                              | Required         |
+| Development assistant    | `@polymorfa/devtools`                            | Required         |
+| Python                   | distribution `polymorfa-sdk`, import `polymorfa` | Required         |
+| Go                       | `github.com/polymorfa/sdks/go`                   | Required         |
+| PHP                      | `polymorfa/sdk`                                  | Required         |
+| .NET                     | `Polymorfa.Sdk`                                  | Required         |
+| Rust                     | `polymorfa-sdk`                                  | Required         |
 
 Registry release workflows may be prepared and validated, but no public
 package is published without an explicit release instruction and the required
@@ -123,10 +123,10 @@ registry identities and credentials.
 The initial bootstrap reads both specifications from the monorepo `dev`
 branch. After bootstrap, SDK branches track matching monorepo branches:
 
-| Monorepo branch | Reusable workflow ref | SDK target branch |
-|---|---|---|
-| `dev` | `polymorfa/sdks/.github/workflows/sdk-coverage.yml@dev` | `dev` |
-| `main` | `polymorfa/sdks/.github/workflows/sdk-coverage.yml@main` | `main` |
+| Monorepo branch | Reusable workflow ref                                    | SDK target branch |
+| --------------- | -------------------------------------------------------- | ----------------- |
+| `dev`           | `polymorfa/sdks/.github/workflows/sdk-coverage.yml@dev`  | `dev`             |
+| `main`          | `polymorfa/sdks/.github/workflows/sdk-coverage.yml@main` | `main`            |
 
 `main` is stable in both repositories. `dev` is the integration branch.
 

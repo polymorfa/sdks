@@ -14,8 +14,18 @@ import {
 } from "../errors.js";
 import { SDK_VERSION } from "../version.js";
 import { decodeResponseBody, encodeRequestBody } from "./body.js";
-import { canRetryRequest, defaultSleep, isRetryableStatus, retryDelayMs } from "./retry.js";
-import type { ApiResponse, RawRequest, ResponseMetadata, TransportOptions } from "./types.js";
+import {
+  canRetryRequest,
+  defaultSleep,
+  isRetryableStatus,
+  retryDelayMs,
+} from "./retry.js";
+import type {
+  ApiResponse,
+  RawRequest,
+  ResponseMetadata,
+  TransportOptions,
+} from "./types.js";
 
 export class HttpTransport {
   readonly #baseUrl: string;
@@ -24,15 +34,26 @@ export class HttpTransport {
   readonly #timeoutMs: number;
   readonly #maxNetworkRetries: number;
   readonly #fetch: typeof globalThis.fetch;
-  readonly #sleep: (milliseconds: number, signal?: AbortSignal) => Promise<void>;
+  readonly #sleep: (
+    milliseconds: number,
+    signal?: AbortSignal,
+  ) => Promise<void>;
   readonly #random: () => number;
 
   constructor(options: TransportOptions) {
     this.#baseUrl = options.baseUrl.replace(/\/+$/, "");
     this.#authorization = options.authorization;
     this.#apiVersion = options.apiVersion;
-    this.#timeoutMs = assertNonNegativeInteger(options.timeoutMs, "timeoutMs", false);
-    this.#maxNetworkRetries = assertNonNegativeInteger(options.maxNetworkRetries, "maxNetworkRetries", true);
+    this.#timeoutMs = assertNonNegativeInteger(
+      options.timeoutMs,
+      "timeoutMs",
+      false,
+    );
+    this.#maxNetworkRetries = assertNonNegativeInteger(
+      options.maxNetworkRetries,
+      "maxNetworkRetries",
+      true,
+    );
     this.#fetch = options.fetch ?? globalThis.fetch;
     this.#sleep = options.sleep ?? defaultSleep;
     this.#random = options.random ?? Math.random;
@@ -58,8 +79,15 @@ export class HttpTransport {
         if (response.ok) {
           return Object.freeze({ data: data as T, metadata });
         }
-        if (eligible && attempt <= retries && isRetryableStatus(response.status)) {
-          await this.#sleep(retryDelayMs(response, attempt, this.#random), request.signal);
+        if (
+          eligible &&
+          attempt <= retries &&
+          isRetryableStatus(response.status)
+        ) {
+          await this.#sleep(
+            retryDelayMs(response, attempt, this.#random),
+            request.signal,
+          );
           continue;
         }
         throw apiError(response, data, metadata);
@@ -68,29 +96,44 @@ export class HttpTransport {
           throw error;
         }
         if (request.signal?.aborted === true) {
-          throw new PolymorfaCancelledError("The request was cancelled by the caller.", {
-            code: "request_cancelled",
-            cause: error,
-          });
+          throw new PolymorfaCancelledError(
+            "The request was cancelled by the caller.",
+            {
+              code: "request_cancelled",
+              cause: error,
+            },
+          );
         }
         if (error instanceof RequestTimeout) {
           if (eligible && attempt <= retries) {
-            await this.#sleep(retryDelayMs(undefined, attempt, this.#random), request.signal);
+            await this.#sleep(
+              retryDelayMs(undefined, attempt, this.#random),
+              request.signal,
+            );
             continue;
           }
-          throw new PolymorfaTimeoutError(`The request exceeded its ${error.timeoutMs}ms timeout.`, {
-            code: "request_timeout",
-            cause: error,
-          });
+          throw new PolymorfaTimeoutError(
+            `The request exceeded its ${error.timeoutMs}ms timeout.`,
+            {
+              code: "request_timeout",
+              cause: error,
+            },
+          );
         }
         if (eligible && attempt <= retries) {
-          await this.#sleep(retryDelayMs(undefined, attempt, this.#random), request.signal);
+          await this.#sleep(
+            retryDelayMs(undefined, attempt, this.#random),
+            request.signal,
+          );
           continue;
         }
-        throw new PolymorfaConnectionError("The request could not reach the Polymorfa API.", {
-          code: "connection_error",
-          cause: error,
-        });
+        throw new PolymorfaConnectionError(
+          "The request could not reach the Polymorfa API.",
+          {
+            code: "connection_error",
+            cause: error,
+          },
+        );
       }
     }
   }
@@ -113,7 +156,11 @@ export class HttpTransport {
       headers.set("content-type", encoded.contentType);
     }
 
-    const timeoutMs = assertNonNegativeInteger(request.timeoutMs ?? this.#timeoutMs, "timeoutMs", false);
+    const timeoutMs = assertNonNegativeInteger(
+      request.timeoutMs ?? this.#timeoutMs,
+      "timeoutMs",
+      false,
+    );
     const controller = new AbortController();
     let timedOut = false;
     const timer = setTimeout(() => {
@@ -147,7 +194,10 @@ export class HttpTransport {
 }
 
 class RequestTimeout extends Error {
-  constructor(readonly timeoutMs: number, cause: unknown) {
+  constructor(
+    readonly timeoutMs: number,
+    cause: unknown,
+  ) {
     super("Request timed out.", { cause });
   }
 }
@@ -169,19 +219,33 @@ function requestUrl(
 }
 
 function validatePath(path: string): void {
-  if (!path.startsWith("/") || path.startsWith("//") || URL.canParse(path)) {
-    throw new PolymorfaValidationError("Raw request paths must be relative and begin with a single slash.", {
-      code: "invalid_request_path",
-    });
+  if (
+    !path.startsWith("/") ||
+    path.startsWith("//") ||
+    path.includes("\\") ||
+    URL.canParse(path)
+  ) {
+    throw new PolymorfaValidationError(
+      "Raw request paths must be relative and begin with a single slash.",
+      {
+        code: "invalid_request_path",
+      },
+    );
   }
 }
 
-function responseMetadata(response: Response, attempts: number): ResponseMetadata {
+function responseMetadata(
+  response: Response,
+  attempts: number,
+): ResponseMetadata {
   const headerRecord: Record<string, string> = {};
   response.headers.forEach((value, key) => {
     headerRecord[key] = value;
   });
-  const requestId = response.headers.get("x-request-id") ?? response.headers.get("request-id") ?? undefined;
+  const requestId =
+    response.headers.get("x-request-id") ??
+    response.headers.get("request-id") ??
+    undefined;
   const apiVersion = response.headers.get("polymorfa-version") ?? undefined;
   return Object.freeze({
     status: response.status,
@@ -192,21 +256,33 @@ function responseMetadata(response: Response, attempts: number): ResponseMetadat
   });
 }
 
-function apiError(response: Response, body: unknown, metadata: ResponseMetadata): PolymorfaError {
+function apiError(
+  response: Response,
+  body: unknown,
+  metadata: ResponseMetadata,
+): PolymorfaError {
   const options: PolymorfaErrorOptions = {
     status: response.status,
-    ...(metadata.requestId === undefined ? {} : { requestId: metadata.requestId }),
+    ...(metadata.requestId === undefined
+      ? {}
+      : { requestId: metadata.requestId }),
     details: body,
     metadata,
     ...errorCode(body),
   };
   const message = errorMessage(body, response.status);
-  if (response.status === 400 || response.status === 422) return new PolymorfaValidationError(message, options);
-  if (response.status === 401) return new PolymorfaAuthenticationError(message, options);
-  if (response.status === 403) return new PolymorfaAuthorizationError(message, options);
-  if (response.status === 404) return new PolymorfaNotFoundError(message, options);
-  if (response.status === 409) return new PolymorfaConflictError(message, options);
-  if (response.status === 429) return new PolymorfaRateLimitError(message, options);
+  if (response.status === 400 || response.status === 422)
+    return new PolymorfaValidationError(message, options);
+  if (response.status === 401)
+    return new PolymorfaAuthenticationError(message, options);
+  if (response.status === 403)
+    return new PolymorfaAuthorizationError(message, options);
+  if (response.status === 404)
+    return new PolymorfaNotFoundError(message, options);
+  if (response.status === 409)
+    return new PolymorfaConflictError(message, options);
+  if (response.status === 429)
+    return new PolymorfaRateLimitError(message, options);
   if (response.status >= 500) return new PolymorfaServerError(message, options);
   return new PolymorfaError(message, options);
 }
@@ -229,11 +305,18 @@ function errorCode(body: unknown): Pick<PolymorfaErrorOptions, "code"> {
   return {};
 }
 
-function assertNonNegativeInteger(value: number, field: string, allowZero: boolean): number {
+function assertNonNegativeInteger(
+  value: number,
+  field: string,
+  allowZero: boolean,
+): number {
   if (!Number.isInteger(value) || value < 0 || (!allowZero && value === 0)) {
-    throw new PolymorfaValidationError(`${field} must be ${allowZero ? "a non-negative" : "a positive"} integer.`, {
-      code: "invalid_request_option",
-    });
+    throw new PolymorfaValidationError(
+      `${field} must be ${allowZero ? "a non-negative" : "a positive"} integer.`,
+      {
+        code: "invalid_request_option",
+      },
+    );
   }
   return value;
 }

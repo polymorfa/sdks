@@ -1,0 +1,60 @@
+import { describe, expect, expectTypeOf, it } from "vitest";
+
+import {
+  CursorPage,
+  MessagingClient,
+  PlatformClient,
+  PolymorfaAuthenticationError,
+  PolymorfaCancelledError,
+  PolymorfaConfigurationError,
+  PolymorfaError,
+  PolymorfaRateLimitError,
+  PolymorfaTimeoutError,
+  constructWebhookEvent,
+  isEvent,
+  verifyWebhookSignature,
+  type ApiResponse,
+  type CreateProjectRequest,
+  type CreateSessionRequest,
+  type MessageReceivedEvent,
+  type MessagingClientOptions,
+  type PlatformClientOptions,
+  type RawRequest,
+  type RequestOptions,
+  type ResponseMetadata,
+  type SendMessageRequest,
+  type WebhookEvent,
+} from "../src/index.js";
+
+describe("public exports", () => {
+  it("exposes every runtime dependency required by the CLI", () => {
+    expect([
+      MessagingClient,
+      PlatformClient,
+      CursorPage,
+      PolymorfaError,
+      PolymorfaConfigurationError,
+      PolymorfaAuthenticationError,
+      PolymorfaRateLimitError,
+      PolymorfaTimeoutError,
+      PolymorfaCancelledError,
+      constructWebhookEvent,
+      verifyWebhookSignature,
+      isEvent,
+    ]).toHaveLength(12);
+  });
+
+  it("exposes every public CLI-facing type from one entrypoint", () => {
+    expectTypeOf<ApiResponse<unknown>>().toHaveProperty("metadata");
+    expectTypeOf<ResponseMetadata>().toHaveProperty("requestId");
+    expectTypeOf<RequestOptions>().toHaveProperty("signal");
+    expectTypeOf<RawRequest>().toHaveProperty("path");
+    expectTypeOf<MessagingClientOptions>().toHaveProperty("credential");
+    expectTypeOf<PlatformClientOptions>().toHaveProperty("apiKey");
+    expectTypeOf<CreateSessionRequest>().toHaveProperty("projectId");
+    expectTypeOf<CreateProjectRequest>().toHaveProperty("name");
+    expectTypeOf<SendMessageRequest>().toHaveProperty("chatId");
+    expectTypeOf<WebhookEvent>().toHaveProperty("event");
+    expectTypeOf<MessageReceivedEvent>().toHaveProperty("payload");
+  });
+});

@@ -3,15 +3,25 @@ import type { HttpMethod } from "./types.js";
 const SAFE_METHODS = new Set<HttpMethod>(["GET", "HEAD", "OPTIONS"]);
 const RETRYABLE_STATUSES = new Set([408, 409, 429]);
 
-export function canRetryRequest(method: HttpMethod, idempotencyKey: string | undefined): boolean {
-  return SAFE_METHODS.has(method) || (idempotencyKey !== undefined && idempotencyKey.length > 0);
+export function canRetryRequest(
+  method: HttpMethod,
+  idempotencyKey: string | undefined,
+): boolean {
+  return (
+    SAFE_METHODS.has(method) ||
+    (idempotencyKey !== undefined && idempotencyKey.length > 0)
+  );
 }
 
 export function isRetryableStatus(status: number): boolean {
   return RETRYABLE_STATUSES.has(status) || status >= 500;
 }
 
-export function retryDelayMs(response: Response | undefined, attempt: number, random: () => number): number {
+export function retryDelayMs(
+  response: Response | undefined,
+  attempt: number,
+  random: () => number,
+): number {
   const retryAfter = response?.headers.get("retry-after");
   if (retryAfter !== null && retryAfter !== undefined) {
     const seconds = Number(retryAfter);
@@ -28,7 +38,10 @@ export function retryDelayMs(response: Response | undefined, attempt: number, ra
   return Math.floor(ceiling * (0.5 + random() * 0.5));
 }
 
-export async function defaultSleep(milliseconds: number, signal?: AbortSignal): Promise<void> {
+export async function defaultSleep(
+  milliseconds: number,
+  signal?: AbortSignal,
+): Promise<void> {
   if (signal?.aborted === true) {
     throw signal.reason;
   }

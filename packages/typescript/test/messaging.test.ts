@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, it } from "vitest";
 
 import { MessagingClient } from "../src/messaging/client.js";
-import { startTestServer, type RecordedRequest, type TestServer } from "./support/http-server.js";
+import {
+  startTestServer,
+  type RecordedRequest,
+  type TestServer,
+} from "./support/http-server.js";
 
 const servers: TestServer[] = [];
 
@@ -9,10 +13,16 @@ afterEach(async () => {
   await Promise.all(servers.splice(0).map((server) => server.close()));
 });
 
-async function messagingServer(): Promise<{ client: MessagingClient; requests: RecordedRequest[] }> {
+async function messagingServer(): Promise<{
+  client: MessagingClient;
+  requests: RecordedRequest[];
+}> {
   const server = await startTestServer(() => ({
     status: 200,
-    headers: { "content-type": "application/json", "x-request-id": "req_messaging" },
+    headers: {
+      "content-type": "application/json",
+      "x-request-id": "req_messaging",
+    },
     body: '{"success":true,"data":{},"message":"accepted","operationId":"op_1"}',
   }));
   servers.push(server);
@@ -35,7 +45,11 @@ describe("MessagingClient sessions", () => {
       { idempotencyKey: "session-support" },
     );
 
-    expect(requests[0]).toMatchObject({ method: "GET", path: "/api/sessions", body: "" });
+    expect(requests[0]).toMatchObject({
+      method: "GET",
+      path: "/api/sessions",
+      body: "",
+    });
     expect(requests[1]).toMatchObject({
       method: "POST",
       path: "/api/sessions",
@@ -90,10 +104,24 @@ describe("MessagingClient messages", () => {
 
   it("maps seen, typing, reaction, and star actions", async () => {
     const { client, requests } = await messagingServer();
-    await client.messages.markSeen("support", { chatId: "chat", messageId: "m1" });
-    await client.messages.setTyping("support", { chatId: "chat", state: "recording" });
-    await client.messages.react("support", { chatId: "chat", messageId: "m1", reaction: "👍" });
-    await client.messages.star("support", { chatId: "chat", messageId: "m1", star: true });
+    await client.messages.markSeen("support", {
+      chatId: "chat",
+      messageId: "m1",
+    });
+    await client.messages.setTyping("support", {
+      chatId: "chat",
+      state: "recording",
+    });
+    await client.messages.react("support", {
+      chatId: "chat",
+      messageId: "m1",
+      reaction: "👍",
+    });
+    await client.messages.star("support", {
+      chatId: "chat",
+      messageId: "m1",
+      star: true,
+    });
 
     expect(requests.map(({ path }) => path)).toEqual([
       "/api/support/messages/seen",
@@ -127,17 +155,23 @@ describe("MessagingClient webhooks", () => {
       "DELETE /api/webhooks/hook%2Fa",
     ]);
     expect(requests[1]?.body).toContain('"hmacKey":"fixture-secret"');
-    expect(requests.every(({ path }) => !path.includes("fixture-secret"))).toBe(true);
+    expect(requests.every(({ path }) => !path.includes("fixture-secret"))).toBe(
+      true,
+    );
   });
 
   it("uses a client token only when its discriminator matches", async () => {
-    const server = await startTestServer(() => ({ body: '{"success":true,"data":[]}' }));
+    const server = await startTestServer(() => ({
+      body: '{"success":true,"data":[]}',
+    }));
     servers.push(server);
     const client = new MessagingClient({
       credential: { type: "clientToken", value: "pmfa_ct_widget" },
       baseUrl: server.url,
     });
     await client.sessions.list();
-    expect(server.requests[0]?.headers.authorization).toBe("Bearer pmfa_ct_widget");
+    expect(server.requests[0]?.headers.authorization).toBe(
+      "Bearer pmfa_ct_widget",
+    );
   });
 });
