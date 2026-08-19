@@ -169,6 +169,48 @@ export type SetProfileStatusResponse = SuccessResponse;
 export type SetProfilePictureResponse = SuccessResponse;
 export type DeleteProfilePictureResponse = SuccessResponse;
 
+export type StandardPrivacyAudience =
+  "all" | "contacts" | "contact_blacklist" | "none";
+
+export interface PrivacySettings {
+  readonly groupAdd: StandardPrivacyAudience;
+  readonly lastSeen: StandardPrivacyAudience;
+  readonly status: StandardPrivacyAudience;
+  readonly profile: StandardPrivacyAudience;
+  readonly readReceipts: "all" | "none";
+  readonly online: "all" | "match_last_seen";
+  readonly callAdd: "all" | "known";
+  readonly messages: "all" | "contacts";
+  readonly defense: "on_standard" | "off";
+  readonly stickers: "contacts" | "contact_allowlist" | "none";
+}
+
+export interface PrivacySettingValueMap {
+  readonly groupadd: StandardPrivacyAudience;
+  readonly last: StandardPrivacyAudience;
+  readonly status: StandardPrivacyAudience;
+  readonly profile: StandardPrivacyAudience;
+  readonly readreceipts: "all" | "none";
+  readonly online: "all" | "match_last_seen";
+  readonly calladd: "all" | "known";
+  readonly messages: "all" | "contacts";
+  readonly defense: "on_standard" | "off";
+  readonly stickers: "contacts" | "contact_allowlist" | "none";
+}
+
+export type PrivacySettingName = keyof PrivacySettingValueMap;
+export type PrivacySettingMutation = {
+  [Setting in PrivacySettingName]: {
+    readonly setting: Setting;
+    readonly value: PrivacySettingValueMap[Setting];
+  };
+}[PrivacySettingName];
+export type PrivacySettingValue = PrivacySettingMutation["value"];
+export type DefaultDisappearingTimerRequest = DisappearingTimerRequest;
+export type GetPrivacySettingsResponse = SuccessEnvelope<PrivacySettings>;
+export type SetPrivacySettingResponse = SuccessEnvelope<PrivacySettings>;
+export type SetDefaultDisappearingTimerResponse = SuccessResponse;
+
 export type ListContactsResponse = SuccessEnvelope<readonly Contact[]>;
 export type CheckContactsResponse = SuccessEnvelope<
   readonly CheckContactResult[]

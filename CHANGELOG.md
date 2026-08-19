@@ -13,6 +13,8 @@
   deletion.
 - Added typed session profile retrieval plus name, status, and JSON URL/base64
   picture mutations.
+- Added typed account privacy retrieval, setting-specific privacy mutations,
+  and default disappearing-message timer controls.
 - Added handwritten Platform clients for organizations, projects, and sessions.
 - Added handwritten Platform resources for campaigns, audiences, opt-outs, and
   media, covering 27 additional organization-key operations.

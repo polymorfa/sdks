@@ -17,6 +17,7 @@ import {
   OperationsResource,
   ObservationPoliciesResource,
   ProfileResource,
+  PrivacyResource,
   QuickRepliesResource,
   PlatformClient,
   PolymorfaAuthenticationError,
@@ -44,6 +45,7 @@ import {
   type Label,
   type ProjectObservationPolicy,
   type ProfileData,
+  type PrivacySettings,
   type BusinessQuickReply,
   type MintClientTokenRequest,
   type MessageReceivedEvent,
@@ -67,6 +69,7 @@ import {
 describe("public exports", () => {
   it("exposes every runtime dependency required by the CLI", () => {
     expect(ProfileResource).toBeTypeOf("function");
+    expect(PrivacyResource).toBeTypeOf("function");
     expect([
       MessagingClient,
       MessagingMediaResource,
@@ -84,6 +87,7 @@ describe("public exports", () => {
       OperationsResource,
       ObservationPoliciesResource,
       ProfileResource,
+      PrivacyResource,
       QuickRepliesResource,
       CursorPage,
       PolymorfaError,
@@ -96,7 +100,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(28);
+    ]).toHaveLength(29);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -126,6 +130,7 @@ describe("public exports", () => {
     expectTypeOf<Label>().toHaveProperty("color");
     expectTypeOf<ProjectObservationPolicy>().toHaveProperty("labelMode");
     expectTypeOf<ProfileData>().toHaveProperty("status");
+    expectTypeOf<PrivacySettings>().toHaveProperty("readReceipts");
     expectTypeOf<BusinessQuickReply>().toHaveProperty("shortcut");
     expectTypeOf<DisappearingTimerRequest>().toHaveProperty("durationSeconds");
     expectTypeOf<MintClientTokenRequest>().toHaveProperty("ephemeralId");

@@ -550,9 +550,8 @@
       "operationId": "getPrivacySettings",
       "fingerprint": "23b23f6425b483d786b1edc5d5541957abf48c60978a76fadaf21c8ef0c25307",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.privacy.get"
       }
     },
     {
@@ -1762,9 +1761,8 @@
       "operationId": "setPrivacySetting",
       "fingerprint": "ca1f4d9feff32014c99af243dde71b41fd7ea6da4fc0dd889657d75a6f99f0d2",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.privacy.set"
       }
     },
     {
@@ -1774,9 +1772,8 @@
       "operationId": "setDefaultDisappearingTimer",
       "fingerprint": "eb74a53d1f5b2873e3da588aadf68e9563c3939899e246fabf066e117dbbc3fd",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.privacy.setDefaultDisappearingTimer"
       }
     },
     {

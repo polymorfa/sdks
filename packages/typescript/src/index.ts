@@ -33,6 +33,7 @@ export { MessagesResource } from "./messaging/messages.js";
 export { ObservationPoliciesResource } from "./messaging/observation-policies.js";
 export { OperationsResource } from "./messaging/operations.js";
 export { ProfileResource } from "./messaging/profile.js";
+export { PrivacyResource } from "./messaging/privacy.js";
 export { QuickRepliesResource } from "./messaging/quick-replies.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
@@ -69,6 +70,7 @@ export type {
   CreateWebhookResponse,
   DeleteBusinessQuickReplyResponse,
   DeleteProfilePictureResponse,
+  DefaultDisappearingTimerRequest,
   DeletedBusinessQuickReply,
   EditMessageRequest,
   FlowDataExchangeMessageContent,
@@ -88,6 +90,7 @@ export type {
   GetMessagingMediaInfoResponse,
   GetOperationResponse,
   GetProfileResponse,
+  GetPrivacySettingsResponse,
   GetQRCodeResponse,
   GetClientRulesResponse,
   GetSessionResponse,
@@ -154,6 +157,11 @@ export type {
   QuickReplyUnknownReason,
   ProjectObservationPolicy,
   ProfileData,
+  PrivacySettingMutation,
+  PrivacySettingName,
+  PrivacySettingValue,
+  PrivacySettingValueMap,
+  PrivacySettings,
   ReplaceChatLabelsRequest,
   ReplaceBusinessQuickReplyResponse,
   ReactRequest,
@@ -185,6 +193,9 @@ export type {
   SetProfilePictureResponse,
   SetProfileStatusRequest,
   SetProfileStatusResponse,
+  SetDefaultDisappearingTimerResponse,
+  SetPrivacySettingResponse,
+  StandardPrivacyAudience,
   SetBusinessQuickReplyResponse,
   SetClientRulesRequest,
   Session,

@@ -366,6 +366,52 @@ Profile routes are absent from the browser client-token action allowlist. Use a
 server API key with the required profile scope. The Profile tag has no profile
 history, picture download, or standalone upload operation.
 
+## Privacy
+
+`MessagingClient.privacy` exposes the complete three-operation Privacy tag for
+Linked Device sessions. `get` requires `profile:read`; `set` and
+`setDefaultDisappearingTimer` require `profile:write`.
+
+```ts
+const privacy = await messaging.privacy.get("support");
+
+await messaging.privacy.set(
+  "support",
+  { setting: "online", value: "match_last_seen" },
+  { idempotencyKey: "privacy-online-2026-08-19" },
+);
+
+await messaging.privacy.setDefaultDisappearingTimer(
+  "support",
+  { durationSeconds: 604800 },
+  { idempotencyKey: "privacy-default-timer-2026-08-19" },
+);
+
+console.log(privacy.data.data, privacy.metadata.requestId);
+```
+
+`PrivacySettingMutation` is discriminated by `setting`; incompatible values
+fail type checking:
+
+| Setting                                 | Accepted values                                |
+| --------------------------------------- | ---------------------------------------------- |
+| `groupadd`, `last`, `status`, `profile` | `all`, `contacts`, `contact_blacklist`, `none` |
+| `readreceipts`                          | `all`, `none`                                  |
+| `online`                                | `all`, `match_last_seen`                       |
+| `calladd`                               | `all`, `known`                                 |
+| `messages`                              | `all`, `contacts`                              |
+| `defense`                               | `on_standard`, `off`                           |
+| `stickers`                              | `contacts`, `contact_allowlist`, `none`        |
+
+Default disappearing-message durations are seconds: `0` disables the account
+default, `86400` is one day, `604800` is seven days, and `7776000` is 90 days.
+This account default does not replace the per-chat timer exposed by
+`MessagingClient.chats.setDisappearingTimer`.
+
+Privacy routes are absent from the browser client-token action allowlist. Use a
+server API key with the required profile scope. The Privacy tag has no privacy
+history, allowlist/blacklist member-management, or pagination operation.
+
 ## Chats
 
 `MessagingClient.chats` exposes the credential-compatible Linked Device chat
