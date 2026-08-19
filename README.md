@@ -4,7 +4,7 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 
 This development branch currently ships the TypeScript server SDK foundation.
 It follows the Messaging and Platform contracts recorded at source revision
-`0d91ee0e396c18188f68b112ad852f16bb519ed3`. Graph-compatible APIs are outside
+`11c984512a4d52f5444a5804a046a10fbcf06ea0`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## TypeScript development install

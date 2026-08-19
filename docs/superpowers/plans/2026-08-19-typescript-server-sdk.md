@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- The contract source is monorepo commit `0d91ee0e396c18188f68b112ad852f16bb519ed3`, Messaging path `apps/api/docs/openapi.json`, Platform path `apps/api/docs/openapi.management.json`.
+- The contract source is monorepo commit `11c984512a4d52f5444a5804a046a10fbcf06ea0`, Messaging path `apps/api/docs/openapi.json`, Platform path `apps/api/docs/openapi.management.json`.
 - Graph-compatible APIs are excluded.
 - Runtime code is handwritten; OpenAPI must not generate runtime client source.
 - The package has no runtime dependency, private or public.
