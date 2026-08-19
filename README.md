@@ -233,19 +233,30 @@ template building, and one-to-one calls. They expose immutable snapshots through
 objects rather than reimplementing product state.
 
 ```ts
-import { BrowserTransport, QuickLinkController } from "@polymorfa/browser";
+import {
+  BrowserMessagingClient,
+  BrowserTransport,
+  QuickLinkController,
+  createClientTokenProvider,
+} from "@polymorfa/browser";
 import { quickLinkBackend } from "./quicklink-backend.js";
 
-const transport = new BrowserTransport({
-  getClientToken: async () => {
-    const response = await fetch("/api/polymorfa/token", { method: "POST" });
-    if (!response.ok) throw new Error("Unable to mint client token");
-    return response.json();
-  },
+const getClientToken = createClientTokenProvider();
+const transport = new BrowserTransport({ getClientToken });
+const messaging = new BrowserMessagingClient({
+  session: "support",
+  getClientToken,
 });
 
+await messaging.messages.setTyping({ chatId: "customer", state: "typing" });
 const quickLink = new QuickLinkController(quickLinkBackend(transport));
 ```
+
+The browser Messaging client is session-bound and exposes only the runtime's
+exact client-token action allowlist. `createBrowserComposerActions` connects
+text/reply compose boxes to that client. Conversation history, template
+management, media upload, and call lifecycle/control stay behind explicit
+application-owned adapters because client tokens cannot call those routes.
 
 `@polymorfa/elements` provides custom elements for plain HTML and for frameworks
 that interoperate with the Custom Elements standard. `@polymorfa/react`
@@ -278,9 +289,9 @@ subpath exports an inert mount function.
 ## Coverage status
 
 `contracts/coverage.json` maps all 331 Messaging and Platform operations in the
-pinned contract. This milestone has 59 handwritten resource methods, 60
+pinned contract. This milestone has 73 handwritten resource methods, 60
 dashboard-only or staff routes excluded from the server credential surface,
-and 212 operations available through the raw escape hatch while typed methods
+and 198 operations available through the raw escape hatch while typed methods
 are added. Missing and structurally changed operations are reported
 individually; the ledger never presents raw access as typed parity.
 

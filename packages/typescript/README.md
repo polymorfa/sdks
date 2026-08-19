@@ -26,6 +26,13 @@ See the repository README for the complete development contract and current
 typed-resource coverage. This package has no runtime dependencies and requires
 Node.js 20 or newer.
 
+## Browser client tokens
+
+`MessagingClient.clientTokens` mints short-lived tokens and manages the live
+session rules that authorize them. Use it only on the server. The browser-safe
+transport and allowed-action resources live in `@polymorfa/browser`; the
+Next.js-compatible route adapter lives in `@polymorfa/nextjs`.
+
 ## Platform automation
 
 Organization API keys can use handwritten campaign, audience, opt-out, and

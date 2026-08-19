@@ -11,6 +11,11 @@
 - Added typed errors, response metadata, timeouts, cancellation, safe retries,
   idempotency support, per-request API versions, and raw requests.
 - Added cursor pagination primitives.
+- Added server-side client-token minting and rule management, a Next.js mint
+  adapter, and a same-origin browser token provider.
+- Added a session-bound browser Messaging client for the exact client-token
+  message, presence, contact, and widget allowlist, plus a text/reply composer
+  adapter.
 - Added raw-body webhook signature verification and typed event parsing.
 - Added explicit contract coverage reporting against the pinned Messaging and
   Platform specifications.
