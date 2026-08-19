@@ -14,7 +14,7 @@ that require a live dashboard session.
 
 ## Contract source
 
-- Source repository: `titan-api/titan`
+- Source repository: the Polymorfa source monorepo before its planned repository transfer
 - Source commit: `f156af2dda13e62b6b106a542fdedb39524bdb66`
 - Contract: `apps/api/docs/openapi.management.json`
 - SDK snapshot: `contracts/openapi.platform.json`

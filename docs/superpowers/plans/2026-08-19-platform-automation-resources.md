@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Contract source is `titan-api/titan@f156af2dda13e62b6b106a542fdedb39524bdb66`, path `apps/api/docs/openapi.management.json`.
+- Contract source is the Polymorfa source monorepo at `f156af2dda13e62b6b106a542fdedb39524bdb66`, path `apps/api/docs/openapi.management.json`.
 - Graph-compatible APIs remain excluded.
 - Runtime client code is handwritten; OpenAPI does not generate runtime source.
 - `PlatformClient` accepts only organization server API keys.

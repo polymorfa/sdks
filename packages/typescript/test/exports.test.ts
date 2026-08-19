@@ -1,8 +1,12 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {
+  AudiencesResource,
+  CampaignsResource,
   CursorPage,
   MessagingClient,
+  MediaResource,
+  OptOutsResource,
   PlatformClient,
   PolymorfaAuthenticationError,
   PolymorfaCancelledError,
@@ -18,6 +22,8 @@ import {
   type CreateSessionRequest,
   type MessageReceivedEvent,
   type MessagingClientOptions,
+  type ListCampaignsParams,
+  type PlatformPayload,
   type PlatformClientOptions,
   type RawRequest,
   type RequestOptions,
@@ -31,6 +37,10 @@ describe("public exports", () => {
     expect([
       MessagingClient,
       PlatformClient,
+      AudiencesResource,
+      CampaignsResource,
+      MediaResource,
+      OptOutsResource,
       CursorPage,
       PolymorfaError,
       PolymorfaConfigurationError,
@@ -41,7 +51,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(12);
+    ]).toHaveLength(16);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -51,6 +61,10 @@ describe("public exports", () => {
     expectTypeOf<RawRequest>().toHaveProperty("path");
     expectTypeOf<MessagingClientOptions>().toHaveProperty("credential");
     expectTypeOf<PlatformClientOptions>().toHaveProperty("apiKey");
+    expectTypeOf<ListCampaignsParams>().toHaveProperty("projectId");
+    expectTypeOf<PlatformPayload>().toMatchTypeOf<
+      Readonly<Record<string, unknown>>
+    >();
     expectTypeOf<CreateSessionRequest>().toHaveProperty("projectId");
     expectTypeOf<CreateProjectRequest>().toHaveProperty("name");
     expectTypeOf<SendMessageRequest>().toHaveProperty("chatId");

@@ -5,9 +5,19 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 import { describe, expect, it } from "vitest";
+import { MessagingClient, PlatformClient } from "../src/index.js";
 
 const checker = fileURLToPath(
   new URL("../../../scripts/check-coverage.mjs", import.meta.url),
+);
+const messagingContract = fileURLToPath(
+  new URL("../../../contracts/openapi.messaging.json", import.meta.url),
+);
+const platformContract = fileURLToPath(
+  new URL("../../../contracts/openapi.platform.json", import.meta.url),
+);
+const repositoryLedger = fileURLToPath(
+  new URL("../../../contracts/coverage.json", import.meta.url),
 );
 const knownFingerprint =
   "43b00b873e450f67c069001200873efdb343ec4a35a3204ff4b70682d9363f73";
@@ -100,7 +110,74 @@ function runChecker(
   };
 }
 
+function runRepositoryChecker() {
+  const directory = mkdtempSync(join(tmpdir(), "polymorfa-coverage-repo-"));
+  const report = join(directory, "report.json");
+  const result = spawnSync(
+    process.execPath,
+    [
+      checker,
+      "--messaging",
+      messagingContract,
+      "--platform",
+      platformContract,
+      "--ledger",
+      repositoryLedger,
+      "--report",
+      report,
+      "--strict",
+    ],
+    { encoding: "utf8" },
+  );
+  return {
+    ...result,
+    report:
+      result.status === 0
+        ? (JSON.parse(readFileSync(report, "utf8")) as Record<string, unknown>)
+        : undefined,
+  };
+}
+
 describe("coverage checker", () => {
+  it("reports the reviewed repository ledger totals", () => {
+    const result = runRepositoryChecker();
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.report).toMatchObject({
+      sourceCommit: "f156af2dda13e62b6b106a542fdedb39524bdb66",
+      total: 331,
+      covered: 59,
+      partial: 0,
+      missing: 212,
+      excluded: 60,
+      changed: 0,
+    });
+  });
+
+  it("resolves every covered ledger mapping to a public client method", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const roots: Readonly<Record<string, unknown>> = {
+      MessagingClient: new MessagingClient({
+        credential: { type: "apiKey", value: "pmfa_messaging" },
+      }),
+      PlatformClient: new PlatformClient({ apiKey: "pmfa_platform" }),
+    };
+
+    for (const operation of ledger.operations) {
+      if (operation.typescript.status !== "covered") continue;
+      const parts = operation.typescript.method?.split(".") ?? [];
+      let value: unknown = roots[parts[0] ?? ""];
+      for (const part of parts.slice(1)) {
+        expect(value, operation.typescript.method).toBeTypeOf("object");
+        value = (value as Readonly<Record<string, unknown>>)[part];
+      }
+      expect(value, operation.typescript.method).toBeTypeOf("function");
+    }
+  });
+
   it("accepts a complete ledger and emits machine-readable counts", () => {
     const result = runChecker();
     expect(result.status, result.stderr).toBe(0);

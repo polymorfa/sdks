@@ -2083,9 +2083,8 @@
       "operationId": "deleteAudience",
       "fingerprint": "7a3fa2bd90c018fa34736074baced7b9d42dfc7956317ae09a9644bf48d2f301",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.audiences.delete"
       }
     },
     {
@@ -2095,9 +2094,8 @@
       "operationId": "deleteCampaign",
       "fingerprint": "fb5cef90dbfa756213c870fd1ef4461b6c8e062da069cf88b3830e5e71e31413",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.delete"
       }
     },
     {
@@ -2107,9 +2105,9 @@
       "operationId": "deleteFlow",
       "fingerprint": "9efdd6ef0c41a42ad17c60d85dcd07bf6e97067f3d27bb959a5d1c9ad9df191b",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2131,9 +2129,8 @@
       "operationId": "deleteMedia",
       "fingerprint": "bc8a28796934144374417e53862df9309dc502753312658570d6e08b68a810c3",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.media.delete"
       }
     },
     {
@@ -2155,9 +2152,8 @@
       "operationId": "deleteOptOut",
       "fingerprint": "e5a79337a1d32509cf310a55213fe99c46000c3d36c9691ec655ffe9c18ac216",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.optOuts.delete"
       }
     },
     {
@@ -2178,9 +2174,9 @@
       "operationId": "deleteMessageTemplate",
       "fingerprint": "39e3af44591cbd8b148aae94d965156a88ccb71f6fa97f0017893365272de91b",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2634,9 +2630,8 @@
       "operationId": "listAudiences",
       "fingerprint": "c9b7fea6681bda1193d6644e3d8bbecbfe9d3209d92e488709809fd5bdd9ea8f",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.audiences.list"
       }
     },
     {
@@ -2646,9 +2641,8 @@
       "operationId": "getAudience",
       "fingerprint": "d112bac7a31b48726e5b733b4ccefd1176d18e46b98a955637998e11da393b7e",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.audiences.retrieve"
       }
     },
     {
@@ -2742,9 +2736,8 @@
       "operationId": "listPlatformCampaigns",
       "fingerprint": "93e1ad98cea3e0c386e94259f325bfa164e730e6ad367e42ab9b2607ebe04dbb",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.list"
       }
     },
     {
@@ -2754,9 +2747,8 @@
       "operationId": "getPlatformCampaign",
       "fingerprint": "da6692869d64aa37690d8547d7b4a9ec27af091c309ccb44e04681a051fcc20e",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.retrieve"
       }
     },
     {
@@ -2766,9 +2758,8 @@
       "operationId": "getPlatformCampaignAnalytics",
       "fingerprint": "810a9a1d4da4ac527ff5e1bda34d4b17fb740060c9655762cdb4e19cfa794a43",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.analytics"
       }
     },
     {
@@ -2778,9 +2769,8 @@
       "operationId": "listCampaignEvents",
       "fingerprint": "503b8fe2d1ef229b5fb3c39aab4e0d679f5ac3a97967b5b52113f83fca8062d8",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.events"
       }
     },
     {
@@ -2790,9 +2780,8 @@
       "operationId": "listCampaignRecipients",
       "fingerprint": "8a157a2a3454a6445153b60fce01f2c89748afb3d5fb050782767fec5fd494ff",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.recipients"
       }
     },
     {
@@ -2802,9 +2791,9 @@
       "operationId": "listFlows",
       "fingerprint": "ca6c44c532123d6270b56b090b52629605d6dddc151fd3a9381c8145dec3c303",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2814,9 +2803,9 @@
       "operationId": "getFlow",
       "fingerprint": "26e16fe0f8d5124e2b9538eff308676aa8253370a115373a882d3aa65b82abfb",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2850,9 +2839,8 @@
       "operationId": "getMediaUrl",
       "fingerprint": "b3ebfeb65b98896c8e12a16e93d195891f106629c36af1035ce147250587c59b",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.media.retrieve"
       }
     },
     {
@@ -2886,9 +2874,8 @@
       "operationId": "listOptOuts",
       "fingerprint": "f35a9d0aba83389d3f301c7b6e2fcf74848ecf24da6762de0764f8f57df5e923",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.optOuts.list"
       }
     },
     {
@@ -2931,9 +2918,9 @@
       "operationId": "listMessageTemplates",
       "fingerprint": "a922df1848c0555fa235eae538b5c3e99a39ba1900821014ce4066e9d5591910",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2943,9 +2930,9 @@
       "operationId": "getMessageTemplate",
       "fingerprint": "b5a28dc474e45626de59a6d45295860f3f06112d3e9283acc13f86bae59c9f3e",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3075,9 +3062,8 @@
       "operationId": "updateCampaign",
       "fingerprint": "939a5e4ab9df46828313043f36cbef0b04edfe40600518bd5728465f68242056",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.update"
       }
     },
     {
@@ -3087,9 +3073,9 @@
       "operationId": "updateFlow",
       "fingerprint": "cb1d868db9fe129780ac228b857655ba0b8335df0309ca8580b5a3f93b62ecf1",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3133,9 +3119,9 @@
       "operationId": "updateMessageTemplate",
       "fingerprint": "8c142f1a22edc5362f12344d7472b8b81d08fe7ae15b31215e5c7d8f201aa41b",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3577,9 +3563,8 @@
       "operationId": "createAudience",
       "fingerprint": "d86398c7616c06d22361b587d9f104209abac626a928abe70e0db75315f21248",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.audiences.create"
       }
     },
     {
@@ -3589,9 +3574,8 @@
       "operationId": "createAudienceUploadUrl",
       "fingerprint": "46664ac229f2cc30ff2b46acbebd13b5f846fcc51a5a1349d461cfa5dd9e573d",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.audiences.createUpload"
       }
     },
     {
@@ -3601,9 +3585,8 @@
       "operationId": "createPlatformCampaign",
       "fingerprint": "cbe45541fca28a1139361507914313f69f597e1827b4b39a04920693d38379aa",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.create"
       }
     },
     {
@@ -3613,9 +3596,8 @@
       "operationId": "archiveCampaign",
       "fingerprint": "7b25f8b0fee06d3b5abf8d7533e8c3589050869d348695fe8a7ce2a651dc8720",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.archive"
       }
     },
     {
@@ -3625,9 +3607,8 @@
       "operationId": "duplicateCampaign",
       "fingerprint": "a938db2b4e224d593324a3af88e098205033ab4a8120129130db957e443f5129",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.duplicate"
       }
     },
     {
@@ -3637,9 +3618,8 @@
       "operationId": "launchPlatformCampaign",
       "fingerprint": "3c044ffdaad17d7801459768cd868545f7c1dcc11885803f05f13a3aa8b13763",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.launch"
       }
     },
     {
@@ -3649,9 +3629,8 @@
       "operationId": "pausePlatformCampaign",
       "fingerprint": "d774b78c26421d27bcbb3bfae14a138db186efac3c93ed8847245ca51e42502f",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.pause"
       }
     },
     {
@@ -3661,9 +3640,8 @@
       "operationId": "requeueFailedCampaign",
       "fingerprint": "90a421bd466de36f55321f83216983219ba9e065d99aeeb0778086ddb1b63fee",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.requeue"
       }
     },
     {
@@ -3673,9 +3651,8 @@
       "operationId": "resumePlatformCampaign",
       "fingerprint": "3d65dffea539f5f962287df721fcae3b3123ca04b35553a17a7d6d3b6f839e7c",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.resume"
       }
     },
     {
@@ -3685,9 +3662,8 @@
       "operationId": "stopPlatformCampaign",
       "fingerprint": "19bf2cd48aae4aea95daf7a3399c4876bee66723a74ad60382b567c569614e69",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.campaigns.stop"
       }
     },
     {
@@ -3697,9 +3673,9 @@
       "operationId": "createFlow",
       "fingerprint": "413a774608f29e1c32ae00b761506f038e958c70aaea25ae23240ea2b45ea692",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3721,9 +3697,8 @@
       "operationId": "createMediaUploadUrl",
       "fingerprint": "29f21fbe7dc3e1c291f6c8d771e9cb5ee3cb3b30eabdd1099897111dd422f6da",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.media.createUpload"
       }
     },
     {
@@ -3745,9 +3720,8 @@
       "operationId": "createOptOut",
       "fingerprint": "4872a99a6210546ffd0a1e49574935cd90d905e7bdcda12101fd39d63185bd05",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.optOuts.create"
       }
     },
     {
@@ -3757,9 +3731,8 @@
       "operationId": "createOptOuts",
       "fingerprint": "1e35d121e42a7a602cc585774e8792db92ea2f4ad4378f76ca2b41f06bd2ee0a",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "PlatformClient.optOuts.createBatch"
       }
     },
     {
@@ -3859,9 +3832,9 @@
       "operationId": "createMessageTemplate",
       "fingerprint": "b600a82bba354e631778da9b1024152a5f14b7bded099a306c1e8a6596412243",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "milestone": "credential-boundary"
       }
     },
     {
