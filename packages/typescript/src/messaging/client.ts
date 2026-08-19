@@ -6,6 +6,7 @@ import {
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
 import { ChatsResource } from "./chats.js";
+import { ChannelsResource } from "./channels.js";
 import { ClientTokensResource } from "./client-tokens.js";
 import { ContactsResource } from "./contacts.js";
 import { GroupsResource } from "./groups.js";
@@ -24,6 +25,7 @@ import { WebhooksResource } from "./webhooks.js";
 
 export class MessagingClient {
   readonly chats: ChatsResource;
+  readonly channels: ChannelsResource;
   readonly clientTokens: ClientTokensResource;
   readonly contacts: ContactsResource;
   readonly groups: GroupsResource;
@@ -55,6 +57,7 @@ export class MessagingClient {
       ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
     });
     this.chats = new ChatsResource(transport);
+    this.channels = new ChannelsResource(transport);
     this.clientTokens = new ClientTokensResource(transport);
     this.contacts = new ContactsResource(transport);
     this.groups = new GroupsResource(transport);

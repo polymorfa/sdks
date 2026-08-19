@@ -87,6 +87,9 @@ The handwritten Messaging resources in this milestone are:
   persistence
 - `chats`: edit or delete sent messages, archive or unarchive chats, and set
   disappearing-message timers
+- `channels`: list, create, retrieve, and delete channels; page channel
+  messages and updates; and manage viewing, reactions, live-update
+  subscriptions, following, and mute state
 - `contacts`: list, check registration, retrieve contact metadata, inspect the
   blocklist, profile picture, user info, devices, and business profile, and
   block or unblock a contact
@@ -338,9 +341,9 @@ subpath exports an inert mount function.
 ## Coverage status
 
 `contracts/coverage.json` maps all 331 Messaging and Platform operations in the
-pinned contract. This milestone has 143 handwritten resource methods, 63
+pinned contract. This milestone has 156 handwritten resource methods, 63
 dashboard-only or staff routes excluded from the server credential surface,
-and 125 operations available through the raw escape hatch while typed methods
+and 112 operations available through the raw escape hatch while typed methods
 are added. Missing and structurally changed operations are reported
 individually; the ledger never presents raw access as typed parity.
 

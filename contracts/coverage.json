@@ -62,9 +62,8 @@
       "operationId": "deleteChannel",
       "fingerprint": "a987a4363b9a650f92ddd13b80d9f80a2af5de281d2940b1b9a42c2f2e2be61c",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.channels.delete"
       }
     },
     {
@@ -281,9 +280,8 @@
       "operationId": "listChannels",
       "fingerprint": "cfa70db490a78120b6e7d018648d6f5581955aecd7b76d630799bc3bce68f14c",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.channels.list"
       }
     },
     {
@@ -293,9 +291,8 @@
       "operationId": "getChannel",
       "fingerprint": "6bd5cd5b4fa6712e01154305a058311ce3f4e4df4f9e095a98f50b473d670de3",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.channels.retrieve"
       }
     },
     {
@@ -305,9 +302,8 @@
       "operationId": "listChannelMessageUpdates",
       "fingerprint": "9f960db09f382e57aaa31638a350eab383c4ddf13628a499eb7d7b41320f8096",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.channels.listMessageUpdates"
       }
     },
     {
@@ -317,9 +313,8 @@
       "operationId": "listChannelMessages",
       "fingerprint": "d6b12beb5e721daf823ae6ec78d8ef7a5b62a68124e4a940dcc1b37fb79a6845",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.channels.listMessages"
       }
     },
     {
@@ -990,9 +985,8 @@
       "operationId": "createChannel",
       "fingerprint": "943d8c11521f3ad8b7ce6c57f454149b964e389ab77a99f28baed91fd37642af",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.channels.create"
       }
     },
     {
@@ -1002,9 +996,8 @@
       "operationId": "followChannel",
       "fingerprint": "d4cc30c29721dc943f6769c0c82ed88a7b523656fb5fb9381e160e2e30e86986",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.channels.follow"
       }
     },
     {
@@ -1014,9 +1007,8 @@
       "operationId": "subscribeChannelLiveUpdates",
       "fingerprint": "eec318d35dccdf7ecdbc3174deccfc0183dd358e8d585bc8375b80a4b3a1ea67",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.channels.subscribeToLiveUpdates"
       }
     },
     {
@@ -1026,9 +1018,8 @@
       "operationId": "reactToChannelMessage",
       "fingerprint": "3143227ba439b0b629982026a01096ef94a82b5191b384087be7affcb3f7762b",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.channels.reactToMessage"
       }
     },
     {
@@ -1038,9 +1029,8 @@
       "operationId": "markChannelMessageViewed",
       "fingerprint": "cd59c96a7c15fe45e989a880f727246e3dabcada935fd6abb05d14443a84df2b",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.channels.markMessageViewed"
       }
     },
     {
@@ -1050,9 +1040,8 @@
       "operationId": "muteChannel",
       "fingerprint": "99b2a14f0bae4a2d056d65cb7594ea37008d9939ff791519c183588b3b79c033",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.channels.mute"
       }
     },
     {
@@ -1062,9 +1051,8 @@
       "operationId": "unfollowChannel",
       "fingerprint": "4c057ba5650ae687b821fa1fa5746a3c5c90cef9889a18dc518aca0feb6db375",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.channels.unfollow"
       }
     },
     {
@@ -1074,9 +1062,8 @@
       "operationId": "unmuteChannel",
       "fingerprint": "cf904451a41ee9a143dd91ede7c571dfda3a1d2fc33a1ea0fd431747b4bf3ded",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.channels.unmute"
       }
     },
     {

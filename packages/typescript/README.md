@@ -479,6 +479,84 @@ both shapes, plus the documented async-accepted envelope. The subscription
 type likewise includes its documented async response when callers explicitly
 send `Prefer: respond-async`.
 
+## Channels
+
+`MessagingClient.channels` exposes the complete 13-operation Channels tag for
+connected Linked Device sessions. Channels are WhatsApp newsletters in the
+protocol layer, but the SDK keeps the public API's `channels` terminology and
+does not merge them with chats or groups.
+
+```ts
+const channels = await messaging.channels.list("support");
+const channel = await messaging.channels.retrieve(
+  "support",
+  "120363000000000000@newsletter",
+);
+const messages = await messaging.channels.listMessages(
+  "support",
+  "120363000000000000@newsletter",
+  { count: 25, before: 951 },
+);
+const updates = await messaging.channels.listMessageUpdates(
+  "support",
+  "120363000000000000@newsletter",
+  { count: 25, since: 1787212800, after: 951 },
+);
+
+console.log(
+  channels.data.data,
+  channel.data.data,
+  messages.data.data,
+  updates.data.data,
+);
+```
+
+The read surface is `list`, `retrieve`, `listMessages`,
+`listMessageUpdates`, and `subscribeToLiveUpdates`; each requires
+`channels:read`. `create`, `delete`, `markMessageViewed`, `reactToMessage`,
+`follow`, `unfollow`, `mute`, and `unmute` require `channels:manage`. All
+mutations accept `RequestOptions`, including an idempotency key.
+
+Message history and update history are bounded arrays, not `CursorPage`
+objects. Both accept `count` from 1 through 100 and default to 50. Message
+history accepts a positive numeric message server ID as `before`. Update
+history accepts a non-negative Unix timestamp in seconds as `since` and a
+positive numeric message server ID as `after`; the pinned runner treats
+`since: 0` as unset. Responses do not include `next`, `hasMore`, or a cursor,
+so the SDK does not synthesize them. Update rows use the same `ChannelMessage`
+shape as message rows, but `text` can be absent because update payloads contain
+view and reaction counts without message content.
+
+`subscribeToLiveUpdates` performs a temporary subscription mutation and
+returns the upstream `durationSeconds`. It does not return a stream, iterator,
+websocket, or listener. The source exposes no explicit unsubscribe operation;
+applications can query `listMessageUpdates` while their upstream subscription
+is active.
+
+No channel route is present in the browser client-token action allowlist. Use a
+server API key with `channels:read` or `channels:manage`; client tokens are
+rejected before route execution. Every operation requires an active Linked
+Device connection.
+
+The pinned source has two request/response discrepancies:
+
+- `CreateChannelRequest` publicly declares optional `picture`, while the
+  runner unmarshals a field named `profileUrl`. The current handler therefore
+  creates the channel without applying the declared picture. The SDK exposes
+  only the contract field and does not claim that picture setup succeeds.
+- Follow, unfollow, mute, unmute, viewed, and reaction routes declare generic
+  `SuccessResponse` results. The live runner returns data envelopes with the
+  statuses `FOLLOWED`, `UNFOLLOWED`, `MUTED`, `UNMUTED`, `VIEWED`, and
+  `UPDATED`. The action response types represent both shapes, plus the live
+  RPC async-accepted result available through `Prefer: respond-async` even
+  though these routes omit 202 from the pinned OpenAPI.
+
+The public reaction schema permits at most 32 characters. The runner performs
+a second check against 32 UTF-8 bytes, so a multibyte reaction can pass route
+validation and still receive a 400 response. Empty reaction text is preserved
+and removes the caller's reaction upstream. Channel, session, and numeric
+message identifiers are URL-encoded by the SDK.
+
 ## Chats
 
 `MessagingClient.chats` exposes the credential-compatible Linked Device chat

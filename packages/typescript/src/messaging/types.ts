@@ -331,6 +331,95 @@ export type SubscribePresenceResponse =
   | SuccessEnvelope<PresenceSubscriptionData>
   | SuccessEnvelope<AsyncAcceptedData>;
 
+/** Public channel/newsletter metadata. Fields are optional in the pinned contract. */
+export interface Channel {
+  readonly lid?: string;
+  readonly name?: string;
+  readonly description?: string;
+  readonly profileUrl?: string;
+  readonly followers?: number;
+  readonly muted?: boolean;
+  readonly preview?: boolean;
+}
+
+export interface CreateChannelRequest {
+  readonly name: string;
+  readonly description?: string;
+  /** Public contract field; the pinned runner does not presently apply it. */
+  readonly picture?: string;
+}
+
+export interface ChannelMessage {
+  readonly serverId: number;
+  readonly id: string;
+  readonly type: string;
+  readonly timestamp: string;
+  readonly views: number;
+  readonly reactionCounts: Readonly<Record<string, number>>;
+  readonly text?: string;
+}
+
+export interface ChannelMessagesParams {
+  /** Number of messages to return. The API accepts 1 through 100 and defaults to 50. */
+  readonly count?: number;
+  /** Positive message server ID used as the exclusive older-history cursor. */
+  readonly before?: number;
+}
+
+export interface ChannelMessageUpdatesParams {
+  /** Number of updates to return. The API accepts 1 through 100 and defaults to 50. */
+  readonly count?: number;
+  /** Non-negative Unix timestamp in seconds. Zero is treated as unset by the runner. */
+  readonly since?: number;
+  /** Positive message server ID used as the update cursor. */
+  readonly after?: number;
+}
+
+export interface ChannelReactionRequest {
+  /** Reaction text, limited to 32 characters by the public contract. Empty removes a reaction. */
+  readonly reaction: string;
+}
+
+export interface ChannelLiveUpdates {
+  readonly durationSeconds: number;
+}
+
+export interface DeletedChannel {
+  readonly status: "DELETED";
+}
+
+export type ChannelActionStatus =
+  "FOLLOWED" | "UNFOLLOWED" | "MUTED" | "UNMUTED" | "VIEWED" | "UPDATED";
+
+export interface ChannelActionResult<
+  Status extends ChannelActionStatus = ChannelActionStatus,
+> {
+  readonly status: Status;
+}
+
+export type ListChannelsResponse = SuccessEnvelope<readonly Channel[]>;
+export type CreateChannelResponse =
+  SuccessEnvelope<Channel> | SuccessEnvelope<AsyncAcceptedData>;
+export type GetChannelResponse = SuccessEnvelope<Channel>;
+export type DeleteChannelResponse =
+  SuccessEnvelope<DeletedChannel> | SuccessEnvelope<AsyncAcceptedData>;
+export type ListChannelMessagesResponse = SuccessEnvelope<
+  readonly ChannelMessage[]
+>;
+export type ListChannelMessageUpdatesResponse = ListChannelMessagesResponse;
+export type ChannelLiveUpdatesResponse =
+  SuccessEnvelope<ChannelLiveUpdates> | SuccessEnvelope<AsyncAcceptedData>;
+export type ChannelActionResponse<Status extends ChannelActionStatus> =
+  | SuccessResponse
+  | SuccessEnvelope<ChannelActionResult<Status>>
+  | SuccessEnvelope<AsyncAcceptedData>;
+export type MarkChannelMessageViewedResponse = ChannelActionResponse<"VIEWED">;
+export type ReactToChannelMessageResponse = ChannelActionResponse<"UPDATED">;
+export type FollowChannelResponse = ChannelActionResponse<"FOLLOWED">;
+export type UnfollowChannelResponse = ChannelActionResponse<"UNFOLLOWED">;
+export type MuteChannelResponse = ChannelActionResponse<"MUTED">;
+export type UnmuteChannelResponse = ChannelActionResponse<"UNMUTED">;
+
 export interface Label {
   readonly id: string;
   readonly name: string;

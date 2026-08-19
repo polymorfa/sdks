@@ -5,6 +5,7 @@ import {
   BillingResource,
   CampaignsResource,
   ChatsResource,
+  ChannelsResource,
   ClientTokensResource,
   ContactsResource,
   GroupsResource,
@@ -40,7 +41,10 @@ import {
   type BillingBalance,
   type BillingTransaction,
   type BillingUsage,
+  type Channel,
+  type ChannelMessage,
   type CreateProjectRequest,
+  type CreateChannelRequest,
   type CreateSessionRequest,
   type Contact,
   type ContactUserInfo,
@@ -92,6 +96,7 @@ describe("public exports", () => {
       BillingResource,
       CampaignsResource,
       ChatsResource,
+      ChannelsResource,
       ClientTokensResource,
       ContactsResource,
       GroupsResource,
@@ -115,7 +120,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(30);
+    ]).toHaveLength(31);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -137,6 +142,9 @@ describe("public exports", () => {
       Readonly<Record<string, unknown>>
     >();
     expectTypeOf<CreateSessionRequest>().toHaveProperty("projectId");
+    expectTypeOf<CreateChannelRequest>().toHaveProperty("picture");
+    expectTypeOf<Channel>().toHaveProperty("lid");
+    expectTypeOf<ChannelMessage>().toHaveProperty("serverId");
     expectTypeOf<Contact>().toHaveProperty("lid");
     expectTypeOf<ContactUserInfo>().toHaveProperty("devices");
     expectTypeOf<EditMessageRequest>().toHaveProperty("text");

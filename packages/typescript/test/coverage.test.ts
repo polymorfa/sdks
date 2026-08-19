@@ -146,9 +146,9 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "f156af2dda13e62b6b106a542fdedb39524bdb66",
       total: 331,
-      covered: 143,
+      covered: 156,
       partial: 0,
-      missing: 125,
+      missing: 112,
       excluded: 63,
       changed: 0,
     });
@@ -208,6 +208,52 @@ describe("coverage checker", () => {
       getChatPresence: "MessagingClient.presence.getForChat",
       setPresence: "MessagingClient.presence.set",
       subscribePresence: "MessagingClient.presence.subscribe",
+    });
+  });
+
+  it("maps every Channels operation to the server resource", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const channelOperationIds = [
+      "listChannels",
+      "createChannel",
+      "getChannel",
+      "deleteChannel",
+      "listChannelMessages",
+      "listChannelMessageUpdates",
+      "markChannelMessageViewed",
+      "reactToChannelMessage",
+      "subscribeChannelLiveUpdates",
+      "followChannel",
+      "unfollowChannel",
+      "muteChannel",
+      "unmuteChannel",
+    ];
+    const channelMappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ operationId }) => channelOperationIds.includes(operationId))
+        .map(({ operationId, typescript }) => [operationId, typescript.method]),
+    );
+
+    expect(channelMappings).toEqual({
+      deleteChannel: "MessagingClient.channels.delete",
+      listChannels: "MessagingClient.channels.list",
+      getChannel: "MessagingClient.channels.retrieve",
+      listChannelMessageUpdates: "MessagingClient.channels.listMessageUpdates",
+      listChannelMessages: "MessagingClient.channels.listMessages",
+      createChannel: "MessagingClient.channels.create",
+      followChannel: "MessagingClient.channels.follow",
+      subscribeChannelLiveUpdates:
+        "MessagingClient.channels.subscribeToLiveUpdates",
+      reactToChannelMessage: "MessagingClient.channels.reactToMessage",
+      markChannelMessageViewed: "MessagingClient.channels.markMessageViewed",
+      muteChannel: "MessagingClient.channels.mute",
+      unfollowChannel: "MessagingClient.channels.unfollow",
+      unmuteChannel: "MessagingClient.channels.unmute",
     });
   });
 
