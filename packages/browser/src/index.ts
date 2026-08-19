@@ -38,6 +38,7 @@ export {
   type QuickLinkStatus,
   type QuickLinkTransport,
 } from "./quicklink/index.js";
+export * from "./templates/index.js";
 export {
   BrowserTransport,
   type BrowserHttpMethod,
