@@ -15,9 +15,8 @@
       "operationId": "deleteBusinessCollection",
       "fingerprint": "0f092de90dae553d9af58b63410078d0a135c82e3a277c7f5f5e6619ba0e85a8",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.deleteCollection"
       }
     },
     {
@@ -27,9 +26,8 @@
       "operationId": "deleteBusinessProduct",
       "fingerprint": "881e214d7ca6d6e0d7143e4e3fc3abc271a016216eb47ca5aecdfd764fccf130",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.deleteProduct"
       }
     },
     {
@@ -39,9 +37,8 @@
       "operationId": "deleteBusinessCoverPhoto",
       "fingerprint": "9fa339e0af9875c8f5587203e5fb7abe61cde1c0ec9e0b8c68727ce5687a17e9",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.deleteCoverPhoto"
       }
     },
     {
@@ -173,9 +170,8 @@
       "operationId": "getBusinessCatalog",
       "fingerprint": "81b976c1d41e664e5e9492baaebea123815dc29f346066bbfa30b9c4835c4691",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.getCatalog"
       }
     },
     {
@@ -185,9 +181,8 @@
       "operationId": "getBusinessCollections",
       "fingerprint": "6d63ab37e5c322c0df2eef6c5d7078144580f3319fb12a4cf31847e640030543",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.listCollections"
       }
     },
     {
@@ -197,9 +192,8 @@
       "operationId": "getBusinessCollection",
       "fingerprint": "74fba00717011f85cc4a3f74548ca0d8fd9347f0c4c611720c6720ec3c5f5e63",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.getCollection"
       }
     },
     {
@@ -209,9 +203,8 @@
       "operationId": "getBusinessMerchantCompliance",
       "fingerprint": "b65a7caab156684d46867d1bcbed688949d60c41e9effb3afd7abec584644715",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.getMerchantCompliance"
       }
     },
     {
@@ -221,9 +214,8 @@
       "operationId": "getBusinessEligibility",
       "fingerprint": "80e0461c1fd88189fc56bf048658de318d0440931f72730eb22273cd6294c430",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.getEligibility"
       }
     },
     {
@@ -233,9 +225,8 @@
       "operationId": "getBusinessLinkedAccounts",
       "fingerprint": "d55ac4970205cf32a07888f0fa3b4f75dcf997c7e4d6e961097200eee7b43357",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.getLinkedAccounts"
       }
     },
     {
@@ -245,9 +236,8 @@
       "operationId": "getBusinessProduct",
       "fingerprint": "e4e0300d7303c30091004d3829968d0f30717570b7de9687fdafdcdd3985c476",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.getProduct"
       }
     },
     {
@@ -257,9 +247,8 @@
       "operationId": "getOwnBusinessProfile",
       "fingerprint": "29f5b708286a8928ac22f3326f7c94c5557202e4b55c5ae36ffed7bee35804d6",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.getProfile"
       }
     },
     {
@@ -819,9 +808,8 @@
       "operationId": "setBusinessCartEnabled",
       "fingerprint": "c722b6d4949d08ee650dc17d1cb7d94795946f28b22174a989e4171077ff7b33",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.setCartEnabled"
       }
     },
     {
@@ -831,9 +819,8 @@
       "operationId": "updateBusinessCollection",
       "fingerprint": "5d819b79b3cfd24695ea47ba4077386a0202fe4756c93e0d597059355393fa9f",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.updateCollection"
       }
     },
     {
@@ -843,9 +830,8 @@
       "operationId": "setBusinessProductVisibility",
       "fingerprint": "0597624ac4fdfc718209b28cc895e607e07c2f35013274097e0bc4cd9611afce",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.setProductVisibility"
       }
     },
     {
@@ -855,9 +841,8 @@
       "operationId": "updateBusinessProfile",
       "fingerprint": "bd9456ce05df5424f49b0b70bc9d263a4539a121c72169e5885101cab96101b6",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.updateProfile"
       }
     },
     {
@@ -878,9 +863,8 @@
       "operationId": "createBusinessCatalog",
       "fingerprint": "e3be22d67f4f6dd33d5db5d91f246591fe12a09e2409e261b1d5b9f9068d5e91",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.createCatalog"
       }
     },
     {
@@ -890,9 +874,8 @@
       "operationId": "createBusinessCollection",
       "fingerprint": "91df7f96088c9987942e3dd9c6d673aa58e6bd84d28ae42a7d3e9498e31d2888",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.createCollection"
       }
     },
     {
@@ -902,9 +885,8 @@
       "operationId": "appealBusinessCollection",
       "fingerprint": "0ae828304df8b8592f54cd2b97b44bad989298f8e3387c720c014b0e390fb571",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.appealCollection"
       }
     },
     {
@@ -914,9 +896,8 @@
       "operationId": "reorderBusinessCollections",
       "fingerprint": "cf299c93ea096eb0155584f2edca82ac5eb4054eecaba5246c36f6a3234779f8",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.reorderCollections"
       }
     },
     {
@@ -926,9 +907,8 @@
       "operationId": "getBusinessOrder",
       "fingerprint": "48778694dd18d3ae7fcff8d2135f474899e844a9a6af0d6b22a064e21a9be78c",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.getOrder"
       }
     },
     {
@@ -938,9 +918,8 @@
       "operationId": "createBusinessProduct",
       "fingerprint": "375d3ef11db63e51d3e30a578a1dd107a153f31660a6207d07014c698123b531",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.createProduct"
       }
     },
     {
@@ -950,9 +929,8 @@
       "operationId": "appealBusinessProduct",
       "fingerprint": "b15415e4c99cb659acc5307f9826868f4c897fef0e7aa35240671e72d170f40e",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.appealProduct"
       }
     },
     {
@@ -1568,9 +1546,8 @@
       "operationId": "setBusinessMerchantCompliance",
       "fingerprint": "d5e1dde8297edb25dd2b46d00690c3cd11d470c8508518e20d0d338849aff5dc",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.setMerchantCompliance"
       }
     },
     {
@@ -1580,9 +1557,8 @@
       "operationId": "updateBusinessProduct",
       "fingerprint": "56b1ab82dd263be59350de2f2099bfa898d2e1176fcf46c8bf4d7eb12d6cdc04",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.updateProduct"
       }
     },
     {
@@ -1592,9 +1568,8 @@
       "operationId": "setBusinessCoverPhoto",
       "fingerprint": "80a41142d261e8867ebc35f77f75fba09b155e4733040f34f37c69e5159ae58a",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.business.setCoverPhoto"
       }
     },
     {

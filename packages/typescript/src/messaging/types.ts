@@ -127,6 +127,502 @@ export interface BusinessProfile {
   readonly hours: readonly BusinessProfileHours[];
 }
 
+export type BusinessProfileDay =
+  | {
+      readonly dayOfWeek: "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
+      readonly mode: "specific_hours";
+      /** Minutes after midnight, from 0 through 1439. */
+      readonly openTime: number;
+      /** Minutes after midnight, from 0 through 1439 and distinct from openTime. */
+      readonly closeTime: number;
+    }
+  | {
+      readonly dayOfWeek: "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
+      readonly mode: "open_24h" | "appointment_only";
+      readonly openTime?: never;
+      readonly closeTime?: never;
+    };
+
+export interface BusinessProfileHoursUpdate {
+  readonly timeZone: string;
+  readonly days: readonly BusinessProfileDay[];
+}
+
+export interface BusinessProfileUpdateRequest {
+  readonly address?: string;
+  readonly email?: string;
+  readonly description?: string;
+  readonly websites?: readonly string[];
+  readonly hours?: BusinessProfileHoursUpdate;
+}
+
+export type BusinessCoverPhotoRequest =
+  | { readonly url: string; readonly base64?: never }
+  | { readonly url?: never; readonly base64: string };
+
+export interface BusinessProfileStatus {
+  readonly status: string;
+}
+
+export interface BusinessCoverPhotoResult {
+  readonly coverPhotoId: string;
+}
+
+export interface BusinessActionSuccess {
+  readonly success: true;
+}
+
+export interface BusinessCatalogParams {
+  /** Business account user or LID JID. */
+  readonly jid: string;
+  /** Opaque cursor returned as `next` by the preceding page. */
+  readonly after?: string;
+  /** Product limit from 1 through 100. */
+  readonly limit?: number;
+  /** Requested image width from 1 through 1024. */
+  readonly width?: number;
+  /** Requested image height from 1 through 1024. */
+  readonly height?: number;
+}
+
+export interface BusinessProductParams {
+  /** Business account user or LID JID. */
+  readonly jid: string;
+}
+
+export interface BusinessCollectionsParams {
+  /** Business account user or LID JID. */
+  readonly jid: string;
+  /** Opaque cursor returned as `next` by the preceding page. */
+  readonly after?: string;
+  /** Collection limit from 1 through 20. */
+  readonly collectionLimit?: number;
+  /** Product limit per collection from 1 through 100. */
+  readonly itemLimit?: number;
+  /** Requested image width from 1 through 1024. */
+  readonly width?: number;
+  /** Requested image height from 1 through 1024. */
+  readonly height?: number;
+}
+
+export interface BusinessCollectionParams {
+  /** Business account user or LID JID. */
+  readonly jid: string;
+  /** Opaque product cursor returned by the upstream collection page. */
+  readonly after?: string;
+  /** Product limit from 1 through 100. */
+  readonly limit?: number;
+  /** Requested image width from 1 through 1024. */
+  readonly width?: number;
+  /** Requested image height from 1 through 1024. */
+  readonly height?: number;
+}
+
+export type BusinessProductImageSource =
+  | {
+      /** HTTPS source fetched through the API's bounded, SSRF-safe downloader. */
+      readonly url: string;
+      readonly base64?: never;
+      readonly mediaUrl?: never;
+    }
+  | {
+      /** Base64 image data representing at most 16 MiB after decoding. */
+      readonly url?: never;
+      readonly base64: string;
+      readonly mediaUrl?: never;
+    }
+  | {
+      readonly url?: never;
+      readonly base64?: never;
+      /** Existing HTTPS WhatsApp or Meta media URL reused without downloading. */
+      readonly mediaUrl: string;
+    };
+
+export interface BusinessProductImporterAddress {
+  readonly street1?: string;
+  readonly street2?: string;
+  readonly city?: string;
+  readonly region?: string;
+  readonly postalCode?: string;
+  readonly countryCode?: string;
+}
+
+export interface BusinessProductCompliance {
+  readonly countryCodeOrigin?: string;
+  readonly importerName?: string;
+  readonly importerAddress?: BusinessProductImporterAddress;
+}
+
+export interface BusinessProductMutationRequest {
+  readonly name: string;
+  readonly description?: string;
+  readonly currency?: string;
+  /** Integer amount in thousandths, represented as a decimal string. */
+  readonly price?: string;
+  /** Integer amount in thousandths, represented as a decimal string. */
+  readonly salePrice?: string;
+  readonly url?: string;
+  readonly retailerId?: string;
+  /** Omitted is interpreted as false by the pinned runner during replacement. */
+  readonly hidden?: boolean;
+  readonly images: readonly BusinessProductImageSource[];
+  /** Existing HTTPS WhatsApp or Meta media URLs. */
+  readonly videoUrls?: readonly string[];
+  readonly complianceCategory?: string;
+  readonly compliance?: BusinessProductCompliance;
+  readonly width?: number;
+  readonly height?: number;
+}
+
+export interface BusinessAddress {
+  readonly street1?: string;
+  readonly street2?: string;
+  readonly city?: string;
+  readonly region?: string;
+  readonly postalCode?: string;
+  readonly countryCode?: string;
+}
+
+export interface BusinessComplianceInfo {
+  readonly countryCodeOrigin?: string;
+  readonly importerName?: string;
+  readonly importerAddress?: BusinessAddress;
+}
+
+export interface BusinessProductImage {
+  readonly id: string;
+  readonly originalUrl?: string;
+  readonly requestUrl?: string;
+}
+
+export interface BusinessProductVideo {
+  readonly id: string;
+  readonly originalUrl?: string;
+  readonly thumbnailUrl?: string;
+}
+
+export interface BusinessProductMedia {
+  readonly images: readonly BusinessProductImage[];
+  readonly videos: readonly BusinessProductVideo[];
+}
+
+export interface BusinessSalePrice {
+  readonly price: string;
+  readonly startDate?: string;
+  readonly endDate?: string;
+}
+
+export interface BusinessProductStatus {
+  readonly status?: string;
+  readonly canAppeal: boolean;
+}
+
+export interface BusinessDimensions {
+  readonly width?: number;
+  readonly height?: number;
+}
+
+export interface BusinessVariantThumbnail {
+  readonly id?: string;
+  readonly originalUrl?: string;
+  readonly requestUrl?: string;
+  readonly originalDimensions: BusinessDimensions;
+}
+
+export interface BusinessVariantProperty {
+  readonly name: string;
+  readonly value: string;
+}
+
+export interface BusinessVariantAvailabilityItem {
+  readonly productId?: string;
+  readonly available: boolean;
+  readonly options: readonly BusinessVariantProperty[];
+}
+
+export interface BusinessVariantAvailability {
+  readonly listings: readonly BusinessVariantAvailabilityItem[];
+}
+
+export interface BusinessVariantListing {
+  readonly description?: string;
+  readonly lowestPrice?: string;
+  readonly multiPrice?: string;
+}
+
+export interface BusinessVariantOption {
+  readonly value: string;
+  readonly thumbnail?: BusinessVariantThumbnail;
+}
+
+export interface BusinessVariantType {
+  readonly name: string;
+  readonly options: readonly BusinessVariantOption[];
+}
+
+export interface BusinessProductVariant {
+  readonly availability: BusinessVariantAvailability;
+  readonly listingDetails: BusinessVariantListing;
+  readonly types: readonly BusinessVariantType[];
+  readonly properties: readonly BusinessVariantProperty[];
+}
+
+export interface BusinessProduct {
+  readonly id: string;
+  readonly retailerId?: string;
+  readonly belongsTo?: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly price: string;
+  readonly currency: string;
+  readonly url?: string;
+  readonly shimmedUrl?: string;
+  readonly hidden: boolean;
+  readonly sanctioned: boolean;
+  readonly maxAvailable?: number;
+  readonly availability?: string;
+  readonly complianceCategory?: string;
+  readonly compliance?: BusinessComplianceInfo;
+  readonly media: BusinessProductMedia;
+  readonly salePrice?: BusinessSalePrice;
+  readonly status: BusinessProductStatus;
+  readonly variant?: BusinessProductVariant;
+}
+
+export interface BusinessCatalogPage {
+  readonly next?: string;
+  readonly previous?: string;
+  readonly products: readonly BusinessProduct[];
+}
+
+export interface BusinessProductDeleteResult {
+  readonly deletedCount: number;
+}
+
+export interface BusinessCartSettingRequest {
+  readonly enabled: boolean;
+}
+
+export interface BusinessProductVisibilityRequest {
+  readonly hidden: boolean;
+}
+
+export interface BusinessCatalogAppealRequest {
+  readonly reason: string;
+}
+
+export interface BusinessCollectionStatus {
+  readonly status?: string;
+  readonly canAppeal: boolean;
+  readonly commerceUrl?: string;
+  readonly rejectReason?: string;
+}
+
+export interface BusinessCollection {
+  readonly id: string;
+  readonly name: string;
+  readonly products: readonly BusinessProduct[];
+  readonly status: BusinessCollectionStatus;
+}
+
+export interface BusinessCollectionPage {
+  readonly next?: string;
+  readonly collections: readonly BusinessCollection[];
+}
+
+export interface BusinessCollectionCreateRequest {
+  readonly name: string;
+  readonly productIds: readonly string[];
+}
+
+export interface BusinessCollectionUpdateRequest {
+  readonly name?: string;
+  readonly addProductIds?: readonly string[];
+  readonly removeProductIds?: readonly string[];
+}
+
+export interface BusinessCollectionMutationResult {
+  readonly id: string;
+  readonly reviewStatus: string;
+}
+
+export interface BusinessCollectionMove {
+  readonly collectionId: string;
+  readonly fromIndex: number;
+  readonly toIndex: number;
+}
+
+export interface BusinessCollectionReorderRequest {
+  readonly moves: readonly BusinessCollectionMove[];
+}
+
+export interface BusinessOrderLookupRequest {
+  readonly token: string;
+}
+
+export interface BusinessOrderPrice {
+  readonly subtotal: string;
+  readonly total: string;
+  readonly currency: string;
+  readonly priceStatus?: string;
+}
+
+export interface BusinessOrderProduct {
+  readonly id: string;
+  readonly imageId?: string;
+  readonly imageUrl?: string;
+  readonly price: string;
+  readonly currency: string;
+  readonly name: string;
+  readonly quantity: number;
+  readonly variantProperties?: string;
+}
+
+export interface BusinessOrder {
+  readonly id: string;
+  readonly createdAt: number;
+  readonly catalogId?: string;
+  readonly price: BusinessOrderPrice;
+  readonly products: readonly BusinessOrderProduct[];
+}
+
+export type BusinessMerchantEntityType =
+  | "SOLE_PROPRIETORSHIP"
+  | "PARTNERSHIP"
+  | "PRIVATE_COMPANY"
+  | "PUBLIC_COMPANY"
+  | "LIMITED_LIABILITY_PARTNERSHIP"
+  | "OTHER";
+
+export interface BusinessMerchantContact {
+  readonly email: string;
+  readonly landlineNumber: string;
+  readonly mobileNumber: string;
+}
+
+export interface BusinessMerchantOfficer extends BusinessMerchantContact {
+  readonly name: string;
+}
+
+export interface BusinessMerchantCompliance {
+  readonly entityName: string;
+  readonly entityType: BusinessMerchantEntityType;
+  readonly isRegistered: boolean;
+  readonly entityTypeCustom: string;
+  readonly customerCare: BusinessMerchantContact;
+  readonly grievanceOfficer: BusinessMerchantOfficer;
+}
+
+export interface BusinessAdStatus {
+  readonly hasActiveCTWAAd: boolean;
+  readonly hasCreatedAd: boolean;
+}
+
+export interface BusinessFacebookPage extends BusinessAdStatus {
+  readonly id: string;
+  readonly displayName: string;
+  readonly profileSync?: "disable" | "import";
+  readonly profilePictureUrl: string;
+  readonly showOnProfile: boolean;
+  readonly whatsAppAsPageButton: boolean;
+}
+
+export interface BusinessFacebookBusiness {
+  readonly id: string;
+  readonly displayName: string;
+  readonly catalogId?: string;
+  readonly catalogState?: "disable" | "import";
+}
+
+export interface BusinessInstagramProfessional {
+  readonly handle: string;
+  readonly displayName: string;
+  readonly profilePictureUrl: string;
+  readonly showOnProfile: boolean;
+}
+
+export interface BusinessWhatsAppAdIdentity extends BusinessAdStatus {
+  readonly id: string;
+}
+
+export interface BusinessLinkedAccounts {
+  readonly facebookPage?: BusinessFacebookPage;
+  readonly facebookBusiness?: BusinessFacebookBusiness;
+  readonly instagramProfessional?: BusinessInstagramProfessional;
+  readonly whatsAppAdIdentity?: BusinessWhatsAppAdIdentity;
+}
+
+export type BusinessFeature =
+  | "meta_verified"
+  | "marketing_messages"
+  | "genai"
+  | "genai_image"
+  | "meta_one"
+  | "bb_pro";
+
+export interface BusinessFeatureEligibility {
+  readonly feature: BusinessFeature;
+  readonly status: string;
+  readonly expiration?: number;
+  readonly additionalParams?: string;
+  readonly showPrivacyInterstitialToNewUsers?: boolean;
+  readonly v1Enabled?: boolean;
+}
+
+export interface BusinessEligibility {
+  readonly features: readonly BusinessFeatureEligibility[];
+}
+
+/** Non-GET RPC operations can return this accepted envelope when requested asynchronously. */
+export type BusinessCommandResponse<T> =
+  SuccessEnvelope<T> | SuccessEnvelope<AsyncAcceptedData>;
+
+export type GetOwnBusinessProfileResponse = SuccessEnvelope<BusinessProfile>;
+export type UpdateBusinessProfileResponse =
+  BusinessCommandResponse<BusinessProfileStatus>;
+export type SetBusinessCoverPhotoResponse =
+  BusinessCommandResponse<BusinessCoverPhotoResult>;
+export type DeleteBusinessCoverPhotoResponse =
+  BusinessCommandResponse<BusinessProfileStatus>;
+export type GetBusinessCatalogResponse = SuccessEnvelope<BusinessCatalogPage>;
+export type CreateBusinessCatalogResponse =
+  BusinessCommandResponse<BusinessActionSuccess>;
+export type SetBusinessCartEnabledResponse =
+  BusinessCommandResponse<BusinessActionSuccess>;
+export type GetBusinessProductResponse = SuccessEnvelope<BusinessProduct>;
+export type CreateBusinessProductResponse =
+  BusinessCommandResponse<BusinessProduct>;
+export type UpdateBusinessProductResponse =
+  BusinessCommandResponse<BusinessProduct>;
+export type DeleteBusinessProductResponse =
+  BusinessCommandResponse<BusinessProductDeleteResult>;
+export type SetBusinessProductVisibilityResponse =
+  BusinessCommandResponse<BusinessActionSuccess>;
+export type AppealBusinessProductResponse =
+  BusinessCommandResponse<BusinessActionSuccess>;
+export type GetBusinessCollectionsResponse =
+  SuccessEnvelope<BusinessCollectionPage>;
+export type GetBusinessCollectionResponse = SuccessEnvelope<BusinessCollection>;
+export type CreateBusinessCollectionResponse =
+  BusinessCommandResponse<BusinessCollectionMutationResult>;
+export type UpdateBusinessCollectionResponse =
+  BusinessCommandResponse<BusinessCollectionMutationResult>;
+export type DeleteBusinessCollectionResponse =
+  BusinessCommandResponse<BusinessActionSuccess>;
+export type ReorderBusinessCollectionsResponse =
+  BusinessCommandResponse<BusinessActionSuccess>;
+export type AppealBusinessCollectionResponse =
+  BusinessCommandResponse<BusinessActionSuccess>;
+export type GetBusinessOrderResponse = BusinessCommandResponse<BusinessOrder>;
+export type GetBusinessMerchantComplianceResponse =
+  SuccessEnvelope<BusinessMerchantCompliance>;
+export type SetBusinessMerchantComplianceResponse =
+  BusinessCommandResponse<BusinessMerchantCompliance>;
+export type GetBusinessLinkedAccountsResponse =
+  SuccessEnvelope<BusinessLinkedAccounts>;
+export type GetBusinessEligibilityResponse =
+  SuccessEnvelope<BusinessEligibility>;
+
 export interface ContactUserInfo {
   readonly jid: string;
   readonly lid: string;

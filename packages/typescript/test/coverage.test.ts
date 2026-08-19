@@ -146,9 +146,9 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "f156af2dda13e62b6b106a542fdedb39524bdb66",
       total: 331,
-      covered: 156,
+      covered: 181,
       partial: 0,
-      missing: 112,
+      missing: 87,
       excluded: 63,
       changed: 0,
     });
@@ -255,6 +255,100 @@ describe("coverage checker", () => {
       unfollowChannel: "MessagingClient.channels.unfollow",
       unmuteChannel: "MessagingClient.channels.unmute",
     });
+  });
+
+  it("maps every non-Quick-Replies Business App operation to the server resource", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const expectedMappings = {
+      appealBusinessCollection: "MessagingClient.business.appealCollection",
+      appealBusinessProduct: "MessagingClient.business.appealProduct",
+      createBusinessCatalog: "MessagingClient.business.createCatalog",
+      createBusinessCollection: "MessagingClient.business.createCollection",
+      createBusinessProduct: "MessagingClient.business.createProduct",
+      deleteBusinessCollection: "MessagingClient.business.deleteCollection",
+      deleteBusinessCoverPhoto: "MessagingClient.business.deleteCoverPhoto",
+      deleteBusinessProduct: "MessagingClient.business.deleteProduct",
+      getBusinessCatalog: "MessagingClient.business.getCatalog",
+      getBusinessCollection: "MessagingClient.business.getCollection",
+      getBusinessCollections: "MessagingClient.business.listCollections",
+      getBusinessEligibility: "MessagingClient.business.getEligibility",
+      getBusinessLinkedAccounts: "MessagingClient.business.getLinkedAccounts",
+      getBusinessMerchantCompliance:
+        "MessagingClient.business.getMerchantCompliance",
+      getBusinessOrder: "MessagingClient.business.getOrder",
+      getBusinessProduct: "MessagingClient.business.getProduct",
+      getOwnBusinessProfile: "MessagingClient.business.getProfile",
+      reorderBusinessCollections: "MessagingClient.business.reorderCollections",
+      setBusinessCartEnabled: "MessagingClient.business.setCartEnabled",
+      setBusinessCoverPhoto: "MessagingClient.business.setCoverPhoto",
+      setBusinessMerchantCompliance:
+        "MessagingClient.business.setMerchantCompliance",
+      setBusinessProductVisibility:
+        "MessagingClient.business.setProductVisibility",
+      updateBusinessCollection: "MessagingClient.business.updateCollection",
+      updateBusinessProduct: "MessagingClient.business.updateProduct",
+      updateBusinessProfile: "MessagingClient.business.updateProfile",
+    } as const;
+    const contract = JSON.parse(readFileSync(messagingContract, "utf8")) as {
+      paths: Readonly<
+        Record<
+          string,
+          Readonly<
+            Record<
+              string,
+              | {
+                  readonly operationId?: string;
+                  readonly tags?: readonly string[];
+                }
+              | readonly unknown[]
+            >
+          >
+        >
+      >;
+    };
+    const contractOperationIds = Object.values(contract.paths)
+      .flatMap((path) => Object.values(path))
+      .filter(
+        (
+          operation,
+        ): operation is {
+          readonly operationId: string;
+          readonly tags?: readonly string[];
+        } => {
+          if (
+            operation === null ||
+            typeof operation !== "object" ||
+            Array.isArray(operation)
+          ) {
+            return false;
+          }
+          const candidate = operation as {
+            readonly operationId?: string;
+            readonly tags?: readonly string[];
+          };
+          return (
+            candidate.tags?.includes("Business App") === true &&
+            typeof candidate.operationId === "string" &&
+            !candidate.operationId.includes("BusinessQuick")
+          );
+        },
+      )
+      .map(({ operationId }) => operationId)
+      .sort();
+    const operationIds = new Set(Object.keys(expectedMappings));
+    const mappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ operationId }) => operationIds.has(operationId))
+        .map(({ operationId, typescript }) => [operationId, typescript.method]),
+    );
+
+    expect(contractOperationIds).toEqual([...operationIds].sort());
+    expect(mappings).toEqual(expectedMappings);
   });
 
   it("accepts a complete ledger and emits machine-readable counts", () => {

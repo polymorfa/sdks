@@ -3,6 +3,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import {
   AudiencesResource,
   BillingResource,
+  BusinessResource,
   CampaignsResource,
   ChatsResource,
   ChannelsResource,
@@ -59,6 +60,10 @@ import {
   type PresenceData,
   type PrivacySettings,
   type BusinessQuickReply,
+  type BusinessCatalogPage,
+  type BusinessMerchantCompliance,
+  type BusinessProductMutationRequest,
+  type BusinessProfileUpdateRequest,
   type MintClientTokenRequest,
   type MessageReceivedEvent,
   type MessagingClientOptions,
@@ -94,6 +99,7 @@ describe("public exports", () => {
       PlatformClient,
       AudiencesResource,
       BillingResource,
+      BusinessResource,
       CampaignsResource,
       ChatsResource,
       ChannelsResource,
@@ -120,7 +126,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(31);
+    ]).toHaveLength(32);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -157,6 +163,10 @@ describe("public exports", () => {
     expectTypeOf<PresenceData>().toHaveProperty("authoritative");
     expectTypeOf<ChatPresenceData>().toHaveProperty("typingStatus");
     expectTypeOf<BusinessQuickReply>().toHaveProperty("shortcut");
+    expectTypeOf<BusinessCatalogPage>().toHaveProperty("products");
+    expectTypeOf<BusinessMerchantCompliance>().toHaveProperty("entityType");
+    expectTypeOf<BusinessProductMutationRequest>().toHaveProperty("images");
+    expectTypeOf<BusinessProfileUpdateRequest>().toHaveProperty("hours");
     expectTypeOf<DisappearingTimerRequest>().toHaveProperty("durationSeconds");
     expectTypeOf<MintClientTokenRequest>().toHaveProperty("ephemeralId");
     expectTypeOf<PairCodeRequest>().toHaveProperty("phone");

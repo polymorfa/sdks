@@ -479,6 +479,133 @@ both shapes, plus the documented async-accepted envelope. The subscription
 type likewise includes its documented async response when callers explicitly
 send `Prefer: respond-async`.
 
+## Business App
+
+`MessagingClient.business` exposes the 25 credential-compatible Business App
+operations outside the separately maintained `quickReplies` resource. Every
+operation requires a connected Linked Device session. Cloud API sessions,
+project credentials, browser client tokens, dashboard sessions, and staff
+credentials cannot use this resource.
+
+```ts
+const catalog = await messaging.business.getCatalog("sales", {
+  jid: "15551234567@s.whatsapp.net",
+  limit: 25,
+});
+
+const product = await messaging.business.createProduct(
+  "sales",
+  {
+    name: "Mint tea",
+    currency: "USD",
+    price: "12000",
+    images: [{ url: "https://cdn.example.com/tea.jpg" }],
+  },
+  { idempotencyKey: crypto.randomUUID() },
+);
+
+console.log(
+  catalog.data.data.products,
+  catalog.data.data.next,
+  product.metadata.requestId,
+);
+```
+
+The exact server scopes are:
+
+| Scope           | Operations                                                                                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `profile:read`  | `getProfile`, `getMerchantCompliance`                                                                                                                   |
+| `profile:write` | `updateProfile`, `setCoverPhoto`, `deleteCoverPhoto`, `setMerchantCompliance`, catalog creation/cart mutation, and every product or collection mutation |
+| `business:read` | `getCatalog`, `getProduct`, `listCollections`, `getCollection`, `getOrder`, `getLinkedAccounts`, `getEligibility`                                       |
+
+All 17 non-GET operations accept `RequestOptions`, including idempotency keys.
+They also represent the live `{ success: true, data: { requestId } }` result
+returned when a caller explicitly sends `Prefer: respond-async`. This includes
+`getOrder`, which is a token-bearing POST lookup despite its read semantics.
+GET operations remain synchronous.
+
+### Profile and account state
+
+The profile surface is `getProfile`, `updateProfile`, `setCoverPhoto`, and
+`deleteCoverPhoto`. Profile updates accept address, email, description, one or
+two HTTP(S) websites, or business hours. `specific_hours` days require
+distinct minute-of-day `openTime` and `closeTime` values; `open_24h` and
+`appointment_only` reject those fields. A profile update must contain at least
+one field, and a week cannot contain duplicate days.
+
+`business.getProfile` always addresses the connected account's own Business
+App profile. It reuses the public `BusinessProfile` response type but remains
+distinct from `contacts.businessProfile`, which reads another contact's
+profile by identifier.
+
+Cover photos use one JSON source: an HTTP(S) URL fetched by the API or base64
+data. There is no multipart, binary, file, streaming, resumable, or separate
+upload operation. The API permits at most 5 MiB after decoding and 6,990,508
+base64 characters. Remote downloads are capped at 5 MiB, require a public
+host, reject URL credentials and private/reserved addresses, revalidate each
+redirect, and time out after 60 seconds. The SDK's union prevents supplying a
+URL and base64 together.
+
+`getMerchantCompliance` and `setMerchantCompliance` read or completely replace
+the merchant entity, customer-care, and grievance-officer fields. The server
+trims strings and enforces the documented UTF-8 byte limits. `getLinkedAccounts`
+returns optional Facebook Page, Facebook Business, Instagram Professional, and
+WhatsApp ad-identity records. `getEligibility` returns at most the six exact
+feature kinds declared by `BusinessFeature` with live upstream status strings.
+Neither read offers history or pagination.
+
+### Catalogs, products, collections, and orders
+
+`getCatalog` requires a user or LID business JID. It accepts an opaque `after`
+cursor, `limit` from 1 through 100, and optional image dimensions from 1 through 1024. Its response contains `products`, optional `next`, and optional
+`previous`. `listCollections` uses the same JID and cursor model with
+`collectionLimit` from 1 through 20 and `itemLimit` from 1 through 100; its
+response contains `collections` and optional `next`. These are explicit cursor
+fields, not offset pages, and the SDK does not synthesize `hasMore`.
+
+`getCollection` accepts `after` and a product `limit`, but the pinned response
+contains only the collection and products—no next cursor. The SDK preserves
+that source limitation rather than claiming automatic pagination. Product,
+collection, business JID, order, cover-photo, and session identifiers are
+encoded by the SDK. Cursors and order tokens remain query/body values rather
+than path data.
+
+Product creation and replacement require one through ten image sources. Each
+image is exactly one of:
+
+- `url`: an arbitrary public HTTPS image fetched through the bounded,
+  SSRF-safe downloader, with a 16 MiB response cap;
+- `base64`: JSON base64 capped at 16 MiB decoded and 22,369,624 encoded
+  characters; or
+- `mediaUrl`: an existing HTTPS URL on a WhatsApp or Meta host, reused without
+  downloading.
+
+`videoUrls` contain at most ten existing WhatsApp or Meta HTTPS URLs. The
+resource does not invent file-path, byte-array, multipart, streaming,
+resumable-upload, or media-upload methods. Product prices are unsigned integer
+amounts in thousandths with up to 18 digits. Currency is a three-letter
+uppercase code and is required with `price`; `currency` and `salePrice` are
+invalid without `price`. Omitting `hidden` produces `false` in the pinned
+runner. During replacement, that can trigger the separate visibility mutation
+and unhide an existing product, so callers preserving a hidden product must
+send `hidden: true` explicitly.
+
+Collection creation requires one through 100 unique product IDs. Updates must
+change the name or include at least one product addition/removal; each list is
+unique and an ID cannot occur in both. Reordering requires one through 100
+unique collection moves with indices from 0 through 99. Product and collection
+appeal reasons are trimmed, nonempty, and capped at 4,096 UTF-8 bytes. The
+generated OpenAPI exposes a 4,096-character maximum, so multibyte text can pass
+schema validation and still fail the byte check; the SDK leaves that API error
+visible as a typed validation error.
+
+`getOrder` requires the exact order ID and opaque lookup token supplied by the
+Business App event. It is not an order list, search, history, checkout, or
+fulfilment API. The source likewise exposes no catalog listing independent of
+a business JID, no product search, no collection search, and no upload
+progress.
+
 ## Channels
 
 `MessagingClient.channels` exposes the complete 13-operation Channels tag for
