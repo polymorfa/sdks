@@ -4,6 +4,7 @@ import {
   AudiencesResource,
   BillingResource,
   BusinessResource,
+  CallsResource,
   CampaignsResource,
   ChatsResource,
   ChannelsResource,
@@ -11,6 +12,7 @@ import {
   ContactsResource,
   GroupsResource,
   LabelsResource,
+  LidsResource,
   CursorPage,
   MessagingClient,
   MessagingMediaResource,
@@ -35,6 +37,7 @@ import {
   PolymorfaRateLimitError,
   PolymorfaTimeoutError,
   TemplatesResource,
+  UsersResource,
   constructWebhookEvent,
   isEvent,
   verifyWebhookSignature,
@@ -75,12 +78,14 @@ import {
   type PlatformClientOptions,
   type RawRequest,
   type RequestOptions,
+  type ResolveLidParams,
   type ResponseMetadata,
   type SendMessageRequest,
   type TemplateDefinition,
   type TierPricing,
   type UpdateBillingReminderSettingsRequest,
   type WebhookEvent,
+  type UserSecurityCode,
 } from "../src/index.js";
 
 describe("public exports", () => {
@@ -100,6 +105,7 @@ describe("public exports", () => {
       AudiencesResource,
       BillingResource,
       BusinessResource,
+      CallsResource,
       CampaignsResource,
       ChatsResource,
       ChannelsResource,
@@ -107,6 +113,7 @@ describe("public exports", () => {
       ContactsResource,
       GroupsResource,
       LabelsResource,
+      LidsResource,
       MediaResource,
       OptOutsResource,
       OperationsResource,
@@ -123,10 +130,11 @@ describe("public exports", () => {
       PolymorfaTimeoutError,
       PolymorfaCancelledError,
       TemplatesResource,
+      UsersResource,
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(32);
+    ]).toHaveLength(35);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -140,6 +148,9 @@ describe("public exports", () => {
     );
     expectTypeOf<ResponseMetadata>().toHaveProperty("requestId");
     expectTypeOf<RequestOptions>().toHaveProperty("signal");
+    expectTypeOf<ResolveLidParams>().toMatchTypeOf<
+      Readonly<Record<string, string | undefined>>
+    >();
     expectTypeOf<RawRequest>().toHaveProperty("path");
     expectTypeOf<MessagingClientOptions>().toHaveProperty("credential");
     expectTypeOf<PlatformClientOptions>().toHaveProperty("apiKey");
@@ -176,6 +187,7 @@ describe("public exports", () => {
     expectTypeOf<SendMessageRequest>().toHaveProperty("chatId");
     expectTypeOf<TemplateDefinition>().toHaveProperty("variables");
     expectTypeOf<WebhookEvent>().toHaveProperty("event");
+    expectTypeOf<UserSecurityCode>().toHaveProperty("numericCode");
     expectTypeOf<MessageReceivedEvent>().toHaveProperty("payload");
   });
 });

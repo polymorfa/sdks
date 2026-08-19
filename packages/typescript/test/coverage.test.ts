@@ -146,9 +146,9 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "f156af2dda13e62b6b106a542fdedb39524bdb66",
       total: 331,
-      covered: 181,
+      covered: 184,
       partial: 0,
-      missing: 87,
+      missing: 84,
       excluded: 63,
       changed: 0,
     });
@@ -349,6 +349,81 @@ describe("coverage checker", () => {
 
     expect(contractOperationIds).toEqual([...operationIds].sort());
     expect(mappings).toEqual(expectedMappings);
+  });
+
+  it("maps the complete Calls, LIDs, and Users tags to their server resources", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const mappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ operationId }) =>
+          ["rejectCall", "resolveLIDs", "getUserSecurityCode"].includes(
+            operationId,
+          ),
+        )
+        .map(({ operationId, typescript }) => [operationId, typescript.method]),
+    );
+    const contract = JSON.parse(readFileSync(messagingContract, "utf8")) as {
+      paths: Readonly<
+        Record<
+          string,
+          Readonly<
+            Record<
+              string,
+              | {
+                  readonly operationId?: string;
+                  readonly tags?: readonly string[];
+                }
+              | readonly unknown[]
+            >
+          >
+        >
+      >;
+    };
+    const contractOperationIds = Object.values(contract.paths)
+      .flatMap((path) => Object.values(path))
+      .filter(
+        (
+          operation,
+        ): operation is {
+          readonly operationId: string;
+          readonly tags?: readonly string[];
+        } => {
+          if (
+            operation === null ||
+            typeof operation !== "object" ||
+            Array.isArray(operation)
+          ) {
+            return false;
+          }
+          const candidate = operation as {
+            readonly operationId?: string;
+            readonly tags?: readonly string[];
+          };
+          return (
+            candidate.tags?.some((tag) =>
+              ["Calls", "LIDs", "Users"].includes(tag),
+            ) === true && typeof candidate.operationId === "string"
+          );
+        },
+      )
+      .map(({ operationId }) => operationId)
+      .sort();
+
+    expect(contractOperationIds).toEqual([
+      "getUserSecurityCode",
+      "rejectCall",
+      "resolveLIDs",
+    ]);
+    expect(mappings).toEqual({
+      getUserSecurityCode: "MessagingClient.users.getSecurityCode",
+      rejectCall: "MessagingClient.calls.reject",
+      resolveLIDs: "MessagingClient.lids.resolve",
+    });
   });
 
   it("accepts a complete ledger and emits machine-readable counts", () => {

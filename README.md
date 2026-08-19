@@ -83,6 +83,7 @@ The handwritten Messaging resources in this milestone are:
 - `operations`: retrieve durable lifecycle operation status
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility
+- `calls`: reject an identified incoming Linked Device call
 - `messages`: send every contract-defined message kind through one typed send
   union, mark seen, set typing state, react, and star
 - `media`: download binary media, retrieve metadata, and request durable object
@@ -99,6 +100,8 @@ The handwritten Messaging resources in this milestone are:
   participants, and update group profile and permission settings
 - `labels`: list, create, update, delete, list a chat's labels, and replace a
   chat's complete label set
+- `lids`: resolve one phone number, stable user ID, or username to known stable
+  identity aliases
 - `observationPolicies`: retrieve and update project ceilings and session
   overrides for presence, typing, and label observation
 - `profile`: retrieve the session profile and set its name, status, or JSON
@@ -111,6 +114,8 @@ The handwritten Messaging resources in this milestone are:
   quick replies
 - `templates`: list, create, retrieve, update, delete, preview, and submit to
   Meta
+- `users`: retrieve a display-only identity verification code for a stable
+  LID-backed user ID
 - `webhooks`: list, create, retrieve, update, and delete
 
 ## Platform client
@@ -343,9 +348,9 @@ subpath exports an inert mount function.
 ## Coverage status
 
 `contracts/coverage.json` maps all 331 Messaging and Platform operations in the
-pinned contract. This milestone has 181 handwritten resource methods, 63
+pinned contract. This milestone has 184 handwritten resource methods, 63
 dashboard-only or staff routes excluded from the server credential surface,
-and 87 operations available through the raw escape hatch while typed methods
+and 84 operations available through the raw escape hatch while typed methods
 are added. Missing and structurally changed operations are reported
 individually; the ledger never presents raw access as typed parity.
 

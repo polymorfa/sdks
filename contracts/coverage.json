@@ -478,9 +478,8 @@
       "operationId": "resolveLIDs",
       "fingerprint": "d4d813f817fe7ab3fe910b6add9cc4799b15196ad2ae1b357392d793681f935a",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.lids.resolve"
       }
     },
     {
@@ -556,9 +555,8 @@
       "operationId": "getUserSecurityCode",
       "fingerprint": "8137c11491c0261b2aabd8104c0b6bfa40e474eb78975482560beae36310e01f",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.users.getSecurityCode"
       }
     },
     {
@@ -951,9 +949,8 @@
       "operationId": "rejectCall",
       "fingerprint": "b299f698991f7b28ea16c7adfdea992eff458fc7fa9d117e35aa9988229f1bdd",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.calls.reject"
       }
     },
     {

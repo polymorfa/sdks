@@ -118,6 +118,80 @@ The resource also provides `retrieve`, `picture`, `info`, `devices`,
 `businessProfile`, `blocklist`, and `unblock`. Contact operations are not
 available for Cloud API sessions.
 
+## Calls and stable user identity
+
+The compact `calls`, `lids`, and `users` resources cover all three operations
+in their pinned source tags. Each requires an organization server API key and
+a connected Linked Device session. Project credentials, browser client tokens,
+Cloud API sessions, dashboard sessions, and staff credentials cannot use these
+routes.
+
+```ts
+await messaging.calls.reject(
+  "support",
+  incomingCallId,
+  { from: callerJid },
+  { idempotencyKey: incomingCallId },
+);
+
+const identity = await messaging.lids.resolve("support", {
+  phoneNumber: "+15551234567",
+});
+
+if (identity.data.data.id) {
+  const code = await messaging.users.getSecurityCode(
+    "support",
+    identity.data.data.id,
+  );
+  console.log(code.data.data.numericCode, code.data.data.qrCode);
+}
+```
+
+`calls.reject` requires `chats:manage`. Its call ID must contain 1 through 128
+characters and the JSON `from` field must contain the incoming caller's
+nonempty JID. Session, call, and caller identifiers are passed without semantic
+rewriting; path identifiers are URL-encoded. The SDK sends an idempotency key
+when supplied and only permits automatic retries of this POST when that key is
+nonempty. The source exposes no call list, retrieve, accept, history, watch,
+stream, or outgoing-call operation.
+
+The pinned OpenAPI declares a generic synchronous `SuccessResponse` for call
+rejection. The live runner returns
+`{ success: true, data: { status: "REJECTED" } }`. A caller can explicitly send
+`Prefer: respond-async` through `RequestOptions.headers`, in which case the live
+RPC returns HTTP 202 with `{ success: true, data: { requestId } }`.
+`RejectCallResponse` represents all three source-observable shapes.
+
+`lids.resolve` requires `contacts:read`. `ResolveLidParams` is a discriminated
+union that permits exactly one of these inputs:
+
+- `phoneNumber`: digits with an optional leading `+`; the runner trims
+  surrounding whitespace and returns a normalized leading `+` when known
+- `id`: a stable LID-backed user ID; the runner requires the `@lid` server
+- `lid`: the deprecated input alias for `id`
+- `username`: 3 through 35 characters, with an optional four-digit
+  `usernameKey`
+
+`usernameKey` is invalid without `username`, and competing identity inputs are
+rejected before runner dispatch. The response can contain the stable `id`, its
+deprecated `lid` alias, a phone number, a username, and `keyRequired` when
+WhatsApp needs the username's four-digit key. The source exposes no bulk
+resolution, search, list, pagination, or retained identity history.
+
+`users.getSecurityCode` also requires `contacts:read` and accepts only a stable
+user ID matching digits followed by `@lid`. The result contains that ID,
+optional known aliases, a 60-digit `numericCode`, and a base64-encoded display
+`qrCode`. The runner deliberately excludes WhatsApp's private verification QR
+payload, and the API schema rejects an upstream response that does not match
+the public shape. The API marks successful and failed responses
+`Cache-Control: private, no-store`; callers can inspect that header through
+`ApiResponse.metadata.headers`. This GET is always synchronous. The source
+exposes no security-code list, cache, history, refresh, or verification-submit
+operation.
+
+All three methods preserve request IDs and response metadata and accept the
+standard timeout, cancellation, API-version, custom-header, and retry options.
+
 ## Groups
 
 `MessagingClient.groups` exposes all 21 operations in the pinned Groups tag.

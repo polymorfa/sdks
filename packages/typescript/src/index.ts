@@ -26,6 +26,7 @@ export { MessagingClient } from "./messaging/client.js";
 export { ChatsResource } from "./messaging/chats.js";
 export { ChannelsResource } from "./messaging/channels.js";
 export { BusinessResource } from "./messaging/business.js";
+export { CallsResource } from "./messaging/calls.js";
 export type {
   AppealBusinessCollectionResponse,
   AppealBusinessProductResponse,
@@ -120,6 +121,7 @@ export { ClientTokensResource } from "./messaging/client-tokens.js";
 export { ContactsResource } from "./messaging/contacts.js";
 export { GroupsResource } from "./messaging/groups.js";
 export { LabelsResource } from "./messaging/labels.js";
+export { LidsResource } from "./messaging/lids.js";
 export { MessagingMediaResource } from "./messaging/media.js";
 export { MessagesResource } from "./messaging/messages.js";
 export { ObservationPoliciesResource } from "./messaging/observation-policies.js";
@@ -137,6 +139,7 @@ export {
 export { QuickRepliesResource } from "./messaging/quick-replies.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
+export { UsersResource } from "./messaging/users.js";
 export type {
   AddressMessageContent,
   BartenderMode,
@@ -216,6 +219,7 @@ export type {
   GetSessionObservationPolicyResponse,
   GetUserDevicesResponse,
   GetUserInfoResponse,
+  GetUserSecurityCodeResponse,
   GetWebhookResponse,
   HistorySyncPolicy,
   Group,
@@ -297,6 +301,12 @@ export type {
   ReplaceChatLabelsRequest,
   ReplaceBusinessQuickReplyResponse,
   ReactRequest,
+  RejectCallRequest,
+  RejectCallResponse,
+  RejectCallResult,
+  ResolveLidParams,
+  ResolveLidResult,
+  ResolveLidsResponse,
   ReactToChannelMessageResponse,
   RevokeGroupInviteCodeResponse,
   RequestPairCodeResponse,
@@ -368,6 +378,7 @@ export type {
   UpdateSessionObservationPolicyResponse,
   UpdateProjectTemplateRequest,
   UpdateWebhookRequest,
+  UserSecurityCode,
   UpdateWebhookResponse,
   JoinGroupRequest,
   Webhook,

@@ -78,6 +78,83 @@ export interface SuccessResponse {
   readonly message?: string;
 }
 
+export interface RejectCallRequest {
+  /** JID of the incoming caller. */
+  readonly from: string;
+}
+
+export interface RejectCallResult {
+  readonly status: "REJECTED";
+}
+
+/**
+ * OpenAPI declares SuccessResponse, while the live RPC returns a data envelope
+ * and also supports Prefer: respond-async for a request ID.
+ */
+export type RejectCallResponse =
+  | SuccessResponse
+  | SuccessEnvelope<RejectCallResult>
+  | SuccessEnvelope<AsyncAcceptedData>;
+
+export type ResolveLidParams =
+  | {
+      /** Phone number containing digits with an optional leading plus sign. */
+      readonly phoneNumber: string;
+      readonly id?: never;
+      readonly lid?: never;
+      readonly username?: never;
+      readonly usernameKey?: never;
+    }
+  | {
+      /** Stable user ID in the form digits@lid. */
+      readonly id: string;
+      readonly phoneNumber?: never;
+      readonly lid?: never;
+      readonly username?: never;
+      readonly usernameKey?: never;
+    }
+  | {
+      /** @deprecated Use id. */
+      readonly lid: string;
+      readonly phoneNumber?: never;
+      readonly id?: never;
+      readonly username?: never;
+      readonly usernameKey?: never;
+    }
+  | {
+      /** WhatsApp username containing 3 through 35 characters. */
+      readonly username: string;
+      /** Optional four-digit key requested by WhatsApp for this username. */
+      readonly usernameKey?: string;
+      readonly phoneNumber?: never;
+      readonly id?: never;
+      readonly lid?: never;
+    };
+
+export interface ResolveLidResult {
+  readonly id?: string;
+  /** @deprecated Use id. */
+  readonly lid?: string;
+  readonly phoneNumber?: string;
+  readonly username?: string;
+  readonly keyRequired?: boolean;
+}
+
+export type ResolveLidsResponse = SuccessEnvelope<ResolveLidResult>;
+
+export interface UserSecurityCode {
+  /** Stable user ID in the form digits@lid. */
+  readonly id: string;
+  readonly phoneNumber?: string;
+  readonly username?: string;
+  /** The 60-digit identity verification code. */
+  readonly numericCode: string;
+  /** Base64-encoded display QR; the private verification payload is excluded. */
+  readonly qrCode: string;
+}
+
+export type GetUserSecurityCodeResponse = SuccessEnvelope<UserSecurityCode>;
+
 export interface Contact {
   readonly lid: string;
   readonly phoneNumber?: string;
