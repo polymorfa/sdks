@@ -32,6 +32,7 @@ export { MessagingMediaResource } from "./messaging/media.js";
 export { MessagesResource } from "./messaging/messages.js";
 export { ObservationPoliciesResource } from "./messaging/observation-policies.js";
 export { OperationsResource } from "./messaging/operations.js";
+export { ProfileResource } from "./messaging/profile.js";
 export { QuickRepliesResource } from "./messaging/quick-replies.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
@@ -67,6 +68,7 @@ export type {
   CreateWebhookRequest,
   CreateWebhookResponse,
   DeleteBusinessQuickReplyResponse,
+  DeleteProfilePictureResponse,
   DeletedBusinessQuickReply,
   EditMessageRequest,
   FlowDataExchangeMessageContent,
@@ -85,6 +87,7 @@ export type {
   GetProjectObservationPolicyResponse,
   GetMessagingMediaInfoResponse,
   GetOperationResponse,
+  GetProfileResponse,
   GetQRCodeResponse,
   GetClientRulesResponse,
   GetSessionResponse,
@@ -150,6 +153,7 @@ export type {
   QuickReplyObservationStatus,
   QuickReplyUnknownReason,
   ProjectObservationPolicy,
+  ProfileData,
   ReplaceChatLabelsRequest,
   ReplaceBusinessQuickReplyResponse,
   ReactRequest,
@@ -175,6 +179,12 @@ export type {
   SendTextMessageRequest,
   SetGroupFieldRequest,
   SetGroupPictureRequest,
+  SetProfileNameRequest,
+  SetProfileNameResponse,
+  SetProfilePictureRequest,
+  SetProfilePictureResponse,
+  SetProfileStatusRequest,
+  SetProfileStatusResponse,
   SetBusinessQuickReplyResponse,
   SetClientRulesRequest,
   Session,

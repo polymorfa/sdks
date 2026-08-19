@@ -16,6 +16,7 @@ import {
   OptOutsResource,
   OperationsResource,
   ObservationPoliciesResource,
+  ProfileResource,
   QuickRepliesResource,
   PlatformClient,
   PolymorfaAuthenticationError,
@@ -42,6 +43,7 @@ import {
   type GroupParticipant,
   type Label,
   type ProjectObservationPolicy,
+  type ProfileData,
   type BusinessQuickReply,
   type MintClientTokenRequest,
   type MessageReceivedEvent,
@@ -64,6 +66,7 @@ import {
 
 describe("public exports", () => {
   it("exposes every runtime dependency required by the CLI", () => {
+    expect(ProfileResource).toBeTypeOf("function");
     expect([
       MessagingClient,
       MessagingMediaResource,
@@ -80,6 +83,7 @@ describe("public exports", () => {
       OptOutsResource,
       OperationsResource,
       ObservationPoliciesResource,
+      ProfileResource,
       QuickRepliesResource,
       CursorPage,
       PolymorfaError,
@@ -92,7 +96,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(27);
+    ]).toHaveLength(28);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -121,6 +125,7 @@ describe("public exports", () => {
     expectTypeOf<GroupParticipant>().toHaveProperty("isAdmin");
     expectTypeOf<Label>().toHaveProperty("color");
     expectTypeOf<ProjectObservationPolicy>().toHaveProperty("labelMode");
+    expectTypeOf<ProfileData>().toHaveProperty("status");
     expectTypeOf<BusinessQuickReply>().toHaveProperty("shortcut");
     expectTypeOf<DisappearingTimerRequest>().toHaveProperty("durationSeconds");
     expectTypeOf<MintClientTokenRequest>().toHaveProperty("ephemeralId");

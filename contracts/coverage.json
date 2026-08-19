@@ -107,9 +107,8 @@
       "operationId": "deleteProfilePicture",
       "fingerprint": "3e1893187f61ecf1ef7c1910a70677dd0f5bb5b1fdab247bafee9dfe3613be82",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.profile.deletePicture"
       }
     },
     {
@@ -563,9 +562,8 @@
       "operationId": "getProfile",
       "fingerprint": "4ef879df292d150307430b6d0ba28d9f8145e7fd3d3bcf0994a6f91d3bcf1616",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.profile.get"
       }
     },
     {
@@ -1788,9 +1786,8 @@
       "operationId": "setProfileName",
       "fingerprint": "41397daf7a15da8d5358130e7e0f6217b1137ac323a2a22b00cc2c3e6778aa09",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.profile.setName"
       }
     },
     {
@@ -1800,9 +1797,8 @@
       "operationId": "setProfilePicture",
       "fingerprint": "d1577f63e542eecb626bcb87f09c859f78d37e798df79aaccf9731161acf8e82",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.profile.setPicture"
       }
     },
     {
@@ -1812,9 +1808,8 @@
       "operationId": "setProfileStatus",
       "fingerprint": "87af45d88572fbc40d862ae9c51a69ba3143c36459743a83b50f185bb3b1465a",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.profile.setStatus"
       }
     },
     {

@@ -143,6 +143,32 @@ export interface ContactProfilePicture {
   readonly url: string;
 }
 
+export interface ProfileData {
+  readonly name: string;
+  readonly status: string;
+  readonly profilePicUrl?: string;
+}
+
+export interface SetProfileNameRequest {
+  readonly name: string;
+}
+
+export interface SetProfileStatusRequest {
+  readonly status: string;
+}
+
+/** JSON picture source accepted by the public API contract. */
+export interface SetProfilePictureRequest {
+  readonly url?: string;
+  readonly base64?: string;
+}
+
+export type GetProfileResponse = SuccessEnvelope<ProfileData>;
+export type SetProfileNameResponse = SuccessResponse;
+export type SetProfileStatusResponse = SuccessResponse;
+export type SetProfilePictureResponse = SuccessResponse;
+export type DeleteProfilePictureResponse = SuccessResponse;
+
 export type ListContactsResponse = SuccessEnvelope<readonly Contact[]>;
 export type CheckContactsResponse = SuccessEnvelope<
   readonly CheckContactResult[]

@@ -331,6 +331,41 @@ undocumented policy update field.
 Quick-reply routes are absent from the browser client-token action allowlist.
 Use a server API key with the required profile scope.
 
+## Session profile
+
+`MessagingClient.profile` exposes the complete five-operation Profile tag for
+Linked Device sessions. `get` requires `profile:read`; `setName`, `setStatus`,
+`setPicture`, and `deletePicture` require `profile:write`.
+
+```ts
+const profile = await messaging.profile.get("support");
+
+await messaging.profile.setName(
+  "support",
+  { name: "Polymorfa Support" },
+  { idempotencyKey: "profile-name-2026-08-19" },
+);
+
+await messaging.profile.setPicture(
+  "support",
+  { url: "https://cdn.example.com/support-profile.jpg" },
+  { idempotencyKey: "profile-picture-2026-08-19" },
+);
+
+console.log(profile.data.data, profile.metadata.requestId);
+```
+
+Picture input is JSON containing optional `url` and `base64` string fields. It
+is not a binary upload or streaming method. The pinned public schema does not
+declare those fields mutually exclusive and does not publish a size limit. The
+pinned runner prefers non-empty base64 when both fields are supplied, rejects a
+payload with neither source, and internally limits fetched or decoded data to
+50 MiB. Use one source per request for unambiguous behavior.
+
+Profile routes are absent from the browser client-token action allowlist. Use a
+server API key with the required profile scope. The Profile tag has no profile
+history, picture download, or standalone upload operation.
+
 ## Chats
 
 `MessagingClient.chats` exposes the credential-compatible Linked Device chat

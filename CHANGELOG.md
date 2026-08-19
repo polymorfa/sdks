@@ -11,6 +11,8 @@
   project/session observation-policy resources.
 - Added typed Business App quick-reply listing, creation, replacement, and
   deletion.
+- Added typed session profile retrieval plus name, status, and JSON URL/base64
+  picture mutations.
 - Added handwritten Platform clients for organizations, projects, and sessions.
 - Added handwritten Platform resources for campaigns, audiences, opt-outs, and
   media, covering 27 additional organization-key operations.

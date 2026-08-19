@@ -14,6 +14,7 @@ import { MessagingMediaResource } from "./media.js";
 import { MessagesResource } from "./messages.js";
 import { ObservationPoliciesResource } from "./observation-policies.js";
 import { OperationsResource } from "./operations.js";
+import { ProfileResource } from "./profile.js";
 import { QuickRepliesResource } from "./quick-replies.js";
 import { SessionsResource } from "./sessions.js";
 import { TemplatesResource } from "./templates.js";
@@ -30,6 +31,7 @@ export class MessagingClient {
   readonly sessions: SessionsResource;
   readonly messages: MessagesResource;
   readonly operations: OperationsResource;
+  readonly profile: ProfileResource;
   readonly quickReplies: QuickRepliesResource;
   readonly templates: TemplatesResource;
   readonly webhooks: WebhooksResource;
@@ -58,6 +60,7 @@ export class MessagingClient {
     this.sessions = new SessionsResource(transport);
     this.messages = new MessagesResource(transport);
     this.operations = new OperationsResource(transport);
+    this.profile = new ProfileResource(transport);
     this.quickReplies = new QuickRepliesResource(transport);
     this.templates = new TemplatesResource(transport);
     this.webhooks = new WebhooksResource(transport);
