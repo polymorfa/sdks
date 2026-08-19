@@ -21,6 +21,7 @@ export {
   type BrowserErrorCategory,
   type BrowserErrorOptions,
 } from "./errors.js";
+export * from "./chat/index.js";
 export {
   ClientTokenManager,
   type ClientToken,
