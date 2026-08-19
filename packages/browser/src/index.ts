@@ -25,8 +25,10 @@ export * from "./chat/index.js";
 export * from "./calls/index.js";
 export {
   ClientTokenManager,
+  createClientTokenProvider,
   type ClientToken,
   type ClientTokenManagerOptions,
+  type ClientTokenProviderOptions,
   type ClientTokenProvider,
 } from "./token.js";
 export {

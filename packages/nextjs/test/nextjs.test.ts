@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { createClientTokenRoute, readVerifiedWebhook } from "../src/index.js";
+import {
+  createClientTokenRoute,
+  createMessagingClientTokenMint,
+  readVerifiedWebhook,
+} from "../src/index.js";
 
 describe("createClientTokenRoute", () => {
   it("authorizes before minting and returns a non-cacheable browser token", async () => {
@@ -35,6 +39,72 @@ describe("createClientTokenRoute", () => {
     );
     expect(response.status).toBe(500);
     expect(await response.text()).not.toContain("database password");
+  });
+});
+
+describe("createMessagingClientTokenMint", () => {
+  it("maps the server SDK envelope to normalized browser claims", async () => {
+    const mint = vi.fn(async () => ({
+      data: {
+        success: true as const,
+        data: {
+          token: "pmfa_ct_fixture",
+          expiresAt: "2026-08-19T20:00:00.000Z",
+        },
+      },
+    }));
+    const resolve = vi.fn(async () => ({
+      session: "support",
+      ephemeralId: "user-1-tab-1",
+      ttlSeconds: 600,
+    }));
+    const adapter = createMessagingClientTokenMint({
+      clientTokens: { mint },
+      resolve,
+    });
+    const request = new Request("https://app.test/token", { method: "POST" });
+
+    await expect(adapter({ userId: "user-1" }, request)).resolves.toEqual({
+      value: "pmfa_ct_fixture",
+      audience: "browser",
+      expiresAt: Date.parse("2026-08-19T20:00:00.000Z"),
+    });
+    expect(resolve).toHaveBeenCalledWith({ userId: "user-1" }, request);
+    expect(mint).toHaveBeenCalledWith(
+      {
+        session: "support",
+        ephemeralId: "user-1-tab-1",
+        ttlSeconds: 600,
+      },
+      { signal: request.signal },
+    );
+  });
+
+  it("fails closed when the SDK returns malformed token data", async () => {
+    const adapter = createMessagingClientTokenMint({
+      clientTokens: {
+        mint: async () => ({
+          data: {
+            success: true,
+            data: {
+              token: "server-secret",
+              expiresAt: "not-a-date",
+            },
+          },
+        }),
+      },
+      resolve: async () => ({
+        session: "support",
+        ephemeralId: "user-1-tab-1",
+      }),
+    });
+
+    await expect(
+      adapter(
+        { userId: "user-1" },
+        new Request("https://app.test/token", { method: "POST" }),
+      ),
+    ).rejects.toThrow("invalid client token response");
   });
 });
 

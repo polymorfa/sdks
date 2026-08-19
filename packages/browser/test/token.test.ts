@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   BrowserConfigurationError,
   ClientTokenManager,
+  createClientTokenProvider,
   type ClientToken,
 } from "../src/index.js";
 
@@ -88,5 +89,52 @@ describe("ClientTokenManager", () => {
         BrowserConfigurationError,
       );
     }
+  });
+});
+
+describe("createClientTokenProvider", () => {
+  it("posts to a relative application route and returns browser claims", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({
+        value: "pmfa_ct_route",
+        audience: "browser",
+        expiresAt: 5_000,
+      }),
+    );
+    const provider = createClientTokenProvider({
+      path: "/api/polymorfa/token",
+      fetch,
+    });
+
+    await expect(provider()).resolves.toEqual({
+      value: "pmfa_ct_route",
+      audience: "browser",
+      expiresAt: 5_000,
+    });
+    expect(fetch).toHaveBeenCalledWith("/api/polymorfa/token", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { accept: "application/json" },
+    });
+  });
+
+  it("rejects absolute paths, HTTP failures, and malformed claims", async () => {
+    expect(() =>
+      createClientTokenProvider({ path: "https://evil.test/token" }),
+    ).toThrow(BrowserConfigurationError);
+
+    const failed = createClientTokenProvider({
+      fetch: async () => new Response("private server detail", { status: 500 }),
+    });
+    await expect(failed()).rejects.toMatchObject({
+      category: "server",
+      status: 500,
+    });
+    await expect(failed()).rejects.not.toThrow("private server detail");
+
+    const malformed = createClientTokenProvider({
+      fetch: async () => Response.json({ value: "pmfa_server" }),
+    });
+    await expect(malformed()).rejects.toBeInstanceOf(BrowserConfigurationError);
   });
 });
