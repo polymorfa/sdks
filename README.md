@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`5475b869a953d87ae39a94cdfb1e4be2cd3f4f0c`. Graph-compatible APIs are outside
+`f156af2dda13e62b6b106a542fdedb39524bdb66`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
