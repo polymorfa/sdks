@@ -11567,7 +11567,12 @@
             "nullable": true
           },
           "defaultCustomer": {
-            "$ref": "#/components/schemas/Customer",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Customer"
+              }
+            ],
             "nullable": true
           }
         },
@@ -11585,7 +11590,6 @@
           },
           {
             "type": "object",
-            "additionalProperties": false,
             "properties": {
               "migratedNumberCount": {
                 "type": "integer",
@@ -11950,7 +11954,6 @@
           },
           {
             "type": "object",
-            "additionalProperties": false,
             "properties": {
               "url": {
                 "type": "string",
