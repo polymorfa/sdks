@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "f156af2dda13e62b6b106a542fdedb39524bdb66",
+  "sourceCommit": "2bca3f13242e8297734fa4286933dee346d655b5",
   "excludedContracts": [
     {
       "family": "graph",
@@ -1971,6 +1971,17 @@
     {
       "family": "platform",
       "method": "DELETE",
+      "path": "/v1/customers/{customerId}/pairing-links/{pairingLinkId}",
+      "operationId": "revokeCustomerPairingLink",
+      "fingerprint": "0e3a8b41ae00c04078420785edd14df2b073216b6135790a0a6bfbbd27e78a50",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.revokePairingLink"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
       "path": "/v1/flows/{flowId}",
       "operationId": "deleteFlow",
       "fingerprint": "9efdd6ef0c41a42ad17c60d85dcd07bf6e97067f3d27bb959a5d1c9ad9df191b",
@@ -2649,6 +2660,61 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/v1/customers",
+      "operationId": "listCustomers",
+      "fingerprint": "a54c14d80d3504882f5902952563038e37d5bb85fd045dcd2e570c2ba0e16be6",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.list"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/customers/{customerId}",
+      "operationId": "getCustomer",
+      "fingerprint": "62ae84a5ee3d5c3783070bfc03e5f9535d67a80c0f2cb0d7f6c5c67e07bd718e",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.retrieve"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/customers/{customerId}/events",
+      "operationId": "listCustomerEvents",
+      "fingerprint": "839539469ae5e671420c089392077f47808c77cabc43fce7db54be34ac126f5f",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.listEvents"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/customers/{customerId}/numbers",
+      "operationId": "listCustomerNumbers",
+      "fingerprint": "14ddf26d897bc605a839082e43ac77675f4a82e935cfdca8aa80adc398a2a3a2",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.listNumbers"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/customers/{customerId}/pairing-links",
+      "operationId": "listCustomerPairingLinks",
+      "fingerprint": "6d419c3d4369c5020e8e11588a62e23882dd58f81546d57796235d816f366543",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.listPairingLinks"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/v1/flows",
       "operationId": "listFlows",
       "fingerprint": "ca6c44c532123d6270b56b090b52629605d6dddc151fd3a9381c8145dec3c303",
@@ -2756,6 +2822,17 @@
       "typescript": {
         "status": "covered",
         "method": "PlatformClient.projects.list"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/projects/{projectId}/customers/status",
+      "operationId": "getCustomersStatus",
+      "fingerprint": "2ea59c9703c76cf8bfd04d74166ce4504d70fa53090049fd6614ba1044d103a2",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.status"
       }
     },
     {
@@ -2919,6 +2996,17 @@
       "typescript": {
         "status": "covered",
         "method": "PlatformClient.campaigns.update"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/v1/customers/{customerId}",
+      "operationId": "updateCustomer",
+      "fingerprint": "66eb57975826a76c2d96816688450d24afe6eea4195cbcbf5473f1f14295ea33",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.update"
       }
     },
     {
@@ -3525,6 +3613,61 @@
     {
       "family": "platform",
       "method": "POST",
+      "path": "/v1/customers",
+      "operationId": "createCustomer",
+      "fingerprint": "5ef3cee3b57f10bc9854638bb35f47c4014aa5c9b4951e783df5472fda8b2144",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.create"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/customers/{customerId}/archive",
+      "operationId": "archiveCustomer",
+      "fingerprint": "f9d55c6babd4f5abd9e2391f9db9152cc9440c1416585397b0ff65842447dac3",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.archive"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/customers/{customerId}/numbers/{sessionId}/transfer",
+      "operationId": "transferCustomerNumber",
+      "fingerprint": "40346a290d32c5795e327291bfead6c7332c97d5150c87263b0887f6b272189a",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.transferNumber"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/customers/{customerId}/pairing-links",
+      "operationId": "createCustomerPairingLink",
+      "fingerprint": "7e6677d1c9fbb6174106818aa7fb1fe426f4bf274ccd60958c45060eb7057fbf",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.createPairingLink"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/customers/{customerId}/restore",
+      "operationId": "restoreCustomer",
+      "fingerprint": "e13571eea373b7bea4ebb134a3d8a7fb158c92c30007b8d9f9493e426500e841",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.restore"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
       "path": "/v1/flows",
       "operationId": "createFlow",
       "fingerprint": "413a774608f29e1c32ae00b761506f038e958c70aaea25ae23240ea2b45ea692",
@@ -3599,6 +3742,17 @@
       "typescript": {
         "status": "covered",
         "method": "PlatformClient.projects.create"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/v1/projects/{projectId}/customers/enable",
+      "operationId": "enableCustomers",
+      "fingerprint": "d65936aee2325cf0fa55bc9c22bba407bda8efc1110307c1e0d2d3176698e265",
+      "typescript": {
+        "status": "covered",
+        "method": "PlatformClient.customers.enable"
       }
     },
     {

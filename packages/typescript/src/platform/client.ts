@@ -10,6 +10,7 @@ import { ApiKeysResource } from "./api-keys.js";
 import { AuditLogsResource } from "./audit-logs.js";
 import { BillingResource } from "./billing.js";
 import { CampaignsResource } from "./campaigns.js";
+import { CustomersResource } from "./customers.js";
 import { MediaResource } from "./media.js";
 import { MembersResource } from "./members.js";
 import { OptOutsResource } from "./opt-outs.js";
@@ -28,6 +29,7 @@ export class PlatformClient {
   readonly auditLogs: AuditLogsResource;
   readonly billing: BillingResource;
   readonly campaigns: CampaignsResource;
+  readonly customers: CustomersResource;
   readonly members: MembersResource;
   readonly organizations: OrganizationsResource;
   readonly media: MediaResource;
@@ -59,6 +61,7 @@ export class PlatformClient {
     this.auditLogs = new AuditLogsResource(transport);
     this.billing = new BillingResource(transport);
     this.campaigns = new CampaignsResource(transport);
+    this.customers = new CustomersResource(transport);
     this.members = new MembersResource(transport);
     this.organizations = new OrganizationsResource(transport);
     this.media = new MediaResource(transport);

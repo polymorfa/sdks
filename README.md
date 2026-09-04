@@ -164,9 +164,17 @@ The handwritten Platform resources in this milestone are:
   and update the exact saved configuration fields
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and recipients
+- `customers`: enable Customers for a project; create, list, retrieve, update,
+  archive, and restore Customers; inspect Numbers and events; create, list,
+  and revoke pairing links; and transfer Numbers between Customers
 - `audiences`: list, create, retrieve, delete, and create an upload URL
 - `optOuts`: list, create one, create a batch, and delete by phone number
 - `media`: retrieve a URL, delete, and create an upload URL
+
+Customer creation and pairing-link creation require caller-supplied
+idempotency keys. The SDK returns the pairing URL only on the first successful
+creation attempt. Customer list responses retain their cursor metadata under
+`response.data.page`.
 
 The pinned campaign, audience, opt-out, and media contracts expose their
 operation payloads as open objects. These methods therefore use the exported

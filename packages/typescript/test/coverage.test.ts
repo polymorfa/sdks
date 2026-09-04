@@ -144,13 +144,45 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "f156af2dda13e62b6b106a542fdedb39524bdb66",
-      total: 331,
-      covered: 207,
+      sourceCommit: "2bca3f13242e8297734fa4286933dee346d655b5",
+      total: 345,
+      covered: 221,
       partial: 0,
       missing: 58,
       excluded: 66,
       changed: 0,
+    });
+  });
+
+  it("maps the complete Customers contract to the Platform resource", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        path: string;
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const customerMappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ path }) => path.includes("customers"))
+        .map(({ operationId, typescript }) => [operationId, typescript.method]),
+    );
+
+    expect(customerMappings).toEqual({
+      archiveCustomer: "PlatformClient.customers.archive",
+      createCustomer: "PlatformClient.customers.create",
+      createCustomerPairingLink: "PlatformClient.customers.createPairingLink",
+      enableCustomers: "PlatformClient.customers.enable",
+      getCustomer: "PlatformClient.customers.retrieve",
+      getCustomersStatus: "PlatformClient.customers.status",
+      listCustomerEvents: "PlatformClient.customers.listEvents",
+      listCustomerNumbers: "PlatformClient.customers.listNumbers",
+      listCustomerPairingLinks: "PlatformClient.customers.listPairingLinks",
+      listCustomers: "PlatformClient.customers.list",
+      restoreCustomer: "PlatformClient.customers.restore",
+      revokeCustomerPairingLink: "PlatformClient.customers.revokePairingLink",
+      transferCustomerNumber: "PlatformClient.customers.transferNumber",
+      updateCustomer: "PlatformClient.customers.update",
     });
   });
 

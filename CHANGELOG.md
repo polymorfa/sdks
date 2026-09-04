@@ -16,6 +16,8 @@
 - Added typed account privacy retrieval, setting-specific privacy mutations,
   and default disappearing-message timer controls.
 - Added handwritten Platform clients for organizations, projects, and sessions.
+- Added the complete typed Customers resource, including project enablement,
+  profile lifecycle, pairing links, recent events, and Number transfers.
 - Added handwritten Platform resources for campaigns, audiences, opt-outs, and
   media, covering 27 additional organization-key operations.
 - Added typed organization-key resources for API-key metadata and deactivation,
