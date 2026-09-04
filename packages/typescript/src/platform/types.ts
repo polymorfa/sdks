@@ -4,6 +4,173 @@ export interface DataEnvelope<T> {
 
 export type PlatformPayload = Readonly<Record<string, unknown>>;
 
+export type CustomerStatus = "active" | "archiving" | "archived";
+
+export interface Customer {
+  readonly id: string;
+  readonly orgId: string;
+  readonly projectId: string;
+  readonly name: string | null;
+  readonly phone: string | null;
+  readonly externalCustomerId: string | null;
+  readonly status: CustomerStatus;
+  readonly isDefault: boolean;
+  readonly archivedAt: number | null;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+}
+
+export interface CustomerSummary extends Omit<Customer, "phone"> {
+  readonly phoneMasked: string | null;
+  readonly numberCount: number;
+  readonly connectedNumberCount: number;
+  readonly activePairingLinkState: string | null;
+  readonly lastActivityAt: number | null;
+  readonly needsAttention: boolean;
+}
+
+export interface CustomersStatus {
+  readonly enabled: boolean;
+  readonly enabledAt: number | null;
+  readonly enabledBy: string | null;
+  readonly defaultCustomer: Customer | null;
+}
+
+export interface CustomersEnablement extends CustomersStatus {
+  readonly migratedNumberCount: number;
+}
+
+export interface CustomerProjectRequest {
+  readonly projectId?: string;
+}
+
+export interface CreateCustomerRequest {
+  readonly projectId?: string;
+  readonly name?: string | null;
+  readonly phone?: string | null;
+  readonly externalCustomerId?: string | null;
+}
+
+export interface UpdateCustomerRequest {
+  readonly projectId?: string;
+  readonly name?: string | null;
+  readonly phone?: string | null;
+  readonly externalCustomerId?: string | null;
+}
+
+export interface ListCustomersParams {
+  readonly projectId: string;
+  readonly cursor?: string;
+  readonly limit?: number;
+  readonly search?: string;
+  readonly status?: CustomerStatus | "all";
+  readonly isDefault?: boolean;
+  readonly hasNumbers?: boolean;
+  readonly needsAttention?: boolean;
+}
+
+export interface CustomerListPage {
+  readonly nextCursor: string | null;
+  readonly hasMore: boolean;
+}
+
+export interface CustomerListEnvelope {
+  readonly data: readonly CustomerSummary[];
+  readonly page: CustomerListPage;
+}
+
+export interface CustomerNumber {
+  readonly id: string;
+  readonly customerId: string;
+  readonly sessionId: string;
+  readonly name: string | null;
+  readonly phoneMasked: string | null;
+  readonly status: string;
+  readonly backend: string | null;
+  readonly createdAt: number;
+}
+
+export interface CustomerEventMetadata {
+  readonly fields?: readonly ("name" | "phone" | "externalCustomerId")[];
+}
+
+export interface CustomerEvent {
+  readonly id: string;
+  readonly action: string;
+  readonly fromStatus: string | null;
+  readonly toStatus: string | null;
+  readonly sessionId: string | null;
+  readonly pairingLinkId: string | null;
+  readonly metadata: CustomerEventMetadata;
+  readonly occurredAt: number;
+}
+
+export type CustomerPairingMethod = "qr" | "phone";
+export type CustomerPairingLocale = "en" | "pt-BR";
+export type CustomerPairingTheme = "light" | "dark" | "system";
+export type CustomerPairingLinkStatus =
+  | "active"
+  | "opened"
+  | "connecting"
+  | "connected"
+  | "failed"
+  | "expired"
+  | "revoked";
+
+export interface CustomerPairingLink {
+  readonly id: string;
+  readonly orgId: string;
+  readonly projectId: string;
+  readonly customerId: string;
+  readonly expectedPhoneMasked: string | null;
+  readonly methods: readonly CustomerPairingMethod[];
+  readonly locale: CustomerPairingLocale | null;
+  readonly theme: CustomerPairingTheme | null;
+  readonly expiresAt: number;
+  readonly status: CustomerPairingLinkStatus;
+  readonly attemptCount: number;
+  readonly maxAttempts: number;
+  readonly pendingSessionId: string | null;
+  readonly createdBy: string | null;
+  readonly reservedAt: number | null;
+  readonly openedAt: number | null;
+  readonly connectingAt: number | null;
+  readonly connectedAt: number | null;
+  readonly failedAt: number | null;
+  readonly expiredAt: number | null;
+  readonly revokedAt: number | null;
+  readonly lastErrorCode: string | null;
+  readonly failedExchangeCount: number;
+  readonly phoneMismatchCount: number;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+}
+
+export interface CreatedCustomerPairingLink extends CustomerPairingLink {
+  /** Returned once. An idempotent replay returns null. */
+  readonly url: string | null;
+}
+
+export interface CreateCustomerPairingLinkRequest {
+  readonly projectId?: string;
+  readonly expectedPhone?: string | null;
+  readonly methods?: readonly CustomerPairingMethod[];
+  readonly expiresInSeconds?: number;
+  readonly locale?: CustomerPairingLocale | null;
+  readonly theme?: CustomerPairingTheme | null;
+}
+
+export interface ListCustomerEventsParams {
+  readonly projectId: string;
+  readonly limit?: number;
+}
+
+export interface TransferCustomerNumberRequest {
+  readonly projectId: string;
+  readonly sourceCustomerId: string;
+  readonly confirm: true;
+}
+
 export interface ListCampaignsParams {
   readonly projectId: string;
   readonly projectSlug?: string;

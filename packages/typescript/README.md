@@ -26,6 +26,40 @@ See the repository README for the complete development contract and current
 typed-resource coverage. This package has no runtime dependencies and requires
 Node.js 20 or newer.
 
+## Customers
+
+Use `PlatformClient.customers` to manage project-owned Customers and their
+Numbers. The resource covers the complete Customers contract, including
+enablement, profile lifecycle, pairing links, recent events, and Number
+transfers.
+
+```ts
+const customer = await platform.customers.create(
+  {
+    projectId: "project_123",
+    name: "Ada",
+    phone: "+15551234567",
+    externalCustomerId: "crm_456",
+  },
+  { idempotencyKey: crypto.randomUUID() },
+);
+
+const pairing = await platform.customers.createPairingLink(
+  customer.data.data.id,
+  {
+    projectId: "project_123",
+    methods: ["qr", "phone"],
+  },
+  { idempotencyKey: crypto.randomUUID() },
+);
+
+console.log(pairing.data.data.url);
+```
+
+The pairing URL is returned once. An idempotent replay returns the same link
+record with `url: null`. `customers.list()` preserves both the Customer array
+and the cursor metadata from the API response.
+
 ## Browser client tokens
 
 `MessagingClient.clientTokens` mints short-lived tokens and manages the live

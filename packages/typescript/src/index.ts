@@ -409,6 +409,7 @@ export { ApiKeysResource } from "./platform/api-keys.js";
 export { AuditLogsResource } from "./platform/audit-logs.js";
 export { BillingResource } from "./platform/billing.js";
 export { CampaignsResource } from "./platform/campaigns.js";
+export { CustomersResource } from "./platform/customers.js";
 export { PlatformClient } from "./platform/client.js";
 export { MediaResource } from "./platform/media.js";
 export { MembersResource } from "./platform/members.js";
@@ -431,12 +432,33 @@ export type {
   BillingReminderSettings,
   BillingTransaction,
   BillingUsage,
+  CreateCustomerPairingLinkRequest,
+  CreateCustomerRequest,
+  CreatedCustomerPairingLink,
+  Customer,
+  CustomerEvent,
+  CustomerEventMetadata,
+  CustomerListEnvelope,
+  CustomerListPage,
+  CustomerNumber,
+  CustomerPairingLink,
+  CustomerPairingLinkStatus,
+  CustomerPairingLocale,
+  CustomerPairingMethod,
+  CustomerPairingTheme,
+  CustomerProjectRequest,
+  CustomerStatus,
+  CustomerSummary,
+  CustomersEnablement,
+  CustomersStatus,
   CreateProjectRequest,
   CreateTestingSessionRequest,
   DataEnvelope,
   ListAuditLogsParams,
   ListPlatformSessionsParams,
   ListCampaignsParams,
+  ListCustomerEventsParams,
+  ListCustomersParams,
   ManagementOperation,
   ManagementOperationStatus,
   ManagedSession,
@@ -466,7 +488,9 @@ export type {
   SessionTier,
   SessionTierOverrideRequest,
   TierPricing,
+  TransferCustomerNumberRequest,
   UpdateBillingReminderSettingsRequest,
+  UpdateCustomerRequest,
   RetrieveWidgetSettingsParams,
   UpdateWidgetSettingsRequest,
   WidgetColorPalette,
