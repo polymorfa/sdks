@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`f156af2dda13e62b6b106a542fdedb39524bdb66`. Graph-compatible APIs are outside
+`d2ddaef836762dc189887f4f21b17c74c9c79ee7`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -84,6 +84,7 @@ The handwritten Messaging resources in this milestone are:
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call
+- `voip`: mint the browser call token used by `@polymorfa/browser` signaling
 - `campaigns`: list, create, retrieve, inspect analytics, launch, pause, resume,
   stop, and requeue project campaigns through the Messaging control plane
 - `messages`: send every contract-defined message kind through one typed send
@@ -338,15 +339,32 @@ that interoperate with the Custom Elements standard. `@polymorfa/react`
 provides idiomatic hooks and components, including controlled and SDK-owned
 controller lifecycles.
 
-### Calls boundary
+### Calls
 
-Call media and signaling follow the implementation in `voip-v2`: browser WebRTC
-media, offer/answer exchange, trickle ICE candidate submission and polling, and
-the existing `/api/voip/calls/{id}` signaling paths. The application supplies a
-`CallsBackend` for place, answer, reject, hangup, and lifecycle events because
-that control plane is not exposed by the current `voip-v2` REST signaling
-surface. The SDK does not invent group rooms, participants, reactions, hand
-raising, or waiting rooms.
+Call media and signaling follow the platform's browser signaling surface:
+WebRTC media, offer/answer exchange, trickle ICE candidate submission and
+polling, and idempotent teardown over the `/api/voip/calls/{id}` paths, all on
+the client token. `createSignalingCallsBackend` is the `CallsBackend` for that
+surface; `IncomingCallRelay` is where the application hands the browser the
+`call.received` webhook it received on its own server
+(`incomingCallFromWebhook` maps the payload). The server mints the browser
+token with `MessagingClient.voip.token` after granting the session's client
+rules the `voip_place`, `voip_answer`, and `voip_signal` actions; those rules
+also bind calls per token (`maxConcurrency`, `allowedNumber`).
+
+Calls carry a `line`: `linkedDevice` (a paired WhatsApp device session, audio
+and video) or `cloudApi` (the WhatsApp Business Calling API, audio only). Every
+component gates on the snapshot's `capabilities`, never on the line name. The
+controller also owns capture/playback device choice (`setPreferredDevices`,
+`switchDevice`, `refreshDevices`) so a microphone or camera swap mid-call is a
+track replacement, not a renegotiation. The SDK does not invent group rooms,
+participants, reactions, hand raising, or waiting rooms.
+
+`@polymorfa/react` ships the complete call UI: `CallSurface` (incoming card,
+stage, control dock, and a pop-out window), plus `IncomingCallCard`,
+`CallStage`, `CallControls`, and `DialPad` for composition. The design mirrors
+the official WhatsApp desktop call windows in a monochrome Material-3 voice;
+colors derive from the shared appearance variables.
 
 ## Next.js and dev mode
 

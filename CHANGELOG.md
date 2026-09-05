@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+- Added `MessagingClient.voip.token` for minting the browser call token, typed
+  the client-rules response the runtime actually returns (including the calls
+  bindings `maxConcurrency` and `allowedNumber`), and typed client actions.
+- Added `createSignalingCallsBackend`, `IncomingCallRelay`, and
+  `incomingCallFromWebhook` so browser calls run end to end on the REST
+  signaling surface; `CallsController` now carries the calling `line` and
+  `capabilities`, device lists and selections, live device switching, and
+  `connectedAt`.
+- Replaced the placeholder `CallSurface` with the complete call UI —
+  `IncomingCallCard`, `CallStage`, `CallControls`, `DialPad`, a pop-out call
+  window, and `useCallDuration` — themed from the shared appearance variables
+  and localized through new `calls.*` messages; `pmfa-call` follows the same
+  controller contract.
+- Refreshed the Messaging and Platform contracts and the coverage ledger for
+  the `/api/voip/*` signaling routes and the `call.ended` / `call.telemetry`
+  webhook events.
+
 ## 0.1.0-dev.0 - 2026-08-19
 
 - Added handwritten Messaging clients for sessions, messages, and webhooks.

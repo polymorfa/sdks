@@ -32,6 +32,16 @@ export const POST = createClientTokenRoute({
 });
 ```
 
+For browser calls, the same route can mint through `MessagingClient.voip`
+(`POST /api/voip/token`), which returns the same token shape:
+
+```ts
+mint: createMessagingClientTokenMint({
+  clientTokens: { mint: (input, options) => messaging.voip.token(input, options) },
+  resolve: async (subject) => ({ session: "support", ephemeralId: subject.userId }),
+}),
+```
+
 `createTemplateBuilderRoute` pairs the browser template transport with
 `MessagingClient.templates`. The application authorizes every request and
 resolves both project scope and the Cloud API submission session on the server.
