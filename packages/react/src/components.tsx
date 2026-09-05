@@ -1,5 +1,4 @@
 import type {
-  CallsController,
   ConversationController,
   ConversationMessage,
   MessageComposerController,
@@ -313,60 +312,5 @@ function TemplatePreviewOutput({
         </article>
       ))}
     </output>
-  );
-}
-
-export interface CallSurfaceProps extends ControllerProps<CallsController> {
-  readonly renderMedia?: (streams: {
-    readonly local?: MediaStream;
-    readonly remote?: MediaStream;
-  }) => ReactNode;
-}
-export function CallSurface({
-  controller,
-  createController,
-  renderMedia,
-}: CallSurfaceProps) {
-  const resolved = useResolvedController(controller, createController);
-  const snapshot = useController(resolved);
-  const configuration = usePolymorfa();
-  return (
-    <section {...shell(configuration)} data-pmfa="call" aria-live="assertive">
-      <h2>{snapshot.status}</h2>
-      {snapshot.peer && <p>{snapshot.peer}</p>}
-      {renderMedia?.({
-        ...(resolved.localStream === undefined
-          ? {}
-          : { local: resolved.localStream }),
-        ...(resolved.remoteStream === undefined
-          ? {}
-          : { remote: resolved.remoteStream }),
-      })}
-      {snapshot.status === "incoming" && (
-        <>
-          <button type="button" onClick={() => void resolved.answer()}>
-            Answer
-          </button>
-          <button type="button" onClick={() => void resolved.reject()}>
-            Reject
-          </button>
-        </>
-      )}
-      {["ringing", "accepted", "connecting", "connected"].includes(
-        snapshot.status,
-      ) && (
-        <>
-          <button
-            type="button"
-            onClick={() => resolved.setMuted({ audio: !snapshot.audioMuted })}
-          >
-            {snapshot.audioMuted ? "Unmute" : "Mute"}
-          </button>
-          <button type="button" onClick={() => void resolved.hangup()}>
-            Hang up
-          </button>
-        </>
-      )}
-    </section>
   );
 }

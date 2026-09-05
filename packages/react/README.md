@@ -21,3 +21,57 @@ carousel card bodies, and variable examples. It keeps “Save draft” and “Su
 to Meta” as separate actions and renders structured previews. Use
 `renderPreview` to replace the preview region without replacing controller
 state.
+
+## Calls
+
+`CallSurface` is the whole call experience: the incoming card while a call
+rings, the stage and control dock during the call, and a ↗ button that pops
+the call into its own resizable window. `IncomingCallCard`, `CallStage`,
+`CallControls`, and `DialPad` compose individually. All of them render from a
+`CallsController` and follow the provider's appearance and locale.
+
+```tsx
+import {
+  BrowserTransport,
+  CallsController,
+  CallsSignalingClient,
+  IncomingCallRelay,
+  WebRtcMediaFactory,
+  createClientTokenProvider,
+  createSignalingCallsBackend,
+  incomingCallFromWebhook,
+} from "@polymorfa/browser";
+import { CallSurface, DialPad, PolymorfaProvider } from "@polymorfa/react";
+
+const transport = new BrowserTransport({
+  getClientToken: createClientTokenProvider(), // POST /api/polymorfa-token → pmfa_ct_…
+});
+const signaling = new CallsSignalingClient(transport);
+const incoming = new IncomingCallRelay();
+const calls = new CallsController(
+  createSignalingCallsBackend({ signaling, incoming }),
+  new WebRtcMediaFactory({ signaling }),
+);
+calls.initialize();
+
+// Your realtime channel delivers the server's `call.received` webhook:
+realtime.on("call.received", (payload) =>
+  incoming.receive(incomingCallFromWebhook(payload)),
+);
+
+<PolymorfaProvider>
+  <CallSurface controller={calls} resolveName={lookupContactName} />
+  <DialPad controller={calls} />
+</PolymorfaProvider>;
+```
+
+The incoming card mirrors the official desktop call window: name, "WhatsApp
+audio/video call" subtitle, avatar or a mirrored self-preview with camera and
+mute toggles and a ⋯ device menu, then Reject and Answer. Answering a video
+offer with the camera off still acquires video muted, so the in-call camera
+toggle can enable it. The dock carries split pills — `[camera|⌄]` and
+`[mic|⌄]` whose dropdowns pick devices live — and a red hang-up pill. Video is
+per direction; `disableVideo` hides the camera control. Avatars come from
+`resolveAvatar` (a URL or a promise of one; `BrowserMessagingClient.contacts
+.picture` works when the token carries `read_contact`); without one a stable
+hash of the caller id picks one of eight palette tones.
