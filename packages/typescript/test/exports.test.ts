@@ -46,6 +46,7 @@ import {
   SessionBansResource,
   TemplatesResource,
   UsersResource,
+  VoipResource,
   WidgetSettingsResource,
   constructWebhookEvent,
   isEvent,
@@ -160,11 +161,12 @@ describe("public exports", () => {
       SessionBansResource,
       TemplatesResource,
       UsersResource,
+      VoipResource,
       WidgetSettingsResource,
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(44);
+    ]).toHaveLength(45);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {

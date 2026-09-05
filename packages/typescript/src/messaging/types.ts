@@ -1353,28 +1353,84 @@ export interface ClientTokenValue {
 
 export type MintClientTokenResponse = SuccessEnvelope<ClientTokenValue>;
 
-export interface ClientRuleRateLimits {
-  readonly perMinute?: number;
-  readonly perDay?: number;
-}
+/** Who a client token may message: chats the peer started, anyone, or nobody. */
+export type ClientRecipientMode = "conversation" | "any" | "none";
 
+/**
+ * Client-token actions (comma-separated in `allowedActions`). The `voip_*`
+ * actions gate the browser call signaling routes: `voip_place` and
+ * `voip_answer` establish media, `voip_signal` covers trickle ICE and teardown.
+ */
+export type ClientAction =
+  | "mcp"
+  | "send_message"
+  | "send_reaction"
+  | "send_typing"
+  | "send_seen"
+  | "read_presence"
+  | "subscribe_presence"
+  | "read_contact"
+  | "widget_start"
+  | "widget_pair"
+  | "widget_status"
+  | "widget_embedded_signup"
+  | "widget_handoff"
+  | "voip_place"
+  | "voip_answer"
+  | "voip_signal";
+
+/** Rules as returned by `GET /api/sessions/{session}/client-rules`. */
 export interface ClientRules {
-  readonly actions: readonly string[];
-  readonly recipientMode: string;
-  readonly verifiedJids?: readonly string[];
-  readonly rateLimits?: ClientRuleRateLimits;
+  readonly recipientMode: ClientRecipientMode | "";
+  /** Comma-separated {@link ClientAction} list. */
+  readonly allowedActions: string;
+  /** Requests per minute per ephemeral id (0 = unlimited). */
+  readonly rateLimit: number;
+  /** Sends per day per ephemeral id (0 = unlimited). */
+  readonly maxDaily: number;
+  /** Comma-separated browser origins allowed to use the token. */
+  readonly allowedOrigins: string;
+  /** Calls: max distinct in-flight calls per token (0 = unlimited). */
+  readonly maxConcurrency: number;
+  /** Calls: comma-separated E.164 destination allowlist (empty = any). */
+  readonly allowedNumber: string;
+  readonly enabled: boolean;
 }
 
 export type GetClientRulesResponse = SuccessEnvelope<ClientRules>;
 
 export interface SetClientRulesRequest {
-  readonly recipientMode: string;
+  readonly recipientMode: ClientRecipientMode;
+  /** Comma-separated {@link ClientAction} list. */
   readonly allowedActions?: string;
   readonly rateLimit?: number;
   readonly maxDaily?: number;
   readonly allowedOrigins?: string;
   readonly enabled: boolean;
+  /** Calls: max distinct in-flight calls per token (0 = unlimited). */
+  readonly maxConcurrency?: number;
+  /** Calls: comma-separated E.164 destination allowlist (empty = any). */
+  readonly allowedNumber?: string;
 }
+
+/**
+ * Body for `POST /api/voip/token`: the same claims as
+ * {@link MintClientTokenRequest}, minting the browser token that
+ * `@polymorfa/browser` call signaling runs on.
+ */
+export interface VoipTokenRequest {
+  readonly session: string;
+  readonly ephemeralId: string;
+  readonly ttlSeconds?: number;
+}
+
+export interface VoipTokenValue {
+  readonly token: string;
+  /** Unix epoch milliseconds. */
+  readonly expiresAt: number;
+}
+
+export type VoipTokenResponse = SuccessEnvelope<VoipTokenValue>;
 
 export type ListSessionsResponse = SuccessEnvelope<readonly Session[]>;
 export type CreateSessionResponse = SuccessEnvelope<SessionOperation>;

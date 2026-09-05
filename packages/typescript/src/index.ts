@@ -27,6 +27,7 @@ export { ChatsResource } from "./messaging/chats.js";
 export { ChannelsResource } from "./messaging/channels.js";
 export { BusinessResource } from "./messaging/business.js";
 export { CallsResource } from "./messaging/calls.js";
+export { VoipResource } from "./messaging/voip.js";
 export { MessagingCampaignsResource } from "./messaging/campaigns.js";
 export type {
   AppealBusinessCollectionResponse,
@@ -176,8 +177,12 @@ export type {
   DisappearingTimerDuration,
   DisappearingTimerRequest,
   CloudApiCredentials,
-  ClientRuleRateLimits,
   ClientRules,
+  ClientRecipientMode,
+  ClientAction,
+  VoipTokenRequest,
+  VoipTokenResponse,
+  VoipTokenValue,
   ClientTokenValue,
   Contact,
   ContactBlocklist,
