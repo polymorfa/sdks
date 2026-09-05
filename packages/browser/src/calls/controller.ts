@@ -24,10 +24,42 @@ export type CallEndReason =
   | "capacity"
   | "remote_hangup"
   | (string & {});
+/**
+ * Which Polymorfa calling line carries a call: a linked WhatsApp device
+ * session (audio + video) or the WhatsApp Business Calling API (audio only).
+ */
+export type CallLine = "linkedDevice" | "cloudApi";
+
+export interface CallCapabilities {
+  readonly video: boolean;
+  readonly mute: boolean;
+}
+
+export function capabilitiesFor(line: CallLine): CallCapabilities {
+  return { video: line !== "cloudApi", mute: true };
+}
+
+export type CallDeviceKind = "audioinput" | "videoinput" | "audiooutput";
+
+export interface CallDevice {
+  readonly deviceId: string;
+  readonly kind: CallDeviceKind;
+  readonly label: string;
+}
+
+/** Capture/playback device choices. `audioOutput` needs `setSinkId` support. */
+export interface SelectedCallDevices {
+  readonly audioInput?: string;
+  readonly videoInput?: string;
+  readonly audioOutput?: string;
+}
+
 export interface IncomingCall {
   readonly callId: string;
   readonly from: string;
   readonly video: boolean;
+  /** Defaults to `linkedDevice`. */
+  readonly line?: CallLine;
 }
 export type CallLifecycleEvent =
   | { readonly type: "incomingCall"; readonly call: IncomingCall }
@@ -48,6 +80,7 @@ export type CallLifecycleEvent =
 export interface PlaceCallInput {
   readonly to: string;
   readonly video: boolean;
+  readonly line: CallLine;
   readonly idempotencyKey: string;
 }
 export interface CallsBackend {
@@ -65,9 +98,15 @@ export interface CallsSnapshot extends ControllerSnapshot {
   readonly callId?: string;
   readonly peer?: string;
   readonly direction?: "incoming" | "outgoing";
+  readonly line: CallLine;
+  readonly capabilities: CallCapabilities;
   readonly video: boolean;
   readonly audioMuted: boolean;
   readonly videoMuted: boolean;
+  /** Set once media connected; drives the call duration display. */
+  readonly connectedAt?: number;
+  readonly devices: readonly CallDevice[];
+  readonly selectedDevices: SelectedCallDevices;
   readonly endReason?: CallEndReason;
   readonly error?: {
     readonly code: string;
@@ -84,6 +123,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   readonly #backend: CallsBackend;
   readonly #mediaFactory: CallMediaFactory;
   readonly #createKey: () => string;
+  readonly #now: () => number;
   #abort = new AbortController();
   #unsubscribe: (() => void) | undefined;
   #media: CallMediaSession | undefined;
@@ -95,11 +135,21 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     options: CallsControllerOptions = {},
   ) {
     super(
-      { status: "idle", video: false, audioMuted: false, videoMuted: false },
+      {
+        status: "idle",
+        line: "linkedDevice",
+        capabilities: capabilitiesFor("linkedDevice"),
+        video: false,
+        audioMuted: false,
+        videoMuted: false,
+        devices: [],
+        selectedDevices: {},
+      },
       options.now,
     );
     this.#backend = backend;
     this.#mediaFactory = mediaFactory;
+    this.#now = options.now ?? Date.now;
     this.#createKey =
       options.createIdempotencyKey ?? (() => crypto.randomUUID());
   }
@@ -115,21 +165,26 @@ export class CallsController extends ObservableController<CallsSnapshot> {
 
   async place(
     to: string,
-    options: { readonly video?: boolean } = {},
+    options: { readonly video?: boolean; readonly line?: CallLine } = {},
   ): Promise<void> {
     const operation = this.#begin();
-    const video = options.video ?? false;
+    const line = options.line ?? "linkedDevice";
+    const capabilities = capabilitiesFor(line);
+    const video = (options.video ?? false) && capabilities.video;
     try {
       const { callId } = await this.#backend.place(
-        { to, video, idempotencyKey: this.#createKey() },
+        { to, video, line, idempotencyKey: this.#createKey() },
         this.#abort.signal,
       );
       if (operation !== this.#operation) return;
       this.transition({
+        ...this.#deviceFields(),
         status: "ringing",
         callId,
         peer: to,
         direction: "outgoing",
+        line,
+        capabilities,
         video,
         audioMuted: false,
         videoMuted: false,
@@ -145,7 +200,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     if (current.status !== "incoming" || current.callId === undefined)
       throw new Error("No incoming call is available to answer.");
     const operation = this.#begin(false);
-    const video = options.video ?? current.video;
+    const video =
+      (options.video ?? current.video) && current.capabilities.video;
     try {
       await this.#backend.answer(current.callId, this.#abort.signal);
       if (operation !== this.#operation) return;
@@ -183,6 +239,54 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       videoMuted: muted.video ?? current.videoMuted,
     });
   }
+  /** Choose the devices the next call acquires (and the speaker the UI plays through). */
+  setPreferredDevices(devices: SelectedCallDevices): void {
+    this.assertActive();
+    const current = this.getSnapshot();
+    this.transition({
+      ...callFields(current),
+      status: current.status,
+      selectedDevices: { ...current.selectedDevices, ...devices },
+    });
+  }
+
+  /**
+   * Switch the live microphone or camera mid-call (the outgoing track is
+   * replaced in place, mute state carries over) and remember the choice for
+   * the next call. Without an active media session only the preference is
+   * stored.
+   */
+  async switchDevice(
+    kind: "audioInput" | "videoInput",
+    deviceId: string,
+  ): Promise<void> {
+    this.setPreferredDevices({ [kind]: deviceId });
+    const media = this.#media;
+    if (media?.switchInput === undefined) return;
+    try {
+      await media.switchInput(
+        kind === "audioInput" ? "audio" : "video",
+        deviceId,
+        this.#abort.signal,
+      );
+    } catch {
+      // Device unavailable — keep the current capture.
+    }
+  }
+
+  /** Re-enumerate capture/playback devices into the snapshot. */
+  async refreshDevices(): Promise<void> {
+    this.assertActive();
+    if (this.#mediaFactory.listDevices === undefined) return;
+    const devices = await this.#mediaFactory.listDevices();
+    const current = this.getSnapshot();
+    this.transition({
+      ...callFields(current),
+      status: current.status,
+      devices,
+    });
+  }
+
   get localStream(): MediaStream | undefined {
     return this.#media?.localStream;
   }
@@ -227,6 +331,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         },
       },
       this.#abort.signal,
+      { devices: this.getSnapshot().selectedDevices },
     );
     if (operation !== this.#operation) {
       await media.close();
@@ -238,7 +343,11 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     const current = this.getSnapshot();
     if (current.callId !== callId) return;
     if (state === "connected")
-      this.transition({ ...callFields(current), status: "connected" });
+      this.transition({
+        ...callFields(current),
+        status: "connected",
+        connectedAt: current.connectedAt ?? this.#now(),
+      });
     else if (state === "failed" || state === "closed") {
       void this.#closeMedia();
       this.transition({
@@ -278,12 +387,17 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       return;
     if (event.type === "incomingCall") {
       if (!["idle", "ready", "ended"].includes(current.status)) return;
+      const line = event.call.line ?? "linkedDevice";
+      const capabilities = capabilitiesFor(line);
       this.transition({
+        ...this.#deviceFields(),
         status: "incoming",
         callId: event.call.callId,
         peer: event.call.from,
         direction: "incoming",
-        video: event.call.video,
+        line,
+        capabilities,
+        video: event.call.video && capabilities.video,
         audioMuted: false,
         videoMuted: false,
       });
@@ -304,6 +418,11 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       this.transition({ ...callFields(current), status: event.type });
     }
   }
+  #deviceFields(): Pick<CallsSnapshot, "devices" | "selectedDevices"> {
+    const { devices, selectedDevices } = this.getSnapshot();
+    return { devices, selectedDevices };
+  }
+
   #requireIncoming(): CallsSnapshot & { callId: string } {
     const current = this.getSnapshot();
     if (current.status !== "incoming" || current.callId === undefined)
@@ -340,9 +459,16 @@ function callFields(
     ...(snapshot.direction === undefined
       ? {}
       : { direction: snapshot.direction }),
+    line: snapshot.line,
+    capabilities: snapshot.capabilities,
     video: snapshot.video,
     audioMuted: snapshot.audioMuted,
     videoMuted: snapshot.videoMuted,
+    ...(snapshot.connectedAt === undefined
+      ? {}
+      : { connectedAt: snapshot.connectedAt }),
+    devices: snapshot.devices,
+    selectedDevices: snapshot.selectedDevices,
     ...(snapshot.endReason === undefined
       ? {}
       : { endReason: snapshot.endReason }),

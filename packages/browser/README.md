@@ -39,9 +39,13 @@ routes directly.
 
 Available controller families are QuickLink, conversations and composing,
 template building, and calls. Calls use `CallsSignalingClient` for the
-`voip-v2` offer/answer and trickle ICE REST paths plus `WebRtcMediaFactory` for
-browser media. Applications supply `CallsBackend` for lifecycle and call-control
-operations that are not part of that REST signaling surface.
+offer/answer and trickle ICE REST paths, `WebRtcMediaFactory` for browser
+media and device switching, and `createSignalingCallsBackend` as the
+`CallsBackend` over that surface. The application relays its `call.received`
+webhook into `IncomingCallRelay` (`incomingCallFromWebhook` maps the payload);
+reject and hang-up run through the idempotent teardown route. `CallsController`
+tracks the calling `line` (`linkedDevice` or `cloudApi`), its `capabilities`,
+device lists and selections, and `connectedAt` for duration display.
 
 ## Template builder
 
