@@ -133,6 +133,7 @@ export class Call extends Emitter<CallEvents> {
   #endReason: CallEndReason | undefined;
   #startedAt: number;
   #connectedAt: number | undefined;
+  #endedAt: number | undefined;
   #accepting: Promise<void> | undefined;
 
   constructor(init: CallInit) {
@@ -166,10 +167,14 @@ export class Call extends Emitter<CallEvents> {
     return this.#connectedAt;
   }
   /** Seconds since media connected; 0 before that. */
+  /** Seconds of connected time; frozen at the end so a retained call stops counting. */
   get duration(): number {
-    return this.#connectedAt === undefined
-      ? 0
-      : Math.max(0, Math.floor((this.#now() - this.#connectedAt) / 1000));
+    if (this.#connectedAt === undefined) return 0;
+    const until = this.#endedAt ?? this.#now();
+    return Math.max(0, Math.floor((until - this.#connectedAt) / 1000));
+  }
+  get endedAt(): number | undefined {
+    return this.#endedAt;
   }
   get participants(): readonly Participant[] {
     return [...this.#participants.values()];
@@ -187,13 +192,32 @@ export class Call extends Emitter<CallEvents> {
         new Error(`Cannot answer a call in state "${this.#state}".`),
       );
     const video = options.video ?? this.video !== undefined;
+    let accepted = false;
     this.#accepting = (async () => {
       this.#transition("connecting");
       await this.#api.accept(this.id, { video });
+      accepted = true;
       await this.#bridge();
     })().catch((cause: unknown) => {
       this.#accepting = undefined;
-      if (this.#state !== "ended") this.#transition("incoming");
+      if (this.#state === "ended") throw cause;
+      if (!accepted) {
+        // The accept itself was refused: nothing changed on the platform, so
+        // the call is still ringing and can be answered or rejected again.
+        this.#transition("incoming");
+        throw cause;
+      }
+      // The platform has accepted; only our media failed. Going back to
+      // `incoming` would send a second accept and offer reject() for a call
+      // that is no longer ringing. End it and say why.
+      this.emit("error", {
+        code: "media_failed",
+        message:
+          cause instanceof Error
+            ? cause.message
+            : "Media could not be bridged.",
+      });
+      this.#end("connection_failed");
       throw cause;
     });
     return this.#accepting;
@@ -275,12 +299,21 @@ export class Call extends Emitter<CallEvents> {
     media.on("close", () => {
       if (this.#state === "connected") this.#end("connection_failed");
     });
-    const ready = await new Promise<{ sampleRate: number; video: boolean }>(
-      (resolve, reject) => {
-        media.once("ready", resolve);
-        media.connect().catch(reject);
-      },
-    );
+    let ready: { sampleRate: number; video: boolean };
+    try {
+      ready = await new Promise<{ sampleRate: number; video: boolean }>(
+        (resolve, reject) => {
+          media.once("ready", resolve);
+          media.connect().catch(reject);
+        },
+      );
+    } catch (cause) {
+      // Any bridge failure releases the socket and its heartbeat; left open,
+      // a retry would overwrite #media and leak this one.
+      media.close();
+      if (this.#media === media) this.#media = undefined;
+      throw cause;
+    }
     if (this.#state === "ended") {
       media.close();
       return;
@@ -302,6 +335,7 @@ export class Call extends Emitter<CallEvents> {
   #end(reason: CallEndReason): void {
     if (this.#state === "ended") return;
     this.#endReason = reason;
+    this.#endedAt = this.#now();
     this.#transition("ended");
     const media = this.#media;
     this.#media = undefined;

@@ -24,6 +24,8 @@ export interface LifecycleSocketOptions {
   readonly maxBackoffMs?: number;
   /** Heartbeat period; 0 disables. Default 15 000 ms. */
   readonly heartbeatMs?: number;
+  /** Bound on one attempt's WebSocket open; 0 disables. Default 10 000 ms. */
+  readonly connectTimeoutMs?: number;
 }
 
 type Events = {
@@ -155,7 +157,42 @@ export class LifecycleSocket extends Emitter<Events> {
       return;
     }
     this.#socket = socket;
+    // A socket stuck CONNECTING fires neither onopen nor onclose, and the
+    // heartbeat only starts after onopen — without this bound the attempt
+    // never settles and no reconnect is ever scheduled.
+    const timeoutMs = this.#o.connectTimeoutMs ?? 10_000;
+    let openTimer: ReturnType<typeof setTimeout> | undefined =
+      timeoutMs > 0
+        ? (this.#o.setTimeout ?? setTimeout)(() => {
+            openTimer = undefined;
+            if (this.#socket !== socket) return;
+            this.#socket = undefined;
+            socket.onopen =
+              socket.onmessage =
+              socket.onclose =
+              socket.onerror =
+                null;
+            try {
+              socket.close();
+            } catch {
+              // never opened
+            }
+            this.emit("error", {
+              code: "connect_timeout",
+              message: "The lifecycle socket did not open in time.",
+            });
+            settle();
+            this.#scheduleReconnect();
+          }, timeoutMs)
+        : undefined;
+    const clearOpenTimer = () => {
+      if (openTimer !== undefined) {
+        (this.#o.clearTimeout ?? clearTimeout)(openTimer);
+        openTimer = undefined;
+      }
+    };
     socket.onopen = () => {
+      clearOpenTimer();
       this.#attempt = 0;
       this.#startHeartbeat(socket);
       this.emit("state", true);
@@ -167,6 +204,7 @@ export class LifecycleSocket extends Emitter<Events> {
     };
     socket.onerror = () => undefined;
     socket.onclose = () => {
+      clearOpenTimer();
       this.#stopHeartbeat();
       if (this.#socket === socket) this.#socket = undefined;
       this.emit("state", false);

@@ -280,3 +280,182 @@ describe("CallsClient", () => {
     expect(() => new CallsClient({ session: "s" })).toThrow(/apiKey/);
   });
 });
+
+describe("CallsClient — review round one", () => {
+  it("settles answer() when the call ends while media is still connecting", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const answering = call!.answer();
+    await flush();
+    const media = h.ws(1);
+    media.open(); // connecting, no `ready` yet
+    // Remote hangs up before media bridges. close() must reject the pending
+    // connect, or answer() would hang forever.
+    life.text({
+      type: "event",
+      event: "call.ended",
+      callId: "CALL-1",
+      payload: { reason: "user_hangup" },
+      timestamp: "",
+    });
+    await expect(answering).rejects.toThrow(/closed before media/);
+    expect(call!.state).toBe("ended");
+    expect(call!.endReason).toBe("remote_hangup");
+  });
+
+  it("ends the call, rather than returning to incoming, when media fails after a successful accept", async () => {
+    const api = fakeApi();
+    api.mediaTicket.mockRejectedValueOnce(new Error("no ticket"));
+    const h = clientWith(api);
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const errors: string[] = [];
+    call!.on("error", (e) => errors.push(e.code));
+    await expect(call!.answer()).rejects.toThrow("no ticket");
+    // The platform already accepted: a second accept or a reject would be wrong.
+    expect(api.accept).toHaveBeenCalledTimes(1);
+    expect(call!.state).toBe("ended");
+    expect(call!.endReason).toBe("connection_failed");
+    expect(errors).toEqual(["media_failed"]);
+    await expect(call!.reject()).rejects.toThrow(/ended/);
+  });
+
+  it("closes the media socket when bridging fails after it opened", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const answering = call!.answer();
+    await flush();
+    const media = h.ws(1);
+    media.open();
+    media.text({ type: "error", code: "pod_refused", message: "no" });
+    await expect(answering).rejects.toThrow(/pod_refused/);
+    expect(media.readyState).toBe(FakeWebSocket.CLOSED);
+    // The lifecycle heartbeat is still live; the media socket's — the last one
+    // registered — must have been cleared with the socket.
+    expect(h.t.intervals.at(-1)?.cleared).toBe(true);
+    expect(h.t.intervals.at(0)?.cleared).not.toBe(true);
+  });
+
+  it("applies lifecycle events that arrive before place() resolves", async () => {
+    const api = fakeApi();
+    let resolvePlace: (v: { callId: string }) => void = () => undefined;
+    api.place.mockImplementationOnce(
+      () => new Promise((r) => (resolvePlace = r)),
+    );
+    const h = clientWith(api);
+    const life = await connected(h);
+    const placing = h.client.place("+15550100");
+    await flush();
+    // The remote answers before our POST returns.
+    life.text({
+      type: "event",
+      event: "call.accepted",
+      callId: "CALL-FAST",
+      payload: {},
+      timestamp: "",
+    });
+    resolvePlace({ callId: "CALL-FAST" });
+    const call = await placing;
+    await bridge(h);
+    expect(call.state).toBe("connected");
+  });
+
+  it("freezes duration when the call ends", async () => {
+    let now = 10_000;
+    const api = fakeApi();
+    FakeWebSocket.instances = [];
+    const t = timers();
+    const client = new CallsClient({
+      session: "support",
+      api,
+      WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
+      setInterval: t.setInterval,
+      clearInterval: t.clearInterval,
+      setTimeout: t.setTimeout,
+      clearTimeout: t.clearTimeout,
+      now: () => now,
+    });
+    const connecting = client.connect();
+    await flush();
+    FakeWebSocket.instances[0]!.open();
+    await connecting;
+    let call: Call | undefined;
+    client.on("incoming", (c) => (call = c));
+    ring(FakeWebSocket.instances[0]!);
+    const answering = call!.answer();
+    await flush();
+    FakeWebSocket.instances[1]!.open();
+    FakeWebSocket.instances[1]!.text({
+      type: "ready",
+      sampleRate: 16_000,
+      video: false,
+    });
+    await answering;
+    now = 25_000;
+    expect(call!.duration).toBe(15);
+    await call!.hangup();
+    now = 99_000;
+    expect(call!.duration).toBe(15);
+    expect(call!.endedAt).toBe(25_000);
+  });
+
+  it("bounds how many ended calls it retains", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    for (let i = 0; i < 205; i += 1) {
+      const id = `CALL-${i}`;
+      ring(life, id);
+      life.text({
+        type: "event",
+        event: "call.ended",
+        callId: id,
+        payload: {},
+        timestamp: "",
+      });
+    }
+    // 205 ended; only the most recent 200 are still known, so a duplicate
+    // ended for the oldest is simply unknown (and harmless), not a leak.
+    expect(h.client.calls).toEqual([]);
+    const known = (h.client as unknown as { calls: unknown[] }).calls;
+    expect(known).toHaveLength(0);
+  });
+
+  it("times out a socket that never opens and reconnects", async () => {
+    const api = fakeApi();
+    FakeWebSocket.instances = [];
+    const t = timers();
+    const client = new CallsClient({
+      session: "support",
+      api,
+      WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
+      setInterval: t.setInterval,
+      clearInterval: t.clearInterval,
+      setTimeout: t.setTimeout,
+      clearTimeout: t.clearTimeout,
+      random: () => 0.5,
+    });
+    const errors: string[] = [];
+    client.on("error", (e) => errors.push(e.code));
+    const connecting = client.connect();
+    await flush();
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    // Never opens. The open timeout is the first queued timeout; firing it
+    // must settle connect(), report, and schedule a reconnect.
+    t.fireTimeouts();
+    await connecting;
+    expect(errors).toEqual(["connect_timeout"]);
+    // The handler scheduled a reconnect; fireTimeouts snapshots the queue
+    // first, so that new timer is still pending here.
+    expect(t.timeouts.filter((x) => x.cleared !== true)).toHaveLength(1);
+    expect(FakeWebSocket.instances[0]!.readyState).toBe(FakeWebSocket.CLOSED);
+    client.disconnect();
+  });
+});

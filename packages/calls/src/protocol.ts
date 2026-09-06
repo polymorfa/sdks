@@ -228,7 +228,8 @@ export function parseMediaControl(
         ? (parsed as MediaControlFrame)
         : undefined;
     case "participant_left":
-      return isString(f["participantId"])
+      return isString(f["participantId"]) &&
+        (f["reason"] === undefined || isString(f["reason"]))
         ? (parsed as MediaControlFrame)
         : undefined;
     case "error":

@@ -112,3 +112,31 @@ describe("frame parsers", () => {
     ).toMatchObject({ type: "participant_joined" });
   });
 });
+
+describe("participant_left", () => {
+  it("accepts reason only when absent or a string", () => {
+    expect(
+      parseMediaControl(
+        JSON.stringify({
+          type: "participant_left",
+          participantId: "p",
+          reason: 42,
+        }),
+      ),
+    ).toBeUndefined();
+    expect(
+      parseMediaControl(
+        JSON.stringify({ type: "participant_left", participantId: "p" }),
+      ),
+    ).toMatchObject({ type: "participant_left" });
+    expect(
+      parseMediaControl(
+        JSON.stringify({
+          type: "participant_left",
+          participantId: "p",
+          reason: "hangup",
+        }),
+      ),
+    ).toMatchObject({ reason: "hangup" });
+  });
+});

@@ -47,6 +47,8 @@ export class MediaSocket extends Emitter<Events> {
   #awaitingPong = false;
   #sampleRate = DEFAULT_SAMPLE_RATE;
   #closed = false;
+  /** Settles the in-flight `connect()`; a local `close()` rejects it. */
+  #pending: ((err?: Error) => void) | undefined;
 
   constructor(options: MediaSocketOptions) {
     super();
@@ -80,9 +82,11 @@ export class MediaSocket extends Emitter<Events> {
       const done = (err?: Error) => {
         if (settled) return;
         settled = true;
+        if (this.#pending === done) this.#pending = undefined;
         if (err) reject(err);
         else resolve();
       };
+      this.#pending = done;
       let socket: WebSocket;
       try {
         // The ticket is a bearer credential; browsers cannot set headers on a
@@ -166,6 +170,9 @@ export class MediaSocket extends Emitter<Events> {
   close(): void {
     this.#closed = true;
     this.#stopHeartbeat();
+    // A call that ends while media is still connecting must not leave the
+    // caller's answer() pending forever: reject the in-flight connect first.
+    this.#pending?.(new Error("Media socket closed before media was bridged."));
     const socket = this.#socket;
     this.#socket = undefined;
     if (socket === undefined) return;

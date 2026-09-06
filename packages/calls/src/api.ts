@@ -62,6 +62,32 @@ export interface HttpCallsApiOptions {
   readonly socketBaseUrl?: string;
 }
 
+/**
+ * A 2xx body that does not carry the shape the operation needs is a protocol
+ * fault, not a success: fail loudly here rather than let `undefined` reach a
+ * socket URL or a call id.
+ */
+function expectShape(
+  data: unknown,
+  operation: string,
+  ok: (d: Record<string, unknown>) => boolean,
+): Record<string, unknown> {
+  if (
+    data !== null &&
+    typeof data === "object" &&
+    ok(data as Record<string, unknown>)
+  )
+    return data as Record<string, unknown>;
+  throw new CallsApiError(
+    200,
+    "malformed_response",
+    `${operation}: response body did not carry the expected fields`,
+  );
+}
+const isString = (v: unknown): v is string => typeof v === "string";
+const isNumber = (v: unknown): v is number =>
+  typeof v === "number" && Number.isFinite(v);
+
 export class CallsApiError extends Error {
   constructor(
     readonly status: number,
@@ -106,49 +132,69 @@ export class HttpCallsApi implements CallsApi {
     session: string,
     signal?: AbortSignal,
   ): Promise<SocketTicket> {
-    const data = await this.#request<SocketTicket>(
+    const data = await this.#request<unknown>(
       "POST",
       "/api/voip/ws-ticket",
       { session },
       signal,
     );
-    return { ...data, url: this.#absoluteSocketUrl(data.url) };
+    const t = expectShape(
+      data,
+      "ws-ticket",
+      (d) => isString(d.ticket) && isNumber(d.expiresAt) && isString(d.url),
+    );
+    return {
+      ticket: t.ticket as string,
+      expiresAt: t.expiresAt as number,
+      url: this.#absoluteSocketUrl(t.url as string),
+    };
   }
 
   async mediaTicket(
     callId: string,
     signal?: AbortSignal,
   ): Promise<MediaTicket> {
-    const data = await this.#request<{
-      token: string;
-      expiresAt: number;
-      url?: string;
-    }>(
+    const data = await this.#request<unknown>(
       "POST",
       `/api/voip/calls/${encodeURIComponent(callId)}/agent-token`,
       {},
       signal,
     );
+    const t = expectShape(
+      data,
+      "agent-token",
+      (d) =>
+        isString(d.token) &&
+        isNumber(d.expiresAt) &&
+        (d.url === undefined || isString(d.url)),
+    );
     return {
-      token: data.token,
-      expiresAt: data.expiresAt,
+      token: t.token as string,
+      expiresAt: t.expiresAt as number,
       url: this.#absoluteSocketUrl(
-        data.url ?? `/voip/sdk?callId=${encodeURIComponent(callId)}`,
+        (t.url as string | undefined) ??
+          `/voip/sdk?callId=${encodeURIComponent(callId)}`,
       ),
     };
   }
 
-  place(
+  async place(
     input: PlaceCallRequest,
     signal?: AbortSignal,
   ): Promise<{ readonly callId: string }> {
-    return this.#request(
+    const data = await this.#request<unknown>(
       "POST",
       "/api/voip/calls",
       { session: input.session, to: input.to, video: input.video },
       signal,
       { "idempotency-key": input.idempotencyKey },
     );
+    const t = expectShape(
+      data,
+      "place",
+      (d) => isString(d.callId) && (d.callId as string).length > 0,
+    );
+    return { callId: t.callId as string };
   }
 
   async accept(
@@ -185,17 +231,28 @@ export class HttpCallsApi implements CallsApi {
     );
   }
 
-  addParticipant(
+  async addParticipant(
     callId: string,
     to: string,
     signal?: AbortSignal,
   ): Promise<Participant> {
-    return this.#request(
+    const data = await this.#request<unknown>(
       "POST",
       `/api/voip/calls/${encodeURIComponent(callId)}/participants`,
       { to },
       signal,
     );
+    const p = expectShape(
+      data,
+      "participant",
+      (d) =>
+        isString(d.id) &&
+        isString(d.handle) &&
+        typeof d.audioMuted === "boolean" &&
+        typeof d.video === "boolean" &&
+        ["invited", "ringing", "connected", "left"].includes(d.state as string),
+    );
+    return p as unknown as Participant;
   }
 
   #absoluteSocketUrl(url: string): string {

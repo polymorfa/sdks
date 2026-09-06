@@ -53,10 +53,13 @@ export class FakeWebSocket {
   }
 }
 
-export function fakeApi(): CallsApi & {
-  [K in keyof CallsApi]: ReturnType<typeof vi.fn>;
-} {
-  return {
+type FakeApi = {
+  [K in keyof CallsApi]: ReturnType<typeof vi.fn> & CallsApi[K];
+};
+
+/** Typed against CallsApi field by field, so a signature drift fails here first. */
+export function fakeApi(): FakeApi {
+  const api: FakeApi = {
     socketTicket: vi.fn(async (session: string) => ({
       ticket: "pmfa_wst_a",
       expiresAt: Date.now() + 60_000,
@@ -78,7 +81,8 @@ export function fakeApi(): CallsApi & {
       video: false,
       state: "invited" as const,
     })),
-  } as never;
+  } as FakeApi;
+  return api;
 }
 
 export function timers() {

@@ -55,6 +55,15 @@ export class CallsClient extends Emitter<ClientEvents> {
   readonly #api: CallsApi;
   readonly #socket: LifecycleSocket;
   readonly #calls = new Map<string, Call>();
+  /** Recently ended call ids, oldest first, so retention stays bounded. */
+  readonly #endedOrder: string[] = [];
+  /**
+   * Lifecycle events for call ids the client does not know yet. A placed
+   * call is tracked only when the POST resolves, and the socket can deliver
+   * its `accepted` or `ended` before that; dropping those would leave the
+   * call ringing forever.
+   */
+  readonly #pendingEvents = new Map<string, LifecycleEvent[]>();
   readonly #o: CallsClientOptions;
   readonly #createKey: () => string;
 
@@ -158,16 +167,14 @@ export class CallsClient extends Emitter<ClientEvents> {
         return;
       }
       case "call.accepted":
-        void existing?._remoteAccepted();
-        return;
       case "call.ended":
-        existing?._remoteEnded(endReasonFrom(event.payload["reason"]));
-        return;
       case "call.missed":
-        existing?._remoteEnded("missed");
-        return;
       case "call.rejected":
-        existing?._remoteEnded("rejected");
+        if (existing === undefined) {
+          this.#buffer(event);
+          return;
+        }
+        this.#apply(existing, event);
         return;
       default:
         return;
@@ -178,13 +185,64 @@ export class CallsClient extends Emitter<ClientEvents> {
     this.#calls.set(call.id, call);
     call.once("ended", (reason) => {
       this.emit("ended", call, reason);
-      // Keep the entry until a new call reuses the id, so a late duplicate
-      // lifecycle event for this id is recognised and ignored.
+      // Ended calls stay known for a while so a late duplicate lifecycle event
+      // for the id is recognised and ignored — but bounded, or a long-lived
+      // client would hold every call it ever handled.
+      this.#endedOrder.push(call.id);
+      while (this.#endedOrder.length > ENDED_RETENTION) {
+        const oldest = this.#endedOrder.shift();
+        if (oldest !== undefined && this.#calls.get(oldest)?.ended)
+          this.#calls.delete(oldest);
+      }
     });
     this.emit("call", call);
+    // Anything that arrived for this id before the call existed applies now.
+    const queued = this.#pendingEvents.get(call.id);
+    if (queued !== undefined) {
+      this.#pendingEvents.delete(call.id);
+      for (const event of queued) this.#apply(call, event);
+    }
     return call;
   }
+
+  #apply(call: Call, event: LifecycleEvent): void {
+    switch (event.event) {
+      case "call.accepted":
+        void call._remoteAccepted();
+        return;
+      case "call.ended":
+        call._remoteEnded(endReasonFrom(event.payload["reason"]));
+        return;
+      case "call.missed":
+        call._remoteEnded("missed");
+        return;
+      case "call.rejected":
+        call._remoteEnded("rejected");
+        return;
+      default:
+        return;
+    }
+  }
+
+  #buffer(event: LifecycleEvent): void {
+    let queue = this.#pendingEvents.get(event.callId);
+    if (queue === undefined) {
+      if (this.#pendingEvents.size >= PENDING_IDS) {
+        const oldest = this.#pendingEvents.keys().next().value;
+        if (oldest !== undefined) this.#pendingEvents.delete(oldest);
+      }
+      queue = [];
+      this.#pendingEvents.set(event.callId, queue);
+    }
+    if (queue.length < PENDING_EVENTS_PER_ID) queue.push(event);
+  }
 }
+
+/** Ended calls kept for duplicate-event suppression. */
+const ENDED_RETENTION = 200;
+/** Unknown call ids whose early events are held, and how many each. */
+const PENDING_IDS = 64;
+const PENDING_EVENTS_PER_ID = 8;
 
 function timerOptions(o: CallsClientOptions) {
   return {
