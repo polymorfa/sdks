@@ -842,7 +842,7 @@ export function CallStage({
     snapshot.status === "reconnecting"
       ? `${t(locale, "calls.reconnecting")}…`
       : !live && snapshot.direction === "outgoing"
-        ? `${t(locale, "calls.ringing")} ${peer}…`
+        ? t(locale, "calls.ringingTo", { peer })
         : null;
   const identity = (
     <CallIdentity

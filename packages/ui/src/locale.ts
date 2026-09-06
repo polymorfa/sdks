@@ -55,6 +55,8 @@ export const ENGLISH_MESSAGES = {
   "calls.popoutTitle": "Call",
   "calls.dismiss": "Dismiss",
   "calls.incomingFrom": "Incoming call from {peer}",
+  /** Outgoing call still ringing; the peer's position and the ellipsis belong to the locale. */
+  "calls.ringingTo": "Ringing {peer}…",
 } as const;
 
 export type MessageKey = keyof typeof ENGLISH_MESSAGES;
