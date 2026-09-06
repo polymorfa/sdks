@@ -338,6 +338,10 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     kind: "audioInput" | "videoInput",
     deviceId: string,
   ): Promise<void> {
+    // Ahead of setPreferredDevices, which asserts the controller is live: the
+    // UI calls this with `void`, so a selection landing after disposal would
+    // throw into nothing.
+    if (this.#abort.signal.aborted) return;
     const previous = this.getSnapshot().selectedDevices[kind];
     const generation = (this.#deviceSwitches.get(kind) ?? 0) + 1;
     this.#deviceSwitches.set(kind, generation);

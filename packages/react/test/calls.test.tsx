@@ -68,6 +68,9 @@ function mount(node: React.ReactNode): HTMLElement {
 afterEach(() => {
   for (const root of roots.splice(0)) act(() => root.unmount());
   document.body.replaceChildren();
+  // Unconditionally, so a failed assertion inside a fake-timer test cannot
+  // leak them into the rest of the file.
+  vi.useRealTimers();
 });
 
 describe("Calls UI", () => {
@@ -311,7 +314,6 @@ describe("Calls UI", () => {
       for (const root of roots) root.render(<Probe status="ended" />);
     });
     expect(host.textContent).toBe("0");
-    vi.useRealTimers();
   });
 
   it("keeps the in-call stage layout while reconnecting", async () => {
@@ -405,7 +407,7 @@ describe("Calls UI", () => {
     badController.dispose();
   });
 
-  it("applies provider direction and dark theme classes", () => {
+  it("applies provider direction and dark theme classes", async () => {
     const f = fixture();
     const host = mount(
       <PolymorfaProvider
@@ -418,9 +420,22 @@ describe("Calls UI", () => {
     act(() => {
       f.relay.receive({ callId: "CALL-3", from: "+12025550123", video: true });
     });
-    // Controls only render on an active call; answer first.
+    // The controls only render on an active call, so the assertions below say
+    // nothing until it is answered.
     expect(host.querySelector(".pmfa-calls")).toBeNull();
+    await act(async () => {
+      await f.controller.answer();
+    });
+    const root = host.querySelector(".pmfa-calls") as HTMLElement;
+    expect(root).not.toBeNull();
+    expect(root.getAttribute("dir")).toBe("rtl");
+    expect(root.className).toContain("pmfa-calls-dark");
+    expect(root.style.getPropertyValue("--pmfa-color-primary")).toBe("#123456");
+  });
+
+  it("formats call durations", () => {
     expect(formatDuration(3725)).toBe("1:02:05");
     expect(formatDuration(65)).toBe("1:05");
+    expect(formatDuration(0)).toBe("0:00");
   });
 });

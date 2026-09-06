@@ -292,6 +292,28 @@ describe("createSignalingCallsBackend", () => {
     controller.dispose();
   });
 
+  it("ignores a device selection made after disposal", async () => {
+    const m = media();
+    const controller = new CallsController(
+      createSignalingCallsBackend({
+        signaling: signaling(),
+        incoming: new IncomingCallRelay(),
+        place: async () => "call-dev",
+      }),
+      m.factory,
+    );
+    controller.initialize();
+    await controller.place("+12025550123");
+    controller.dispose();
+
+    // setPreferredDevices asserts the controller is live, and the device
+    // panel calls this with `void` — so this used to throw into nothing.
+    await expect(
+      controller.switchDevice("audioInput", "mic-2"),
+    ).resolves.toBeUndefined();
+    expect(m.session.switchInput).not.toHaveBeenCalled();
+  });
+
   it("stays quiet when a device switch fails after disposal", async () => {
     const m = media();
     const controller = new CallsController(
