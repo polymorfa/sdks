@@ -136,11 +136,16 @@ export class MediaSocket extends Emitter<Events> {
           if (control === undefined) return;
           if (control.type === "ready") {
             this.#sampleRate = control.sampleRate;
-            this.emit("ready", {
-              sampleRate: control.sampleRate,
-              video: control.video,
-            });
-            done();
+            // done() in finally: a throwing `ready` listener must not leave
+            // answer() pending, and the exception still reaches its owner.
+            try {
+              this.emit("ready", {
+                sampleRate: control.sampleRate,
+                video: control.video,
+              });
+            } finally {
+              done();
+            }
             return;
           }
           if (control.type === "error")
@@ -244,11 +249,14 @@ export class MediaSocket extends Emitter<Events> {
     this.#beat = (this.#o.setInterval ?? setInterval)(() => {
       if (this.#socket !== socket) return;
       if (this.#awaitingPong) {
-        this.emit("error", {
-          code: "heartbeat_timeout",
-          message: "The pod stopped answering.",
-        });
-        this.close();
+        try {
+          this.emit("error", {
+            code: "heartbeat_timeout",
+            message: "The pod stopped answering.",
+          });
+        } finally {
+          this.close();
+        }
         return;
       }
       if (socket.readyState === this.#WS.OPEN) {

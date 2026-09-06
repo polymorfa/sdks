@@ -138,16 +138,19 @@ export class LifecycleSocket extends Emitter<Events> {
     } catch (cause) {
       // close() aborts an in-flight ticket request; that is not a failure the
       // consumer should hear about after asking for the socket to close.
-      if (!signal.aborted && !this.#closed)
-        this.emit("error", {
-          code: "ticket_failed",
-          message:
-            cause instanceof Error
-              ? cause.message
-              : "Could not mint a lifecycle ticket.",
-        });
-      settle();
-      if (!signal.aborted && !this.#closed) this.#scheduleReconnect();
+      try {
+        if (!signal.aborted && !this.#closed)
+          this.emit("error", {
+            code: "ticket_failed",
+            message:
+              cause instanceof Error
+                ? cause.message
+                : "Could not mint a lifecycle ticket.",
+          });
+      } finally {
+        settle();
+        if (!signal.aborted && !this.#closed) this.#scheduleReconnect();
+      }
       return;
     }
     if (this.#closed || signal.aborted || generation !== this.#generation) {
@@ -185,12 +188,15 @@ export class LifecycleSocket extends Emitter<Events> {
             } catch {
               // never opened
             }
-            this.emit("error", {
-              code: "connect_timeout",
-              message: "The lifecycle socket did not open in time.",
-            });
-            settle();
-            this.#scheduleReconnect();
+            try {
+              this.emit("error", {
+                code: "connect_timeout",
+                message: "The lifecycle socket did not open in time.",
+              });
+            } finally {
+              settle();
+              this.#scheduleReconnect();
+            }
           }, timeoutMs)
         : undefined;
     const clearOpenTimer = () => this.#clearOpenTimer();
@@ -198,8 +204,13 @@ export class LifecycleSocket extends Emitter<Events> {
       clearOpenTimer();
       this.#attempt = 0;
       this.#startHeartbeat(socket);
-      this.emit("state", true);
-      settle();
+      // A throwing listener must not leave connect() pending: settle in
+      // finally and let the exception surface to whoever registered it.
+      try {
+        this.emit("state", true);
+      } finally {
+        settle();
+      }
     };
     socket.onmessage = (event) => {
       const frame = parseLifecycleFrame((event as MessageEvent).data);
@@ -210,9 +221,12 @@ export class LifecycleSocket extends Emitter<Events> {
       clearOpenTimer();
       this.#stopHeartbeat();
       if (this.#socket === socket) this.#socket = undefined;
-      this.emit("state", false);
-      settle();
-      this.#scheduleReconnect();
+      try {
+        this.emit("state", false);
+      } finally {
+        settle();
+        this.#scheduleReconnect();
+      }
     };
   }
 
@@ -273,8 +287,11 @@ export class LifecycleSocket extends Emitter<Events> {
         } catch {
           // already gone
         }
-        this.emit("state", false);
-        this.#scheduleReconnect();
+        try {
+          this.emit("state", false);
+        } finally {
+          this.#scheduleReconnect();
+        }
         return;
       }
       if (socket.readyState === this.#WS.OPEN) {

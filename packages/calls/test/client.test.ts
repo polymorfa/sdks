@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { CallsClient, encodeAudioFrame, type Call } from "../src/index.js";
+import {
+  CallsClient,
+  MediaSocket,
+  encodeAudioFrame,
+  type Call,
+} from "../src/index.js";
 import { FakeWebSocket, fakeApi, flush, timers } from "./helpers.js";
 
 function clientWith(api = fakeApi()) {
@@ -572,5 +577,60 @@ describe("CallsClient — review round three", () => {
     await expect(answering).rejects.toThrow(/did not report media ready/);
     expect(media.readyState).toBe(FakeWebSocket.CLOSED);
     expect(call!.state).toBe("ended"); // media failed after a successful accept
+  });
+});
+
+describe("CallsClient — review round four", () => {
+  it("settles connect() even when a ready listener throws", async () => {
+    // At the transport: Call's own ready listener is a promise resolver and
+    // cannot throw, so the case that matters is a consumer listening on the
+    // socket directly. The exception must surface; the settlement must not
+    // depend on it.
+    FakeWebSocket.instances = [];
+    const t = timers();
+    const media = new MediaSocket({
+      ticket: {
+        token: "t",
+        expiresAt: 1,
+        url: "wss://pod.example/voip/sdk?callId=X",
+      },
+      WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
+      setInterval: t.setInterval,
+      clearInterval: t.clearInterval,
+      setTimeout: t.setTimeout,
+      clearTimeout: t.clearTimeout,
+    });
+    media.on("ready", () => {
+      throw new Error("consumer bug");
+    });
+    const connecting = media.connect();
+    const ws = FakeWebSocket.instances[0]!;
+    ws.open();
+    expect(() =>
+      ws.text({ type: "ready", sampleRate: 16_000, video: false }),
+    ).toThrow("consumer bug");
+    await expect(connecting).resolves.toBeUndefined();
+    expect(media.connected).toBe(true);
+    media.close();
+  });
+
+  it("settles connect() and still reconnects when a state listener throws", async () => {
+    const h = clientWith();
+    h.client.on("ready", () => {
+      throw new Error("ready handler bug");
+    });
+    const connecting = h.client.connect();
+    await flush();
+    expect(() => h.ws(0).open()).toThrow("ready handler bug");
+    await expect(connecting).resolves.toBeUndefined();
+    h.client.on("disconnected", () => {
+      throw new Error("disconnected handler bug");
+    });
+    expect(() => h.ws(0).drop()).toThrow("disconnected handler bug");
+    // The drop still scheduled a reconnect.
+    expect(
+      h.t.timeouts.filter((x) => x.cleared !== true).length,
+    ).toBeGreaterThan(0);
+    h.client.disconnect();
   });
 });
