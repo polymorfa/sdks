@@ -227,7 +227,18 @@ export class CallsSocket {
       settle();
       return;
     }
-    const socket = new this.#WebSocket(url);
+    let socket: WebSocket;
+    try {
+      socket = new this.#WebSocket(url);
+    } catch {
+      // A constructor that throws (a rejected URL, a blocked mixed-content
+      // upgrade) would otherwise leave `connect()` pending forever, and the
+      // still-set attempt would make every later `connect()` return it.
+      settle();
+      if (!signal.aborted && !this.#closed && generation === this.#generation)
+        this.#scheduleReconnect();
+      return;
+    }
     this.#socket = socket;
     socket.onopen = () => {
       this.#attempt = 0;
@@ -289,14 +300,50 @@ export function parseCallsSocketMessage(
     return undefined;
   }
   if (parsed === null || typeof parsed !== "object") return undefined;
-  const type = (parsed as { readonly type?: unknown }).type;
-  return type === "ready" ||
-    type === "event" ||
-    type === "candidate" ||
-    type === "error" ||
-    type === "pong"
-    ? (parsed as CallsSocketServerMessage)
-    : undefined;
+  const frame = parsed as Record<string, unknown>;
+  switch (frame["type"]) {
+    case "ready":
+      return isString(frame["session"])
+        ? (parsed as CallsSocketServerMessage)
+        : undefined;
+    case "event":
+      return isString(frame["event"]) &&
+        isString(frame["callId"]) &&
+        isString(frame["timestamp"]) &&
+        "payload" in frame
+        ? (parsed as CallsSocketServerMessage)
+        : undefined;
+    case "candidate":
+      return isString(frame["callId"]) && isCandidate(frame["candidate"])
+        ? (parsed as CallsSocketServerMessage)
+        : undefined;
+    case "error":
+      return isString(frame["code"]) && isString(frame["message"])
+        ? (parsed as CallsSocketServerMessage)
+        : undefined;
+    case "pong":
+      return parsed as CallsSocketServerMessage;
+    default:
+      return undefined;
+  }
+}
+
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+
+function isCandidate(value: unknown): value is TrickleCandidate {
+  if (value === null || typeof value !== "object") return false;
+  const candidate = value as Record<string, unknown>;
+  // `null` is what a serialized `RTCIceCandidate` carries for an absent
+  // `sdpMid` / `sdpMLineIndex`, so it is tolerated rather than treated as a
+  // malformed frame.
+  return (
+    isString(candidate["candidate"]) &&
+    (candidate["sdpMid"] == null || isString(candidate["sdpMid"])) &&
+    (candidate["sdpMLineIndex"] == null ||
+      typeof candidate["sdpMLineIndex"] === "number")
+  );
 }
 
 /**

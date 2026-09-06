@@ -910,7 +910,11 @@ export function CallControls({
     // audio call it upgrades to video (camera + re-offer on the same
     // connection) through the controller.
     if (snapshot.video) resolved.setMuted({ video: !snapshot.videoMuted });
-    else void resolved.enableVideo();
+    // A denied camera, a failed re-offer, or a call that ended mid-upgrade all
+    // reject here. The upgrade rolls itself back, so the audio call carries on
+    // and the button stays live for another try; swallowing the rejection just
+    // keeps a declined camera from surfacing as an unhandled error.
+    else void resolved.enableVideo().catch(() => undefined);
   };
 
   return (

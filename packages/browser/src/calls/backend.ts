@@ -86,27 +86,56 @@ export interface SignalingCallsBackendOptions {
   readonly signaling: CallsSignaling;
   /** Inbound call notifications: a {@link CallsSocket} or an application-fed {@link IncomingCallRelay}. */
   readonly incoming: Pick<IncomingCallRelay, "subscribe">;
-  /** Call id generator for outbound calls. Defaults to `crypto.randomUUID`. */
-  readonly createCallId?: () => string;
+  /**
+   * Places an outbound call through the application's own server and resolves
+   * the call id the platform assigned it.
+   *
+   * The browser signaling surface has no route that dials a destination: the
+   * client token can only attach media to a call the platform already owns
+   * (`/offer` reaches the pod through the call's affinity record, so an id the
+   * browser invented resolves to no pod). Starting an outbound call is a
+   * server-key operation, so the application posts the destination to its own
+   * endpoint, that endpoint places the call with the server SDK, and the
+   * resulting id comes back here. Without it outbound calling is unavailable
+   * and the controller's `place()` rejects.
+   */
+  readonly place?: (
+    input: PlaceCallInput,
+    signal: AbortSignal,
+  ) => Promise<string | { readonly callId: string }>;
 }
 
 /**
- * A {@link CallsBackend} over the REST signaling surface alone. Outbound calls
- * mint a browser-side call id and establish media by posting the SDP offer
- * (the media factory does that); answering an inbound call likewise posts an
- * offer for the announced call id; reject and hang-up release the pod's
- * session with the idempotent teardown route. No server API key is involved:
- * everything runs on the client token.
+ * A {@link CallsBackend} over the REST signaling surface alone. Answering an
+ * inbound call posts an SDP offer for the announced call id (the media factory
+ * does that); reject and hang-up release the pod's session with the idempotent
+ * teardown route. No server API key is involved: everything the browser does
+ * runs on the client token.
+ *
+ * Outbound calls are the exception. Nothing on the client-token surface starts
+ * a call, so {@link SignalingCallsBackendOptions.place} is what turns them on:
+ * it hands the destination to the application's server, which places the call
+ * and returns the platform's call id for media to attach to.
  */
 export function createSignalingCallsBackend(
   options: SignalingCallsBackendOptions,
 ): CallsBackend {
-  const createCallId = options.createCallId ?? (() => crypto.randomUUID());
   return {
     subscribe: (listener) => options.incoming.subscribe(listener),
     place: async (input: PlaceCallInput, signal: AbortSignal) => {
       throwIfAborted(signal);
-      return { callId: createCallId() };
+      const placeWith = options.place;
+      if (placeWith === undefined)
+        throw new Error(
+          "Outbound calling needs a `place` hook: the browser signaling surface " +
+            "cannot dial a destination, so the call must be started by your " +
+            "server and its call id returned to the browser.",
+        );
+      const placed = await placeWith(input, signal);
+      throwIfAborted(signal);
+      const callId = typeof placed === "string" ? placed : placed.callId;
+      if (callId === "") throw new Error("`place` resolved without a call id.");
+      return { callId };
     },
     answer: async (_callId: string, signal: AbortSignal) => {
       throwIfAborted(signal);

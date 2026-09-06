@@ -138,8 +138,18 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         .candidate(callId, candidate, signal)
         .catch(() => undefined);
     };
+    // The transport is subscribed before the answer arrives so no pushed
+    // candidate is missed, but `addIceCandidate` rejects until the remote
+    // description exists — and REST polling stands down while the socket is
+    // up, so a rejected candidate would never be retried. Hold them instead.
+    let remoteDescribed = false;
+    const pendingCandidates: TrickleCandidate[] = [];
     const unsubscribeCandidates = transport?.onCandidate((id, candidate) => {
       if (id !== callId) return;
+      if (!remoteDescribed) {
+        pendingCandidates.push(candidate);
+        return;
+      }
       void peer.addIceCandidate(candidate).catch(() => undefined);
     });
     peer.ontrack = (event) => {
@@ -160,7 +170,11 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       );
       applyIceServers(peer, answer);
       await peer.setRemoteDescription({ type: "answer", sdp: answer.sdp });
+      remoteDescribed = true;
+      for (const candidate of pendingCandidates.splice(0))
+        void peer.addIceCandidate(candidate).catch(() => undefined);
     } catch (cause) {
+      unsubscribeCandidates?.();
       closePeer(peer, local);
       throw cause;
     }
@@ -223,8 +237,16 @@ export class WebRtcMediaFactory implements CallMediaFactory {
             : stream.getVideoTracks()[0];
         if (track === undefined) return;
         const old = local.getTracks().find((t) => t.kind === kind);
-        if (old !== undefined) track.enabled = old.enabled;
         const sender = peer.getSenders().find((s) => s.track?.kind === kind);
+        if (sender === undefined && old === undefined) {
+          // Nothing of this kind is negotiated — an audio-only call being
+          // asked to switch camera. Keeping the track would satisfy
+          // `enableVideo`'s "already have video" guard and permanently block
+          // the upgrade that would actually negotiate it.
+          stopTracks(stream);
+          return;
+        }
+        if (old !== undefined) track.enabled = old.enabled;
         if (sender !== undefined) await sender.replaceTrack(track);
         if (old !== undefined) {
           old.stop();
@@ -245,8 +267,21 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         const track = stream.getVideoTracks()[0];
         if (track === undefined) return;
         local.addTrack(track);
-        peer.addTrack(track, local);
-        await renegotiate({}, enableSignal);
+        const sender = peer.addTrack(track, local);
+        try {
+          await renegotiate({}, enableSignal);
+        } catch (cause) {
+          // Leaving the track behind would trip the guard above and make the
+          // upgrade unretryable, so undo it before surfacing the failure.
+          try {
+            peer.removeTrack(sender);
+          } catch {
+            // The connection may already be closed; the track still goes.
+          }
+          local.removeTrack(track);
+          track.stop();
+          throw cause;
+        }
       },
       restartIce: (restartSignal) =>
         renegotiate({ iceRestart: true }, restartSignal),

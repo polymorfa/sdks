@@ -44,7 +44,7 @@ function fixture() {
     createSignalingCallsBackend({
       signaling,
       incoming: relay,
-      createCallId: () => "call-out",
+      place: async () => "call-out",
     }),
     media,
   );

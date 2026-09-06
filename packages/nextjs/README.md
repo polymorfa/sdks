@@ -32,8 +32,11 @@ export const POST = createClientTokenRoute({
 });
 ```
 
-For browser calls, the same route can mint through `MessagingClient.voip`
-(`POST /api/voip/token`), which returns the same token shape:
+For browser calls, this same application route can mint through
+`MessagingClient.voip` instead, which returns the same token shape. Only the
+upstream platform call changes (the server SDK posts `/api/voip/token`); the
+path the browser posts to is still your own route, which
+`createClientTokenProvider` defaults to `/api/polymorfa/token`:
 
 ```ts
 mint: createMessagingClientTokenMint({

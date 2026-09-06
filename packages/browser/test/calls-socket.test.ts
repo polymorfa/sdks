@@ -82,6 +82,25 @@ function socketWith(
 }
 
 describe("CallsSocket", () => {
+  it("settles and retries when the WebSocket constructor throws", async () => {
+    class Throwing {
+      static readonly OPEN = 1;
+      constructor() {
+        throw new Error("insecure url");
+      }
+    }
+    const { socket, timers } = socketWith({
+      WebSocket: Throwing as unknown as typeof globalThis.WebSocket,
+    });
+    // A constructor that throws must not leave connect() pending forever, or
+    // every later connect() would return that same dead promise.
+    await socket.connect();
+    expect(socket.connected).toBe(false);
+    expect(timers).toHaveLength(1);
+    await socket.connect();
+    socket.close();
+  });
+
   it("mints a ticket, opens the socket, and feeds lifecycle events to the backend", async () => {
     const { socket, ws } = socketWith();
     const connecting = socket.connect();
@@ -288,6 +307,45 @@ describe("socket frame mapping", () => {
     expect(parseCallsSocketMessage(JSON.stringify({ type: "pong" }))).toEqual({
       type: "pong",
     });
+    // A known `type` is not enough: an incomplete frame would otherwise reach
+    // the receiver with missing fields.
+    expect(
+      parseCallsSocketMessage(JSON.stringify({ type: "event", event: "x" })),
+    ).toBeUndefined();
+    expect(
+      parseCallsSocketMessage(
+        JSON.stringify({ type: "candidate", callId: "c" }),
+      ),
+    ).toBeUndefined();
+    expect(
+      parseCallsSocketMessage(
+        JSON.stringify({
+          type: "candidate",
+          callId: "c",
+          candidate: { sdpMid: "0" },
+        }),
+      ),
+    ).toBeUndefined();
+    expect(
+      parseCallsSocketMessage(JSON.stringify({ type: "ready" })),
+    ).toBeUndefined();
+    expect(
+      parseCallsSocketMessage(JSON.stringify({ type: "error", code: "nope" })),
+    ).toBeUndefined();
+    // A serialized RTCIceCandidate carries null for an absent sdpMid.
+    expect(
+      parseCallsSocketMessage(
+        JSON.stringify({
+          type: "candidate",
+          callId: "c",
+          candidate: {
+            candidate: "candidate:1",
+            sdpMid: null,
+            sdpMLineIndex: null,
+          },
+        }),
+      ),
+    ).toMatchObject({ type: "candidate", callId: "c" });
     const ev = (event: string, payload: unknown) =>
       lifecycleEventFrom({
         type: "event",

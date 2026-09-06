@@ -44,7 +44,10 @@ for socket tickets, `CallsSocket` for the calls WebSocket (pushed `call.*`
 lifecycle events and ICE both ways, reconnecting with backoff and falling
 back to REST while down), `WebRtcMediaFactory` for the peer connection,
 media, device switching, audio→video upgrade and ICE restart, and
-`createSignalingCallsBackend` as the `CallsBackend` over that surface. An
+`createSignalingCallsBackend` as the `CallsBackend` over that surface. Nothing
+on the client-token surface dials a destination, so that backend takes a
+`place` hook: it posts the destination to the application's own route, which
+starts the call with the server SDK and returns the platform's call id. An
 application without the socket can still relay its webhooks through
 `IncomingCallRelay`; it must forward both `call.received` (`receive`) and
 `call.ended` (`ended`), or a remote hang-up never reaches the controller. Reject and hang-up run through the idempotent

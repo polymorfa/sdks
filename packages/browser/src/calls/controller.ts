@@ -393,6 +393,12 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       return;
     }
     this.#media = media;
+    // Mute pressed while the camera and microphone were still being acquired
+    // only reached the snapshot — there were no tracks to silence yet. Apply
+    // it now, or the UI would report muted over a live microphone.
+    const pending = this.getSnapshot();
+    if (pending.audioMuted || pending.videoMuted)
+      media.setMuted({ audio: pending.audioMuted, video: pending.videoMuted });
   }
   #connection(callId: string, state: RTCPeerConnectionState): void {
     const current = this.getSnapshot();
@@ -419,10 +425,21 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   #ice(callId: string, state: RTCIceConnectionState): void {
     const current = this.getSnapshot();
     if (current.callId !== callId) return;
-    if (state === "disconnected")
+    if (state === "disconnected") {
       this.#beginResumption(callId, this.#iceRestartAfterMs);
-    else if (state === "connected" || state === "completed")
-      this.#clearResumption();
+      return;
+    }
+    if (state !== "connected" && state !== "completed") return;
+    this.#clearResumption();
+    // A short ICE flap need not move `connectionState`, so recovery cannot
+    // wait for `#connection` to put the call back: clearing the timers alone
+    // would strand it in `reconnecting` for the rest of its life.
+    if (current.status === "reconnecting")
+      this.transition({
+        ...callFields(current),
+        status: "connected",
+        connectedAt: current.connectedAt ?? this.#now(),
+      });
   }
   /**
    * Media dropped on a live call: show `reconnecting`, try an ICE restart

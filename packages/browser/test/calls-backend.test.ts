@@ -76,13 +76,13 @@ describe("incomingCallFromWebhook", () => {
 });
 
 describe("createSignalingCallsBackend", () => {
-  it("relays inbound calls, mints call ids, and tears down on reject/hangup", async () => {
+  it("relays inbound calls, places through the hook, and tears down on reject/hangup", async () => {
     const relay = new IncomingCallRelay();
     const s = signaling();
     const backend = createSignalingCallsBackend({
       signaling: s,
       incoming: relay,
-      createCallId: () => "call-out-1",
+      place: async () => "call-out-1",
     });
     const m = media();
     const controller = new CallsController(backend, m.factory);
@@ -129,6 +129,56 @@ describe("createSignalingCallsBackend", () => {
     });
   });
 
+  it("carries the destination to the place hook and adopts its call id", async () => {
+    const place = vi.fn(async () => ({ callId: "server-call-9" }));
+    const controller = new CallsController(
+      createSignalingCallsBackend({
+        signaling: signaling(),
+        incoming: new IncomingCallRelay(),
+        place,
+      }),
+      media().factory,
+    );
+    controller.initialize();
+
+    await controller.place("+12025550199", { video: true });
+    expect(place).toHaveBeenCalledWith(
+      {
+        to: "+12025550199",
+        video: true,
+        line: "linkedDevice",
+        idempotencyKey: expect.any(String),
+      },
+      expect.any(AbortSignal),
+    );
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "connecting",
+      callId: "server-call-9",
+      peer: "+12025550199",
+    });
+  });
+
+  it("refuses to place a call when no placement hook is configured", async () => {
+    // Inventing a call id here would post an offer for a call no pod owns,
+    // which the platform answers with a permanent not-ready.
+    const s = signaling();
+    const controller = new CallsController(
+      createSignalingCallsBackend({
+        signaling: s,
+        incoming: new IncomingCallRelay(),
+      }),
+      media().factory,
+    );
+    controller.initialize();
+
+    await controller.place("+12025550199");
+    const snapshot = controller.getSnapshot();
+    expect(snapshot.status).toBe("error");
+    expect(snapshot.error?.code).toBe("place_failed");
+    expect(snapshot.error?.message).toMatch(/place/i);
+    expect(s.offer).not.toHaveBeenCalled();
+  });
+
   it("keeps the Business Calling API line audio-only", async () => {
     const relay = new IncomingCallRelay();
     const backend = createSignalingCallsBackend({
@@ -166,7 +216,7 @@ describe("createSignalingCallsBackend", () => {
     const backend = createSignalingCallsBackend({
       signaling: signaling(),
       incoming: relay,
-      createCallId: () => "call-dev",
+      place: async () => "call-dev",
     });
     const m = media();
     const controller = new CallsController(backend, m.factory, {

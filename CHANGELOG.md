@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- `createSignalingCallsBackend` no longer invents a call id for outbound
+  calls. Nothing on the client-token surface dials a destination, so an
+  invented id reached no pod and its offer was refused as not-ready forever.
+  Outbound calling now goes through a `place` hook that hands the destination
+  to the application's server and takes back the platform's call id; the
+  removed `createCallId` option had no working use.
+- Calls hardening: a recovered ICE flap leaves `reconnecting` instead of
+  waiting for a connection-state change that may never come; mute pressed
+  while the microphone was still being acquired now reaches the tracks;
+  pushed ICE candidates are held until the answer is applied rather than
+  discarded; setup failures release the candidate subscription; an audio-only
+  call no longer keeps an unnegotiated camera track (which had made the video
+  upgrade unretryable); a failed upgrade rolls the camera back; the calls
+  WebSocket survives a throwing constructor and validates every frame shape.
+
 - Added `CallsSocket` (the calls WebSocket: pushed `call.*` lifecycle events,
   ICE both ways, ticket-based auth, capped reconnect) as a drop-in lifecycle
   source for `createSignalingCallsBackend` and a `candidateTransport` for

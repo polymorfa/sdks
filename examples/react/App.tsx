@@ -59,6 +59,20 @@ const calls = new CallsController(
   createSignalingCallsBackend({
     signaling: callSignaling,
     incoming: incomingCalls,
+    // Outbound calls start on the server: the client token cannot dial a
+    // destination. This route places the call with the server SDK and answers
+    // with the platform's call id, which is what media then attaches to.
+    place: async ({ to, video, line }, signal) => {
+      const response = await fetch("/api/calls/place", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ to, video, line }),
+        signal,
+      });
+      if (!response.ok) throw new Error("The call could not be placed.");
+      const { callId } = (await response.json()) as { callId: string };
+      return callId;
+    },
   }),
   new WebRtcMediaFactory({ signaling: callSignaling }),
 );

@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`d2ddaef836762dc189887f4f21b17c74c9c79ee7`. Graph-compatible APIs are outside
+`b413f2c6a701c86ec593241a70145ee89cc2bcd2`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -345,7 +345,9 @@ Call media and signaling follow the platform's browser signaling surface:
 WebRTC media, offer/answer exchange, trickle ICE candidate submission and
 polling, and idempotent teardown over the `/api/voip/calls/{id}` paths, all on
 the client token. `createSignalingCallsBackend` is the `CallsBackend` for that
-surface; `IncomingCallRelay` is where the application hands the browser the
+surface; outbound calls go through its `place` hook, because starting a call
+is a server-key operation and the browser can only attach media to a call the
+platform already owns. `IncomingCallRelay` is where the application hands the browser the
 `call.received` webhook it received on its own server
 (`incomingCallFromWebhook` maps the payload). The server mints the browser
 token with `MessagingClient.voip.token` after granting the session's client

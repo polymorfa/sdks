@@ -206,12 +206,15 @@ describe("CallsController resumption and terminal offers", () => {
     t.fire(2_000);
     expect(restartIce).toHaveBeenCalledTimes(1);
     ice?.("connected");
-    expect(controller.getSnapshot().status).toBe("reconnecting"); // waits for connectionstate
+    // A flap that never moved `connectionState` still has to end: recovery
+    // restores the call itself rather than waiting for a state change that
+    // may never come.
+    expect(controller.getSnapshot().status).toBe("connected");
     // ICE recovery must cancel the give-up timer, or the call would still be
     // dropped mid-conversation once the window elapsed.
     expect(t.pending()).toBe(0);
     t.fire(15_000);
-    expect(controller.getSnapshot().status).toBe("reconnecting");
+    expect(controller.getSnapshot().status).toBe("connected");
     controller.dispose();
     expect(t.pending()).toBe(0);
   });
