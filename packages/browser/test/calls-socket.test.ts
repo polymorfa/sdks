@@ -216,14 +216,12 @@ describe("CallsSocket lifecycle", () => {
   });
 
   it("settles connect() and aborts the ticket request when closed during acquisition", async () => {
-    let resolveTicket:
-      | ((t: { ticket: string; expiresAt: number; url: string }) => void)
-      | undefined;
+    let resolveTicket: ((t: SocketTicket) => void) | undefined;
     let ticketSignal: AbortSignal | undefined;
     const sig = signaling();
     sig.socketTicket = vi.fn((_session?: string, signal?: AbortSignal) => {
       ticketSignal = signal;
-      return new Promise((resolve) => {
+      return new Promise<SocketTicket>((resolve) => {
         resolveTicket = resolve;
       });
     });
