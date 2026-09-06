@@ -1041,7 +1041,10 @@ export function CallControls({
           <button
             type="button"
             className="pmfa-calls-btn pmfa-calls-btn-hangup"
-            onClick={() => void resolved.hangup()}
+            // Rejects on a disposed controller, which a mounted surface
+            // holding an application-supplied one can still be clicked
+            // against; the call is over either way.
+            onClick={() => void resolved.hangup().catch(() => undefined)}
             aria-label={t(locale, "calls.hangup")}
           >
             <HangupIcon />

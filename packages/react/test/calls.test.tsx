@@ -459,6 +459,36 @@ describe("Calls UI", () => {
     process.off("unhandledRejection", onRejection);
   });
 
+  it("absorbs a hang-up against a disposed controller", async () => {
+    const rejections: unknown[] = [];
+    const onRejection = (reason: unknown) => rejections.push(reason);
+    process.on("unhandledRejection", onRejection);
+    const f = fixture();
+    const host = mount(
+      <PolymorfaProvider locale={createLocale("en")}>
+        <CallControls controller={f.controller} />
+      </PolymorfaProvider>,
+    );
+    act(() => {
+      f.relay.receive({ callId: "CALL-4", from: "+12025550123", video: false });
+    });
+    await act(async () => {
+      await f.controller.answer();
+    });
+    const button = host.querySelector(
+      "[aria-label='Hang up']",
+    ) as HTMLButtonElement;
+    // #finish transitions after its await, so a controller disposed under a
+    // still-mounted dock makes hangup() reject.
+    f.controller.dispose();
+    await act(async () => {
+      button.click();
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(rejections).toEqual([]);
+    process.off("unhandledRejection", onRejection);
+  });
+
   it("formats call durations", () => {
     expect(formatDuration(3725)).toBe("1:02:05");
     expect(formatDuration(65)).toBe("1:05");

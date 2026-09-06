@@ -113,7 +113,7 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
         button(
           messages["calls.hangup"],
           "hangup",
-          () => void controller?.hangup(),
+          () => void controller?.hangup().catch(() => undefined),
         ),
       );
     }
