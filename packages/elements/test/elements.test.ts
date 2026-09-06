@@ -91,6 +91,9 @@ describe("portable elements", () => {
       peer: "+12025550123",
     };
     const fixture = fixtureController(base);
+    const enableVideo = vi.fn(async () => undefined);
+    const setMuted = vi.fn();
+    Object.assign(fixture.controller, { enableVideo, setMuted });
     const node = document.createElement("pmfa-call");
     (node as unknown as { controller: unknown }).controller =
       fixture.controller;
@@ -111,6 +114,21 @@ describe("portable elements", () => {
     // with; a raw status identifier must not reach the DOM.
     fixture.update({ ...base, status: "ready", revision: 1 });
     expect(root?.querySelector('h2[part="status"]')).toBeNull();
+
+    // An audio call on a video-capable line offers the upgrade, matching the
+    // React dock; without it the element could never reach video.
+    fixture.update({ ...base, revision: 4, video: false });
+    const camera = root?.querySelector('[part="camera"]') as HTMLButtonElement;
+    expect(camera.textContent).toBe("Turn camera on");
+    camera.click();
+    expect(enableVideo).toHaveBeenCalledTimes(1);
+    expect(setMuted).not.toHaveBeenCalled();
+
+    // On a video call the same button mutes the outgoing track instead.
+    fixture.update({ ...base, revision: 5 });
+    (root?.querySelector('[part="camera"]') as HTMLButtonElement).click();
+    expect(setMuted).toHaveBeenCalledWith({ video: true });
+    expect(enableVideo).toHaveBeenCalledTimes(1);
 
     // The element takes any controller, so a line without mute must not be
     // offered the control.

@@ -29,6 +29,8 @@
   call no longer keeps an unnegotiated camera track (which had made the video
   upgrade unretryable); a failed upgrade rolls the camera back; the calls
   WebSocket survives a throwing constructor and validates every frame shape; a
+  camera button in `pmfa-call` upgrades an audio call over a video-capable
+  line, as the React dock's already did; a
   failed re-offer rolls the peer out of `have-local-offer` so later upgrades
   and ICE restarts are not blocked by the stale offer; the audio→video upgrade
   acquires the camera chosen during the call rather than the one selected when

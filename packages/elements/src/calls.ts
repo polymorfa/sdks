@@ -79,15 +79,24 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
             () => controller?.setMuted({ audio: !snapshot.audioMuted }),
           ),
         );
-      if (snapshot.capabilities.video && snapshot.video)
+      // On a video call the button mutes the outgoing track; on an audio call
+      // over a video-capable line it upgrades, as the React dock's does.
+      // Without the second case an audio call could never reach video here.
+      if (snapshot.capabilities.video)
         panel.append(
-          button(
-            snapshot.videoMuted
-              ? messages["calls.cameraOn"]
-              : messages["calls.cameraOff"],
-            "camera",
-            () => controller?.setMuted({ video: !snapshot.videoMuted }),
-          ),
+          snapshot.video
+            ? button(
+                snapshot.videoMuted
+                  ? messages["calls.cameraOn"]
+                  : messages["calls.cameraOff"],
+                "camera",
+                () => controller?.setMuted({ video: !snapshot.videoMuted }),
+              )
+            : button(messages["calls.cameraOn"], "camera", () => {
+                // Rejects on a denied camera or a failed re-offer; the upgrade
+                // rolls itself back, so the audio call carries on.
+                void controller?.enableVideo?.().catch(() => undefined);
+              }),
         );
       panel.append(
         button(
