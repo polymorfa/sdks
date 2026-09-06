@@ -19,6 +19,7 @@
   ],
   "sideEffects": false,
   "workspaces": [
+    "packages/calls",
     "packages/browser",
     "packages/ui",
     "packages/elements",
