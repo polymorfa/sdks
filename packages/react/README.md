@@ -57,10 +57,15 @@ const calls = new CallsController(
     // Outbound calls start on the server: the client token cannot dial a
     // destination. Omit this hook if you only answer inbound calls (and drop
     // `DialPad`, which places them).
-    place: async ({ to, video, line }, signal) => {
+    place: async ({ to, video, line, idempotencyKey }, signal) => {
       const response = await fetch("/api/calls/place", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          // One key per placement: forward it to the server SDK call so a
+          // retried request cannot start a second call.
+          "idempotency-key": idempotencyKey,
+        },
         body: JSON.stringify({ to, video, line }),
         signal,
       });

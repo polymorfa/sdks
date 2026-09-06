@@ -489,6 +489,16 @@ export function IncomingCallCard({
   const offersVideo = incoming && snapshot.video && snapshot.capabilities.video;
   const [cameraOn, setCameraOn] = useState(true);
   const [preMuted, setPreMuted] = useState(false);
+  // The card returns null between calls instead of unmounting, so these
+  // toggles would otherwise carry into the next call and mute it with nothing
+  // on screen to explain why. Reset during render, before the preview reads
+  // them, so the camera is never acquired against a stale choice.
+  const [toggledFor, setToggledFor] = useState(snapshot.callId);
+  if (snapshot.callId !== toggledFor) {
+    setToggledFor(snapshot.callId);
+    setCameraOn(true);
+    setPreMuted(false);
+  }
   const preview = useSelfPreview(
     offersVideo && cameraOn,
     snapshot.selectedDevices.videoInput,

@@ -15,6 +15,7 @@ import {
   CallControls,
   CallSurface,
   DialPad,
+  IncomingCallCard,
   PolymorfaProvider,
   formatDuration,
 } from "../src/index.js";
@@ -108,6 +109,41 @@ describe("Calls UI", () => {
       status: "ended",
       endReason: "rejected",
     });
+  });
+
+  it("clears the pre-answer toggles when the next call arrives", async () => {
+    const f = fixture();
+    // Mounted directly, as the composition entry point documents. CallSurface
+    // returns null between calls and so unmounts the card for free; a host
+    // that composes the card itself keeps it mounted throughout.
+    const host = mount(
+      <PolymorfaProvider locale={createLocale("en")}>
+        <IncomingCallCard controller={f.controller} />
+      </PolymorfaProvider>,
+    );
+
+    act(() =>
+      f.relay.receive({ callId: "CALL-1", from: "+12025550123", video: true }),
+    );
+    await act(async () => {
+      (
+        host.querySelector("[aria-label='Answer muted']") as HTMLButtonElement
+      ).click();
+    });
+    expect(host.querySelector("[aria-label='Answer unmuted']")).not.toBeNull();
+    await act(async () => {
+      (
+        host.querySelector("[aria-label='Reject']") as HTMLButtonElement
+      ).click();
+    });
+
+    act(() =>
+      f.relay.receive({ callId: "CALL-2", from: "+15550100", video: true }),
+    );
+    // The card returns null between calls rather than unmounting, so a stale
+    // toggle would mute this call on answer with nothing on screen saying so.
+    expect(host.querySelector("[aria-label='Answer muted']")).not.toBeNull();
+    expect(host.querySelector("[aria-label='Answer unmuted']")).toBeNull();
   });
 
   it("answers, mutes from the dock, and hangs up", async () => {
