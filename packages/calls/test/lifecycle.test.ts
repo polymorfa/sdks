@@ -63,7 +63,9 @@ describe("LifecycleSocket listener failures", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
       expect(rejections).toEqual([]);
       expect(h.report).toHaveBeenCalledTimes(1);
-      expect((h.report.mock.calls[0]?.[0] as Error).message).toBe("listener bug");
+      expect((h.report.mock.calls[0]?.[0] as Error).message).toBe(
+        "listener bug",
+      );
       // The retry policy is unaffected by the consumer's bug.
       expect(h.t.timeouts.length).toBeGreaterThan(0);
     } finally {

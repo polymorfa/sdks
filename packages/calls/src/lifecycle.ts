@@ -103,7 +103,11 @@ export class LifecycleSocket extends Emitter<Events> {
     this.#socket = undefined;
     try {
       if (socket !== undefined) {
-        socket.onopen = socket.onmessage = socket.onclose = socket.onerror = null;
+        socket.onopen =
+          socket.onmessage =
+          socket.onclose =
+          socket.onerror =
+            null;
         try {
           socket.close();
         } catch {
