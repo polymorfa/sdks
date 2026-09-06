@@ -167,9 +167,11 @@ describe("CallsController resumption and terminal offers", () => {
         if (entry !== undefined) entry.cancelled = true;
       }) as unknown as typeof globalThis.clearTimeout,
       fire: (ms: number) => {
-        for (const entry of queue.filter(
-          (t) => t.ms === ms && t.cancelled !== true,
-        )) {
+        // Re-check cancellation inside the loop: a callback may clear another
+        // timer queued at the same delay, and the pre-filtered snapshot would
+        // otherwise still run it.
+        for (const entry of [...queue]) {
+          if (entry.ms !== ms || entry.cancelled === true) continue;
           entry.cancelled = true;
           entry.fn();
         }
