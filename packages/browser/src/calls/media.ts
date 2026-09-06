@@ -240,7 +240,10 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         kind === "audio"
           ? stream.getAudioTracks()[0]
           : stream.getVideoTracks()[0];
-      if (track === undefined) return;
+      if (track === undefined) {
+        stopTracks(stream);
+        return;
+      }
       const old = local.getTracks().find((t) => t.kind === kind);
       const sender = peer.getSenders().find((s) => s.track?.kind === kind);
       if (sender === undefined && old === undefined) {
@@ -293,7 +296,10 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         return;
       }
       const track = stream.getVideoTracks()[0];
-      if (track === undefined) return;
+      if (track === undefined) {
+        stopTracks(stream);
+        return;
+      }
       local.addTrack(track);
       const sender = peer.addTrack(track, local);
       try {

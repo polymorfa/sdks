@@ -299,6 +299,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       this.getSnapshot().selectedDevices,
     );
     const after = this.getSnapshot();
+    // Disposed while the camera was being acquired: transition would assert
+    // and reject a direct caller for a call that no longer exists.
+    if (this.#abort.signal.aborted) return;
     // A hang-up or failure while the camera was being acquired keeps the
     // callId on the terminal snapshot, so the id alone does not say the call
     // is still live — video: true on an ended call would show a camera the
