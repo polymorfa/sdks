@@ -69,7 +69,10 @@ export class CallsSocket {
   #closed = true;
   /** Settles the promise of an in-flight `connect()`; cleared once it fires. */
   #settle: (() => void) | undefined;
-  #opening = false;
+  /** Aborts the in-flight ticket request when `close()` interrupts an attempt. */
+  #attemptAbort: AbortController | undefined;
+  /** Bumped by `close()` so a stale ticket completion never opens a socket. */
+  #generation = 0;
 
   constructor(options: CallsSocketOptions) {
     this.#options = options;
@@ -123,7 +126,12 @@ export class CallsSocket {
       }
       this.#emitState(false);
     }
-    // A connect() awaiting this attempt must not hang on teardown.
+    // A connect() awaiting this attempt must not hang on teardown: settle it
+    // and abort a ticket request still in flight. Any completion that slips
+    // through belongs to an old generation and is ignored.
+    this.#generation += 1;
+    this.#attemptAbort?.abort();
+    this.#attemptAbort = undefined;
     this.#settle?.();
   }
 
@@ -166,20 +174,41 @@ export class CallsSocket {
   }
 
   async #open(): Promise<void> {
-    if (this.#closed || this.#opening || this.#socket !== undefined) return;
-    this.#opening = true;
-    try {
-      await this.#openOnce();
-    } finally {
-      this.#opening = false;
-    }
+    if (
+      this.#closed ||
+      this.#attemptAbort !== undefined ||
+      this.#socket !== undefined
+    )
+      return;
+    // The whole attempt — ticket request included — is tracked from here so
+    // close() can settle the caller and abort the request at any point.
+    const generation = this.#generation;
+    const abort = new AbortController();
+    this.#attemptAbort = abort;
+    await new Promise<void>((resolve) => {
+      let settled = false;
+      const settle = () => {
+        if (settled) return;
+        settled = true;
+        if (this.#settle === settle) this.#settle = undefined;
+        if (this.#attemptAbort === abort) this.#attemptAbort = undefined;
+        resolve();
+      };
+      this.#settle = settle;
+      void this.#openOnce(generation, abort.signal, settle);
+    });
   }
 
-  async #openOnce(): Promise<void> {
+  async #openOnce(
+    generation: number,
+    signal: AbortSignal,
+    settle: () => void,
+  ): Promise<void> {
     let url: string;
     try {
       const ticket = await this.#options.signaling.socketTicket?.(
         this.#options.session,
+        signal,
       );
       if (
         ticket === undefined ||
@@ -188,38 +217,34 @@ export class CallsSocket {
         throw new Error("The signaling client cannot mint socket tickets.");
       url = this.#options.signaling.socketUrl(ticket);
     } catch {
-      this.#scheduleReconnect();
+      settle();
+      if (!signal.aborted && !this.#closed) this.#scheduleReconnect();
       return;
     }
-    if (this.#closed) return;
-    await new Promise<void>((resolve) => {
-      const socket = new this.#WebSocket(url);
-      this.#socket = socket;
-      let settled = false;
-      const settle = () => {
-        if (settled) return;
-        settled = true;
-        if (this.#settle === settle) this.#settle = undefined;
-        resolve();
-      };
-      this.#settle = settle;
-      socket.onopen = () => {
-        this.#attempt = 0;
-        this.#emitState(true);
-        settle();
-      };
-      socket.onmessage = (event) => {
-        const message = parseCallsSocketMessage(event.data);
-        if (message !== undefined) this.#receive(message);
-      };
-      socket.onerror = () => undefined;
-      socket.onclose = () => {
-        if (this.#socket === socket) this.#socket = undefined;
-        this.#emitState(false);
-        settle();
-        this.#scheduleReconnect();
-      };
-    });
+    // Closed (or closed and reopened) while the ticket was in flight: this
+    // completion is stale and must not create a socket.
+    if (this.#closed || signal.aborted || generation !== this.#generation) {
+      settle();
+      return;
+    }
+    const socket = new this.#WebSocket(url);
+    this.#socket = socket;
+    socket.onopen = () => {
+      this.#attempt = 0;
+      this.#emitState(true);
+      settle();
+    };
+    socket.onmessage = (event) => {
+      const message = parseCallsSocketMessage(event.data);
+      if (message !== undefined) this.#receive(message);
+    };
+    socket.onerror = () => undefined;
+    socket.onclose = () => {
+      if (this.#socket === socket) this.#socket = undefined;
+      this.#emitState(false);
+      settle();
+      this.#scheduleReconnect();
+    };
   }
 
   #scheduleReconnect(): void {

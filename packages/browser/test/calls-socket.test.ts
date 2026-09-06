@@ -9,6 +9,7 @@ import {
   type CallMediaFactory,
   type CallMediaSession,
   type CallsSignaling,
+  type SocketTicket,
 } from "../src/index.js";
 
 class FakeWebSocket {
@@ -212,6 +213,59 @@ describe("CallsSocket lifecycle", () => {
       ]),
     ).resolves.toBeUndefined();
     expect(socket.connected).toBe(false);
+  });
+
+  it("settles connect() and aborts the ticket request when closed during acquisition", async () => {
+    let resolveTicket:
+      | ((t: { ticket: string; expiresAt: number; url: string }) => void)
+      | undefined;
+    let ticketSignal: AbortSignal | undefined;
+    const sig = signaling();
+    sig.socketTicket = vi.fn((_session?: string, signal?: AbortSignal) => {
+      ticketSignal = signal;
+      return new Promise((resolve) => {
+        resolveTicket = resolve;
+      });
+    });
+    FakeWebSocket.instances = [];
+    const socket = new CallsSocket({
+      signaling: sig,
+      WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
+    });
+    const connecting = socket.connect();
+    await Promise.resolve();
+    socket.close();
+    await expect(
+      Promise.race([
+        connecting,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("connect() hung")), 200),
+        ),
+      ]),
+    ).resolves.toBeUndefined();
+    expect(ticketSignal?.aborted).toBe(true);
+    // The stale ticket completing later must not open a socket.
+    resolveTicket?.({
+      ticket: "pmfa_wst_late",
+      expiresAt: Date.now() + 60_000,
+      url: "/voip/ws?ticket=pmfa_wst_late",
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(FakeWebSocket.instances).toHaveLength(0);
+    // A fresh connect() after close works again.
+    sig.socketTicket = vi.fn(async () => ({
+      ticket: "pmfa_wst_new",
+      expiresAt: Date.now() + 60_000,
+      url: "/voip/ws?ticket=pmfa_wst_new",
+    }));
+    const again = socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    FakeWebSocket.instances[0]?.open();
+    await again;
+    expect(socket.connected).toBe(true);
   });
 
   it("ignores a second connect() while a socket exists", async () => {
