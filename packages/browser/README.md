@@ -51,8 +51,10 @@ starts the call with the server SDK and returns the platform's call id. An
 application without the socket can still relay its webhooks through
 `IncomingCallRelay`; it must forward both `call.received` (`receive`) and
 `call.ended` (`ended`), or a remote hang-up never reaches the controller. Reject and hang-up run through the idempotent
-teardown route; a pod-lost (410) or capacity (503) answer ends the call
-instead of erroring. `CallsController` exposes `enableVideo()` and a
+teardown route. A pod-lost (410) or capacity (503) answer to the _media offer_
+ends the call as `pod_lost` or `capacity` instead of erroring; the same codes
+from placement or teardown are ordinary failures and stay recoverable, so a
+503 from your own `place` route is a `place_failed` the caller can retry. `CallsController` exposes `enableVideo()` and a
 `reconnecting` status with a bounded resumption window.
 
 ## Template builder
