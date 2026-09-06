@@ -200,6 +200,10 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     const line = options.line ?? "linkedDevice";
     const capabilities = capabilitiesFor(line);
     const video = (options.video ?? false) && capabilities.video;
+    // Only a refused offer carries the pod's terminal hints; a placement that
+    // fails is the application's own route answering, and its 503 means try
+    // again, not "the call is over".
+    let offering = false;
     try {
       const { callId } = await this.#backend.place(
         { to, video, line, idempotencyKey: this.#createKey() },
@@ -218,9 +222,10 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         audioMuted: false,
         videoMuted: false,
       });
+      offering = true;
       await this.#openMedia(callId, video, operation);
     } catch (cause) {
-      this.#fail(cause, operation, "place_failed");
+      this.#fail(cause, operation, "place_failed", offering);
     }
   }
 
@@ -231,13 +236,15 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     const operation = this.#begin(false);
     const video =
       (options.video ?? current.video) && current.capabilities.video;
+    let offering = false;
     try {
       await this.#backend.answer(current.callId, this.#abort.signal);
       if (operation !== this.#operation) return;
       this.transition({ ...callFields(current), status: "accepted", video });
+      offering = true;
       await this.#openMedia(current.callId, video, operation);
     } catch (cause) {
-      this.#fail(cause, operation, "answer_failed");
+      this.#fail(cause, operation, "answer_failed", offering);
     }
   }
 
@@ -541,6 +548,16 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         status: current.status,
         video: event.video,
       });
+    } else if (event.type === "connected") {
+      // The backend can beat the WebRTC callback to this. Without clearing
+      // the timers here a pending restart would fire an ICE restart on an
+      // already-connected call, and the give-up timer could still end it.
+      this.#clearResumption();
+      this.transition({
+        ...callFields(current),
+        status: "connected",
+        connectedAt: current.connectedAt ?? this.#now(),
+      });
     } else {
       this.transition({ ...callFields(current), status: event.type });
     }
@@ -562,12 +579,21 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     this.#media = undefined;
     await media?.close();
   }
-  #fail(cause: unknown, operation: number, code: string): void {
+  #fail(
+    cause: unknown,
+    operation: number,
+    code: string,
+    fromOffer = false,
+  ): void {
     if (operation !== this.#operation || this.#abort.signal.aborted) return;
     void this.#closeMedia();
     // A pod-lost (410) or capacity/draining (503) answer to the offer is not
-    // an error to retry: the call is over. Surface it as an ended call.
-    const status = (cause as { readonly status?: unknown } | null)?.status;
+    // an error to retry: the call is over. Surface it as an ended call. Only
+    // the offer carries those hints — the same codes from a placement or a
+    // teardown are ordinary failures and stay recoverable.
+    const status = fromOffer
+      ? (cause as { readonly status?: unknown } | null)?.status
+      : undefined;
     const terminal =
       typeof status === "number" ? TERMINAL_OFFER_REASONS[status] : undefined;
     if (terminal !== undefined) {

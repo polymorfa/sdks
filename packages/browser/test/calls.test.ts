@@ -213,6 +213,61 @@ describe("CallsController resumption and terminal offers", () => {
     };
   }
 
+  it("clears the recovery timers when the backend reports connected first", async () => {
+    const f = fixture();
+    const restartIce = vi.fn(async () => undefined);
+    Object.assign(f.session, { restartIce });
+    let ice: ((state: RTCIceConnectionState) => void) | undefined;
+    (f.media.open as ReturnType<typeof vi.fn>).mockImplementation(
+      async (_id, _video, callbacks) => {
+        ice = callbacks.onIceConnectionState;
+        return f.session;
+      },
+    );
+    const t = timers();
+    const controller = new CallsController(f.backend, f.media, {
+      setTimeout: t.setTimeout,
+      clearTimeout: t.clearTimeout,
+      now: () => 5_000,
+    });
+    controller.initialize();
+    await controller.place("+12025550123");
+    ice?.("disconnected");
+    expect(controller.getSnapshot().status).toBe("reconnecting");
+
+    // The pod can beat the WebRTC callback to this. If it only set the status,
+    // the pending restart would fire an ICE restart on a connected call and
+    // the give-up timer could still end it.
+    f.emit({ type: "connected", callId: "call-1" });
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "connected",
+      connectedAt: 5_000,
+    });
+    expect(t.pending()).toBe(0);
+    t.fire(2_000);
+    t.fire(15_000);
+    expect(restartIce).not.toHaveBeenCalled();
+    expect(controller.getSnapshot().status).toBe("connected");
+    controller.dispose();
+  });
+
+  it("keeps a placement failure recoverable when the pod hints are absent", async () => {
+    const f = fixture();
+    // 503 from the application's own placement route means retry; only the
+    // pod's answer to an offer carries a terminal meaning.
+    (f.backend.place as ReturnType<typeof vi.fn>).mockRejectedValue(
+      Object.assign(new Error("Service Unavailable"), { status: 503 }),
+    );
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    await controller.place("+12025550123");
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "error",
+      error: { code: "place_failed", recoverable: true },
+    });
+    controller.dispose();
+  });
+
   it("shows reconnecting, restarts ICE, and recovers when media returns", async () => {
     const f = fixture();
     const restartIce = vi.fn(async () => undefined);
