@@ -40,14 +40,22 @@ beforeEach(() => {
 });
 
 function peerConnection(overrides: Partial<Record<string, unknown>> = {}) {
-  const senders: { track: FakeTrack | null }[] = [];
+  const senders: {
+    track: FakeTrack | null;
+    replaceTrack?: (track: FakeTrack) => Promise<void>;
+  }[] = [];
   const peer = {
     connectionState: "new",
     iceConnectionState: "new",
     senders,
     addIceCandidate: vi.fn(async () => undefined),
     addTrack: vi.fn((track: FakeTrack) => {
-      const sender = { track };
+      const sender = {
+        track,
+        replaceTrack: async (next: FakeTrack) => {
+          sender.track = next;
+        },
+      };
       senders.push(sender);
       return sender;
     }),
@@ -239,6 +247,54 @@ describe("WebRtcMediaFactory track negotiation", () => {
     expect(peer.setLocalDescription).toHaveBeenCalledWith({
       type: "rollback",
     });
+  });
+
+  it("serializes same-kind switches so the last request wins", async () => {
+    const audio = new FakeTrack("audio");
+    const local = new FakeStream([audio]);
+    const second = new FakeTrack("audio");
+    const first = new FakeTrack("audio");
+    let releaseFirst: (stream: FakeStream) => void = () => undefined;
+    const getUserMedia = vi
+      .fn()
+      .mockResolvedValueOnce(local)
+      // The older acquisition resolves last, which is the ordering that used
+      // to leave the older device as the live track.
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            releaseFirst = resolve as (s: FakeStream) => void;
+          }),
+      )
+      .mockResolvedValueOnce(new FakeStream([second]));
+    const peer = peerConnection();
+    const session = await factoryFor({
+      peer,
+      signaling: signaling(),
+      getUserMedia,
+    }).open("call-1", false, callbacks, new AbortController().signal);
+
+    const a = session.switchInput?.(
+      "audio",
+      "mic-2",
+      new AbortController().signal,
+    );
+    const b = session.switchInput?.(
+      "audio",
+      "mic-3",
+      new AbortController().signal,
+    );
+    // The chain defers each swap by a microtask; let the first one start.
+    for (let i = 0; i < 5; i += 1) await Promise.resolve();
+    // The second switch must not have started while the first is in flight:
+    // one call for open, one for the first switch, none yet for the second.
+    expect(getUserMedia).toHaveBeenCalledTimes(2);
+    releaseFirst(new FakeStream([first]));
+    await a;
+    await b;
+    expect(getUserMedia).toHaveBeenCalledTimes(3);
+    expect(local.getAudioTracks()).toEqual([second]);
+    expect(first.stop).toHaveBeenCalled();
   });
 
   it("releases the acquired stream when the track swap fails", async () => {

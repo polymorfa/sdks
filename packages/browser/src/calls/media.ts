@@ -219,6 +219,60 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       negotiating = negotiating.catch(() => undefined).then(run);
       return negotiating;
     };
+    const switching = new Map<"audio" | "video", Promise<void>>();
+    const swap = async (
+      kind: "audio" | "video",
+      deviceId: string,
+      switchSignal: AbortSignal,
+    ): Promise<void> => {
+      throwIfAborted(switchSignal);
+      const stream = await this.#mediaDevices.getUserMedia(
+        kind === "audio"
+          ? { audio: { deviceId: { ideal: deviceId } } }
+          : { video: { deviceId: { ideal: deviceId } } },
+      );
+      // The call may have ended while the device was being acquired.
+      if (closed || switchSignal.aborted) {
+        stopTracks(stream);
+        return;
+      }
+      const track =
+        kind === "audio"
+          ? stream.getAudioTracks()[0]
+          : stream.getVideoTracks()[0];
+      if (track === undefined) return;
+      const old = local.getTracks().find((t) => t.kind === kind);
+      const sender = peer.getSenders().find((s) => s.track?.kind === kind);
+      if (sender === undefined && old === undefined) {
+        // Nothing of this kind is negotiated — an audio-only call being
+        // asked to switch camera. Keeping the track would satisfy
+        // `enableVideo`'s "already have video" guard and permanently block
+        // the upgrade that would actually negotiate it.
+        stopTracks(stream);
+        return;
+      }
+      if (old !== undefined) track.enabled = old.enabled;
+      if (sender !== undefined) {
+        try {
+          await sender.replaceTrack(track);
+        } catch (cause) {
+          stopTracks(stream);
+          throw cause;
+        }
+        // `close()` can land during the replacement; adopting the track now
+        // would add it to a stream `closePeer` has already emptied.
+        if (closed || switchSignal.aborted) {
+          stopTracks(stream);
+          return;
+        }
+      }
+      if (old !== undefined) {
+        old.stop();
+        local.removeTrack(old);
+      }
+      local.addTrack(track);
+    };
+
     const poll = this.#setInterval(() => {
       // The socket delivers remote candidates while it is up.
       if (transport?.connected === true) return;
@@ -235,53 +289,19 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       },
       audioEnabled: () => local.getAudioTracks().some(({ enabled }) => enabled),
       videoEnabled: () => local.getVideoTracks().some(({ enabled }) => enabled),
-      switchInput: async (kind, deviceId, switchSignal) => {
-        throwIfAborted(switchSignal);
-        const stream = await this.#mediaDevices.getUserMedia(
-          kind === "audio"
-            ? { audio: { deviceId: { ideal: deviceId } } }
-            : { video: { deviceId: { ideal: deviceId } } },
+      // Same-kind switches run one at a time. Concurrently, an older
+      // acquisition could finish after a newer one and replace the live track
+      // with the device the user moved away from, leaving the capture behind
+      // the preference that names it. Serialized, the last request wins.
+      switchInput: (kind, deviceId, switchSignal) => {
+        const run = (switching.get(kind) ?? Promise.resolve()).then(() =>
+          swap(kind, deviceId, switchSignal),
         );
-        // The call may have ended while the device was being acquired.
-        if (closed || switchSignal.aborted) {
-          stopTracks(stream);
-          return;
-        }
-        const track =
-          kind === "audio"
-            ? stream.getAudioTracks()[0]
-            : stream.getVideoTracks()[0];
-        if (track === undefined) return;
-        const old = local.getTracks().find((t) => t.kind === kind);
-        const sender = peer.getSenders().find((s) => s.track?.kind === kind);
-        if (sender === undefined && old === undefined) {
-          // Nothing of this kind is negotiated — an audio-only call being
-          // asked to switch camera. Keeping the track would satisfy
-          // `enableVideo`'s "already have video" guard and permanently block
-          // the upgrade that would actually negotiate it.
-          stopTracks(stream);
-          return;
-        }
-        if (old !== undefined) track.enabled = old.enabled;
-        if (sender !== undefined) {
-          try {
-            await sender.replaceTrack(track);
-          } catch (cause) {
-            stopTracks(stream);
-            throw cause;
-          }
-          // `close()` can land during the replacement; adopting the track now
-          // would add it to a stream `closePeer` has already emptied.
-          if (closed || switchSignal.aborted) {
-            stopTracks(stream);
-            return;
-          }
-        }
-        if (old !== undefined) {
-          old.stop();
-          local.removeTrack(old);
-        }
-        local.addTrack(track);
+        switching.set(
+          kind,
+          run.catch(() => undefined),
+        );
+        return run;
       },
       enableVideo: async (enableSignal, devices) => {
         throwIfAborted(enableSignal);
