@@ -90,7 +90,23 @@
             "type": "boolean"
           },
           "type": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "text",
+              "image",
+              "video",
+              "audio",
+              "document",
+              "location",
+              "contact",
+              "phone_number_shared",
+              "poll",
+              "sticker",
+              "reaction",
+              "revoke",
+              "edited",
+              "unknown"
+            ]
           },
           "text": {
             "type": "string"
@@ -239,7 +255,7 @@
         ]
       },
       "MessageReceivedPayload": {
-        "anyOf": [
+        "oneOf": [
           {
             "$ref": "#/components/schemas/MessagePayload"
           },
@@ -3699,6 +3715,12 @@
           "allowedNumber": {
             "type": "string",
             "default": ""
+          },
+          "maxSetupsPerMinute": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 600,
+            "default": 0
           }
         },
         "required": [
@@ -5013,6 +5035,43 @@
               "id",
               "token",
               "action"
+            ],
+            "oneOf": [
+              {
+                "properties": {
+                  "action": {
+                    "enum": [
+                      "navigate"
+                    ]
+                  }
+                },
+                "required": [
+                  "screen"
+                ]
+              },
+              {
+                "properties": {
+                  "action": {
+                    "enum": [
+                      "data_exchange"
+                    ]
+                  }
+                },
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "screen"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "dataJson"
+                      ]
+                    }
+                  ]
+                }
+              }
             ]
           },
           "isForwarded": {
@@ -5312,6 +5371,125 @@
         "required": [
           "sdp"
         ]
+      },
+      "VoipRenegotiateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/SDPAnswer"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipRenegotiateRequest": {
+        "type": "object",
+        "properties": {
+          "sdp": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "sdp"
+        ]
+      },
+      "VoipSocketTicket": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "number"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket",
+          "expiresAt",
+          "url"
+        ]
+      },
+      "VoipSocketTicketResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/VoipSocketTicket"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipSocketTicketRequest": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "VoipAgentToken": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "token",
+          "expiresAt"
+        ]
+      },
+      "VoipAgentTokenResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/VoipAgentToken"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipAgentTokenRequest": {
+        "type": "object",
+        "properties": {
+          "ttlSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3600
+          }
+        }
       },
       "VoipCandidateRequest": {
         "type": "object",
@@ -13941,6 +14119,16 @@
               }
             }
           },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
             "content": {
@@ -13952,7 +14140,7 @@
             }
           },
           "503": {
-            "description": "Call refused — the owning pod is at capacity",
+            "description": "Call refused — the owning pod is at capacity or draining",
             "content": {
               "application/json": {
                 "schema": {
@@ -13966,6 +14154,330 @@
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
         },
         "description": "**Required scope:** `sessions:manage`"
+      }
+    },
+    "/api/voip/calls/{id}/renegotiate": {
+      "post": {
+        "operationId": "voipRenegotiate",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Re-offer on an established call (add video, restart ICE) and receive the pod's answer",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipRenegotiateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SDP answer for the re-offer, on the same peer connection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipRenegotiateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call refused — the owning pod is at capacity or draining",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
+        "description": "**Required scope:** `sessions:manage`"
+      }
+    },
+    "/api/voip/ws-ticket": {
+      "post": {
+        "operationId": "voipSocketTicket",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Mint a single-use ticket for the calls WebSocket",
+        "description": "**Required scope:** `sessions:manage`\n\nBrowsers cannot send an Authorization header on a WebSocket upgrade, so the calls socket (`GET /voip/ws?ticket=…`) is opened with a ticket obtained here. Tickets are single-use and expire after 60 seconds. Client tokens are bound to their session; server keys must name one.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipSocketTicketRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ticket minted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipSocketTicketResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/api/voip/calls/{id}/agent-token": {
+      "post": {
+        "operationId": "voipAgentToken",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Mint a per-call ticket for a voice agent's media WebSocket",
+        "description": "**Required scope:** `sessions:manage`\n\nServer keys only. The ticket is bound to this call, expires after `ttlSeconds` (default 300, max 3600) and is presented by the agent to the voip pod as `Authorization: Bearer <token>`. It grants nothing else.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipAgentTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agent ticket minted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipAgentTokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
       }
     },
     "/api/voip/calls/{id}/candidate": {
@@ -14063,6 +14575,16 @@
               }
             }
           },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
             "content": {
@@ -14074,7 +14596,7 @@
             }
           },
           "503": {
-            "description": "Call refused — the owning pod is at capacity",
+            "description": "Call refused — the owning pod is at capacity or draining",
             "content": {
               "application/json": {
                 "schema": {
@@ -14269,6 +14791,16 @@
               }
             }
           },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
             "content": {
@@ -14280,7 +14812,7 @@
             }
           },
           "503": {
-            "description": "Call refused — the owning pod is at capacity",
+            "description": "Call refused — the owning pod is at capacity or draining",
             "content": {
               "application/json": {
                 "schema": {

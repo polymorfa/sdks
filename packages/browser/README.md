@@ -39,13 +39,17 @@ routes directly.
 
 Available controller families are QuickLink, conversations and composing,
 template building, and calls. Calls use `CallsSignalingClient` for the
-offer/answer and trickle ICE REST paths, `WebRtcMediaFactory` for browser
-media and device switching, and `createSignalingCallsBackend` as the
-`CallsBackend` over that surface. The application relays its `call.received`
-webhook into `IncomingCallRelay` (`incomingCallFromWebhook` maps the payload);
-reject and hang-up run through the idempotent teardown route. `CallsController`
-tracks the calling `line` (`linkedDevice` or `cloudApi`), its `capabilities`,
-device lists and selections, and `connectedAt` for duration display.
+`/api/voip/calls/{id}` offer, candidate, renegotiate, and teardown routes and
+for socket tickets, `CallsSocket` for the calls WebSocket (pushed `call.*`
+lifecycle events and ICE both ways, reconnecting with backoff and falling
+back to REST while down), `WebRtcMediaFactory` for the peer connection,
+media, device switching, audio→video upgrade and ICE restart, and
+`createSignalingCallsBackend` as the `CallsBackend` over that surface. An
+application without the socket can still relay its `call.received` webhook
+through `IncomingCallRelay`. Reject and hang-up run through the idempotent
+teardown route; a pod-lost (410) or capacity (503) answer ends the call
+instead of erroring. `CallsController` exposes `enableVideo()` and a
+`reconnecting` status with a bounded resumption window.
 
 ## Template builder
 

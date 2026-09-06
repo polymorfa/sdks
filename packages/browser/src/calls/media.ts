@@ -8,6 +8,22 @@ import type { CallDevice, SelectedCallDevices } from "./controller.js";
 export interface CallMediaCallbacks {
   readonly onConnectionState: (state: RTCPeerConnectionState) => void;
   readonly onRemoteStream: (stream: MediaStream) => void;
+  /** ICE connection state (drives the resumption window). Optional. */
+  readonly onIceConnectionState?: (state: RTCIceConnectionState) => void;
+}
+
+/**
+ * A push channel for ICE candidates (the calls WebSocket). When `send`
+ * returns true the candidate travelled over it and REST is skipped; remote
+ * candidates arrive through `onCandidate` and REST polling pauses while
+ * `connected` is true.
+ */
+export interface CandidateTransport {
+  readonly connected: boolean;
+  sendCandidate(callId: string, candidate: TrickleCandidate): boolean;
+  onCandidate(
+    listener: (callId: string, candidate: TrickleCandidate) => void,
+  ): () => void;
 }
 export interface CallMediaSession {
   readonly localStream: MediaStream;
@@ -15,6 +31,14 @@ export interface CallMediaSession {
   setMuted(muted: { readonly audio?: boolean; readonly video?: boolean }): void;
   audioEnabled(): boolean;
   videoEnabled(): boolean;
+  /**
+   * Add an outgoing camera track to an audio call and renegotiate on the
+   * same connection. Optional for fakes and for signaling without
+   * `renegotiate`.
+   */
+  enableVideo?(signal: AbortSignal): Promise<void>;
+  /** Re-offer with fresh ICE credentials after a network change. Optional for fakes. */
+  restartIce?(signal: AbortSignal): Promise<void>;
   /**
    * Swap the live capture device: acquires `deviceId` and replaces the
    * outgoing track in place (mute state carries over). Optional for fakes.
@@ -42,6 +66,8 @@ export interface CallMediaFactory {
 }
 export interface WebRtcMediaFactoryOptions {
   readonly signaling: CallsSignaling;
+  /** Calls WebSocket for ICE; REST stays the fallback while it is down. */
+  readonly candidateTransport?: CandidateTransport;
   readonly mediaDevices?: MediaDevices;
   readonly createPeerConnection?: (
     configuration?: RTCConfiguration,
@@ -53,6 +79,7 @@ export interface WebRtcMediaFactoryOptions {
 
 export class WebRtcMediaFactory implements CallMediaFactory {
   readonly #signaling: CallsSignaling;
+  readonly #candidateTransport: CandidateTransport | undefined;
   readonly #mediaDevices: MediaDevices;
   readonly #createPeer: (configuration?: RTCConfiguration) => RTCPeerConnection;
   readonly #pollIntervalMs: number;
@@ -61,6 +88,7 @@ export class WebRtcMediaFactory implements CallMediaFactory {
 
   constructor(options: WebRtcMediaFactoryOptions) {
     this.#signaling = options.signaling;
+    this.#candidateTransport = options.candidateTransport;
     this.#mediaDevices = options.mediaDevices ?? navigator.mediaDevices;
     this.#createPeer =
       options.createPeerConnection ??
@@ -101,18 +129,27 @@ export class WebRtcMediaFactory implements CallMediaFactory {
     const peer = this.#createPeer();
     const remote = new MediaStream();
     for (const track of local.getTracks()) peer.addTrack(track, local);
+    const transport = this.#candidateTransport;
     peer.onicecandidate = (event) => {
       if (event.candidate === null) return;
+      const candidate = candidateFrom(event.candidate.toJSON());
+      if (transport?.sendCandidate(callId, candidate) === true) return;
       void this.#signaling
-        .candidate(callId, candidateFrom(event.candidate.toJSON()), signal)
+        .candidate(callId, candidate, signal)
         .catch(() => undefined);
     };
+    const unsubscribeCandidates = transport?.onCandidate((id, candidate) => {
+      if (id !== callId) return;
+      void peer.addIceCandidate(candidate).catch(() => undefined);
+    });
     peer.ontrack = (event) => {
       remote.addTrack(event.track);
       callbacks.onRemoteStream(remote);
     };
     peer.onconnectionstatechange = () =>
       callbacks.onConnectionState(peer.connectionState);
+    peer.oniceconnectionstatechange = () =>
+      callbacks.onIceConnectionState?.(peer.iceConnectionState);
     try {
       const offer = await peer.createOffer();
       await peer.setLocalDescription(offer);
@@ -128,10 +165,35 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       throw cause;
     }
     let closed = false;
-    const poll = this.#setInterval(
-      () => void drainCandidates(this.#signaling, callId, peer, signal),
-      this.#pollIntervalMs,
-    );
+    let negotiating: Promise<void> = Promise.resolve();
+    const renegotiate = (
+      options: RTCOfferOptions,
+      renegotiateSignal: AbortSignal,
+    ): Promise<void> => {
+      const run = async () => {
+        const renegotiateWith = this.#signaling.renegotiate;
+        if (renegotiateWith === undefined)
+          throw new Error("Signaling does not support renegotiation.");
+        throwIfAborted(renegotiateSignal);
+        const offer = await peer.createOffer(options);
+        await peer.setLocalDescription(offer);
+        const answer = await renegotiateWith.call(
+          this.#signaling,
+          callId,
+          peer.localDescription?.sdp ?? offer.sdp ?? "",
+          renegotiateSignal,
+        );
+        if (closed) return;
+        await peer.setRemoteDescription({ type: "answer", sdp: answer.sdp });
+      };
+      negotiating = negotiating.catch(() => undefined).then(run);
+      return negotiating;
+    };
+    const poll = this.#setInterval(() => {
+      // The socket delivers remote candidates while it is up.
+      if (transport?.connected === true) return;
+      void drainCandidates(this.#signaling, callId, peer, signal);
+    }, this.#pollIntervalMs);
     return {
       localStream: local,
       remoteStream: remote,
@@ -165,10 +227,25 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         }
         local.addTrack(track);
       },
+      enableVideo: async (enableSignal) => {
+        throwIfAborted(enableSignal);
+        if (local.getVideoTracks().length > 0) return;
+        const stream = await this.#mediaDevices.getUserMedia(
+          constraintsFor(true, preferences.devices, { audio: false }),
+        );
+        const track = stream.getVideoTracks()[0];
+        if (track === undefined) return;
+        local.addTrack(track);
+        peer.addTrack(track, local);
+        await renegotiate({}, enableSignal);
+      },
+      restartIce: (restartSignal) =>
+        renegotiate({ iceRestart: true }, restartSignal),
       close: async () => {
         if (closed) return;
         closed = true;
         this.#clearInterval(poll);
+        unsubscribeCandidates?.();
         closePeer(peer, local);
         try {
           await this.#signaling.teardown(callId);
@@ -183,12 +260,17 @@ export class WebRtcMediaFactory implements CallMediaFactory {
 function constraintsFor(
   video: boolean,
   devices: SelectedCallDevices | undefined,
+  options: { readonly audio?: boolean } = {},
 ): MediaStreamConstraints {
   const audioInput = devices?.audioInput;
   const videoInput = devices?.videoInput;
   return {
     audio:
-      audioInput === undefined ? true : { deviceId: { ideal: audioInput } },
+      options.audio === false
+        ? false
+        : audioInput === undefined
+          ? true
+          : { deviceId: { ideal: audioInput } },
     video: video
       ? videoInput === undefined
         ? true
@@ -242,6 +324,7 @@ function closePeer(peer: RTCPeerConnection, stream: MediaStream): void {
   peer.onicecandidate = null;
   peer.ontrack = null;
   peer.onconnectionstatechange = null;
+  peer.oniceconnectionstatechange = null;
   for (const track of stream.getTracks()) track.stop();
   peer.close();
 }

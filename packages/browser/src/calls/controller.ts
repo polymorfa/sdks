@@ -12,6 +12,7 @@ export type CallStatus =
   | "accepted"
   | "connecting"
   | "connected"
+  | "reconnecting"
   | "ended"
   | "error";
 export type CallEndReason =
@@ -23,6 +24,7 @@ export type CallEndReason =
   | "ice_timeout"
   | "capacity"
   | "remote_hangup"
+  | "pod_lost"
   | (string & {});
 /**
  * Which Polymorfa calling line carries a call: a linked WhatsApp device
@@ -117,17 +119,38 @@ export interface CallsSnapshot extends ControllerSnapshot {
 export interface CallsControllerOptions {
   readonly createIdempotencyKey?: () => string;
   readonly now?: () => number;
+  /**
+   * Resumption window: how long media may stay disconnected before the call
+   * is given up (default 15 000 ms), and how long `disconnected` may last
+   * before an ICE restart is attempted (default 2 000 ms).
+   */
+  readonly resumptionWindowMs?: number;
+  readonly iceRestartAfterMs?: number;
+  readonly setTimeout?: typeof globalThis.setTimeout;
+  readonly clearTimeout?: typeof globalThis.clearTimeout;
 }
+
+/** HTTP statuses on the offer that mean the call cannot be established at all. */
+const TERMINAL_OFFER_REASONS: Readonly<Record<number, CallEndReason>> = {
+  410: "pod_lost",
+  503: "capacity",
+};
 
 export class CallsController extends ObservableController<CallsSnapshot> {
   readonly #backend: CallsBackend;
   readonly #mediaFactory: CallMediaFactory;
   readonly #createKey: () => string;
   readonly #now: () => number;
+  readonly #resumptionWindowMs: number;
+  readonly #iceRestartAfterMs: number;
+  readonly #setTimeout: typeof globalThis.setTimeout;
+  readonly #clearTimeout: typeof globalThis.clearTimeout;
   #abort = new AbortController();
   #unsubscribe: (() => void) | undefined;
   #media: CallMediaSession | undefined;
   #operation = 0;
+  #resumeTimer: ReturnType<typeof setTimeout> | undefined;
+  #giveUpTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     backend: CallsBackend,
@@ -152,6 +175,10 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     this.#now = options.now ?? Date.now;
     this.#createKey =
       options.createIdempotencyKey ?? (() => crypto.randomUUID());
+    this.#resumptionWindowMs = options.resumptionWindowMs ?? 15_000;
+    this.#iceRestartAfterMs = options.iceRestartAfterMs ?? 2_000;
+    this.#setTimeout = options.setTimeout ?? globalThis.setTimeout;
+    this.#clearTimeout = options.clearTimeout ?? globalThis.clearTimeout;
   }
 
   initialize(): void {
@@ -239,6 +266,32 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       videoMuted: muted.video ?? current.videoMuted,
     });
   }
+  /**
+   * Upgrade an audio call to video: acquires the camera, adds the track and
+   * renegotiates on the same connection. No-op when the line has no video,
+   * when video is already on, or when the media session cannot renegotiate.
+   */
+  async enableVideo(): Promise<void> {
+    this.assertActive();
+    const current = this.getSnapshot();
+    const media = this.#media;
+    if (
+      !current.capabilities.video ||
+      current.video ||
+      media?.enableVideo === undefined
+    )
+      return;
+    await media.enableVideo(this.#abort.signal);
+    const after = this.getSnapshot();
+    if (after.callId !== current.callId) return;
+    this.transition({
+      ...callFields(after),
+      status: after.status,
+      video: true,
+      videoMuted: false,
+    });
+  }
+
   /** Choose the devices the next call acquires (and the speaker the UI plays through). */
   setPreferredDevices(devices: SelectedCallDevices): void {
     this.assertActive();
@@ -296,6 +349,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
 
   protected override onDispose(): void {
     this.#operation += 1;
+    this.#clearResumption();
     this.#abort.abort();
     this.#unsubscribe?.();
     this.#unsubscribe = undefined;
@@ -324,6 +378,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       video,
       {
         onConnectionState: (state) => this.#connection(callId, state),
+        onIceConnectionState: (state) => this.#ice(callId, state),
         onRemoteStream: () => {
           const current = this.getSnapshot();
           if (current.callId === callId)
@@ -342,19 +397,72 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   #connection(callId: string, state: RTCPeerConnectionState): void {
     const current = this.getSnapshot();
     if (current.callId !== callId) return;
-    if (state === "connected")
+    if (state === "connected") {
+      this.#clearResumption();
       this.transition({
         ...callFields(current),
         status: "connected",
         connectedAt: current.connectedAt ?? this.#now(),
       });
-    else if (state === "failed" || state === "closed") {
+    } else if (state === "closed") {
       void this.#closeMedia();
       this.transition({
         ...callFields(current),
         status: "ended",
         endReason: "connection_failed",
       });
+    } else if (state === "failed") {
+      // One ICE restart within the resumption window before giving up.
+      this.#beginResumption(callId, 0);
+    }
+  }
+  #ice(callId: string, state: RTCIceConnectionState): void {
+    const current = this.getSnapshot();
+    if (current.callId !== callId) return;
+    if (state === "disconnected")
+      this.#beginResumption(callId, this.#iceRestartAfterMs);
+    else if (state === "connected" || state === "completed")
+      this.#clearResumption();
+  }
+  /**
+   * Media dropped on a live call: show `reconnecting`, try an ICE restart
+   * after `restartAfterMs`, and end the call as `connection_failed` once the
+   * resumption window closes without media coming back.
+   */
+  #beginResumption(callId: string, restartAfterMs: number): void {
+    if (this.#giveUpTimer !== undefined) return;
+    const current = this.getSnapshot();
+    if (current.status !== "connected" && current.status !== "connecting")
+      return;
+    this.transition({ ...callFields(current), status: "reconnecting" });
+    this.#giveUpTimer = this.#setTimeout(() => {
+      this.#giveUpTimer = undefined;
+      this.#clearResumption();
+      const now = this.getSnapshot();
+      if (now.callId !== callId || now.status !== "reconnecting") return;
+      void this.#closeMedia();
+      this.transition({
+        ...callFields(now),
+        status: "ended",
+        endReason: "connection_failed",
+      });
+    }, this.#resumptionWindowMs);
+    this.#resumeTimer = this.#setTimeout(() => {
+      this.#resumeTimer = undefined;
+      const media = this.#media;
+      if (media?.restartIce === undefined) return;
+      if (this.getSnapshot().callId !== callId) return;
+      void media.restartIce(this.#abort.signal).catch(() => undefined);
+    }, restartAfterMs);
+  }
+  #clearResumption(): void {
+    if (this.#resumeTimer !== undefined) {
+      this.#clearTimeout(this.#resumeTimer);
+      this.#resumeTimer = undefined;
+    }
+    if (this.#giveUpTimer !== undefined) {
+      this.#clearTimeout(this.#giveUpTimer);
+      this.#giveUpTimer = undefined;
     }
   }
   async #finish(
@@ -430,6 +538,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     return current as CallsSnapshot & { callId: string };
   }
   async #closeMedia(): Promise<void> {
+    this.#clearResumption();
     const media = this.#media;
     this.#media = undefined;
     await media?.close();
@@ -437,6 +546,19 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   #fail(cause: unknown, operation: number, code: string): void {
     if (operation !== this.#operation || this.#abort.signal.aborted) return;
     void this.#closeMedia();
+    // A pod-lost (410) or capacity/draining (503) answer to the offer is not
+    // an error to retry: the call is over. Surface it as an ended call.
+    const status = (cause as { readonly status?: unknown } | null)?.status;
+    const terminal =
+      typeof status === "number" ? TERMINAL_OFFER_REASONS[status] : undefined;
+    if (terminal !== undefined) {
+      this.transition({
+        ...callFields(this.getSnapshot()),
+        status: "ended",
+        endReason: terminal,
+      });
+      return;
+    }
     this.transition({
       ...callFields(this.getSnapshot()),
       status: "error",

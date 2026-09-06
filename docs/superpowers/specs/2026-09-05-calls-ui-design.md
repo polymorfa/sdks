@@ -76,3 +76,17 @@ submission and polling, idempotent teardown — through
 `incomingCallFromWebhook` maps the payload. The server mints the browser token
 with `MessagingClient.voip.token` after granting the session's client rules the
 `voip_place`, `voip_answer`, and `voip_signal` actions.
+
+## Transport (2026-09-06 addendum)
+
+The kit no longer depends on the application relaying webhooks. `CallsSocket`
+opens the calls WebSocket with a single-use ticket (`POST /api/voip/ws-ticket`)
+and is both the backend's lifecycle source (incoming, accepted, ended with the
+pod's reason mapped onto the controller vocabulary) and the media factory's
+`candidateTransport`. REST candidate polling pauses while the socket is up and
+resumes while it reconnects; `IncomingCallRelay` remains for deployments that
+prefer their own channel. The camera button on an audio call now calls
+`controller.enableVideo()` (camera + re-offer on the same connection), and a
+dropped connection renders the existing "Reconnecting" message while the
+controller restarts ICE inside a 15 s resumption window. None of this changes
+the visual design.

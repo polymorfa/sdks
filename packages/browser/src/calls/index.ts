@@ -23,8 +23,17 @@ export {
   type SignalingCallsBackendOptions,
 } from "./backend.js";
 export {
+  CallsSocket,
+  lifecycleEventFrom,
+  parseCallsSocketMessage,
+  type CallsSocketClientMessage,
+  type CallsSocketOptions,
+  type CallsSocketServerMessage,
+} from "./socket.js";
+export {
   WebRtcMediaFactory,
   type CallMediaCallbacks,
+  type CandidateTransport,
   type CallMediaFactory,
   type CallMediaPreferences,
   type CallMediaSession,
@@ -35,5 +44,6 @@ export {
   type CallsSignaling,
   type IceServer,
   type SdpAnswer,
+  type SocketTicket,
   type TrickleCandidate,
 } from "./signaling.js";

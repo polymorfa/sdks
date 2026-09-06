@@ -41,6 +41,7 @@ const ACTIVE_STATUSES = new Set<CallsSnapshot["status"]>([
   "accepted",
   "connecting",
   "connected",
+  "reconnecting",
 ]);
 
 // ── Icons (Feather, MIT — inline so the package ships zero assets) ────
@@ -792,9 +793,11 @@ export function CallStage({
   const showLocalVideo = snapshot.video && !snapshot.videoMuted;
   const preAccept = showLocalVideo && !live;
   const ringingLine =
-    !live && snapshot.direction === "outgoing"
-      ? `${t(locale, "calls.ringing")} ${peer}…`
-      : null;
+    snapshot.status === "reconnecting"
+      ? `${t(locale, "calls.reconnecting")}…`
+      : !live && snapshot.direction === "outgoing"
+        ? `${t(locale, "calls.ringing")} ${peer}…`
+        : null;
   const identity = (
     <CallIdentity
       name={displayName ?? peer}
@@ -903,10 +906,11 @@ export function CallControls({
   const showCamera = snapshot.capabilities.video && disableVideo !== true;
   const cameraOff = !snapshot.video || snapshot.videoMuted;
   const onCamera = () => {
-    // Audio→video upgrade needs a re-offer on the signaling wire; the
-    // affordance exists, the wiring is a fast-follow. Toggling only ever
-    // touches the local outgoing track.
+    // On a video call the button mutes/unmutes the outgoing track; on an
+    // audio call it upgrades to video (camera + re-offer on the same
+    // connection) through the controller.
     if (snapshot.video) resolved.setMuted({ video: !snapshot.videoMuted });
+    else void resolved.enableVideo();
   };
 
   return (

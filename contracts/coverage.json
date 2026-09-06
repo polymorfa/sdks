@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "d2ddaef836762dc189887f4f21b17c74c9c79ee7",
+  "sourceCommit": "0da82dc7ace8dc310f4e55f29e629c228e69334a",
   "excludedContracts": [
     {
       "family": "graph",
@@ -46,7 +46,7 @@
       "method": "DELETE",
       "path": "/api/voip/calls/{id}",
       "operationId": "voipTeardown",
-      "fingerprint": "651e900bb4b192b47f07a4bf2569b2a494291a3afd447bd9691fa681e634bb43",
+      "fingerprint": "fa59c21ef613147f39e23dfda41cf9ef0bde99d3bd7f888574bb68b93e4afa01",
       "typescript": {
         "status": "excluded",
         "reason": "Browser client-token signaling route served by @polymorfa/browser (CallsSignalingClient over BrowserTransport); it does not accept the server credential used by the TypeScript server SDK.",
@@ -1104,7 +1104,7 @@
       "method": "POST",
       "path": "/api/voip/calls/{id}/candidate",
       "operationId": "voipCandidate",
-      "fingerprint": "b6914b37361d9f445d6fdbf0343311cb856fa37e38e35a2cf7bf8289c9b8cbcc",
+      "fingerprint": "73dc885b8d7b9df92ab9943e063db75226f45fa91850990a81fea9ff8b36601c",
       "typescript": {
         "status": "excluded",
         "reason": "Browser client-token signaling route served by @polymorfa/browser (CallsSignalingClient over BrowserTransport); it does not accept the server credential used by the TypeScript server SDK.",
@@ -1116,7 +1116,7 @@
       "method": "POST",
       "path": "/api/voip/calls/{id}/offer",
       "operationId": "voipOffer",
-      "fingerprint": "b4548d5ec1e1af48eb25dcd7763610e43ef677823f0ef9d511cf530a7638c7e5",
+      "fingerprint": "5a4f632054f769d997f8970eb0c5728fa4a90d296f9f6d1b7e3790ef6c0e10c5",
       "typescript": {
         "status": "excluded",
         "reason": "Browser client-token signaling route served by @polymorfa/browser (CallsSignalingClient over BrowserTransport); it does not accept the server credential used by the TypeScript server SDK.",
@@ -1132,6 +1132,39 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.token"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/voip/calls/{id}/renegotiate",
+      "operationId": "voipRenegotiate",
+      "fingerprint": "384dfa69325054306bfb5c4708fc4dc8e92e9800d9adfccdebc03801173efbae",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Browser client-token signaling route served by @polymorfa/browser (CallsSignalingClient.renegotiate over BrowserTransport); it does not accept the server credential used by the TypeScript server SDK."
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/voip/ws-ticket",
+      "operationId": "voipSocketTicket",
+      "fingerprint": "b95af3bef3974c271b26d0fef1439f1ccb9b0df45db50512399eef06f52dd0fe",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.voip.socketTicket"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/voip/calls/{id}/agent-token",
+      "operationId": "voipAgentToken",
+      "fingerprint": "03d4c5cd14a2c755d10ffb96fc7cbeee43b8ccfd7635d5922fdd0a5087d196a3",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.voip.agentToken"
       }
     },
     {

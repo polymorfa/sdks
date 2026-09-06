@@ -49,9 +49,10 @@ export function incomingCallFromWebhook(
 }
 
 /**
- * Application-fed source of inbound call notifications. The signaling REST
- * surface has no browser push channel, so the application relays
- * `call.received` (and optionally `call.ended`) webhook events here.
+ * Application-fed source of inbound call notifications for deployments that
+ * relay `call.received` (and optionally `call.ended`) webhook events over
+ * their own realtime channel. {@link CallsSocket} is the push alternative:
+ * it subscribes to the same lifecycle stream directly from the API.
  */
 export class IncomingCallRelay {
   readonly #listeners = new Set<(event: CallLifecycleEvent) => void>();
@@ -83,7 +84,7 @@ export class IncomingCallRelay {
 export interface SignalingCallsBackendOptions {
   /** REST signaling client for the `/api/voip/calls/{id}` paths. */
   readonly signaling: CallsSignaling;
-  /** Inbound call notifications relayed by the application. */
+  /** Inbound call notifications: a {@link CallsSocket} or an application-fed {@link IncomingCallRelay}. */
   readonly incoming: Pick<IncomingCallRelay, "subscribe">;
   /** Call id generator for outbound calls. Defaults to `crypto.randomUUID`. */
   readonly createCallId?: () => string;

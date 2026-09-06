@@ -1,0 +1,317 @@
+import type { CallLifecycleEvent, CallEndReason } from "./controller.js";
+import type { CallsSignaling, TrickleCandidate } from "./signaling.js";
+
+/** Server → browser frames on the calls WebSocket. */
+export type CallsSocketServerMessage =
+  | { readonly type: "ready"; readonly session: string }
+  | {
+      readonly type: "event";
+      readonly event: string;
+      readonly callId: string;
+      readonly payload: unknown;
+      readonly timestamp: string;
+    }
+  | {
+      readonly type: "candidate";
+      readonly callId: string;
+      readonly candidate: TrickleCandidate;
+    }
+  | { readonly type: "error"; readonly code: string; readonly message: string }
+  | { readonly type: "pong" };
+
+/** Browser → server frames on the calls WebSocket. */
+export type CallsSocketClientMessage =
+  | {
+      readonly type: "candidate";
+      readonly callId: string;
+      readonly candidate: TrickleCandidate;
+    }
+  | { readonly type: "teardown"; readonly callId: string }
+  | { readonly type: "ping" };
+
+export interface CallsSocketOptions {
+  /** Signaling client able to mint socket tickets. */
+  readonly signaling: Pick<CallsSignaling, "socketTicket" | "socketUrl">;
+  /** Session to follow when the credential is a server key. */
+  readonly session?: string;
+  /** Reconnect backoff bounds in milliseconds. Defaults 1 000 → 30 000. */
+  readonly minBackoffMs?: number;
+  readonly maxBackoffMs?: number;
+  readonly WebSocket?: typeof globalThis.WebSocket;
+  readonly setTimeout?: typeof globalThis.setTimeout;
+  readonly clearTimeout?: typeof globalThis.clearTimeout;
+  readonly random?: () => number;
+}
+
+/**
+ * The calls WebSocket: one socket per client, opened with a single-use ticket
+ * from `POST /api/voip/ws-ticket`. It pushes the session's `call.*` lifecycle
+ * events (so an incoming call rings without any webhook plumbing), delivers
+ * the pod's ICE candidates, and carries the browser's candidates and
+ * teardown. It reconnects with capped exponential backoff — a fresh ticket
+ * each time — until {@link close}. It is a {@link CallsBackend} lifecycle
+ * source: pass it as the backend's `incoming`.
+ */
+export class CallsSocket {
+  readonly #options: CallsSocketOptions;
+  readonly #WebSocket: typeof globalThis.WebSocket;
+  readonly #setTimeout: typeof globalThis.setTimeout;
+  readonly #clearTimeout: typeof globalThis.clearTimeout;
+  readonly #random: () => number;
+  readonly #lifecycle = new Set<(event: CallLifecycleEvent) => void>();
+  readonly #candidates = new Set<
+    (callId: string, candidate: TrickleCandidate) => void
+  >();
+  readonly #state = new Set<(connected: boolean) => void>();
+  #socket: WebSocket | undefined;
+  #timer: ReturnType<typeof setTimeout> | undefined;
+  #attempt = 0;
+  #closed = true;
+
+  constructor(options: CallsSocketOptions) {
+    this.#options = options;
+    this.#WebSocket = options.WebSocket ?? globalThis.WebSocket;
+    this.#setTimeout = options.setTimeout ?? globalThis.setTimeout;
+    this.#clearTimeout = options.clearTimeout ?? globalThis.clearTimeout;
+    this.#random = options.random ?? Math.random;
+  }
+
+  /** True while the socket is open. */
+  get connected(): boolean {
+    return (
+      this.#socket !== undefined &&
+      this.#socket.readyState === this.#WebSocket.OPEN
+    );
+  }
+
+  /** Open the socket; resolves after the first attempt settles (open or failed). */
+  async connect(): Promise<void> {
+    this.#closed = false;
+    await this.#open();
+  }
+
+  /** Close the socket and stop reconnecting. */
+  close(): void {
+    this.#closed = true;
+    if (this.#timer !== undefined) {
+      this.#clearTimeout(this.#timer);
+      this.#timer = undefined;
+    }
+    const socket = this.#socket;
+    this.#socket = undefined;
+    if (socket !== undefined) {
+      socket.onopen = null;
+      socket.onmessage = null;
+      socket.onclose = null;
+      socket.onerror = null;
+      try {
+        socket.close();
+      } catch {
+        // already closed
+      }
+      this.#emitState(false);
+    }
+  }
+
+  /** Lifecycle source for {@link CallsBackend.subscribe}. */
+  subscribe(listener: (event: CallLifecycleEvent) => void): () => void {
+    this.#lifecycle.add(listener);
+    return () => this.#lifecycle.delete(listener);
+  }
+
+  /** Remote ICE candidates pushed by the pod. */
+  onCandidate(
+    listener: (callId: string, candidate: TrickleCandidate) => void,
+  ): () => void {
+    this.#candidates.add(listener);
+    return () => this.#candidates.delete(listener);
+  }
+
+  /** Connection state changes (true = open). */
+  onState(listener: (connected: boolean) => void): () => void {
+    this.#state.add(listener);
+    return () => this.#state.delete(listener);
+  }
+
+  /** Send a local ICE candidate; false when the socket is down (use REST). */
+  sendCandidate(callId: string, candidate: TrickleCandidate): boolean {
+    return this.#send({ type: "candidate", callId, candidate });
+  }
+
+  /** Ask the pod to release a call; false when the socket is down. */
+  sendTeardown(callId: string): boolean {
+    return this.#send({ type: "teardown", callId });
+  }
+
+  #send(message: CallsSocketClientMessage): boolean {
+    const socket = this.#socket;
+    if (socket === undefined || socket.readyState !== this.#WebSocket.OPEN)
+      return false;
+    socket.send(JSON.stringify(message));
+    return true;
+  }
+
+  async #open(): Promise<void> {
+    if (this.#closed) return;
+    let url: string;
+    try {
+      const ticket = await this.#options.signaling.socketTicket?.(
+        this.#options.session,
+      );
+      if (
+        ticket === undefined ||
+        this.#options.signaling.socketUrl === undefined
+      )
+        throw new Error("The signaling client cannot mint socket tickets.");
+      url = this.#options.signaling.socketUrl(ticket);
+    } catch {
+      this.#scheduleReconnect();
+      return;
+    }
+    if (this.#closed) return;
+    await new Promise<void>((resolve) => {
+      const socket = new this.#WebSocket(url);
+      this.#socket = socket;
+      let settled = false;
+      const settle = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+      socket.onopen = () => {
+        this.#attempt = 0;
+        this.#emitState(true);
+        settle();
+      };
+      socket.onmessage = (event) => {
+        const message = parseCallsSocketMessage(event.data);
+        if (message !== undefined) this.#receive(message);
+      };
+      socket.onerror = () => undefined;
+      socket.onclose = () => {
+        if (this.#socket === socket) this.#socket = undefined;
+        this.#emitState(false);
+        settle();
+        this.#scheduleReconnect();
+      };
+    });
+  }
+
+  #scheduleReconnect(): void {
+    if (this.#closed || this.#timer !== undefined) return;
+    const min = this.#options.minBackoffMs ?? 1_000;
+    const max = this.#options.maxBackoffMs ?? 30_000;
+    const delay =
+      Math.min(max, min * 2 ** this.#attempt) * (0.5 + this.#random() / 2);
+    this.#attempt = Math.min(this.#attempt + 1, 10);
+    this.#timer = this.#setTimeout(() => {
+      this.#timer = undefined;
+      void this.#open();
+    }, delay);
+  }
+
+  #receive(message: CallsSocketServerMessage): void {
+    if (message.type === "candidate") {
+      for (const listener of [...this.#candidates])
+        listener(message.callId, message.candidate);
+      return;
+    }
+    if (message.type !== "event") return;
+    const lifecycle = lifecycleEventFrom(message);
+    if (lifecycle === undefined) return;
+    for (const listener of [...this.#lifecycle]) listener(lifecycle);
+  }
+
+  #emitState(connected: boolean): void {
+    for (const listener of [...this.#state]) listener(connected);
+  }
+}
+
+/** Parse one server frame; unknown or malformed frames yield `undefined`. */
+export function parseCallsSocketMessage(
+  data: unknown,
+): CallsSocketServerMessage | undefined {
+  if (typeof data !== "string") return undefined;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    return undefined;
+  }
+  if (parsed === null || typeof parsed !== "object") return undefined;
+  const type = (parsed as { readonly type?: unknown }).type;
+  return type === "ready" ||
+    type === "event" ||
+    type === "candidate" ||
+    type === "error" ||
+    type === "pong"
+    ? (parsed as CallsSocketServerMessage)
+    : undefined;
+}
+
+/**
+ * Map a pushed `call.*` event onto the controller's lifecycle vocabulary. The
+ * runner identifies the remote party as a JID reference; the number wins,
+ * then the LID, then the raw JID. Outgoing offers are the browser's own.
+ */
+export function lifecycleEventFrom(
+  message: Extract<CallsSocketServerMessage, { type: "event" }>,
+): CallLifecycleEvent | undefined {
+  const payload = (message.payload ?? {}) as Record<string, unknown>;
+  switch (message.event) {
+    case "call.received": {
+      if (payload.direction === "outgoing") return undefined;
+      return {
+        type: "incomingCall",
+        call: {
+          callId: message.callId,
+          from: peerFrom(payload.from),
+          video: payload.hasVideo === true || payload.has_video === true,
+          line: "linkedDevice",
+        },
+      };
+    }
+    case "call.accepted":
+      return { type: "accepted", callId: message.callId };
+    case "call.ended": {
+      const reason = endReasonFrom(payload.reason);
+      return reason === undefined
+        ? { type: "ended", callId: message.callId }
+        : { type: "ended", callId: message.callId, reason };
+    }
+    case "call.missed":
+      return { type: "ended", callId: message.callId, reason: "missed" };
+    case "call.rejected":
+      return { type: "ended", callId: message.callId, reason: "rejected" };
+    default:
+      return undefined;
+  }
+}
+
+function peerFrom(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value === null || typeof value !== "object") return "";
+  const ref = value as {
+    readonly phoneNumber?: unknown;
+    readonly lid?: unknown;
+    readonly id?: unknown;
+  };
+  for (const candidate of [ref.phoneNumber, ref.lid, ref.id])
+    if (typeof candidate === "string" && candidate.length > 0) return candidate;
+  return "";
+}
+
+function endReasonFrom(value: unknown): CallEndReason | undefined {
+  if (typeof value !== "string" || value.length === 0) return undefined;
+  switch (value) {
+    case "user_hangup":
+      return "remote_hangup";
+    case "setup_timeout":
+    case "media_timeout":
+      return "ice_timeout";
+    case "lost_connection":
+      return "connection_failed";
+    default:
+      return value;
+  }
+}

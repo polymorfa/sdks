@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- Added `CallsSocket` (the calls WebSocket: pushed `call.*` lifecycle events,
+  ICE both ways, ticket-based auth, capped reconnect) as a drop-in lifecycle
+  source for `createSignalingCallsBackend` and a `candidateTransport` for
+  `WebRtcMediaFactory`; `CallsSignalingClient` gained `renegotiate`,
+  `socketTicket`, and `socketUrl`; `BrowserTransport` exposes `baseUrl`.
+- `CallsController` gained `enableVideo()` (audio→video upgrade by re-offer),
+  a `reconnecting` status with ICE restart and a bounded resumption window,
+  and ends the call as `pod_lost` / `capacity` when the offer is refused
+  with 410 / 503. The React camera button upgrades audio calls to video;
+  `CallStage` and `pmfa-call` show "Reconnecting…".
+- Added `MessagingClient.voip.socketTicket` and `voip.agentToken`; typed
+  `maxSetupsPerMinute` in the client rules; refreshed the contracts and the
+  coverage ledger to polymorfa@0da82dc7a (renegotiate, ws-ticket,
+  agent-token).
+
 - Added `MessagingClient.voip.token` for minting the browser call token, typed
   the client-rules response the runtime actually returns (including the calls
   bindings `maxConcurrency` and `allowedNumber`), and typed client actions.

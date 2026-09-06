@@ -7,6 +7,7 @@ const ACTIVE = new Set<CallsSnapshot["status"]>([
   "accepted",
   "connecting",
   "connected",
+  "reconnecting",
 ]);
 
 /**
@@ -31,11 +32,13 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
           ? messages["calls.ringing"]
           : status === "connecting" || status === "accepted"
             ? messages["calls.connecting"]
-            : status === "ended"
-              ? messages["calls.ended"]
-              : status === "error"
-                ? messages["calls.failed"]
-                : status;
+            : status === "reconnecting"
+              ? messages["calls.reconnecting"]
+              : status === "ended"
+                ? messages["calls.ended"]
+                : status === "error"
+                  ? messages["calls.failed"]
+                  : status;
     panel.append(textElement("h2", heading, "status"));
     if (snapshot?.peer !== undefined)
       panel.append(textElement("p", snapshot.peer, "peer"));

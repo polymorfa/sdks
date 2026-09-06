@@ -35,11 +35,10 @@ import {
   BrowserTransport,
   CallsController,
   CallsSignalingClient,
-  IncomingCallRelay,
+  CallsSocket,
   WebRtcMediaFactory,
   createClientTokenProvider,
   createSignalingCallsBackend,
-  incomingCallFromWebhook,
 } from "@polymorfa/browser";
 import { CallSurface, DialPad, PolymorfaProvider } from "@polymorfa/react";
 
@@ -47,17 +46,16 @@ const transport = new BrowserTransport({
   getClientToken: createClientTokenProvider(), // POST /api/polymorfa-token → pmfa_ct_…
 });
 const signaling = new CallsSignalingClient(transport);
-const incoming = new IncomingCallRelay();
+// The calls WebSocket: incoming calls ring without webhook plumbing, remote
+// hang-ups land immediately, ICE trickles over the socket (REST is the
+// fallback while it reconnects).
+const socket = new CallsSocket({ signaling });
 const calls = new CallsController(
-  createSignalingCallsBackend({ signaling, incoming }),
-  new WebRtcMediaFactory({ signaling }),
+  createSignalingCallsBackend({ signaling, incoming: socket }),
+  new WebRtcMediaFactory({ signaling, candidateTransport: socket }),
 );
 calls.initialize();
-
-// Your realtime channel delivers the server's `call.received` webhook:
-realtime.on("call.received", (payload) =>
-  incoming.receive(incomingCallFromWebhook(payload)),
-);
+void socket.connect();
 
 <PolymorfaProvider>
   <CallSurface controller={calls} resolveName={lookupContactName} />
@@ -71,7 +69,11 @@ mute toggles and a ⋯ device menu, then Reject and Answer. Answering a video
 offer with the camera off still acquires video muted, so the in-call camera
 toggle can enable it. The dock carries split pills — `[camera|⌄]` and
 `[mic|⌄]` whose dropdowns pick devices live — and a red hang-up pill. Video is
-per direction; `disableVideo` hides the camera control. Avatars come from
+per direction; on an audio call the camera button upgrades to video
+(`controller.enableVideo()`, a re-offer on the same connection) and
+`disableVideo` hides it. A dropped connection shows "Reconnecting…" while the
+controller restarts ICE, and gives up as `connection_failed` after the
+resumption window. Avatars come from
 `resolveAvatar` (a URL or a promise of one; `BrowserMessagingClient.contacts
 .picture` works when the token carries `read_contact`); without one a stable
 hash of the caller id picks one of eight palette tones.

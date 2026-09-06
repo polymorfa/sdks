@@ -1392,6 +1392,8 @@ export interface ClientRules {
   readonly allowedOrigins: string;
   /** Calls: max distinct in-flight calls per token (0 = unlimited). */
   readonly maxConcurrency: number;
+  /** Polymorfa Calls: call setups per minute per ephemeral id (0 = platform default of 10). */
+  readonly maxSetupsPerMinute: number;
   /** Calls: comma-separated E.164 destination allowlist (empty = any). */
   readonly allowedNumber: string;
   readonly enabled: boolean;
@@ -1409,6 +1411,8 @@ export interface SetClientRulesRequest {
   readonly enabled: boolean;
   /** Calls: max distinct in-flight calls per token (0 = unlimited). */
   readonly maxConcurrency?: number;
+  /** Polymorfa Calls: call setups per minute per ephemeral id (0 = platform default). */
+  readonly maxSetupsPerMinute?: number;
   /** Calls: comma-separated E.164 destination allowlist (empty = any). */
   readonly allowedNumber?: string;
 }
@@ -1431,6 +1435,33 @@ export interface VoipTokenValue {
 }
 
 export type VoipTokenResponse = SuccessEnvelope<VoipTokenValue>;
+
+/** Body for `POST /api/voip/ws-ticket`. Server keys must name the session. */
+export interface VoipSocketTicketRequest {
+  readonly session?: string;
+}
+/** A single-use, 60-second ticket that opens the calls WebSocket. */
+export interface VoipSocketTicketValue {
+  readonly ticket: string;
+  /** Unix epoch milliseconds. */
+  readonly expiresAt: number;
+  /** Root-relative WebSocket URL, ticket included. */
+  readonly url: string;
+}
+export type VoipSocketTicketResponse = SuccessEnvelope<VoipSocketTicketValue>;
+
+/** Body for `POST /api/voip/calls/{id}/agent-token`. */
+export interface VoipAgentTokenRequest {
+  /** Ticket lifetime in seconds (default 300, max 3600). */
+  readonly ttlSeconds?: number;
+}
+/** A per-call ticket a voice agent presents to the voip pod's PCM WebSocket. */
+export interface VoipAgentTokenValue {
+  readonly token: string;
+  /** Unix epoch milliseconds. */
+  readonly expiresAt: number;
+}
+export type VoipAgentTokenResponse = SuccessEnvelope<VoipAgentTokenValue>;
 
 export type ListSessionsResponse = SuccessEnvelope<readonly Session[]>;
 export type CreateSessionResponse = SuccessEnvelope<SessionOperation>;

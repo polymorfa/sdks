@@ -148,3 +148,113 @@ describe("CallsSignalingClient", () => {
     ]);
   });
 });
+
+describe("CallsController resumption and terminal offers", () => {
+  function timers() {
+    const queue: Array<{ fn: () => void; ms: number }> = [];
+    return {
+      queue,
+      setTimeout: ((fn: () => void, ms: number) => {
+        queue.push({ fn, ms });
+        return queue.length as unknown as ReturnType<typeof setTimeout>;
+      }) as unknown as typeof globalThis.setTimeout,
+      clearTimeout: (() =>
+        undefined) as unknown as typeof globalThis.clearTimeout,
+      fire: (ms: number) =>
+        queue.filter((t) => t.ms === ms).forEach((t) => t.fn()),
+    };
+  }
+
+  it("shows reconnecting, restarts ICE, and recovers when media returns", async () => {
+    const f = fixture();
+    const restartIce = vi.fn(async () => undefined);
+    Object.assign(f.session, { restartIce });
+    let ice: ((state: RTCIceConnectionState) => void) | undefined;
+    (f.media.open as ReturnType<typeof vi.fn>).mockImplementation(
+      async (_id, _video, callbacks) => {
+        ice = callbacks.onIceConnectionState;
+        return f.session;
+      },
+    );
+    const t = timers();
+    const controller = new CallsController(f.backend, f.media, {
+      setTimeout: t.setTimeout,
+      clearTimeout: t.clearTimeout,
+    });
+    controller.initialize();
+    await controller.place("+12025550123");
+    ice?.("connected");
+    // The connection state machine, not ICE, marks connected.
+    expect(controller.getSnapshot().status).toBe("connecting");
+    ice?.("disconnected");
+    expect(controller.getSnapshot().status).toBe("reconnecting");
+    t.fire(2_000);
+    expect(restartIce).toHaveBeenCalledTimes(1);
+    ice?.("connected");
+    expect(controller.getSnapshot().status).toBe("reconnecting"); // waits for connectionstate
+    controller.dispose();
+  });
+
+  it("gives the call up after the resumption window", async () => {
+    const f = fixture();
+    let ice: ((state: RTCIceConnectionState) => void) | undefined;
+    (f.media.open as ReturnType<typeof vi.fn>).mockImplementation(
+      async (_id, _video, callbacks) => {
+        ice = callbacks.onIceConnectionState;
+        return f.session;
+      },
+    );
+    const t = timers();
+    const controller = new CallsController(f.backend, f.media, {
+      setTimeout: t.setTimeout,
+      clearTimeout: t.clearTimeout,
+      resumptionWindowMs: 500,
+    });
+    controller.initialize();
+    await controller.place("+12025550123");
+    ice?.("disconnected");
+    t.fire(500);
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      endReason: "connection_failed",
+    });
+    expect(f.session.close).toHaveBeenCalled();
+  });
+
+  it("ends (not errors) when the offer is answered pod-lost or at capacity", async () => {
+    for (const [status, reason] of [
+      [410, "pod_lost"],
+      [503, "capacity"],
+    ] as const) {
+      const f = fixture();
+      (f.media.open as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        Object.assign(new Error("gone"), { status }),
+      );
+      const controller = new CallsController(f.backend, f.media);
+      controller.initialize();
+      await controller.place("+12025550123");
+      expect(controller.getSnapshot()).toMatchObject({
+        status: "ended",
+        endReason: reason,
+      });
+    }
+  });
+
+  it("upgrades an audio call to video through the media session", async () => {
+    const f = fixture();
+    const enableVideo = vi.fn(async () => undefined);
+    Object.assign(f.session, { enableVideo });
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    await controller.place("+12025550123");
+    expect(controller.getSnapshot().video).toBe(false);
+    await controller.enableVideo();
+    expect(enableVideo).toHaveBeenCalledWith(expect.any(AbortSignal));
+    expect(controller.getSnapshot()).toMatchObject({
+      video: true,
+      videoMuted: false,
+    });
+    await controller.enableVideo(); // idempotent
+    expect(enableVideo).toHaveBeenCalledTimes(1);
+  });
+});
