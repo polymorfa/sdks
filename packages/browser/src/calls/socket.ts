@@ -67,6 +67,9 @@ export class CallsSocket {
   #timer: ReturnType<typeof setTimeout> | undefined;
   #attempt = 0;
   #closed = true;
+  /** Settles the promise of an in-flight `connect()`; cleared once it fires. */
+  #settle: (() => void) | undefined;
+  #opening = false;
 
   constructor(options: CallsSocketOptions) {
     this.#options = options;
@@ -84,9 +87,18 @@ export class CallsSocket {
     );
   }
 
-  /** Open the socket; resolves after the first attempt settles (open or failed). */
+  /**
+   * Open the socket; resolves after the first attempt settles (open, failed,
+   * or {@link close} called meanwhile). Calling it while a socket exists or
+   * an attempt is in flight is a no-op.
+   */
   async connect(): Promise<void> {
     this.#closed = false;
+    if (this.#timer !== undefined) {
+      // A reconnect is scheduled; run it now instead of waiting.
+      this.#clearTimeout(this.#timer);
+      this.#timer = undefined;
+    }
     await this.#open();
   }
 
@@ -111,6 +123,8 @@ export class CallsSocket {
       }
       this.#emitState(false);
     }
+    // A connect() awaiting this attempt must not hang on teardown.
+    this.#settle?.();
   }
 
   /** Lifecycle source for {@link CallsBackend.subscribe}. */
@@ -152,7 +166,16 @@ export class CallsSocket {
   }
 
   async #open(): Promise<void> {
-    if (this.#closed) return;
+    if (this.#closed || this.#opening || this.#socket !== undefined) return;
+    this.#opening = true;
+    try {
+      await this.#openOnce();
+    } finally {
+      this.#opening = false;
+    }
+  }
+
+  async #openOnce(): Promise<void> {
     let url: string;
     try {
       const ticket = await this.#options.signaling.socketTicket?.(
@@ -176,8 +199,10 @@ export class CallsSocket {
       const settle = () => {
         if (settled) return;
         settled = true;
+        if (this.#settle === settle) this.#settle = undefined;
         resolve();
       };
+      this.#settle = settle;
       socket.onopen = () => {
         this.#attempt = 0;
         this.#emitState(true);

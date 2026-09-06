@@ -43,7 +43,7 @@ import {
 import { CallSurface, DialPad, PolymorfaProvider } from "@polymorfa/react";
 
 const transport = new BrowserTransport({
-  getClientToken: createClientTokenProvider(), // POST /api/polymorfa-token → pmfa_ct_…
+  getClientToken: createClientTokenProvider(), // POST /api/polymorfa/token → pmfa_ct_…
 });
 const signaling = new CallsSignalingClient(transport);
 // The calls WebSocket: incoming calls ring without webhook plumbing, remote

@@ -212,6 +212,11 @@ export class WebRtcMediaFactory implements CallMediaFactory {
             ? { audio: { deviceId: { ideal: deviceId } } }
             : { video: { deviceId: { ideal: deviceId } } },
         );
+        // The call may have ended while the device was being acquired.
+        if (closed || switchSignal.aborted) {
+          stopTracks(stream);
+          return;
+        }
         const track =
           kind === "audio"
             ? stream.getAudioTracks()[0]
@@ -233,6 +238,10 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         const stream = await this.#mediaDevices.getUserMedia(
           constraintsFor(true, preferences.devices, { audio: false }),
         );
+        if (closed || enableSignal.aborted) {
+          stopTracks(stream);
+          return;
+        }
         const track = stream.getVideoTracks()[0];
         if (track === undefined) return;
         local.addTrack(track);
@@ -313,6 +322,9 @@ async function drainCandidates(
   } catch {
     // Polling retries on the next interval.
   }
+}
+function stopTracks(stream: MediaStream): void {
+  for (const track of stream.getTracks()) track.stop();
 }
 function setTracks(
   tracks: readonly MediaStreamTrack[],

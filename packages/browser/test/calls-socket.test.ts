@@ -195,6 +195,38 @@ describe("CallsSocket", () => {
   });
 });
 
+describe("CallsSocket lifecycle", () => {
+  it("settles a pending connect() when close() is called mid-attempt", async () => {
+    const { socket } = socketWith();
+    const connecting = socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    // The fake socket never opens; teardown must not leave connect() hanging.
+    socket.close();
+    await expect(
+      Promise.race([
+        connecting,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("connect() hung")), 200),
+        ),
+      ]),
+    ).resolves.toBeUndefined();
+    expect(socket.connected).toBe(false);
+  });
+
+  it("ignores a second connect() while a socket exists", async () => {
+    const { socket, ws } = socketWith();
+    const first = socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    ws().open();
+    await first;
+    await socket.connect();
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    expect(socket.connected).toBe(true);
+  });
+});
+
 describe("socket frame mapping", () => {
   it("drops unknown frames and maps pod reasons onto the controller vocabulary", () => {
     expect(parseCallsSocketMessage("not json")).toBeUndefined();

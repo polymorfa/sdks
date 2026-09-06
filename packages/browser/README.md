@@ -45,8 +45,9 @@ lifecycle events and ICE both ways, reconnecting with backoff and falling
 back to REST while down), `WebRtcMediaFactory` for the peer connection,
 media, device switching, audio→video upgrade and ICE restart, and
 `createSignalingCallsBackend` as the `CallsBackend` over that surface. An
-application without the socket can still relay its `call.received` webhook
-through `IncomingCallRelay`. Reject and hang-up run through the idempotent
+application without the socket can still relay its webhooks through
+`IncomingCallRelay`; it must forward both `call.received` (`receive`) and
+`call.ended` (`ended`), or a remote hang-up never reaches the controller. Reject and hang-up run through the idempotent
 teardown route; a pod-lost (410) or capacity (503) answer ends the call
 instead of erroring. `CallsController` exposes `enableVideo()` and a
 `reconnecting` status with a bounded resumption window.

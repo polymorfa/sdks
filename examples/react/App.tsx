@@ -41,6 +41,8 @@ import {
   createClientTokenProvider,
   createSignalingCallsBackend,
   incomingCallFromWebhook,
+  type CallEndReason,
+  type CallReceivedWebhookPayload,
 } from "@polymorfa/browser";
 import { CallSurface, DialPad } from "@polymorfa/react";
 
@@ -48,6 +50,10 @@ const callTransport = new BrowserTransport({
   getClientToken: createClientTokenProvider(),
 });
 const callSignaling = new CallsSignalingClient(callTransport);
+// Webhook-only integration: the application relays BOTH `call.received` and
+// `call.ended` from its own realtime channel. (With `CallsSocket` as the
+// backend's `incoming` source neither handler is needed — the socket pushes
+// the lifecycle itself.)
 export const incomingCalls = new IncomingCallRelay();
 const calls = new CallsController(
   createSignalingCallsBackend({
@@ -58,13 +64,19 @@ const calls = new CallsController(
 );
 calls.initialize();
 
-/** Wire this to your realtime channel that forwards the webhook payload. */
-export function onCallReceivedWebhook(payload: {
-  callId: string;
-  from: { id?: string; phoneNumber?: string; lid?: string };
-  hasVideo?: boolean;
-}): void {
+/** Wire this to your realtime channel that forwards the `call.received` webhook payload. */
+export function onCallReceivedWebhook(
+  payload: CallReceivedWebhookPayload,
+): void {
   incomingCalls.receive(incomingCallFromWebhook(payload));
+}
+
+/** Wire this to the same channel for `call.ended`, so a remote hang-up ends the UI promptly. */
+export function onCallEndedWebhook(payload: {
+  callId: string;
+  reason?: CallEndReason;
+}): void {
+  incomingCalls.ended(payload.callId, payload.reason);
 }
 
 export function CallsApp() {
