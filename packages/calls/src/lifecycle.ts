@@ -26,6 +26,15 @@ export interface LifecycleSocketOptions {
   readonly heartbeatMs?: number;
   /** Bound on one attempt's WebSocket open; 0 disables. Default 10 000 ms. */
   readonly connectTimeoutMs?: number;
+  /**
+   * Where a listener exception raised at an asynchronous boundary (a `state`
+   * or `error` listener throwing after a ticket request settled) is reported.
+   * Emissions inside WebSocket handlers propagate to the platform's event
+   * dispatch like any listener bug; this covers the emissions that have no
+   * synchronous caller. Defaults to the platform's `reportError`, else a
+   * microtask rethrow — an uncaught error either way, never a swallowed one.
+   */
+  readonly reportError?: (cause: unknown) => void;
 }
 
 type Events = {
@@ -92,19 +101,25 @@ export class LifecycleSocket extends Emitter<Events> {
     }
     const socket = this.#socket;
     this.#socket = undefined;
-    if (socket !== undefined) {
-      socket.onopen = socket.onmessage = socket.onclose = socket.onerror = null;
-      try {
-        socket.close();
-      } catch {
-        // already closed
+    try {
+      if (socket !== undefined) {
+        socket.onopen = socket.onmessage = socket.onclose = socket.onerror = null;
+        try {
+          socket.close();
+        } catch {
+          // already closed
+        }
+        this.emit("state", false);
       }
-      this.emit("state", false);
+    } finally {
+      // A throwing state listener must not leave a pending connect() hanging,
+      // the ticket request in flight, or the generation stale (which would let
+      // a late #openOnce install a socket after close()).
+      this.#generation += 1;
+      this.#abort?.abort();
+      this.#abort = undefined;
+      this.#settle?.();
     }
-    this.#generation += 1;
-    this.#abort?.abort();
-    this.#abort = undefined;
-    this.#settle?.();
   }
 
   #open(): Promise<void> {
@@ -123,7 +138,26 @@ export class LifecycleSocket extends Emitter<Events> {
         resolve();
       };
       this.#settle = settle;
-      void this.#openOnce(generation, abort.signal, settle);
+      // #openOnce settles the attempt itself; what can still reject here is a
+      // listener throwing on an emission with no synchronous caller. Report it
+      // as an uncaught error instead of an unhandled rejection of a voided
+      // promise.
+      this.#openOnce(generation, abort.signal, settle).catch((cause: unknown) =>
+        this.#report(cause),
+      );
+    });
+  }
+
+  #report(cause: unknown): void {
+    const report =
+      this.#o.reportError ??
+      (globalThis as { reportError?: (cause: unknown) => void }).reportError;
+    if (report !== undefined) {
+      report(cause);
+      return;
+    }
+    queueMicrotask(() => {
+      throw cause;
     });
   }
 
