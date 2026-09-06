@@ -214,6 +214,46 @@ describe("createSignalingCallsBackend", () => {
     expect(s.offer).not.toHaveBeenCalled();
   });
 
+  it("puts the device preference back when the switch fails", async () => {
+    const relay = new IncomingCallRelay();
+    const backend = createSignalingCallsBackend({
+      signaling: signaling(),
+      incoming: relay,
+      place: async () => "call-dev",
+    });
+    const m = media();
+    const controller = new CallsController(backend, m.factory);
+    controller.initialize();
+    controller.setPreferredDevices({ audioInput: "mic-1" });
+    await controller.place("+12025550123");
+
+    m.session.switchInput.mockRejectedValueOnce(new Error("device in use"));
+    await controller.switchDevice("audioInput", "mic-2");
+    // The capture kept mic-1, so the stored preference has to say so — or the
+    // list shows a device that is not in use and the next call opens with it.
+    expect(controller.getSnapshot().selectedDevices).toEqual({
+      audioInput: "mic-1",
+    });
+
+    // With nothing chosen before, the key goes away rather than becoming a
+    // preference for a device that failed.
+    const fresh = new CallsController(
+      createSignalingCallsBackend({
+        signaling: signaling(),
+        incoming: new IncomingCallRelay(),
+        place: async () => "call-dev-2",
+      }),
+      m.factory,
+    );
+    fresh.initialize();
+    await fresh.place("+12025550123");
+    m.session.switchInput.mockRejectedValueOnce(new Error("device in use"));
+    await fresh.switchDevice("videoInput", "cam-9");
+    expect(fresh.getSnapshot().selectedDevices).toEqual({});
+    fresh.dispose();
+    controller.dispose();
+  });
+
   it("keeps the Business Calling API line audio-only", async () => {
     const relay = new IncomingCallRelay();
     const backend = createSignalingCallsBackend({

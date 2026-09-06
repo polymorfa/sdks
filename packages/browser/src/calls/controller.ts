@@ -327,6 +327,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     kind: "audioInput" | "videoInput",
     deviceId: string,
   ): Promise<void> {
+    const previous = this.getSnapshot().selectedDevices[kind];
     this.setPreferredDevices({ [kind]: deviceId });
     const media = this.#media;
     if (media?.switchInput === undefined) return;
@@ -337,7 +338,20 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         this.#abort.signal,
       );
     } catch {
-      // Device unavailable — keep the current capture.
+      // Device unavailable — the capture kept the old track, so the stored
+      // preference goes back with it. Left as it was, the device list would
+      // show a device that is not in use and the next call would open with it.
+      const current = this.getSnapshot();
+      const restored: Record<string, string | undefined> = {
+        ...current.selectedDevices,
+      };
+      if (previous === undefined) delete restored[kind];
+      else restored[kind] = previous;
+      this.transition({
+        ...callFields(current),
+        status: current.status,
+        selectedDevices: restored as SelectedCallDevices,
+      });
     }
   }
 

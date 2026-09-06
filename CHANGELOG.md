@@ -48,7 +48,7 @@
   `CallStage` and `pmfa-call` show "Reconnecting…".
 - Added `MessagingClient.voip.socketTicket` and `voip.agentToken`; typed
   `maxSetupsPerMinute` in the client rules; refreshed the contracts and the
-  coverage ledger to polymorfa@83b819dd6 (renegotiate, ws-ticket,
+  coverage ledger to polymorfa@b413f2c6a (renegotiate, ws-ticket,
   agent-token).
 
 - Added `MessagingClient.voip.token` for minting the browser call token, typed
