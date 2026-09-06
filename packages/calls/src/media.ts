@@ -57,6 +57,12 @@ export class MediaSocket extends Emitter<Events> {
   #closed = false;
   /** Settles the in-flight `connect()`; a local `close()` rejects it. */
   #pending: ((err?: Error) => void) | undefined;
+  /**
+   * The promise of the attempt in flight. `#socket` is set before `ready`
+   * arrives, so a second `connect()` during the handshake must wait on this
+   * rather than resolve against a socket that has not bridged yet.
+   */
+  #connecting: Promise<void> | undefined;
 
   constructor(options: MediaSocketOptions) {
     super();
@@ -84,8 +90,10 @@ export class MediaSocket extends Emitter<Events> {
   connect(): Promise<void> {
     if (this.#closed)
       return Promise.reject(new Error("Media socket is closed."));
+    if (this.#connecting !== undefined) return this.#connecting;
     if (this.#socket !== undefined) return Promise.resolve();
-    return new Promise<void>((resolve, reject) => {
+    let inflight = true;
+    const attempt = new Promise<void>((resolve, reject) => {
       const readyMs = this.#o.readyTimeoutMs ?? 10_000;
       let readyTimer: ReturnType<typeof setTimeout> | undefined;
       let settled = false;
@@ -99,6 +107,8 @@ export class MediaSocket extends Emitter<Events> {
           readyTimer = undefined;
         }
         if (this.#pending === done) this.#pending = undefined;
+        inflight = false;
+        this.#connecting = undefined;
         if (err) reject(err);
         else resolve();
       };
@@ -175,6 +185,10 @@ export class MediaSocket extends Emitter<Events> {
         this.emit("close");
       };
     });
+    // The executor may have settled synchronously (a constructor throw):
+    // only a still-pending attempt is shared with later callers.
+    if (inflight) this.#connecting = attempt;
+    return attempt;
   }
 
   /** Push s16le mono PCM at {@link sampleRate} toward WhatsApp. Returns false when not connected. */
