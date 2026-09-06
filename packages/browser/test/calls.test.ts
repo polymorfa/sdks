@@ -496,6 +496,22 @@ describe("CallsController resumption and terminal offers", () => {
     }
   });
 
+  it("keeps the first end reason when a duplicate ended arrives", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    await controller.place("+12025550123");
+    f.emit({ type: "ended", callId: "call-1", reason: "remote_hangup" });
+    // Both the relay and the socket can deliver a late duplicate with its own
+    // reason; the call ended once, for the first reason.
+    f.emit({ type: "ended", callId: "call-1", reason: "missed" });
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      endReason: "remote_hangup",
+    });
+    controller.dispose();
+  });
+
   it("still accepts a new incoming call after one ended", async () => {
     const f = fixture();
     const controller = new CallsController(f.backend, f.media);

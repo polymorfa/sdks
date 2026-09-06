@@ -280,11 +280,6 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     });
   }
   /**
-   * Upgrade an audio call to video: acquires the camera, adds the track and
-   * renegotiates on the same connection. No-op when the line has no video,
-   * when video is already on, or when the media session cannot renegotiate.
-   */
-  /**
    * Whether an audio→video upgrade is possible right now: the line carries
    * video, the call is not already video, and the media session can
    * renegotiate. Surfaces gate the camera-upgrade control on this rather than
@@ -299,6 +294,11 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     );
   }
 
+  /**
+   * Upgrade an audio call to video: acquires the camera, adds the track and
+   * renegotiates on the same connection. No-op when the line has no video,
+   * when video is already on, or when the media session cannot renegotiate.
+   */
   async enableVideo(): Promise<void> {
     this.assertActive();
     const current = this.getSnapshot();
@@ -621,6 +621,10 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         videoMuted: false,
       });
     } else if (event.type === "ended") {
+      // `ended` is exempt from the terminal guard so a finished call can still
+      // be closed out, but a second `ended` for a call that already ended
+      // must not overwrite the reason it ended with.
+      if (current.status === "ended") return;
       void this.#closeMedia();
       this.transition({
         ...callFields(current),
