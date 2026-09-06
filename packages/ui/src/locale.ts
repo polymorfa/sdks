@@ -50,6 +50,7 @@ export const ENGLISH_MESSAGES = {
   "calls.placeAudioCall": "Place audio call",
   "calls.placeVideoCall": "Place video call",
   "calls.dialPlaceholder": "Phone number",
+  "calls.deleteDigit": "Delete last digit",
   "calls.dismiss": "Dismiss",
   "calls.incomingFrom": "Incoming call from {peer}",
 } as const;

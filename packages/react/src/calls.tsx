@@ -1141,7 +1141,7 @@ export function DialPad({
             className="pmfa-calls-key pmfa-calls-key-erase"
             onClick={() => setValue((v) => v.slice(0, -1))}
             disabled={value.length === 0}
-            aria-label={t(locale, "common.cancel")}
+            aria-label={t(locale, "calls.deleteDigit")}
           >
             <EraseIcon />
           </button>
