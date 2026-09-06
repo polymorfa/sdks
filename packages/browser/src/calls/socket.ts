@@ -60,6 +60,14 @@ export interface CallsSocketOptions {
    * periods rather than never.
    */
   readonly heartbeatMs?: number;
+  /**
+   * Handshake deadline in milliseconds; 0 disables it. Defaults to 10 000.
+   * The WebSocket API has no handshake timeout of its own, so a stalled
+   * upgrade would otherwise leave `connect()` pending — and, because the
+   * attempt holds the socket slot, suppress reconnects — for as long as the
+   * browser cares to wait. The heartbeat cannot see this: it starts on open.
+   */
+  readonly openTimeoutMs?: number;
   readonly WebSocket?: typeof globalThis.WebSocket;
   readonly setTimeout?: typeof globalThis.setTimeout;
   readonly clearTimeout?: typeof globalThis.clearTimeout;
@@ -102,6 +110,8 @@ export class CallsSocket {
   /** Bumped by `close()` so a stale ticket completion never opens a socket. */
   #generation = 0;
   #heartbeatTimer: ReturnType<typeof setInterval> | undefined;
+  /** Handshake deadline for the socket currently opening. */
+  #openTimer: ReturnType<typeof setTimeout> | undefined;
   /** True between sending a `ping` and receiving the matching `pong`. */
   #awaitingPong = false;
 
@@ -146,6 +156,7 @@ export class CallsSocket {
   close(): void {
     this.#closed = true;
     this.#stopHeartbeat();
+    this.#clearOpenTimer();
     if (this.#timer !== undefined) {
       this.#clearTimeout(this.#timer);
       this.#timer = undefined;
@@ -309,7 +320,9 @@ export class CallsSocket {
       return;
     }
     this.#socket = socket;
+    this.#startOpenTimer(socket, settle);
     socket.onopen = () => {
+      this.#clearOpenTimer();
       this.#attempt = 0;
       this.#startHeartbeat(socket);
       this.#emitState(true);
@@ -321,6 +334,7 @@ export class CallsSocket {
     };
     socket.onerror = () => undefined;
     socket.onclose = () => {
+      this.#clearOpenTimer();
       this.#stopHeartbeat();
       if (this.#socket === socket) this.#socket = undefined;
       this.#emitState(false);
@@ -382,6 +396,30 @@ export class CallsSocket {
     }, every);
   }
 
+  /**
+   * Bound the handshake: a socket still not open when the deadline fires is
+   * dropped like a dead one, which settles the pending `connect()` and
+   * schedules a reconnect with a fresh ticket.
+   */
+  #startOpenTimer(socket: WebSocket, settle: () => void): void {
+    this.#clearOpenTimer();
+    const after = this.#options.openTimeoutMs ?? 10_000;
+    if (after <= 0) return;
+    this.#openTimer = this.#setTimeout(() => {
+      this.#openTimer = undefined;
+      if (this.#socket !== socket) return;
+      settle();
+      this.#dropSocket(socket);
+    }, after);
+  }
+
+  #clearOpenTimer(): void {
+    if (this.#openTimer !== undefined) {
+      this.#clearTimeout(this.#openTimer);
+      this.#openTimer = undefined;
+    }
+  }
+
   #stopHeartbeat(): void {
     if (this.#heartbeatTimer !== undefined) {
       this.#clearInterval(this.#heartbeatTimer);
@@ -396,6 +434,7 @@ export class CallsSocket {
    * with the handlers detached so it cannot run twice.
    */
   #dropSocket(socket: WebSocket): void {
+    this.#clearOpenTimer();
     this.#stopHeartbeat();
     if (this.#socket === socket) this.#socket = undefined;
     socket.onopen = null;

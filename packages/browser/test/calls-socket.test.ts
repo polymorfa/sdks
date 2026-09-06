@@ -66,16 +66,30 @@ function socketWith(
 ) {
   FakeWebSocket.instances = [];
   const intervals: Array<{ fn: () => void; cleared?: boolean }> = [];
-  const timers: Array<{ fn: () => void; ms: number }> = [];
+  const timers: Array<{
+    fn: () => void;
+    ms: number;
+    cleared?: boolean;
+    fired?: boolean;
+  }> = [];
   const socket = new CallsSocket({
     signaling: signaling(),
     WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
     setTimeout: ((fn: () => void, ms: number) => {
-      timers.push({ fn, ms });
+      const entry = {
+        ms,
+        fn: () => {
+          entry.fired = true;
+          fn();
+        },
+      } as (typeof timers)[number];
+      timers.push(entry);
       return timers.length as unknown as ReturnType<typeof setTimeout>;
     }) as unknown as typeof globalThis.setTimeout,
-    clearTimeout: (() =>
-      undefined) as unknown as typeof globalThis.clearTimeout,
+    clearTimeout: ((handle: number) => {
+      const entry = timers[handle - 1];
+      if (entry !== undefined) entry.cleared = true;
+    }) as unknown as typeof globalThis.clearTimeout,
     setInterval: ((fn: () => void) => {
       intervals.push({ fn });
       return intervals.length as unknown as ReturnType<typeof setInterval>;
@@ -225,6 +239,49 @@ describe("CallsSocket", () => {
     h.socket.close();
   });
 
+  it("drops a socket whose handshake never completes", async () => {
+    const h = socketWith({ openTimeoutMs: 5_000, minBackoffMs: 100 });
+    const states: boolean[] = [];
+    h.socket.onState((connected) => states.push(connected));
+    const connecting = h.socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    const stalled = h.ws();
+    // The browser never fires onopen or onclose for a stalled upgrade, so
+    // only the handshake deadline can move this attempt on.
+    const open = h.timers.find((t) => t.ms === 5_000);
+    expect(open).toBeDefined();
+    open?.fn();
+    await connecting;
+    expect(h.socket.connected).toBe(false);
+    expect(stalled.readyState).toBe(FakeWebSocket.CLOSED);
+    expect(states).toEqual([false]);
+    // A reconnect is scheduled with backoff, not another bare handshake.
+    const backoff = h.timers.filter(
+      (t) => t.cleared !== true && t.fired !== true,
+    );
+    expect(backoff).toHaveLength(1);
+    // A second connect() is a fresh attempt rather than the dead one.
+    backoff[0]?.fn();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(FakeWebSocket.instances).toHaveLength(2);
+    h.socket.close();
+  });
+
+  it("clears the handshake deadline once the socket opens", async () => {
+    const h = socketWith({ openTimeoutMs: 5_000 });
+    const connecting = h.socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    h.ws().open();
+    await connecting;
+    const open = h.timers.find((t) => t.ms === 5_000);
+    expect(open?.cleared).toBe(true);
+    expect(h.socket.connected).toBe(true);
+    h.socket.close();
+  });
+
   it("surfaces server error frames to onError", async () => {
     const { socket, ws } = socketWith();
     const seen: { code: string; message: string }[] = [];
@@ -343,16 +400,20 @@ describe("CallsSocket", () => {
     await connecting;
     ws().drop();
     expect(states).toEqual([true, false]);
-    expect(timers).toHaveLength(1);
-    expect(timers[0]?.ms).toBe(75); // 100ms × (0.5 + 0.5/2)
-    timers[0]?.fn();
+    // Pending timers only: the open-handshake deadline is cleared on open and
+    // a fired backoff stays in the list.
+    const live = () =>
+      timers.filter((t) => t.cleared !== true && t.fired !== true);
+    expect(live()).toHaveLength(1);
+    expect(live()[0]?.ms).toBe(75); // 100ms × (0.5 + 0.5/2)
+    live()[0]?.fn();
     await Promise.resolve();
     await Promise.resolve();
     expect(FakeWebSocket.instances).toHaveLength(2);
     ws().drop();
-    expect(timers[1]?.ms).toBe(150); // doubled
+    expect(live()[0]?.ms).toBe(150); // doubled
     socket.close();
-    timers[1]?.fn();
+    live()[0]?.fn();
     await Promise.resolve();
     await Promise.resolve();
     expect(FakeWebSocket.instances).toHaveLength(2); // no reconnect after close
