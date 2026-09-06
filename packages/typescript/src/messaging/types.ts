@@ -1436,9 +1436,14 @@ export interface VoipTokenValue {
 
 export type VoipTokenResponse = SuccessEnvelope<VoipTokenValue>;
 
-/** Body for `POST /api/voip/ws-ticket`. Server keys must name the session. */
+/**
+ * Body for `POST /api/voip/ws-ticket`. Required here because this client
+ * authenticates with a server key, and the route answers 400 when one of
+ * those does not name a session. (The wire contract leaves it optional for
+ * client tokens, which are already bound to theirs.)
+ */
 export interface VoipSocketTicketRequest {
-  readonly session?: string;
+  readonly session: string;
 }
 /** A single-use, 60-second ticket that opens the calls WebSocket. */
 export interface VoipSocketTicketValue {

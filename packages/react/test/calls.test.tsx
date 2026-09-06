@@ -289,6 +289,10 @@ describe("Calls UI", () => {
   });
 
   it("keeps the duration running while the call is reconnecting", () => {
+    // Pinned: measuring against real time, a render crossing a second
+    // boundary would read 6 and fail this intermittently.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-06T12:00:00.000Z"));
     const now = Date.now();
     function Probe({ status }: { status: CallsSnapshot["status"] }) {
       return (
@@ -307,6 +311,7 @@ describe("Calls UI", () => {
       for (const root of roots) root.render(<Probe status="ended" />);
     });
     expect(host.textContent).toBe("0");
+    vi.useRealTimers();
   });
 
   it("applies provider direction and dark theme classes", () => {
