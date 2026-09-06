@@ -8,6 +8,10 @@
   Outbound calling now goes through a `place` hook that hands the destination
   to the application's server and takes back the platform's call id; the
   removed `createCallId` option had no working use.
+- `CallsSocket` heartbeats. A half-open connection still reports OPEN, so
+  candidates were dropped while the media factory kept REST polling disabled;
+  an unanswered `ping` now closes it and reconnects. `heartbeatMs` tunes the
+  period, 0 disables it.
 - `CallsSocket` takes a `line`, carried onto the calls it delivers. It always
   reported `linkedDevice`, so a Business Calling API session showed video
   controls on an audio-only line.

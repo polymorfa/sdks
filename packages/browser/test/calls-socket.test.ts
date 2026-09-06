@@ -65,6 +65,7 @@ function socketWith(
   options: Partial<ConstructorParameters<typeof CallsSocket>[0]> = {},
 ) {
   FakeWebSocket.instances = [];
+  const intervals: Array<{ fn: () => void; cleared?: boolean }> = [];
   const timers: Array<{ fn: () => void; ms: number }> = [];
   const socket = new CallsSocket({
     signaling: signaling(),
@@ -75,10 +76,28 @@ function socketWith(
     }) as unknown as typeof globalThis.setTimeout,
     clearTimeout: (() =>
       undefined) as unknown as typeof globalThis.clearTimeout,
+    setInterval: ((fn: () => void) => {
+      intervals.push({ fn });
+      return intervals.length as unknown as ReturnType<typeof setInterval>;
+    }) as unknown as typeof globalThis.setInterval,
+    clearInterval: ((handle: number) => {
+      const entry = intervals[handle - 1];
+      if (entry !== undefined) entry.cleared = true;
+    }) as unknown as typeof globalThis.clearInterval,
     random: () => 0.5,
     ...options,
   });
-  return { socket, timers, ws: () => FakeWebSocket.instances.at(-1)! };
+  return {
+    socket,
+    timers,
+    intervals,
+    // Fire every live heartbeat tick.
+    beat: () => {
+      for (const entry of [...intervals])
+        if (entry.cleared !== true) entry.fn();
+    },
+    ws: () => FakeWebSocket.instances.at(-1)!,
+  };
 }
 
 describe("CallsSocket", () => {
@@ -171,6 +190,39 @@ describe("CallsSocket", () => {
     });
     controller.dispose();
     socket.close();
+  });
+
+  it("pings, and drops a socket that stops answering", async () => {
+    const h = socketWith({ heartbeatMs: 1_000 });
+    const states: boolean[] = [];
+    h.socket.onState((connected) => states.push(connected));
+    const connecting = h.socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    const first = h.ws();
+    first.open();
+    await connecting;
+
+    h.beat();
+    expect(JSON.parse(first.sent.at(-1) ?? "{}")).toEqual({ type: "ping" });
+    // Answered every tick: the connection stays up.
+    first.receive({ type: "pong" });
+    h.beat();
+    first.receive({ type: "pong" });
+    expect(h.socket.connected).toBe(true);
+    expect(states).toEqual([true]);
+
+    // Unanswered: a half-open socket still reports OPEN and fires no onclose,
+    // so nothing else would ever notice ICE had stopped flowing. The tick
+    // after the unanswered ping drops it.
+    h.beat();
+    expect(h.socket.connected).toBe(true);
+    h.beat();
+    expect(states).toEqual([true, false]);
+    expect(h.socket.connected).toBe(false);
+    expect(h.timers.length).toBeGreaterThan(0);
+    expect(h.intervals.every((t) => t.cleared === true)).toBe(true);
+    h.socket.close();
   });
 
   it("surfaces server error frames to onError", async () => {

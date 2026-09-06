@@ -53,9 +53,18 @@ export interface CallsSocketOptions {
   /** Reconnect backoff bounds in milliseconds. Defaults 1 000 → 30 000. */
   readonly minBackoffMs?: number;
   readonly maxBackoffMs?: number;
+  /**
+   * Heartbeat period in milliseconds; 0 disables it. Defaults to 15 000. A
+   * `ping` goes out each period and the socket is dropped when the previous
+   * one was never answered, so a half-open connection is detected within two
+   * periods rather than never.
+   */
+  readonly heartbeatMs?: number;
   readonly WebSocket?: typeof globalThis.WebSocket;
   readonly setTimeout?: typeof globalThis.setTimeout;
   readonly clearTimeout?: typeof globalThis.clearTimeout;
+  readonly setInterval?: typeof globalThis.setInterval;
+  readonly clearInterval?: typeof globalThis.clearInterval;
   readonly random?: () => number;
 }
 
@@ -73,6 +82,8 @@ export class CallsSocket {
   readonly #WebSocket: typeof globalThis.WebSocket;
   readonly #setTimeout: typeof globalThis.setTimeout;
   readonly #clearTimeout: typeof globalThis.clearTimeout;
+  readonly #setInterval: typeof globalThis.setInterval;
+  readonly #clearInterval: typeof globalThis.clearInterval;
   readonly #random: () => number;
   readonly #lifecycle = new Set<(event: CallLifecycleEvent) => void>();
   readonly #candidates = new Set<
@@ -90,6 +101,9 @@ export class CallsSocket {
   #attemptAbort: AbortController | undefined;
   /** Bumped by `close()` so a stale ticket completion never opens a socket. */
   #generation = 0;
+  #heartbeatTimer: ReturnType<typeof setInterval> | undefined;
+  /** True between sending a `ping` and receiving the matching `pong`. */
+  #awaitingPong = false;
 
   constructor(options: CallsSocketOptions) {
     this.#options = options;
@@ -98,6 +112,10 @@ export class CallsSocket {
       options.setTimeout ?? globalThis.setTimeout.bind(globalThis);
     this.#clearTimeout =
       options.clearTimeout ?? globalThis.clearTimeout.bind(globalThis);
+    this.#setInterval =
+      options.setInterval ?? globalThis.setInterval.bind(globalThis);
+    this.#clearInterval =
+      options.clearInterval ?? globalThis.clearInterval.bind(globalThis);
     this.#random = options.random ?? Math.random;
   }
 
@@ -127,6 +145,7 @@ export class CallsSocket {
   /** Close the socket and stop reconnecting. */
   close(): void {
     this.#closed = true;
+    this.#stopHeartbeat();
     if (this.#timer !== undefined) {
       this.#clearTimeout(this.#timer);
       this.#timer = undefined;
@@ -292,6 +311,7 @@ export class CallsSocket {
     this.#socket = socket;
     socket.onopen = () => {
       this.#attempt = 0;
+      this.#startHeartbeat(socket);
       this.#emitState(true);
       settle();
     };
@@ -301,6 +321,7 @@ export class CallsSocket {
     };
     socket.onerror = () => undefined;
     socket.onclose = () => {
+      this.#stopHeartbeat();
       if (this.#socket === socket) this.#socket = undefined;
       this.#emitState(false);
       settle();
@@ -322,6 +343,10 @@ export class CallsSocket {
   }
 
   #receive(message: CallsSocketServerMessage): void {
+    if (message.type === "pong") {
+      this.#awaitingPong = false;
+      return;
+    }
     if (message.type === "error") {
       this.#emitError({ code: message.code, message: message.message });
       return;
@@ -335,6 +360,55 @@ export class CallsSocket {
     const lifecycle = lifecycleEventFrom(message, this.#options.line);
     if (lifecycle === undefined) return;
     for (const listener of [...this.#lifecycle]) listener(lifecycle);
+  }
+
+  /**
+   * A silently dead connection still reports OPEN, so `sendCandidate` keeps
+   * claiming success and the media factory keeps REST polling disabled: ICE
+   * stops flowing both ways with nothing to notice it. Pinging turns that into
+   * an ordinary close, which reconnects.
+   */
+  #startHeartbeat(socket: WebSocket): void {
+    this.#stopHeartbeat();
+    const every = this.#options.heartbeatMs ?? 15_000;
+    if (every <= 0) return;
+    this.#heartbeatTimer = this.#setInterval(() => {
+      if (this.#socket !== socket) return;
+      if (this.#awaitingPong) {
+        this.#dropSocket(socket);
+        return;
+      }
+      this.#awaitingPong = this.#send({ type: "ping" });
+    }, every);
+  }
+
+  #stopHeartbeat(): void {
+    if (this.#heartbeatTimer !== undefined) {
+      this.#clearInterval(this.#heartbeatTimer);
+      this.#heartbeatTimer = undefined;
+    }
+    this.#awaitingPong = false;
+  }
+
+  /**
+   * Tear down a socket the heartbeat found dead. `close()` on a half-open
+   * connection may never fire `onclose`, so the close path runs here directly,
+   * with the handlers detached so it cannot run twice.
+   */
+  #dropSocket(socket: WebSocket): void {
+    this.#stopHeartbeat();
+    if (this.#socket === socket) this.#socket = undefined;
+    socket.onopen = null;
+    socket.onmessage = null;
+    socket.onclose = null;
+    socket.onerror = null;
+    try {
+      socket.close();
+    } catch {
+      // already gone
+    }
+    this.#emitState(false);
+    this.#scheduleReconnect();
   }
 
   #emitError(error: CallsSocketError): void {
