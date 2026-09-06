@@ -97,8 +97,11 @@ Outbound calls therefore run through the backend's `place` hook:
 3. It answers with the platform's call id.
 4. The browser attaches media to that id, and only then does signaling apply.
 
-Without the hook the controller's `place()` rejects, so an application that
-only answers inbound calls needs no such route.
+Without the hook the placement fails, which the controller reports the way it
+reports every call failure — an `error` snapshot with code `place_failed`.
+`place()` itself resolves either way, so the snapshot is what an integrator
+watches, not a rejected promise. An application that only answers inbound
+calls needs no such route.
 
 ## Transport (2026-09-06 addendum)
 

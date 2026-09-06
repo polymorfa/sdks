@@ -1074,7 +1074,7 @@ export interface DialPadProps extends ControllerProps {
   readonly defaultValue?: string;
   /** Calling line the call is placed over. Defaults to `linkedDevice`. */
   readonly line?: CallLine;
-  /** Called after `place()` resolves. */
+  /** Called once the call is actually placed, not when a placement fails. */
   readonly onPlaced?: (to: string) => void;
   readonly className?: string;
 }
@@ -1106,7 +1106,12 @@ export function DialPad({
     // and its value, so Enter would otherwise place a second call — and
     // `place()` aborts the current operation, tearing down the live call.
     if (busy || to.length === 0) return;
-    void resolved.place(to, { video, line }).then(() => onPlaced?.(to));
+    // `place()` resolves even when the placement failed — the controller
+    // reports that through the snapshot — so the snapshot is what says
+    // whether there is now a call to announce.
+    void resolved.place(to, { video, line }).then(() => {
+      if (ACTIVE_STATUSES.has(resolved.getSnapshot().status)) onPlaced?.(to);
+    });
   };
 
   return (

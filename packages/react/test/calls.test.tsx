@@ -344,6 +344,67 @@ describe("Calls UI", () => {
     f.controller.dispose();
   });
 
+  it("announces a placed call only when one was actually placed", async () => {
+    const placed: string[] = [];
+    const ok = fixture();
+    const host = mount(
+      <PolymorfaProvider locale={createLocale("en")}>
+        <DialPad
+          controller={ok.controller}
+          defaultValue="+12025550123"
+          onPlaced={(to) => placed.push(to)}
+        />
+      </PolymorfaProvider>,
+    );
+    await act(async () => {
+      (
+        host.querySelector(
+          "[aria-label='Place audio call']",
+        ) as HTMLButtonElement
+      ).click();
+    });
+    expect(placed).toEqual(["+12025550123"]);
+
+    const badController = new CallsController(
+      createSignalingCallsBackend({
+        signaling: {
+          offer: vi.fn(async () => ({ sdp: "v=0", iceServers: [] })),
+          candidate: vi.fn(async () => undefined),
+          candidates: vi.fn(async () => []),
+          teardown: vi.fn(async () => undefined),
+        },
+        incoming: new IncomingCallRelay(),
+        place: async () => {
+          throw new Error("route down");
+        },
+      }),
+      { open: vi.fn() } as unknown as CallMediaFactory,
+    );
+    badController.initialize();
+    const failing = mount(
+      <PolymorfaProvider locale={createLocale("en")}>
+        <DialPad
+          controller={badController}
+          defaultValue="+15550100"
+          onPlaced={(to) => placed.push(to)}
+        />
+      </PolymorfaProvider>,
+    );
+    await act(async () => {
+      (
+        failing.querySelector(
+          "[aria-label='Place audio call']",
+        ) as HTMLButtonElement
+      ).click();
+    });
+    // place() resolves even on failure, so announcing on resolution alone told
+    // the application a call had been placed when none had.
+    expect(badController.getSnapshot().status).toBe("error");
+    expect(placed).toEqual(["+12025550123"]);
+    ok.controller.dispose();
+    badController.dispose();
+  });
+
   it("applies provider direction and dark theme classes", () => {
     const f = fixture();
     const host = mount(

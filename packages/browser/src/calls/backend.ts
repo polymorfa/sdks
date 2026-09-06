@@ -102,8 +102,9 @@ export interface SignalingCallsBackendOptions {
    * browser invented resolves to no pod). Starting an outbound call is a
    * server-key operation, so the application posts the destination to its own
    * endpoint, that endpoint places the call with the server SDK, and the
-   * resulting id comes back here. Without it outbound calling is unavailable
-   * and the controller's `place()` rejects.
+   * resulting id comes back here. Without it outbound calling is unavailable:
+   * this hook throws, and the controller turns that into a `place_failed`
+   * error snapshot — `CallsController.place()` resolves regardless.
    */
   readonly place?: (
     input: PlaceCallInput,
