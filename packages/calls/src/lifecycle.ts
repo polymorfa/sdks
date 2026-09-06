@@ -157,8 +157,14 @@ export class LifecycleSocket extends Emitter<Events> {
       this.#o.reportError ??
       (globalThis as { reportError?: (cause: unknown) => void }).reportError;
     if (report !== undefined) {
-      report(cause);
-      return;
+      // A reporter that itself throws would reject the .catch() chain in
+      // #open() with nothing left to handle it; fall back to the rethrow.
+      try {
+        report(cause);
+        return;
+      } catch {
+        // fall through
+      }
     }
     queueMicrotask(() => {
       throw cause;
