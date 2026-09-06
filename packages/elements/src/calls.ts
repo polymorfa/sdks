@@ -55,15 +55,19 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
     const controller = this.configuredController<CallsController>();
     if (status === "incoming")
       panel.append(
+        // Both reject when a remote hang-up lands between the render and the
+        // click, because the call is no longer incoming. The snapshot already
+        // says so, so this only keeps the rejection from going unhandled —
+        // the same handling the React card uses.
         button(
           messages["calls.answer"],
           "primary answer",
-          () => void controller?.answer(),
+          () => void controller?.answer().catch(() => undefined),
         ),
         button(
           messages["calls.reject"],
           "reject",
-          () => void controller?.reject(),
+          () => void controller?.reject().catch(() => undefined),
         ),
       );
     if (snapshot !== undefined && ACTIVE.has(status)) {
