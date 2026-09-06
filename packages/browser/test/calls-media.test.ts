@@ -395,6 +395,22 @@ describe("WebRtcMediaFactory track negotiation", () => {
     void second;
   });
 
+  it("omits the re-offer operations when signaling cannot renegotiate", async () => {
+    const audio = new FakeTrack("audio");
+    const basic = signaling();
+    delete (basic as { renegotiate?: unknown }).renegotiate;
+    const session = await factoryFor({
+      peer: peerConnection(),
+      signaling: basic,
+      getUserMedia: vi.fn().mockResolvedValue(new FakeStream([audio])),
+    }).open("call-1", false, callbacks, new AbortController().signal);
+
+    // Present but rejecting, these satisfied the controller's optional-method
+    // guards and failed into handlers that swallow the reason.
+    expect(session.enableVideo).toBeUndefined();
+    expect(session.restartIce).toBeUndefined();
+  });
+
   it("rolls the camera back when the upgrade re-offer fails", async () => {
     const audio = new FakeTrack("audio");
     const local = new FakeStream([audio]);

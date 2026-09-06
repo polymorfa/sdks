@@ -346,13 +346,24 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       // before the getUserMedia await, so two overlapping calls both passed it
       // and left the connection with two camera tracks and two senders. Queued,
       // the second re-checks the guard after the first has added its track.
-      enableVideo: (enableSignal, devices) => {
-        const run = upgrading.then(() => upgrade(enableSignal, devices));
-        upgrading = run.catch(() => undefined);
-        return run;
-      },
-      restartIce: (restartSignal) =>
-        renegotiate({ iceRestart: true }, restartSignal),
+      // Both need a re-offer, so signaling that cannot renegotiate does not
+      // get them at all. Present but failing, they left the controller's
+      // optional-method guards satisfied and the operations rejecting into
+      // handlers that swallow the reason — a dead camera button.
+      ...(this.#signaling.renegotiate === undefined
+        ? {}
+        : {
+            enableVideo: (
+              enableSignal: AbortSignal,
+              devices?: SelectedCallDevices,
+            ) => {
+              const run = upgrading.then(() => upgrade(enableSignal, devices));
+              upgrading = run.catch(() => undefined);
+              return run;
+            },
+            restartIce: (restartSignal: AbortSignal) =>
+              renegotiate({ iceRestart: true }, restartSignal),
+          }),
       close: async () => {
         if (closed) return;
         closed = true;
