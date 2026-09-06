@@ -1109,9 +1109,15 @@ export function DialPad({
     // `place()` resolves even when the placement failed — the controller
     // reports that through the snapshot — so the snapshot is what says
     // whether there is now a call to announce.
-    void resolved.place(to, { video, line }).then(() => {
-      if (ACTIVE_STATUSES.has(resolved.getSnapshot().status)) onPlaced?.(to);
-    });
+    void resolved
+      .place(to, { video, line })
+      .then(() => {
+        if (ACTIVE_STATUSES.has(resolved.getSnapshot().status)) onPlaced?.(to);
+      })
+      // A placement failure lands in the snapshot, not here, but `place()`
+      // does reject on a disposed controller — which a mounted pad holding a
+      // shared one can still be dialled against.
+      .catch(() => undefined);
   };
 
   return (

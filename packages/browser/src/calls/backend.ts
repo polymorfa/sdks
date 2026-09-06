@@ -104,7 +104,8 @@ export interface SignalingCallsBackendOptions {
    * endpoint, that endpoint places the call with the server SDK, and the
    * resulting id comes back here. Without it outbound calling is unavailable:
    * this hook throws, and the controller turns that into a `place_failed`
-   * error snapshot — `CallsController.place()` resolves regardless.
+   * error snapshot rather than a rejected promise. (`CallsController.place()`
+   * rejects only when the controller has been disposed.)
    */
   readonly place?: (
     input: PlaceCallInput,

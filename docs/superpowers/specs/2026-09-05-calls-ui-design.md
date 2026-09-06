@@ -100,7 +100,8 @@ Outbound calls therefore run through the backend's `place` hook:
 Without the hook the placement fails, which the controller reports the way it
 reports every call failure — an `error` snapshot with code `place_failed`.
 `place()` itself resolves either way, so the snapshot is what an integrator
-watches, not a rejected promise. An application that only answers inbound
+watches, not a rejected promise — it rejects only when the controller has been
+disposed, which a UI holding a shared controller should still absorb. An application that only answers inbound
 calls needs no such route.
 
 ## Transport (2026-09-06 addendum)

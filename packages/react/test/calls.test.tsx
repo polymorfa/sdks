@@ -433,6 +433,32 @@ describe("Calls UI", () => {
     expect(root.style.getPropertyValue("--pmfa-color-primary")).toBe("#123456");
   });
 
+  it("absorbs a dial against a disposed controller", async () => {
+    const rejections: unknown[] = [];
+    const onRejection = (reason: unknown) => rejections.push(reason);
+    process.on("unhandledRejection", onRejection);
+    const f = fixture();
+    const host = mount(
+      <PolymorfaProvider locale={createLocale("en")}>
+        <DialPad controller={f.controller} defaultValue="+12025550123" />
+      </PolymorfaProvider>,
+    );
+    // A pad left mounted against a shared controller that has been disposed:
+    // place() rejects out of #begin()'s assertActive, before the try block
+    // that turns every other failure into a snapshot.
+    f.controller.dispose();
+    await act(async () => {
+      (
+        host.querySelector(
+          "[aria-label='Place audio call']",
+        ) as HTMLButtonElement
+      ).click();
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(rejections).toEqual([]);
+    process.off("unhandledRejection", onRejection);
+  });
+
   it("formats call durations", () => {
     expect(formatDuration(3725)).toBe("1:02:05");
     expect(formatDuration(65)).toBe("1:05");
