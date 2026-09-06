@@ -51,6 +51,8 @@ export class LifecycleSocket extends Emitter<Events> {
   #generation = 0;
   #settle: (() => void) | undefined;
   #abort: AbortController | undefined;
+  /** Bounds the current attempt's WebSocket open; cleared on open, close, or close(). */
+  #openTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(options: LifecycleSocketOptions) {
     super();
@@ -82,6 +84,8 @@ export class LifecycleSocket extends Emitter<Events> {
   close(): void {
     this.#closed = true;
     this.#stopHeartbeat();
+    // An armed open timer keeps a Node process alive for up to connectTimeoutMs.
+    this.#clearOpenTimer();
     if (this.#timer !== undefined) {
       (this.#o.clearTimeout ?? clearTimeout)(this.#timer);
       this.#timer = undefined;
@@ -132,13 +136,16 @@ export class LifecycleSocket extends Emitter<Events> {
     try {
       ticket = await this.#o.api.socketTicket(this.#o.session, signal);
     } catch (cause) {
-      this.emit("error", {
-        code: "ticket_failed",
-        message:
-          cause instanceof Error
-            ? cause.message
-            : "Could not mint a lifecycle ticket.",
-      });
+      // close() aborts an in-flight ticket request; that is not a failure the
+      // consumer should hear about after asking for the socket to close.
+      if (!signal.aborted && !this.#closed)
+        this.emit("error", {
+          code: "ticket_failed",
+          message:
+            cause instanceof Error
+              ? cause.message
+              : "Could not mint a lifecycle ticket.",
+        });
       settle();
       if (!signal.aborted && !this.#closed) this.#scheduleReconnect();
       return;
@@ -161,10 +168,11 @@ export class LifecycleSocket extends Emitter<Events> {
     // heartbeat only starts after onopen — without this bound the attempt
     // never settles and no reconnect is ever scheduled.
     const timeoutMs = this.#o.connectTimeoutMs ?? 10_000;
-    let openTimer: ReturnType<typeof setTimeout> | undefined =
+    this.#clearOpenTimer();
+    this.#openTimer =
       timeoutMs > 0
         ? (this.#o.setTimeout ?? setTimeout)(() => {
-            openTimer = undefined;
+            this.#openTimer = undefined;
             if (this.#socket !== socket) return;
             this.#socket = undefined;
             socket.onopen =
@@ -185,12 +193,7 @@ export class LifecycleSocket extends Emitter<Events> {
             this.#scheduleReconnect();
           }, timeoutMs)
         : undefined;
-    const clearOpenTimer = () => {
-      if (openTimer !== undefined) {
-        (this.#o.clearTimeout ?? clearTimeout)(openTimer);
-        openTimer = undefined;
-      }
-    };
+    const clearOpenTimer = () => this.#clearOpenTimer();
     socket.onopen = () => {
       clearOpenTimer();
       this.#attempt = 0;
@@ -279,6 +282,13 @@ export class LifecycleSocket extends Emitter<Events> {
         this.#awaitingPong = true;
       }
     }, every);
+  }
+
+  #clearOpenTimer(): void {
+    if (this.#openTimer !== undefined) {
+      (this.#o.clearTimeout ?? clearTimeout)(this.#openTimer);
+      this.#openTimer = undefined;
+    }
   }
 
   #stopHeartbeat(): void {

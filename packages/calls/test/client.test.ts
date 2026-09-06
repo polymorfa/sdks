@@ -493,3 +493,84 @@ describe("CallsClient — review round two", () => {
     expect(h.t.intervals.filter((i) => !i.cleared)).toHaveLength(1); // lifecycle heartbeat only
   });
 });
+
+describe("CallsClient — review round three", () => {
+  it("rejects answer() when the call ends while the media ticket is in flight", async () => {
+    const api = fakeApi();
+    let resolveTicket: (v: {
+      token: string;
+      expiresAt: number;
+      url: string;
+    }) => void = () => undefined;
+    api.mediaTicket.mockImplementationOnce(
+      () => new Promise((r) => (resolveTicket = r)),
+    );
+    const h = clientWith(api);
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const answering = call!.answer();
+    await flush();
+    life.text({
+      type: "event",
+      event: "call.ended",
+      callId: "CALL-1",
+      payload: { reason: "user_hangup" },
+      timestamp: "",
+    });
+    resolveTicket({
+      token: "t",
+      expiresAt: 1,
+      url: "wss://pod.example/voip/sdk?callId=CALL-1",
+    });
+    // Resolving here would tell the caller the call connected; it ended.
+    await expect(answering).rejects.toThrow(/ended before media/);
+    expect(call!.endReason).toBe("remote_hangup"); // not rewritten to connection_failed
+    expect(FakeWebSocket.instances).toHaveLength(1); // no media socket was created
+  });
+
+  it("clears the open timer on close() so a Node process can exit", async () => {
+    const h = clientWith();
+    const connecting = h.client.connect();
+    await flush();
+    // Socket never opens; close() must disarm the attempt's open timer.
+    h.client.disconnect();
+    await connecting;
+    expect(h.t.timeouts.filter((x) => x.cleared !== true)).toHaveLength(0);
+  });
+
+  it("does not report ticket_failed for a ticket request that close() aborted", async () => {
+    const api = fakeApi();
+    api.socketTicket.mockImplementationOnce(
+      (_s: string, signal?: AbortSignal) =>
+        new Promise((_r, reject) =>
+          signal?.addEventListener("abort", () => reject(new Error("aborted"))),
+        ),
+    );
+    const h = clientWith(api);
+    const errors: string[] = [];
+    h.client.on("error", (e) => errors.push(e.code));
+    const connecting = h.client.connect();
+    await flush();
+    h.client.disconnect();
+    await connecting;
+    expect(errors).toEqual([]);
+  });
+
+  it("bounds media connect() with a ready timeout", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const answering = call!.answer();
+    await flush();
+    const media = h.ws(1);
+    media.open(); // pod answers nothing — no ready, no error, no close
+    h.t.fireTimeouts();
+    await expect(answering).rejects.toThrow(/did not report media ready/);
+    expect(media.readyState).toBe(FakeWebSocket.CLOSED);
+    expect(call!.state).toBe("ended"); // media failed after a successful accept
+  });
+});

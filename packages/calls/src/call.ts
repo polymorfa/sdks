@@ -282,7 +282,7 @@ export class Call extends Emitter<CallEvents> {
     // leave an ended call holding a live socket and heartbeat.
     // Read through the getter: TypeScript narrows a private field across the
     // awaits above and would otherwise consider the later check unreachable.
-    if (this.ended) return;
+    if (this.ended) throw new Error("Call ended before media was bridged.");
     const media = new MediaSocket({ ...this.#mediaOptions, ticket });
     this.#media = media;
     media.on("audio", (pcm) => this.audio._push(pcm));

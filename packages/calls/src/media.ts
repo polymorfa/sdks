@@ -18,6 +18,14 @@ export interface MediaSocketOptions {
   readonly clearInterval?: typeof globalThis.clearInterval;
   /** Heartbeat period; 0 disables. Default 5 000 ms — media is latency-sensitive. */
   readonly heartbeatMs?: number;
+  /**
+   * Bound on connect(): from the attempt until the pod's `ready` frame. 0
+   * disables. Default 10 000 ms. Without it a socket stuck CONNECTING, or one
+   * that answers pings but never bridges, leaves answer() pending forever.
+   */
+  readonly readyTimeoutMs?: number;
+  readonly setTimeout?: typeof globalThis.setTimeout;
+  readonly clearTimeout?: typeof globalThis.clearTimeout;
 }
 
 type Events = {
@@ -78,15 +86,31 @@ export class MediaSocket extends Emitter<Events> {
       return Promise.reject(new Error("Media socket is closed."));
     if (this.#socket !== undefined) return Promise.resolve();
     return new Promise<void>((resolve, reject) => {
+      const readyMs = this.#o.readyTimeoutMs ?? 10_000;
+      let readyTimer: ReturnType<typeof setTimeout> | undefined;
       let settled = false;
+      // Every settlement clears the ready bound, so the timer can only fire
+      // for an attempt that is still genuinely pending.
       const done = (err?: Error) => {
         if (settled) return;
         settled = true;
+        if (readyTimer !== undefined) {
+          (this.#o.clearTimeout ?? clearTimeout)(readyTimer);
+          readyTimer = undefined;
+        }
         if (this.#pending === done) this.#pending = undefined;
         if (err) reject(err);
         else resolve();
       };
       this.#pending = done;
+      if (readyMs > 0)
+        readyTimer = (this.#o.setTimeout ?? setTimeout)(() => {
+          readyTimer = undefined;
+          // A socket stuck CONNECTING, or one that answers pings but never
+          // bridges, would otherwise hold answer() open forever.
+          done(new Error("The pod did not report media ready in time."));
+          this.close();
+        }, readyMs);
       let socket: WebSocket;
       try {
         // The ticket is a bearer credential; browsers cannot set headers on a
