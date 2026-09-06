@@ -111,6 +111,18 @@ describe("portable elements", () => {
     // with; a raw status identifier must not reach the DOM.
     fixture.update({ ...base, status: "ready", revision: 1 });
     expect(root?.querySelector('h2[part="status"]')).toBeNull();
+
+    // The element takes any controller, so a line without mute must not be
+    // offered the control.
+    fixture.update({ ...base, revision: 2 });
+    expect(root?.querySelector('[part="mute"]')).not.toBeNull();
+    fixture.update({
+      ...base,
+      revision: 3,
+      capabilities: { video: true, mute: false },
+    });
+    expect(root?.querySelector('[part="mute"]')).toBeNull();
+    expect(root?.querySelector('[part="hangup"]')).not.toBeNull();
     node.remove();
   });
   it("restores drawer focus and emits a composed close event", () => {

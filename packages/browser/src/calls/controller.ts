@@ -297,7 +297,16 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       this.getSnapshot().selectedDevices,
     );
     const after = this.getSnapshot();
-    if (after.callId !== current.callId) return;
+    // A hang-up or failure while the camera was being acquired keeps the
+    // callId on the terminal snapshot, so the id alone does not say the call
+    // is still live — video: true on an ended call would show a camera the
+    // surface no longer has.
+    if (
+      after.callId !== current.callId ||
+      after.status === "ended" ||
+      after.status === "error"
+    )
+      return;
     this.transition({
       ...callFields(after),
       status: after.status,

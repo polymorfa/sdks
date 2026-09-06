@@ -67,15 +67,18 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
         ),
       );
     if (snapshot !== undefined && ACTIVE.has(status)) {
-      panel.append(
-        button(
-          snapshot.audioMuted
-            ? messages["calls.unmute"]
-            : messages["calls.mute"],
-          "mute",
-          () => controller?.setMuted({ audio: !snapshot.audioMuted }),
-        ),
-      );
+      // Gated like the camera: the element takes any controller, and one that
+      // reports a line without mute must not be offered the control.
+      if (snapshot.capabilities.mute)
+        panel.append(
+          button(
+            snapshot.audioMuted
+              ? messages["calls.unmute"]
+              : messages["calls.mute"],
+            "mute",
+            () => controller?.setMuted({ audio: !snapshot.audioMuted }),
+          ),
+        );
       if (snapshot.capabilities.video && snapshot.video)
         panel.append(
           button(

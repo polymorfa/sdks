@@ -422,6 +422,35 @@ describe("CallsController resumption and terminal offers", () => {
     }
   });
 
+  it("drops a video upgrade that lands after the call ended", async () => {
+    const f = fixture();
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    Object.assign(f.session, {
+      enableVideo: vi.fn(async () => {
+        await gate;
+      }),
+    });
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    await controller.place("+12025550123");
+
+    const upgrading = controller.enableVideo();
+    f.emit({ type: "ended", callId: "call-1", reason: "remote_hangup" });
+    expect(controller.getSnapshot().status).toBe("ended");
+    release();
+    await upgrading;
+    // The terminal snapshot keeps the callId, so the id alone cannot say the
+    // call is still live — this would otherwise show a camera on an ended call.
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      video: false,
+    });
+    controller.dispose();
+  });
+
   it("upgrades an audio call to video through the media session", async () => {
     const f = fixture();
     const enableVideo = vi.fn(async () => undefined);
