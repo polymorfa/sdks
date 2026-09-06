@@ -82,7 +82,14 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
       // On a video call the button mutes the outgoing track; on an audio call
       // over a video-capable line it upgrades, as the React dock's does.
       // Without the second case an audio call could never reach video here.
-      if (snapshot.capabilities.video)
+      // The upgrade needs a media session, which exists only once the call is
+      // connected — offered earlier the button would do nothing at all. The
+      // mute branch is unaffected, and `connectedAt` is no use as the test
+      // because it survives `reconnecting`.
+      if (
+        snapshot.capabilities.video &&
+        (snapshot.video || status === "connected")
+      )
         panel.append(
           snapshot.video
             ? button(

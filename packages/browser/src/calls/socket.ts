@@ -1,4 +1,8 @@
-import type { CallLifecycleEvent, CallEndReason } from "./controller.js";
+import type {
+  CallEndReason,
+  CallLifecycleEvent,
+  CallLine,
+} from "./controller.js";
 import type { CallsSignaling, TrickleCandidate } from "./signaling.js";
 
 /** Server → browser frames on the calls WebSocket. */
@@ -40,6 +44,12 @@ export interface CallsSocketOptions {
   readonly signaling: Pick<CallsSignaling, "socketTicket" | "socketUrl">;
   /** Session to follow when the credential is a server key. */
   readonly session?: string;
+  /**
+   * Calling line the session's inbound calls arrive on. Defaults to
+   * `linkedDevice`; set `cloudApi` for a Business Calling API session, or the
+   * controller would offer video controls on an audio-only line.
+   */
+  readonly line?: CallLine;
   /** Reconnect backoff bounds in milliseconds. Defaults 1 000 → 30 000. */
   readonly minBackoffMs?: number;
   readonly maxBackoffMs?: number;
@@ -322,7 +332,7 @@ export class CallsSocket {
       return;
     }
     if (message.type !== "event") return;
-    const lifecycle = lifecycleEventFrom(message);
+    const lifecycle = lifecycleEventFrom(message, this.#options.line);
     if (lifecycle === undefined) return;
     for (const listener of [...this.#lifecycle]) listener(lifecycle);
   }
@@ -401,6 +411,7 @@ function isCandidate(value: unknown): value is TrickleCandidate {
  */
 export function lifecycleEventFrom(
   message: Extract<CallsSocketServerMessage, { type: "event" }>,
+  line: CallLine = "linkedDevice",
 ): CallLifecycleEvent | undefined {
   const payload = (message.payload ?? {}) as Record<string, unknown>;
   switch (message.event) {
@@ -412,7 +423,7 @@ export function lifecycleEventFrom(
           callId: message.callId,
           from: peerFrom(payload.from),
           video: payload.hasVideo === true || payload.has_video === true,
-          line: "linkedDevice",
+          line,
         },
       };
     }

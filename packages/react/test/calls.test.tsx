@@ -314,6 +314,36 @@ describe("Calls UI", () => {
     vi.useRealTimers();
   });
 
+  it("keeps the in-call stage layout while reconnecting", async () => {
+    const f = fixture();
+    let ice: ((state: RTCIceConnectionState) => void) | undefined;
+    let connection: ((state: RTCPeerConnectionState) => void) | undefined;
+    (f.media.open as ReturnType<typeof vi.fn>).mockImplementation(
+      async (_id, _video, callbacks) => {
+        ice = callbacks.onIceConnectionState;
+        connection = callbacks.onConnectionState;
+        return f.session;
+      },
+    );
+    const host = mount(
+      <PolymorfaProvider locale={createLocale("en")}>
+        <CallSurface controller={f.controller} />
+      </PolymorfaProvider>,
+    );
+    await act(async () => {
+      await f.controller.place("+12025550123", { video: true });
+    });
+    act(() => connection?.("connected"));
+    expect(host.querySelector(".pmfa-calls-hero-preview")).toBeNull();
+
+    act(() => ice?.("disconnected"));
+    expect(f.controller.getSnapshot().status).toBe("reconnecting");
+    // The call is established; a flap must not drop it back to the pre-answer
+    // hero preview that belongs to a call which never connected.
+    expect(host.querySelector(".pmfa-calls-hero-preview")).toBeNull();
+    f.controller.dispose();
+  });
+
   it("applies provider direction and dark theme classes", () => {
     const f = fixture();
     const host = mount(

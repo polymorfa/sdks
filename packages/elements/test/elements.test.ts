@@ -115,17 +115,30 @@ describe("portable elements", () => {
     fixture.update({ ...base, status: "ready", revision: 1 });
     expect(root?.querySelector('h2[part="status"]')).toBeNull();
 
+    // The upgrade needs a media session, so it is not offered before the call
+    // connects — the button would have done nothing there.
+    fixture.update({
+      ...base,
+      revision: 4,
+      video: false,
+      status: "connecting",
+    });
+    expect(root?.querySelector('[part="camera"]')).toBeNull();
+
     // An audio call on a video-capable line offers the upgrade, matching the
     // React dock; without it the element could never reach video.
-    fixture.update({ ...base, revision: 4, video: false });
+    fixture.update({ ...base, revision: 5, video: false });
     const camera = root?.querySelector('[part="camera"]') as HTMLButtonElement;
     expect(camera.textContent).toBe("Turn camera on");
     camera.click();
     expect(enableVideo).toHaveBeenCalledTimes(1);
     expect(setMuted).not.toHaveBeenCalled();
 
-    // On a video call the same button mutes the outgoing track instead.
-    fixture.update({ ...base, revision: 5 });
+    // On a video call the same button mutes the outgoing track instead, and
+    // that branch is offered throughout the call.
+    fixture.update({ ...base, revision: 6, status: "connecting" });
+    expect(root?.querySelector('[part="camera"]')).not.toBeNull();
+    fixture.update({ ...base, revision: 7 });
     (root?.querySelector('[part="camera"]') as HTMLButtonElement).click();
     expect(setMuted).toHaveBeenCalledWith({ video: true });
     expect(enableVideo).toHaveBeenCalledTimes(1);
@@ -136,7 +149,7 @@ describe("portable elements", () => {
     expect(root?.querySelector('[part="mute"]')).not.toBeNull();
     fixture.update({
       ...base,
-      revision: 3,
+      revision: 8,
       capabilities: { video: true, mute: false },
     });
     expect(root?.querySelector('[part="mute"]')).toBeNull();

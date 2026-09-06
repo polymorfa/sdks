@@ -813,7 +813,11 @@ export function CallStage({
   if (!ACTIVE_STATUSES.has(snapshot.status)) return null;
   const peer = snapshot.peer ?? "";
   const showLocalVideo = snapshot.video && !snapshot.videoMuted;
-  const preAccept = showLocalVideo && !live;
+  // `live` is false while reconnecting, but the call is established and its
+  // layout should stay put — the pre-answer hero preview belongs to a call
+  // that has not connected yet.
+  const preAccept =
+    showLocalVideo && !live && snapshot.status !== "reconnecting";
   const ringingLine =
     snapshot.status === "reconnecting"
       ? `${t(locale, "calls.reconnecting")}…`

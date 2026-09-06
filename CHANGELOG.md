@@ -8,6 +8,9 @@
   Outbound calling now goes through a `place` hook that hands the destination
   to the application's server and takes back the platform's call id; the
   removed `createCallId` option had no working use.
+- `CallsSocket` takes a `line`, carried onto the calls it delivers. It always
+  reported `linkedDevice`, so a Business Calling API session showed video
+  controls on an audio-only line.
 - `CallsSignalingClient.socketTicket` no longer names a session. The client
   token is bound to one, and the API answers 403 when a request names another.
 - `CallsSocket` reports a signaling client that cannot mint tickets as an

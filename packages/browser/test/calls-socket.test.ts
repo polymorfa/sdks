@@ -130,6 +130,49 @@ describe("CallsSocket", () => {
     transient.socket.close();
   });
 
+  it("carries the configured line onto socket-delivered incoming calls", async () => {
+    const { socket, ws } = socketWith({ line: "cloudApi" });
+    const backend = createSignalingCallsBackend({
+      signaling: signaling(),
+      incoming: socket,
+    });
+    const session: CallMediaSession = {
+      localStream: {} as MediaStream,
+      remoteStream: {} as MediaStream,
+      setMuted: vi.fn(),
+      audioEnabled: () => true,
+      videoEnabled: () => false,
+      close: vi.fn(async () => undefined),
+    };
+    const controller = new CallsController(backend, {
+      open: vi.fn(async () => session),
+    });
+    controller.initialize();
+    const connecting = socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    ws().open();
+    await connecting;
+
+    ws().receive({
+      type: "event",
+      event: "call.received",
+      callId: "CALL-9",
+      payload: { callId: "CALL-9", from: "+15550100", hasVideo: true },
+      timestamp: "",
+    });
+    // Hardcoding linkedDevice here offered video controls on a line that has
+    // no video at all.
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "incoming",
+      line: "cloudApi",
+      video: false,
+      capabilities: { video: false },
+    });
+    controller.dispose();
+    socket.close();
+  });
+
   it("surfaces server error frames to onError", async () => {
     const { socket, ws } = socketWith();
     const seen: { code: string; message: string }[] = [];
