@@ -94,8 +94,10 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       options.createPeerConnection ??
       ((configuration) => new RTCPeerConnection(configuration));
     this.#pollIntervalMs = options.pollIntervalMs ?? 1_000;
-    this.#setInterval = options.setInterval ?? globalThis.setInterval;
-    this.#clearInterval = options.clearInterval ?? globalThis.clearInterval;
+    this.#setInterval =
+      options.setInterval ?? globalThis.setInterval.bind(globalThis);
+    this.#clearInterval =
+      options.clearInterval ?? globalThis.clearInterval.bind(globalThis);
   }
 
   async listDevices(): Promise<readonly CallDevice[]> {
@@ -191,14 +193,25 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         throwIfAborted(renegotiateSignal);
         const offer = await peer.createOffer(options);
         await peer.setLocalDescription(offer);
-        const answer = await renegotiateWith.call(
-          this.#signaling,
-          callId,
-          peer.localDescription?.sdp ?? offer.sdp ?? "",
-          renegotiateSignal,
-        );
-        if (closed) return;
-        await peer.setRemoteDescription({ type: "answer", sdp: answer.sdp });
+        try {
+          const answer = await renegotiateWith.call(
+            this.#signaling,
+            callId,
+            peer.localDescription?.sdp ?? offer.sdp ?? "",
+            renegotiateSignal,
+          );
+          if (closed) return;
+          await peer.setRemoteDescription({ type: "answer", sdp: answer.sdp });
+        } catch (cause) {
+          // Without this the peer is stranded in `have-local-offer`, and every
+          // later upgrade or ICE restart fails on the leftover offer rather
+          // than on its own merits.
+          if (!closed)
+            await peer
+              .setLocalDescription({ type: "rollback" })
+              .catch(() => undefined);
+          throw cause;
+        }
       };
       negotiating = negotiating.catch(() => undefined).then(run);
       return negotiating;
@@ -247,7 +260,20 @@ export class WebRtcMediaFactory implements CallMediaFactory {
           return;
         }
         if (old !== undefined) track.enabled = old.enabled;
-        if (sender !== undefined) await sender.replaceTrack(track);
+        if (sender !== undefined) {
+          try {
+            await sender.replaceTrack(track);
+          } catch (cause) {
+            stopTracks(stream);
+            throw cause;
+          }
+          // `close()` can land during the replacement; adopting the track now
+          // would add it to a stream `closePeer` has already emptied.
+          if (closed || switchSignal.aborted) {
+            stopTracks(stream);
+            return;
+          }
+        }
         if (old !== undefined) {
           old.stop();
           local.removeTrack(old);

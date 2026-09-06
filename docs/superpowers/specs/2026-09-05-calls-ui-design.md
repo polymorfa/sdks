@@ -77,6 +77,25 @@ submission and polling, idempotent teardown — through
 with `MessagingClient.voip.token` after granting the session's client rules the
 `voip_place`, `voip_answer`, and `voip_signal` actions.
 
+### Outbound placement (2026-09-06)
+
+`voip_place` authorizes browser signaling for an outbound call; it does not
+create one. Nothing on the client-token surface dials a destination — `/offer`
+carries only SDP, and it reaches a pod through the call's affinity record, so a
+call id the browser invents resolves to no pod and its offer is refused as
+not-ready for as long as it is retried. Starting a call is a server-key
+operation on the Business Calling surface (`action: "connect"`).
+
+Outbound calls therefore run through the backend's `place` hook:
+
+1. The browser posts the destination to the application's own route.
+2. That route places the call with the server SDK, on the server credential.
+3. It answers with the platform's call id.
+4. The browser attaches media to that id, and only then does signaling apply.
+
+Without the hook the controller's `place()` rejects, so an application that
+only answers inbound calls needs no such route.
+
 ## Transport (2026-09-06 addendum)
 
 The kit no longer depends on the application relaying webhooks. `CallsSocket`

@@ -77,8 +77,10 @@ export class CallsSocket {
   constructor(options: CallsSocketOptions) {
     this.#options = options;
     this.#WebSocket = options.WebSocket ?? globalThis.WebSocket;
-    this.#setTimeout = options.setTimeout ?? globalThis.setTimeout;
-    this.#clearTimeout = options.clearTimeout ?? globalThis.clearTimeout;
+    this.#setTimeout =
+      options.setTimeout ?? globalThis.setTimeout.bind(globalThis);
+    this.#clearTimeout =
+      options.clearTimeout ?? globalThis.clearTimeout.bind(globalThis);
     this.#random = options.random ?? Math.random;
   }
 

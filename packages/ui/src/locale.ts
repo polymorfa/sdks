@@ -32,6 +32,7 @@ export const ENGLISH_MESSAGES = {
   "calls.videoCall": "WhatsApp video call",
   "calls.ringing": "Ringing",
   "calls.connecting": "Connecting",
+  "calls.connected": "Connected",
   "calls.ended": "Call ended",
   "calls.failed": "Call failed",
   "calls.answerWithCamera": "Answer with camera",

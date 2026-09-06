@@ -215,6 +215,62 @@ describe("WebRtcMediaFactory track negotiation", () => {
     expect(local.getVideoTracks()).toHaveLength(0);
   });
 
+  it("rolls the local offer back when renegotiation fails", async () => {
+    const audio = new FakeTrack("audio");
+    const local = new FakeStream([audio]);
+    const getUserMedia = vi.fn().mockResolvedValue(local);
+    const peer = peerConnection();
+    const s = signaling({
+      renegotiate: vi.fn(async () => {
+        throw new Error("re-offer rejected");
+      }),
+    } as never);
+    const session = await factoryFor({
+      peer,
+      signaling: s,
+      getUserMedia,
+    }).open("call-1", false, callbacks, new AbortController().signal);
+
+    await expect(
+      session.restartIce?.(new AbortController().signal),
+    ).rejects.toThrow("re-offer rejected");
+    // Left in have-local-offer, every later upgrade or restart would fail on
+    // the stale offer rather than on its own merits.
+    expect(peer.setLocalDescription).toHaveBeenCalledWith({
+      type: "rollback",
+    });
+  });
+
+  it("releases the acquired stream when the track swap fails", async () => {
+    const audio = new FakeTrack("audio");
+    const local = new FakeStream([audio]);
+    const replacement = new FakeTrack("audio");
+    const getUserMedia = vi
+      .fn()
+      .mockResolvedValueOnce(local)
+      .mockResolvedValueOnce(new FakeStream([replacement]));
+    const peer = peerConnection();
+    const session = await factoryFor({
+      peer,
+      signaling: signaling(),
+      getUserMedia,
+    }).open("call-1", false, callbacks, new AbortController().signal);
+    const sender = peer.getSenders()[0] as unknown as {
+      replaceTrack: (track: unknown) => Promise<void>;
+    };
+    sender.replaceTrack = async () => {
+      throw new Error("swap rejected");
+    };
+
+    await expect(
+      session.switchInput?.("audio", "mic-2", new AbortController().signal),
+    ).rejects.toThrow("swap rejected");
+    expect(replacement.stop).toHaveBeenCalled();
+    // The original capture is untouched, so the call keeps its microphone.
+    expect(audio.stop).not.toHaveBeenCalled();
+    expect(local.getAudioTracks()).toEqual([audio]);
+  });
+
   it("rolls the camera back when the upgrade re-offer fails", async () => {
     const audio = new FakeTrack("audio");
     const local = new FakeStream([audio]);

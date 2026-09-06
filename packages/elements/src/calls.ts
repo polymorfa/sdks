@@ -25,6 +25,8 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
     const panel = element("section", "panel call");
     panel.setAttribute("aria-live", "assertive");
     const status = snapshot?.status ?? "ready";
+    // `idle` and `ready` have nothing to announce, and this region is
+    // assertive — a raw status identifier would be read out untranslated.
     const heading =
       status === "incoming"
         ? messages["calls.incoming"]
@@ -32,14 +34,17 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
           ? messages["calls.ringing"]
           : status === "connecting" || status === "accepted"
             ? messages["calls.connecting"]
-            : status === "reconnecting"
-              ? messages["calls.reconnecting"]
-              : status === "ended"
-                ? messages["calls.ended"]
-                : status === "error"
-                  ? messages["calls.failed"]
-                  : status;
-    panel.append(textElement("h2", heading, "status"));
+            : status === "connected"
+              ? messages["calls.connected"]
+              : status === "reconnecting"
+                ? messages["calls.reconnecting"]
+                : status === "ended"
+                  ? messages["calls.ended"]
+                  : status === "error"
+                    ? messages["calls.failed"]
+                    : undefined;
+    if (heading !== undefined)
+      panel.append(textElement("h2", heading, "status"));
     if (snapshot?.peer !== undefined)
       panel.append(textElement("p", snapshot.peer, "peer"));
     const controller = this.configuredController<CallsController>();

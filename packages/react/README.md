@@ -51,7 +51,23 @@ const signaling = new CallsSignalingClient(transport);
 // fallback while it reconnects).
 const socket = new CallsSocket({ signaling });
 const calls = new CallsController(
-  createSignalingCallsBackend({ signaling, incoming: socket }),
+  createSignalingCallsBackend({
+    signaling,
+    incoming: socket,
+    // Outbound calls start on the server: the client token cannot dial a
+    // destination. Omit this hook if you only answer inbound calls (and drop
+    // `DialPad`, which places them).
+    place: async ({ to, video, line }, signal) => {
+      const response = await fetch("/api/calls/place", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ to, video, line }),
+        signal,
+      });
+      if (!response.ok) throw new Error("The call could not be placed.");
+      return ((await response.json()) as { callId: string }).callId;
+    },
+  }),
   new WebRtcMediaFactory({ signaling, candidateTransport: socket }),
 );
 calls.initialize();

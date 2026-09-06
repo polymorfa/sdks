@@ -36,10 +36,16 @@ export function incomingCallFromWebhook(
   payload: CallReceivedWebhookPayload,
   options: { readonly line?: CallLine } = {},
 ): IncomingCall {
+  // Empty strings fall through like absent fields, matching `peerFrom` on the
+  // socket path — the two inbound routes must agree on the same payload.
   const from =
     typeof payload.from === "string"
       ? payload.from
-      : (payload.from.phoneNumber ?? payload.from.lid ?? payload.from.id ?? "");
+      : (firstNonEmpty(
+          payload.from.phoneNumber,
+          payload.from.lid,
+          payload.from.id,
+        ) ?? "");
   return {
     callId: payload.callId,
     from,
@@ -133,8 +139,15 @@ export function createSignalingCallsBackend(
         );
       const placed = await placeWith(input, signal);
       throwIfAborted(signal);
-      const callId = typeof placed === "string" ? placed : placed.callId;
-      if (callId === "") throw new Error("`place` resolved without a call id.");
+      // `place` is application code behind a public interface: a response that
+      // did not match its declared shape must not reach signaling as an
+      // `undefined` call id.
+      const callId =
+        typeof placed === "string"
+          ? placed
+          : (placed as { readonly callId?: unknown } | null)?.callId;
+      if (typeof callId !== "string" || callId === "")
+        throw new Error("`place` resolved without a call id.");
       return { callId };
     },
     answer: async (_callId: string, signal: AbortSignal) => {
@@ -145,6 +158,14 @@ export function createSignalingCallsBackend(
     hangup: (callId: string, signal: AbortSignal) =>
       options.signaling.teardown(callId, signal),
   };
+}
+
+function firstNonEmpty(
+  ...values: readonly (string | undefined)[]
+): string | undefined {
+  for (const value of values)
+    if (typeof value === "string" && value.length > 0) return value;
+  return undefined;
 }
 
 function throwIfAborted(signal: AbortSignal): void {

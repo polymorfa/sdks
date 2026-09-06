@@ -177,8 +177,10 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       options.createIdempotencyKey ?? (() => crypto.randomUUID());
     this.#resumptionWindowMs = options.resumptionWindowMs ?? 15_000;
     this.#iceRestartAfterMs = options.iceRestartAfterMs ?? 2_000;
-    this.#setTimeout = options.setTimeout ?? globalThis.setTimeout;
-    this.#clearTimeout = options.clearTimeout ?? globalThis.clearTimeout;
+    this.#setTimeout =
+      options.setTimeout ?? globalThis.setTimeout.bind(globalThis);
+    this.#clearTimeout =
+      options.clearTimeout ?? globalThis.clearTimeout.bind(globalThis);
   }
 
   initialize(): void {

@@ -8,6 +8,10 @@
   Outbound calling now goes through a `place` hook that hands the destination
   to the application's server and takes back the platform's call id; the
   removed `createCallId` option had no working use.
+- Timer defaults are bound to `globalThis`. `CallsController`, `CallsSocket`,
+  `WebRtcMediaFactory`, and the QuickLink controller called the unbound
+  `setTimeout`/`setInterval` with the instance as receiver, which browsers
+  reject with `TypeError: Illegal invocation`.
 - Calls hardening: a recovered ICE flap leaves `reconnecting` instead of
   waiting for a connection-state change that may never come; mute pressed
   while the microphone was still being acquired now reaches the tracks;
@@ -15,7 +19,11 @@
   discarded; setup failures release the candidate subscription; an audio-only
   call no longer keeps an unnegotiated camera track (which had made the video
   upgrade unretryable); a failed upgrade rolls the camera back; the calls
-  WebSocket survives a throwing constructor and validates every frame shape.
+  WebSocket survives a throwing constructor and validates every frame shape; a
+  failed re-offer rolls the peer out of `have-local-offer` so later upgrades
+  and ICE restarts are not blocked by the stale offer; a failed device swap
+  releases the stream it acquired; and `pmfa-call` localizes the connected
+  heading rather than rendering a raw status identifier.
 
 - Added `CallsSocket` (the calls WebSocket: pushed `call.*` lifecycle events,
   ICE both ways, ticket-based auth, capped reconnect) as a drop-in lifecycle

@@ -66,6 +66,14 @@ describe("incomingCallFromWebhook", () => {
       incomingCallFromWebhook({ callId: "c", from: { lid: "5550123@lid" } })
         .from,
     ).toBe("5550123@lid");
+    // An empty field falls through like an absent one, as it does on the
+    // socket path — both routes feed the same IncomingCall.from.
+    expect(
+      incomingCallFromWebhook({
+        callId: "c",
+        from: { phoneNumber: "", lid: "5550123@lid" },
+      }).from,
+    ).toBe("5550123@lid");
     expect(
       incomingCallFromWebhook(
         { callId: "c", from: "+12025550123", hasVideo: true },
@@ -156,6 +164,33 @@ describe("createSignalingCallsBackend", () => {
       callId: "server-call-9",
       peer: "+12025550199",
     });
+  });
+
+  it("rejects a placement result that carries no usable call id", async () => {
+    for (const placed of [
+      undefined,
+      null,
+      {},
+      { callId: 7 },
+      { callId: "" },
+      "",
+    ]) {
+      const s = signaling();
+      const controller = new CallsController(
+        createSignalingCallsBackend({
+          signaling: s,
+          incoming: new IncomingCallRelay(),
+          place: async () => placed as never,
+        }),
+        media().factory,
+      );
+      controller.initialize();
+      await controller.place("+12025550199");
+      // An undefined id would otherwise reach the offer path as `undefined`.
+      expect(controller.getSnapshot().status).toBe("error");
+      expect(s.offer).not.toHaveBeenCalled();
+      controller.dispose();
+    }
   });
 
   it("refuses to place a call when no placement hook is configured", async () => {
