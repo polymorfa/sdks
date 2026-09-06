@@ -256,6 +256,36 @@ describe("Calls UI", () => {
     expect(f.session.close).not.toHaveBeenCalled();
   });
 
+  it("localizes the default device option", async () => {
+    const f = fixture();
+    (f.media as { listDevices?: unknown }).listDevices = async () => [
+      { deviceId: "mic-1", kind: "audioinput" as const, label: "Desk mic" },
+    ];
+    const host = mount(
+      <PolymorfaProvider
+        locale={createLocale("ar", { "calls.defaultDevice": "افتراضي" })}
+      >
+        <CallControls controller={f.controller} />
+      </PolymorfaProvider>,
+    );
+    await act(async () => {
+      await f.controller.place("+12025550123");
+    });
+    await act(async () => {
+      (
+        host.querySelector(
+          "[aria-label='Microphone and speaker settings']",
+        ) as HTMLButtonElement
+      ).click();
+    });
+    // Every other label in this panel goes through the locale; this one was
+    // hardcoded English and stayed so in an RTL locale.
+    const option = host.querySelector(
+      ".pmfa-calls-select option",
+    ) as HTMLOptionElement;
+    expect(option.textContent).toBe("افتراضي");
+  });
+
   it("applies provider direction and dark theme classes", () => {
     const f = fixture();
     const host = mount(

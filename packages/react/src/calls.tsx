@@ -437,7 +437,7 @@ function DeviceFields({
               value={snapshot.selectedDevices[kind] ?? ""}
               onChange={(event) => select(kind, event.currentTarget.value)}
             >
-              <option value="">Default</option>
+              <option value="">{t(locale, "calls.defaultDevice")}</option>
               {group.map((d, i) => (
                 <option
                   key={d.deviceId.length > 0 ? d.deviceId : i}
