@@ -451,6 +451,25 @@ describe("CallsController resumption and terminal offers", () => {
     controller.dispose();
   });
 
+  it("ignores a backend connected event after the call ended", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    await controller.place("+12025550123");
+    f.emit({ type: "ended", callId: "call-1", reason: "remote_hangup" });
+    expect(controller.getSnapshot().status).toBe("ended");
+
+    // The ended snapshot keeps the callId, so matching on it alone would
+    // bring the call back to life.
+    f.emit({ type: "connected", callId: "call-1" });
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      endReason: "remote_hangup",
+    });
+    expect(controller.getSnapshot().connectedAt).toBeUndefined();
+    controller.dispose();
+  });
+
   it("upgrades an audio call to video through the media session", async () => {
     const f = fixture();
     const enableVideo = vi.fn(async () => undefined);

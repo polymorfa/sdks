@@ -273,6 +273,45 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       local.addTrack(track);
     };
 
+    let upgrading: Promise<void> = Promise.resolve();
+    const upgrade = async (
+      enableSignal: AbortSignal,
+      devices: SelectedCallDevices | undefined,
+    ): Promise<void> => {
+      throwIfAborted(enableSignal);
+      if (local.getVideoTracks().length > 0) return;
+      // `preferences` was captured when the call opened. A camera chosen
+      // since then lives on the controller, so it is passed in here — an
+      // audio-only call has no video sender for `switchInput` to swap.
+      const stream = await this.#mediaDevices.getUserMedia(
+        constraintsFor(true, devices ?? preferences.devices, {
+          audio: false,
+        }),
+      );
+      if (closed || enableSignal.aborted) {
+        stopTracks(stream);
+        return;
+      }
+      const track = stream.getVideoTracks()[0];
+      if (track === undefined) return;
+      local.addTrack(track);
+      const sender = peer.addTrack(track, local);
+      try {
+        await renegotiate({}, enableSignal);
+      } catch (cause) {
+        // Leaving the track behind would trip the guard above and make the
+        // upgrade unretryable, so undo it before surfacing the failure.
+        try {
+          peer.removeTrack(sender);
+        } catch {
+          // The connection may already be closed; the track still goes.
+        }
+        local.removeTrack(track);
+        track.stop();
+        throw cause;
+      }
+    };
+
     const poll = this.#setInterval(() => {
       // The socket delivers remote candidates while it is up.
       if (transport?.connected === true) return;
@@ -303,39 +342,14 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         );
         return run;
       },
-      enableVideo: async (enableSignal, devices) => {
-        throwIfAborted(enableSignal);
-        if (local.getVideoTracks().length > 0) return;
-        // `preferences` was captured when the call opened. A camera chosen
-        // since then lives on the controller, so it is passed in here — an
-        // audio-only call has no video sender for `switchInput` to swap.
-        const stream = await this.#mediaDevices.getUserMedia(
-          constraintsFor(true, devices ?? preferences.devices, {
-            audio: false,
-          }),
-        );
-        if (closed || enableSignal.aborted) {
-          stopTracks(stream);
-          return;
-        }
-        const track = stream.getVideoTracks()[0];
-        if (track === undefined) return;
-        local.addTrack(track);
-        const sender = peer.addTrack(track, local);
-        try {
-          await renegotiate({}, enableSignal);
-        } catch (cause) {
-          // Leaving the track behind would trip the guard above and make the
-          // upgrade unretryable, so undo it before surfacing the failure.
-          try {
-            peer.removeTrack(sender);
-          } catch {
-            // The connection may already be closed; the track still goes.
-          }
-          local.removeTrack(track);
-          track.stop();
-          throw cause;
-        }
+      // Serialized like switchInput: the "already have video" guard sits
+      // before the getUserMedia await, so two overlapping calls both passed it
+      // and left the connection with two camera tracks and two senders. Queued,
+      // the second re-checks the guard after the first has added its track.
+      enableVideo: (enableSignal, devices) => {
+        const run = upgrading.then(() => upgrade(enableSignal, devices));
+        upgrading = run.catch(() => undefined);
+        return run;
       },
       restartIce: (restartSignal) =>
         renegotiate({ iceRestart: true }, restartSignal),

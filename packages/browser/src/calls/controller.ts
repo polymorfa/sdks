@@ -601,6 +601,10 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         video: event.video,
       });
     } else if (event.type === "connected") {
+      // A terminal snapshot keeps its callId, so the id match above does not
+      // mean the call is still live — a late `connected` would otherwise
+      // resurrect an ended or failed call.
+      if (current.status === "ended" || current.status === "error") return;
       // The backend can beat the WebRTC callback to this. Without clearing
       // the timers here a pending restart would fire an ICE restart on an
       // already-connected call, and the give-up timer could still end it.

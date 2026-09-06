@@ -352,6 +352,49 @@ describe("WebRtcMediaFactory track negotiation", () => {
     });
   });
 
+  it("adds one camera track when two upgrades overlap", async () => {
+    const audio = new FakeTrack("audio");
+    const local = new FakeStream([audio]);
+    const first = new FakeTrack("video");
+    const second = new FakeTrack("video");
+    let release: (stream: FakeStream) => void = () => undefined;
+    const getUserMedia = vi
+      .fn()
+      .mockResolvedValueOnce(local)
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            release = resolve as (s: FakeStream) => void;
+          }),
+      )
+      .mockResolvedValueOnce(new FakeStream([second]));
+    const peer = peerConnection();
+    const session = await factoryFor({
+      peer,
+      signaling: signaling(),
+      getUserMedia,
+    }).open("call-1", false, callbacks, new AbortController().signal);
+
+    const a = session.enableVideo?.(new AbortController().signal);
+    const b = session.enableVideo?.(new AbortController().signal);
+    // The queue defers each turn by a microtask, so let the first one reach
+    // its acquisition before releasing it.
+    for (let i = 0; i < 5; i += 1) await Promise.resolve();
+    release(new FakeStream([first]));
+    await a;
+    await b;
+    // Both calls cleared the "already have video" guard before either had
+    // acquired, which left two tracks and two senders on one connection.
+    expect(local.getVideoTracks()).toEqual([first]);
+    expect(
+      peer.getSenders().filter((s) => s.track?.kind === "video"),
+    ).toHaveLength(1);
+    // The queued call re-checks the guard and returns without acquiring, so
+    // the second camera is never opened at all.
+    expect(getUserMedia).toHaveBeenCalledTimes(2);
+    void second;
+  });
+
   it("rolls the camera back when the upgrade re-offer fails", async () => {
     const audio = new FakeTrack("audio");
     const local = new FakeStream([audio]);
