@@ -14129,6 +14129,16 @@
               }
             }
           },
+          "429": {
+            "description": "Call setup rate exceeded for this client token, or its concurrency limit is reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
             "content": {

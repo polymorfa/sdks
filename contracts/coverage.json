@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "83b819dd674325d7ce277259c0623b616f73f2e0",
+  "sourceCommit": "b413f2c6a701c86ec593241a70145ee89cc2bcd2",
   "excludedContracts": [
     {
       "family": "graph",
@@ -1116,7 +1116,7 @@
       "method": "POST",
       "path": "/api/voip/calls/{id}/offer",
       "operationId": "voipOffer",
-      "fingerprint": "5a4f632054f769d997f8970eb0c5728fa4a90d296f9f6d1b7e3790ef6c0e10c5",
+      "fingerprint": "da0f2c6c876d767bf8b9d3edebeeac741dab4859157abd4634837e7a009df7bc",
       "typescript": {
         "status": "excluded",
         "reason": "Browser client-token signaling route served by @polymorfa/browser (CallsSignalingClient over BrowserTransport); it does not accept the server credential used by the TypeScript server SDK.",
