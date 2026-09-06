@@ -8,6 +8,9 @@
   Outbound calling now goes through a `place` hook that hands the destination
   to the application's server and takes back the platform's call id; the
   removed `createCallId` option had no working use.
+- `CallsSocket` gained `onError`, so a server `error` frame reaches the
+  application instead of being parsed and dropped while the socket keeps
+  reconnecting against a permanent failure.
 - Timer defaults are bound to `globalThis`. `CallsController`, `CallsSocket`,
   `WebRtcMediaFactory`, and the QuickLink controller called the unbound
   `setTimeout`/`setInterval` with the instance as receiver, which browsers

@@ -101,6 +101,26 @@ describe("CallsSocket", () => {
     socket.close();
   });
 
+  it("surfaces server error frames to onError", async () => {
+    const { socket, ws } = socketWith();
+    const seen: { code: string; message: string }[] = [];
+    socket.onError((error) => seen.push(error));
+    const connecting = socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    ws().open();
+    await connecting;
+
+    ws().receive({ type: "error", code: "ticket_expired", message: "Expired" });
+    // Dropped silently, the socket would keep reconnecting against a
+    // permanent failure with nothing for the consumer to act on.
+    expect(seen).toEqual([{ code: "ticket_expired", message: "Expired" }]);
+    ws().receive({ type: "pong" });
+    ws().receive({ type: "error", code: "x" });
+    expect(seen).toHaveLength(1);
+    socket.close();
+  });
+
   it("mints a ticket, opens the socket, and feeds lifecycle events to the backend", async () => {
     const { socket, ws } = socketWith();
     const connecting = socket.connect();

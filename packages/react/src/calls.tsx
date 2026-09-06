@@ -1086,7 +1086,10 @@ export function DialPad({
   const canVideo = capabilitiesFor(line).video;
   const dial = (video: boolean) => {
     const to = value.trim();
-    if (to.length === 0) return;
+    // The buttons are disabled while a call is up, but the input keeps focus
+    // and its value, so Enter would otherwise place a second call — and
+    // `place()` aborts the current operation, tearing down the live call.
+    if (busy || to.length === 0) return;
     void resolved.place(to, { video, line }).then(() => onPlaced?.(to));
   };
 

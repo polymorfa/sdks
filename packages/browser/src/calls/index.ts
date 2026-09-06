@@ -27,6 +27,7 @@ export {
   lifecycleEventFrom,
   parseCallsSocketMessage,
   type CallsSocketClientMessage,
+  type CallsSocketError,
   type CallsSocketOptions,
   type CallsSocketServerMessage,
 } from "./socket.js";

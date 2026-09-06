@@ -228,6 +228,34 @@ describe("Calls UI", () => {
     });
   });
 
+  it("ignores Enter in the dial input while a call is up", async () => {
+    const f = fixture();
+    const host = mount(
+      <PolymorfaProvider locale={createLocale("en")}>
+        <DialPad controller={f.controller} defaultValue="+12025550123" />
+      </PolymorfaProvider>,
+    );
+    const input = host.querySelector(".pmfa-calls-input") as HTMLInputElement;
+    await act(async () => {
+      input.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      );
+    });
+    expect(f.controller.getSnapshot().status).toBe("connecting");
+    expect(f.media.open).toHaveBeenCalledTimes(1);
+
+    // The buttons are disabled now, but the input keeps focus and its value.
+    // place() aborts the live operation, so a second Enter would drop the
+    // call in progress and dial again.
+    await act(async () => {
+      input.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      );
+    });
+    expect(f.media.open).toHaveBeenCalledTimes(1);
+    expect(f.session.close).not.toHaveBeenCalled();
+  });
+
   it("applies provider direction and dark theme classes", () => {
     const f = fixture();
     const host = mount(

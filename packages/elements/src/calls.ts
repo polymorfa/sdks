@@ -23,7 +23,6 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
   ): readonly Node[] {
     const messages = locale.messages;
     const panel = element("section", "panel call");
-    panel.setAttribute("aria-live", "assertive");
     const status = snapshot?.status ?? "ready";
     // `idle` and `ready` have nothing to announce, and this region is
     // assertive — a raw status identifier would be read out untranslated.
@@ -43,8 +42,14 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
                   : status === "error"
                     ? messages["calls.failed"]
                     : undefined;
-    if (heading !== undefined)
-      panel.append(textElement("h2", heading, "status"));
+    if (heading !== undefined) {
+      // Assertive on the heading, not the panel: this element re-renders
+      // wholesale on every snapshot, so a panel-wide live region made a mute
+      // toggle re-announce the peer number and every control with it.
+      const status = textElement("h2", heading, "status");
+      status.setAttribute("aria-live", "assertive");
+      panel.append(status);
+    }
     if (snapshot?.peer !== undefined)
       panel.append(textElement("p", snapshot.peer, "peer"));
     const controller = this.configuredController<CallsController>();

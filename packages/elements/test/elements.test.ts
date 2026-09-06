@@ -76,6 +76,43 @@ describe("portable elements", () => {
     node.remove();
     expect(fixture.listeners.size).toBe(0);
   });
+  it("scopes the call element's assertive region to the status heading", () => {
+    const base = {
+      status: "connected",
+      revision: 0,
+      updatedAt: 0,
+      line: "linkedDevice",
+      capabilities: { video: true, mute: true },
+      video: true,
+      audioMuted: false,
+      videoMuted: false,
+      selectedDevices: {},
+      devices: [],
+      peer: "+12025550123",
+    };
+    const fixture = fixtureController(base);
+    const node = document.createElement("pmfa-call");
+    (node as unknown as { controller: unknown }).controller =
+      fixture.controller;
+    document.body.append(node);
+
+    const root = node.shadowRoot;
+    // The element re-renders wholesale, so an assertive panel re-announced the
+    // peer number and every control each time a mute label changed.
+    expect(root?.querySelector("section[aria-live]")).toBeNull();
+    expect(
+      root?.querySelector('h2[part="status"]')?.getAttribute("aria-live"),
+    ).toBe("assertive");
+    expect(root?.querySelector('h2[part="status"]')?.textContent).toBe(
+      "Connected",
+    );
+
+    // idle and ready have nothing to announce and no message to announce it
+    // with; a raw status identifier must not reach the DOM.
+    fixture.update({ ...base, status: "ready", revision: 1 });
+    expect(root?.querySelector('h2[part="status"]')).toBeNull();
+    node.remove();
+  });
   it("restores drawer focus and emits a composed close event", () => {
     const opener = document.createElement("button");
     document.body.append(opener);

@@ -19,6 +19,12 @@ export type CallsSocketServerMessage =
   | { readonly type: "error"; readonly code: string; readonly message: string }
   | { readonly type: "pong" };
 
+/** A server-sent `error` frame, delivered to {@link CallsSocket.onError}. */
+export interface CallsSocketError {
+  readonly code: string;
+  readonly message: string;
+}
+
 /** Browser → server frames on the calls WebSocket. */
 export type CallsSocketClientMessage =
   | {
@@ -63,6 +69,7 @@ export class CallsSocket {
     (callId: string, candidate: TrickleCandidate) => void
   >();
   readonly #state = new Set<(connected: boolean) => void>();
+  readonly #errors = new Set<(error: CallsSocketError) => void>();
   #socket: WebSocket | undefined;
   #timer: ReturnType<typeof setTimeout> | undefined;
   #attempt = 0;
@@ -155,6 +162,17 @@ export class CallsSocket {
   onState(listener: (connected: boolean) => void): () => void {
     this.#state.add(listener);
     return () => this.#state.delete(listener);
+  }
+
+  /**
+   * Server-sent `error` frames. The socket keeps reconnecting after one, so a
+   * consumer that recognises a permanent failure (a rejected ticket, a session
+   * it may not follow) should call {@link close} rather than let the backoff
+   * retry it forever.
+   */
+  onError(listener: (error: CallsSocketError) => void): () => void {
+    this.#errors.add(listener);
+    return () => this.#errors.delete(listener);
   }
 
   /** Send a local ICE candidate; false when the socket is down (use REST). */
@@ -274,6 +292,11 @@ export class CallsSocket {
   }
 
   #receive(message: CallsSocketServerMessage): void {
+    if (message.type === "error") {
+      const error = { code: message.code, message: message.message };
+      for (const listener of [...this.#errors]) listener(error);
+      return;
+    }
     if (message.type === "candidate") {
       for (const listener of [...this.#candidates])
         listener(message.callId, message.candidate);
