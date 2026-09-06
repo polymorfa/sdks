@@ -2,6 +2,20 @@ import type { CallsController, CallsSnapshot } from "@polymorfa/browser";
 import type { Locale } from "@polymorfa/ui";
 import { PolymorfaElement, button, element, textElement } from "./base.js";
 
+/**
+ * Run a synchronous controller call from a DOM handler. The controller's
+ * mutators throw once it is disposed, and a disposed controller keeps its last
+ * snapshot — so this element stays rendered with clickable buttons. The call
+ * they belonged to is gone; there is nothing to report.
+ */
+function ignoreDisposed(run: () => void): void {
+  try {
+    run();
+  } catch {
+    // Disposed controller — no snapshot left to change.
+  }
+}
+
 const ACTIVE = new Set<CallsSnapshot["status"]>([
   "ringing",
   "accepted",
@@ -80,7 +94,10 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
               ? messages["calls.unmute"]
               : messages["calls.mute"],
             "mute",
-            () => controller?.setMuted({ audio: !snapshot.audioMuted }),
+            () =>
+              ignoreDisposed(() =>
+                controller?.setMuted({ audio: !snapshot.audioMuted }),
+              ),
           ),
         );
       // On a video call the button mutes the outgoing track; on an audio call
@@ -101,7 +118,10 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
                   ? messages["calls.cameraOn"]
                   : messages["calls.cameraOff"],
                 "camera",
-                () => controller?.setMuted({ video: !snapshot.videoMuted }),
+                () =>
+                  ignoreDisposed(() =>
+                    controller?.setMuted({ video: !snapshot.videoMuted }),
+                  ),
               )
             : button(messages["calls.cameraOn"], "camera", () => {
                 // Rejects on a denied camera or a failed re-offer; the upgrade

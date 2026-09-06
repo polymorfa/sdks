@@ -207,6 +207,45 @@ describe("portable elements", () => {
     }
   });
 
+  it("absorbs mute clicks on the call element after disposal", () => {
+    const base = {
+      status: "connected",
+      revision: 0,
+      updatedAt: 0,
+      line: "linkedDevice",
+      capabilities: { video: true, mute: true },
+      video: true,
+      audioMuted: false,
+      videoMuted: false,
+      selectedDevices: {},
+      devices: [],
+      peer: "+12025550123",
+    };
+    const fixture = fixtureController(base);
+    // A disposed controller throws synchronously from setMuted while the
+    // element stays rendered on its last snapshot.
+    Object.assign(fixture.controller, {
+      setMuted: () => {
+        throw new Error("CallsController is disposed.");
+      },
+    });
+    const node = document.createElement("pmfa-call");
+    (node as unknown as { controller: unknown }).controller =
+      fixture.controller;
+    document.body.append(node);
+    try {
+      for (const part of ["mute", "camera"]) {
+        const button = node.shadowRoot?.querySelector(
+          `[part="${part}"]`,
+        ) as HTMLButtonElement | null;
+        expect(button).not.toBeNull();
+        expect(() => button?.click()).not.toThrow();
+      }
+    } finally {
+      node.remove();
+    }
+  });
+
   it("restores drawer focus and emits a composed close event", () => {
     const opener = document.createElement("button");
     document.body.append(opener);

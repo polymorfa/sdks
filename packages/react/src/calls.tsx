@@ -36,6 +36,23 @@ type ControllerProps = {
   readonly createController?: () => CallsController;
 };
 
+/**
+ * Run a synchronous controller call from a DOM handler.
+ *
+ * The controller's mutators assert it is live and throw once it is disposed,
+ * and a disposed controller keeps its last snapshot — so a surface stays
+ * mounted and its buttons stay clickable. React does not catch throws from
+ * event handlers, so without this the error reaches window.onerror. There is
+ * nothing to report: the call these controls belonged to is gone.
+ */
+function ignoreDisposed(run: () => void): void {
+  try {
+    run();
+  } catch {
+    // Disposed controller — no snapshot left to change.
+  }
+}
+
 const ACTIVE_STATUSES = new Set<CallsSnapshot["status"]>([
   "ringing",
   "accepted",
@@ -417,18 +434,13 @@ function DeviceFields({
   readonly locale: Locale;
 }) {
   const select = (kind: DeviceFieldKind, deviceId: string) => {
-    try {
+    ignoreDisposed(() => {
       if (kind === "audioOutput")
         controller.setPreferredDevices({ audioOutput: deviceId });
       else if (deviceId.length > 0)
         void controller.switchDevice(kind, deviceId);
       else controller.setPreferredDevices({ [kind]: undefined });
-    } catch {
-      // `setPreferredDevices` asserts the controller is live and throws
-      // synchronously once it is disposed. A disposed controller keeps its
-      // last snapshot, so these selects stay interactive, and React does not
-      // catch throws from event handlers — this would reach window.onerror.
-    }
+    });
   };
   return (
     <>
@@ -943,7 +955,8 @@ export function CallControls({
     // On a video call the button mutes/unmutes the outgoing track; on an
     // audio call it upgrades to video (camera + re-offer on the same
     // connection) through the controller.
-    if (snapshot.video) resolved.setMuted({ video: !snapshot.videoMuted });
+    if (snapshot.video)
+      ignoreDisposed(() => resolved.setMuted({ video: !snapshot.videoMuted }));
     // A denied camera, a failed re-offer, or a call that ended mid-upgrade all
     // reject here. The upgrade rolls itself back, so the audio call carries on
     // and the button stays live for another try; swallowing the rejection just
@@ -1025,7 +1038,9 @@ export function CallControls({
                 type="button"
                 className={`pmfa-calls-btn pmfa-calls-btn-ctrl${snapshot.audioMuted ? " pmfa-calls-on" : ""}`}
                 onClick={() =>
-                  resolved.setMuted({ audio: !snapshot.audioMuted })
+                  ignoreDisposed(() =>
+                    resolved.setMuted({ audio: !snapshot.audioMuted }),
+                  )
                 }
                 aria-label={t(
                   locale,

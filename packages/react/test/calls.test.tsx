@@ -65,7 +65,23 @@ function mount(node: React.ReactNode): HTMLElement {
   return host;
 }
 
+/**
+ * Collect unhandled rejections for one test. Registered centrally so the
+ * listener is removed even when an assertion fails — left attached it would go
+ * on swallowing Node's reporting for every later test in the file.
+ */
+const rejectionWatchers: ((reason: unknown) => void)[] = [];
+function watchRejections(): unknown[] {
+  const rejections: unknown[] = [];
+  const onRejection = (reason: unknown) => rejections.push(reason);
+  process.on("unhandledRejection", onRejection);
+  rejectionWatchers.push(onRejection);
+  return rejections;
+}
+
 afterEach(() => {
+  for (const onRejection of rejectionWatchers.splice(0))
+    process.off("unhandledRejection", onRejection);
   for (const root of roots.splice(0)) act(() => root.unmount());
   document.body.replaceChildren();
   // Unconditionally, so a failed assertion inside a fake-timer test cannot
@@ -434,9 +450,7 @@ describe("Calls UI", () => {
   });
 
   it("absorbs a dial against a disposed controller", async () => {
-    const rejections: unknown[] = [];
-    const onRejection = (reason: unknown) => rejections.push(reason);
-    process.on("unhandledRejection", onRejection);
+    const rejections = watchRejections();
     const f = fixture();
     const host = mount(
       <PolymorfaProvider locale={createLocale("en")}>
@@ -456,13 +470,10 @@ describe("Calls UI", () => {
     });
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(rejections).toEqual([]);
-    process.off("unhandledRejection", onRejection);
   });
 
   it("absorbs a hang-up against a disposed controller", async () => {
-    const rejections: unknown[] = [];
-    const onRejection = (reason: unknown) => rejections.push(reason);
-    process.on("unhandledRejection", onRejection);
+    const rejections = watchRejections();
     const f = fixture();
     const host = mount(
       <PolymorfaProvider locale={createLocale("en")}>
@@ -486,7 +497,38 @@ describe("Calls UI", () => {
     });
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(rejections).toEqual([]);
-    process.off("unhandledRejection", onRejection);
+  });
+
+  it("absorbs mute clicks against a disposed controller", async () => {
+    const errors: unknown[] = [];
+    const onError = (event: ErrorEvent) => {
+      errors.push(event.error);
+      event.preventDefault();
+    };
+    globalThis.addEventListener("error", onError);
+    const f = fixture();
+    const host = mount(
+      <PolymorfaProvider locale={createLocale("en")}>
+        <CallControls controller={f.controller} />
+      </PolymorfaProvider>,
+    );
+    act(() => {
+      f.relay.receive({ callId: "CALL-5", from: "+12025550123", video: true });
+    });
+    await act(async () => {
+      await f.controller.answer();
+    });
+    // setMuted asserts the controller is live and throws synchronously; the
+    // dock stays mounted on the last snapshot, so its buttons stay clickable.
+    f.controller.dispose();
+    for (const label of ["Mute", "Turn camera off"]) {
+      const button = host.querySelector(
+        `[aria-label='${label}']`,
+      ) as HTMLButtonElement | null;
+      expect(() => button?.click()).not.toThrow();
+    }
+    expect(errors).toEqual([]);
+    globalThis.removeEventListener("error", onError);
   });
 
   it("formats call durations", () => {
