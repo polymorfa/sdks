@@ -148,7 +148,10 @@ export class CallsClient extends Emitter<ClientEvents> {
     switch (event.event) {
       case "call.received": {
         if (event.payload["direction"] === "outgoing") return;
-        if (existing !== undefined && !existing.ended) return;
+        // Call ids are unique per call, so a `call.received` for an id the
+        // client already knows — live or retained-ended — is a duplicate, not
+        // a new call. Reviving an ended one would ring the application twice.
+        if (existing !== undefined) return;
         const call = this.#track(
           new Call({
             id: event.callId,

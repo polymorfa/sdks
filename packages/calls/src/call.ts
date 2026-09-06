@@ -277,6 +277,12 @@ export class Call extends Emitter<CallEvents> {
 
   async #bridge(): Promise<void> {
     const ticket = await this.#api.mediaTicket(this.id);
+    // The call can end while the ticket is in flight — a queued `ended` right
+    // behind the `accepted` that started this. Creating the socket now would
+    // leave an ended call holding a live socket and heartbeat.
+    // Read through the getter: TypeScript narrows a private field across the
+    // awaits above and would otherwise consider the later check unreachable.
+    if (this.ended) return;
     const media = new MediaSocket({ ...this.#mediaOptions, ticket });
     this.#media = media;
     media.on("audio", (pcm) => this.audio._push(pcm));
@@ -314,7 +320,7 @@ export class Call extends Emitter<CallEvents> {
       if (this.#media === media) this.#media = undefined;
       throw cause;
     }
-    if (this.#state === "ended") {
+    if (this.ended) {
       media.close();
       return;
     }

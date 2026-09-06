@@ -81,7 +81,7 @@ export function fakeApi(): FakeApi {
       video: false,
       state: "invited" as const,
     })),
-  } as FakeApi;
+  } satisfies FakeApi;
   return api;
 }
 

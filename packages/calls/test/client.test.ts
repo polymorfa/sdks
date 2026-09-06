@@ -180,15 +180,13 @@ describe("CallsClient", () => {
     await flush();
     expect(call!.state).toBe("ended");
     expect(h.api.mediaTicket).not.toHaveBeenCalled();
-    // The same id ringing again is a new call. Hold the first object: the
-    // earlier listener above reassigns `call` on the next ring.
-    const first = call!;
+    // Call ids are unique per call, so the same id ringing again is a
+    // duplicate of the ended call — it must not ring the application twice.
     let again: Call | undefined;
     h.client.on("incoming", (c) => (again = c));
     ring(life);
-    expect(again).toBeDefined();
-    expect(again).not.toBe(first);
-    expect(again!.state).toBe("incoming");
+    expect(again).toBeUndefined();
+    expect(h.client.calls).toEqual([]);
   });
 
   it("reports a failed accept and returns the call to incoming", async () => {
@@ -457,5 +455,41 @@ describe("CallsClient — review round one", () => {
     expect(t.timeouts.filter((x) => x.cleared !== true)).toHaveLength(1);
     expect(FakeWebSocket.instances[0]!.readyState).toBe(FakeWebSocket.CLOSED);
     client.disconnect();
+  });
+});
+
+describe("CallsClient — review round two", () => {
+  it("does not open media when accepted and ended are both queued before place() resolves", async () => {
+    const api = fakeApi();
+    let resolvePlace: (v: { callId: string }) => void = () => undefined;
+    api.place.mockImplementationOnce(
+      () => new Promise((r) => (resolvePlace = r)),
+    );
+    const h = clientWith(api);
+    const life = await connected(h);
+    const placing = h.client.place("+15550100");
+    await flush();
+    life.text({
+      type: "event",
+      event: "call.accepted",
+      callId: "CALL-Q",
+      payload: {},
+      timestamp: "",
+    });
+    life.text({
+      type: "event",
+      event: "call.ended",
+      callId: "CALL-Q",
+      payload: { reason: "user_hangup" },
+      timestamp: "",
+    });
+    resolvePlace({ callId: "CALL-Q" });
+    const call = await placing;
+    await flush(20);
+    expect(call.state).toBe("ended");
+    // The ticket was fetched by the accepted replay, but no socket may exist
+    // for a call that ended before the socket was created.
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    expect(h.t.intervals.filter((i) => !i.cleared)).toHaveLength(1); // lifecycle heartbeat only
   });
 });
