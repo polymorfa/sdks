@@ -513,14 +513,20 @@ export function IncomingCallCard({
   const peer = snapshot.peer ?? "";
   const name = displayName ?? peer;
 
+  // A remote hang-up between the click and the call reaching the controller
+  // makes both of these reject: the call is no longer incoming. The snapshot
+  // already shows the call ended, so the rejection only needs absorbing.
   const accept = () =>
-    void resolved.answer({ video: offersVideo }).then(() => {
-      if (preMuted || (offersVideo && !cameraOn))
-        resolved.setMuted({
-          ...(preMuted ? { audio: true } : {}),
-          ...(offersVideo && !cameraOn ? { video: true } : {}),
-        });
-    });
+    void resolved
+      .answer({ video: offersVideo })
+      .then(() => {
+        if (preMuted || (offersVideo && !cameraOn))
+          resolved.setMuted({
+            ...(preMuted ? { audio: true } : {}),
+            ...(offersVideo && !cameraOn ? { video: true } : {}),
+          });
+      })
+      .catch(() => undefined);
 
   const micToggle = (
     <button
@@ -624,7 +630,7 @@ export function IncomingCallCard({
             <button
               type="button"
               className="pmfa-calls-btn pmfa-calls-btn-decline"
-              onClick={() => void resolved.reject()}
+              onClick={() => void resolved.reject().catch(() => undefined)}
               aria-label={t(locale, "calls.reject")}
             >
               <HangupIcon />

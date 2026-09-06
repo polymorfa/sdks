@@ -36,7 +36,10 @@ export interface CallMediaSession {
    * same connection. Optional for fakes and for signaling without
    * `renegotiate`.
    */
-  enableVideo?(signal: AbortSignal): Promise<void>;
+  enableVideo?(
+    signal: AbortSignal,
+    devices?: SelectedCallDevices,
+  ): Promise<void>;
   /** Re-offer with fresh ICE credentials after a network change. Optional for fakes. */
   restartIce?(signal: AbortSignal): Promise<void>;
   /**
@@ -280,11 +283,16 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         }
         local.addTrack(track);
       },
-      enableVideo: async (enableSignal) => {
+      enableVideo: async (enableSignal, devices) => {
         throwIfAborted(enableSignal);
         if (local.getVideoTracks().length > 0) return;
+        // `preferences` was captured when the call opened. A camera chosen
+        // since then lives on the controller, so it is passed in here — an
+        // audio-only call has no video sender for `switchInput` to swap.
         const stream = await this.#mediaDevices.getUserMedia(
-          constraintsFor(true, preferences.devices, { audio: false }),
+          constraintsFor(true, devices ?? preferences.devices, {
+            audio: false,
+          }),
         );
         if (closed || enableSignal.aborted) {
           stopTracks(stream);

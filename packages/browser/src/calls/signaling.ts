@@ -87,8 +87,14 @@ export class CallsSignalingClient implements CallsSignaling {
     });
     return response.data.data;
   }
+  /**
+   * Mint a socket ticket. The `session` argument is accepted for interface
+   * compatibility and deliberately not sent: this client authenticates with a
+   * `pmfa_ct_` token, which the API binds to exactly one session and refuses
+   * (403) when a request names another. The bound session is used instead.
+   */
   async socketTicket(
-    session?: string,
+    _session?: string,
     signal?: AbortSignal,
   ): Promise<SocketTicket> {
     const response = await this.#transport.request<{
@@ -96,7 +102,7 @@ export class CallsSignalingClient implements CallsSignaling {
     }>({
       method: "POST",
       path: `${this.#prefix}/voip/ws-ticket`,
-      body: session === undefined ? {} : { session },
+      body: {},
       ...(signal === undefined ? {} : { signal }),
     });
     return response.data.data;

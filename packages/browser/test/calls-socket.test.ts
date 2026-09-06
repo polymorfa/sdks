@@ -101,6 +101,35 @@ describe("CallsSocket", () => {
     socket.close();
   });
 
+  it("stops on a signaling client that cannot mint tickets, retries on a failed request", async () => {
+    const noTickets = socketWith({
+      signaling: { socketTicket: undefined, socketUrl: undefined } as never,
+    });
+    const unsupported: { code: string; message: string }[] = [];
+    noTickets.socket.onError((error) => unsupported.push(error));
+    await noTickets.socket.connect();
+    // Retrying this can never succeed, so it must report and stop rather than
+    // back off against it for the life of the page.
+    expect(unsupported.map((e) => e.code)).toEqual(["unsupported"]);
+    expect(noTickets.timers).toHaveLength(0);
+    noTickets.socket.close();
+
+    const failing = signaling();
+    failing.socketTicket = vi.fn(async () => {
+      throw new Error("ticket route down");
+    });
+    const transient = socketWith({ signaling: failing });
+    const errors: { code: string; message: string }[] = [];
+    transient.socket.onError((error) => errors.push(error));
+    await transient.socket.connect();
+    // A ticket route that is merely down is worth retrying — but not silently.
+    expect(errors).toEqual([
+      { code: "ticket_failed", message: "ticket route down" },
+    ]);
+    expect(transient.timers).toHaveLength(1);
+    transient.socket.close();
+  });
+
   it("surfaces server error frames to onError", async () => {
     const { socket, ws } = socketWith();
     const seen: { code: string; message: string }[] = [];

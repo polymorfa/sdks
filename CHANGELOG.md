@@ -8,6 +8,12 @@
   Outbound calling now goes through a `place` hook that hands the destination
   to the application's server and takes back the platform's call id; the
   removed `createCallId` option had no working use.
+- `CallsSignalingClient.socketTicket` no longer names a session. The client
+  token is bound to one, and the API answers 403 when a request names another.
+- `CallsSocket` reports a signaling client that cannot mint tickets as an
+  `unsupported` error and stops, instead of backing off forever against a
+  failure that can never succeed; ordinary ticket failures still retry, now
+  reported as `ticket_failed`.
 - `CallsSocket` gained `onError`, so a server `error` frame reaches the
   application instead of being parsed and dropped while the socket keeps
   reconnecting against a permanent failure.
@@ -24,7 +30,9 @@
   upgrade unretryable); a failed upgrade rolls the camera back; the calls
   WebSocket survives a throwing constructor and validates every frame shape; a
   failed re-offer rolls the peer out of `have-local-offer` so later upgrades
-  and ICE restarts are not blocked by the stale offer; a failed device swap
+  and ICE restarts are not blocked by the stale offer; the audio→video upgrade
+  acquires the camera chosen during the call rather than the one selected when
+  it opened; a failed device swap
   releases the stream it acquired; and `pmfa-call` localizes the connected
   heading rather than rendering a raw status identifier.
 

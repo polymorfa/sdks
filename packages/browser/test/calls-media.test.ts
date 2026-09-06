@@ -271,6 +271,31 @@ describe("WebRtcMediaFactory track negotiation", () => {
     expect(local.getAudioTracks()).toEqual([audio]);
   });
 
+  it("acquires the camera the caller selected, not the one captured at open", async () => {
+    const audio = new FakeTrack("audio");
+    const camera = new FakeTrack("video");
+    const getUserMedia = vi
+      .fn()
+      .mockResolvedValueOnce(new FakeStream([audio]))
+      .mockResolvedValueOnce(new FakeStream([camera]));
+    const peer = peerConnection();
+    const session = await factoryFor({
+      peer,
+      signaling: signaling(),
+      getUserMedia,
+    }).open("call-1", false, callbacks, new AbortController().signal, {
+      devices: { videoInput: "cam-at-open" },
+    });
+
+    await session.enableVideo?.(new AbortController().signal, {
+      videoInput: "cam-chosen-later",
+    });
+    expect(getUserMedia).toHaveBeenLastCalledWith({
+      audio: false,
+      video: { deviceId: { ideal: "cam-chosen-later" } },
+    });
+  });
+
   it("rolls the camera back when the upgrade re-offer fails", async () => {
     const audio = new FakeTrack("audio");
     const local = new FakeStream([audio]);

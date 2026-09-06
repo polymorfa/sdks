@@ -165,10 +165,14 @@ export class CallsSocket {
   }
 
   /**
-   * Server-sent `error` frames. The socket keeps reconnecting after one, so a
-   * consumer that recognises a permanent failure (a rejected ticket, a session
-   * it may not follow) should call {@link close} rather than let the backoff
-   * retry it forever.
+   * Failures worth surfacing: server-sent `error` frames, a ticket request
+   * that failed (`ticket_failed`), and a signaling client that cannot mint
+   * tickets at all (`unsupported`).
+   *
+   * Only `unsupported` stops the socket, because retrying it can never
+   * succeed. The rest keep reconnecting, so a consumer that recognises a
+   * permanent failure — a revoked credential, a session it may not follow —
+   * should call {@link close} rather than let the backoff retry it forever.
    */
   onError(listener: (error: CallsSocketError) => void): () => void {
     this.#errors.add(listener);
@@ -226,17 +230,33 @@ export class CallsSocket {
   ): Promise<void> {
     let url: string;
     try {
-      const ticket = await this.#options.signaling.socketTicket?.(
+      if (
+        this.#options.signaling.socketTicket === undefined ||
+        this.#options.signaling.socketUrl === undefined
+      ) {
+        // Not a failure that retrying can fix: this signaling client will
+        // never mint a ticket. Report it and stop, rather than back off
+        // against it for the lifetime of the page.
+        this.#emitError({
+          code: "unsupported",
+          message: "The signaling client cannot mint socket tickets.",
+        });
+        settle();
+        return;
+      }
+      const ticket = await this.#options.signaling.socketTicket(
         this.#options.session,
         signal,
       );
-      if (
-        ticket === undefined ||
-        this.#options.signaling.socketUrl === undefined
-      )
-        throw new Error("The signaling client cannot mint socket tickets.");
       url = this.#options.signaling.socketUrl(ticket);
-    } catch {
+    } catch (cause) {
+      // An ordinary ticket request can fail transiently, so this keeps
+      // reconnecting — but it no longer does so silently.
+      this.#emitError({
+        code: "ticket_failed",
+        message:
+          cause instanceof Error ? cause.message : "Could not mint a ticket.",
+      });
       settle();
       if (!signal.aborted && !this.#closed) this.#scheduleReconnect();
       return;
@@ -293,8 +313,7 @@ export class CallsSocket {
 
   #receive(message: CallsSocketServerMessage): void {
     if (message.type === "error") {
-      const error = { code: message.code, message: message.message };
-      for (const listener of [...this.#errors]) listener(error);
+      this.#emitError({ code: message.code, message: message.message });
       return;
     }
     if (message.type === "candidate") {
@@ -306,6 +325,10 @@ export class CallsSocket {
     const lifecycle = lifecycleEventFrom(message);
     if (lifecycle === undefined) return;
     for (const listener of [...this.#lifecycle]) listener(lifecycle);
+  }
+
+  #emitError(error: CallsSocketError): void {
+    for (const listener of [...this.#errors]) listener(error);
   }
 
   #emitState(connected: boolean): void {

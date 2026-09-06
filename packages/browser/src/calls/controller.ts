@@ -151,6 +151,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   #operation = 0;
   #resumeTimer: ReturnType<typeof setTimeout> | undefined;
   #giveUpTimer: ReturnType<typeof setTimeout> | undefined;
+  /** The status resumption interrupted, restored when media comes back. */
+  #resumedFrom: "connected" | "connecting" | undefined;
 
   constructor(
     backend: CallsBackend,
@@ -290,7 +292,10 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       media?.enableVideo === undefined
     )
       return;
-    await media.enableVideo(this.#abort.signal);
+    await media.enableVideo(
+      this.#abort.signal,
+      this.getSnapshot().selectedDevices,
+    );
     const after = this.getSnapshot();
     if (after.callId !== current.callId) return;
     this.transition({
@@ -439,16 +444,22 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       return;
     }
     if (state !== "connected" && state !== "completed") return;
+    const resumed = this.#resumedFrom;
     this.#clearResumption();
     // A short ICE flap need not move `connectionState`, so recovery cannot
     // wait for `#connection` to put the call back: clearing the timers alone
-    // would strand it in `reconnecting` for the rest of its life.
-    if (current.status === "reconnecting")
-      this.transition({
-        ...callFields(current),
-        status: "connected",
-        connectedAt: current.connectedAt ?? this.#now(),
-      });
+    // would strand it in `reconnecting` for the rest of its life. Restore the
+    // status the flap interrupted — a flap during setup recovers to
+    // `connecting`, and only a call that was already up gets `connectedAt`.
+    if (current.status !== "reconnecting") return;
+    const status = resumed ?? "connected";
+    this.transition({
+      ...callFields(current),
+      status,
+      ...(status === "connected"
+        ? { connectedAt: current.connectedAt ?? this.#now() }
+        : {}),
+    });
   }
   /**
    * Media dropped on a live call: show `reconnecting`, try an ICE restart
@@ -460,6 +471,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     const current = this.getSnapshot();
     if (current.status !== "connected" && current.status !== "connecting")
       return;
+    this.#resumedFrom = current.status;
     this.transition({ ...callFields(current), status: "reconnecting" });
     this.#giveUpTimer = this.#setTimeout(() => {
       this.#giveUpTimer = undefined;
@@ -482,6 +494,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     }, restartAfterMs);
   }
   #clearResumption(): void {
+    this.#resumedFrom = undefined;
     if (this.#resumeTimer !== undefined) {
       this.#clearTimeout(this.#resumeTimer);
       this.#resumeTimer = undefined;

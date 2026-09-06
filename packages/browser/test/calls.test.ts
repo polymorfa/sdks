@@ -182,6 +182,34 @@ describe("CallsSignalingClient", () => {
   });
 });
 
+describe("CallsSignalingClient socket tickets", () => {
+  it("never names a session: the client token is already bound to one", async () => {
+    const fetch = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            data: { ticket: "pmfa_wst_a", expiresAt: 1, url: "/voip/ws?t=a" },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
+    );
+    const client = new CallsSignalingClient(
+      new BrowserTransport({
+        baseUrl: "https://api.example",
+        getClientToken: async () => "pmfa_ct_x",
+        fetch: fetch as unknown as typeof globalThis.fetch,
+      }),
+    );
+    await client.socketTicket("support");
+    // The API answers 403 "client token cannot follow another session" when a
+    // client token names one, so the bound session must be left implicit.
+    const [, init] = (
+      fetch.mock.calls as unknown as [string, RequestInit][]
+    )[0] ?? ["", {}];
+    expect(JSON.parse(String(init.body))).toEqual({});
+  });
+});
+
 describe("CallsController resumption and terminal offers", () => {
   // Fake timers that honour cancellation: a cleared or already-fired entry is
   // never run again, so a missing clearTimeout in the controller shows up as a
@@ -296,13 +324,55 @@ describe("CallsController resumption and terminal offers", () => {
     ice?.("connected");
     // A flap that never moved `connectionState` still has to end: recovery
     // restores the call itself rather than waiting for a state change that
-    // may never come.
-    expect(controller.getSnapshot().status).toBe("connected");
+    // may never come. This one flapped during setup, so it recovers to
+    // `connecting` — reporting `connected` here would start the duration
+    // counter on a call whose media never came up.
+    expect(controller.getSnapshot().status).toBe("connecting");
+    expect(controller.getSnapshot().connectedAt).toBeUndefined();
     // ICE recovery must cancel the give-up timer, or the call would still be
     // dropped mid-conversation once the window elapsed.
     expect(t.pending()).toBe(0);
     t.fire(15_000);
-    expect(controller.getSnapshot().status).toBe("connected");
+    expect(controller.getSnapshot().status).toBe("connecting");
+    controller.dispose();
+    expect(t.pending()).toBe(0);
+  });
+
+  it("recovers an established call back to connected", async () => {
+    const f = fixture();
+    Object.assign(f.session, { restartIce: vi.fn(async () => undefined) });
+    let ice: ((state: RTCIceConnectionState) => void) | undefined;
+    let connection: ((state: RTCPeerConnectionState) => void) | undefined;
+    (f.media.open as ReturnType<typeof vi.fn>).mockImplementation(
+      async (_id, _video, callbacks) => {
+        ice = callbacks.onIceConnectionState;
+        connection = callbacks.onConnectionState;
+        return f.session;
+      },
+    );
+    const t = timers();
+    const controller = new CallsController(f.backend, f.media, {
+      setTimeout: t.setTimeout,
+      clearTimeout: t.clearTimeout,
+      now: () => 7_000,
+    });
+    controller.initialize();
+    await controller.place("+12025550123");
+    connection?.("connected");
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "connected",
+      connectedAt: 7_000,
+    });
+
+    ice?.("disconnected");
+    expect(controller.getSnapshot().status).toBe("reconnecting");
+    ice?.("connected");
+    // This call was up before the flap, so it goes back to connected and
+    // keeps the original connectedAt.
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "connected",
+      connectedAt: 7_000,
+    });
     controller.dispose();
     expect(t.pending()).toBe(0);
   });
@@ -360,8 +430,14 @@ describe("CallsController resumption and terminal offers", () => {
     controller.initialize();
     await controller.place("+12025550123");
     expect(controller.getSnapshot().video).toBe(false);
+    // A camera chosen on an audio-only call never reaches a sender, so the
+    // upgrade has to carry the current selection rather than the one captured
+    // when the call opened.
+    controller.setPreferredDevices({ videoInput: "cam-9" });
     await controller.enableVideo();
-    expect(enableVideo).toHaveBeenCalledWith(expect.any(AbortSignal));
+    expect(enableVideo).toHaveBeenCalledWith(expect.any(AbortSignal), {
+      videoInput: "cam-9",
+    });
     expect(controller.getSnapshot()).toMatchObject({
       video: true,
       videoMuted: false,
