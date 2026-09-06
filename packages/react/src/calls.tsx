@@ -656,12 +656,18 @@ export function IncomingCallCard({
 
 // ── Duration ──────────────────────────────────────────────────────────
 
-/** Seconds since the call connected, ticking once a second (0 before that). */
+/**
+ * Seconds since the call connected, ticking once a second (0 before that).
+ * A call that drops to `reconnecting` keeps counting: the controller holds
+ * `connectedAt` across the flap, and the call it measures is the same one.
+ */
 export function useCallDuration(
   snapshot: Pick<CallsSnapshot, "status" | "connectedAt">,
 ): number {
   const connectedAt =
-    snapshot.status === "connected" ? snapshot.connectedAt : undefined;
+    snapshot.status === "connected" || snapshot.status === "reconnecting"
+      ? snapshot.connectedAt
+      : undefined;
   const [seconds, setSeconds] = useState(0);
   useEffect(() => {
     if (connectedAt === undefined) {

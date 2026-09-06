@@ -9,6 +9,7 @@ import {
   type CallMediaFactory,
   type CallMediaSession,
   type CallsSignaling,
+  type CallsSnapshot,
 } from "@polymorfa/browser";
 import { createLocale } from "@polymorfa/ui";
 import {
@@ -18,6 +19,7 @@ import {
   IncomingCallCard,
   PolymorfaProvider,
   formatDuration,
+  useCallDuration,
 } from "../src/index.js";
 
 (
@@ -284,6 +286,27 @@ describe("Calls UI", () => {
       ".pmfa-calls-select option",
     ) as HTMLOptionElement;
     expect(option.textContent).toBe("افتراضي");
+  });
+
+  it("keeps the duration running while the call is reconnecting", () => {
+    const now = Date.now();
+    function Probe({ status }: { status: CallsSnapshot["status"] }) {
+      return (
+        <span>{useCallDuration({ status, connectedAt: now - 5_000 })}</span>
+      );
+    }
+    const host = mount(<Probe status="connected" />);
+    expect(host.textContent).toBe("5");
+    // The controller holds connectedAt across a flap, so a consumer that shows
+    // the duration during reconnecting must not see it reset to zero.
+    act(() => {
+      for (const root of roots) root.render(<Probe status="reconnecting" />);
+    });
+    expect(host.textContent).toBe("5");
+    act(() => {
+      for (const root of roots) root.render(<Probe status="ended" />);
+    });
+    expect(host.textContent).toBe("0");
   });
 
   it("applies provider direction and dark theme classes", () => {
