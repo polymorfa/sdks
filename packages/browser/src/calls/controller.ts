@@ -153,6 +153,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   #giveUpTimer: ReturnType<typeof setTimeout> | undefined;
   /** The status resumption interrupted, restored when media comes back. */
   #resumedFrom: "connected" | "connecting" | undefined;
+  /** Per-kind switch counter, so a stale failure cannot undo a newer switch. */
+  readonly #deviceSwitches = new Map<string, number>();
 
   constructor(
     backend: CallsBackend,
@@ -337,6 +339,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     deviceId: string,
   ): Promise<void> {
     const previous = this.getSnapshot().selectedDevices[kind];
+    const generation = (this.#deviceSwitches.get(kind) ?? 0) + 1;
+    this.#deviceSwitches.set(kind, generation);
     this.setPreferredDevices({ [kind]: deviceId });
     const media = this.#media;
     if (media?.switchInput === undefined) return;
@@ -350,6 +354,13 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       // Device unavailable — the capture kept the old track, so the stored
       // preference goes back with it. Left as it was, the device list would
       // show a device that is not in use and the next call would open with it.
+      //
+      // Unless a newer switch of this kind has since landed: its device is the
+      // one now live, and restoring this one's would describe the wrong track.
+      // A disposed controller has no snapshot left to correct, and throwing
+      // out of here would surface as an unhandled rejection in `void` callers.
+      if (this.#deviceSwitches.get(kind) !== generation) return;
+      if (this.#abort.signal.aborted) return;
       const current = this.getSnapshot();
       const restored: Record<string, string | undefined> = {
         ...current.selectedDevices,
@@ -369,6 +380,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     this.assertActive();
     if (this.#mediaFactory.listDevices === undefined) return;
     const devices = await this.#mediaFactory.listDevices();
+    if (this.#abort.signal.aborted) return;
     const current = this.getSnapshot();
     this.transition({
       ...callFields(current),

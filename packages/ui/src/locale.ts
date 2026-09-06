@@ -52,6 +52,7 @@ export const ENGLISH_MESSAGES = {
   "calls.dialPlaceholder": "Phone number",
   "calls.deleteDigit": "Delete last digit",
   "calls.defaultDevice": "Default",
+  "calls.popoutTitle": "Call",
   "calls.dismiss": "Dismiss",
   "calls.incomingFrom": "Incoming call from {peer}",
 } as const;

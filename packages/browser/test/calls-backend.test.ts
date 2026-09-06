@@ -254,6 +254,72 @@ describe("createSignalingCallsBackend", () => {
     controller.dispose();
   });
 
+  it("does not let a stale switch failure undo a newer one", async () => {
+    const m = media();
+    const controller = new CallsController(
+      createSignalingCallsBackend({
+        signaling: signaling(),
+        incoming: new IncomingCallRelay(),
+        place: async () => "call-dev",
+      }),
+      m.factory,
+    );
+    controller.initialize();
+    await controller.place("+12025550123");
+
+    let failFirst: (reason: Error) => void = () => undefined;
+    m.session.switchInput
+      .mockImplementationOnce(
+        () =>
+          new Promise((_resolve, reject) => {
+            failFirst = reject;
+          }),
+      )
+      .mockImplementationOnce(async () => undefined);
+
+    const first = controller.switchDevice("audioInput", "mic-2");
+    await controller.switchDevice("audioInput", "mic-3");
+    expect(controller.getSnapshot().selectedDevices).toEqual({
+      audioInput: "mic-3",
+    });
+    // mic-3 is the live capture now; the older failure must not describe it
+    // as anything else.
+    failFirst(new Error("device in use"));
+    await first;
+    expect(controller.getSnapshot().selectedDevices).toEqual({
+      audioInput: "mic-3",
+    });
+    controller.dispose();
+  });
+
+  it("stays quiet when a device switch fails after disposal", async () => {
+    const m = media();
+    const controller = new CallsController(
+      createSignalingCallsBackend({
+        signaling: signaling(),
+        incoming: new IncomingCallRelay(),
+        place: async () => "call-dev",
+      }),
+      m.factory,
+    );
+    controller.initialize();
+    await controller.place("+12025550123");
+
+    let fail: (reason: Error) => void = () => undefined;
+    m.session.switchInput.mockImplementationOnce(
+      () =>
+        new Promise((_resolve, reject) => {
+          fail = reject;
+        }),
+    );
+    const switching = controller.switchDevice("audioInput", "mic-2");
+    controller.dispose();
+    fail(new Error("device in use"));
+    // Callers invoke this with `void`, so a throw out of the catch block
+    // would surface as an unhandled rejection when a pop-out closes.
+    await expect(switching).resolves.toBeUndefined();
+  });
+
   it("keeps the Business Calling API line audio-only", async () => {
     const relay = new IncomingCallRelay();
     const backend = createSignalingCallsBackend({

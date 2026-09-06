@@ -71,9 +71,13 @@ call root.
 
 Signaling is the REST surface on the client token — offer/answer, trickle ICE
 submission and polling, idempotent teardown — through
-`createSignalingCallsBackend`. Inbound calls arrive as the server's
-`call.received` webhook and are relayed into `IncomingCallRelay`;
-`incomingCallFromWebhook` maps the payload. The server mints the browser token
+`createSignalingCallsBackend`. Inbound calls arrive by either of two paths,
+and an application picks one: `CallsSocket` subscribes to the lifecycle
+directly and needs no webhook plumbing (the Transport addendum below), or the
+application relays the server's `call.received` webhook into
+`IncomingCallRelay`, with `incomingCallFromWebhook` mapping the payload. The
+relay is the fallback for deployments that already carry webhooks to the
+browser, not a prerequisite. The server mints the browser token
 with `MessagingClient.voip.token` after granting the session's client rules the
 `voip_place`, `voip_answer`, and `voip_signal` actions.
 

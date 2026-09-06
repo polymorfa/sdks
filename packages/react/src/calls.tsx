@@ -1189,7 +1189,11 @@ export interface CallPopoutHandle {
  * streams keep playing across same-origin windows, so portal'd `<video>`
  * elements just work.
  */
-export function useCallPopout(): CallPopoutHandle {
+/**
+ * @param title Window title. `CallSurface` passes the localized
+ * `calls.popoutTitle`; the default keeps the hook usable on its own.
+ */
+export function useCallPopout(title = "Call"): CallPopoutHandle {
   const windowRef = useRef<Window | null>(null);
   const [container, setContainer] = useState<HTMLElement | null>(null);
 
@@ -1208,7 +1212,7 @@ export function useCallPopout(): CallPopoutHandle {
     );
     if (popup === null) return; // popup blocked — the call stays inline
     const doc = popup.document;
-    doc.title = "Call";
+    doc.title = title;
     const style = doc.createElement("style");
     style.textContent = `html,body{margin:0;height:100%;background:oklch(0.15 0 0);}${CALLS_STYLES}`;
     doc.head.appendChild(style);
@@ -1217,7 +1221,7 @@ export function useCallPopout(): CallPopoutHandle {
     doc.body.appendChild(root);
     windowRef.current = popup;
     setContainer(root);
-  }, []);
+  }, [title]);
 
   useEffect(() => {
     if (container === null) return;
@@ -1269,7 +1273,7 @@ export function CallSurface({
   const snapshot = useController(resolved);
   const root = useCallsRoot();
   const { locale } = root;
-  const popout = useCallPopout();
+  const popout = useCallPopout(t(locale, "calls.popoutTitle"));
   const peer = snapshot.peer;
   const displayName = peer === undefined ? undefined : resolveName?.(peer);
   const active = ACTIVE_STATUSES.has(snapshot.status);
