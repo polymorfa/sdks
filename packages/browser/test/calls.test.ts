@@ -113,6 +113,39 @@ describe("CallsController (voip-v2 contract)", () => {
     f.emit({ type: "connected", callId: "old-call" });
     expect(controller.getSnapshot().status).toBe("ended");
   });
+  it("applies a mute pressed while the microphone was still being acquired", async () => {
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const f = fixture();
+    (f.media.open as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+      await gate;
+      return f.session;
+    });
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "call-1", from: "+12025550123", video: false },
+    });
+
+    const answering = controller.answer();
+    await Promise.resolve();
+    // Mute now reaches only the snapshot — there are no tracks yet. If it were
+    // dropped here the dock would report muted over a live microphone.
+    controller.setMuted({ audio: true });
+    expect(f.session.setMuted).not.toHaveBeenCalled();
+    release();
+    await answering;
+
+    expect(f.session.setMuted).toHaveBeenCalledWith({
+      audio: true,
+      video: false,
+    });
+    expect(controller.getSnapshot().audioMuted).toBe(true);
+    controller.dispose();
+  });
 });
 
 describe("CallsSignalingClient", () => {
