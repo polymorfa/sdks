@@ -417,10 +417,18 @@ function DeviceFields({
   readonly locale: Locale;
 }) {
   const select = (kind: DeviceFieldKind, deviceId: string) => {
-    if (kind === "audioOutput")
-      controller.setPreferredDevices({ audioOutput: deviceId });
-    else if (deviceId.length > 0) void controller.switchDevice(kind, deviceId);
-    else controller.setPreferredDevices({ [kind]: undefined });
+    try {
+      if (kind === "audioOutput")
+        controller.setPreferredDevices({ audioOutput: deviceId });
+      else if (deviceId.length > 0)
+        void controller.switchDevice(kind, deviceId);
+      else controller.setPreferredDevices({ [kind]: undefined });
+    } catch {
+      // `setPreferredDevices` asserts the controller is live and throws
+      // synchronously once it is disposed. A disposed controller keeps its
+      // last snapshot, so these selects stay interactive, and React does not
+      // catch throws from event handlers — this would reach window.onerror.
+    }
   };
   return (
     <>

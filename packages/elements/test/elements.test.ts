@@ -162,44 +162,49 @@ describe("portable elements", () => {
     // `unhandledrejection`, so listening for that would assert nothing.
     const onRejection = (reason: unknown) => rejections.push(reason);
     process.on("unhandledRejection", onRejection);
-    const fixture = fixtureController({
-      status: "incoming",
-      revision: 0,
-      updatedAt: 0,
-      line: "linkedDevice",
-      capabilities: { video: true, mute: true },
-      video: false,
-      audioMuted: false,
-      videoMuted: false,
-      selectedDevices: {},
-      devices: [],
-      peer: "+12025550123",
-    });
-    // A remote hang-up between render and click leaves both rejecting.
-    Object.assign(fixture.controller, {
-      answer: async () => {
-        throw new Error("No incoming call is available to answer.");
-      },
-      reject: async () => {
-        throw new Error("No incoming call is available to reject.");
-      },
-    });
     const node = document.createElement("pmfa-call");
-    (node as unknown as { controller: unknown }).controller =
-      fixture.controller;
-    document.body.append(node);
+    // Detached even when an assertion fails: left attached it would go on
+    // swallowing Node's reporting and could hide a later test's failure.
+    try {
+      const fixture = fixtureController({
+        status: "incoming",
+        revision: 0,
+        updatedAt: 0,
+        line: "linkedDevice",
+        capabilities: { video: true, mute: true },
+        video: false,
+        audioMuted: false,
+        videoMuted: false,
+        selectedDevices: {},
+        devices: [],
+        peer: "+12025550123",
+      });
+      // A remote hang-up between render and click leaves both rejecting.
+      Object.assign(fixture.controller, {
+        answer: async () => {
+          throw new Error("No incoming call is available to answer.");
+        },
+        reject: async () => {
+          throw new Error("No incoming call is available to reject.");
+        },
+      });
+      (node as unknown as { controller: unknown }).controller =
+        fixture.controller;
+      document.body.append(node);
 
-    (
-      node.shadowRoot?.querySelector('[part~="answer"]') as HTMLButtonElement
-    ).click();
-    (
-      node.shadowRoot?.querySelector('[part="reject"]') as HTMLButtonElement
-    ).click();
-    // Node reports these after the microtask queue drains, so wait a macrotask.
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(rejections).toEqual([]);
-    node.remove();
-    process.off("unhandledRejection", onRejection);
+      (
+        node.shadowRoot?.querySelector('[part~="answer"]') as HTMLButtonElement
+      ).click();
+      (
+        node.shadowRoot?.querySelector('[part="reject"]') as HTMLButtonElement
+      ).click();
+      // Node reports these after the microtask queue drains, so wait a macrotask.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(rejections).toEqual([]);
+    } finally {
+      node.remove();
+      process.off("unhandledRejection", onRejection);
+    }
   });
 
   it("restores drawer focus and emits a composed close event", () => {

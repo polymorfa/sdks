@@ -470,6 +470,50 @@ describe("CallsController resumption and terminal offers", () => {
     controller.dispose();
   });
 
+  it("ignores every non-terminal lifecycle event once the call has ended", async () => {
+    for (const event of [
+      { type: "connected" as const, callId: "call-1" },
+      { type: "accepted" as const, callId: "call-1" },
+      { type: "ringing" as const, callId: "call-1" },
+      { type: "videostate" as const, callId: "call-1", video: true },
+    ]) {
+      const f = fixture();
+      const controller = new CallsController(f.backend, f.media);
+      controller.initialize();
+      await controller.place("+12025550123");
+      f.emit({ type: "ended", callId: "call-1", reason: "remote_hangup" });
+
+      // The ended snapshot keeps its callId, so matching on the id alone let
+      // any of these put a finished call back into a live status — or turn
+      // video on after it was over.
+      f.emit(event);
+      expect(controller.getSnapshot()).toMatchObject({
+        status: "ended",
+        endReason: "remote_hangup",
+        video: false,
+      });
+      controller.dispose();
+    }
+  });
+
+  it("still accepts a new incoming call after one ended", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    await controller.place("+12025550123");
+    f.emit({ type: "ended", callId: "call-1", reason: "remote_hangup" });
+    // The terminal guard must not wall off the next call.
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "call-2", from: "+15550100", video: false },
+    });
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "incoming",
+      callId: "call-2",
+    });
+    controller.dispose();
+  });
+
   it("upgrades an audio call to video through the media session", async () => {
     const f = fixture();
     const enableVideo = vi.fn(async () => undefined);
