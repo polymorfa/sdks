@@ -150,18 +150,31 @@ describe("CallsSignalingClient", () => {
 });
 
 describe("CallsController resumption and terminal offers", () => {
+  // Fake timers that honour cancellation: a cleared or already-fired entry is
+  // never run again, so a missing clearTimeout in the controller shows up as a
+  // failing test rather than passing silently.
   function timers() {
-    const queue: Array<{ fn: () => void; ms: number }> = [];
+    const queue: Array<{ fn: () => void; ms: number; cancelled?: boolean }> =
+      [];
     return {
       queue,
       setTimeout: ((fn: () => void, ms: number) => {
         queue.push({ fn, ms });
         return queue.length as unknown as ReturnType<typeof setTimeout>;
       }) as unknown as typeof globalThis.setTimeout,
-      clearTimeout: (() =>
-        undefined) as unknown as typeof globalThis.clearTimeout,
-      fire: (ms: number) =>
-        queue.filter((t) => t.ms === ms).forEach((t) => t.fn()),
+      clearTimeout: ((handle: number) => {
+        const entry = queue[handle - 1];
+        if (entry !== undefined) entry.cancelled = true;
+      }) as unknown as typeof globalThis.clearTimeout,
+      fire: (ms: number) => {
+        for (const entry of queue.filter(
+          (t) => t.ms === ms && t.cancelled !== true,
+        )) {
+          entry.cancelled = true;
+          entry.fn();
+        }
+      },
+      pending: () => queue.filter((t) => t.cancelled !== true).length,
     };
   }
 
@@ -192,7 +205,13 @@ describe("CallsController resumption and terminal offers", () => {
     expect(restartIce).toHaveBeenCalledTimes(1);
     ice?.("connected");
     expect(controller.getSnapshot().status).toBe("reconnecting"); // waits for connectionstate
+    // ICE recovery must cancel the give-up timer, or the call would still be
+    // dropped mid-conversation once the window elapsed.
+    expect(t.pending()).toBe(0);
+    t.fire(15_000);
+    expect(controller.getSnapshot().status).toBe("reconnecting");
     controller.dispose();
+    expect(t.pending()).toBe(0);
   });
 
   it("gives the call up after the resumption window", async () => {
