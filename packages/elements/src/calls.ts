@@ -16,6 +16,19 @@ function ignoreDisposed(run: () => void): void {
   }
 }
 
+const HEADINGS: Partial<
+  Record<CallsSnapshot["status"], keyof Locale["messages"]>
+> = {
+  incoming: "calls.incoming",
+  ringing: "calls.ringing",
+  accepted: "calls.connecting",
+  connecting: "calls.connecting",
+  connected: "calls.connected",
+  reconnecting: "calls.reconnecting",
+  ended: "calls.ended",
+  error: "calls.failed",
+};
+
 const ACTIVE = new Set<CallsSnapshot["status"]>([
   "ringing",
   "accepted",
@@ -38,24 +51,10 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
     const messages = locale.messages;
     const panel = element("section", "panel call");
     const status = snapshot?.status ?? "ready";
-    // `idle` and `ready` have nothing to announce, and this region is
-    // assertive — a raw status identifier would be read out untranslated.
-    const heading =
-      status === "incoming"
-        ? messages["calls.incoming"]
-        : status === "ringing"
-          ? messages["calls.ringing"]
-          : status === "connecting" || status === "accepted"
-            ? messages["calls.connecting"]
-            : status === "connected"
-              ? messages["calls.connected"]
-              : status === "reconnecting"
-                ? messages["calls.reconnecting"]
-                : status === "ended"
-                  ? messages["calls.ended"]
-                  : status === "error"
-                    ? messages["calls.failed"]
-                    : undefined;
+    // idle and ready are absent on purpose: nothing to announce, and this
+    // region is assertive — a raw status identifier would be read out.
+    const key = HEADINGS[status];
+    const heading = key === undefined ? undefined : messages[key];
     if (heading !== undefined) {
       // Assertive on the heading, not the panel: this element re-renders
       // wholesale on every snapshot, so a panel-wide live region made a mute
@@ -109,7 +108,8 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
       // because it survives `reconnecting`.
       if (
         snapshot.capabilities.video &&
-        (snapshot.video || status === "connected")
+        (snapshot.video ||
+          (status === "connected" && controller?.canEnableVideo === true))
       )
         panel.append(
           snapshot.video

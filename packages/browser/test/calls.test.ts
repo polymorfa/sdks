@@ -514,6 +514,46 @@ describe("CallsController resumption and terminal offers", () => {
     controller.dispose();
   });
 
+  it("ignores connection-state callbacks that land after the call ended", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media, {
+      now: () => 9_000,
+    });
+    controller.initialize();
+    await controller.place("+12025550123");
+    await controller.hangup();
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      endReason: "hangup",
+    });
+    // Media teardown is asynchronous, so these can still fire afterwards. A
+    // late `connected` would revive the call; a late `closed` would rewrite a
+    // clean hangup as a connection failure.
+    f.connect("connected");
+    f.connect("closed");
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      endReason: "hangup",
+    });
+    expect(controller.getSnapshot().connectedAt).toBeUndefined();
+    controller.dispose();
+  });
+
+  it("reports whether a video upgrade is possible", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    expect(controller.canEnableVideo).toBe(false);
+    await controller.place("+12025550123");
+    // The session cannot renegotiate: capability alone is not enough.
+    expect(controller.canEnableVideo).toBe(false);
+    Object.assign(f.session, { enableVideo: vi.fn(async () => undefined) });
+    expect(controller.canEnableVideo).toBe(true);
+    await controller.enableVideo();
+    expect(controller.canEnableVideo).toBe(false); // already video
+    controller.dispose();
+  });
+
   it("upgrades an audio call to video through the media session", async () => {
     const f = fixture();
     const enableVideo = vi.fn(async () => undefined);

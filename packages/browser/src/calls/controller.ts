@@ -284,6 +284,21 @@ export class CallsController extends ObservableController<CallsSnapshot> {
    * renegotiates on the same connection. No-op when the line has no video,
    * when video is already on, or when the media session cannot renegotiate.
    */
+  /**
+   * Whether an audio→video upgrade is possible right now: the line carries
+   * video, the call is not already video, and the media session can
+   * renegotiate. Surfaces gate the camera-upgrade control on this rather than
+   * on `capabilities.video` alone, which says nothing about the session.
+   */
+  get canEnableVideo(): boolean {
+    const current = this.getSnapshot();
+    return (
+      current.capabilities.video &&
+      !current.video &&
+      this.#media?.enableVideo !== undefined
+    );
+  }
+
   async enableVideo(): Promise<void> {
     this.assertActive();
     const current = this.getSnapshot();
@@ -459,6 +474,11 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   #connection(callId: string, state: RTCPeerConnectionState): void {
     const current = this.getSnapshot();
     if (current.callId !== callId) return;
+    // Media teardown is asynchronous, so a queued connection-state callback can
+    // land after the call ended. A terminal snapshot keeps its callId: a late
+    // `connected` would revive it, a late `closed` would overwrite a clean
+    // hangup with `connection_failed`. Same rule #receive and #ice apply.
+    if (current.status === "ended" || current.status === "error") return;
     if (state === "connected") {
       this.#clearResumption();
       this.transition({

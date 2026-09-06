@@ -79,7 +79,22 @@ function watchRejections(): unknown[] {
   return rejections;
 }
 
+const errorWatchers: ((event: ErrorEvent) => void)[] = [];
+/** Collect window `error` events for one test; removed by afterEach even on failure. */
+function watchErrors(): unknown[] {
+  const errors: unknown[] = [];
+  const onError = (event: ErrorEvent) => {
+    errors.push(event.error);
+    event.preventDefault();
+  };
+  globalThis.addEventListener("error", onError);
+  errorWatchers.push(onError);
+  return errors;
+}
+
 afterEach(() => {
+  for (const onError of errorWatchers.splice(0))
+    globalThis.removeEventListener("error", onError);
   for (const onRejection of rejectionWatchers.splice(0))
     process.off("unhandledRejection", onRejection);
   for (const root of roots.splice(0)) act(() => root.unmount());
@@ -500,12 +515,7 @@ describe("Calls UI", () => {
   });
 
   it("absorbs mute clicks against a disposed controller", async () => {
-    const errors: unknown[] = [];
-    const onError = (event: ErrorEvent) => {
-      errors.push(event.error);
-      event.preventDefault();
-    };
-    globalThis.addEventListener("error", onError);
+    const errors = watchErrors();
     const f = fixture();
     const host = mount(
       <PolymorfaProvider locale={createLocale("en")}>
@@ -528,7 +538,6 @@ describe("Calls UI", () => {
       expect(() => button?.click()).not.toThrow();
     }
     expect(errors).toEqual([]);
-    globalThis.removeEventListener("error", onError);
   });
 
   it("formats call durations", () => {

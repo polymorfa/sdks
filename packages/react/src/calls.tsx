@@ -950,6 +950,12 @@ export function CallControls({
 
   const live = snapshot.status === "connected";
   const showCamera = snapshot.capabilities.video && disableVideo !== true;
+  // The affordance stays visible on an audio call (the settled design) and is
+  // disabled until it can act: connected, and either already a video call or
+  // an upgrade the media session can actually perform. A session that cannot
+  // renegotiate therefore shows the same disabled button as a call that has
+  // not connected yet, instead of a live one that does nothing.
+  const cameraReady = live && (snapshot.video || resolved.canEnableVideo);
   const cameraOff = !snapshot.video || snapshot.videoMuted;
   const onCamera = () => {
     // On a video call the button mutes/unmutes the outgoing track; on an
@@ -1005,13 +1011,13 @@ export function CallControls({
         >
           {showCamera && (
             <div
-              className={`pmfa-calls-group${live ? "" : " pmfa-calls-disabled"}`}
+              className={`pmfa-calls-group${cameraReady ? "" : " pmfa-calls-disabled"}`}
             >
               <button
                 type="button"
                 className={`pmfa-calls-btn pmfa-calls-btn-ctrl${cameraOff ? " pmfa-calls-on" : ""}`}
                 onClick={onCamera}
-                disabled={!live}
+                disabled={!cameraReady}
                 aria-label={t(
                   locale,
                   cameraOff ? "calls.cameraOn" : "calls.cameraOff",
