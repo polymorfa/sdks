@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Export typed terminal Calls webhooks. `call.ended` preserves a nullable caller
+  identity for `pod_lost`; `call.telemetry` preserves cumulative traffic values.
+
 - Browser WebRTC calls now receive participant joins, state changes, and
   departures through the lifecycle stream. Late invitation replies cannot
   overwrite newer roster state or restore a participant who already left. The

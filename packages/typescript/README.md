@@ -905,8 +905,8 @@ Webhook mutations accept the same `RequestOptions` as every other resource,
 including idempotency keys, cancellation, timeouts, and API-version overrides.
 
 Use `constructWebhookEvent` with the exact raw request bytes before inspecting
-an inbound delivery. `isEvent` narrows all 33 event names in the pinned
-Messaging contract to their exported payload types:
+an inbound delivery. `isEvent` narrows recognized event names to their exported
+payload types:
 
 ```ts
 const event = await constructWebhookEvent(rawBody, signature, webhookSecret);
@@ -917,6 +917,12 @@ if (isEvent(event, "history.sync")) {
   console.log(event.payload.callId, event.payload.from.id);
 }
 ```
+
+Development builds also export `CallEndedPayload` and `CallTelemetryPayload`.
+For `call.ended`, check `from` before reading its identity: it is `null` when
+the media host disappeared before reporting the caller. The reason is
+`pod_lost` for those recovered terminal events. Telemetry fields `recvKbps`
+and `sendKbps` contain cumulative kilobits, not rates.
 
 The Platform contract exposes campaign events through
 `PlatformClient.campaigns.events`. It does not expose key-authenticated webhook
