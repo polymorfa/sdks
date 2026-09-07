@@ -12,6 +12,13 @@ export interface CallsClientOptions {
   readonly baseUrl?: string;
   /** Swap the platform seam entirely — tests, or a client-token transport. */
   readonly api?: CallsApi;
+  /**
+   * Claim the session's `sdk` answer mode on `connect()` so inbound calls ring
+   * for this client instead of being auto-answered. Default `true`; set
+   * `false` when another consumer owns the mode (a browser widget on the same
+   * session, say).
+   */
+  readonly claimMode?: boolean;
   readonly fetch?: FetchLike;
   readonly WebSocket?: typeof globalThis.WebSocket;
   readonly setTimeout?: typeof globalThis.setTimeout;
@@ -52,6 +59,7 @@ type ClientEvents = {
  */
 export class CallsClient extends Emitter<ClientEvents> {
   readonly session: string;
+  readonly #claimMode: boolean;
   readonly #api: CallsApi;
   readonly #socket: LifecycleSocket;
   readonly #calls = new Map<string, Call>();
@@ -71,6 +79,7 @@ export class CallsClient extends Emitter<ClientEvents> {
     super();
     this.#o = options;
     this.session = options.session;
+    this.#claimMode = options.claimMode ?? true;
     if (options.api === undefined && options.apiKey === undefined)
       throw new Error("CallsClient needs an `apiKey` or a custom `api`.");
     this.#api =
@@ -102,8 +111,14 @@ export class CallsClient extends Emitter<ClientEvents> {
     return [...this.#calls.values()].filter((call) => !call.ended);
   }
 
-  /** Open the lifecycle stream. Resolves after the first attempt settles; reconnects until `disconnect()`. */
-  connect(): Promise<void> {
+  /**
+   * Claim the session's answer mode, then open the lifecycle stream. Resolves
+   * after the first attempt settles; reconnects until `disconnect()`. A claim
+   * that fails rejects before any socket opens: following a session whose
+   * calls are being auto-answered elsewhere would ring nothing here.
+   */
+  async connect(): Promise<void> {
+    if (this.#claimMode) await this.#api.setMode(this.session, "sdk");
     return this.#socket.connect();
   }
 

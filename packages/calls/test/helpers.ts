@@ -65,6 +65,7 @@ export function fakeApi(): FakeApi {
       expiresAt: Date.now() + 60_000,
       url: `wss://api.example/voip/ws?ticket=pmfa_wst_a&s=${session}`,
     })),
+    setMode: vi.fn(async () => undefined),
     mediaTicket: vi.fn(async (callId: string) => ({
       token: `pmfa_at_${callId}`,
       expiresAt: Date.now() + 300_000,

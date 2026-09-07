@@ -231,6 +231,60 @@ describe("CallsClient", () => {
     h.client.disconnect();
   });
 
+  it("claims the sdk answer mode before opening the lifecycle stream", async () => {
+    const order: string[] = [];
+    const api = fakeApi();
+    api.setMode.mockImplementation(async (session: string, mode: string) => {
+      order.push(`mode:${session}:${mode}`);
+    });
+    api.socketTicket.mockImplementation(async (session: string) => {
+      order.push("ticket");
+      return {
+        ticket: "t",
+        expiresAt: 1,
+        url: `wss://api.example/voip/ws?s=${session}`,
+      };
+    });
+    const h = clientWith(api);
+    const connecting = h.client.connect();
+    await flush();
+    h.ws(0).open();
+    await connecting;
+    // Without the claim, inbound calls would be auto-answered elsewhere and
+    // never ring here — so it goes first.
+    expect(order).toEqual(["mode:support:sdk", "ticket"]);
+    await h.client.disconnect();
+  });
+
+  it("opens no socket when the mode claim fails, and can opt out of claiming", async () => {
+    const api = fakeApi();
+    api.setMode.mockRejectedValue(new Error("403 voip_answer required"));
+    const h = clientWith(api);
+    await expect(h.client.connect()).rejects.toThrow("voip_answer required");
+    expect(FakeWebSocket.instances).toHaveLength(0);
+    expect(api.socketTicket).not.toHaveBeenCalled();
+
+    FakeWebSocket.instances = [];
+    const quiet = fakeApi();
+    const t = timers();
+    const client = new CallsClient({
+      session: "support",
+      api: quiet,
+      claimMode: false,
+      WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
+      setInterval: t.setInterval,
+      clearInterval: t.clearInterval,
+      setTimeout: t.setTimeout,
+      clearTimeout: t.clearTimeout,
+    });
+    const connecting = client.connect();
+    await flush();
+    FakeWebSocket.instances[0]!.open();
+    await connecting;
+    expect(quiet.setMode).not.toHaveBeenCalled();
+    await client.disconnect();
+  });
+
   it("hangs up live calls on disconnect", async () => {
     const h = clientWith();
     const life = await connected(h);

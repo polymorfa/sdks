@@ -22,7 +22,7 @@ client.on("incoming", async (call) => {
   call.on("ended", (reason) => console.log("ended:", reason));
 });
 
-await client.connect();
+await client.connect(); // claims the session's `sdk` answer mode, then follows its calls
 
 const call = await client.place("+15550100", { video: false });
 ```
