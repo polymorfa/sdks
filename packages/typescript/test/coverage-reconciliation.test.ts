@@ -102,7 +102,8 @@ describe("reconciled coverage evidence", () => {
       contracts: Record<string, { snapshotPath: string; sha256: string }>;
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
-    expect(source.commit).toMatch(/^[a-f0-9]{40}$/);
+    // Repinning the reviewed source requires updating this regression gate too.
+    expect(source.commit).toBe("3bf3a6ba3de8b19a547afd16fca1f3b368d7d4e7");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
