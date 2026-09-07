@@ -675,6 +675,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       if (current.status === "ended") return;
       this.#operation += 1;
       this.#abort.abort();
+      this.#abort = new AbortController();
       void this.#closeMedia();
       this.transition({
         ...callFields(current),

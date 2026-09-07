@@ -139,6 +139,45 @@ describe("browser widget and shared calls client", () => {
     expect(f.calls.controller.call?.endReason).toBe("connection_failed");
   });
 
+  it.each(["reject", "hangup"] as const)(
+    "surfaces a refused %s without ending the call and allows hangup retry",
+    async (action) => {
+      const f = fixture();
+      const socket = await f.connect();
+      event(socket, "call.received", "CALL-IN", { from: "+15550100" });
+      if (action === "hangup") await f.calls.controller.answer();
+      f.fetch.mockImplementationOnce(
+        async () =>
+          new Response(
+            JSON.stringify({
+              error: { code: "unavailable", message: "Try again" },
+            }),
+            {
+              status: 503,
+              headers: { "content-type": "application/json" },
+            },
+          ),
+      );
+      await f.calls.controller[action]();
+      await flush();
+      expect(f.calls.controller.getSnapshot()).toMatchObject({
+        status: "error",
+        error: { code: "call_control_failed" },
+      });
+      expect(f.calls.controller.call?.ended).toBe(false);
+      const deletes = () =>
+        f.fetch.mock.calls.filter(([, init]) => init?.method === "DELETE");
+      expect(deletes()).toHaveLength(1);
+      await f.calls.controller.hangup();
+      expect(deletes()).toHaveLength(2);
+      expect(f.calls.controller.getSnapshot()).toMatchObject({
+        status: "ended",
+        endReason: "hangup",
+      });
+      expect(f.calls.controller.call?.ended).toBe(true);
+    },
+  );
+
   it("preserves terminal offer reasons in the shared model", async () => {
     const f = fixture();
     await f.connect();

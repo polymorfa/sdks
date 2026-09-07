@@ -112,7 +112,11 @@ export function createBrowserCalls(options: BrowserCallsOptions): BrowserCalls {
     },
     hangup: async (id, signal) => {
       signal.throwIfAborted();
-      await requireCall(id).hangup();
+      const call = requireCall(id);
+      // WebRTC is owned by the controller. Keep the model live if the REST
+      // teardown fails, so the widget can report the failure and retry it.
+      await api.hangup(id, signal);
+      call._remoteEnded("hangup");
     },
   };
   const media =
@@ -170,6 +174,7 @@ export function createBrowserCalls(options: BrowserCallsOptions): BrowserCalls {
     if (
       call &&
       !call.ended &&
+      snapshot.error?.code !== "call_control_failed" &&
       (snapshot.status === "ended" || snapshot.status === "error")
     ) {
       const reason =
