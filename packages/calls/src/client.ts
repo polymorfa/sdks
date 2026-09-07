@@ -128,11 +128,16 @@ export class CallsClient extends Emitter<ClientEvents> {
     return this.#socket.connect();
   }
 
-  /** Stop following the session. Live calls are hung up first. */
+  /**
+   * Stop following the session and hang up its live calls. The stream closes
+   * first: a `connect()` issued while a slow hang-up is still in flight must
+   * not have its fresh socket closed by this earlier disconnect. Each call
+   * ends locally when its hang-up settles, so nothing is lost by closing early.
+   */
   async disconnect(): Promise<void> {
     this.#connectGeneration += 1;
-    await Promise.allSettled(this.calls.map((call) => call.hangup()));
     this.#socket.close();
+    await Promise.allSettled(this.calls.map((call) => call.hangup()));
   }
 
   /**

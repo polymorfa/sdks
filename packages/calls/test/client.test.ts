@@ -306,6 +306,43 @@ describe("CallsClient", () => {
     expect(h.client.connected).toBe(false);
   });
 
+  it("keeps a socket opened by a later connect() while an earlier disconnect() awaits hang-ups", async () => {
+    const api = fakeApi();
+    let releaseHangup: () => void = () => undefined;
+    api.hangup.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseHangup = resolve;
+        }),
+    );
+    const h = clientWith(api);
+    const connecting = h.client.connect();
+    await flush();
+    h.ws(0).open();
+    await connecting;
+    h.ws(0).text({
+      type: "event",
+      event: { type: "call.received", callId: "C1", from: { lid: "2000@lid" } },
+    });
+    await flush();
+    expect(h.client.calls).toHaveLength(1);
+
+    const disconnecting = h.client.disconnect(); // hang-up is deferred
+    await flush();
+    expect(h.client.connected).toBe(false);
+    const reconnecting = h.client.connect();
+    await flush();
+    h.ws(1).open();
+    await reconnecting;
+    releaseHangup();
+    await disconnecting;
+    await flush();
+    // The later connection survives the earlier disconnect settling.
+    expect(h.client.connected).toBe(true);
+    expect(h.client.calls).toHaveLength(0);
+    await h.client.disconnect();
+  });
+
   it("hangs up live calls on disconnect", async () => {
     const h = clientWith();
     const life = await connected(h);
