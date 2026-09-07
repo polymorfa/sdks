@@ -39,9 +39,23 @@ routes directly.
 
 Available controller families are QuickLink, conversations and composing,
 template building, and calls. Calls use `CallsSignalingClient` for the
-`voip-v2` offer/answer and trickle ICE REST paths plus `WebRtcMediaFactory` for
-browser media. Applications supply `CallsBackend` for lifecycle and call-control
-operations that are not part of that REST signaling surface.
+`/api/voip/calls/{id}` offer, candidate, renegotiate, and teardown routes and
+for socket tickets, `CallsSocket` for the calls WebSocket (pushed `call.*`
+lifecycle events and ICE both ways, reconnecting with backoff and falling
+back to REST while down), `WebRtcMediaFactory` for the peer connection,
+media, device switching, audio→video upgrade and ICE restart, and
+`createSignalingCallsBackend` as the `CallsBackend` over that surface. Nothing
+on the client-token surface dials a destination, so that backend takes a
+`place` hook: it posts the destination to the application's own route, which
+starts the call with the server SDK and returns the platform's call id. An
+application without the socket can still relay its webhooks through
+`IncomingCallRelay`; it must forward both `call.received` (`receive`) and
+`call.ended` (`ended`), or a remote hang-up never reaches the controller. Reject and hang-up run through the idempotent
+teardown route. A pod-lost (410) or capacity (503) answer to the _media offer_
+ends the call as `pod_lost` or `capacity` instead of erroring; the same codes
+from placement or teardown are ordinary failures and stay recoverable, so a
+503 from your own `place` route is a `place_failed` the caller can retry. `CallsController` exposes `enableVideo()` and a
+`reconnecting` status with a bounded resumption window.
 
 ## Template builder
 

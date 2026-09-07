@@ -72,6 +72,11 @@ export class BrowserTransport {
   readonly #now: () => number;
   readonly #onDiagnostic: BrowserDiagnosticSink | undefined;
 
+  /** The API origin requests are resolved against (no trailing slash). */
+  get baseUrl(): string {
+    return this.#baseUrl;
+  }
+
   constructor(options: BrowserTransportOptions) {
     this.#baseUrl = (options.baseUrl ?? "https://api.polymorfa.com").replace(
       /\/+$/,

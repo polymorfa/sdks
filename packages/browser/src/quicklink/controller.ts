@@ -89,8 +89,10 @@ export class QuickLinkController extends ObservableController<QuickLinkSnapshot>
     super({ status: "idle" }, now);
     this.#transport = transport;
     this.#now = now;
-    this.#setTimeout = options.setTimeout ?? globalThis.setTimeout;
-    this.#clearTimeout = options.clearTimeout ?? globalThis.clearTimeout;
+    this.#setTimeout =
+      options.setTimeout ?? globalThis.setTimeout.bind(globalThis);
+    this.#clearTimeout =
+      options.clearTimeout ?? globalThis.clearTimeout.bind(globalThis);
   }
 
   async launch(): Promise<void> {

@@ -1353,28 +1353,120 @@ export interface ClientTokenValue {
 
 export type MintClientTokenResponse = SuccessEnvelope<ClientTokenValue>;
 
-export interface ClientRuleRateLimits {
-  readonly perMinute?: number;
-  readonly perDay?: number;
-}
+/** Who a client token may message: chats the peer started, anyone, or nobody. */
+export type ClientRecipientMode = "conversation" | "any" | "none";
 
+/**
+ * Client-token actions (comma-separated in `allowedActions`). The `voip_*`
+ * actions gate the browser call signaling routes: `voip_place` and
+ * `voip_answer` establish media, `voip_signal` covers trickle ICE and teardown.
+ */
+export type ClientAction =
+  | "mcp"
+  | "send_message"
+  | "send_reaction"
+  | "send_typing"
+  | "send_seen"
+  | "read_presence"
+  | "subscribe_presence"
+  | "read_contact"
+  | "widget_start"
+  | "widget_pair"
+  | "widget_status"
+  | "widget_embedded_signup"
+  | "widget_handoff"
+  | "voip_place"
+  | "voip_answer"
+  | "voip_signal";
+
+/** Rules as returned by `GET /api/sessions/{session}/client-rules`. */
 export interface ClientRules {
-  readonly actions: readonly string[];
-  readonly recipientMode: string;
-  readonly verifiedJids?: readonly string[];
-  readonly rateLimits?: ClientRuleRateLimits;
+  readonly recipientMode: ClientRecipientMode | "";
+  /** Comma-separated {@link ClientAction} list. */
+  readonly allowedActions: string;
+  /** Requests per minute per ephemeral id (0 = unlimited). */
+  readonly rateLimit: number;
+  /** Sends per day per ephemeral id (0 = unlimited). */
+  readonly maxDaily: number;
+  /** Comma-separated browser origins allowed to use the token. */
+  readonly allowedOrigins: string;
+  /** Calls: max distinct in-flight calls per token (0 = unlimited). */
+  readonly maxConcurrency: number;
+  /** Polymorfa Calls: call setups per minute per ephemeral id (0 = platform default of 10). */
+  readonly maxSetupsPerMinute: number;
+  /** Calls: comma-separated E.164 destination allowlist (empty = any). */
+  readonly allowedNumber: string;
+  readonly enabled: boolean;
 }
 
 export type GetClientRulesResponse = SuccessEnvelope<ClientRules>;
 
 export interface SetClientRulesRequest {
-  readonly recipientMode: string;
+  readonly recipientMode: ClientRecipientMode;
+  /** Comma-separated {@link ClientAction} list. */
   readonly allowedActions?: string;
   readonly rateLimit?: number;
   readonly maxDaily?: number;
   readonly allowedOrigins?: string;
   readonly enabled: boolean;
+  /** Calls: max distinct in-flight calls per token (0 = unlimited). */
+  readonly maxConcurrency?: number;
+  /** Polymorfa Calls: call setups per minute per ephemeral id (0 = platform default). */
+  readonly maxSetupsPerMinute?: number;
+  /** Calls: comma-separated E.164 destination allowlist (empty = any). */
+  readonly allowedNumber?: string;
 }
+
+/**
+ * Body for `POST /api/voip/token`: the same claims as
+ * {@link MintClientTokenRequest}, minting the browser token that
+ * `@polymorfa/browser` call signaling runs on.
+ */
+export interface VoipTokenRequest {
+  readonly session: string;
+  readonly ephemeralId: string;
+  readonly ttlSeconds?: number;
+}
+
+export interface VoipTokenValue {
+  readonly token: string;
+  /** Unix epoch milliseconds. */
+  readonly expiresAt: number;
+}
+
+export type VoipTokenResponse = SuccessEnvelope<VoipTokenValue>;
+
+/**
+ * Body for `POST /api/voip/ws-ticket`. Required here because this client
+ * authenticates with a server key, and the route answers 400 when one of
+ * those does not name a session. (The wire contract leaves it optional for
+ * client tokens, which are already bound to theirs.)
+ */
+export interface VoipSocketTicketRequest {
+  readonly session: string;
+}
+/** A single-use, 60-second ticket that opens the calls WebSocket. */
+export interface VoipSocketTicketValue {
+  readonly ticket: string;
+  /** Unix epoch milliseconds. */
+  readonly expiresAt: number;
+  /** Root-relative WebSocket URL, ticket included. */
+  readonly url: string;
+}
+export type VoipSocketTicketResponse = SuccessEnvelope<VoipSocketTicketValue>;
+
+/** Body for `POST /api/voip/calls/{id}/agent-token`. */
+export interface VoipAgentTokenRequest {
+  /** Ticket lifetime in seconds (default 300, max 3600). */
+  readonly ttlSeconds?: number;
+}
+/** A per-call ticket a voice agent presents to the voip pod's PCM WebSocket. */
+export interface VoipAgentTokenValue {
+  readonly token: string;
+  /** Unix epoch milliseconds. */
+  readonly expiresAt: number;
+}
+export type VoipAgentTokenResponse = SuccessEnvelope<VoipAgentTokenValue>;
 
 export type ListSessionsResponse = SuccessEnvelope<readonly Session[]>;
 export type CreateSessionResponse = SuccessEnvelope<SessionOperation>;

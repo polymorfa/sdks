@@ -76,6 +76,215 @@ describe("portable elements", () => {
     node.remove();
     expect(fixture.listeners.size).toBe(0);
   });
+  it("renders the call element's status heading as an assertive region", () => {
+    const base = {
+      status: "connected",
+      revision: 0,
+      updatedAt: 0,
+      line: "linkedDevice",
+      capabilities: { video: true, mute: true },
+      video: true,
+      audioMuted: false,
+      videoMuted: false,
+      selectedDevices: {},
+      devices: [],
+      peer: "+12025550123",
+    };
+    const fixture = fixtureController(base);
+    const node = document.createElement("pmfa-call");
+    (node as unknown as { controller: unknown }).controller =
+      fixture.controller;
+    document.body.append(node);
+    const root = node.shadowRoot;
+    try {
+      // The element re-renders wholesale, so an assertive panel re-announced
+      // the peer number and every control each time a mute label changed.
+      expect(root?.querySelector("section[aria-live]")).toBeNull();
+      expect(
+        root?.querySelector('h2[part="status"]')?.getAttribute("aria-live"),
+      ).toBe("assertive");
+      expect(root?.querySelector('h2[part="status"]')?.textContent).toBe(
+        "Connected",
+      );
+
+      // idle and ready have nothing to announce and no message to announce it
+      // with; a raw status identifier must not reach the DOM.
+      fixture.update({ ...base, status: "ready", revision: 1 });
+      expect(root?.querySelector('h2[part="status"]')).toBeNull();
+    } finally {
+      node.remove();
+    }
+  });
+
+  it("offers the camera controls only where they can act", () => {
+    const base = {
+      status: "connected",
+      revision: 0,
+      updatedAt: 0,
+      line: "linkedDevice",
+      capabilities: { video: true, mute: true },
+      video: true,
+      audioMuted: false,
+      videoMuted: false,
+      selectedDevices: {},
+      devices: [],
+      peer: "+12025550123",
+    };
+    const fixture = fixtureController(base);
+    const enableVideo = vi.fn(async () => undefined);
+    const setMuted = vi.fn();
+    const ctl = fixture.controller as unknown as {
+      enableVideo: unknown;
+      setMuted: unknown;
+      canEnableVideo: boolean;
+    };
+    Object.assign(ctl, { enableVideo, setMuted, canEnableVideo: true });
+    const node = document.createElement("pmfa-call");
+    (node as unknown as { controller: unknown }).controller =
+      fixture.controller;
+    document.body.append(node);
+    const root = node.shadowRoot;
+    try {
+      // The upgrade needs a media session, so it is not offered before the
+      // call connects — the button would have done nothing there.
+      fixture.update({
+        ...base,
+        revision: 1,
+        video: false,
+        status: "connecting",
+      });
+      expect(root?.querySelector('[part="camera"]')).toBeNull();
+
+      // Nor when the session cannot renegotiate: the element takes any
+      // controller, and one that reports no upgrade must not show the button.
+      ctl.canEnableVideo = false;
+      fixture.update({ ...base, revision: 2, video: false });
+      expect(root?.querySelector('[part="camera"]')).toBeNull();
+
+      // An audio call on a video-capable line offers the upgrade, matching
+      // the React dock; without it the element could never reach video.
+      ctl.canEnableVideo = true;
+      fixture.update({ ...base, revision: 3, video: false });
+      const camera = root?.querySelector(
+        '[part="camera"]',
+      ) as HTMLButtonElement;
+      expect(camera.textContent).toBe("Turn camera on");
+      camera.click();
+      expect(enableVideo).toHaveBeenCalledTimes(1);
+      expect(setMuted).not.toHaveBeenCalled();
+
+      // On a video call the same button mutes the outgoing track, throughout.
+      fixture.update({ ...base, revision: 4, status: "connecting" });
+      expect(root?.querySelector('[part="camera"]')).not.toBeNull();
+      fixture.update({ ...base, revision: 5 });
+      (root?.querySelector('[part="camera"]') as HTMLButtonElement).click();
+      expect(setMuted).toHaveBeenCalledWith({ video: true });
+      expect(enableVideo).toHaveBeenCalledTimes(1);
+
+      // A line without mute must not be offered the control.
+      fixture.update({ ...base, revision: 6 });
+      expect(root?.querySelector('[part="mute"]')).not.toBeNull();
+      fixture.update({
+        ...base,
+        revision: 7,
+        capabilities: { video: true, mute: false },
+      });
+      expect(root?.querySelector('[part="mute"]')).toBeNull();
+      expect(root?.querySelector('[part="hangup"]')).not.toBeNull();
+    } finally {
+      node.remove();
+    }
+  });
+  it("absorbs answer and reject rejections on the call element", async () => {
+    const rejections: unknown[] = [];
+    // Node's hook, not the DOM event: happy-dom does not dispatch
+    // `unhandledrejection`, so listening for that would assert nothing.
+    const onRejection = (reason: unknown) => rejections.push(reason);
+    process.on("unhandledRejection", onRejection);
+    const node = document.createElement("pmfa-call");
+    // Detached even when an assertion fails: left attached it would go on
+    // swallowing Node's reporting and could hide a later test's failure.
+    try {
+      const fixture = fixtureController({
+        status: "incoming",
+        revision: 0,
+        updatedAt: 0,
+        line: "linkedDevice",
+        capabilities: { video: true, mute: true },
+        video: false,
+        audioMuted: false,
+        videoMuted: false,
+        selectedDevices: {},
+        devices: [],
+        peer: "+12025550123",
+      });
+      // A remote hang-up between render and click leaves both rejecting.
+      Object.assign(fixture.controller, {
+        answer: async () => {
+          throw new Error("No incoming call is available to answer.");
+        },
+        reject: async () => {
+          throw new Error("No incoming call is available to reject.");
+        },
+      });
+      (node as unknown as { controller: unknown }).controller =
+        fixture.controller;
+      document.body.append(node);
+
+      (
+        node.shadowRoot?.querySelector('[part~="answer"]') as HTMLButtonElement
+      ).click();
+      (
+        node.shadowRoot?.querySelector('[part="reject"]') as HTMLButtonElement
+      ).click();
+      // Node reports these after the microtask queue drains, so wait a macrotask.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(rejections).toEqual([]);
+    } finally {
+      node.remove();
+      process.off("unhandledRejection", onRejection);
+    }
+  });
+
+  it("absorbs mute clicks on the call element after disposal", () => {
+    const base = {
+      status: "connected",
+      revision: 0,
+      updatedAt: 0,
+      line: "linkedDevice",
+      capabilities: { video: true, mute: true },
+      video: true,
+      audioMuted: false,
+      videoMuted: false,
+      selectedDevices: {},
+      devices: [],
+      peer: "+12025550123",
+    };
+    const fixture = fixtureController(base);
+    // A disposed controller throws synchronously from setMuted while the
+    // element stays rendered on its last snapshot.
+    Object.assign(fixture.controller, {
+      setMuted: () => {
+        throw new Error("CallsController is disposed.");
+      },
+    });
+    const node = document.createElement("pmfa-call");
+    (node as unknown as { controller: unknown }).controller =
+      fixture.controller;
+    document.body.append(node);
+    try {
+      for (const part of ["mute", "camera"]) {
+        const button = node.shadowRoot?.querySelector(
+          `[part="${part}"]`,
+        ) as HTMLButtonElement | null;
+        expect(button).not.toBeNull();
+        expect(() => button?.click()).not.toThrow();
+      }
+    } finally {
+      node.remove();
+    }
+  });
+
   it("restores drawer focus and emits a composed close event", () => {
     const opener = document.createElement("button");
     document.body.append(opener);

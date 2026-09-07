@@ -144,12 +144,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "fc681025966227ff918a701cd82b06157702dde6",
-      total: 345,
-      covered: 221,
+      sourceCommit: "b413f2c6a701c86ec593241a70145ee89cc2bcd2",
+      total: 391,
+      covered: 224,
       partial: 0,
-      missing: 58,
-      excluded: 66,
+      missing: 96,
+      excluded: 71,
       changed: 0,
     });
   });
@@ -378,12 +378,20 @@ describe("coverage checker", () => {
         "MessagingClient.business.getMerchantCompliance",
       getBusinessOrder: "MessagingClient.business.getOrder",
       getBusinessProduct: "MessagingClient.business.getProduct",
+      getProjectObservationPolicy:
+        "MessagingClient.observationPolicies.retrieveForProject",
+      getSessionObservationPolicy:
+        "MessagingClient.observationPolicies.retrieveForSession",
       getOwnBusinessProfile: "MessagingClient.business.getProfile",
       reorderBusinessCollections: "MessagingClient.business.reorderCollections",
       setBusinessCartEnabled: "MessagingClient.business.setCartEnabled",
       setBusinessCoverPhoto: "MessagingClient.business.setCoverPhoto",
       setBusinessMerchantCompliance:
         "MessagingClient.business.setMerchantCompliance",
+      updateProjectObservationPolicy:
+        "MessagingClient.observationPolicies.updateForProject",
+      updateSessionObservationPolicy:
+        "MessagingClient.observationPolicies.updateForSession",
       setBusinessProductVisibility:
         "MessagingClient.business.setProductVisibility",
       updateBusinessCollection: "MessagingClient.business.updateCollection",
@@ -538,7 +546,7 @@ describe("coverage checker", () => {
       "listActiveSessionBans",
       "listSecurityIncidents",
       "acknowledgeSecurityIncident",
-      "getPlatformOperation",
+      "getOrganizationOperation",
       "listPolymorfaTokens",
       "inviteMember",
       "updateMemberRole",
@@ -583,7 +591,7 @@ describe("coverage checker", () => {
         status: "covered",
         method: "PlatformClient.securityIncidents.acknowledge",
       },
-      getPlatformOperation: {
+      getOrganizationOperation: {
         status: "covered",
         method: "PlatformClient.operations.retrieve",
       },

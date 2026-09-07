@@ -26,6 +26,7 @@ import { QuickRepliesResource } from "./quick-replies.js";
 import { SessionsResource } from "./sessions.js";
 import { TemplatesResource } from "./templates.js";
 import { UsersResource } from "./users.js";
+import { VoipResource } from "./voip.js";
 import { WebhooksResource } from "./webhooks.js";
 
 export class MessagingClient {
@@ -50,6 +51,7 @@ export class MessagingClient {
   readonly quickReplies: QuickRepliesResource;
   readonly templates: TemplatesResource;
   readonly users: UsersResource;
+  readonly voip: VoipResource;
   readonly webhooks: WebhooksResource;
   readonly raw: RawClient;
 
@@ -87,6 +89,7 @@ export class MessagingClient {
     this.quickReplies = new QuickRepliesResource(transport);
     this.templates = new TemplatesResource(transport);
     this.users = new UsersResource(transport);
+    this.voip = new VoipResource(transport);
     this.webhooks = new WebhooksResource(transport);
     this.raw = new RawClient(transport);
   }
