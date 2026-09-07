@@ -265,7 +265,7 @@ export interface CallEndedPayload {
   readonly durationSeconds: number;
   /** Includes pod_lost for calls ended after the media host disappears. */
   readonly reason: string;
-  readonly direction: string;
+  readonly direction: "inbound" | "outbound";
   readonly hadVideo: boolean;
 }
 

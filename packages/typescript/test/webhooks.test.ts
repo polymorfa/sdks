@@ -92,6 +92,9 @@ describe("constructWebhookEvent", () => {
       expect(isEvent(event, "call.ended")).toBe(true);
       if (isEvent(event, "call.ended")) {
         expectTypeOf(event.payload).toEqualTypeOf<CallEndedPayload>();
+        expectTypeOf(event.payload.direction).toEqualTypeOf<
+          "inbound" | "outbound"
+        >();
         expect(event.payload).toEqual(payload);
         expect(event.payload.from?.id ?? null).toBe(from?.id ?? null);
       }
