@@ -687,3 +687,24 @@ describe("terminal call control errors", () => {
     controller.dispose();
   });
 });
+
+describe("continuing after a refused reject", () => {
+  it("clears the reject error when the incoming call is successfully answered", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "call-1", from: "+15550100", video: false },
+    });
+    vi.mocked(f.backend.reject).mockRejectedValueOnce(new Error("try again"));
+    await controller.reject();
+    expect(controller.getSnapshot().error?.code).toBe("call_control_failed");
+    await controller.answer();
+    expect(controller.getSnapshot().status).toBe("connecting");
+    expect(controller.getSnapshot().error).toBeUndefined();
+    f.connect("connected");
+    expect(controller.getSnapshot().error).toBeUndefined();
+    controller.dispose();
+  });
+});

@@ -285,7 +285,11 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     try {
       await this.#backend.answer(current.callId, this.#abort.signal);
       if (operation !== this.#operation) return;
-      this.transition({ ...callFields(current), status: "accepted", video });
+      this.transition({
+        ...callFields(current, false),
+        status: "accepted",
+        video,
+      });
       offering = true;
       await this.#openMedia(current.callId, video, operation);
     } catch (cause) {

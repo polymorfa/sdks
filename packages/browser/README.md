@@ -128,4 +128,5 @@ application route resolves those values after authorizing the request.
 
 If a reject or hangup request fails, the call stays active and its controls remain
 available for retry. The UI shows a localized failure message and keeps existing
-media connected until the call ends. `snapshot.error` clears when ending succeeds.
+media connected until the call ends. `snapshot.error` clears when ending succeeds
+or when an incoming call is successfully answered after a failed reject.
