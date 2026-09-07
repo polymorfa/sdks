@@ -60,6 +60,8 @@ type ClientEvents = {
 export class CallsClient extends Emitter<ClientEvents> {
   readonly session: string;
   readonly #claimMode: boolean;
+  /** Bumped by disconnect(); a connect() still claiming its mode then stops short of the socket. */
+  #connectGeneration = 0;
   readonly #api: CallsApi;
   readonly #socket: LifecycleSocket;
   readonly #calls = new Map<string, Call>();
@@ -118,12 +120,17 @@ export class CallsClient extends Emitter<ClientEvents> {
    * calls are being auto-answered elsewhere would ring nothing here.
    */
   async connect(): Promise<void> {
+    const generation = this.#connectGeneration;
     if (this.#claimMode) await this.#api.setMode(this.session, "sdk");
+    // disconnect() ran while the claim was in flight: opening the socket now
+    // would reconnect a client the caller has already stopped.
+    if (generation !== this.#connectGeneration) return;
     return this.#socket.connect();
   }
 
   /** Stop following the session. Live calls are hung up first. */
   async disconnect(): Promise<void> {
+    this.#connectGeneration += 1;
     await Promise.allSettled(this.calls.map((call) => call.hangup()));
     this.#socket.close();
   }

@@ -285,6 +285,27 @@ describe("CallsClient", () => {
     await client.disconnect();
   });
 
+  it("does not open a socket when disconnect() lands while the mode claim is pending", async () => {
+    const api = fakeApi();
+    let resolveClaim: () => void = () => undefined;
+    api.setMode.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveClaim = resolve;
+        }),
+    );
+    const h = clientWith(api);
+    const connecting = h.client.connect();
+    await flush();
+    await h.client.disconnect();
+    resolveClaim();
+    await connecting;
+    await flush();
+    expect(FakeWebSocket.instances).toHaveLength(0);
+    expect(api.socketTicket).not.toHaveBeenCalled();
+    expect(h.client.connected).toBe(false);
+  });
+
   it("hangs up live calls on disconnect", async () => {
     const h = clientWith();
     const life = await connected(h);
