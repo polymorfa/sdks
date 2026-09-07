@@ -200,12 +200,17 @@ export function parseMediaControl(
   data: unknown,
 ): MediaControlFrame | undefined {
   if (typeof data !== "string") return undefined;
-  let parsed: unknown;
   try {
-    parsed = JSON.parse(data);
+    return parseMediaControlValue(JSON.parse(data));
   } catch {
     return undefined;
   }
+}
+
+/** Validate an already-decoded media control value. @internal */
+export function parseMediaControlValue(
+  parsed: unknown,
+): MediaControlFrame | undefined {
   if (parsed === null || typeof parsed !== "object") return undefined;
   const f = parsed as Record<string, unknown>;
   switch (f["type"]) {

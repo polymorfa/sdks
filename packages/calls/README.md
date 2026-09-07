@@ -46,6 +46,10 @@ the socket; text frames are JSON control (`ready`, `hangup`, `video_state`,
 `participant_*`). The framing is defined once in `protocol.ts`; the pod
 implements the same contract.
 
+Calls created with `mediaMode: "external"` receive the same participant roster
+through the lifecycle socket. `participantJoined`, `participantState`, and
+`participantLeft` update `call.participants` without opening a media socket.
+
 ## Runtime
 
 Node 22+ for the global `WebSocket`, or pass `WebSocket` from `ws` on Node 20.

@@ -368,8 +368,9 @@ and video) or `cloudApi` (the WhatsApp Business Calling API, audio only). Every
 component gates on the snapshot's `capabilities`, never on the line name. The
 controller also owns capture/playback device choice (`setPreferredDevices`,
 `switchDevice`, `refreshDevices`) so a microphone or camera swap mid-call is a
-track replacement, not a renegotiation. The shared call model supports participant invitations. Live roster updates
-are available on programmatic media sockets, not the browser WebRTC path.
+track replacement, not a renegotiation. The shared call model supports
+participant invitations. Browser WebRTC calls receive live participant joins,
+state changes, and departures through the lifecycle stream.
 
 `@polymorfa/react` ships the complete call UI: `CallSurface` (incoming card,
 stage, control dock, and a pop-out window), plus `IncomingCallCard`,

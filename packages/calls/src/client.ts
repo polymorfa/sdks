@@ -7,6 +7,7 @@ import {
 import { Call, type CallEndReason } from "./call.js";
 import { Emitter } from "./events.js";
 import { LifecycleSocket, type LifecycleEvent } from "./lifecycle.js";
+import { parseMediaControlValue, type MediaControlFrame } from "./protocol.js";
 
 export interface CallsClientOptions {
   /** Server API key (`pmfa_…`). Never ship this to a browser. */
@@ -239,6 +240,17 @@ export class CallsClient extends Emitter<ClientEvents> {
         }
         this.#apply(existing, event);
         return;
+      case "call.participant_joined":
+      case "call.participant_state":
+      case "call.participant_left":
+        if (this.#o.mediaMode !== "external") return;
+        if (participantControlFrom(event) === undefined) return;
+        if (existing === undefined) {
+          this.#buffer(event);
+          return;
+        }
+        this.#apply(existing, event);
+        return;
       default:
         return;
     }
@@ -282,6 +294,14 @@ export class CallsClient extends Emitter<ClientEvents> {
       case "call.rejected":
         call._remoteEnded("rejected");
         return;
+      case "call.participant_joined":
+      case "call.participant_state":
+      case "call.participant_left": {
+        if (this.#o.mediaMode !== "external") return;
+        const frame = participantControlFrom(event);
+        if (frame !== undefined) call._remoteParticipant(frame);
+        return;
+      }
       default:
         return;
     }
@@ -350,4 +370,42 @@ function endReasonFrom(value: unknown): CallEndReason {
     default:
       return "unknown";
   }
+}
+
+type ParticipantControlFrame = Extract<
+  MediaControlFrame,
+  { type: "participant_joined" | "participant_state" | "participant_left" }
+>;
+
+function participantControlFrom(
+  event: LifecycleEvent,
+): ParticipantControlFrame | undefined {
+  if (event.payload["callId"] !== event.callId) return undefined;
+  let value: unknown;
+  switch (event.event) {
+    case "call.participant_joined":
+      value = {
+        type: "participant_joined",
+        participant: event.payload["participant"],
+      };
+      break;
+    case "call.participant_state":
+      value = {
+        type: "participant_state",
+        participant: event.payload["participant"],
+      };
+      break;
+    case "call.participant_left":
+      value = {
+        type: "participant_left",
+        participantId: event.payload["participantId"],
+        ...(event.payload["reason"] === undefined
+          ? {}
+          : { reason: event.payload["reason"] }),
+      };
+      break;
+    default:
+      return undefined;
+  }
+  return parseMediaControlValue(value) as ParticipantControlFrame | undefined;
 }

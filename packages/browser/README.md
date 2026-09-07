@@ -78,9 +78,9 @@ one widget; additional inbound calls are declined.
 
 The shared call's PCM/video-frame streams belong to programmatic socket media.
 Use `controller.localStream` and `controller.remoteStream` for browser media.
-Participant invitations return the invited participant, but WebRTC does not
-receive the tagged socket's roster updates. Do not treat its participants list
-or the reserved `audioMuted`/`video` fields as authoritative live presence.
+Participant invitations return the invited participant. The lifecycle stream
+keeps `call.participants` and its `audioMuted`, `video`, and `state` fields in
+sync for browser WebRTC calls.
 
 `createSignalingCallsBackend`, `CallsSocket` and `IncomingCallRelay` remain
 available for applications that supply their own placement or event channel.
