@@ -320,10 +320,7 @@ describe("CallsClient", () => {
     await flush();
     h.ws(0).open();
     await connecting;
-    h.ws(0).text({
-      type: "event",
-      event: { type: "call.received", callId: "C1", from: { lid: "2000@lid" } },
-    });
+    ring(h.ws(0), "C1");
     await flush();
     expect(h.client.calls).toHaveLength(1);
 
