@@ -67,7 +67,7 @@ const calls = [
     operationId: "voipRejectCall",
     method: "reject",
     args: [callId],
-    body: {},
+    body: undefined,
     status: 202,
     response: { success: true },
     result: undefined,
@@ -145,7 +145,12 @@ describe("reconciled coverage evidence", () => {
         `https://api.example.com${mapping.path.replace("{id}", encodeURIComponent(callId))}`,
       );
       expect(init.method).toBe(mapping.method);
-      expect(JSON.parse(init.body as string)).toEqual(fixture.body);
+      if (fixture.body === undefined) {
+        expect(init.body).toBeUndefined();
+        expect(new Headers(init.headers).has("content-type")).toBe(false);
+      } else {
+        expect(JSON.parse(init.body as string)).toEqual(fixture.body);
+      }
       expect(new Headers(init.headers).get("authorization")).toBe(
         "Bearer pmfa_coverage",
       );

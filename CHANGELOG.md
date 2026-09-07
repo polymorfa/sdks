@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Send call rejection without a request body, matching the API contract.
+
 - Refreshed the pinned API contracts and recorded the five implemented
   programmatic Calls methods. The ledger retains missing QuickLink and
   Platform methods and removes obsolete widget mappings. Coverage is 226 of
