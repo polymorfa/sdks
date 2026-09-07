@@ -125,3 +125,7 @@ await templates.refreshPreview();
 The same-origin transport sends application actions with browser cookies. It
 does not accept a server credential, project slug, or Cloud API session. The
 application route resolves those values after authorizing the request.
+
+If a reject or hangup request fails, the call stays active and its controls remain
+available for retry. The UI shows a localized failure message and keeps existing
+media connected until the call ends. `snapshot.error` clears when ending succeeds.

@@ -53,7 +53,10 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
     const status = snapshot?.status ?? "ready";
     // idle and ready are absent on purpose: nothing to announce, and this
     // region is assertive — a raw status identifier would be read out.
-    const key = HEADINGS[status];
+    const key =
+      snapshot?.error?.code === "call_control_failed"
+        ? "calls.controlFailed"
+        : HEADINGS[status];
     const heading = key === undefined ? undefined : messages[key];
     if (heading !== undefined) {
       // Assertive on the heading, not the panel: this element re-renders

@@ -576,8 +576,22 @@ export function IncomingCallCard({
         aria-label={t(locale, "calls.incomingFrom", { peer: name })}
       >
         <div className="pmfa-calls-name">{name}</div>
-        <div className="pmfa-calls-subtitle">
-          {t(locale, offersVideo ? "calls.videoCall" : "calls.audioCall")}
+        <div
+          className="pmfa-calls-subtitle"
+          role={
+            snapshot.error?.code === "call_control_failed"
+              ? "status"
+              : undefined
+          }
+        >
+          {t(
+            locale,
+            snapshot.error?.code === "call_control_failed"
+              ? "calls.controlFailed"
+              : offersVideo
+                ? "calls.videoCall"
+                : "calls.audioCall",
+          )}
         </div>
 
         {offersVideo ? (
@@ -723,6 +737,7 @@ function CallIdentity({
   peer,
   live,
   ringingLine,
+  errorLine,
   flashPeer,
   seconds,
 }: {
@@ -730,20 +745,27 @@ function CallIdentity({
   readonly peer: string | null;
   readonly live: boolean;
   readonly ringingLine: string | null;
+  readonly errorLine: string | null;
   readonly flashPeer: boolean;
   readonly seconds: number;
 }) {
-  const line = live
-    ? peer !== null && flashPeer
-      ? peer
-      : formatDuration(seconds)
-    : (ringingLine ?? peer);
+  const line =
+    errorLine ??
+    (live
+      ? peer !== null && flashPeer
+        ? peer
+        : formatDuration(seconds)
+      : (ringingLine ?? peer));
   const lineKey = live && !(peer !== null && flashPeer) ? "duration" : "peer";
   return (
     <div>
       <div className="pmfa-calls-name">{name}</div>
       {line !== null && (
-        <div key={lineKey} className="pmfa-calls-peer pmfa-calls-flash">
+        <div
+          key={lineKey}
+          className="pmfa-calls-peer pmfa-calls-flash"
+          role={errorLine === null ? undefined : "status"}
+        >
           {line}
         </div>
       )}
@@ -850,6 +872,11 @@ export function CallStage({
       peer={displayName === undefined ? null : peer}
       live={live}
       ringingLine={ringingLine}
+      errorLine={
+        snapshot.error?.code === "call_control_failed"
+          ? t(locale, "calls.controlFailed")
+          : null
+      }
       flashPeer={flashPeer}
       seconds={seconds}
     />

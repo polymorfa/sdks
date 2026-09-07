@@ -619,17 +619,30 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     reason: CallEndReason,
     action: (signal: AbortSignal) => Promise<void>,
   ): Promise<void> {
-    const operation = ++this.#operation;
+    const operation = this.#operation;
     try {
       await action(this.#abort.signal);
     } catch (cause) {
-      this.#fail(cause, operation, "call_control_failed");
+      if (operation !== this.#operation || this.#abort.signal.aborted) return;
+      // A refused control request does not end the remote call. Keep its live
+      // state and media so the visible answer/reject/hangup controls can retry.
+      this.transition({
+        ...this.getSnapshot(),
+        error: {
+          code: "call_control_failed",
+          message:
+            cause instanceof Error ? cause.message : "Call operation failed.",
+          recoverable: true,
+        },
+      });
       return;
     }
+    if (operation !== this.#operation) return;
+    const finishedOperation = ++this.#operation;
     await this.#closeMedia();
-    if (operation === this.#operation)
+    if (finishedOperation === this.#operation)
       this.transition({
-        ...callFields(this.getSnapshot()),
+        ...callFields(this.getSnapshot(), false),
         status: "ended",
         endReason: reason,
       });
@@ -678,7 +691,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       this.#abort = new AbortController();
       void this.#closeMedia();
       this.transition({
-        ...callFields(current),
+        ...callFields(current, false),
         status: "ended",
         ...(event.reason === undefined ? {} : { endReason: event.reason }),
       });
@@ -759,6 +772,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
 
 function callFields(
   snapshot: CallsSnapshot,
+  preserveError = true,
 ): Omit<CallsSnapshot, "revision" | "updatedAt" | "status"> {
   return {
     ...(snapshot.callId === undefined ? {} : { callId: snapshot.callId }),
@@ -779,6 +793,8 @@ function callFields(
     ...(snapshot.endReason === undefined
       ? {}
       : { endReason: snapshot.endReason }),
-    ...(snapshot.error === undefined ? {} : { error: snapshot.error }),
+    ...(!preserveError || snapshot.error === undefined
+      ? {}
+      : { error: snapshot.error }),
   };
 }

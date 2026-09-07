@@ -161,7 +161,7 @@ describe("browser widget and shared calls client", () => {
       await f.calls.controller[action]();
       await flush();
       expect(f.calls.controller.getSnapshot()).toMatchObject({
-        status: "error",
+        status: action === "reject" ? "incoming" : "connecting",
         error: { code: "call_control_failed" },
       });
       expect(f.calls.controller.call?.ended).toBe(false);
@@ -180,6 +180,7 @@ describe("browser widget and shared calls client", () => {
         endReason: "hangup",
       });
       expect(f.calls.controller.call?.ended).toBe(true);
+      expect(f.calls.controller.getSnapshot().error).toBeUndefined();
     },
   );
 
