@@ -11,6 +11,7 @@ export {
   HttpCallsApi,
   CallsApiError,
   type CallsApi,
+  type AnswerMode,
   type FetchLike,
   type MediaTicket,
   type PlaceCallRequest,

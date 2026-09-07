@@ -109,6 +109,8 @@ export interface CallInit {
   readonly video: boolean;
   readonly api: CallsApi;
   readonly media: Omit<MediaSocketOptions, "ticket">;
+  /** External media is owned by a browser/WebRTC adapter, which calls mediaConnected(). */
+  readonly mediaMode?: "socket" | "external";
   readonly now?: () => number;
 }
 
@@ -135,6 +137,8 @@ export class Call extends Emitter<CallEvents> {
   #connectedAt: number | undefined;
   #endedAt: number | undefined;
   #accepting: Promise<void> | undefined;
+  readonly #externalMedia: boolean;
+  #mediaReady = false;
 
   constructor(init: CallInit) {
     super();
@@ -144,6 +148,7 @@ export class Call extends Emitter<CallEvents> {
     this.peer = init.peer;
     this.#api = init.api;
     this.#mediaOptions = init.media;
+    this.#externalMedia = init.mediaMode === "external";
     this.#now = init.now ?? Date.now;
     this.#state = init.direction === "inbound" ? "incoming" : "ringing";
     this.#startedAt = this.#now();
@@ -182,8 +187,9 @@ export class Call extends Emitter<CallEvents> {
 
   /**
    * Accept an incoming call and bridge media. Resolves once the pod reports
-   * media flowing. Idempotent while in flight; rejects if the call is not
-   * incoming.
+   * media flowing. With externally managed media, resolves after acceptance;
+   * the adapter calls mediaConnected() when WebRTC connects. Idempotent while
+   * in flight; rejects if the call is not incoming.
    */
   answer(options: { readonly video?: boolean } = {}): Promise<void> {
     if (this.#accepting !== undefined) return this.#accepting;
@@ -275,7 +281,24 @@ export class Call extends Emitter<CallEvents> {
     this.#end(reason);
   }
 
+  /**
+   * Notify an externally managed call that its media connected. An outbound
+   * call still waits for the remote party to accept. Socket media ignores this.
+   */
+  mediaConnected(): void {
+    if (!this.#externalMedia || this.ended) return;
+    this.#mediaReady = true;
+    if (this.#state !== "connecting") return;
+    this.#connectedAt = this.#now();
+    this.#transition("connected");
+    this.emit("connected");
+  }
+
   async #bridge(): Promise<void> {
+    if (this.#externalMedia) {
+      if (this.#mediaReady) this.mediaConnected();
+      return;
+    }
     const ticket = await this.#api.mediaTicket(this.id);
     // The call can end while the ticket is in flight — a queued `ended` right
     // behind the `accepted` that started this. Creating the socket now would

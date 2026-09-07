@@ -46,6 +46,46 @@ function fixture() {
 }
 
 describe("CallsController (voip-v2 contract)", () => {
+  it("keeps custom-backend calls active when a second placement is requested", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    await controller.place("+15550100");
+    f.connect("connected");
+    await expect(controller.place("+15550101")).rejects.toThrow(
+      "Finish the active call",
+    );
+    expect(f.backend.place).toHaveBeenCalledOnce();
+    expect(f.session.close).not.toHaveBeenCalled();
+    expect(controller.getSnapshot().status).toBe("connected");
+    controller.dispose();
+  });
+  it("allows device selection and refresh after remote end, before answering the next call", async () => {
+    const f = fixture();
+    const devices = [
+      { deviceId: "mic-2", kind: "audioinput" as const, label: "Microphone" },
+    ];
+    const controller = new CallsController(f.backend, {
+      ...f.media,
+      listDevices: async () => devices,
+    });
+    controller.initialize();
+    await controller.place("+15550100");
+    f.emit({ type: "ended", callId: "call-1", reason: "remote_hangup" });
+    await controller.switchDevice("audioInput", "mic-2");
+    await controller.refreshDevices();
+    expect(controller.getSnapshot()).toMatchObject({
+      selectedDevices: { audioInput: "mic-2" },
+      devices,
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "call-2", from: "+15550101", video: false },
+    });
+    await controller.switchDevice("audioInput", "mic-3");
+    expect(controller.getSnapshot().selectedDevices.audioInput).toBe("mic-3");
+    controller.dispose();
+  });
   it("receives and answers an incoming WebRTC call", async () => {
     const f = fixture();
     const controller = new CallsController(f.backend, f.media);
