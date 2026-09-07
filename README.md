@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`b413f2c6a701c86ec593241a70145ee89cc2bcd2`. Graph-compatible APIs are outside
+`3bf3a6ba3de8b19a547afd16fca1f3b368d7d4e7`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -285,11 +285,12 @@ replies. Unknown event names and payloads are preserved for forward
 compatibility.
 
 Messaging server credentials can manage webhook registrations through
-`MessagingClient.webhooks`. The Platform contract has no server-credential
-event listing, webhook delivery inspection, replay, or test-delivery endpoint.
-Its console webhook settings require a dashboard session, and its cross-org
-webhook controls require a staff identity, so neither surface is exposed by
-`PlatformClient` or counted as missing server SDK coverage.
+`MessagingClient.webhooks`. The Platform contract also defines organization
+and project event listing and replay, webhook management, delivery inspection
+and retry, and durable operation management. These Platform resources remain
+missing from the handwritten SDK, apart from organization operation retrieval
+through `PlatformClient.operations.retrieve`. The coverage ledger records each
+gap. Dashboard and staff routes retain their separate credential requirements.
 
 ## Browser controllers and UI
 
@@ -395,12 +396,22 @@ subpath exports an inert mount function.
 
 ## Coverage status
 
-`contracts/coverage.json` maps all 331 Messaging and Platform operations in the
-pinned contract. This milestone has 207 operations covered by handwritten
-resources, 66 dashboard-only or staff routes excluded from the server
-credential surface, and 58 operations available through the raw escape hatch
-while typed methods are added. Missing and structurally changed operations are reported
-individually; the ledger never presents raw access as typed parity.
+`contracts/coverage.json` records all 402 Messaging and Platform operations in
+its pinned contract: 226 covered, 103 missing, 73 excluded, and zero changed
+fingerprints. Covered mappings include methods in the server, browser, and
+Calls packages. A mapping records an HTTP operation, not package publication
+or live-call readiness.
+
+The five programmatic Calls operations map to `HttpCallsApi.place`, `accept`,
+`reject`, `addParticipant`, and `setMode`. QuickLink routes and the new durable
+Platform resources retain explicit missing entries. Existing widget methods
+still request removed routes and do not count as QuickLink coverage.
+
+`npm run check:coverage` requires every contract operation to have a ledger
+row. It permits explicit missing and excluded entries; passing that check does
+not establish API parity. Raw requests never count as typed coverage. See the
+[contract notes](contracts/README.md) for source hashes and reconciliation
+rules.
 
 ## Development
 

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 import { describe, expect, it } from "vitest";
+import { HttpCallsApi } from "../../calls/src/index.js";
 import { BrowserMessagingClient } from "../../browser/src/index.js";
 import { MessagingClient, PlatformClient } from "../src/index.js";
 
@@ -144,13 +145,14 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "b413f2c6a701c86ec593241a70145ee89cc2bcd2",
-      total: 391,
-      covered: 224,
+      sourceCommit: "3bf3a6ba3de8b19a547afd16fca1f3b368d7d4e7",
+      total: 402,
+      covered: 226,
       partial: 0,
-      missing: 96,
-      excluded: 71,
+      missing: 103,
+      excluded: 73,
       changed: 0,
+      resolutions: [],
     });
   });
 
@@ -223,19 +225,14 @@ describe("coverage checker", () => {
     });
   });
 
-  it("maps widget settings and batch session lifecycle to the organization-key client", () => {
+  it("maps batch session lifecycle to the organization-key client", () => {
     const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
       operations: Array<{
         operationId: string;
         typescript: { status: string; method?: string };
       }>;
     };
-    const operationIds = [
-      "getWidgetSettings",
-      "updateWidgetSettings",
-      "stopSessions",
-      "deleteSessions",
-    ];
+    const operationIds = ["stopSessions", "deleteSessions"];
     const mappings = Object.fromEntries(
       ledger.operations
         .filter(({ operationId }) => operationIds.includes(operationId))
@@ -244,9 +241,7 @@ describe("coverage checker", () => {
 
     expect(mappings).toEqual({
       deleteSessions: "PlatformClient.sessions.deleteMany",
-      getWidgetSettings: "PlatformClient.widgetSettings.retrieve",
       stopSessions: "PlatformClient.sessions.stopMany",
-      updateWidgetSettings: "PlatformClient.widgetSettings.update",
     });
   });
 
@@ -261,6 +256,7 @@ describe("coverage checker", () => {
         credential: { type: "apiKey", value: "pmfa_messaging" },
       }),
       PlatformClient: new PlatformClient({ apiKey: "pmfa_platform" }),
+      HttpCallsApi: new HttpCallsApi({ apiKey: "pmfa_calls" }),
       BrowserMessagingClient: new BrowserMessagingClient({
         session: "coverage",
         getClientToken: async () => "pmfa_ct_coverage",

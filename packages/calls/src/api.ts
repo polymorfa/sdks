@@ -235,7 +235,7 @@ export class HttpCallsApi implements CallsApi {
     await this.#request(
       "POST",
       `/api/voip/calls/${encodeURIComponent(callId)}/reject`,
-      {},
+      undefined,
       signal,
     );
   }

@@ -1040,52 +1040,15 @@ are not exposed by the server SDK. Browser client tokens are rejected by the
 Management API, and `PlatformClient` deliberately rejects project and browser
 client tokens before transport.
 
-## Widget settings and batch session lifecycle
+## Legacy widget settings
 
-`PlatformClient.widgetSettings` maps both organization-key widget settings
-operations. They require `widget:create`; the Management API rejects project
-tokens and browser client tokens.
+`PlatformClient.widgetSettings.retrieve` and `update` still request
+`/v1/widget`, which is absent from the pinned API contract. The API now exposes
+QuickLink settings at `/v1/quicklink`. These methods do not implement that
+contract, and the ledger marks both QuickLink settings operations missing.
+Do not use the widget settings methods against this API revision.
 
-```ts
-const saved = await platform.widgetSettings.retrieve({
-  projectId: "11111111-2222-4333-8444-555555555555",
-});
-
-const updated = await platform.widgetSettings.update(
-  {
-    projectId: "11111111-2222-4333-8444-555555555555",
-    enabled: true,
-    modesAllowed: ["embedded", "redirect"],
-    methods: ["qr", "pairing"],
-    allowedOrigins: ["https://app.example.com"],
-    allowedRedirectUris: ["https://app.example.com/widget/callback"],
-    businessName: "Support",
-    accent: "#6A3DE8",
-    theme: "system",
-    shape: "rounded",
-    radiusPx: 16,
-    historySync: "ask",
-  },
-  { idempotencyKey: "widget-settings-support" },
-);
-```
-
-Omit `projectId` for organization defaults. Retrieval returns `null` when no
-saved row exists. Updates accept any subset of the root-exported
-`UpdateWidgetSettingsRequest`: booleans, exact mode/method/theme/shape/logo and
-history-sync enums, HTTPS redirect and origin allowlists, optional light/dark
-hex palettes, and saved QR-logo storage identifiers. The operation is JSON
-only; it does not upload a logo or accept binary data. The server allows a
-bodyless update as a compatibility no-op, represented by `update({})`.
-
-The live handler applies stricter rules than the generic retrieval schema in
-the pinned OpenAPI: project IDs are UUIDs; choice lists contain 1–50 unique
-items; URL lists contain at most 50 credential-free HTTPS values; origins have
-no path, query, or fragment; palette values and `accent` are six-digit hex;
-`businessName` is at most 120 characters; and `radiusPx` is 0–999. An empty
-business name is stored as `null`. The SDK types the live repository response,
-including numeric timestamps and `WidgetSettings | null`, rather than claiming
-that the OpenAPI's otherwise-untyped `DataEnvelope` is an arbitrary object.
+## Batch session lifecycle
 
 `PlatformClient.sessions.stopMany` and `deleteMany` cover the two exact batch
 operations. They require `sessions:manage` and accept `sessionIds` plus an
