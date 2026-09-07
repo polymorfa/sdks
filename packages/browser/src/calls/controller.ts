@@ -285,7 +285,11 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     try {
       await this.#backend.answer(current.callId, this.#abort.signal);
       if (operation !== this.#operation) return;
-      this.transition({ ...callFields(current), status: "accepted", video });
+      this.transition({
+        ...callFields(current, false),
+        status: "accepted",
+        video,
+      });
       offering = true;
       await this.#openMedia(current.callId, video, operation);
     } catch (cause) {
@@ -466,7 +470,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     this.#unsubscribe?.();
     this.#unsubscribe = undefined;
     this.#backend.dispose?.();
-    void this.#closeMedia();
+    void this.#closeMedia().catch(() => undefined);
   }
 
   #begin(closeMedia = true): number {
@@ -474,7 +478,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     this.#operation += 1;
     this.#abort.abort();
     this.#abort = new AbortController();
-    if (closeMedia) void this.#closeMedia();
+    if (closeMedia) void this.#closeMedia().catch(() => undefined);
     return this.#operation;
   }
   async #openMedia(
@@ -535,9 +539,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         connectedAt: current.connectedAt ?? this.#now(),
       });
     } else if (state === "closed") {
-      void this.#closeMedia();
+      void this.#closeMedia().catch(() => undefined);
       this.transition({
-        ...callFields(current),
+        ...callFields(current, false),
         status: "ended",
         endReason: "connection_failed",
       });
@@ -588,9 +592,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       this.#clearResumption();
       const now = this.getSnapshot();
       if (now.callId !== callId || now.status !== "reconnecting") return;
-      void this.#closeMedia();
+      void this.#closeMedia().catch(() => undefined);
       this.transition({
-        ...callFields(now),
+        ...callFields(now, false),
         status: "ended",
         endReason: "connection_failed",
       });
@@ -619,21 +623,38 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     reason: CallEndReason,
     action: (signal: AbortSignal) => Promise<void>,
   ): Promise<void> {
-    const operation = ++this.#operation;
+    const operation = this.#operation;
     try {
       await action(this.#abort.signal);
     } catch (cause) {
-      this.#fail(cause, operation, "call_control_failed");
+      if (operation !== this.#operation || this.#abort.signal.aborted) return;
+      // A refused control request does not end the remote call. Keep its live
+      // state and media so the visible answer/reject/hangup controls can retry.
+      this.transition({
+        ...this.getSnapshot(),
+        error: {
+          code: "call_control_failed",
+          message:
+            cause instanceof Error ? cause.message : "Call operation failed.",
+          recoverable: true,
+        },
+      });
       return;
     }
-    await this.#closeMedia();
-    if (operation === this.#operation)
-      this.transition({
-        ...callFields(this.getSnapshot()),
-        status: "ended",
-        endReason: reason,
-      });
+    if (operation !== this.#operation) return;
+    const finishedOperation = ++this.#operation;
+    try {
+      await this.#closeMedia();
+    } finally {
+      if (finishedOperation === this.#operation)
+        this.transition({
+          ...callFields(this.getSnapshot(), false),
+          status: "ended",
+          endReason: reason,
+        });
+    }
   }
+
   #receive(event: CallLifecycleEvent): void {
     const current = this.getSnapshot();
     if (
@@ -676,9 +697,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       this.#operation += 1;
       this.#abort.abort();
       this.#abort = new AbortController();
-      void this.#closeMedia();
+      void this.#closeMedia().catch(() => undefined);
       this.transition({
-        ...callFields(current),
+        ...callFields(current, false),
         status: "ended",
         ...(event.reason === undefined ? {} : { endReason: event.reason }),
       });
@@ -726,7 +747,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     fromOffer = false,
   ): void {
     if (operation !== this.#operation || this.#abort.signal.aborted) return;
-    void this.#closeMedia();
+    void this.#closeMedia().catch(() => undefined);
     // A pod-lost (410) or capacity/draining (503) answer to the offer is not
     // an error to retry: the call is over. Surface it as an ended call. Only
     // the offer carries those hints — the same codes from a placement or a
@@ -738,7 +759,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       typeof status === "number" ? TERMINAL_OFFER_REASONS[status] : undefined;
     if (terminal !== undefined) {
       this.transition({
-        ...callFields(this.getSnapshot()),
+        ...callFields(this.getSnapshot(), false),
         status: "ended",
         endReason: terminal,
       });
@@ -759,6 +780,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
 
 function callFields(
   snapshot: CallsSnapshot,
+  preserveError = true,
 ): Omit<CallsSnapshot, "revision" | "updatedAt" | "status"> {
   return {
     ...(snapshot.callId === undefined ? {} : { callId: snapshot.callId }),
@@ -779,6 +801,8 @@ function callFields(
     ...(snapshot.endReason === undefined
       ? {}
       : { endReason: snapshot.endReason }),
-    ...(snapshot.error === undefined ? {} : { error: snapshot.error }),
+    ...(!preserveError || snapshot.error === undefined
+      ? {}
+      : { error: snapshot.error }),
   };
 }

@@ -69,3 +69,7 @@ resumption window. Avatars come from
 `resolveAvatar` (a URL or a promise of one; `BrowserMessagingClient.contacts
 .picture` works when the token carries `read_contact`); without one a stable
 hash of the caller id picks one of eight palette tones.
+
+If a reject or hangup request fails, the call stays active and its controls remain
+available for retry. The UI shows a localized failure message and keeps existing
+media connected until the call ends. `snapshot.error` clears when ending succeeds.

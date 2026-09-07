@@ -634,3 +634,77 @@ describe("CallsController resumption and terminal offers", () => {
     expect(enableVideo).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("terminal call control errors", () => {
+  it.each(["closed", "failed"] as const)(
+    "clears a refused hangup when media becomes %s",
+    async (state) => {
+      vi.useFakeTimers();
+      const f = fixture();
+      const controller = new CallsController(f.backend, f.media, {
+        resumptionWindowMs: 500,
+      });
+      try {
+        controller.initialize();
+        await controller.place("+15550100");
+        f.connect("connected");
+        vi.mocked(f.backend.hangup).mockRejectedValueOnce(
+          new Error("try again"),
+        );
+        await controller.hangup();
+        expect(controller.getSnapshot().error?.code).toBe(
+          "call_control_failed",
+        );
+        f.connect(state);
+        if (state === "failed") await vi.advanceTimersByTimeAsync(501);
+        expect(controller.getSnapshot().status).toBe("ended");
+        expect(controller.getSnapshot().error).toBeUndefined();
+      } finally {
+        controller.dispose();
+        vi.useRealTimers();
+      }
+    },
+  );
+  it("clears a refused hangup when pending media setup receives a terminal response", async () => {
+    const f = fixture();
+    let rejectMedia!: (error: Error) => void;
+    vi.mocked(f.media.open).mockImplementationOnce(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectMedia = reject;
+        }),
+    );
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    const placing = controller.place("+15550100");
+    await Promise.resolve();
+    vi.mocked(f.backend.hangup).mockRejectedValueOnce(new Error("try again"));
+    await controller.hangup();
+    rejectMedia(Object.assign(new Error("call gone"), { status: 410 }));
+    await placing;
+    expect(controller.getSnapshot().status).toBe("ended");
+    expect(controller.getSnapshot().error).toBeUndefined();
+    controller.dispose();
+  });
+});
+
+describe("continuing after a refused reject", () => {
+  it("clears the reject error when the incoming call is successfully answered", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "call-1", from: "+15550100", video: false },
+    });
+    vi.mocked(f.backend.reject).mockRejectedValueOnce(new Error("try again"));
+    await controller.reject();
+    expect(controller.getSnapshot().error?.code).toBe("call_control_failed");
+    await controller.answer();
+    expect(controller.getSnapshot().status).toBe("connecting");
+    expect(controller.getSnapshot().error).toBeUndefined();
+    f.connect("connected");
+    expect(controller.getSnapshot().error).toBeUndefined();
+    controller.dispose();
+  });
+});
