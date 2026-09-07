@@ -6,6 +6,7 @@
     "jsx": "react-jsx",
     "paths": {
       "@polymorfa/browser": ["./packages/browser/src/index.ts"],
+      "@polymorfa/calls": ["./packages/calls/src/index.ts"],
       "@polymorfa/devtools": ["./packages/devtools/src/index.ts"],
       "@polymorfa/elements": ["./packages/elements/src/index.ts"],
       "@polymorfa/nextjs": ["./packages/nextjs/src/index.ts"],
