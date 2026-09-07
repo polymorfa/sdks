@@ -31,8 +31,21 @@ export interface PlaceCallRequest {
  * platform calls are one swappable seam — tests fake it, and the browser kit
  * can back it with a client-token transport where the operation is permitted.
  */
+/** How a session answers inbound calls; the SDK claims `sdk` on connect. */
+export type AnswerMode = "browser" | "agent" | "sdk";
+
 export interface CallsApi {
   socketTicket(session: string, signal?: AbortSignal): Promise<SocketTicket>;
+  /**
+   * Record how the session answers inbound calls. `sdk` makes them ring until
+   * this client accepts or rejects; the other modes auto-answer for a browser
+   * or raw-audio leg.
+   */
+  setMode(
+    session: string,
+    mode: AnswerMode,
+    signal?: AbortSignal,
+  ): Promise<void>;
   mediaTicket(callId: string, signal?: AbortSignal): Promise<MediaTicket>;
   /** Start an outbound call on a linked-device session; resolves the platform call id. */
   place(
@@ -195,6 +208,14 @@ export class HttpCallsApi implements CallsApi {
       (d) => isString(d.callId) && (d.callId as string).length > 0,
     );
     return { callId: t.callId as string };
+  }
+
+  async setMode(
+    session: string,
+    mode: AnswerMode,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#request("POST", "/api/voip/mode", { session, mode }, signal);
   }
 
   async accept(
