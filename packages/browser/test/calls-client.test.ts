@@ -139,6 +139,21 @@ describe("browser widget and shared calls client", () => {
     expect(f.calls.controller.call?.endReason).toBe("connection_failed");
   });
 
+  it("keeps a confirmed remote end terminal when local cleanup rejects", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    event(socket, "call.received", "CALL-IN", { from: "+15550100" });
+    await f.calls.controller.answer();
+    vi.mocked(f.session.close).mockRejectedValueOnce(
+      new Error("media cleanup failed"),
+    );
+    await f.calls.controller.hangup();
+    await flush();
+    expect(f.calls.controller.getSnapshot().status).toBe("ended");
+    expect(f.calls.controller.call?.ended).toBe(true);
+    expect(f.calls.controller.getSnapshot().error).toBeUndefined();
+  });
+
   it.each(["reject", "hangup"] as const)(
     "surfaces a refused %s without ending the call and allows hangup retry",
     async (action) => {

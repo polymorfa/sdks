@@ -637,3 +637,83 @@ it("finishes pending media setup after a refused hangup", async () => {
   });
   f.controller.dispose();
 });
+
+it("ends after successful remote hangup even when local media cleanup fails", async () => {
+  const f = fixture();
+  const host = mount(
+    <PolymorfaProvider>
+      <CallSurface controller={f.controller} popout={false} />
+    </PolymorfaProvider>,
+  );
+  act(() =>
+    f.relay.receive({
+      callId: "CALL-CLOSE-FAIL",
+      from: "+15550100",
+      video: false,
+    }),
+  );
+  await act(async () => {
+    await f.controller.answer();
+  });
+  vi.mocked(f.signaling.teardown).mockRejectedValueOnce(new Error("try again"));
+  await act(async () => {
+    await f.controller.hangup();
+  });
+  vi.mocked(f.session.close).mockRejectedValueOnce(
+    new Error("media close failed"),
+  );
+  await act(async () => {
+    (host.querySelector("[aria-label='Hang up']") as HTMLButtonElement).click();
+  });
+  expect(f.controller.getSnapshot().status).toBe("ended");
+  expect(f.controller.getSnapshot().error).toBeUndefined();
+  expect(host.querySelector("[data-pmfa='call-surface']")).toBeNull();
+  f.controller.dispose();
+});
+
+it("keeps the same status element while a control failure is visible", async () => {
+  vi.useFakeTimers();
+  const f = fixture();
+  try {
+    const host = mount(
+      <PolymorfaProvider>
+        <CallSurface
+          controller={f.controller}
+          popout={false}
+          resolveName={() => "Casey Rivera"}
+        />
+      </PolymorfaProvider>,
+    );
+    act(() =>
+      f.relay.receive({
+        callId: "CALL-STATUS",
+        from: "+15550100",
+        video: false,
+      }),
+    );
+    await act(async () => {
+      await f.controller.answer();
+    });
+    act(() =>
+      vi.mocked(f.media.open).mock.calls[0]![2].onConnectionState("connected"),
+    );
+    vi.mocked(f.signaling.teardown).mockRejectedValueOnce(
+      new Error("try again"),
+    );
+    await act(async () => {
+      await f.controller.hangup();
+    });
+    const status = host.querySelector("[role='status']");
+    expect(status?.textContent).toContain("Could not end the call");
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(host.querySelector("[role='status']")).toBe(status);
+    await act(async () => {
+      await f.controller.hangup();
+    });
+  } finally {
+    f.controller.dispose();
+    vi.useRealTimers();
+  }
+});

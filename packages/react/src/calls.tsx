@@ -756,7 +756,12 @@ function CallIdentity({
         ? peer
         : formatDuration(seconds)
       : (ringingLine ?? peer));
-  const lineKey = live && !(peer !== null && flashPeer) ? "duration" : "peer";
+  const lineKey =
+    errorLine !== null
+      ? "error"
+      : live && !(peer !== null && flashPeer)
+        ? "duration"
+        : "peer";
   return (
     <div>
       <div className="pmfa-calls-name">{name}</div>
