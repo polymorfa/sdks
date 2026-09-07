@@ -1053,3 +1053,97 @@ describe("CallsClient — review round four", () => {
     h.client.disconnect();
   });
 });
+
+describe("pending placement roster pressure", () => {
+  it.each(["call.ended", "call.missed", "call.rejected", "call.accepted"])(
+    "preserves %s after roster bursts",
+    async (event) => {
+      const api = fakeApi();
+      let resolvePlace!: (value: { callId: string }) => void;
+      api.place.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolvePlace = resolve;
+          }),
+      );
+      const h = clientWith(api, { mediaMode: "external" });
+      const life = await connected(h);
+      const placing = h.client.place("+15550100");
+      await flush();
+      const roster = (i: number) =>
+        life.text({
+          type: "event",
+          event: "call.participant_joined",
+          callId: "CALL-FAST",
+          timestamp: "",
+          payload: {
+            callId: "CALL-FAST",
+            participant: {
+              id: `p-${i}`,
+              handle: "+15550101",
+              state: "connected",
+              audioMuted: false,
+              video: false,
+            },
+          },
+        });
+      for (let i = 0; i < 12; i++) roster(i);
+      life.text({
+        type: "event",
+        event,
+        callId: "CALL-FAST",
+        payload: { reason: "remote_hangup" },
+        timestamp: "",
+      });
+      for (let i = 12; i < 24; i++) roster(i);
+      resolvePlace({ callId: "CALL-FAST" });
+      const call = await placing;
+      if (event === "call.accepted") expect(call.state).toBe("connecting");
+      else expect(call.ended).toBe(true);
+    },
+  );
+});
+
+describe("participant departure metadata", () => {
+  it.each([null, 42, {}])(
+    "retains departure when optional reason is %j",
+    async (reason) => {
+      const h = clientWith(fakeApi(), { mediaMode: "external" });
+      const life = await connected(h);
+      let call!: Call;
+      h.client.on("incoming", (value) => {
+        call = value;
+      });
+      ring(life);
+      life.text({
+        type: "event",
+        event: "call.participant_joined",
+        callId: "CALL-1",
+        timestamp: "",
+        payload: {
+          callId: "CALL-1",
+          participant: {
+            id: "p1",
+            handle: "+15550101",
+            audioMuted: false,
+            video: false,
+            state: "connected",
+          },
+        },
+      });
+      let departed: string | undefined;
+      call.on("participantLeft", (id) => {
+        departed = id;
+      });
+      life.text({
+        type: "event",
+        event: "call.participant_left",
+        callId: "CALL-1",
+        timestamp: "",
+        payload: { callId: "CALL-1", participantId: "p1", reason },
+      });
+      expect(call.participants).toEqual([]);
+      expect(departed).toBe("p1");
+    },
+  );
+});

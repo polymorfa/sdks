@@ -317,6 +317,40 @@ export class CallsClient extends Emitter<ClientEvents> {
       queue = [];
       this.#pendingEvents.set(event.callId, queue);
     }
+    const terminal = (item: LifecycleEvent) =>
+      item.event === "call.ended" ||
+      item.event === "call.missed" ||
+      item.event === "call.rejected";
+    // A completed call cannot be revived by later roster or accepted events.
+    if (queue.some(terminal)) return;
+    if (terminal(event)) {
+      queue.splice(0, queue.length, event);
+      return;
+    }
+    if (event.event === "call.accepted") {
+      if (queue.some((item) => item.event === "call.accepted")) return;
+      // Reserve lifecycle progress even when roster updates filled the queue.
+      if (queue.length >= PENDING_EVENTS_PER_ID) queue.shift();
+      queue.push(event);
+      return;
+    }
+    const frame = participantControlFrom(event);
+    if (frame !== undefined) {
+      const id =
+        frame.type === "participant_left"
+          ? frame.participantId
+          : frame.participant.id;
+      const previous = queue.findIndex((item) => {
+        const queued = participantControlFrom(item);
+        return (
+          queued !== undefined &&
+          (queued.type === "participant_left"
+            ? queued.participantId
+            : queued.participant.id) === id
+        );
+      });
+      if (previous >= 0) queue.splice(previous, 1);
+    }
     if (queue.length < PENDING_EVENTS_PER_ID) queue.push(event);
   }
 }
@@ -399,7 +433,7 @@ function participantControlFrom(
       value = {
         type: "participant_left",
         participantId: event.payload["participantId"],
-        ...(event.payload["reason"] === undefined
+        ...(typeof event.payload["reason"] !== "string"
           ? {}
           : { reason: event.payload["reason"] }),
       };
