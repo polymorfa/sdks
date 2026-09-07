@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "b413f2c6a701c86ec593241a70145ee89cc2bcd2",
+  "sourceCommit": "3bf3a6ba3de8b19a547afd16fca1f3b368d7d4e7",
   "excludedContracts": [
     {
       "family": "graph",
@@ -17,6 +17,18 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.templates.delete"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/api/quicklinks/{id}",
+      "operationId": "cancelQuickLink",
+      "fingerprint": "763ce4c4e8f4fdec20a081a53a40bcbc10101940bbe9fc41647ca5338215d5f7",
+      "typescript": {
+        "status": "missing",
+        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -62,18 +74,6 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.webhooks.delete"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "DELETE",
-      "path": "/api/widget/sessions/{id}",
-      "operationId": "cancelWidgetSession",
-      "fingerprint": "2fd55587eeedac38f66426d64d6a21a79d41efa723ec76ed80c37b8c2fb23af3",
-      "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
       }
     },
     {
@@ -296,6 +296,18 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.templates.retrieve"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/quicklinks/{id}",
+      "operationId": "getQuickLink",
+      "fingerprint": "76ece78254ba9f50816a3ebb40365ac699bd7b2ceb4b15134a3e6c2521672b4c",
+      "typescript": {
+        "status": "missing",
+        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -799,21 +811,33 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/v1/bridge/route",
-      "operationId": "getBridgeRoute",
-      "fingerprint": "c6e3c36cb20cdcf0c6c6991a495c676891c1e6d5f53ef83e754d4c9d66a2d801",
+      "path": "/quicklink/{token}",
+      "operationId": "getQuickLinkState",
+      "fingerprint": "3d23a1ff64a1b8d149d49f511048526b58c11754de51e8b1b6b3e2a386c26731",
       "typescript": {
         "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
         "milestone": "typescript-parity"
       }
     },
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/widget/handoff/{token}/state",
-      "operationId": "getWidgetHandoffState",
-      "fingerprint": "98c32cc9d5796d5b40130bacadb9e8478b07ee9dd10c2cb39f1080f79ecd9123",
+      "path": "/quicklink/{token}/logo",
+      "operationId": "getQuickLinkLogo",
+      "fingerprint": "36238ba60ff6e55aa2cf2bc0a0558d9da149de02e6b75c3592c1f8274665fd0d",
+      "typescript": {
+        "status": "missing",
+        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/v1/bridge/route",
+      "operationId": "getBridgeRoute",
+      "fingerprint": "c6e3c36cb20cdcf0c6c6991a495c676891c1e6d5f53ef83e754d4c9d66a2d801",
       "typescript": {
         "status": "missing",
         "reason": "No handwritten TypeScript resource method exists for this operation yet.",
@@ -999,6 +1023,18 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/api/quicklinks",
+      "operationId": "createQuickLink",
+      "fingerprint": "0f8aa33283ca0a7b8f5ce21aec512a471ec96fee773a16f1bf96e55c5cea9367",
+      "typescript": {
+        "status": "missing",
+        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/api/sessions",
       "operationId": "createSession",
       "fingerprint": "8e1ae014f98f524c3d8f89b0cf5ec8c674094ee7e01243251d220a139cdc92cb",
@@ -1102,6 +1138,39 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/api/voip/calls",
+      "operationId": "voipPlaceCall",
+      "fingerprint": "448ae151ad5c2bfce1f66bf0c2ebbdd3dff653a228d19e14c33c2c344207c4b9",
+      "typescript": {
+        "status": "covered",
+        "method": "HttpCallsApi.place"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/voip/calls/{id}/accept",
+      "operationId": "voipAcceptCall",
+      "fingerprint": "49c928d4a30287e0feda2ec89fb3029868b11e6254887aa42c05f657709d7462",
+      "typescript": {
+        "status": "covered",
+        "method": "HttpCallsApi.accept"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/voip/calls/{id}/agent-token",
+      "operationId": "voipAgentToken",
+      "fingerprint": "03d4c5cd14a2c755d10ffb96fc7cbeee43b8ccfd7635d5922fdd0a5087d196a3",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.voip.agentToken"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/api/voip/calls/{id}/candidate",
       "operationId": "voipCandidate",
       "fingerprint": "73dc885b8d7b9df92ab9943e063db75226f45fa91850990a81fea9ff8b36601c",
@@ -1126,12 +1195,23 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/api/voip/token",
-      "operationId": "voipToken",
-      "fingerprint": "a31e115dd33ba85dff0897cfdcd24b148e8e1b95273a83ff8b86efafc3120d34",
+      "path": "/api/voip/calls/{id}/participants",
+      "operationId": "voipAddParticipant",
+      "fingerprint": "cf43d97dd13892b2b0e472748a2b8f864645189bfa9579fe58e098e1ad8ef11b",
       "typescript": {
         "status": "covered",
-        "method": "MessagingClient.voip.token"
+        "method": "HttpCallsApi.addParticipant"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/voip/calls/{id}/reject",
+      "operationId": "voipRejectCall",
+      "fingerprint": "357abd975d5ab3184daa01763345683e2b85fa96630e88e0c3fae5030336308c",
+      "typescript": {
+        "status": "covered",
+        "method": "HttpCallsApi.reject"
       }
     },
     {
@@ -1148,6 +1228,28 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/api/voip/mode",
+      "operationId": "voipSetMode",
+      "fingerprint": "6e02a5cdf2dc95afb073e908249fe31ba8c68393f3f7d3c491c1a2d3a5c45995",
+      "typescript": {
+        "status": "covered",
+        "method": "HttpCallsApi.setMode"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/api/voip/token",
+      "operationId": "voipToken",
+      "fingerprint": "a31e115dd33ba85dff0897cfdcd24b148e8e1b95273a83ff8b86efafc3120d34",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.voip.token"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/api/voip/ws-ticket",
       "operationId": "voipSocketTicket",
       "fingerprint": "b95af3bef3974c271b26d0fef1439f1ccb9b0df45db50512399eef06f52dd0fe",
@@ -1159,46 +1261,12 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/api/voip/calls/{id}/agent-token",
-      "operationId": "voipAgentToken",
-      "fingerprint": "03d4c5cd14a2c755d10ffb96fc7cbeee43b8ccfd7635d5922fdd0a5087d196a3",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.voip.agentToken"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
       "path": "/api/webhooks",
       "operationId": "createWebhook",
       "fingerprint": "7c827e91f436da0396a50e609d52b4ec85cec7afdc577234e29cad05d04b8b28",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.webhooks.create"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/api/widget/sessions",
-      "operationId": "createWidgetSession",
-      "fingerprint": "9778c1bcc5fa875a6e012bdc04551009ba06bf8039436e9d11edf646b94bcb86",
-      "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/api/widget/sessions/{id}/handoff",
-      "operationId": "createWidgetHandoff",
-      "fingerprint": "2b6bc4390e3f157b0e425e3eb71521dc9c007accd1211fc10edc03a9c858aefa",
-      "typescript": {
-        "status": "covered",
-        "method": "BrowserMessagingClient.widget.handoff"
       }
     },
     {
@@ -1621,6 +1689,42 @@
     },
     {
       "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/cancel",
+      "operationId": "cancelQuickLinkByToken",
+      "fingerprint": "5447efd63f6d2dae94fad5a3f4373f8952d45d88e67009285a0cab08a037a28d",
+      "typescript": {
+        "status": "missing",
+        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/code",
+      "operationId": "requestQuickLinkCode",
+      "fingerprint": "bab38293fe497b4e710cfeeb2f02d02ef3448106271de993df4a07191f8c4a59",
+      "typescript": {
+        "status": "missing",
+        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/confirm",
+      "operationId": "confirmQuickLink",
+      "fingerprint": "776fd122dd6f6bf8b69b86c4a4289718e660e989fd6053f02b212b12f06a2e0e",
+      "typescript": {
+        "status": "missing",
+        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "messaging",
       "method": "PUT",
       "path": "/api/projects/{projectId}/observation-policy",
       "operationId": "updateProjectObservationPolicy",
@@ -2017,21 +2121,21 @@
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/console/webhooks/{webhookId}",
-      "operationId": "deleteWebhook",
-      "fingerprint": "423b57d03ced57221900eee9a192b8111d54f567c11503ba721c5d7c315dd429",
+      "path": "/console/quicklink/logo",
+      "operationId": "removeLogoQuickLinkSettings",
+      "fingerprint": "3588f97e4cfdb3e9cf235ba168c413ac1467cbf1e76437b44f904eb201cb74ac",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "reason": "This dashboard route requires a Console session and does not accept a server credential.",
         "milestone": "not-server-sdk"
       }
     },
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/console/widget/logo",
-      "operationId": "removeLogoWidgetSettings",
-      "fingerprint": "08bff65e413b2751c0cfe0e93e75ea55cca7875fe91d9a9af85a30fa04d2abfd",
+      "path": "/console/webhooks/{webhookId}",
+      "operationId": "deleteWebhook",
+      "fingerprint": "423b57d03ced57221900eee9a192b8111d54f567c11503ba721c5d7c315dd429",
       "typescript": {
         "status": "excluded",
         "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
@@ -2136,8 +2240,8 @@
       "fingerprint": "2555d7a3c0501769b3560377c8595ee3413e7d38e29d91a21156b8a26cabc47b",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -2171,8 +2275,8 @@
       "fingerprint": "315c17d7e078e1003e719e9794627813f51d9e1ae40281f1b2c374555a41cfc5",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -2448,6 +2552,18 @@
       "typescript": {
         "status": "excluded",
         "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/calls",
+      "operationId": "listCalls",
+      "fingerprint": "809a7654f40f6f4b02f1edb22eff76dfd98b9683f0f8c30f84f089bae544c3d7",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard route requires a Console session and does not accept a server credential.",
         "milestone": "not-server-sdk"
       }
     },
@@ -2836,8 +2952,8 @@
       "fingerprint": "5be3e55ec98b3beed960218f6af5a5ace861a5a6811b1c62814085f57e1b238c",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -2848,8 +2964,8 @@
       "fingerprint": "160c5e4c7b91b8b633b004961d2039b0a974fd56f3b8560abb67e5dd22ae5dbf",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -2928,8 +3044,8 @@
       "fingerprint": "b82282f9c6348a836b3f21000e080efb517b701d988758b0fa802ff30dae56b3",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -2951,8 +3067,8 @@
       "fingerprint": "eb99e217f76bca9939974be5ff17ed8f5f71c4c6a3ff0923981254efdb936486",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3007,8 +3123,8 @@
       "fingerprint": "ab2f389ed49a29b77d55e2431a671a7dfa328a2fd3bd64b8ea3ca07704dae671",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3019,8 +3135,8 @@
       "fingerprint": "625009ef487d2c3140be83fd59a68577224e782fef48476132702ac96d2ff15a",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3031,8 +3147,8 @@
       "fingerprint": "402c9db5f517ca805d26c82cb2da0a4d417d1482cba1910c168ef0c7402b4498",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3043,8 +3159,8 @@
       "fingerprint": "c2e69bf06e704272dddb0c998ab8a665e4b48df8243ae511c5d64b14febb9b80",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3055,8 +3171,8 @@
       "fingerprint": "791d29cded696ad923666f84ed184b18af05d03da0a938a4ffa7fa926adb63d6",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3067,8 +3183,8 @@
       "fingerprint": "05ef9b32c73de411c31d8f6fc859764a13be04b9d5fdb46fe374a10d982ece12",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3079,8 +3195,8 @@
       "fingerprint": "abb159dcd6242c16f333dd17b7f32b471d8548d17e447285d346622c602563e7",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3091,8 +3207,8 @@
       "fingerprint": "faf7d82f3c2c65faf4397cddcbc66566a51dbc46f0e7390509430168f0a23fd5",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3103,8 +3219,8 @@
       "fingerprint": "6cb230760cc6dd4c4a5572c634b3350af4ca47762fea75a4b62bfa7014b70aef",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3115,8 +3231,8 @@
       "fingerprint": "b0ef0ff74c50c943198af2ae17c79bba7cf2321fafc7b82199f10bddc5d3c6f1",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3127,8 +3243,20 @@
       "fingerprint": "08ef24fe00067de9e010e41acd4c79f285e257652c61186c62ee8f0ebf6a95fb",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/v1/quicklink",
+      "operationId": "getQuickLinkSettings",
+      "fingerprint": "2da393403c39ff81e2ec7ee4d62bbe50d8ce6feb96eb8a5f34c62af48ae98b80",
+      "typescript": {
+        "status": "missing",
+        "reason": "PlatformClient.widgetSettings still requests /v1/widget; it does not implement the /v1/quicklink contract.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3185,8 +3313,8 @@
       "fingerprint": "b34dcc5f989890f4a244c7b98cd2a1103a1ae7587eaaff5990c6ae35dce6eab3",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3197,8 +3325,8 @@
       "fingerprint": "d4fa1bc619a17a6e42609717f2094506d670c6faac93bf1673fcca18c71e99d4",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3209,8 +3337,8 @@
       "fingerprint": "9dd8f70e0f94223481cdeebb2308330492b6ee916b1f14cfcc19d92a93b9fbe3",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3221,8 +3349,8 @@
       "fingerprint": "504298df2cd3af0e90a3395523a507d4f053a718b0e346fa75f1f21651fcc366",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3233,8 +3361,8 @@
       "fingerprint": "52475b3163f0fbc7862a8462b030677e326da65807f10659d5df0942ffca49e8",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3245,19 +3373,8 @@
       "fingerprint": "573b9da2a147e13f7b6191db6554eea579e3a4d8cc555119ae9d65c00e6dd5e9",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/v1/widget",
-      "operationId": "getWidgetSettings",
-      "fingerprint": "331db9ff8f2719d3d44f9cecb04351e22d35b4d71df6061bd873cf99bdfe0b9e",
-      "typescript": {
-        "status": "covered",
-        "method": "PlatformClient.widgetSettings.retrieve"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3329,6 +3446,18 @@
       "typescript": {
         "status": "excluded",
         "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/projects/{projectId}",
+      "operationId": "updateProject",
+      "fingerprint": "bcc28bdebcdb3770b6ae4aefeecd97b55cc421399d0bc67c2fae279ab2761eb5",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard route requires a Console session and does not accept a server credential.",
         "milestone": "not-server-sdk"
       }
     },
@@ -3421,8 +3550,8 @@
       "fingerprint": "ab722f393f3d724aff5bcac6b48e7e62e27221fa7e5216d772be7fa1f9668f4f",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3456,8 +3585,8 @@
       "fingerprint": "7a951130d9739ea4f6c3b9af13dd19a91ef5942d06d60f5d353f842a3ace2233",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -3823,6 +3952,42 @@
     {
       "family": "platform",
       "method": "POST",
+      "path": "/console/quicklink/logo/org",
+      "operationId": "useOrgLogoQuickLinkSettings",
+      "fingerprint": "cf5ef4724c8c02dabb28092090459e0fd7ab45294355a6c1476f63d777fea484",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard route requires a Console session and does not accept a server credential.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/quicklink/logo/project",
+      "operationId": "useProjectIconQuickLinkSettings",
+      "fingerprint": "cf06dfee3676b865bdc67a03a133d2a3f51538dc2818725211f6895f2253cf1b",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard route requires a Console session and does not accept a server credential.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/quicklink/logo/uploads",
+      "operationId": "generateQuickLinkSettingsLogoUploadUrl",
+      "fingerprint": "1f6c0baa04aa42db308808b30d8b3f401b6c96b7a2b0c9b24c37e165e2c482d7",
+      "typescript": {
+        "status": "excluded",
+        "reason": "This dashboard route requires a Console session and does not accept a server credential.",
+        "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
       "path": "/console/teams/leave",
       "operationId": "leaveTeamUserProfile",
       "fingerprint": "cb45b7d4c951f6ef99363c95f70a8133632347132669064d7f979d85d725f58a",
@@ -3850,42 +4015,6 @@
       "path": "/console/webhooks",
       "operationId": "createWebhook",
       "fingerprint": "f277bb8e428a0a4e308a64fdefbd71e1a1ae5c7063908ad7e543ccd81469334a",
-      "typescript": {
-        "status": "excluded",
-        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
-        "milestone": "not-server-sdk"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/console/widget/logo/org",
-      "operationId": "useOrgLogoWidgetSettings",
-      "fingerprint": "744be92f4bb16bc6840f7ff78df0dca15e949b06847d6dd6ea8686d315af4b7d",
-      "typescript": {
-        "status": "excluded",
-        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
-        "milestone": "not-server-sdk"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/console/widget/logo/project",
-      "operationId": "useProjectIconWidgetSettings",
-      "fingerprint": "fc155d96d96898c6a40505c15d2a0e955e58ae728596029536eafaf16fc9f1d5",
-      "typescript": {
-        "status": "excluded",
-        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
-        "milestone": "not-server-sdk"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/console/widget/logo/uploads",
-      "operationId": "generateWidgetSettingsLogoUploadUrl",
-      "fingerprint": "ffd922c24d4b0ddf1955711e47fd7746b6ad192772628802504bab44a2886f93",
       "typescript": {
         "status": "excluded",
         "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
@@ -4065,8 +4194,8 @@
       "fingerprint": "eba8005fe5674692bf863d4ae911fe03819398729b8369a4448189b7fe129e0d",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -4123,8 +4252,8 @@
       "fingerprint": "a7a33415d944a39d49dc5d7907b498c9985a2c9967fe71975fe76b6bf5061c23",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -4179,8 +4308,8 @@
       "fingerprint": "2339cad5119c3d95b56f85e05d252373c32197a75a739ce174f8ce8e7f0b9af4",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -4191,8 +4320,8 @@
       "fingerprint": "368d5301a8dc02d5348208e3b6d1789adb8cb11867e2cb32511e90efdbc7d3e2",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -4236,8 +4365,8 @@
       "fingerprint": "38edb41227ef675157277de18e0d9bf7f6639677818f8c2a8f69e280b45214df",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -4248,8 +4377,8 @@
       "fingerprint": "1a84d699c6a8fc774bfe85b4eaaddbd31addd61809c403bbaa010a6dd6021a59",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -4260,8 +4389,8 @@
       "fingerprint": "b6db4b2f05eacb82576c3fb6a72cbecd7bcefbd1cb605308822ff5bd7a5b050a",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -4272,8 +4401,8 @@
       "fingerprint": "41f3f02723d73d84ee76a503e44a4ac4320f53d40c728577379eaf6016455376",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -4317,8 +4446,8 @@
       "fingerprint": "6c00282c3715a7b87ea17c2add03033ad5fa03a8dd6b12d709fa03aecae62157",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -4352,8 +4481,8 @@
       "fingerprint": "3c4842a2d3eff7bc2d5d4c96cb93d44edd4466eb98ef9d0919489f66574c2957",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -4364,8 +4493,8 @@
       "fingerprint": "310c07a9659ec0c5f399ecc795e31d9210387a547a8e5db59b33887c1ebf8d4f",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -4376,8 +4505,8 @@
       "fingerprint": "eb920d819c359f828ebef495c874215afc8d0a5b5cf0e5a5f9b02c164cf4fd00",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -4388,8 +4517,8 @@
       "fingerprint": "b65a74eb4c4e71a057a0d0176eeca1aa3fcc67fe1b89cdac4917e3f5e2660abb",
       "typescript": {
         "status": "missing",
-        "reason": "Operation is absent from the coverage ledger.",
-        "milestone": "coverage-triage"
+        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
+        "milestone": "typescript-parity"
       }
     },
     {
@@ -4455,24 +4584,25 @@
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/console/widget/logo",
-      "operationId": "attachLogoWidgetSettings",
-      "fingerprint": "8e6619cc3b0abdd1a9d08babfe12fdc1bd0cc209d79ffdcf02e959150bb16d4d",
+      "path": "/console/quicklink/logo",
+      "operationId": "attachLogoQuickLinkSettings",
+      "fingerprint": "18a6a3b4bafede1452ed176ee9e01d145e38db83437deb56993f60e4d836ba47",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard or staff route does not accept the server credential used by the TypeScript server SDK.",
+        "reason": "This dashboard route requires a Console session and does not accept a server credential.",
         "milestone": "not-server-sdk"
       }
     },
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/v1/widget",
-      "operationId": "updateWidgetSettings",
-      "fingerprint": "acfcf19dc22cdb5d392c574adca0019ced960d222be04335072f72587c7e006f",
+      "path": "/v1/quicklink",
+      "operationId": "updateQuickLinkSettings",
+      "fingerprint": "da2606f6c7967e7642fae7930f54f8482151d1b9d443ada79cc092ee1108f510",
       "typescript": {
-        "status": "covered",
-        "method": "PlatformClient.widgetSettings.update"
+        "status": "missing",
+        "reason": "PlatformClient.widgetSettings still requests /v1/widget; it does not implement the /v1/quicklink contract.",
+        "milestone": "typescript-parity"
       }
     }
   ]

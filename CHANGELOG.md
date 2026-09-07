@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Refreshed the pinned API contracts and recorded the five implemented
+  programmatic Calls methods. The ledger retains missing QuickLink and
+  Platform methods and removes obsolete widget mappings. Coverage is 226 of
+  402 operations, with 103 missing and 73 excluded; no new SDK methods or
+  package releases are included in this reconciliation.
+
 - `createSignalingCallsBackend` no longer invents a call id for outbound
   calls. Nothing on the client-token surface dials a destination, so an
   invented id reached no pod and its offer was refused as not-ready forever.

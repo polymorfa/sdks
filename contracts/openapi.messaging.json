@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa WhatsApp API",
     "version": "openapi-dump",
-    "description": "Public Polymorfa REST API for sessions, messaging, media, webhooks, campaigns, templates, client tokens, widgets, and bridge routing.",
+    "description": "Public Polymorfa REST API for sessions, messaging, media, webhooks, campaigns, templates, client tokens, QuickLinks, and bridge routing.",
     "contact": {
       "name": "Polymorfa API",
       "url": "https://docs.polymorfa.com"
@@ -5491,6 +5491,197 @@
           }
         }
       },
+      "VoipPlacedCall": {
+        "type": "object",
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "session": {
+            "type": "string"
+          },
+          "video": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "callId",
+          "session",
+          "video"
+        ]
+      },
+      "VoipPlacedCallResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/VoipPlacedCall"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipPlaceCallRequest": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "minLength": 1,
+            "example": "support"
+          },
+          "to": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "example": "+15550100"
+          },
+          "video": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "to"
+        ]
+      },
+      "VoipAcceptCallRequest": {
+        "type": "object",
+        "properties": {
+          "video": {
+            "type": "boolean"
+          }
+        }
+      },
+      "VoipParticipant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "audioMuted": {
+            "type": "boolean"
+          },
+          "video": {
+            "type": "boolean"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "invited",
+              "ringing",
+              "connected",
+              "left"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "handle",
+          "audioMuted",
+          "video",
+          "state"
+        ]
+      },
+      "VoipAddParticipantResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/VoipParticipant"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipAddParticipantRequest": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "example": "+15550100"
+          }
+        },
+        "required": [
+          "to"
+        ]
+      },
+      "VoipModeResponse": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "browser",
+              "agent",
+              "sdk"
+            ]
+          }
+        },
+        "required": [
+          "session",
+          "mode"
+        ]
+      },
+      "VoipModeResult": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/VoipModeResponse"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipModeRequest": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "minLength": 1,
+            "example": "support"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "browser",
+              "agent",
+              "sdk"
+            ]
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
       "VoipCandidateRequest": {
         "type": "object",
         "properties": {
@@ -10406,30 +10597,34 @@
           }
         }
       },
-      "WidgetSessionResponse": {
+      "QuickLink": {
         "type": "object",
         "properties": {
-          "widgetUrl": {
-            "type": "string"
+          "id": {
+            "type": "string",
+            "description": "Stable QuickLink identifier, prefixed `ql_`."
           },
-          "redirectUrl": {
-            "type": "string"
-          },
-          "clientToken": {
-            "type": "string"
+          "url": {
+            "type": "string",
+            "description": "Hosted connection URL. Share it only with the person holding the phone."
           },
           "session": {
-            "type": "string"
+            "type": "string",
+            "description": "Session name that receives the connected number."
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "ISO-8601 expiry. QuickLinks live 15 minutes unless `expiresInSeconds` was set."
           }
         },
         "required": [
-          "widgetUrl",
-          "redirectUrl",
-          "clientToken",
-          "session"
+          "id",
+          "url",
+          "session",
+          "expiresAt"
         ]
       },
-      "WidgetSessionResponseWrapper": {
+      "QuickLinkResponse": {
         "type": "object",
         "properties": {
           "success": {
@@ -10439,7 +10634,7 @@
             ]
           },
           "data": {
-            "$ref": "#/components/schemas/WidgetSessionResponse"
+            "$ref": "#/components/schemas/QuickLink"
           }
         },
         "required": [
@@ -10447,23 +10642,18 @@
           "data"
         ]
       },
-      "CreateWidgetSessionRequest": {
+      "CreateQuickLinkRequest": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "enum": [
-              "embedded",
-              "redirect"
-            ]
-          },
           "projectId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "Project that receives the connected number. Required for organization keys with more than one project."
           },
           "customerId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "Customer that owns the connected number when Customers is enabled for the project."
           },
           "methods": {
             "type": "array",
@@ -10471,44 +10661,33 @@
               "type": "string",
               "enum": [
                 "qr",
-                "pairing",
-                "cloud-api"
+                "pairing"
               ]
-            }
+            },
+            "minItems": 1,
+            "maxItems": 2,
+            "description": "Connection methods offered on the hosted page. Defaults to the saved settings, then to both."
           },
           "businessName": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 120
+            "maxLength": 120,
+            "description": "Name shown to the recipient when no saved business name exists."
           },
           "historySync": {
             "type": "string",
             "enum": [
+              "ask",
               "force_on",
-              "force_off",
-              "ask"
+              "force_off"
             ]
-          },
-          "sessionName": {
-            "type": "string"
           },
           "callbackUrl": {
             "type": "string",
             "maxLength": 2048,
             "format": "uri",
             "pattern": "^[Hh][Tt][Tt][Pp][Ss]://",
-            "description": "Exact HTTPS URL without credentials."
-          },
-          "allowedOrigins": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "maxLength": 2048,
-              "format": "uri",
-              "pattern": "^[Hh][Tt][Tt][Pp][Ss]://[^/?#@,]+/?$",
-              "description": "Exact HTTPS origin without credentials, path, query, fragment, or comma. A trailing root slash is removed."
-            },
-            "maxItems": 50
+            "description": "Exact HTTPS URL without credentials. Must match a saved redirect URL."
           },
           "theme": {
             "type": "string",
@@ -10524,85 +10703,275 @@
           },
           "prefillPhone": {
             "type": "string",
-            "pattern": "^\\+?\\d{6,15}$"
+            "pattern": "^\\+?\\d{6,15}$",
+            "description": "Pre-fills the phone number for the pairing-code method."
           },
-          "autoSubmitPhone": {
-            "type": "boolean"
-          },
-          "analytics": {
-            "type": "object",
-            "properties": {
-              "posthogKey": {
-                "type": "string"
-              },
-              "posthogHost": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "posthogKey"
-            ]
-          },
-          "metaApp": {
-            "type": "object",
-            "properties": {
-              "appId": {
-                "type": "string",
-                "minLength": 1
-              },
-              "appSecret": {
-                "type": "string",
-                "minLength": 1
-              }
-            },
-            "required": [
-              "appId",
-              "appSecret"
-            ]
+          "expiresInSeconds": {
+            "type": "integer",
+            "minimum": 300,
+            "maximum": 3600,
+            "description": "Link lifetime in seconds, 300–3600. Defaults to 900."
           }
         }
       },
-      "WidgetHandoffResponse": {
+      "QuickLinkStatus": {
         "type": "object",
         "properties": {
-          "handoffUrl": {
+          "id": {
             "type": "string"
           },
-          "metaQrSvg": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "opened",
+              "linked",
+              "connected",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "session": {
             "type": "string"
           },
           "expiresAt": {
             "type": "string"
-          }
-        },
-        "required": [
-          "handoffUrl",
-          "metaQrSvg",
-          "expiresAt"
-        ]
-      },
-      "WidgetHandoffState": {
-        "type": "object",
-        "properties": {
-          "qr": {
+          },
+          "openedAt": {
             "type": "string",
             "nullable": true
           },
-          "status": {
-            "type": "string"
+          "connectedAt": {
+            "type": "string",
+            "nullable": true
           },
-          "sessionName": {
-            "type": "string"
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "description": "Connected phone in E.164 once the link is connected."
           },
-          "businessName": {
-            "type": "string"
+          "errorCode": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
-          "qr",
+          "id",
           "status",
-          "sessionName"
+          "session",
+          "expiresAt",
+          "openedAt",
+          "connectedAt",
+          "phone",
+          "errorCode"
         ]
+      },
+      "QuickLinkStatusResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/QuickLinkStatus"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "QuickLinkState": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "opened",
+              "linked",
+              "connected",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "methods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "qr",
+                "pairing"
+              ]
+            }
+          },
+          "defaultMethod": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "qr",
+              "pairing",
+              null
+            ]
+          },
+          "businessName": {
+            "type": "string"
+          },
+          "headline": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "successMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "supportUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "privacyUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "termsUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "theme": {
+            "type": "string",
+            "enum": [
+              "light",
+              "dark",
+              "system"
+            ]
+          },
+          "accent": {
+            "type": "string",
+            "nullable": true
+          },
+          "shape": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "square",
+              "rounded",
+              "pill",
+              null
+            ]
+          },
+          "radiusPx": {
+            "type": "number",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "hideWatermark": {
+            "type": "boolean"
+          },
+          "historySync": {
+            "type": "string",
+            "enum": [
+              "ask",
+              "force_on",
+              "force_off"
+            ]
+          },
+          "prefillPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer": {
+            "type": "boolean",
+            "description": "True when the link assigns the number to a Customer."
+          },
+          "session": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "required": [
+              "status",
+              "phone"
+            ]
+          },
+          "qrSvg": {
+            "type": "string",
+            "nullable": true,
+            "description": "Inline SVG of the current WhatsApp QR code, when the QR method is offered and the number is not linked yet."
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "expiresAt",
+          "methods",
+          "defaultMethod",
+          "businessName",
+          "headline",
+          "description",
+          "successMessage",
+          "supportUrl",
+          "privacyUrl",
+          "termsUrl",
+          "theme",
+          "accent",
+          "shape",
+          "radiusPx",
+          "logoUrl",
+          "hideWatermark",
+          "historySync",
+          "prefillPhone",
+          "customer",
+          "session",
+          "qrSvg",
+          "errorCode"
+        ]
+      },
+      "QuickLinkCodeRequest": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "phone"
+        ]
+      },
+      "QuickLinkConfirmRequest": {
+        "type": "object",
+        "properties": {
+          "historySync": {
+            "type": "boolean"
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -14430,6 +14799,633 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/VoipAgentTokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/api/voip/calls": {
+      "post": {
+        "operationId": "voipPlaceCall",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Place an outbound call from a session",
+        "description": "**Required scope:** `sessions:manage`\n\nOriginates a WhatsApp call to `to` (an E.164 phone number or a WhatsApp JID) from the named session. The call rings on the callee's device: `call.accepted` follows when they pick up and `call.ended` when either side hangs up. Attach media like any other call — `/offer` for a browser, the SDK media socket for programmatic audio/video. Client tokens place from their bound session; server keys must name one.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipPlaceCallRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Call placed and ringing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipPlacedCallResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Session not ready — the named session cannot place an outbound call yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Call setup rate exceeded for this client token, or its concurrency limit is reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Outbound calls are not available on this deployment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call refused — the owning pod is at capacity or draining",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/api/voip/calls/{id}/accept": {
+      "post": {
+        "operationId": "voipAcceptCall",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Answer a ringing inbound call",
+        "description": "**Required scope:** `sessions:manage`\n\nAnswers a call the pod is holding for the SDK (sessions in `sdk` client mode ring instead of auto-answering). 409 when the call is not ringing — already answered, ended, or hosted by a session that auto-answers.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipAcceptCallRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Call answered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call refused — the owning pod is at capacity or draining",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/api/voip/calls/{id}/reject": {
+      "post": {
+        "operationId": "voipRejectCall",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Decline a ringing inbound call",
+        "description": "**Required scope:** `sessions:manage`\n\nDeclines a call the pod is holding for the SDK and releases it. 409 when the call is not ringing.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Call declined",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call refused — the owning pod is at capacity or draining",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/api/voip/calls/{id}/participants": {
+      "post": {
+        "operationId": "voipAddParticipant",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Invite another party into a live call",
+        "description": "**Required scope:** `sessions:manage`\n\nRings `to` (an E.164 phone number or a WhatsApp JID) into the call, turning a 1:1 call into a group call. The invitee enters the roster as `invited`; roster changes reach the SDK media socket as `participant_joined` / `participant_state` / `participant_left` frames. 409 until the call has a live leg.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipAddParticipantRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Participant invited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipAddParticipantResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Call setup rate exceeded for this client token, or its concurrency limit is reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call refused — the owning pod is at capacity or draining",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/api/voip/mode": {
+      "post": {
+        "operationId": "voipSetMode",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Choose how a session answers inbound calls",
+        "description": "**Required scope:** `sessions:manage`\n\n`browser` (default) answers each inbound call and bridges it to a browser through `/offer`; `agent` answers and bridges to the raw-audio socket; `sdk` lets the call ring and waits for your `/accept` or `/reject`. The claim persists until changed and applies to calls that arrive after it. Client tokens configure their bound session; server keys must name one.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipModeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mode recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipModeResult"
                 }
               }
             }
@@ -27851,35 +28847,36 @@
         "description": "**Required scope:** `campaigns:manage`"
       }
     },
-    "/api/widget/sessions": {
+    "/api/quicklinks": {
       "post": {
-        "operationId": "createWidgetSession",
+        "operationId": "createQuickLink",
         "tags": [
-          "Widget"
+          "QuickLink"
         ],
-        "summary": "Create a widget session for embedding the connect flow",
+        "summary": "Create a QuickLink",
+        "description": "**Required scope:** `quicklink:manage`\n\nCreates a 15-minute hosted link that connects one WhatsApp number to a new session in the project.",
         "security": [
           {
             "BearerAuth": []
           }
         ],
-        "x-required-scope": "widget:create",
+        "x-required-scope": "quicklink:manage",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateWidgetSessionRequest"
+                "$ref": "#/components/schemas/CreateQuickLinkRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Widget session created",
+            "description": "QuickLink created",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WidgetSessionResponseWrapper"
+                  "$ref": "#/components/schemas/QuickLinkResponse"
                 }
               }
             }
@@ -27936,24 +28933,113 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">widget:create</Badge>"
-        },
-        "description": "**Required scope:** `widget:create`"
+          "content": "<Badge color=\"yellow\" icon=\"key\">quicklink:manage</Badge>"
+        }
       }
     },
-    "/api/widget/sessions/{id}": {
-      "delete": {
-        "operationId": "cancelWidgetSession",
+    "/api/quicklinks/{id}": {
+      "get": {
+        "operationId": "getQuickLink",
         "tags": [
-          "Widget"
+          "QuickLink"
         ],
-        "summary": "Cancel a pending widget session and revoke its CST",
+        "summary": "Read QuickLink status",
         "security": [
           {
             "BearerAuth": []
           }
         ],
-        "x-required-scope": "widget:create",
+        "x-required-scope": "quicklink:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current QuickLink status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuickLinkStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">quicklink:manage</Badge>"
+        },
+        "description": "**Required scope:** `quicklink:manage`"
+      },
+      "delete": {
+        "operationId": "cancelQuickLink",
+        "tags": [
+          "QuickLink"
+        ],
+        "summary": "Cancel a QuickLink",
+        "description": "**Required scope:** `quicklink:manage`\n\nInvalidates the link and removes its pending session. Connected links cannot be cancelled.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "quicklink:manage",
         "parameters": [
           {
             "schema": {
@@ -28042,54 +29128,43 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">widget:create</Badge>"
-        },
-        "description": "**Required scope:** `widget:create`"
+          "content": "<Badge color=\"yellow\" icon=\"key\">quicklink:manage</Badge>"
+        }
       }
     },
-    "/api/widget/sessions/{id}/handoff": {
-      "post": {
-        "operationId": "createWidgetHandoff",
+    "/quicklink/{token}": {
+      "get": {
+        "operationId": "getQuickLinkState",
         "tags": [
-          "Widget"
+          "QuickLink"
         ],
-        "summary": "Mint a TV-style handoff token + meta-QR so the user can finish the connect flow on another device.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "x-required-scope": "widget:create",
+        "security": [],
+        "summary": "Read QuickLink state",
+        "description": "Returns the hosted page state for a QuickLink. Public; the token in the URL is the credential. Starts the session on first read.",
         "parameters": [
           {
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Opaque QuickLink token from the hosted URL."
             },
             "required": true,
-            "name": "id",
+            "name": "token",
             "in": "path"
           }
         ],
         "responses": {
-          "201": {
-            "description": "Handoff minted",
+          "200": {
+            "description": "Current QuickLink state",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
-                    },
                     "data": {
-                      "$ref": "#/components/schemas/WidgetHandoffResponse"
+                      "$ref": "#/components/schemas/QuickLinkState"
                     }
                   },
                   "required": [
-                    "success",
                     "data"
                   ]
                 }
@@ -28146,25 +29221,23 @@
               }
             }
           }
-        },
-        "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">widget:create</Badge>"
-        },
-        "description": "**Required scope:** `widget:create`"
+        }
       }
     },
-    "/widget/handoff/{token}/state": {
+    "/quicklink/{token}/logo": {
       "get": {
-        "operationId": "getWidgetHandoffState",
+        "operationId": "getQuickLinkLogo",
         "tags": [
-          "Widget"
+          "QuickLink"
         ],
         "security": [],
-        "summary": "Resolve a handoff token to the current QR + session status. Public — the token in the URL is the bearer.",
+        "summary": "Read the QuickLink page logo",
+        "description": "Returns the saved logo image for the page. Public; the token in the URL is the credential.",
         "parameters": [
           {
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Opaque QuickLink token from the hosted URL."
             },
             "required": true,
             "name": "token",
@@ -28173,24 +29246,355 @@
         ],
         "responses": {
           "200": {
-            "description": "Current QR + status",
+            "description": "Logo image",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quicklink/{token}/code": {
+      "post": {
+        "operationId": "requestQuickLinkCode",
+        "tags": [
+          "QuickLink"
+        ],
+        "security": [],
+        "summary": "Request a QuickLink pairing code",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Opaque QuickLink token from the hosted URL."
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuickLinkCodeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pairing code issued",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
-                    },
                     "data": {
-                      "$ref": "#/components/schemas/WidgetHandoffState"
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "phone": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "phone"
+                      ]
                     }
                   },
                   "required": [
-                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quicklink/{token}/confirm": {
+      "post": {
+        "operationId": "confirmQuickLink",
+        "tags": [
+          "QuickLink"
+        ],
+        "security": [],
+        "summary": "Confirm a linked QuickLink",
+        "description": "Records consent, applies the chat-history choice, assigns Customer ownership when applicable, and returns the redirect target.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Opaque QuickLink token from the hosted URL."
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuickLinkConfirmRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Connected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "connected"
+                          ]
+                        },
+                        "phone": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "historySync": {
+                          "type": "boolean"
+                        },
+                        "redirectUrl": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "phone",
+                        "historySync",
+                        "redirectUrl"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quicklink/{token}/cancel": {
+      "post": {
+        "operationId": "cancelQuickLinkByToken",
+        "tags": [
+          "QuickLink"
+        ],
+        "security": [],
+        "summary": "Cancel a QuickLink from the hosted page",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Opaque QuickLink token from the hosted URL."
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "cancelled"
+                          ]
+                        },
+                        "redirectUrl": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "redirectUrl"
+                      ]
+                    }
+                  },
+                  "required": [
                     "data"
                   ]
                 }
