@@ -537,7 +537,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     } else if (state === "closed") {
       void this.#closeMedia().catch(() => undefined);
       this.transition({
-        ...callFields(current),
+        ...callFields(current, false),
         status: "ended",
         endReason: "connection_failed",
       });
@@ -590,7 +590,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       if (now.callId !== callId || now.status !== "reconnecting") return;
       void this.#closeMedia().catch(() => undefined);
       this.transition({
-        ...callFields(now),
+        ...callFields(now, false),
         status: "ended",
         endReason: "connection_failed",
       });
@@ -755,7 +755,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       typeof status === "number" ? TERMINAL_OFFER_REASONS[status] : undefined;
     if (terminal !== undefined) {
       this.transition({
-        ...callFields(this.getSnapshot()),
+        ...callFields(this.getSnapshot(), false),
         status: "ended",
         endReason: terminal,
       });
