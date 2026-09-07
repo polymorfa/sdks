@@ -1,7 +1,12 @@
 // @vitest-environment happy-dom
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { createLocale } from "@polymorfa/ui";
-import { TemplateBuilderController } from "@polymorfa/browser";
+import {
+  CallsController,
+  IncomingCallRelay,
+  createSignalingCallsBackend,
+  TemplateBuilderController,
+} from "@polymorfa/browser";
 import {
   definePolymorfaElements,
   type ElementController,
@@ -376,4 +381,80 @@ describe("portable elements", () => {
     expect(node.shadowRoot?.textContent).toContain("Submit to Meta");
     node.remove();
   });
+});
+
+describe("call control retries", () => {
+  it.each(["reject", "hangup"])(
+    "retains the %s button after a refused request",
+    async (part) => {
+      const relay = new IncomingCallRelay();
+      const teardown = vi.fn(async () => undefined);
+      const close = vi.fn(async () => undefined);
+      const controller = new CallsController(
+        createSignalingCallsBackend({
+          signaling: {
+            offer: async () => ({ sdp: "v=0", iceServers: [] }),
+            candidate: async () => undefined,
+            candidates: async () => [],
+            teardown,
+          },
+          incoming: relay,
+        }),
+        {
+          open: async () => ({
+            localStream: new MediaStream(),
+            remoteStream: new MediaStream(),
+            close,
+            setMuted: vi.fn(),
+            audioEnabled: () => true,
+            videoEnabled: () => false,
+          }),
+        },
+      );
+      controller.initialize();
+      const node = document.createElement("pmfa-call");
+      (node as unknown as { controller: CallsController }).controller =
+        controller;
+      document.body.append(node);
+      try {
+        relay.receive({
+          callId: "CALL-RETRY",
+          from: "+15550100",
+          video: false,
+        });
+        if (part === "hangup") await controller.answer();
+        teardown.mockRejectedValueOnce(new Error("temporarily unavailable"));
+        (
+          node.shadowRoot?.querySelector(
+            `[part="${part}"]`,
+          ) as HTMLButtonElement
+        ).click();
+        await vi.waitFor(() =>
+          expect(controller.getSnapshot().error?.code).toBe(
+            "call_control_failed",
+          ),
+        );
+        expect(
+          node.shadowRoot?.querySelector(`[part="${part}"]`),
+        ).not.toBeNull();
+        expect(node.shadowRoot?.textContent).toContain(
+          "Could not end the call. Try again.",
+        );
+        expect(close).not.toHaveBeenCalled();
+        (
+          node.shadowRoot?.querySelector(
+            `[part="${part}"]`,
+          ) as HTMLButtonElement
+        ).click();
+        await vi.waitFor(() =>
+          expect(controller.getSnapshot().status).toBe("ended"),
+        );
+        expect(teardown).toHaveBeenCalledTimes(2);
+        expect(controller.getSnapshot().error).toBeUndefined();
+      } finally {
+        node.remove();
+        controller.dispose();
+      }
+    },
+  );
 });

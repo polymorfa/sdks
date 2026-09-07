@@ -546,3 +546,174 @@ describe("Calls UI", () => {
     expect(formatDuration(0)).toBe("0:00");
   });
 });
+
+describe("failed call controls", () => {
+  it.each(["Reject", "Hang up"])(
+    "keeps %s visible and media alive until retry succeeds",
+    async (label) => {
+      const f = fixture();
+      const host = mount(
+        <PolymorfaProvider>
+          <CallSurface controller={f.controller} popout={false} />
+        </PolymorfaProvider>,
+      );
+      act(() =>
+        f.relay.receive({
+          callId: "CALL-RETRY",
+          from: "+15550100",
+          video: false,
+        }),
+      );
+      if (label === "Hang up")
+        await act(async () => {
+          await f.controller.answer();
+        });
+      vi.mocked(f.signaling.teardown).mockRejectedValueOnce(
+        new Error("temporarily unavailable"),
+      );
+      await act(async () => {
+        (
+          host.querySelector(`[aria-label='${label}']`) as HTMLButtonElement
+        ).click();
+      });
+      expect(host.querySelector(`[aria-label='${label}']`)).not.toBeNull();
+      expect(host.textContent).toContain("Could not end the call. Try again.");
+      expect(f.session.close).not.toHaveBeenCalled();
+      await act(async () => {
+        (
+          host.querySelector(`[aria-label='${label}']`) as HTMLButtonElement
+        ).click();
+      });
+      expect(f.signaling.teardown).toHaveBeenCalledTimes(2);
+      expect(f.controller.getSnapshot().status).toBe("ended");
+      expect(f.controller.getSnapshot().error).toBeUndefined();
+      expect(host.querySelector("[data-pmfa='call-surface']")).toBeNull();
+      f.controller.dispose();
+    },
+  );
+});
+
+it("finishes pending media setup after a refused hangup", async () => {
+  const f = fixture();
+  let resolveMedia!: (session: CallMediaSession) => void;
+  vi.mocked(f.media.open).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        resolveMedia = resolve;
+      }),
+  );
+  const host = mount(
+    <PolymorfaProvider>
+      <CallSurface controller={f.controller} popout={false} />
+    </PolymorfaProvider>,
+  );
+  act(() =>
+    f.relay.receive({
+      callId: "CALL-PENDING",
+      from: "+15550100",
+      video: false,
+    }),
+  );
+  let answer!: Promise<void>;
+  await act(async () => {
+    answer = f.controller.answer();
+    await Promise.resolve();
+  });
+  vi.mocked(f.signaling.teardown).mockRejectedValueOnce(
+    new Error("temporarily unavailable"),
+  );
+  await act(async () => {
+    (host.querySelector("[aria-label='Hang up']") as HTMLButtonElement).click();
+  });
+  await act(async () => {
+    resolveMedia(f.session);
+    await answer;
+  });
+  expect(f.controller.localStream).toBe(f.session.localStream);
+  expect(f.session.close).not.toHaveBeenCalled();
+  expect(host.querySelector("[aria-label='Hang up']")).not.toBeNull();
+  await act(async () => {
+    await f.controller.hangup();
+  });
+  f.controller.dispose();
+});
+
+it("ends after successful remote hangup even when local media cleanup fails", async () => {
+  const f = fixture();
+  const host = mount(
+    <PolymorfaProvider>
+      <CallSurface controller={f.controller} popout={false} />
+    </PolymorfaProvider>,
+  );
+  act(() =>
+    f.relay.receive({
+      callId: "CALL-CLOSE-FAIL",
+      from: "+15550100",
+      video: false,
+    }),
+  );
+  await act(async () => {
+    await f.controller.answer();
+  });
+  vi.mocked(f.signaling.teardown).mockRejectedValueOnce(new Error("try again"));
+  await act(async () => {
+    await f.controller.hangup();
+  });
+  vi.mocked(f.session.close).mockRejectedValueOnce(
+    new Error("media close failed"),
+  );
+  await act(async () => {
+    (host.querySelector("[aria-label='Hang up']") as HTMLButtonElement).click();
+  });
+  expect(f.controller.getSnapshot().status).toBe("ended");
+  expect(f.controller.getSnapshot().error).toBeUndefined();
+  expect(host.querySelector("[data-pmfa='call-surface']")).toBeNull();
+  f.controller.dispose();
+});
+
+it("keeps the same status element while a control failure is visible", async () => {
+  vi.useFakeTimers();
+  const f = fixture();
+  try {
+    const host = mount(
+      <PolymorfaProvider>
+        <CallSurface
+          controller={f.controller}
+          popout={false}
+          resolveName={() => "Casey Rivera"}
+        />
+      </PolymorfaProvider>,
+    );
+    act(() =>
+      f.relay.receive({
+        callId: "CALL-STATUS",
+        from: "+15550100",
+        video: false,
+      }),
+    );
+    await act(async () => {
+      await f.controller.answer();
+    });
+    act(() =>
+      vi.mocked(f.media.open).mock.calls[0]![2].onConnectionState("connected"),
+    );
+    vi.mocked(f.signaling.teardown).mockRejectedValueOnce(
+      new Error("try again"),
+    );
+    await act(async () => {
+      await f.controller.hangup();
+    });
+    const status = host.querySelector("[role='status']");
+    expect(status?.textContent).toContain("Could not end the call");
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(host.querySelector("[role='status']")).toBe(status);
+    await act(async () => {
+      await f.controller.hangup();
+    });
+  } finally {
+    f.controller.dispose();
+    vi.useRealTimers();
+  }
+});

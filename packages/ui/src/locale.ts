@@ -35,6 +35,7 @@ export const ENGLISH_MESSAGES = {
   "calls.connected": "Connected",
   "calls.ended": "Call ended",
   "calls.failed": "Call failed",
+  "calls.controlFailed": "Could not end the call. Try again.",
   "calls.answerWithCamera": "Answer with camera",
   "calls.answerWithoutCamera": "Answer without camera",
   "calls.answerMuted": "Answer muted",

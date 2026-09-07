@@ -51,3 +51,7 @@ The token needs `voip_place`, `voip_answer` and `voip_signal`. See the
 [browser package](../browser/README.md#calls) for answer-mode behavior,
 media ownership and participant limits. The element keeps its existing layout,
 controls, appearance and accessibility behavior.
+
+If a reject or hangup request fails, the call stays active and its controls remain
+available for retry. The UI shows a localized failure message and keeps existing
+media connected until the call ends. `snapshot.error` clears when ending succeeds.

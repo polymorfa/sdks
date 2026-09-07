@@ -6,6 +6,10 @@
   departures through the lifecycle stream. Late invitation replies cannot
   overwrite newer roster state or restore a participant who already left. The
   TypeScript webhook catalog exports payload types for the same three events.
+
+- Keep call controls and media available after a failed reject or hangup, with
+  a localized retry message in React and custom elements.
+
 - Send call rejection without a request body, matching the API contract.
 
 - Refreshed the pinned API contracts and recorded the five implemented
