@@ -48,3 +48,9 @@ export {
   type SocketTicket,
   type TrickleCandidate,
 } from "./signaling.js";
+export { BrowserCallsApi } from "./api.js";
+export {
+  createBrowserCalls,
+  type BrowserCalls,
+  type BrowserCallsOptions,
+} from "./client.js";

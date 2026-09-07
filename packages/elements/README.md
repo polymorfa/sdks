@@ -25,3 +25,29 @@ without a React runtime.
 React binding. Its open shadow root exposes stable parts for the editor,
 validation messages, preview buttons/cards, save action, preview action, and
 Meta submission action.
+
+## Calls
+
+Create a browser calls component and assign its existing controller to `pmfa-call`:
+
+```ts
+import {
+  createBrowserCalls,
+  createClientTokenProvider,
+} from "@polymorfa/browser";
+import { PolymorfaCallElement } from "@polymorfa/elements";
+
+const calls = createBrowserCalls({
+  session: "support",
+  getClientToken: createClientTokenProvider(),
+});
+await calls.connect();
+const element = document.querySelector<PolymorfaCallElement>("pmfa-call");
+if (element) element.controller = calls.controller;
+// Call await calls.dispose() when the application releases this widget.
+```
+
+The token needs `voip_place`, `voip_answer` and `voip_signal`. See the
+[browser package](../browser/README.md#calls) for answer-mode behavior,
+media ownership and participant limits. The element keeps its existing layout,
+controls, appearance and accessibility behavior.

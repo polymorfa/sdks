@@ -96,16 +96,9 @@ export interface SignalingCallsBackendOptions {
    * Places an outbound call through the application's own server and resolves
    * the call id the platform assigned it.
    *
-   * The browser signaling surface has no route that dials a destination: the
-   * client token can only attach media to a call the platform already owns
-   * (`/offer` reaches the pod through the call's affinity record, so an id the
-   * browser invented resolves to no pod). Starting an outbound call is a
-   * server-key operation, so the application posts the destination to its own
-   * endpoint, that endpoint places the call with the server SDK, and the
-   * resulting id comes back here. Without it outbound calling is unavailable:
-   * this hook throws, and the controller turns that into a `place_failed`
-   * error snapshot rather than a rejected promise. (`CallsController.place()`
-   * rejects only when the controller has been disposed.)
+   * This custom backend delegates placement to the supplied hook. Use
+   * createBrowserCalls for built-in client-token placement. Without a hook,
+   * outbound calling reports place_failed instead of inventing a call id.
    */
   readonly place?: (
     input: PlaceCallInput,
@@ -120,10 +113,8 @@ export interface SignalingCallsBackendOptions {
  * teardown route. No server API key is involved: everything the browser does
  * runs on the client token.
  *
- * Outbound calls are the exception. Nothing on the client-token surface starts
- * a call, so {@link SignalingCallsBackendOptions.place} is what turns them on:
- * it hands the destination to the application's server, which places the call
- * and returns the platform's call id for media to attach to.
+ * Supply place for custom outbound placement. createBrowserCalls provides
+ * direct client-token placement through the shared Calls client.
  */
 export function createSignalingCallsBackend(
   options: SignalingCallsBackendOptions,
@@ -135,9 +126,7 @@ export function createSignalingCallsBackend(
       const placeWith = options.place;
       if (placeWith === undefined)
         throw new Error(
-          "Outbound calling needs a `place` hook: the browser signaling surface " +
-            "cannot dial a destination, so the call must be started by your " +
-            "server and its call id returned to the browser.",
+          "This backend needs a `place` hook. Use createBrowserCalls for direct client-token placement.",
         );
       const placed = await placeWith(input, signal);
       throwIfAborted(signal);

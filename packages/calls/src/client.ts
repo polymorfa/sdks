@@ -1,4 +1,9 @@
-import { HttpCallsApi, type CallsApi, type FetchLike } from "./api.js";
+import {
+  HttpCallsApi,
+  type AnswerMode,
+  type CallsApi,
+  type FetchLike,
+} from "./api.js";
 import { Call, type CallEndReason } from "./call.js";
 import { Emitter } from "./events.js";
 import { LifecycleSocket, type LifecycleEvent } from "./lifecycle.js";
@@ -19,6 +24,10 @@ export interface CallsClientOptions {
    * session, say).
    */
   readonly claimMode?: boolean;
+  /** Answer mode to claim; defaults to sdk. WebRTC adapters use browser. */
+  readonly answerMode?: AnswerMode;
+  /** External media is connected by the browser adapter instead of an agent ticket. */
+  readonly mediaMode?: "socket" | "external";
   readonly fetch?: FetchLike;
   readonly WebSocket?: typeof globalThis.WebSocket;
   readonly setTimeout?: typeof globalThis.setTimeout;
@@ -113,6 +122,11 @@ export class CallsClient extends Emitter<ClientEvents> {
     return [...this.#calls.values()].filter((call) => !call.ended);
   }
 
+  /** Look up a known call, including the bounded recent history of ended calls. */
+  getCall(callId: string): Call | undefined {
+    return this.#calls.get(callId);
+  }
+
   /**
    * Claim the session's answer mode, then open the lifecycle stream. Resolves
    * after the first attempt settles; reconnects until `disconnect()`. A claim
@@ -121,7 +135,8 @@ export class CallsClient extends Emitter<ClientEvents> {
    */
   async connect(): Promise<void> {
     const generation = this.#connectGeneration;
-    if (this.#claimMode) await this.#api.setMode(this.session, "sdk");
+    if (this.#claimMode)
+      await this.#api.setMode(this.session, this.#o.answerMode ?? "sdk");
     // disconnect() ran while the claim was in flight: opening the socket now
     // would reconnect a client the caller has already stopped.
     if (generation !== this.#connectGeneration) return;
@@ -146,28 +161,43 @@ export class CallsClient extends Emitter<ClientEvents> {
    */
   async place(
     to: string,
-    options: { readonly video?: boolean } = {},
+    options: {
+      readonly video?: boolean;
+      readonly idempotencyKey?: string;
+      readonly signal?: AbortSignal;
+    } = {},
   ): Promise<Call> {
+    const generation = this.#connectGeneration;
+    options.signal?.throwIfAborted();
     const video = options.video ?? false;
-    const { callId } = await this.#api.place({
+    const input = {
       session: this.session,
       to,
       video,
-      idempotencyKey: this.#createKey(),
+      idempotencyKey: options.idempotencyKey ?? this.#createKey(),
+    };
+    const { callId } =
+      options.signal === undefined
+        ? await this.#api.place(input)
+        : await this.#api.place(input, options.signal);
+    const call = new Call({
+      id: callId,
+      session: this.session,
+      direction: "outbound",
+      peer: to,
+      video,
+      api: this.#api,
+      media: timerOptions(this.#o),
+      ...(this.#o.mediaMode === undefined
+        ? {}
+        : { mediaMode: this.#o.mediaMode }),
+      ...(this.#o.now === undefined ? {} : { now: this.#o.now }),
     });
-    const call = this.#track(
-      new Call({
-        id: callId,
-        session: this.session,
-        direction: "outbound",
-        peer: to,
-        video,
-        api: this.#api,
-        media: timerOptions(this.#o),
-        ...(this.#o.now === undefined ? {} : { now: this.#o.now }),
-      }),
-    );
-    return call;
+    if (generation !== this.#connectGeneration || options.signal?.aborted) {
+      await call.hangup();
+      throw new Error("Call placement was cancelled.");
+    }
+    return this.#track(call);
   }
 
   #receive(event: LifecycleEvent): void {
@@ -190,6 +220,9 @@ export class CallsClient extends Emitter<ClientEvents> {
               event.payload["has_video"] === true,
             api: this.#api,
             media: timerOptions(this.#o),
+            ...(this.#o.mediaMode === undefined
+              ? {}
+              : { mediaMode: this.#o.mediaMode }),
             ...(this.#o.now === undefined ? {} : { now: this.#o.now }),
           }),
         );

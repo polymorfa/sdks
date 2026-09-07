@@ -342,26 +342,34 @@ controller lifecycles.
 
 ### Calls
 
-Call media and signaling follow the platform's browser signaling surface:
-WebRTC media, offer/answer exchange, trickle ICE candidate submission and
-polling, and idempotent teardown over the `/api/voip/calls/{id}` paths, all on
-the client token. `createSignalingCallsBackend` is the `CallsBackend` for that
-surface; outbound calls go through its `place` hook, because starting a call
-is a server-key operation and the browser can only attach media to a call the
-platform already owns. `IncomingCallRelay` is where the application hands the browser the
-`call.received` webhook it received on its own server
-(`incomingCallFromWebhook` maps the payload). The server mints the browser
-token with `MessagingClient.voip.token` after granting the session's client
-rules the `voip_place`, `voip_answer`, and `voip_signal` actions; those rules
-also bind calls per token (`maxConcurrency`, `allowedNumber`).
+`createBrowserCalls` connects the shared `@polymorfa/calls` model to the
+existing browser controller and WebRTC media. It places calls directly with a
+short-lived client token, receives lifecycle events, and exposes the active
+model as `controller.call`. Pass its controller to React or Web Components.
+
+```ts
+import { createBrowserCalls } from "@polymorfa/browser";
+
+const calls = createBrowserCalls({ session: "support", getClientToken });
+await calls.connect();
+await calls.controller.place("+15550100");
+// Release the widget and connections when leaving the application.
+await calls.dispose();
+```
+
+The token needs `voip_place`, `voip_answer` and `voip_signal` actions. Requests
+use its bound session. Connecting claims `browser` mode, which auto-answers
+remotely; the widget's Answer action attaches local media and Reject hangs up.
+Direct placement supports linked devices. Custom signaling backends and
+application-fed lifecycle channels remain available.
 
 Calls carry a `line`: `linkedDevice` (a paired WhatsApp device session, audio
 and video) or `cloudApi` (the WhatsApp Business Calling API, audio only). Every
 component gates on the snapshot's `capabilities`, never on the line name. The
 controller also owns capture/playback device choice (`setPreferredDevices`,
 `switchDevice`, `refreshDevices`) so a microphone or camera swap mid-call is a
-track replacement, not a renegotiation. The SDK does not invent group rooms,
-participants, reactions, hand raising, or waiting rooms.
+track replacement, not a renegotiation. The shared call model supports participant invitations. Live roster updates
+are available on programmatic media sockets, not the browser WebRTC path.
 
 `@polymorfa/react` ships the complete call UI: `CallSurface` (incoming card,
 stage, control dock, and a pop-out window), plus `IncomingCallCard`,
