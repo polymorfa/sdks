@@ -55,5 +55,19 @@ without a network.
 ## Credentials
 
 A server API key. It never belongs in a browser: the browser kit uses client
-tokens, which the platform scopes to a single session and to answering rather
-than placing.
+tokens scoped to one session and explicit call actions, including placement.
+
+## Browser media adapters
+
+Use `createBrowserCalls` from the browser package for the built-in WebRTC widget.
+Its controller exposes this package's `Call` as `controller.call`. The adapter
+claims `answerMode: "browser"` and uses `mediaMode: "external"`, so the Calls
+client never requests an agent ticket. The widget owns media streams and device
+controls; PCM writes and encoded frame events are unavailable on this path.
+
+For an external adapter, `answer()` resolves after acceptance and
+`call.mediaConnected()` reports media readiness. Outbound calls remain ringing
+until remote acceptance. Socket media remains the default and ignores
+`mediaConnected()`. `client.getCall(id)` includes bounded recent ended calls.
+`place()` also accepts an optional `signal` and `idempotencyKey`; a placement
+that returns after cancellation or disconnect is torn down instead of tracked.

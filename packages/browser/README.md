@@ -29,33 +29,63 @@ Product controllers use immutable snapshots and `subscribe()`/`getSnapshot()` so
 `BrowserMessagingClient` binds one session and exposes only the exact
 client-token allowlist: message actions, presence reads/subscriptions, contact
 reads, and widget start/status/pairing/handoff actions. Conversation history,
-template management, media upload, and call lifecycle/control remain
-application-owned server adapters.
+template management and media upload remain application-owned server adapters.
+`createBrowserCalls` supplies client-token call lifecycle and controls.
 
 `createBrowserComposerActions` connects a `MessageComposerController` to the
 message resource for text and reply sends. Supply an upload adapter and a
 `createMessage` mapping for attachments; client tokens cannot call the media
 routes directly.
 
-Available controller families are QuickLink, conversations and composing,
-template building, and calls. Calls use `CallsSignalingClient` for the
-`/api/voip/calls/{id}` offer, candidate, renegotiate, and teardown routes and
-for socket tickets, `CallsSocket` for the calls WebSocket (pushed `call.*`
-lifecycle events and ICE both ways, reconnecting with backoff and falling
-back to REST while down), `WebRtcMediaFactory` for the peer connection,
-media, device switching, audio→video upgrade and ICE restart, and
-`createSignalingCallsBackend` as the `CallsBackend` over that surface. Nothing
-on the client-token surface dials a destination, so that backend takes a
-`place` hook: it posts the destination to the application's own route, which
-starts the call with the server SDK and returns the platform's call id. An
-application without the socket can still relay its webhooks through
-`IncomingCallRelay`; it must forward both `call.received` (`receive`) and
-`call.ended` (`ended`), or a remote hang-up never reaches the controller. Reject and hang-up run through the idempotent
-teardown route. A pod-lost (410) or capacity (503) answer to the _media offer_
-ends the call as `pod_lost` or `capacity` instead of erroring; the same codes
-from placement or teardown are ordinary failures and stay recoverable, so a
-503 from your own `place` route is a `place_failed` the caller can retry. `CallsController` exposes `enableVideo()` and a
-`reconnecting` status with a bounded resumption window.
+## Calls
+
+`createBrowserCalls` connects the shared Calls client to `CallsController` and
+WebRTC. Supply a short-lived client token with `voip_place`, `voip_answer`, and
+`voip_signal` actions and the permitted destination/concurrency rules.
+
+```ts
+import {
+  createBrowserCalls,
+  createClientTokenProvider,
+} from "@polymorfa/browser";
+
+const calls = createBrowserCalls({
+  session: "support",
+  getClientToken: createClientTokenProvider(),
+});
+await calls.connect();
+await calls.controller.place("+15550100");
+// On application teardown:
+await calls.dispose();
+```
+
+Pass `calls.controller` to React's `CallSurface` or the `pmfa-call` element.
+`controller.call` exposes the shared `Call`, including its state, duration,
+end reason and `addParticipant()` method. Direct placement supports linked
+WhatsApp devices. Existing custom backends retain their `cloudApi` line support.
+
+Connecting claims `browser` answer mode for the token's bound session. That
+mode auto-answers the remote caller; the widget's Answer action attaches local
+WebRTC media, and Reject ends the call. It does not send `/accept` or `/reject`,
+which apply to calls parked in `sdk` mode. The mode claim persists after disposal.
+A connected call requires both remote acceptance and a connected media path.
+
+The lifecycle socket reconnects with backoff. ICE candidates use REST signaling
+and polling. The controller retains device switching, mute, audio-to-video
+upgrade, and its bounded ICE resumption window. Disposal releases tracks and
+closes the lifecycle socket. A second call cannot replace an active call in
+one widget; additional inbound calls are declined.
+
+The shared call's PCM/video-frame streams belong to programmatic socket media.
+Use `controller.localStream` and `controller.remoteStream` for browser media.
+Participant invitations return the invited participant, but WebRTC does not
+receive the tagged socket's roster updates. Do not treat its participants list
+or the reserved `audioMuted`/`video` fields as authoritative live presence.
+
+`createSignalingCallsBackend`, `CallsSocket` and `IncomingCallRelay` remain
+available for applications that supply their own placement or event channel.
+The signaling backend still requires its `place` hook. Use `createBrowserCalls`
+for direct client-token placement through `POST /api/voip/calls`.
 
 ## Template builder
 

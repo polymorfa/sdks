@@ -9,13 +9,29 @@ import { describe, expect, it } from "vitest";
 const packageRoot = fileURLToPath(new URL("../", import.meta.url));
 
 describe("@polymorfa/browser package", () => {
-  it("packs and imports in a clean consumer with no runtime dependencies", () => {
+  it("packs and imports with the shared calls dependency in a clean consumer", () => {
+    const callsRoot = fileURLToPath(new URL("../../calls/", import.meta.url));
+    const buildCalls = spawnSync("npm", ["run", "build"], {
+      cwd: callsRoot,
+      encoding: "utf8",
+    });
+    expect(buildCalls.status, buildCalls.stdout + buildCalls.stderr).toBe(0);
     const build = spawnSync("npm", ["run", "build"], {
       cwd: packageRoot,
       encoding: "utf8",
     });
-    expect(build.status, build.stderr).toBe(0);
+    expect(build.status, build.stdout + build.stderr).toBe(0);
     const directory = mkdtempSync(join(tmpdir(), "polymorfa-browser-package-"));
+    const packedCalls = spawnSync(
+      "npm",
+      ["pack", "--json", "--ignore-scripts", "--pack-destination", directory],
+      { cwd: callsRoot, encoding: "utf8" },
+    );
+    expect(packedCalls.status, packedCalls.stderr).toBe(0);
+    const callsTarball = join(
+      directory,
+      JSON.parse(packedCalls.stdout)[0].filename as string,
+    );
     const packed = spawnSync(
       "npm",
       ["pack", "--json", "--ignore-scripts", "--pack-destination", directory],
@@ -43,10 +59,14 @@ describe("@polymorfa/browser package", () => {
     });
     expect(initialize.status, initialize.stderr).toBe(0);
     const tarball = join(directory, metadata[0]?.filename ?? "missing.tgz");
-    const install = spawnSync("npm", ["install", "--ignore-scripts", tarball], {
-      cwd: directory,
-      encoding: "utf8",
-    });
+    const install = spawnSync(
+      "npm",
+      ["install", "--ignore-scripts", tarball, callsTarball],
+      {
+        cwd: directory,
+        encoding: "utf8",
+      },
+    );
     expect(install.status, install.stderr).toBe(0);
     const consumer = join(directory, "consumer.mjs");
     writeFileSync(
@@ -71,6 +91,8 @@ describe("@polymorfa/browser package", () => {
         "utf8",
       ),
     ) as { readonly dependencies?: Readonly<Record<string, string>> };
-    expect(manifest.dependencies ?? {}).toEqual({});
+    expect(manifest.dependencies).toEqual({
+      "@polymorfa/calls": "0.1.0-dev.0",
+    });
   }, 30_000);
 });

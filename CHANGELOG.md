@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Added `createBrowserCalls`: direct client-token placement, shared call models
+  and lifecycle events connected to the existing WebRTC controller and UI.
+  Browser mode auto-answers remotely; Answer attaches local media and Reject
+  ends the call. The existing custom backend remains available.
+- Browser media setup now stops when a remote end arrives, and late placement
+  results after cancellation or disconnect are torn down. One widget refuses
+  overlapping placements and preserves an active call.
+- The browser package now depends on the shared Calls package. Install both
+  matching development artifacts when consuming unpublished builds.
+
 - `createSignalingCallsBackend` no longer invents a call id for outbound
   calls. Nothing on the client-token surface dials a destination, so an
   invented id reached no pod and its offer was refused as not-ready forever.

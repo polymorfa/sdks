@@ -1,3 +1,4 @@
+import type { Call } from "@polymorfa/calls";
 import {
   ObservableController,
   type ControllerSnapshot,
@@ -86,6 +87,10 @@ export interface PlaceCallInput {
   readonly idempotencyKey: string;
 }
 export interface CallsBackend {
+  /** Shared call model, when this backend uses the Calls client. */
+  getCall?(callId: string): Call | undefined;
+  /** Release an owned lifecycle client when the controller is disposed. */
+  dispose?(): void;
   subscribe(listener: (event: CallLifecycleEvent) => void): () => void;
   place(
     input: PlaceCallInput,
@@ -149,6 +154,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   #unsubscribe: (() => void) | undefined;
   #media: CallMediaSession | undefined;
   #operation = 0;
+  #placing = false;
   #resumeTimer: ReturnType<typeof setTimeout> | undefined;
   #giveUpTimer: ReturnType<typeof setTimeout> | undefined;
   /** The status resumption interrupted, restored when media comes back. */
@@ -196,10 +202,33 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     this.transition({ ...callFields(this.getSnapshot()), status: "ready" });
   }
 
+  /** The shared call model for the displayed call, when supplied by the backend. */
+  get call(): Call | undefined {
+    const id = this.getSnapshot().callId;
+    return id === undefined ? undefined : this.#backend.getCall?.(id);
+  }
+
   async place(
     to: string,
     options: { readonly video?: boolean; readonly line?: CallLine } = {},
   ): Promise<void> {
+    this.assertActive();
+    if (this.#placing)
+      throw new Error("A call placement is already in progress.");
+    const current = this.getSnapshot();
+    if (
+      (this.call && !this.call.ended) ||
+      (current.callId !== undefined &&
+        [
+          "incoming",
+          "ringing",
+          "accepted",
+          "connecting",
+          "connected",
+          "reconnecting",
+        ].includes(current.status))
+    )
+      throw new Error("Finish the active call before placing another.");
     const operation = this.#begin();
     const line = options.line ?? "linkedDevice";
     const capabilities = capabilitiesFor(line);
@@ -208,6 +237,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     // fails is the application's own route answering, and its 503 means try
     // again, not "the call is over".
     let offering = false;
+    this.#placing = true;
     try {
       const { callId } = await this.#backend.place(
         { to, video, line, idempotencyKey: this.#createKey() },
@@ -226,10 +256,21 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         audioMuted: false,
         videoMuted: false,
       });
+      const call = this.call;
+      if (call?.ended) {
+        this.#receive({
+          type: "ended",
+          callId,
+          ...(call.endReason === undefined ? {} : { reason: call.endReason }),
+        });
+        return;
+      }
       offering = true;
       await this.#openMedia(callId, video, operation);
     } catch (cause) {
       this.#fail(cause, operation, "place_failed", offering);
+    } finally {
+      this.#placing = false;
     }
   }
 
@@ -424,6 +465,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     this.#abort.abort();
     this.#unsubscribe?.();
     this.#unsubscribe = undefined;
+    this.#backend.dispose?.();
     void this.#closeMedia();
   }
 
@@ -480,6 +522,12 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     // hangup with `connection_failed`. Same rule #receive and #ice apply.
     if (current.status === "ended" || current.status === "error") return;
     if (state === "connected") {
+      const call = this.call;
+      if (call !== undefined) {
+        call.mediaConnected();
+        if (current.status !== "reconnecting") return;
+        if (call.state !== "connected") return;
+      }
       this.#clearResumption();
       this.transition({
         ...callFields(current),
@@ -605,7 +653,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     )
       return;
     if (event.type === "incomingCall") {
-      if (!["idle", "ready", "ended"].includes(current.status)) return;
+      if (!["idle", "ready", "ended", "error"].includes(current.status)) return;
       const line = event.call.line ?? "linkedDevice";
       const capabilities = capabilitiesFor(line);
       this.transition({
@@ -625,6 +673,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       // be closed out, but a second `ended` for a call that already ended
       // must not overwrite the reason it ended with.
       if (current.status === "ended") return;
+      this.#operation += 1;
+      this.#abort.abort();
       void this.#closeMedia();
       this.transition({
         ...callFields(current),

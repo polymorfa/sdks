@@ -32,57 +32,28 @@ the call into its own resizable window. `IncomingCallCard`, `CallStage`,
 
 ```tsx
 import {
-  BrowserTransport,
-  CallsController,
-  CallsSignalingClient,
-  CallsSocket,
-  WebRtcMediaFactory,
+  createBrowserCalls,
   createClientTokenProvider,
-  createSignalingCallsBackend,
 } from "@polymorfa/browser";
 import { CallSurface, DialPad, PolymorfaProvider } from "@polymorfa/react";
 
-const transport = new BrowserTransport({
-  getClientToken: createClientTokenProvider(), // POST /api/polymorfa/token → pmfa_ct_…
+// Create once in the browser; call dispose() on application teardown.
+const calls = createBrowserCalls({
+  session: "support",
+  getClientToken: createClientTokenProvider(),
 });
-const signaling = new CallsSignalingClient(transport);
-// The calls WebSocket: incoming calls ring without webhook plumbing, remote
-// hang-ups land immediately, ICE trickles over the socket (REST is the
-// fallback while it reconnects).
-const socket = new CallsSocket({ signaling });
-const calls = new CallsController(
-  createSignalingCallsBackend({
-    signaling,
-    incoming: socket,
-    // Outbound calls start on the server: the client token cannot dial a
-    // destination. Omit this hook if you only answer inbound calls (and drop
-    // `DialPad`, which places them).
-    place: async ({ to, video, line, idempotencyKey }, signal) => {
-      const response = await fetch("/api/calls/place", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          // One key per placement: forward it to the server SDK call so a
-          // retried request cannot start a second call.
-          "idempotency-key": idempotencyKey,
-        },
-        body: JSON.stringify({ to, video, line }),
-        signal,
-      });
-      if (!response.ok) throw new Error("The call could not be placed.");
-      return ((await response.json()) as { callId: string }).callId;
-    },
-  }),
-  new WebRtcMediaFactory({ signaling, candidateTransport: socket }),
-);
-calls.initialize();
-void socket.connect();
+await calls.connect();
 
 <PolymorfaProvider>
-  <CallSurface controller={calls} resolveName={lookupContactName} />
-  <DialPad controller={calls} />
+  <CallSurface controller={calls.controller} resolveName={lookupContactName} />
+  <DialPad controller={calls.controller} />
 </PolymorfaProvider>;
 ```
+
+The client token needs `voip_place`, `voip_answer` and `voip_signal`. Browser
+mode auto-answers remotely; Answer attaches local WebRTC media and Reject
+ends the call. `calls.controller.call` is the shared `Call` model. See the
+[browser package](../browser/README.md#calls) for lifecycle ownership and limits.
 
 The incoming card mirrors the official desktop call window: name, "WhatsApp
 audio/video call" subtitle, avatar or a mirrored self-preview with camera and

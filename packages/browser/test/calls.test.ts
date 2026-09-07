@@ -46,6 +46,20 @@ function fixture() {
 }
 
 describe("CallsController (voip-v2 contract)", () => {
+  it("keeps custom-backend calls active when a second placement is requested", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    await controller.place("+15550100");
+    f.connect("connected");
+    await expect(controller.place("+15550101")).rejects.toThrow(
+      "Finish the active call",
+    );
+    expect(f.backend.place).toHaveBeenCalledOnce();
+    expect(f.session.close).not.toHaveBeenCalled();
+    expect(controller.getSnapshot().status).toBe("connected");
+    controller.dispose();
+  });
   it("receives and answers an incoming WebRTC call", async () => {
     const f = fixture();
     const controller = new CallsController(f.backend, f.media);
