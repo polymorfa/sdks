@@ -4,7 +4,8 @@
 
 - Browser WebRTC calls now receive participant joins, state changes, and
   departures through the lifecycle stream. Late invitation replies cannot
-  overwrite newer roster state or restore a participant who already left.
+  overwrite newer roster state or restore a participant who already left. The
+  TypeScript webhook catalog exports payload types for the same three events.
 - Send call rejection without a request body, matching the API contract.
 
 - Refreshed the pinned API contracts and recorded the five implemented

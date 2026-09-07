@@ -5,6 +5,9 @@ import type {
   BusinessQuickReplyUpdatePayload,
   CallAcceptedPayload,
   CallMissedPayload,
+  CallParticipant,
+  CallParticipantLeftPayload,
+  CallParticipantPayload,
   CallReceivedPayload,
   CallRejectedPayload,
   ChatArchivePayload,
@@ -127,6 +130,31 @@ type ExpectedPayloads = {
     readonly from: ExpectedJidReference;
     readonly callId: string;
     readonly reason: string;
+  };
+  readonly "call.participant_joined": {
+    readonly callId: string;
+    readonly participant: {
+      readonly id: string;
+      readonly handle: string;
+      readonly audioMuted: false;
+      readonly video: false;
+      readonly state: "invited" | "ringing" | "connected" | "left";
+    };
+  };
+  readonly "call.participant_left": {
+    readonly callId: string;
+    readonly participantId: string;
+    readonly reason?: string;
+  };
+  readonly "call.participant_state": {
+    readonly callId: string;
+    readonly participant: {
+      readonly id: string;
+      readonly handle: string;
+      readonly audioMuted: false;
+      readonly video: false;
+      readonly state: "invited" | "ringing" | "connected" | "left";
+    };
   };
   readonly "call.received": {
     readonly from: ExpectedJidReference;
@@ -257,6 +285,9 @@ type ExportedPayloads = {
   readonly "business.quick_reply.update": BusinessQuickReplyUpdatePayload;
   readonly "call.accepted": CallAcceptedPayload;
   readonly "call.missed": CallMissedPayload;
+  readonly "call.participant_joined": CallParticipantPayload;
+  readonly "call.participant_left": CallParticipantLeftPayload;
+  readonly "call.participant_state": CallParticipantPayload;
   readonly "call.received": CallReceivedPayload;
   readonly "call.rejected": CallRejectedPayload;
   readonly "chat.archive": ChatArchivePayload;
@@ -287,6 +318,9 @@ describe("webhook event payload types", () => {
     expectTypeOf<NativeFlowResponse>().toEqualTypeOf<ExpectedNativeFlowResponse>();
     expectTypeOf<PollOption>().toEqualTypeOf<ExpectedPollOption>();
     expectTypeOf<LinkedDeviceMessageType>().toEqualTypeOf<ExpectedLinkedDeviceMessageType>();
+    expectTypeOf<CallParticipant>().toEqualTypeOf<
+      ExpectedPayloads["call.participant_joined"]["participant"]
+    >();
     expectTypeOf<ExportedPayloads>().toEqualTypeOf<ExpectedPayloads>();
     expectTypeOf<
       Pick<WebhookPayloadMap, keyof ExpectedPayloads>

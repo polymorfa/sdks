@@ -264,7 +264,7 @@ export class Call extends Emitter<CallEvents> {
       (this.#participantRevisions.get(participant.id) ?? 0) <=
       requestedAtRevision
     )
-      this.#applyParticipant({ type: "participant_joined", participant });
+      this.#applyInviteReply(participant);
     return participant;
   }
 
@@ -303,7 +303,24 @@ export class Call extends Emitter<CallEvents> {
     this.#applyParticipant(frame);
   }
 
+  #applyInviteReply(participant: Participant): void {
+    if (this.ended) return;
+    const previous = this.#participants.get(participant.id);
+    if (
+      previous !== undefined &&
+      participantStateRank(participant.state) <
+        participantStateRank(previous.state)
+    )
+      return;
+    if (previous !== undefined && sameParticipant(previous, participant))
+      return;
+    this.#rosterRevision += 1;
+    this.#participantRevisions.set(participant.id, this.#rosterRevision);
+    this.#applyParticipant({ type: "participant_joined", participant });
+  }
+
   #applyParticipant(frame: ParticipantControlFrame): void {
+    if (this.ended) return;
     if (frame.type === "participant_left") {
       if (this.#departedParticipants.has(frame.participantId)) return;
       this.#departedParticipants.add(frame.participantId);
@@ -322,12 +339,6 @@ export class Call extends Emitter<CallEvents> {
     }
     this.#departedParticipants.delete(participant.id);
     const previous = this.#participants.get(participant.id);
-    if (
-      previous !== undefined &&
-      participantStateRank(participant.state) <
-        participantStateRank(previous.state)
-    )
-      return;
     if (previous !== undefined && sameParticipant(previous, participant))
       return;
     this.#participants.set(participant.id, participant);

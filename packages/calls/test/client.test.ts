@@ -449,6 +449,18 @@ describe("CallsClient", () => {
     expect(joined).toEqual(["ringing"]);
     expect(states).toEqual(["connected"]);
 
+    // Lifecycle state is authoritative even when it moves backward during a
+    // participant reconnect; only stale HTTP invitation replies are ranked.
+    life.text({
+      type: "event",
+      event: "call.participant_state",
+      callId: "CALL-1",
+      payload: { callId: "CALL-1", participant },
+      timestamp: "",
+    });
+    expect(call!.participants).toEqual([participant]);
+    expect(states).toEqual(["connected", "ringing"]);
+
     life.text({
       type: "event",
       event: "call.participant_left",
@@ -611,6 +623,79 @@ describe("CallsClient", () => {
     api.addParticipant.mockResolvedValueOnce({ ...departed, state: "invited" });
     await call!.addParticipant("+15550103");
     expect(call!.participants).toEqual([{ ...departed, state: "invited" }]);
+  });
+
+  it("does not apply an invite reply after the call ends", async () => {
+    const api = fakeApi();
+    let resolveInvite: (participant: Participant) => void = () => undefined;
+    api.addParticipant.mockImplementationOnce(
+      () =>
+        new Promise<Participant>((resolve) => {
+          resolveInvite = resolve;
+        }),
+    );
+    const h = clientWith(api, { mediaMode: "external" });
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const adding = call!.addParticipant("+15550104");
+    await flush();
+    life.text({
+      type: "event",
+      event: "call.ended",
+      callId: "CALL-1",
+      payload: { reason: "hangup" },
+      timestamp: "",
+    });
+    resolveInvite({
+      id: "p-ended",
+      handle: "+15550104",
+      audioMuted: false,
+      video: false,
+      state: "invited",
+    });
+    await adding;
+    expect(call!.ended).toBe(true);
+    expect(call!.participants).toEqual([]);
+  });
+
+  it("ignores concurrent duplicate invite replies after newer lifecycle state", async () => {
+    const api = fakeApi();
+    const resolveInvites: ((participant: Participant) => void)[] = [];
+    api.addParticipant.mockImplementation(
+      () =>
+        new Promise<Participant>((resolve) => {
+          resolveInvites.push(resolve);
+        }),
+    );
+    const h = clientWith(api, { mediaMode: "external" });
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+
+    const first = call!.addParticipant("+15550105");
+    const duplicate = call!.addParticipant("+15550105");
+    await flush();
+    const connectedParticipant = {
+      id: "p-concurrent",
+      handle: "+15550105",
+      audioMuted: false,
+      video: false,
+      state: "connected",
+    } satisfies Participant;
+    life.text({
+      type: "event",
+      event: "call.participant_state",
+      callId: "CALL-1",
+      payload: { callId: "CALL-1", participant: connectedParticipant },
+      timestamp: "",
+    });
+    for (const resolve of resolveInvites)
+      resolve({ ...connectedParticipant, state: "invited" });
+    await Promise.all([first, duplicate]);
+    expect(call!.participants).toEqual([connectedParticipant]);
   });
 
   it("refuses to construct without a credential or an api seam", () => {

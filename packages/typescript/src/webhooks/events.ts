@@ -3,6 +3,9 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "business.quick_reply.update",
   "call.accepted",
   "call.missed",
+  "call.participant_joined",
+  "call.participant_left",
+  "call.participant_state",
   "call.received",
   "call.rejected",
   "chat.archive",
@@ -253,6 +256,25 @@ export interface CallMissedPayload extends CallReceivedPayload {
 export type CallAcceptedPayload = CallReceivedPayload;
 export type CallRejectedPayload = CallReceivedPayload;
 
+export interface CallParticipant {
+  readonly id: string;
+  readonly handle: string;
+  readonly audioMuted: false;
+  readonly video: false;
+  readonly state: "invited" | "ringing" | "connected" | "left";
+}
+
+export interface CallParticipantPayload {
+  readonly callId: string;
+  readonly participant: CallParticipant;
+}
+
+export interface CallParticipantLeftPayload {
+  readonly callId: string;
+  readonly participantId: string;
+  readonly reason?: string;
+}
+
 export interface NewsletterUpdatePayload {
   readonly id: string;
   readonly action: string;
@@ -327,6 +349,9 @@ export interface WebhookPayloadMap {
   readonly "business.quick_reply.update": BusinessQuickReplyUpdatePayload;
   readonly "call.accepted": CallAcceptedPayload;
   readonly "call.missed": CallMissedPayload;
+  readonly "call.participant_joined": CallParticipantPayload;
+  readonly "call.participant_left": CallParticipantLeftPayload;
+  readonly "call.participant_state": CallParticipantPayload;
   readonly "call.received": CallReceivedPayload;
   readonly "call.rejected": CallRejectedPayload;
   readonly "chat.archive": ChatArchivePayload;
