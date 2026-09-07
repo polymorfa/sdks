@@ -168,8 +168,13 @@ describe("browser widget and shared calls client", () => {
       const deletes = () =>
         f.fetch.mock.calls.filter(([, init]) => init?.method === "DELETE");
       expect(deletes()).toHaveLength(1);
-      await f.calls.controller.hangup();
+      event(socket, "call.received", "CALL-SECOND", { from: "+15550101" });
+      await flush();
+      expect(f.calls.controller.getSnapshot().callId).toBe("CALL-IN");
       expect(deletes()).toHaveLength(2);
+      expect(String(deletes()[1]![0])).toContain("/CALL-SECOND");
+      await f.calls.controller.hangup();
+      expect(deletes()).toHaveLength(3);
       expect(f.calls.controller.getSnapshot()).toMatchObject({
         status: "ended",
         endReason: "hangup",

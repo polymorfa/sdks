@@ -129,8 +129,10 @@ export function createBrowserCalls(options: BrowserCallsOptions): BrowserCalls {
   client.on("incoming", (call) => {
     if (disposed || call.ended) return;
     // One widget owns one call. Decline additional calls instead of losing their controls.
+    const activeCall = controller.call;
     if (
       placing ||
+      (activeCall !== undefined && !activeCall.ended) ||
       !["idle", "ready", "ended", "error"].includes(
         controller.getSnapshot().status,
       )
