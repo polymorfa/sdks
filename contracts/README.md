@@ -2,14 +2,14 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`8c244aab0e5626d101a2c8c4915287427f39e014`. `source.json` records their original
+`6918c56135e28ba64557e344cb72889f1f517eb5`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        271 |
+| Covered             |        274 |
 | Missing             |          0 |
-| Excluded            |        131 |
+| Excluded            |        128 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
 | Total               |        402 |
@@ -20,13 +20,17 @@ successful live call.
 
 ## Reconciliation
 
-This refresh adds and removes no operations. Two Messaging operation
-fingerprints changed: browser candidate retrieval remains excluded from the
-server SDK, and `MessagingClient.voip.agentToken` remains covered by its typed
-method and request test. Schema updates include literal webhook event names,
-nullable terminal-call callers, participant lifecycle events, client-token
-delegation scopes, and TURN health diagnostics. These changes do not alter the
-operation coverage totals or the existing missing-operation inventory.
+This contract refresh adds and removes no operations and changes no operation
+fingerprints. It retires the `session.qr` webhook schema and callback, and it
+documents that direct QR and pairing-code session routes require an
+organization entitlement while hosted QuickLinks are the standard pairing
+flow.
+
+The SDK now covers the three existing QuickLink operations through
+`MessagingClient.quickLinks.create`, `retrieve`, and `cancel`. Those rows moved
+from excluded to covered, increasing covered operations from 271 to 274 and
+reducing excluded operations from 131 to 128. The missing-operation inventory
+remains empty.
 
 This snapshot records complete handwritten TypeScript coverage for every
 customer-credential-compatible operation in the pinned contracts. Routes that

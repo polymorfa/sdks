@@ -165,6 +165,16 @@ export {
   PRESENCE_UNKNOWN_REASONS,
 } from "./messaging/types.js";
 export { QuickRepliesResource } from "./messaging/quick-replies.js";
+export {
+  QuickLinksResource,
+  type CancelQuickLinkResponse,
+  type CreateQuickLinkRequest,
+  type CreateQuickLinkResponse,
+  type GetQuickLinkResponse,
+  type QuickLink,
+  type QuickLinkStatus,
+  type QuickLinkStatusValue,
+} from "./messaging/quicklinks.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
 export { UsersResource } from "./messaging/users.js";
@@ -606,7 +616,6 @@ export {
   type SessionConnectedPayload,
   type SessionLoggedOutPayload,
   type SessionPhoneOfflinePayload,
-  type SessionQrPayload,
   type SessionStatusPayload,
   type UnknownWebhookEvent,
   type WebhookBody,

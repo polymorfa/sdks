@@ -30,6 +30,15 @@ describe("credential validation", () => {
     });
   });
 
+  it("accepts the single project token format for Messaging routes", () => {
+    expect(
+      validateMessagingCredential({
+        type: "projectToken",
+        value: "pmfa_pt_example",
+      }),
+    ).toEqual({ type: "projectToken", value: "pmfa_pt_example" });
+  });
+
   it("rejects a mismatched Messaging credential discriminator", () => {
     expect(() =>
       validateMessagingCredential({ type: "apiKey", value: "pmfa_ct_example" }),
@@ -40,6 +49,12 @@ describe("credential validation", () => {
         value: "pmfa_example",
       }),
     ).toThrow(/Messaging client token/);
+    expect(() =>
+      validateMessagingCredential({
+        type: "projectToken",
+        value: "pmfa_example",
+      }),
+    ).toThrow(/Messaging project token/);
   });
 
   it("rejects client, project, and listener tokens as organization keys", () => {
@@ -65,7 +80,13 @@ describe("credential validation", () => {
 
   it("rejects server API keys in a browser runtime", () => {
     expect(() => assertServerRuntime({ window: {} })).toThrow(
-      /server API keys cannot be used in browsers/,
+      /server credentials cannot be used in browser runtimes/,
     );
+  });
+
+  it("rejects server credentials in browser workers", () => {
+    expect(() =>
+      assertServerRuntime({ importScripts: () => undefined }),
+    ).toThrow(/server credentials cannot be used in browser runtimes/);
   });
 });

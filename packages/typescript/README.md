@@ -67,6 +67,10 @@ only owner-bound management resources; organization resources such as
 `MessagingClient` remains separate because its session APIs and credentials
 have a different authorization boundary.
 
+Messaging credentials are explicit: `apiKey` for an organization server key,
+`projectToken` for the single opaque project-token format, and `clientToken`
+for the browser action allowlist. Server credentials fail in browser runtimes.
+
 The SDK rejects `pmfa_ct_` browser tokens and CLI-only `pmfa_ls_` listener
 credentials before a management request. It does not expose a listener,
 `AsyncIterable`, event emitter, or forwarding API. Live forwarding belongs to
@@ -156,33 +160,28 @@ session rules can delegate to the browser token.
 
 ## Session connection lifecycle
 
-Start a Linked Device session, retrieve its JSON QR payload or request a phone
-pairing code, then poll the returned durable lifecycle operation. Pairing
-requires `sessions:manage`; operation retrieval accepts any of
-`sessions:read`, `campaigns:read`, or `webhooks:manage`.
+Start a Linked Device session, then poll the returned durable lifecycle
+operation. The standard pairing flow is QuickLink. Direct JSON QR and phone
+pairing-code routes require `sessions:manage` plus an explicit organization
+entitlement; without it, the API returns `403` and the application must create
+a QuickLink. Operation retrieval accepts any of `sessions:read`,
+`campaigns:read`, or `webhooks:manage`.
 
 ```ts
 const started = await messaging.sessions.start("support", {
   idempotencyKey: "start-support",
 });
 
-const qr = await messaging.sessions.qr("support");
-console.log(qr.data.data.qr, qr.metadata.requestId);
-
-const pairingCode = await messaging.sessions.requestPairingCode(
-  "support",
-  { phone: "+15551234567" },
-  { idempotencyKey: "pair-support-phone" },
-);
-
 const operation = await messaging.operations.retrieve(started.data.operationId);
-console.log(pairingCode.data.data.code, operation.data.data.status);
+console.log(operation.data.data.status);
 ```
 
 `sessions.retrieve` is the typed source of session connection status. The
 pinned API contract does not expose session logs or a separate
-connection-status endpoint. QR image rendering remains an application concern;
-the server SDK deliberately requests the typed JSON QR representation.
+connection-status endpoint. The API no longer emits `session.qr` webhook
+events. Applications must observe QuickLink state through the QuickLink flow;
+the entitlement-gated `sessions.qr` and `sessions.requestPairingCode` methods
+remain available only for organizations that have direct pairing enabled.
 
 ## Project templates
 
@@ -927,11 +926,9 @@ event history, replay, or delivery-listener endpoint.
 
 This Messaging family is distinct from `Client.campaigns`, which maps
 the Management API's organization-key campaign model. The Messaging routes
-accept organization API keys. Their live authorization layer also accepts a
-project token only when it is bound to the exact path project, but the public
-`MessagingClient` credential contract does not accept project tokens, so this
-resource deliberately remains organization-key-only. Browser client tokens
-are not allowlisted for any campaign action and fail before the handler.
+accept organization API keys and project tokens bound to the exact path
+project. Browser client tokens are not allowlisted for any campaign action and
+fail before the handler.
 Campaigns are project control-plane objects and have no Linked Device versus
 Cloud session-mode discriminator.
 
@@ -1185,7 +1182,30 @@ are not exposed by the server SDK. Browser client tokens are rejected by the
 Management API. Project tokens are accepted only by a project-scoped `Client`;
 organization-only resources are absent from that view's public type.
 
-## QuickLink settings
+## QuickLink lifecycle and settings
+
+`MessagingClient.quickLinks` owns the authenticated hosted pairing lifecycle:
+
+```ts
+const quickLink = await messaging.quickLinks.create(
+  {
+    projectId: "11111111-2222-4333-8444-555555555555",
+    methods: ["qr", "pairing"],
+    expiresInSeconds: 900,
+  },
+  { idempotencyKey: crypto.randomUUID() },
+);
+
+const status = await messaging.quickLinks.retrieve(quickLink.data.data.id);
+console.log(quickLink.data.data.url, status.data.data.status);
+```
+
+The resource accepts organization API keys or project tokens with
+`quicklink:manage`. It rejects browser client tokens before transport. An
+organization key can select `projectId` when creating a link; a project token
+is bound by the server. `cancel()` invalidates a pending link and removes its
+pending session. Connected links cannot be cancelled. The source exposes no
+list, recover, or history operation.
 
 `Client.quickLinkSettings.retrieve` and `update` map the management
 `GET /v1/quicklink` and `PUT /v1/quicklink` operations. Use them on the root
@@ -1201,10 +1221,10 @@ const projectSettings = await platform
   );
 ```
 
-These methods manage saved settings only. The server SDK has no hosted
-QuickLink creation, inspection, or cancellation method for `/api/quicklinks`.
-Those ephemeral flows belong to an application adapter and the browser
-QuickLink controller. Console-only logo routes are also outside this client.
+These methods manage saved settings only. Hosted lifecycle methods stay on
+`MessagingClient.quickLinks`, not `Client` or `client.project(...)`, because
+the `/api/quicklinks/{id}` routes do not carry an immutable project path for an
+organization-key project view. Console-only logo routes are outside the SDK.
 
 ## Management session lifecycle
 

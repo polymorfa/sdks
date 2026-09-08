@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`8c244aab0e5626d101a2c8c4915287427f39e014`. Graph-compatible APIs are outside
+`6918c56135e28ba64557e344cb72889f1f517eb5`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -76,16 +76,18 @@ const sent = await messaging.messages.send(
 console.log(sent.data.data.id, sent.metadata.attempts);
 ```
 
-Messaging credentials use an explicit discriminator. Server keys use
-`{ type: "apiKey", value }`; short-lived client tokens use
+Messaging credentials use an explicit discriminator. Organization server keys
+use `{ type: "apiKey", value }`, project tokens use
+`{ type: "projectToken", value }`, and short-lived client tokens use
 `{ type: "clientToken", value }`. A discriminator/prefix mismatch fails before
-any network request. Server keys are rejected in browser runtimes.
+any network request. Server credentials are rejected in browser runtimes.
 
 The handwritten Messaging resources in this milestone are:
 
 - `sessions`: list, create, retrieve, update, delete, start, stop, restart,
-  logout, account, JSON QR retrieval, and phone pairing codes
+  logout, account, and entitlement-gated direct JSON QR or phone pairing
 - `operations`: retrieve durable lifecycle operation status
+- `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call
@@ -377,15 +379,20 @@ The SDK has no listener, event stream, `AsyncIterable`, or forwarding API.
 credential cannot be used by `Client`, `MessagingClient`, or their raw request
 helpers.
 
-## QuickLink settings
+## QuickLink lifecycle and settings
+
+`MessagingClient.quickLinks.create()`, `retrieve()`, and `cancel()` map the
+authenticated hosted lifecycle at `/api/quicklinks`. They accept organization
+API keys or project tokens with `quicklink:manage`; browser client tokens fail
+before transport. Organization keys can set `projectId` on creation, while a
+project token remains bound by the server.
+
+These methods expose the short-lived connection URL and status record. They do
+not add list, recovery, or history operations that the API does not provide.
 
 `client.quickLinkSettings.retrieve()` and `update()` map only the management
 `GET /v1/quicklink` and `PUT /v1/quicklink` settings contract. The same methods
 on `client.project(projectId)` use the immutable project ownership context.
-
-The SDK does not expose hosted QuickLink creation, inspection, or cancellation
-for `/api/quicklinks`. Those ephemeral flows belong to an application adapter
-and the browser controller, not the management client.
 
 ## Browser controllers and UI
 

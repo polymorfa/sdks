@@ -725,51 +725,6 @@
           "payload"
         ]
       },
-      "SessionQRPayload": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code"
-        ]
-      },
-      "SessionQREvent": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique event identifier"
-          },
-          "session": {
-            "type": "string",
-            "description": "Session that produced this event"
-          },
-          "timestamp": {
-            "type": "string",
-            "description": "ISO 8601 timestamp"
-          },
-          "event": {
-            "type": "string",
-            "enum": [
-              "session.qr"
-            ],
-            "description": "Event type"
-          },
-          "payload": {
-            "$ref": "#/components/schemas/SessionQRPayload"
-          }
-        },
-        "required": [
-          "id",
-          "session",
-          "timestamp",
-          "event",
-          "payload"
-        ]
-      },
       "SessionConnectedPayload": {
         "type": "object",
         "properties": {
@@ -13377,6 +13332,7 @@
           "Pairing"
         ],
         "summary": "Get QR code for device pairing",
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sessions:manage`\n\nDirect QR retrieval requires an explicit organization entitlement. Create a QuickLink for the standard pairing flow.",
         "security": [
           {
             "BearerAuth": []
@@ -13444,7 +13400,7 @@
             }
           },
           "403": {
-            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "description": "Direct pairing is unavailable; create a QuickLink unless the organization has the direct-pairing entitlement",
             "content": {
               "application/json": {
                 "schema": {
@@ -13479,8 +13435,7 @@
         },
         "x-protocols": [
           "Linked Device API"
-        ],
-        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sessions:manage`"
+        ]
       }
     },
     "/api/{session}/pair/code": {
@@ -13490,6 +13445,7 @@
           "Pairing"
         ],
         "summary": "Request a pairing code for a phone number",
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sessions:manage`\n\nDirect pairing-code retrieval requires an explicit organization entitlement. Create a QuickLink for the standard pairing flow.",
         "security": [
           {
             "BearerAuth": []
@@ -13547,7 +13503,7 @@
             }
           },
           "403": {
-            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "description": "Direct pairing is unavailable; create a QuickLink unless the organization has the direct-pairing entitlement",
             "content": {
               "application/json": {
                 "schema": {
@@ -13582,8 +13538,7 @@
         },
         "x-protocols": [
           "Linked Device API"
-        ],
-        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sessions:manage`"
+        ]
       }
     },
     "/api/{session}/messages/send": {
@@ -30322,30 +30277,6 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SessionStatusEvent"
-              }
-            }
-          }
-        },
-        "responses": {
-          "2XX": {
-            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
-          }
-        }
-      }
-    },
-    "session.qr": {
-      "post": {
-        "operationId": "onSessionQr",
-        "summary": "QR code issued for device linking",
-        "tags": [
-          "Webhooks"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SessionQREvent"
               }
             }
           }

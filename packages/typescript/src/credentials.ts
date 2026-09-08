@@ -2,6 +2,7 @@ import { PolymorfaConfigurationError } from "./errors.js";
 
 export type MessagingCredential =
   | { readonly type: "apiKey"; readonly value: string }
+  | { readonly type: "projectToken"; readonly value: string }
   | { readonly type: "clientToken"; readonly value: string };
 
 export interface SharedClientOptions {
@@ -39,6 +40,15 @@ export type ClientOptions =
 export function validateMessagingCredential(
   credential: MessagingCredential,
 ): MessagingCredential {
+  if (credential.type === "projectToken") {
+    if (!isProjectToken(credential.value)) {
+      throw new PolymorfaConfigurationError(
+        "Messaging project tokens must use the pmfa_pt_ prefix.",
+        "credential",
+      );
+    }
+    return credential;
+  }
   if (credential.type === "clientToken") {
     if (
       !credential.value.startsWith("pmfa_ct_") ||
@@ -102,13 +112,23 @@ function rejectListenerCredential(value: string): void {
 }
 
 export function assertServerRuntime(
-  runtime: { readonly window?: unknown } = globalThis as {
+  runtime: {
     readonly window?: unknown;
-  },
+    readonly importScripts?: unknown;
+    readonly constructor?: { readonly name?: string };
+  } = globalThis,
 ): void {
-  if (typeof runtime.window !== "undefined") {
+  const globalName = runtime.constructor?.name ?? "";
+  const isBrowserWorker =
+    typeof runtime.importScripts === "function" ||
+    globalName === "DedicatedWorkerGlobalScope" ||
+    globalName === "SharedWorkerGlobalScope" ||
+    globalName === "ServiceWorkerGlobalScope" ||
+    globalName.endsWith("WorkletGlobalScope");
+
+  if (typeof runtime.window !== "undefined" || isBrowserWorker) {
     throw new PolymorfaConfigurationError(
-      "Polymorfa server API keys cannot be used in browsers.",
+      "Polymorfa server credentials cannot be used in browser runtimes.",
       "runtime",
     );
   }
@@ -122,4 +142,8 @@ function isServerApiKey(value: string): boolean {
     !value.startsWith("pmfa_pt_") &&
     !value.startsWith("pmfa_ls_")
   );
+}
+
+function isProjectToken(value: string): boolean {
+  return value.startsWith("pmfa_pt_") && value.length > "pmfa_pt_".length;
 }

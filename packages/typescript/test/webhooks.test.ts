@@ -55,6 +55,10 @@ describe("verifyWebhookSignature", () => {
 });
 
 describe("webhook utilities", () => {
+  it("does not advertise the retired direct-QR event", () => {
+    expect(KNOWN_WEBHOOK_EVENT_TYPES).not.toContain("session.qr");
+  });
+
   it("creates canonical exact-byte fixtures and verifies them", async () => {
     const event = JSON.parse(raw.toString("utf8")) as MessageReceivedEvent;
     const fixture = await webhooks.createFixture({

@@ -35,7 +35,6 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "session.connected",
   "session.logged_out",
   "session.phone_offline",
-  "session.qr",
   "session.status",
 ] as const;
 
@@ -156,10 +155,6 @@ export interface PollVotePayload {
 export interface SessionStatusPayload {
   readonly status: string;
   readonly statusReason?: string;
-}
-
-export interface SessionQrPayload {
-  readonly code: string;
 }
 
 export interface SessionConnectedPayload {
@@ -410,7 +405,6 @@ export interface WebhookPayloadMap {
   readonly "session.connected": SessionConnectedPayload;
   readonly "session.logged_out": SessionLoggedOutPayload;
   readonly "session.phone_offline": SessionPhoneOfflinePayload;
-  readonly "session.qr": SessionQrPayload;
   readonly "session.status": SessionStatusPayload;
 }
 
