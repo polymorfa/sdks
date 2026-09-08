@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`3bf3a6ba3de8b19a547afd16fca1f3b368d7d4e7`. Graph-compatible APIs are outside
+`8c244aab0e5626d101a2c8c4915287427f39e014`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -283,12 +283,11 @@ if (isEvent(event, "message.received")) {
 
 Native deliveries use the hexadecimal `X-Webhook-Signature` value. The helper
 also accepts the `sha256=<hex>` compatibility form. Verification uses
-HMAC-SHA256 and constant-time comparison over the unmodified bytes. Known
-events narrow to exported payload types for all 33 event schemas in the pinned
-Messaging contract, including messages, sessions, groups, presence, contacts,
-chats, calls, labels, history sync, command results, and business quick
-replies. Unknown event names and payloads are preserved for forward
-compatibility.
+HMAC-SHA256 and constant-time comparison over the unmodified bytes. Recognized
+events narrow to exported payload types, including messages, sessions, groups,
+presence, contacts, chats, calls, labels, history sync, command results, and
+business quick replies. Unknown event names and payloads are preserved for
+forward compatibility.
 
 Messaging server credentials can manage webhook registrations through
 `MessagingClient.webhooks`. The Platform contract also defines organization
@@ -374,8 +373,9 @@ and video) or `cloudApi` (the WhatsApp Business Calling API, audio only). Every
 component gates on the snapshot's `capabilities`, never on the line name. The
 controller also owns capture/playback device choice (`setPreferredDevices`,
 `switchDevice`, `refreshDevices`) so a microphone or camera swap mid-call is a
-track replacement, not a renegotiation. The shared call model supports participant invitations. Live roster updates
-are available on programmatic media sockets, not the browser WebRTC path.
+track replacement, not a renegotiation. The shared call model supports
+participant invitations. Browser WebRTC calls receive live participant joins,
+state changes, and departures through the lifecycle stream.
 
 `@polymorfa/react` ships the complete call UI: `CallSurface` (incoming card,
 stage, control dock, and a pop-out window), plus `IncomingCallCard`,

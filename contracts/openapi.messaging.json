@@ -281,6 +281,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.received"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -339,6 +342,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.sent"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -401,6 +407,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.ack"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -432,6 +441,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.revoked"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -463,6 +475,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.reaction"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -494,6 +509,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.edited"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -525,6 +543,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -579,6 +600,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.delete"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -636,6 +660,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.vote"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -681,6 +708,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "session.status"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -723,6 +753,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "session.qr"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -779,6 +812,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "session.connected"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -821,6 +857,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "session.logged_out"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -883,6 +922,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "session.phone_offline"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -934,6 +976,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "group.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1000,6 +1045,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "group.participant"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1060,6 +1108,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "presence.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1136,6 +1187,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "contact.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1184,6 +1238,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "chat.archive"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1233,6 +1290,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "chat.mute"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1279,6 +1339,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "chat.read"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1321,6 +1384,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "chat.clear"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1363,6 +1429,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "chat.delete"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1415,6 +1484,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "call.received"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1465,6 +1537,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "call.missed"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1511,6 +1586,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "call.accepted"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1557,6 +1635,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "call.rejected"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1575,7 +1656,34 @@
         "type": "object",
         "properties": {
           "from": {
-            "$ref": "#/components/schemas/JIDRef"
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "phoneNumber": {
+                "type": "string"
+              },
+              "username": {
+                "type": "string"
+              },
+              "lid": {
+                "type": "string",
+                "deprecated": true
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "pn",
+                  "lid"
+                ],
+                "deprecated": true
+              }
+            },
+            "required": [
+              "id"
+            ]
           },
           "callId": {
             "type": "string"
@@ -1587,7 +1695,7 @@
           },
           "reason": {
             "type": "string",
-            "description": "Termination reason: user_hangup | timeout | lost_connection | rejected | capacity.",
+            "description": "Termination reason: user_hangup | timeout | lost_connection | rejected | capacity | pod_lost.",
             "example": "user_hangup"
           },
           "direction": {
@@ -1631,6 +1739,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "call.ended"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1733,10 +1844,189 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "call.telemetry"
+            ],
             "description": "Event type"
           },
           "payload": {
             "$ref": "#/components/schemas/CallTelemetryPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CallParticipant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "audioMuted": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "Reserved; false until WhatsApp exposes authoritative participant mute state."
+          },
+          "video": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "Reserved; false until WhatsApp exposes authoritative participant video state."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "invited",
+              "ringing",
+              "connected",
+              "left"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "handle",
+          "audioMuted",
+          "video",
+          "state"
+        ]
+      },
+      "CallParticipantPayload": {
+        "type": "object",
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "participant": {
+            "$ref": "#/components/schemas/CallParticipant"
+          }
+        },
+        "required": [
+          "callId",
+          "participant"
+        ]
+      },
+      "CallParticipantJoinedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.participant_joined"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallParticipantPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CallParticipantStateEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.participant_state"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallParticipantPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CallParticipantLeftPayload": {
+        "type": "object",
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "participantId": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "callId",
+          "participantId"
+        ]
+      },
+      "CallParticipantLeftEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.participant_left"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallParticipantLeftPayload"
           }
         },
         "required": [
@@ -1782,6 +2072,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "newsletter.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1856,6 +2149,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "blocklist.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1953,6 +2249,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "labels.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2034,6 +2333,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "business.quick_reply.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2129,6 +2431,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "history.sync"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2186,6 +2491,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "command.result"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2266,6 +2574,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.enabled"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2342,6 +2653,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.created"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2432,6 +2746,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.updated"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2518,6 +2835,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.archiving"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2594,6 +2914,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.archived"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2670,6 +2993,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.restored"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2751,6 +3077,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.pairing_link.created"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2832,6 +3161,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.pairing_link.opened"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2918,6 +3250,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.pairing_link.connected"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3004,6 +3339,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.pairing_link.failed"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3085,6 +3423,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.pairing_link.expired"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3175,6 +3516,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.pairing_link.revoked"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3260,6 +3604,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.number.attached"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3346,6 +3693,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.number.transferred"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3432,6 +3782,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.number.disconnected"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -10978,7 +11331,7 @@
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "description": "Polymorfa API key (pmfa_ prefix) or client token (pmfa_ct_ prefix)."
+        "description": "Polymorfa organization key (pmfa_ prefix), project token (pmfa_pt_ prefix) where supported, or short-lived client token (pmfa_ct_ prefix). Organization and project keys may be personal or service-account owned and enforce selected action scopes. Organization keys cover the team and its projects; project tokens stay inside one project. Client tokens stay inside their live project and session and enforce their client rules."
       }
     }
   },
@@ -11015,7 +11368,7 @@
         "security": [],
         "responses": {
           "200": {
-            "description": "All services healthy",
+            "description": "Required readiness checks pass; optional diagnostics may report degraded or in-progress state",
             "content": {
               "application/json": {
                 "schema": {
@@ -11210,7 +11563,15 @@
             "BearerAuth": []
           }
         ],
-        "x-required-scope": "sessions:manage",
+        "x-required-scopes": [
+          "sessions:manage",
+          "messages:write",
+          "contacts:read",
+          "presence:read",
+          "presence:observe",
+          "mcp"
+        ],
+        "x-required-scope-mode": "all",
         "requestBody": {
           "content": {
             "application/json": {
@@ -11283,9 +11644,9 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
         },
-        "description": "**Required scope:** `sessions:manage`"
+        "description": "**Required scopes (all):** `sessions:manage` · `messages:write` · `contacts:read` · `presence:read` · `presence:observe` · `mcp`"
       }
     },
     "/api/sessions/{session}/client-rules": {
@@ -11389,7 +11750,15 @@
             "BearerAuth": []
           }
         ],
-        "x-required-scope": "sessions:manage",
+        "x-required-scopes": [
+          "sessions:manage",
+          "messages:write",
+          "contacts:read",
+          "presence:read",
+          "presence:observe",
+          "mcp"
+        ],
+        "x-required-scope-mode": "all",
         "parameters": [
           {
             "schema": {
@@ -11472,9 +11841,9 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
         },
-        "description": "**Required scope:** `sessions:manage`"
+        "description": "**Required scopes (all):** `sessions:manage` · `messages:write` · `contacts:read` · `presence:read` · `presence:observe` · `mcp`"
       },
       "delete": {
         "operationId": "deleteClientRules",
@@ -14519,7 +14888,7 @@
             }
           },
           "503": {
-            "description": "Call refused — the owning pod is at capacity or draining",
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
             "content": {
               "application/json": {
                 "schema": {
@@ -14651,7 +15020,7 @@
             }
           },
           "503": {
-            "description": "Call refused — the owning pod is at capacity or draining",
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
             "content": {
               "application/json": {
                 "schema": {
@@ -14843,8 +15212,38 @@
               }
             }
           },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
             "content": {
               "application/json": {
                 "schema": {
@@ -14866,7 +15265,7 @@
           "VoIP"
         ],
         "summary": "Place an outbound call from a session",
-        "description": "**Required scope:** `sessions:manage`\n\nOriginates a WhatsApp call to `to` (an E.164 phone number or a WhatsApp JID) from the named session. The call rings on the callee's device: `call.accepted` follows when they pick up and `call.ended` when either side hangs up. Attach media like any other call — `/offer` for a browser, the SDK media socket for programmatic audio/video. Client tokens place from their bound session; server keys must name one.",
+        "description": "**Required scope:** `sessions:manage`\n\nOriginates a WhatsApp call to `to` (an E.164 phone number or a WhatsApp JID) from the named session. The call rings on the callee's device: `call.accepted` follows when they pick up and `call.ended` when either side hangs up. Attach media like any other call — `/offer` for a browser, the SDK media socket for programmatic audio/video. Client tokens place from their bound session; server keys must name one. Outbound starts share a rate limit per organization and source session across server keys and client tokens; client-token rules also apply.",
         "security": [
           {
             "BearerAuth": []
@@ -14954,7 +15353,7 @@
             }
           },
           "429": {
-            "description": "Call setup rate exceeded for this client token, or its concurrency limit is reached",
+            "description": "Outbound call rate exceeded for this organization and source session, or a client-token setup or concurrency limit was reached",
             "content": {
               "application/json": {
                 "schema": {
@@ -14984,7 +15383,7 @@
             }
           },
           "503": {
-            "description": "Call refused — the owning pod is at capacity or draining",
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
             "content": {
               "application/json": {
                 "schema": {
@@ -15116,7 +15515,7 @@
             }
           },
           "503": {
-            "description": "Call refused — the owning pod is at capacity or draining",
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
             "content": {
               "application/json": {
                 "schema": {
@@ -15239,7 +15638,7 @@
             }
           },
           "503": {
-            "description": "Call refused — the owning pod is at capacity or draining",
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
             "content": {
               "application/json": {
                 "schema": {
@@ -15381,7 +15780,7 @@
             }
           },
           "503": {
-            "description": "Call refused — the owning pod is at capacity or draining",
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
             "content": {
               "application/json": {
                 "schema": {
@@ -15602,7 +16001,7 @@
             }
           },
           "503": {
-            "description": "Call refused — the owning pod is at capacity or draining",
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
             "content": {
               "application/json": {
                 "schema": {
@@ -15694,8 +16093,38 @@
               }
             }
           },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
             "content": {
               "application/json": {
                 "schema": {
@@ -15818,7 +16247,7 @@
             }
           },
           "503": {
-            "description": "Call refused — the owning pod is at capacity or draining",
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
             "content": {
               "application/json": {
                 "schema": {
@@ -15846,7 +16275,15 @@
             "BearerAuth": []
           }
         ],
-        "x-required-scope": "sessions:manage",
+        "x-required-scopes": [
+          "sessions:manage",
+          "messages:write",
+          "contacts:read",
+          "presence:read",
+          "presence:observe",
+          "mcp"
+        ],
+        "x-required-scope-mode": "all",
         "requestBody": {
           "content": {
             "application/json": {
@@ -15919,9 +16356,9 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
         },
-        "description": "**Required scope:** `sessions:manage`"
+        "description": "**Required scopes (all):** `sessions:manage` · `messages:write` · `contacts:read` · `presence:read` · `presence:observe` · `mcp`"
       }
     },
     "/api/{session}/groups": {
@@ -29674,7 +30111,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -29698,7 +30135,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -29722,7 +30159,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -29746,7 +30183,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -29770,7 +30207,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -29794,7 +30231,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -29818,7 +30255,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -29842,7 +30279,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -29866,7 +30303,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -29890,7 +30327,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -29914,7 +30351,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -29938,7 +30375,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -29962,7 +30399,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -29986,7 +30423,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30010,7 +30447,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30034,7 +30471,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30058,7 +30495,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30082,7 +30519,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30106,7 +30543,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30130,7 +30567,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30154,7 +30591,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30178,7 +30615,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30202,7 +30639,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30226,7 +30663,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30250,7 +30687,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30274,7 +30711,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30298,7 +30735,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30322,7 +30759,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30346,7 +30783,79 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "call.participant_joined": {
+      "post": {
+        "operationId": "onCallParticipantJoined",
+        "summary": "Participant joined a call",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallParticipantJoinedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "call.participant_state": {
+      "post": {
+        "operationId": "onCallParticipantState",
+        "summary": "Participant call state changed",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallParticipantStateEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "call.participant_left": {
+      "post": {
+        "operationId": "onCallParticipantLeft",
+        "summary": "Participant left a call",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallParticipantLeftEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30370,7 +30879,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30394,7 +30903,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30418,7 +30927,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30442,7 +30951,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30466,7 +30975,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30490,7 +30999,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30514,7 +31023,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30538,7 +31047,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30562,7 +31071,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30586,7 +31095,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30610,7 +31119,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30634,7 +31143,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30658,7 +31167,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30682,7 +31191,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30706,7 +31215,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30730,7 +31239,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30754,7 +31263,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30778,7 +31287,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30802,7 +31311,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30826,7 +31335,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30850,7 +31359,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }

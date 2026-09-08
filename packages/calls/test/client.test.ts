@@ -1,13 +1,18 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  Call,
   CallsClient,
   MediaSocket,
   encodeAudioFrame,
-  type Call,
+  type CallsClientOptions,
+  type Participant,
 } from "../src/index.js";
 import { FakeWebSocket, fakeApi, flush, timers } from "./helpers.js";
 
-function clientWith(api = fakeApi()) {
+function clientWith(
+  api = fakeApi(),
+  options: Pick<CallsClientOptions, "mediaMode"> = {},
+) {
   FakeWebSocket.instances = [];
   const t = timers();
   const client = new CallsClient({
@@ -20,6 +25,7 @@ function clientWith(api = fakeApi()) {
     clearTimeout: t.clearTimeout,
     random: () => 0.5,
     now: () => 1_000,
+    ...options,
   });
   return { client, api, t, ws: (i = 0) => FakeWebSocket.instances[i]! };
 }
@@ -388,6 +394,310 @@ describe("CallsClient", () => {
     expect(call!.participants.map((p) => p.id)).toEqual([added.id]);
   });
 
+  it("tracks lifecycle roster events only for the matching external-media call", async () => {
+    const h = clientWith(fakeApi(), { mediaMode: "external" });
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+
+    const joined: string[] = [];
+    const states: string[] = [];
+    const left: string[] = [];
+    call!.on("participantJoined", (p) => joined.push(p.state));
+    call!.on("participantState", (p) => states.push(p.state));
+    call!.on("participantLeft", (id) => left.push(id));
+    const participant = {
+      id: "p1",
+      handle: "+15550101",
+      audioMuted: false,
+      video: false,
+      state: "ringing",
+    } satisfies Participant;
+
+    life.text({
+      type: "event",
+      event: "call.participant_joined",
+      callId: "CALL-1",
+      payload: { callId: "CALL-1", participant },
+      timestamp: "",
+    });
+    life.text({
+      type: "event",
+      event: "call.participant_state",
+      callId: "CALL-1",
+      payload: {
+        callId: "CALL-1",
+        participant: { ...participant, audioMuted: true, state: "connected" },
+      },
+      timestamp: "",
+    });
+    // The event envelope and payload must identify the same call.
+    life.text({
+      type: "event",
+      event: "call.participant_state",
+      callId: "CALL-1",
+      payload: {
+        callId: "CALL-OTHER",
+        participant: { ...participant, handle: "wrong-call" },
+      },
+      timestamp: "",
+    });
+    expect(call!.participants).toEqual([
+      { ...participant, audioMuted: true, state: "connected" },
+    ]);
+    expect(joined).toEqual(["ringing"]);
+    expect(states).toEqual(["connected"]);
+
+    // Lifecycle state is authoritative even when it moves backward during a
+    // participant reconnect; only stale HTTP invitation replies are ranked.
+    life.text({
+      type: "event",
+      event: "call.participant_state",
+      callId: "CALL-1",
+      payload: { callId: "CALL-1", participant },
+      timestamp: "",
+    });
+    expect(call!.participants).toEqual([participant]);
+    expect(states).toEqual(["connected", "ringing"]);
+
+    life.text({
+      type: "event",
+      event: "call.participant_left",
+      callId: "CALL-1",
+      payload: { callId: "CALL-1", participantId: "p1", reason: "hangup" },
+      timestamp: "",
+    });
+    expect(call!.participants).toEqual([]);
+    expect(left).toEqual(["p1"]);
+
+    // Duplicate departures do not notify the application twice.
+    life.text({
+      type: "event",
+      event: "call.participant_left",
+      callId: "CALL-1",
+      payload: { callId: "CALL-1", participantId: "p1" },
+      timestamp: "",
+    });
+    expect(call!.participants).toEqual([]);
+    expect(joined).toEqual(["ringing"]);
+    expect(left).toEqual(["p1"]);
+  });
+
+  it("ignores lifecycle roster events for socket-media calls and ended calls", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const event = {
+      type: "event",
+      event: "call.participant_joined",
+      callId: "CALL-1",
+      payload: {
+        callId: "CALL-1",
+        participant: {
+          id: "p1",
+          handle: "+15550101",
+          audioMuted: false,
+          video: false,
+          state: "connected",
+        },
+      },
+      timestamp: "",
+    };
+    life.text(event);
+    expect(call!.participants).toEqual([]);
+
+    const external = clientWith(fakeApi(), { mediaMode: "external" });
+    const externalLife = await connected(external);
+    let endedCall: Call | undefined;
+    external.client.on("incoming", (c) => (endedCall = c));
+    ring(externalLife);
+    externalLife.text({
+      type: "event",
+      event: "call.ended",
+      callId: "CALL-1",
+      payload: { reason: "hangup" },
+      timestamp: "",
+    });
+    externalLife.text(event);
+    expect(endedCall!.participants).toEqual([]);
+  });
+
+  it("keeps newer lifecycle roster state when an invite reply arrives late", async () => {
+    const api = fakeApi();
+    let resolveInvite: (participant: Participant) => void = () => undefined;
+    api.addParticipant.mockImplementationOnce(
+      () =>
+        new Promise<Participant>((resolve) => {
+          resolveInvite = resolve;
+        }),
+    );
+    const h = clientWith(api, { mediaMode: "external" });
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const joined: string[] = [];
+    call!.on("participantJoined", (p) => joined.push(p.state));
+
+    const adding = call!.addParticipant("+15550102");
+    await flush();
+    life.text({
+      type: "event",
+      event: "call.participant_joined",
+      callId: "CALL-1",
+      payload: {
+        callId: "CALL-1",
+        participant: {
+          id: "p-late",
+          handle: "+15550102",
+          audioMuted: false,
+          video: false,
+          state: "connected",
+        },
+      },
+      timestamp: "",
+    });
+    resolveInvite({
+      id: "p-late",
+      handle: "+15550102",
+      audioMuted: false,
+      video: false,
+      state: "invited",
+    });
+    await adding;
+    expect(call!.participants.map((p) => p.state)).toEqual(["connected"]);
+    expect(joined).toEqual(["connected"]);
+
+    life.text({
+      type: "event",
+      event: "call.participant_left",
+      callId: "CALL-1",
+      payload: { callId: "CALL-1", participantId: "p-late" },
+      timestamp: "",
+    });
+    expect(call!.participants).toEqual([]);
+
+    let resolveDepartedInvite: (participant: Participant) => void = () =>
+      undefined;
+    api.addParticipant.mockImplementationOnce(
+      () =>
+        new Promise<Participant>((resolve) => {
+          resolveDepartedInvite = resolve;
+        }),
+    );
+    const departedAdding = call!.addParticipant("+15550103");
+    await flush();
+    const departed = {
+      id: "p-departed",
+      handle: "+15550103",
+      audioMuted: false,
+      video: false,
+      state: "connected",
+    } satisfies Participant;
+    life.text({
+      type: "event",
+      event: "call.participant_joined",
+      callId: "CALL-1",
+      payload: { callId: "CALL-1", participant: departed },
+      timestamp: "",
+    });
+    life.text({
+      type: "event",
+      event: "call.participant_left",
+      callId: "CALL-1",
+      payload: { callId: "CALL-1", participantId: departed.id },
+      timestamp: "",
+    });
+    resolveDepartedInvite({ ...departed, state: "invited" });
+    await departedAdding;
+    expect(call!.participants).toEqual([]);
+
+    api.addParticipant.mockResolvedValueOnce({ ...departed, state: "left" });
+    await call!.addParticipant("+15550103");
+    expect(call!.participants).toEqual([]);
+
+    // A later explicit reinvite is newer than the departure and may restore it.
+    api.addParticipant.mockResolvedValueOnce({ ...departed, state: "invited" });
+    await call!.addParticipant("+15550103");
+    expect(call!.participants).toEqual([{ ...departed, state: "invited" }]);
+  });
+
+  it("does not apply an invite reply after the call ends", async () => {
+    const api = fakeApi();
+    let resolveInvite: (participant: Participant) => void = () => undefined;
+    api.addParticipant.mockImplementationOnce(
+      () =>
+        new Promise<Participant>((resolve) => {
+          resolveInvite = resolve;
+        }),
+    );
+    const h = clientWith(api, { mediaMode: "external" });
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const adding = call!.addParticipant("+15550104");
+    await flush();
+    life.text({
+      type: "event",
+      event: "call.ended",
+      callId: "CALL-1",
+      payload: { reason: "hangup" },
+      timestamp: "",
+    });
+    resolveInvite({
+      id: "p-ended",
+      handle: "+15550104",
+      audioMuted: false,
+      video: false,
+      state: "invited",
+    });
+    await adding;
+    expect(call!.ended).toBe(true);
+    expect(call!.participants).toEqual([]);
+  });
+
+  it("ignores concurrent duplicate invite replies after newer lifecycle state", async () => {
+    const api = fakeApi();
+    const resolveInvites: ((participant: Participant) => void)[] = [];
+    api.addParticipant.mockImplementation(
+      () =>
+        new Promise<Participant>((resolve) => {
+          resolveInvites.push(resolve);
+        }),
+    );
+    const h = clientWith(api, { mediaMode: "external" });
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+
+    const first = call!.addParticipant("+15550105");
+    const duplicate = call!.addParticipant("+15550105");
+    await flush();
+    const connectedParticipant = {
+      id: "p-concurrent",
+      handle: "+15550105",
+      audioMuted: false,
+      video: false,
+      state: "connected",
+    } satisfies Participant;
+    life.text({
+      type: "event",
+      event: "call.participant_state",
+      callId: "CALL-1",
+      payload: { callId: "CALL-1", participant: connectedParticipant },
+      timestamp: "",
+    });
+    for (const resolve of resolveInvites)
+      resolve({ ...connectedParticipant, state: "invited" });
+    await Promise.all([first, duplicate]);
+    expect(call!.participants).toEqual([connectedParticipant]);
+  });
+
   it("refuses to construct without a credential or an api seam", () => {
     expect(() => new CallsClient({ session: "s" })).toThrow(/apiKey/);
   });
@@ -742,4 +1052,231 @@ describe("CallsClient — review round four", () => {
     ).toBeGreaterThan(0);
     h.client.disconnect();
   });
+});
+
+describe("pending placement roster pressure", () => {
+  it.each([
+    [
+      "a duplicate departure omits it",
+      "call.participant_left",
+      { callId: "CALL-FAST", participantId: "p-1" },
+    ],
+    [
+      "a state-left frame follows it",
+      "call.participant_state",
+      {
+        callId: "CALL-FAST",
+        participant: {
+          id: "p-1",
+          handle: "+15550101",
+          state: "left",
+          audioMuted: false,
+          video: false,
+        },
+      },
+    ],
+    [
+      "a joined-left frame follows it",
+      "call.participant_joined",
+      {
+        callId: "CALL-FAST",
+        participant: {
+          id: "p-1",
+          handle: "+15550101",
+          state: "left",
+          audioMuted: false,
+          video: false,
+        },
+      },
+    ],
+  ] as const)(
+    "retains the first departure reason when %s",
+    async (_, event, payload) => {
+      const applied: Parameters<Call["_remoteParticipant"]>[0][] = [];
+      const original = Call.prototype._remoteParticipant;
+      const participant = vi
+        .spyOn(Call.prototype, "_remoteParticipant")
+        .mockImplementation(function (this: Call, frame) {
+          applied.push(frame);
+          original.call(this, frame);
+        });
+      const api = fakeApi();
+      let resolvePlace!: (value: { callId: string }) => void;
+      api.place.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolvePlace = resolve;
+          }),
+      );
+      const h = clientWith(api, { mediaMode: "external" });
+      const life = await connected(h);
+      const placing = h.client.place("+15550100");
+      await flush();
+
+      life.text({
+        type: "event",
+        event: "call.participant_left",
+        callId: "CALL-FAST",
+        timestamp: "",
+        payload: {
+          callId: "CALL-FAST",
+          participantId: "p-1",
+          reason: "hangup",
+        },
+      });
+      life.text({
+        type: "event",
+        event,
+        callId: "CALL-FAST",
+        timestamp: "",
+        payload,
+      });
+
+      resolvePlace({ callId: "CALL-FAST" });
+      await placing;
+      expect(applied).toEqual([
+        { type: "participant_left", participantId: "p-1", reason: "hangup" },
+      ]);
+      participant.mockRestore();
+    },
+  );
+
+  it("evicts the oldest roster entry when a ninth participant arrives", async () => {
+    const api = fakeApi();
+    let resolvePlace!: (value: { callId: string }) => void;
+    api.place.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolvePlace = resolve;
+        }),
+    );
+    const h = clientWith(api, { mediaMode: "external" });
+    const life = await connected(h);
+    const placing = h.client.place("+15550100");
+    await flush();
+
+    for (let i = 0; i < 9; i++) {
+      life.text({
+        type: "event",
+        event: "call.participant_joined",
+        callId: "CALL-FAST",
+        timestamp: "",
+        payload: {
+          callId: "CALL-FAST",
+          participant: {
+            id: `p-${i}`,
+            handle: `+1555010${i}`,
+            state: "connected",
+            audioMuted: false,
+            video: false,
+          },
+        },
+      });
+    }
+
+    resolvePlace({ callId: "CALL-FAST" });
+    const call = await placing;
+    expect(call.participants.map((participant) => participant.id)).toEqual([
+      "p-1",
+      "p-2",
+      "p-3",
+      "p-4",
+      "p-5",
+      "p-6",
+      "p-7",
+      "p-8",
+    ]);
+  });
+
+  it.each(["call.ended", "call.missed", "call.rejected", "call.accepted"])(
+    "preserves %s after roster bursts",
+    async (event) => {
+      const api = fakeApi();
+      let resolvePlace!: (value: { callId: string }) => void;
+      api.place.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolvePlace = resolve;
+          }),
+      );
+      const h = clientWith(api, { mediaMode: "external" });
+      const life = await connected(h);
+      const placing = h.client.place("+15550100");
+      await flush();
+      const roster = (i: number) =>
+        life.text({
+          type: "event",
+          event: "call.participant_joined",
+          callId: "CALL-FAST",
+          timestamp: "",
+          payload: {
+            callId: "CALL-FAST",
+            participant: {
+              id: `p-${i}`,
+              handle: "+15550101",
+              state: "connected",
+              audioMuted: false,
+              video: false,
+            },
+          },
+        });
+      for (let i = 0; i < 12; i++) roster(i);
+      life.text({
+        type: "event",
+        event,
+        callId: "CALL-FAST",
+        payload: { reason: "remote_hangup" },
+        timestamp: "",
+      });
+      for (let i = 12; i < 24; i++) roster(i);
+      resolvePlace({ callId: "CALL-FAST" });
+      const call = await placing;
+      if (event === "call.accepted") expect(call.state).toBe("connecting");
+      else expect(call.ended).toBe(true);
+    },
+  );
+});
+
+describe("participant departure metadata", () => {
+  it.each([null, 42, {}])(
+    "retains departure when optional reason is %j",
+    async (reason) => {
+      const h = clientWith(fakeApi(), { mediaMode: "external" });
+      const life = await connected(h);
+      let call!: Call;
+      h.client.on("incoming", (value) => {
+        call = value;
+      });
+      ring(life);
+      life.text({
+        type: "event",
+        event: "call.participant_joined",
+        callId: "CALL-1",
+        timestamp: "",
+        payload: {
+          callId: "CALL-1",
+          participant: {
+            id: "p1",
+            handle: "+15550101",
+            audioMuted: false,
+            video: false,
+            state: "connected",
+          },
+        },
+      });
+      let departed: string | undefined;
+      call.on("participantLeft", (id) => {
+        departed = id;
+      });
+      life.text({
+        type: "event",
+        event: "call.participant_left",
+        callId: "CALL-1",
+        timestamp: "",
+        payload: { callId: "CALL-1", participantId: "p1", reason },
+      });
+      expect(call.participants).toEqual([]);
+      expect(departed).toBe("p1");
+    },
+  );
 });
