@@ -113,6 +113,7 @@ export class SessionsResource {
     });
   }
 
+  /** Direct pairing is entitlement-gated. Use QuickLink for the standard flow. */
   qr(
     session: string,
     options: RequestOptions = {},
@@ -125,6 +126,7 @@ export class SessionsResource {
     });
   }
 
+  /** Direct pairing is entitlement-gated. Use QuickLink for the standard flow. */
   requestPairingCode(
     session: string,
     body: PairCodeRequest,

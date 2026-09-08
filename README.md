@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`8c244aab0e5626d101a2c8c4915287427f39e014`. Graph-compatible APIs are outside
+`6918c56135e28ba64557e344cb72889f1f517eb5`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -84,7 +84,7 @@ any network request. Server keys are rejected in browser runtimes.
 The handwritten Messaging resources in this milestone are:
 
 - `sessions`: list, create, retrieve, update, delete, start, stop, restart,
-  logout, account, JSON QR retrieval, and phone pairing codes
+  logout, account, and entitlement-gated direct JSON QR or phone pairing
 - `operations`: retrieve durable lifecycle operation status
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility

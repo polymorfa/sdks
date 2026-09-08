@@ -606,7 +606,6 @@ export {
   type SessionConnectedPayload,
   type SessionLoggedOutPayload,
   type SessionPhoneOfflinePayload,
-  type SessionQrPayload,
   type SessionStatusPayload,
   type UnknownWebhookEvent,
   type WebhookBody,

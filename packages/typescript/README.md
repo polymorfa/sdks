@@ -156,33 +156,28 @@ session rules can delegate to the browser token.
 
 ## Session connection lifecycle
 
-Start a Linked Device session, retrieve its JSON QR payload or request a phone
-pairing code, then poll the returned durable lifecycle operation. Pairing
-requires `sessions:manage`; operation retrieval accepts any of
-`sessions:read`, `campaigns:read`, or `webhooks:manage`.
+Start a Linked Device session, then poll the returned durable lifecycle
+operation. The standard pairing flow is QuickLink. Direct JSON QR and phone
+pairing-code routes require `sessions:manage` plus an explicit organization
+entitlement; without it, the API returns `403` and the application must create
+a QuickLink. Operation retrieval accepts any of `sessions:read`,
+`campaigns:read`, or `webhooks:manage`.
 
 ```ts
 const started = await messaging.sessions.start("support", {
   idempotencyKey: "start-support",
 });
 
-const qr = await messaging.sessions.qr("support");
-console.log(qr.data.data.qr, qr.metadata.requestId);
-
-const pairingCode = await messaging.sessions.requestPairingCode(
-  "support",
-  { phone: "+15551234567" },
-  { idempotencyKey: "pair-support-phone" },
-);
-
 const operation = await messaging.operations.retrieve(started.data.operationId);
-console.log(pairingCode.data.data.code, operation.data.data.status);
+console.log(operation.data.data.status);
 ```
 
 `sessions.retrieve` is the typed source of session connection status. The
 pinned API contract does not expose session logs or a separate
-connection-status endpoint. QR image rendering remains an application concern;
-the server SDK deliberately requests the typed JSON QR representation.
+connection-status endpoint. The API no longer emits `session.qr` webhook
+events. Applications must observe QuickLink state through the QuickLink flow;
+the entitlement-gated `sessions.qr` and `sessions.requestPairingCode` methods
+remain available only for organizations that have direct pairing enabled.
 
 ## Project templates
 
