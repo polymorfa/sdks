@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "platformSha256": "9b37273ee85a1ce07d456060d46ce18a70832895f03e20ad83319d053232e0c5",
+  "scope": "OpenAPI operations tagged bansafe",
+  "covered": 25,
+  "excluded": 2,
+  "missing": 0,
+  "operations": [
+    {
+      "operationId": "listBanSafeHealth",
+      "method": "GET",
+      "path": "/v1/bansafe/health",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.listHealth"
+    },
+    {
+      "operationId": "getBanSafeHealth",
+      "method": "GET",
+      "path": "/v1/bansafe/health/{session}",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.getHealth"
+    },
+    {
+      "operationId": "listBanSafeHealthHistory",
+      "method": "GET",
+      "path": "/v1/bansafe/health/{session}/history",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.listHealthHistory"
+    },
+    {
+      "operationId": "listBanSafeSignals",
+      "method": "GET",
+      "path": "/v1/bansafe/signals",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.listSignals"
+    },
+    {
+      "operationId": "getBanSafeTelemetry",
+      "method": "GET",
+      "path": "/v1/bansafe/telemetry/{session}",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.getTelemetry"
+    },
+    {
+      "operationId": "listBanSafeTelemetryHistory",
+      "method": "GET",
+      "path": "/v1/bansafe/telemetry/{session}/history",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.listTelemetryHistory"
+    },
+    {
+      "operationId": "listBanSafeCollection",
+      "method": "GET",
+      "path": "/v1/bansafe/collection",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.listCollection"
+    },
+    {
+      "operationId": "listBanSafeHealthActions",
+      "method": "GET",
+      "path": "/v1/bansafe/health-actions",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.listHealthActions"
+    },
+    {
+      "operationId": "listBanSafeFindings",
+      "method": "GET",
+      "path": "/v1/bansafe/findings",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.listFindings"
+    },
+    {
+      "operationId": "acknowledgeBanSafeFinding",
+      "method": "POST",
+      "path": "/v1/bansafe/findings/{findingId}/acknowledge",
+      "status": "excluded",
+      "reason": "Requires signed-in dashboard identity; server API keys and project tokens are refused."
+    },
+    {
+      "operationId": "listBanSafeEnforcement",
+      "method": "GET",
+      "path": "/v1/bansafe/enforcement",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.listEnforcement"
+    },
+    {
+      "operationId": "appealBanSafeEnforcement",
+      "method": "POST",
+      "path": "/v1/bansafe/enforcement/{session}/appeal",
+      "status": "excluded",
+      "reason": "Requires signed-in dashboard identity; server API keys and project tokens are refused."
+    },
+    {
+      "operationId": "listBanSafeIncidents",
+      "method": "GET",
+      "path": "/v1/bansafe/incidents",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.listIncidents"
+    },
+    {
+      "operationId": "createBanSafeIncident",
+      "method": "POST",
+      "path": "/v1/bansafe/incidents",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.createIncident"
+    },
+    {
+      "operationId": "retractBanSafeIncident",
+      "method": "POST",
+      "path": "/v1/bansafe/incidents/{incidentId}/retract",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.retractIncident"
+    },
+    {
+      "operationId": "listBanSafeClaims",
+      "method": "GET",
+      "path": "/v1/bansafe/claims",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.listClaims"
+    },
+    {
+      "operationId": "getBanSafeClaim",
+      "method": "GET",
+      "path": "/v1/bansafe/claims/{claimId}",
+      "status": "covered",
+      "sdkPath": "PlatformClient.banSafe.getClaim"
+    },
+    {
+      "operationId": "getProjectSafeModeCeiling",
+      "method": "GET",
+      "path": "/v1/projects/{projectId}/safe-mode",
+      "status": "covered",
+      "sdkPath": "PlatformClient.projects.getSafeMode"
+    },
+    {
+      "operationId": "updateProjectSafeModeCeiling",
+      "method": "PUT",
+      "path": "/v1/projects/{projectId}/safe-mode",
+      "status": "covered",
+      "sdkPath": "PlatformClient.projects.updateSafeMode"
+    },
+    {
+      "operationId": "getNumberSafeMode",
+      "method": "GET",
+      "path": "/v1/sessions/{sessionId}/safe-mode",
+      "status": "covered",
+      "sdkPath": "PlatformClient.sessions.getSafeMode"
+    },
+    {
+      "operationId": "updateNumberSafeMode",
+      "method": "PUT",
+      "path": "/v1/sessions/{sessionId}/safe-mode",
+      "status": "covered",
+      "sdkPath": "PlatformClient.sessions.updateSafeMode"
+    },
+    {
+      "operationId": "getProjectWarmupPlanSettings",
+      "method": "GET",
+      "path": "/v1/projects/{projectId}/warmup-plan",
+      "status": "covered",
+      "sdkPath": "PlatformClient.projects.getWarmupPlan"
+    },
+    {
+      "operationId": "updateProjectWarmupPlanSettings",
+      "method": "PUT",
+      "path": "/v1/projects/{projectId}/warmup-plan",
+      "status": "covered",
+      "sdkPath": "PlatformClient.projects.updateWarmupPlan"
+    },
+    {
+      "operationId": "getProjectHealthPolicySettings",
+      "method": "GET",
+      "path": "/v1/projects/{projectId}/health-policy",
+      "status": "covered",
+      "sdkPath": "PlatformClient.projects.getHealthPolicy"
+    },
+    {
+      "operationId": "updateProjectHealthPolicySettings",
+      "method": "PUT",
+      "path": "/v1/projects/{projectId}/health-policy",
+      "status": "covered",
+      "sdkPath": "PlatformClient.projects.updateHealthPolicy"
+    },
+    {
+      "operationId": "getInsuranceEvidenceSettings",
+      "method": "GET",
+      "path": "/v1/projects/{projectId}/insurance-evidence",
+      "status": "covered",
+      "sdkPath": "PlatformClient.projects.getInsuranceEvidence"
+    },
+    {
+      "operationId": "updateInsuranceEvidenceSettings",
+      "method": "PUT",
+      "path": "/v1/projects/{projectId}/insurance-evidence",
+      "status": "covered",
+      "sdkPath": "PlatformClient.projects.updateInsuranceEvidence"
+    }
+  ]
+}

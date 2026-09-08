@@ -158,9 +158,15 @@ The handwritten Platform resources in this milestone are:
 - `projectTokens`: list token metadata for an explicit project
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing, and update low-balance reminders
-- `projects`: list, create, request production enrollment, approve, and cancel
+- `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
+  restrictions, incidents, claims, and Health action history; report and retract
+  customer incidents
+- `projects`: list, create, request production enrollment, approve, and cancel;
+  retrieve and update Safe Mode, warm-up, Ban Insurance evidence, and Health
+  policy settings
 - `sessions`: list, stop or delete one session, stop or delete a bounded batch,
-  set tier override, and create a testing session
+  set tier override, create a testing session, and retrieve or update the
+  session Safe Mode override
 - `widgetSettings`: retrieve organization or project Connect widget settings
   and update the exact saved configuration fields
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,

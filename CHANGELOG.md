@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added typed BanSafe Health, telemetry, collection, findings, enforcement,
+  incidents, claims, and Health action reads to `PlatformClient.banSafe`.
+  Project and session resources now cover Safe Mode, warm-up, Ban Insurance
+  evidence, and Health policy settings. Dashboard-only finding acknowledgement
+  and appeals remain outside the server-key client.
+
 - Keep call controls and media available after a failed reject or hangup, with
   a localized retry message in React and custom elements.
 
