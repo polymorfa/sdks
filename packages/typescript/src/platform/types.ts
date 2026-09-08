@@ -714,8 +714,9 @@ export interface BanSafeNumberDetail extends BanSafeNumber {
 
 export interface BanSafeHealthPoint extends Omit<
   BanSafeHealthProjection,
-  "healthEvaluatedAt"
+  "band" | "healthEvaluatedAt"
 > {
+  readonly band: BanSafeHealthBand | null;
   readonly healthEvaluatedAt: string;
 }
 

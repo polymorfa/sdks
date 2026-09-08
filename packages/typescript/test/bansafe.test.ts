@@ -6,8 +6,10 @@ import {
   type ApiResponse,
   type BanSafeCollectionEnvelope,
   type BanSafeHealthActionsEnvelope,
+  type BanSafeHealthBand,
   type BanSafeHealthEnvelope,
   type BanSafeHealthHistory,
+  type BanSafeHealthPoint,
   type BanSafeSignalDefinition,
   type BanSafeTelemetryDetail,
   type BanSafeTelemetryHistoryEnvelope,
@@ -91,6 +93,9 @@ describe("PlatformClient BanSafe resources", () => {
     expectTypeOf(history).toEqualTypeOf<
       ApiResponse<DataEnvelope<BanSafeHealthHistory>>
     >();
+    expectTypeOf<
+      BanSafeHealthPoint["band"]
+    >().toEqualTypeOf<BanSafeHealthBand | null>();
     expectTypeOf(signals).toEqualTypeOf<
       ApiResponse<DataEnvelope<readonly BanSafeSignalDefinition[]>>
     >();
