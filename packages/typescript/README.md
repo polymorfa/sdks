@@ -67,6 +67,12 @@ session rules that authorize them. Use it only on the server. The browser-safe
 transport and allowed-action resources live in `@polymorfa/browser`; the
 Next.js-compatible route adapter lives in `@polymorfa/nextjs`.
 
+Minting a client token and updating its session rules require all six client
+delegation scopes: `sessions:manage`, `messages:write`, `contacts:read`,
+`presence:read`, `presence:observe`, and `mcp`. The same requirement applies to
+`MessagingClient.voip.token`; the issuing key must cover every action that the
+session rules can delegate to the browser token.
+
 ## Session connection lifecycle
 
 Start a Linked Device session, retrieve its JSON QR payload or request a phone

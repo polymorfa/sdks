@@ -277,12 +277,11 @@ if (isEvent(event, "message.received")) {
 
 Native deliveries use the hexadecimal `X-Webhook-Signature` value. The helper
 also accepts the `sha256=<hex>` compatibility form. Verification uses
-HMAC-SHA256 and constant-time comparison over the unmodified bytes. Known
-events narrow to exported payload types for all 33 event schemas in the pinned
-Messaging contract, including messages, sessions, groups, presence, contacts,
-chats, calls, labels, history sync, command results, and business quick
-replies. Unknown event names and payloads are preserved for forward
-compatibility.
+HMAC-SHA256 and constant-time comparison over the unmodified bytes. Recognized
+events narrow to exported payload types, including messages, sessions, groups,
+presence, contacts, chats, calls, labels, history sync, command results, and
+business quick replies. Unknown event names and payloads are preserved for
+forward compatibility.
 
 Messaging server credentials can manage webhook registrations through
 `MessagingClient.webhooks`. The Platform contract also defines organization
