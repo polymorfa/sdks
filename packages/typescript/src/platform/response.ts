@@ -1,5 +1,5 @@
 import { PolymorfaServerError } from "../errors.js";
-import type { ApiResponse } from "../transport/types.js";
+import type { ApiResponse, ResponseMetadata } from "../transport/types.js";
 
 export interface DataEnvelope<T> {
   readonly data: T;
@@ -33,7 +33,10 @@ export function unwrapResponse<T>(
   });
 }
 
-export function decodeCursorPage<T>(data: unknown): {
+export function decodeCursorPage<T>(
+  data: unknown,
+  metadata: ResponseMetadata,
+): {
   readonly items: readonly T[];
   readonly nextCursor?: string | null;
 } {
@@ -41,9 +44,23 @@ export function decodeCursorPage<T>(data: unknown): {
     readonly data?: readonly T[];
     readonly page?: { readonly nextCursor?: string | null };
   };
+  if (!Array.isArray(envelope?.data)) {
+    throw new PolymorfaServerError(
+      "The Polymorfa API returned an invalid collection envelope.",
+      {
+        code: "invalid_response",
+        status: metadata.status,
+        ...(metadata.requestId === undefined
+          ? {}
+          : { requestId: metadata.requestId }),
+        metadata,
+        details: data,
+      },
+    );
+  }
   const nextCursor = envelope.page?.nextCursor;
   return {
-    items: envelope.data ?? [],
+    items: envelope.data,
     ...(nextCursor === undefined ? {} : { nextCursor }),
   };
 }

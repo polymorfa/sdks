@@ -36,7 +36,7 @@ export class RawClient {
       ...request,
       ...(query === undefined ? {} : { query }),
     });
-    const decoded = decode(response.data);
+    const decoded = decode(response.data, response.metadata);
     const nextCursor = decoded.nextCursor ?? undefined;
     return new CursorPage({
       items: decoded.items,

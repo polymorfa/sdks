@@ -84,4 +84,36 @@ describe("Client.operations.wait", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(fetch.mock.calls[0]?.[1]?.method).toBe("GET");
   });
+
+  it("bounds an in-flight retrieval by the total wait deadline", async () => {
+    vi.useFakeTimers();
+    const fetch = vi.fn<typeof globalThis.fetch>(
+      async (_input, init) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener(
+            "abort",
+            () => reject(init.signal?.reason),
+            { once: true },
+          );
+        }),
+    );
+    const client = new Client({
+      credential: { type: "organizationApiKey", value: "pmfa_operations" },
+      baseUrl: "https://api.example.com",
+      timeoutMs: 60_000,
+      fetch,
+    });
+
+    const result = client.operations.wait("operation_1", {
+      maxWaitMs: 500,
+      pollIntervalMs: 250,
+    });
+    const assertion = expect(result).rejects.toMatchObject({
+      name: PolymorfaTimeoutError.name,
+      code: "operation_wait_timeout",
+    });
+    await vi.advanceTimersByTimeAsync(500);
+    await assertion;
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
 });

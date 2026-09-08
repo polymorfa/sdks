@@ -30,4 +30,32 @@ describe("management response envelopes", () => {
       });
     },
   );
+
+  it.each([undefined, null, {}, { page: {} }, { data: null }])(
+    "rejects malformed collection response %j with a typed error",
+    async (body) => {
+      const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+        body === undefined
+          ? new Response(undefined, {
+              status: 200,
+              headers: { "x-request-id": "req_invalid_collection" },
+            })
+          : Response.json(body, {
+              headers: { "x-request-id": "req_invalid_collection" },
+            }),
+      );
+      const client = new Client({
+        credential: { type: "organizationApiKey", value: "pmfa_org" },
+        baseUrl: "https://api.example.com",
+        fetch,
+      });
+
+      await expect(client.events.list()).rejects.toMatchObject({
+        name: PolymorfaServerError.name,
+        code: "invalid_response",
+        status: 200,
+        requestId: "req_invalid_collection",
+      });
+    },
+  );
 });

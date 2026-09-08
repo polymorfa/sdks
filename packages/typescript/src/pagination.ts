@@ -1,11 +1,14 @@
-import type { ApiResponse } from "./transport/types.js";
+import type { ApiResponse, ResponseMetadata } from "./transport/types.js";
 
 export interface PageResult<T> {
   readonly items: readonly T[];
   readonly nextCursor?: string | null;
 }
 
-export type PageDecoder<T> = (data: unknown) => PageResult<T>;
+export type PageDecoder<T> = (
+  data: unknown,
+  metadata: ResponseMetadata,
+) => PageResult<T>;
 
 interface CursorPageOptions<T> {
   readonly items: readonly T[];

@@ -397,30 +397,60 @@ export class OperationsResourceV2<O extends ClientOwner> extends ResourceBase {
       30_000,
     );
     const deadline = Date.now() + maxWaitMs;
-    let firstRequest = true;
-    while (true) {
-      if (options.signal?.aborted === true)
-        throw new PolymorfaCancelledError("The operation wait was cancelled.", {
-          code: "operation_wait_cancelled",
-        });
-      if (!firstRequest && Date.now() >= deadline) {
-        throw operationWaitTimeout(maxWaitMs);
+    const deadlineController = new AbortController();
+    let deadlineReached = false;
+    const abortForCaller = () =>
+      deadlineController.abort(options.signal?.reason);
+    options.signal?.addEventListener("abort", abortForCaller, { once: true });
+    const deadlineTimer = setTimeout(() => {
+      deadlineReached = true;
+      deadlineController.abort();
+    }, maxWaitMs);
+    try {
+      while (true) {
+        if (options.signal?.aborted === true)
+          throw new PolymorfaCancelledError(
+            "The operation wait was cancelled.",
+            { code: "operation_wait_cancelled" },
+          );
+        const remaining = deadline - Date.now();
+        if (remaining <= 0) throw operationWaitTimeout(maxWaitMs);
+        let response: ApiResponse<OperationFor<O>>;
+        try {
+          response = await this.retrieve(operationId, {
+            ...options.requestOptions,
+            timeoutMs: Math.min(
+              options.requestOptions?.timeoutMs ?? remaining,
+              remaining,
+            ),
+            signal: deadlineController.signal,
+          });
+        } catch (error) {
+          if (deadlineReached && !isAborted(options.signal)) {
+            throw operationWaitTimeout(maxWaitMs);
+          }
+          throw error;
+        }
+        if (Date.now() >= deadline) throw operationWaitTimeout(maxWaitMs);
+        if (TERMINAL.has(response.data.status)) return response;
+        const retryAfter = retryAfterMilliseconds(
+          response.metadata.headers["retry-after"],
+        );
+        try {
+          await wait(
+            Math.min(Math.max(pollIntervalMs, retryAfter ?? 0), remaining),
+            deadlineController.signal,
+          );
+        } catch (error) {
+          if (deadlineReached && !isAborted(options.signal)) {
+            throw operationWaitTimeout(maxWaitMs);
+          }
+          throw error;
+        }
       }
-      firstRequest = false;
-      const response = await this.retrieve(operationId, {
-        ...options.requestOptions,
-        ...(options.signal === undefined ? {} : { signal: options.signal }),
-      });
-      if (TERMINAL.has(response.data.status)) return response;
-      const remaining = deadline - Date.now();
-      if (remaining <= 0) throw operationWaitTimeout(maxWaitMs);
-      const retryAfter = retryAfterMilliseconds(
-        response.metadata.headers["retry-after"],
-      );
-      await wait(
-        Math.min(Math.max(pollIntervalMs, retryAfter ?? 0), remaining),
-        options.signal,
-      );
+    } finally {
+      clearTimeout(deadlineTimer);
+      options.signal?.removeEventListener("abort", abortForCaller);
     }
   }
 }
@@ -430,6 +460,10 @@ function operationWaitTimeout(maxWaitMs: number): PolymorfaTimeoutError {
     `The operation did not reach a terminal state within ${maxWaitMs}ms.`,
     { code: "operation_wait_timeout" },
   );
+}
+
+function isAborted(signal: AbortSignal | undefined): boolean {
+  return signal?.aborted === true;
 }
 
 function retryAfterMilliseconds(
