@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
@@ -34,7 +35,10 @@ async function platformServer(): Promise<{
   return {
     requests: server.requests,
     client: new Client({
-      credential: { type: "organizationApiKey", value: "pmfa_platform" },
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     }),

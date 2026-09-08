@@ -168,7 +168,11 @@ const project = new Client({
 Project tokens require an explicit project ID. The server verifies the initial
 token-to-project binding. A later attempt to bind that client to another
 project fails before transport. `Client` also rejects browser client tokens and
-the CLI-only `pmfa_ls_` listener credential before transport.
+the CLI-only `pmfa_ls_` listener credential before transport. Organization
+keys must use the single v1 form `pmfa_` plus 72 unpadded base64url characters;
+project tokens must use `pmfa_pt_` plus 94. The SDK validates that grammar
+without decoding the credential. Call-agent tickets, socket tickets, and
+simulated-device capabilities are also rejected before transport.
 
 Both organization and project views expose owner-bound resources:
 

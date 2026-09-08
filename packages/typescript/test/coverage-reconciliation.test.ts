@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
@@ -129,7 +130,7 @@ describe("reconciled coverage evidence", () => {
         Response.json(fixture.response, { status: fixture.status }),
       );
       const api = new HttpCallsApi({
-        apiKey: "pmfa_coverage",
+        apiKey: ORGANIZATION_API_KEY,
         baseUrl: "https://api.example.com",
         fetch,
       });
@@ -153,7 +154,7 @@ describe("reconciled coverage evidence", () => {
         expect(JSON.parse(init.body as string)).toEqual(fixture.body);
       }
       expect(new Headers(init.headers).get("authorization")).toBe(
-        "Bearer pmfa_coverage",
+        `Bearer ${ORGANIZATION_API_KEY}`,
       );
       if (fixture.method === "place") {
         expect(new Headers(init.headers).get("idempotency-key")).toBe(
@@ -166,7 +167,10 @@ describe("reconciled coverage evidence", () => {
   it("covers QuickLink settings through the exact management routes", async () => {
     const fetch = vi.fn(async () => Response.json({ data: {} }));
     const client = new Client({
-      credential: { type: "organizationApiKey", value: "pmfa_coverage" },
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       fetch,
     });
     await client.quickLinkSettings.retrieve();

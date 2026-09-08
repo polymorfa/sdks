@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
@@ -13,7 +14,10 @@ describe("Client.sessions.start", () => {
       Response.json({ data: { starting: true, sessionId: "session-uuid" } }),
     );
     const client = new Client({
-      credential: { type: "organizationApiKey", value: "pmfa_sessions" },
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: "https://api.example.com",
       fetch,
     });

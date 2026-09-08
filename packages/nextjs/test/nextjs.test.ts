@@ -113,7 +113,10 @@ describe("createMessagingClientTokenMint", () => {
 describe("createTemplateBuilderRoute", () => {
   it("accepts the handwritten server SDK templates resource without an adapter", () => {
     const messaging = new MessagingClient({
-      credential: { type: "apiKey", value: "pmfa_fixture" },
+      credential: {
+        type: "apiKey",
+        value: `pmfa_${"A".repeat(72)}`,
+      },
     });
     expect(() =>
       createTemplateBuilderRoute({

@@ -8,13 +8,19 @@ import {
 } from "../src/credentials.js";
 import { PolymorfaConfigurationError } from "../src/errors.js";
 
+const ORGANIZATION_API_KEY = `pmfa_${"A".repeat(72)}`;
+const PROJECT_TOKEN = `pmfa_pt_${"A".repeat(94)}`;
+
 describe("credential validation", () => {
   it("accepts an explicit Messaging server API key", () => {
     expect(
-      validateMessagingCredential({ type: "apiKey", value: "pmfa_example" }),
+      validateMessagingCredential({
+        type: "apiKey",
+        value: ORGANIZATION_API_KEY,
+      }),
     ).toEqual({
       type: "apiKey",
-      value: "pmfa_example",
+      value: ORGANIZATION_API_KEY,
     });
   });
 
@@ -34,25 +40,25 @@ describe("credential validation", () => {
     expect(
       validateMessagingCredential({
         type: "projectToken",
-        value: "pmfa_pt_example",
+        value: PROJECT_TOKEN,
       }),
-    ).toEqual({ type: "projectToken", value: "pmfa_pt_example" });
+    ).toEqual({ type: "projectToken", value: PROJECT_TOKEN });
   });
 
   it("rejects a mismatched Messaging credential discriminator", () => {
     expect(() =>
       validateMessagingCredential({ type: "apiKey", value: "pmfa_ct_example" }),
-    ).toThrow(/Messaging API key/);
+    ).toThrow(/Client and project tokens/);
     expect(() =>
       validateMessagingCredential({
         type: "clientToken",
-        value: "pmfa_example",
+        value: ORGANIZATION_API_KEY,
       }),
     ).toThrow(/Messaging client token/);
     expect(() =>
       validateMessagingCredential({
         type: "projectToken",
-        value: "pmfa_example",
+        value: ORGANIZATION_API_KEY,
       }),
     ).toThrow(/Messaging project token/);
   });
@@ -62,7 +68,7 @@ describe("credential validation", () => {
       PolymorfaConfigurationError,
     );
     expect(() => validateOrganizationApiKey("pmfa_pt_example")).toThrow(
-      /Organization server API key/,
+      /Client and project tokens/,
     );
     expect(() => validateOrganizationApiKey("pmfa_ls_example")).toThrow(
       /Listener credentials/,
@@ -73,9 +79,56 @@ describe("credential validation", () => {
     expect(
       validateClientCredential({
         type: "projectToken",
-        value: "pmfa_pt_example",
+        value: PROJECT_TOKEN,
       }),
-    ).toEqual({ type: "projectToken", value: "pmfa_pt_example" });
+    ).toEqual({ type: "projectToken", value: PROJECT_TOKEN });
+
+    for (const finalSymbol of ["A", "Q", "g", "w"]) {
+      const value = `pmfa_pt_${"A".repeat(93)}${finalSymbol}`;
+      expect(validateClientCredential({ type: "projectToken", value })).toEqual(
+        { type: "projectToken", value },
+      );
+    }
+  });
+
+  it("rejects special-purpose credentials before transport", () => {
+    for (const value of [
+      `pmfa_at_${"A".repeat(69)}`,
+      `pmfa_wst_${"A".repeat(68)}`,
+      `pmfa_sd_${"A".repeat(69)}`,
+    ]) {
+      expect(() =>
+        validateMessagingCredential({ type: "apiKey", value }),
+      ).toThrow(PolymorfaConfigurationError);
+      expect(() => validateOrganizationApiKey(value)).toThrow(
+        PolymorfaConfigurationError,
+      );
+    }
+  });
+
+  it("rejects malformed and non-canonical organization keys", () => {
+    for (const value of [
+      `pmfa_${"A".repeat(71)}`,
+      `pmfa_${"A".repeat(73)}`,
+      `pmfa_${"A".repeat(71)}+`,
+    ]) {
+      expect(() => validateOrganizationApiKey(value)).toThrow(
+        PolymorfaConfigurationError,
+      );
+    }
+  });
+
+  it("rejects malformed and non-canonical project tokens", () => {
+    for (const value of [
+      `pmfa_pt_${"A".repeat(93)}`,
+      `pmfa_pt_${"A".repeat(95)}`,
+      `pmfa_pt_${"A".repeat(93)}+`,
+      `pmfa_pt_${"A".repeat(93)}B`,
+    ]) {
+      expect(() =>
+        validateClientCredential({ type: "projectToken", value }),
+      ).toThrow(PolymorfaConfigurationError);
+    }
   });
 
   it("rejects server API keys in a browser runtime", () => {

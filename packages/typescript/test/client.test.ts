@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
@@ -47,11 +48,17 @@ async function testClient(projectId?: string): Promise<{
       projectId === undefined
         ? new Client({
             ...shared,
-            credential: { type: "organizationApiKey", value: "pmfa_org" },
+            credential: {
+              type: "organizationApiKey",
+              value: ORGANIZATION_API_KEY,
+            },
           })
         : new Client({
             ...shared,
-            credential: { type: "projectToken", value: "pmfa_pt_project" },
+            credential: {
+              type: "projectToken",
+              value: PROJECT_TOKEN,
+            },
             projectId,
           }),
   };
@@ -89,7 +96,10 @@ describe("Client ownership", () => {
     expect(
       () =>
         new (Client as unknown as new (options: unknown) => Client<"project">)({
-          credential: { type: "projectToken", value: "pmfa_pt_project" },
+          credential: {
+            type: "projectToken",
+            value: PROJECT_TOKEN,
+          },
           projectId: undefined,
           fetch,
         }),
@@ -111,9 +121,59 @@ describe("Client ownership", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it("rejects malformed keys and special-purpose tickets before fetch", () => {
+    const fetch = vi.fn<typeof globalThis.fetch>();
+    const invalidOrganizationKeys = [
+      `pmfa_at_${"A".repeat(69)}`,
+      `pmfa_wst_${"A".repeat(68)}`,
+      `pmfa_sd_${"A".repeat(69)}`,
+      `pmfa_${"A".repeat(71)}`,
+      `pmfa_${"A".repeat(73)}`,
+      `pmfa_${"A".repeat(71)}+`,
+    ];
+
+    for (const value of invalidOrganizationKeys) {
+      expect(
+        () =>
+          new Client({
+            credential: { type: "organizationApiKey", value },
+            fetch,
+          }),
+      ).toThrow(PolymorfaConfigurationError);
+      expect(
+        () =>
+          new MessagingClient({
+            credential: { type: "apiKey", value },
+            fetch,
+          }),
+      ).toThrow(PolymorfaConfigurationError);
+    }
+
+    for (const value of [
+      `pmfa_pt_${"A".repeat(93)}`,
+      `pmfa_pt_${"A".repeat(95)}`,
+      `pmfa_pt_${"A".repeat(93)}+`,
+      `pmfa_pt_${"A".repeat(93)}B`,
+    ]) {
+      expect(
+        () =>
+          new Client({
+            credential: { type: "projectToken", value },
+            projectId: "project_1",
+            fetch,
+          }),
+      ).toThrow(PolymorfaConfigurationError);
+    }
+
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it("treats an explicitly undefined organization projectId as unscoped", () => {
     const client = new (Client as unknown as new (options: unknown) => Client)({
-      credential: { type: "organizationApiKey", value: "pmfa_org" },
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       projectId: undefined,
     });
 
