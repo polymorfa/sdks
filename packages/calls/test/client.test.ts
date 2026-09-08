@@ -1055,6 +1055,53 @@ describe("CallsClient — review round four", () => {
 });
 
 describe("pending placement roster pressure", () => {
+  it("evicts the oldest roster entry when a ninth participant arrives", async () => {
+    const api = fakeApi();
+    let resolvePlace!: (value: { callId: string }) => void;
+    api.place.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolvePlace = resolve;
+        }),
+    );
+    const h = clientWith(api, { mediaMode: "external" });
+    const life = await connected(h);
+    const placing = h.client.place("+15550100");
+    await flush();
+
+    for (let i = 0; i < 9; i++) {
+      life.text({
+        type: "event",
+        event: "call.participant_joined",
+        callId: "CALL-FAST",
+        timestamp: "",
+        payload: {
+          callId: "CALL-FAST",
+          participant: {
+            id: `p-${i}`,
+            handle: `+1555010${i}`,
+            state: "connected",
+            audioMuted: false,
+            video: false,
+          },
+        },
+      });
+    }
+
+    resolvePlace({ callId: "CALL-FAST" });
+    const call = await placing;
+    expect(call.participants.map((participant) => participant.id)).toEqual([
+      "p-1",
+      "p-2",
+      "p-3",
+      "p-4",
+      "p-5",
+      "p-6",
+      "p-7",
+      "p-8",
+    ]);
+  });
+
   it.each(["call.ended", "call.missed", "call.rejected", "call.accepted"])(
     "preserves %s after roster bursts",
     async (event) => {

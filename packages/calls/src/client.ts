@@ -351,7 +351,14 @@ export class CallsClient extends Emitter<ClientEvents> {
       });
       if (previous >= 0) queue.splice(previous, 1);
     }
-    if (queue.length < PENDING_EVENTS_PER_ID) queue.push(event);
+    if (queue.length >= PENDING_EVENTS_PER_ID) {
+      const oldestRoster = queue.findIndex(
+        (item) => participantControlFrom(item) !== undefined,
+      );
+      if (oldestRoster < 0) return;
+      queue.splice(oldestRoster, 1);
+    }
+    queue.push(event);
   }
 }
 
