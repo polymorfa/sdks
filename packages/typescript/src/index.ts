@@ -504,8 +504,6 @@ export type {
   ListCampaignsParams,
   ListCustomerEventsParams,
   ListCustomersParams,
-  ManagementOperation,
-  ManagementOperationStatus,
   ManagedSession,
   Organization,
   OrganizationMember,

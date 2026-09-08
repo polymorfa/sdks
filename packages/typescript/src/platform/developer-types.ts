@@ -325,6 +325,12 @@ export interface OrganizationOperation extends OperationBase {
 export interface ProjectOperation extends OperationBase {
   readonly projectId: string;
 }
+export type ManagementOperation = OrganizationOperation | ProjectOperation;
+export type ManagementOperationStatus = OperationStatus;
+export type ManagementOperationKind = OperationKind;
+export type ManagementOperationProgress = OperationProgress;
+export type ManagementOperationError = OperationError;
+export type ManagementOperationActionRequired = OperationActionRequired;
 export interface ListOperationsParams {
   readonly status?: OperationStatus;
   readonly kind?: OperationKind;

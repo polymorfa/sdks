@@ -100,7 +100,9 @@ class ClientImplementation implements ClientBase<ClientOwner> {
     const credential = validateClientCredential(options.credential);
     assertServerRuntime();
     const projectId =
-      "projectId" in options ? validateProjectId(options.projectId) : null;
+      options.projectId === undefined
+        ? null
+        : validateProjectId(options.projectId);
     if (credential.type === "projectToken" && projectId === null) {
       throw new PolymorfaConfigurationError(
         "Project tokens require an explicit projectId.",

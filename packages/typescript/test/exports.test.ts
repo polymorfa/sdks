@@ -89,6 +89,11 @@ import {
   type QRCodeData,
   type ListCampaignsParams,
   type ManagementOperation,
+  type ManagementOperationActionRequired,
+  type ManagementOperationError,
+  type ManagementOperationKind,
+  type ManagementOperationProgress,
+  type ManagementOperationStatus,
   type OrganizationMember,
   type PlatformPayload,
   type ClientOptions,
@@ -192,6 +197,15 @@ describe("public exports", () => {
     expectTypeOf<ClientOptions>().toHaveProperty("credential");
     expectTypeOf<ListCampaignsParams>().toHaveProperty("projectId");
     expectTypeOf<ManagementOperation>().toHaveProperty("status");
+    expectTypeOf<ManagementOperationStatus>().toEqualTypeOf<
+      ManagementOperation["status"]
+    >();
+    expectTypeOf<ManagementOperationKind>().toEqualTypeOf<
+      ManagementOperation["kind"]
+    >();
+    expectTypeOf<ManagementOperationProgress>().toHaveProperty("code");
+    expectTypeOf<ManagementOperationError>().toHaveProperty("retryable");
+    expectTypeOf<ManagementOperationActionRequired>().toHaveProperty("details");
     expectTypeOf<OrganizationMember>().toHaveProperty("role");
     expectTypeOf<PlatformPayload>().toMatchTypeOf<
       Readonly<Record<string, unknown>>

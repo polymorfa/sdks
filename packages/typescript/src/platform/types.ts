@@ -334,28 +334,6 @@ export interface SecurityIncidentAcknowledgement {
   readonly acknowledged: true;
 }
 
-export type ManagementOperationStatus =
-  | "pending"
-  | "running"
-  | "action_required"
-  | "succeeded"
-  | "failed"
-  | "cancelled";
-
-export interface ManagementOperation {
-  readonly id: string;
-  readonly kind: string;
-  readonly resourceType: string;
-  readonly resourceId: string;
-  readonly projectId: string | null;
-  readonly status: ManagementOperationStatus;
-  readonly progressCode: string | null;
-  readonly failureCode: string | null;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-  readonly completedAt: string | null;
-}
-
 /** Project-token metadata. The bearer token itself is never returned. */
 export interface ProjectToken {
   readonly id: string;

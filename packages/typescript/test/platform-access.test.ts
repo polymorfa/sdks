@@ -72,7 +72,7 @@ describe("Client organization access and operations", () => {
     expectTypeOf<AuditLog>().toHaveProperty("metadata");
     expectTypeOf<SessionBan>().toHaveProperty("banExpiresAt");
     expectTypeOf<SecurityIncident>().toHaveProperty("acknowledgedAt");
-    expectTypeOf<ManagementOperation>().toHaveProperty("failureCode");
+    expectTypeOf<ManagementOperation>().toHaveProperty("capabilities");
     expectTypeOf<ProjectToken>().toHaveProperty("revokedAt");
   });
 

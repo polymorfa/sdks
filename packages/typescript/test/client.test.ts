@@ -111,6 +111,16 @@ describe("Client ownership", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it("treats an explicitly undefined organization projectId as unscoped", () => {
+    const client = new (Client as unknown as new (options: unknown) => Client)({
+      credential: { type: "organizationApiKey", value: "pmfa_org" },
+      projectId: undefined,
+    });
+
+    expect(client.owner).toBe("organization");
+    expect(client.projectId).toBeNull();
+  });
+
   it("rejects a second project binding for an opaque project token before fetch", async () => {
     const { client, requests } = await testClient("project_1");
     expect(client.project("project_1")).toBe(client);
