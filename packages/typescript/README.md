@@ -70,9 +70,14 @@ have a different authorization boundary.
 Messaging credentials are explicit: `apiKey` for an organization server key,
 `projectToken` for the single opaque project-token format, and `clientToken`
 for the browser action allowlist. Server credentials fail in browser runtimes.
+An organization key is exactly `pmfa_` plus 72 unpadded base64url characters;
+a project token is exactly `pmfa_pt_` plus 94. The SDK checks only this public
+v1 grammar and never decodes or decrypts the credential.
 
 The SDK rejects `pmfa_ct_` browser tokens and CLI-only `pmfa_ls_` listener
-credentials before a management request. It does not expose a listener,
+credentials before a management request. It also rejects call-agent
+`pmfa_at_` tickets, socket `pmfa_wst_` tickets, and simulated-device `pmfa_sd_`
+capabilities as server API keys. It does not expose a listener,
 `AsyncIterable`, event emitter, or forwarding API. Live forwarding belongs to
 `polymorfa listen`.
 

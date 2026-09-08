@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
@@ -60,7 +61,10 @@ describe("MessagingClient.quickLinks", () => {
     });
     servers.push(server);
     const client = new MessagingClient({
-      credential: { type: "apiKey", value: "pmfa_quicklink" },
+      credential: {
+        type: "apiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     });
@@ -126,7 +130,10 @@ describe("MessagingClient.quickLinks", () => {
       }),
     );
     const client = new MessagingClient({
-      credential: { type: "projectToken", value: "pmfa_pt_project" },
+      credential: {
+        type: "projectToken",
+        value: PROJECT_TOKEN,
+      },
       baseUrl: "https://api.example.com",
       fetch,
     });
@@ -135,7 +142,7 @@ describe("MessagingClient.quickLinks", () => {
 
     expect(
       new Headers(fetch.mock.calls[0]?.[1]?.headers).get("authorization"),
-    ).toBe("Bearer pmfa_pt_project");
+    ).toBe(`Bearer ${PROJECT_TOKEN}`);
   });
 
   it("rejects project tokens before transport in a browser worker", () => {
@@ -145,7 +152,10 @@ describe("MessagingClient.quickLinks", () => {
     expect(
       () =>
         new MessagingClient({
-          credential: { type: "projectToken", value: "pmfa_pt_project" },
+          credential: {
+            type: "projectToken",
+            value: PROJECT_TOKEN,
+          },
           baseUrl: "https://api.example.com",
           fetch,
         }),

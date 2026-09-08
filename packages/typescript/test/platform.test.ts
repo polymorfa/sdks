@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { PolymorfaConfigurationError } from "../src/errors.js";
@@ -29,7 +30,10 @@ async function platformServer(): Promise<{
   return {
     requests: server.requests,
     client: new Client({
-      credential: { type: "organizationApiKey", value: "pmfa_platform" },
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     }),
@@ -47,7 +51,10 @@ describe("Client credentials", () => {
     expect(
       () =>
         new Client({
-          credential: { type: "organizationApiKey", value: "pmfa_pt_project" },
+          credential: {
+            type: "organizationApiKey",
+            value: PROJECT_TOKEN,
+          },
         }),
     ).toThrow(PolymorfaConfigurationError);
   });

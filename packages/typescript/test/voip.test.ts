@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
@@ -28,7 +29,10 @@ describe("VoipResource", () => {
     }));
     servers.push(server);
     const client = new MessagingClient({
-      credential: { type: "apiKey", value: "pmfa_example" },
+      credential: {
+        type: "apiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     });
@@ -65,7 +69,10 @@ describe("VoipResource", () => {
     }));
     servers.push(server);
     const client = new MessagingClient({
-      credential: { type: "apiKey", value: "pmfa_example" },
+      credential: {
+        type: "apiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     });

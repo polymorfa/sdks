@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -42,7 +43,10 @@ describe("Client.operations.wait", () => {
       )
       .mockResolvedValueOnce(Response.json(operation("succeeded")));
     const client = new Client({
-      credential: { type: "organizationApiKey", value: "pmfa_operations" },
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: "https://api.example.com",
       fetch,
     });
@@ -66,7 +70,10 @@ describe("Client.operations.wait", () => {
       Response.json(operation("running")),
     );
     const client = new Client({
-      credential: { type: "organizationApiKey", value: "pmfa_operations" },
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: "https://api.example.com",
       fetch,
     });
@@ -98,7 +105,10 @@ describe("Client.operations.wait", () => {
         }),
     );
     const client = new Client({
-      credential: { type: "organizationApiKey", value: "pmfa_operations" },
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: "https://api.example.com",
       timeoutMs: 60_000,
       fetch,

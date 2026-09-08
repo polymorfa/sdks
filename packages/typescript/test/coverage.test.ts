@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -257,17 +258,26 @@ describe("coverage checker", () => {
       }>;
     };
     const client = new Client({
-      credential: { type: "organizationApiKey", value: "pmfa_platform" },
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
     });
     const projectClient = client.project("project_coverage");
     const roots: Readonly<Record<string, unknown>> = {
       MessagingClient: new MessagingClient({
-        credential: { type: "apiKey", value: "pmfa_messaging" },
+        credential: {
+          type: "apiKey",
+          value: ORGANIZATION_API_KEY,
+        },
       }),
       Client: client,
       SystemClient: new SystemClient(),
       BridgeClient: new BridgeClient({
-        credential: { type: "projectToken", value: "pmfa_pt_bridge" },
+        credential: {
+          type: "projectToken",
+          value: PROJECT_TOKEN,
+        },
       }),
       HttpCallsApi: new HttpCallsApi({ apiKey: "pmfa_calls" }),
       BrowserMessagingClient: new BrowserMessagingClient({

@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
@@ -21,7 +22,10 @@ describe("BridgeClient", () => {
       Response.json(route),
     );
     const client = new BridgeClient({
-      credential: { type: "projectToken", value: "pmfa_pt_bridge" },
+      credential: {
+        type: "projectToken",
+        value: PROJECT_TOKEN,
+      },
       baseUrl: "https://api.example.com",
       fetch,
     });
@@ -34,7 +38,7 @@ describe("BridgeClient", () => {
     const [url, init] = fetch.mock.calls[0]!;
     expect(new URL(String(url)).pathname).toBe("/v1/bridge/route");
     expect(new Headers(init?.headers).get("authorization")).toBe(
-      "Bearer pmfa_pt_bridge",
+      `Bearer ${PROJECT_TOKEN}`,
     );
   });
 
@@ -57,7 +61,7 @@ describe("BridgeClient", () => {
         new BridgeClient({
           credential: {
             type: "organizationApiKey",
-            value: "pmfa_organization",
+            value: ORGANIZATION_API_KEY,
           },
           fetch,
         } as never),
@@ -69,7 +73,10 @@ describe("BridgeClient", () => {
     expect(
       () =>
         new BridgeClient({
-          credential: { type: "projectToken", value: "pmfa_pt_bridge" },
+          credential: {
+            type: "projectToken",
+            value: PROJECT_TOKEN,
+          },
           baseUrl: "http://api.example.com",
         }),
     ).toThrow(PolymorfaConfigurationError);

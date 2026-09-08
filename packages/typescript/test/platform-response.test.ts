@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { describe, expect, it, vi } from "vitest";
 
 import { Client, PolymorfaServerError } from "../src/index.js";
@@ -17,7 +18,10 @@ describe("management response envelopes", () => {
             }),
       );
       const client = new Client({
-        credential: { type: "organizationApiKey", value: "pmfa_org" },
+        credential: {
+          type: "organizationApiKey",
+          value: ORGANIZATION_API_KEY,
+        },
         baseUrl: "https://api.example.com",
         fetch,
       });
@@ -45,7 +49,10 @@ describe("management response envelopes", () => {
             }),
       );
       const client = new Client({
-        credential: { type: "organizationApiKey", value: "pmfa_org" },
+        credential: {
+          type: "organizationApiKey",
+          value: ORGANIZATION_API_KEY,
+        },
         baseUrl: "https://api.example.com",
         fetch,
       });
