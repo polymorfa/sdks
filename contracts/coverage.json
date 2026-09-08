@@ -26,9 +26,8 @@
       "operationId": "cancelQuickLink",
       "fingerprint": "763ce4c4e8f4fdec20a081a53a40bcbc10101940bbe9fc41647ca5338215d5f7",
       "typescript": {
-        "status": "excluded",
-        "reason": "Ephemeral hosted QuickLink orchestration is outside the public server SDK management-resource contract; browser QuickLink uses an application-provided backend adapter.",
-        "milestone": "not-server-sdk"
+        "status": "covered",
+        "method": "MessagingClient.quickLinks.cancel"
       }
     },
     {
@@ -303,9 +302,8 @@
       "operationId": "getQuickLink",
       "fingerprint": "76ece78254ba9f50816a3ebb40365ac699bd7b2ceb4b15134a3e6c2521672b4c",
       "typescript": {
-        "status": "excluded",
-        "reason": "Ephemeral hosted QuickLink orchestration is outside the public server SDK management-resource contract; browser QuickLink uses an application-provided backend adapter.",
-        "milestone": "not-server-sdk"
+        "status": "covered",
+        "method": "MessagingClient.quickLinks.retrieve"
       }
     },
     {
@@ -1022,9 +1020,8 @@
       "operationId": "createQuickLink",
       "fingerprint": "0f8aa33283ca0a7b8f5ce21aec512a471ec96fee773a16f1bf96e55c5cea9367",
       "typescript": {
-        "status": "excluded",
-        "reason": "Ephemeral hosted QuickLink orchestration is outside the public server SDK management-resource contract; browser QuickLink uses an application-provided backend adapter.",
-        "milestone": "not-server-sdk"
+        "status": "covered",
+        "method": "MessagingClient.quickLinks.create"
       }
     },
     {
