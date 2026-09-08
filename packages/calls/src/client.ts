@@ -7,6 +7,7 @@ import {
 import { Call, type CallEndReason } from "./call.js";
 import { Emitter } from "./events.js";
 import { LifecycleSocket, type LifecycleEvent } from "./lifecycle.js";
+import { parseMediaControlValue, type MediaControlFrame } from "./protocol.js";
 
 export interface CallsClientOptions {
   /** Server API key (`pmfa_…`). Never ship this to a browser. */
@@ -239,6 +240,17 @@ export class CallsClient extends Emitter<ClientEvents> {
         }
         this.#apply(existing, event);
         return;
+      case "call.participant_joined":
+      case "call.participant_state":
+      case "call.participant_left":
+        if (this.#o.mediaMode !== "external") return;
+        if (participantControlFrom(event) === undefined) return;
+        if (existing === undefined) {
+          this.#buffer(event);
+          return;
+        }
+        this.#apply(existing, event);
+        return;
       default:
         return;
     }
@@ -282,6 +294,14 @@ export class CallsClient extends Emitter<ClientEvents> {
       case "call.rejected":
         call._remoteEnded("rejected");
         return;
+      case "call.participant_joined":
+      case "call.participant_state":
+      case "call.participant_left": {
+        if (this.#o.mediaMode !== "external") return;
+        const frame = participantControlFrom(event);
+        if (frame !== undefined) call._remoteParticipant(frame);
+        return;
+      }
       default:
         return;
     }
@@ -297,7 +317,59 @@ export class CallsClient extends Emitter<ClientEvents> {
       queue = [];
       this.#pendingEvents.set(event.callId, queue);
     }
-    if (queue.length < PENDING_EVENTS_PER_ID) queue.push(event);
+    const terminal = (item: LifecycleEvent) =>
+      item.event === "call.ended" ||
+      item.event === "call.missed" ||
+      item.event === "call.rejected";
+    // A completed call cannot be revived by later roster or accepted events.
+    if (queue.some(terminal)) return;
+    if (terminal(event)) {
+      queue.splice(0, queue.length, event);
+      return;
+    }
+    if (event.event === "call.accepted") {
+      if (queue.some((item) => item.event === "call.accepted")) return;
+      // Reserve lifecycle progress even when roster updates filled the queue.
+      if (queue.length >= PENDING_EVENTS_PER_ID) queue.shift();
+      queue.push(event);
+      return;
+    }
+    const frame = participantControlFrom(event);
+    if (frame !== undefined) {
+      const id =
+        frame.type === "participant_left"
+          ? frame.participantId
+          : frame.participant.id;
+      const previous = queue.findIndex((item) => {
+        const queued = participantControlFrom(item);
+        return (
+          queued !== undefined &&
+          (queued.type === "participant_left"
+            ? queued.participantId
+            : queued.participant.id) === id
+        );
+      });
+      if (previous >= 0) {
+        const queued = participantControlFrom(queue[previous]!);
+        // A tracked call suppresses duplicate departures after emitting the
+        // first one's metadata. Preserve the same behavior while pending.
+        if (
+          queued !== undefined &&
+          isParticipantDeparture(queued) &&
+          isParticipantDeparture(frame)
+        )
+          return;
+        queue.splice(previous, 1);
+      }
+    }
+    if (queue.length >= PENDING_EVENTS_PER_ID) {
+      const oldestRoster = queue.findIndex(
+        (item) => participantControlFrom(item) !== undefined,
+      );
+      if (oldestRoster < 0) return;
+      queue.splice(oldestRoster, 1);
+    }
+    queue.push(event);
   }
 }
 
@@ -350,4 +422,48 @@ function endReasonFrom(value: unknown): CallEndReason {
     default:
       return "unknown";
   }
+}
+
+type ParticipantControlFrame = Extract<
+  MediaControlFrame,
+  { type: "participant_joined" | "participant_state" | "participant_left" }
+>;
+
+function isParticipantDeparture(frame: ParticipantControlFrame): boolean {
+  return (
+    frame.type === "participant_left" || frame.participant.state === "left"
+  );
+}
+
+function participantControlFrom(
+  event: LifecycleEvent,
+): ParticipantControlFrame | undefined {
+  if (event.payload["callId"] !== event.callId) return undefined;
+  let value: unknown;
+  switch (event.event) {
+    case "call.participant_joined":
+      value = {
+        type: "participant_joined",
+        participant: event.payload["participant"],
+      };
+      break;
+    case "call.participant_state":
+      value = {
+        type: "participant_state",
+        participant: event.payload["participant"],
+      };
+      break;
+    case "call.participant_left":
+      value = {
+        type: "participant_left",
+        participantId: event.payload["participantId"],
+        ...(typeof event.payload["reason"] !== "string"
+          ? {}
+          : { reason: event.payload["reason"] }),
+      };
+      break;
+    default:
+      return undefined;
+  }
+  return parseMediaControlValue(value) as ParticipantControlFrame | undefined;
 }

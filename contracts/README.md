@@ -2,7 +2,7 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`3bf3a6ba3de8b19a547afd16fca1f3b368d7d4e7`. `source.json` records their original
+`8c244aab0e5626d101a2c8c4915287427f39e014`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
@@ -20,8 +20,18 @@ successful live call.
 
 ## Reconciliation
 
-This snapshot adds 22 operations and removes 11 widget operations relative to
-the previous snapshot. The added operations are five implemented Calls
+This refresh adds and removes no operations. Two Messaging operation
+fingerprints changed: browser candidate retrieval remains excluded from the
+server SDK, and `MessagingClient.voip.agentToken` remains covered by its typed
+method and request test. Schema updates include literal webhook event names,
+nullable terminal-call callers, participant lifecycle events, client-token
+delegation scopes, and TURN health diagnostics. These changes do not alter the
+operation coverage totals or the existing missing-operation inventory.
+
+## Previous reconciliation
+
+The previous snapshot added 22 operations and removed 11 widget operations.
+The added operations were five implemented Calls
 operations, ten missing QuickLink operations, and seven Console-only
 operations excluded by their credential contract.
 

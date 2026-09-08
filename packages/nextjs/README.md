@@ -45,6 +45,10 @@ mint: createMessagingClientTokenMint({
 }),
 ```
 
+The server key used by either mint path needs all client delegation scopes:
+`sessions:manage`, `messages:write`, `contacts:read`, `presence:read`,
+`presence:observe`, and `mcp`.
+
 `createTemplateBuilderRoute` pairs the browser template transport with
 `MessagingClient.templates`. The application authorizes every request and
 resolves both project scope and the Cloud API submission session on the server.

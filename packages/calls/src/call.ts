@@ -1,7 +1,7 @@
 import type { CallsApi } from "./api.js";
 import { Emitter } from "./events.js";
 import { MediaSocket, type MediaSocketOptions } from "./media.js";
-import type { Participant, VideoFrame } from "./protocol.js";
+import type { MediaControlFrame, Participant, VideoFrame } from "./protocol.js";
 
 export type CallDirection = "inbound" | "outbound";
 
@@ -130,6 +130,9 @@ export class Call extends Emitter<CallEvents> {
   readonly #mediaOptions: Omit<MediaSocketOptions, "ticket">;
   readonly #now: () => number;
   readonly #participants = new Map<string, Participant>();
+  readonly #departedParticipants = new Set<string>();
+  readonly #participantRevisions = new Map<string, number>();
+  #rosterRevision = 0;
   #state: CallState;
   #media: MediaSocket | undefined;
   #endReason: CallEndReason | undefined;
@@ -252,9 +255,16 @@ export class Call extends Emitter<CallEvents> {
   async addParticipant(to: string): Promise<Participant> {
     if (this.#state === "ended")
       throw new Error("Cannot add a participant to an ended call.");
+    const requestedAtRevision = this.#rosterRevision;
     const participant = await this.#api.addParticipant(this.id, to);
-    this.#participants.set(participant.id, participant);
-    this.emit("participantJoined", participant);
+    // The lifecycle stream may move this participant forward, or report it
+    // left, while the HTTP request is in flight. Its acknowledgement is then
+    // older than the roster and must not overwrite or restore that entry.
+    if (
+      (this.#participantRevisions.get(participant.id) ?? 0) <=
+      requestedAtRevision
+    )
+      this.#applyInviteReply(participant);
     return participant;
   }
 
@@ -279,6 +289,61 @@ export class Call extends Emitter<CallEvents> {
   /** @internal The platform reported the call over. */
   _remoteEnded(reason: CallEndReason): void {
     this.#end(reason);
+  }
+
+  /** @internal Apply a validated participant update from either transport. */
+  _remoteParticipant(frame: ParticipantControlFrame): void {
+    if (this.ended) return;
+    const participantId =
+      frame.type === "participant_left"
+        ? frame.participantId
+        : frame.participant.id;
+    this.#rosterRevision += 1;
+    this.#participantRevisions.set(participantId, this.#rosterRevision);
+    this.#applyParticipant(frame);
+  }
+
+  #applyInviteReply(participant: Participant): void {
+    if (this.ended) return;
+    const previous = this.#participants.get(participant.id);
+    if (
+      previous !== undefined &&
+      participantStateRank(participant.state) <
+        participantStateRank(previous.state)
+    )
+      return;
+    if (previous !== undefined && sameParticipant(previous, participant))
+      return;
+    this.#rosterRevision += 1;
+    this.#participantRevisions.set(participant.id, this.#rosterRevision);
+    this.#applyParticipant({ type: "participant_joined", participant });
+  }
+
+  #applyParticipant(frame: ParticipantControlFrame): void {
+    if (this.ended) return;
+    if (frame.type === "participant_left") {
+      if (this.#departedParticipants.has(frame.participantId)) return;
+      this.#departedParticipants.add(frame.participantId);
+      this.#participants.delete(frame.participantId);
+      this.emit("participantLeft", frame.participantId, frame.reason);
+      return;
+    }
+
+    const participant = frame.participant;
+    if (participant.state === "left") {
+      this.#applyParticipant({
+        type: "participant_left",
+        participantId: participant.id,
+      });
+      return;
+    }
+    this.#departedParticipants.delete(participant.id);
+    const previous = this.#participants.get(participant.id);
+    if (previous !== undefined && sameParticipant(previous, participant))
+      return;
+    this.#participants.set(participant.id, participant);
+    if (previous === undefined) this.emit("participantJoined", participant);
+    else this.emit("participantState", participant);
   }
 
   /**
@@ -311,18 +376,19 @@ export class Call extends Emitter<CallEvents> {
     media.on("audio", (pcm) => this.audio._push(pcm));
     media.on("video", (frame) => this.video?._frame(frame));
     media.on("videoState", (enabled) => this.video?._state(enabled));
-    media.on("participantJoined", (p) => {
-      this.#participants.set(p.id, p);
-      this.emit("participantJoined", p);
-    });
-    media.on("participantState", (p) => {
-      this.#participants.set(p.id, p);
-      this.emit("participantState", p);
-    });
-    media.on("participantLeft", (id, reason) => {
-      this.#participants.delete(id);
-      this.emit("participantLeft", id, reason);
-    });
+    media.on("participantJoined", (participant) =>
+      this._remoteParticipant({ type: "participant_joined", participant }),
+    );
+    media.on("participantState", (participant) =>
+      this._remoteParticipant({ type: "participant_state", participant }),
+    );
+    media.on("participantLeft", (participantId, reason) =>
+      this._remoteParticipant({
+        type: "participant_left",
+        participantId,
+        ...(reason === undefined ? {} : { reason }),
+      }),
+    );
     media.on("error", (error) => this.emit("error", error));
     media.on("hangup", () => this.#end("remote_hangup"));
     media.on("close", () => {
@@ -374,4 +440,32 @@ export class Call extends Emitter<CallEvents> {
     this.emit("ended", reason);
     this.removeAllListeners();
   }
+}
+
+type ParticipantControlFrame = Extract<
+  MediaControlFrame,
+  { type: "participant_joined" | "participant_state" | "participant_left" }
+>;
+
+function participantStateRank(state: Participant["state"]): number {
+  switch (state) {
+    case "invited":
+      return 0;
+    case "ringing":
+      return 1;
+    case "connected":
+      return 2;
+    case "left":
+      return 3;
+  }
+}
+
+function sameParticipant(a: Participant, b: Participant): boolean {
+  return (
+    a.id === b.id &&
+    a.handle === b.handle &&
+    a.audioMuted === b.audioMuted &&
+    a.video === b.video &&
+    a.state === b.state
+  );
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "3bf3a6ba3de8b19a547afd16fca1f3b368d7d4e7",
+  "sourceCommit": "8c244aab0e5626d101a2c8c4915287427f39e014",
   "excludedContracts": [
     {
       "family": "graph",
@@ -359,7 +359,7 @@
       "method": "GET",
       "path": "/api/voip/calls/{id}/candidates",
       "operationId": "voipCandidates",
-      "fingerprint": "7fe4f817d13b49bf9910a47de56d9cb398d97e15f4573624670a75c94a30a212",
+      "fingerprint": "a0a6899c811800145bd65e05c019c38d68bdffb0b4bb269789ce50baa473021d",
       "typescript": {
         "status": "excluded",
         "reason": "Browser client-token signaling route served by @polymorfa/browser (CallsSignalingClient over BrowserTransport); it does not accept the server credential used by the TypeScript server SDK.",
@@ -1162,7 +1162,7 @@
       "method": "POST",
       "path": "/api/voip/calls/{id}/agent-token",
       "operationId": "voipAgentToken",
-      "fingerprint": "03d4c5cd14a2c755d10ffb96fc7cbeee43b8ccfd7635d5922fdd0a5087d196a3",
+      "fingerprint": "789a8b72ea1c84104018e36eede3e84c52272dc242a0781491e81d4d84703678",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.agentToken"

@@ -17196,7 +17196,7 @@
       "ApiKeyAuth": {
         "type": "http",
         "scheme": "bearer",
-        "description": "Polymorfa server credential: a scoped pmfa_ organization key, or a pmfa_pt_ project token on project- and session-bound operations inside its exact authenticated project. Listener and browser client credentials are rejected."
+        "description": "Polymorfa server credential: a scoped pmfa_ organization key, or a pmfa_pt_ project token on project- and session-bound operations inside its exact authenticated project. Keys may be personal or service-account owned. Both enforce selected action scopes; organization keys can address team resources and every project in the organization. Listener and browser client credentials are rejected."
       },
       "ConsoleSession": {
         "type": "http",

@@ -2,9 +2,14 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "blocklist.update",
   "business.quick_reply.update",
   "call.accepted",
+  "call.ended",
   "call.missed",
+  "call.participant_joined",
+  "call.participant_left",
+  "call.participant_state",
   "call.received",
   "call.rejected",
+  "call.telemetry",
   "chat.archive",
   "chat.clear",
   "chat.delete",
@@ -253,6 +258,52 @@ export interface CallMissedPayload extends CallReceivedPayload {
 export type CallAcceptedPayload = CallReceivedPayload;
 export type CallRejectedPayload = CallReceivedPayload;
 
+export interface CallEndedPayload {
+  /** Null when the media host disappeared before reporting caller identity. */
+  readonly from: JidReference | null;
+  readonly callId: string;
+  readonly durationSeconds: number;
+  /** Includes pod_lost for calls ended after the media host disappears. */
+  readonly reason: string;
+  readonly direction: "inbound" | "outbound";
+  readonly hadVideo: boolean;
+}
+
+export interface CallTelemetryPayload {
+  readonly callId: string;
+  readonly setupMs: number;
+  readonly ringMs: number;
+  readonly durationSeconds: number;
+  readonly terminateReason: string;
+  readonly codec: string;
+  readonly jitterMs: number;
+  readonly packetsLost: number;
+  readonly rttMs: number;
+  /** Cumulative received kilobits, despite the legacy field name. */
+  readonly recvKbps: number;
+  /** Cumulative sent kilobits, despite the legacy field name. */
+  readonly sendKbps: number;
+}
+
+export interface CallParticipant {
+  readonly id: string;
+  readonly handle: string;
+  readonly audioMuted: false;
+  readonly video: false;
+  readonly state: "invited" | "ringing" | "connected" | "left";
+}
+
+export interface CallParticipantPayload {
+  readonly callId: string;
+  readonly participant: CallParticipant;
+}
+
+export interface CallParticipantLeftPayload {
+  readonly callId: string;
+  readonly participantId: string;
+  readonly reason?: string;
+}
+
 export interface NewsletterUpdatePayload {
   readonly id: string;
   readonly action: string;
@@ -326,9 +377,14 @@ export interface WebhookPayloadMap {
   readonly "blocklist.update": BlocklistUpdatePayload;
   readonly "business.quick_reply.update": BusinessQuickReplyUpdatePayload;
   readonly "call.accepted": CallAcceptedPayload;
+  readonly "call.ended": CallEndedPayload;
   readonly "call.missed": CallMissedPayload;
+  readonly "call.participant_joined": CallParticipantPayload;
+  readonly "call.participant_left": CallParticipantLeftPayload;
+  readonly "call.participant_state": CallParticipantPayload;
   readonly "call.received": CallReceivedPayload;
   readonly "call.rejected": CallRejectedPayload;
+  readonly "call.telemetry": CallTelemetryPayload;
   readonly "chat.archive": ChatArchivePayload;
   readonly "chat.clear": ChatClearPayload;
   readonly "chat.delete": ChatDeletePayload;
