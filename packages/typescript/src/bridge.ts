@@ -3,6 +3,7 @@ import {
   validateClientCredential,
   type SharedClientOptions,
 } from "./credentials.js";
+import { PolymorfaConfigurationError } from "./errors.js";
 import { HttpTransport } from "./transport/http.js";
 import type { ApiResponse, RequestOptions } from "./transport/types.js";
 
@@ -44,6 +45,12 @@ export class BridgeClient {
 
   constructor(options: BridgeClientOptions) {
     const credential = validateClientCredential(options.credential);
+    if (credential.type !== "projectToken") {
+      throw new PolymorfaConfigurationError(
+        "BridgeClient requires a project token.",
+        "credential",
+      );
+    }
     assertServerRuntime();
     const transport = new HttpTransport({
       baseUrl: options.baseUrl ?? "https://api.polymorfa.com",

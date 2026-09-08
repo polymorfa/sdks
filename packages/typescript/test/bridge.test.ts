@@ -49,4 +49,29 @@ describe("BridgeClient", () => {
     ).toThrow(PolymorfaConfigurationError);
     expect(fetch).not.toHaveBeenCalled();
   });
+
+  it("rejects organization credentials supplied by untyped callers", () => {
+    const fetch = vi.fn<typeof globalThis.fetch>();
+    expect(
+      () =>
+        new BridgeClient({
+          credential: {
+            type: "organizationApiKey",
+            value: "pmfa_organization",
+          },
+          fetch,
+        } as never),
+    ).toThrow(PolymorfaConfigurationError);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("rejects cleartext non-loopback API origins", () => {
+    expect(
+      () =>
+        new BridgeClient({
+          credential: { type: "projectToken", value: "pmfa_pt_bridge" },
+          baseUrl: "http://api.example.com",
+        }),
+    ).toThrow(PolymorfaConfigurationError);
+  });
 });

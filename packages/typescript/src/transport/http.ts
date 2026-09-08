@@ -3,6 +3,7 @@ import {
   PolymorfaAuthorizationError,
   PolymorfaCancelledError,
   PolymorfaConflictError,
+  PolymorfaConfigurationError,
   PolymorfaConnectionError,
   PolymorfaError,
   PolymorfaNotFoundError,
@@ -41,7 +42,7 @@ export class HttpTransport {
   readonly #random: () => number;
 
   constructor(options: TransportOptions) {
-    this.#baseUrl = options.baseUrl.replace(/\/+$/, "");
+    this.#baseUrl = validateBaseUrl(options.baseUrl, options.authorization);
     this.#authorization = options.authorization;
     this.#apiVersion = options.apiVersion;
     this.#timeoutMs = assertNonNegativeInteger(
@@ -202,6 +203,7 @@ export class HttpTransport {
       const response = await this.#fetch(url, {
         method: request.method,
         headers,
+        redirect: this.#authorization === undefined ? "follow" : "error",
         ...(encoded.body === undefined ? {} : { body: encoded.body }),
         signal: controller.signal,
       });
@@ -216,6 +218,49 @@ export class HttpTransport {
       request.signal?.removeEventListener("abort", cancel);
     }
   }
+}
+
+function validateBaseUrl(
+  value: string,
+  authorization: string | undefined,
+): string {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new PolymorfaConfigurationError(
+      "baseUrl must be an absolute HTTP or HTTPS URL.",
+      "baseUrl",
+    );
+  }
+  if (url.username !== "" || url.password !== "") {
+    throw new PolymorfaConfigurationError(
+      "baseUrl must not contain credentials.",
+      "baseUrl",
+    );
+  }
+  const isLoopbackHttp =
+    url.protocol === "http:" &&
+    (url.hostname === "localhost" ||
+      url.hostname === "127.0.0.1" ||
+      url.hostname === "[::1]");
+  if (
+    authorization !== undefined &&
+    url.protocol !== "https:" &&
+    !isLoopbackHttp
+  ) {
+    throw new PolymorfaConfigurationError(
+      "Credentialed clients require HTTPS, except for loopback development servers.",
+      "baseUrl",
+    );
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new PolymorfaConfigurationError(
+      "baseUrl must use HTTP or HTTPS.",
+      "baseUrl",
+    );
+  }
+  return value.replace(/\/+$/, "");
 }
 
 class RequestTimeout extends Error {
