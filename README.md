@@ -13,7 +13,7 @@ this SDK's initial scope.
 
 | Package               | Runtime             | Responsibility                                                                    |
 | --------------------- | ------------------- | --------------------------------------------------------------------------------- |
-| `@polymorfa/sdk`      | Node.js 20+         | Messaging and Platform server clients, webhooks, and raw requests                 |
+| `@polymorfa/sdk`      | Node.js 20+         | Messaging, management, system, and Bridge server clients                          |
 | `@polymorfa/browser`  | Browser             | Client-token transport and framework-neutral product controllers                  |
 | `@polymorfa/ui`       | Isomorphic          | Appearance, locale, direction, motion, and diagnostic contracts                   |
 | `@polymorfa/elements` | Browser             | Portable custom elements for React-free, Vue, Svelte, and plain HTML applications |
@@ -38,7 +38,12 @@ The Git install runs the package build through `prepare`. The published package
 name and root import are already stable:
 
 ```ts
-import { MessagingClient, PlatformClient } from "@polymorfa/sdk";
+import {
+  BridgeClient,
+  Client,
+  MessagingClient,
+  SystemClient,
+} from "@polymorfa/sdk";
 ```
 
 Node.js 20 or newer is required. The package has no runtime dependencies.
@@ -53,7 +58,7 @@ const messaging = new MessagingClient({
     type: "apiKey",
     value: process.env.POLYMORFA_MESSAGING_API_KEY!,
   },
-  apiVersion: "2026-08-19",
+  apiVersion: "1.0.0",
 });
 
 const sessions = await messaging.sessions.list();
@@ -121,31 +126,66 @@ The handwritten Messaging resources in this milestone are:
   LID-backed user ID
 - `webhooks`: list, create, retrieve, update, and delete
 
-## Platform client
+## Management client
 
 ```ts
-import { PlatformClient } from "@polymorfa/sdk";
+import { Client } from "@polymorfa/sdk";
 
-const platform = new PlatformClient({
-  apiKey: process.env.POLYMORFA_PLATFORM_API_KEY!,
+const client = new Client({
+  credential: {
+    type: "organizationApiKey",
+    value: process.env.POLYMORFA_PLATFORM_API_KEY!,
+  },
 });
 
-const projects = await platform.projects.list();
-const sessions = await platform.sessions.list({
+const projects = await client.projects.list();
+const sessions = await client.sessions.list({
   projectId: projects.data.data[0]?._id,
 });
 
-const campaign = await platform.campaigns.create(
-  { projectId: projects.data.data[0]?._id, name: "August launch" },
-  { idempotencyKey: crypto.randomUUID() },
-);
-console.log(campaign.data.data, campaign.metadata.requestId);
+const project = client.project("project_123");
+const events = await project.events.list({ limit: 25 });
+console.log(events.items, events.response.metadata.requestId);
 ```
 
-The Platform client accepts only `pmfa_` server API keys. It rejects client
-tokens and project tokens before making a request.
+`Client` binds its ownership context when you construct it. An organization
+API key without `projectId` creates an organization client. Call
+`client.project(projectId)` to create an immutable project view, or construct a
+project view directly with an organization key or a `pmfa_pt_` project token:
 
-The handwritten Platform resources in this milestone are:
+```ts
+const project = new Client({
+  credential: {
+    type: "projectToken",
+    value: process.env.POLYMORFA_PROJECT_TOKEN!,
+  },
+  projectId: "project_123",
+});
+```
+
+Project tokens require an explicit project ID. The server verifies the initial
+token-to-project binding. A later attempt to bind that client to another
+project fails before transport. `Client` also rejects browser client tokens and
+the CLI-only `pmfa_ls_` listener credential before transport.
+
+Both organization and project views expose owner-bound resources:
+
+- `events`: list, retrieve, and replay durable events
+- `webhooks`: list, create, retrieve, update, delete, test, and rotate secrets
+- `webhookDeliveries`: list and retrieve deliveries, list and retrieve their
+  physical attempts, and retry a delivery
+- `operations`: list, retrieve, list transitions, cancel, and wait for a
+  terminal state
+- `quickLinkSettings`: retrieve and update the saved QuickLink configuration
+
+List methods return `CursorPage<T>`. Mutations return typed receipts with the
+resource, operation, and idempotency identifiers supplied by the API. The
+SDK-only `operations.wait()` helper polls `retrieve`; it does not create a
+second remote operation or cancel the remote operation when local waiting is
+aborted. A larger server `Retry-After` raises the next poll delay without
+extending the caller's total wait deadline.
+
+The organization view also exposes these management resources:
 
 - `organizations`: retrieve the organization visible to the API key
 - `apiKeys`: list key metadata and deactivate an organization API key
@@ -154,15 +194,12 @@ The handwritten Platform resources in this milestone are:
   and limit filters
 - `sessionBans`: list all or active session bans
 - `securityIncidents`: list and acknowledge leaked-credential incidents
-- `operations`: retrieve durable asynchronous operation state
 - `projectTokens`: list token metadata for an explicit project
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing, and update low-balance reminders
 - `projects`: list, create, request production enrollment, approve, and cancel
-- `sessions`: list, stop or delete one session, stop or delete a bounded batch,
-  set tier override, and create a testing session
-- `widgetSettings`: retrieve organization or project Connect widget settings
-  and update the exact saved configuration fields
+- `sessions`: list, start, stop, or delete one session; stop or delete a bounded
+  batch; set tier override; and create a testing session
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and recipients
 - `customers`: enable Customers for a project; create, list, retrieve, update,
@@ -182,9 +219,46 @@ operation payloads as open objects. These methods therefore use the exported
 `PlatformPayload` type instead of claiming fields the contract does not define.
 
 Platform template and Flow endpoints require a live dashboard bearer and reject
-organization server keys. They are intentionally absent from `PlatformClient`;
+organization server keys. They are intentionally absent from `Client`;
 browser template tooling must reach them through an application-owned server
 adapter that authorizes the signed-in user.
+
+## System and Bridge clients
+
+`SystemClient` calls the credential-free status, version, readiness, and
+liveness routes. It does not accept a credential:
+
+```ts
+import { SystemClient } from "@polymorfa/sdk";
+
+const system = new SystemClient();
+const [status, version, health, ping] = await Promise.all([
+  system.status(),
+  system.version(),
+  system.health(),
+  system.ping(),
+]);
+```
+
+`BridgeClient` accepts only a project token and exposes one discovery method:
+
+```ts
+import { BridgeClient } from "@polymorfa/sdk";
+
+const bridge = new BridgeClient({
+  credential: {
+    type: "projectToken",
+    value: process.env.POLYMORFA_PROJECT_TOKEN!,
+  },
+});
+
+const route = await bridge.routes.resolve();
+console.log(route.data.wsUrl, route.data.expiresAt);
+```
+
+Route discovery returns the regional Bridge connection details. The client does
+not open the WebSocket, manage reconnects, or participate in the CLI listener
+protocol. A `pmfa_ls_` listener credential is rejected before transport.
 
 ## Response metadata and errors
 
@@ -217,7 +291,7 @@ them on the client or override them for one request:
 ```ts
 const controller = new AbortController();
 
-const response = await platform.projects.create(
+const response = await client.projects.create(
   { name: "Support" },
   {
     signal: controller.signal,
@@ -238,19 +312,22 @@ honors `Retry-After`, then uses bounded exponential backoff with jitter.
 Set `apiVersion` on a client or a single request. The SDK sends it as the
 `Polymorfa-Version` header.
 
-Every client exposes `raw.request<T>()` for endpoints without a curated method:
+Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 
 ```ts
-const response = await platform.raw.request<{ data: unknown }>({
+const response = await client.raw.request<{ data: unknown }>({
   method: "GET",
   path: "/v1/operations/operation_123",
   query: { projectId: "project_123" },
 });
 ```
 
-Raw paths must start with one slash and cannot be absolute URLs, preventing a
-credential from being forwarded to another host. Raw requests retain typed
-errors, metadata, cancellation, API versions, retry rules, and idempotency.
+Organization raw paths remain relative API paths. Project raw paths are
+relative to the bound project and receive the encoded
+`/v1/projects/{projectId}` prefix automatically. Project raw requests reject
+absolute URLs, traversal, explicit project prefixes, backslashes, and
+`Authorization` overrides before transport. Raw requests retain typed errors,
+metadata, cancellation, API versions, retry rules, and idempotency.
 
 `raw.paginate()` accepts a page decoder and returns `CursorPage<T>`, which
 supports `items`, `nextCursor`, `hasMore`, `nextPage()`, and async item
@@ -263,13 +340,13 @@ CLI.
 Verify the exact raw request body before parsing:
 
 ```ts
-import { constructWebhookEvent, isEvent } from "@polymorfa/sdk";
+import { isEvent, webhooks } from "@polymorfa/sdk";
 
-const event = await constructWebhookEvent(
-  rawBody,
-  signatureHeader,
-  webhookSecret,
-);
+const event = await webhooks.verify({
+  body: rawBody,
+  signature: signatureHeader,
+  secret: webhookSecret,
+});
 if (isEvent(event, "message.received")) {
   console.log(event.payload);
 }
@@ -282,14 +359,33 @@ events narrow to exported payload types, including messages, sessions, groups,
 presence, contacts, chats, calls, labels, history sync, command results, and
 business quick replies. Unknown event names and payloads are preserved for
 forward compatibility.
+`webhooks.verifySignature()` returns a boolean without parsing.
+`webhooks.createFixture()` creates exact-byte local fixtures, and
+`webhooks.verifyLocal()` verifies payloads re-signed by local CLI forwarding.
+The older `constructWebhookEvent` and `verifyWebhookSignature` exports remain
+available through the first stable major. A later major can remove them with a
+migration release.
 
 Messaging server credentials can manage webhook registrations through
-`MessagingClient.webhooks`. The Platform contract also defines organization
-and project event listing and replay, webhook management, delivery inspection
-and retry, and durable operation management. These Platform resources remain
-missing from the handwritten SDK, apart from organization operation retrieval
-through `PlatformClient.operations.retrieve`. The coverage ledger records each
-gap. Dashboard and staff routes retain their separate credential requirements.
+`MessagingClient.webhooks`. The management `Client` owns the separate durable
+organization and project event, webhook, delivery, attempt, and operation
+resources described above. Dashboard and staff routes retain their separate
+credential requirements.
+
+The SDK has no listener, event stream, `AsyncIterable`, or forwarding API.
+`polymorfa listen` connects to a separate CLI-only protocol; its `pmfa_ls_`
+credential cannot be used by `Client`, `MessagingClient`, or their raw request
+helpers.
+
+## QuickLink settings
+
+`client.quickLinkSettings.retrieve()` and `update()` map only the management
+`GET /v1/quicklink` and `PUT /v1/quicklink` settings contract. The same methods
+on `client.project(projectId)` use the immutable project ownership context.
+
+The SDK does not expose hosted QuickLink creation, inspection, or cancellation
+for `/api/quicklinks`. Those ephemeral flows belong to an application adapter
+and the browser controller, not the management client.
 
 ## Browser controllers and UI
 
@@ -382,7 +478,7 @@ colors derive from the shared appearance variables.
 `@polymorfa/nextjs` builds Web `Request`/`Response` handlers, so it has no Next.js
 runtime dependency. Applications provide their own authorization and minting
 logic; webhook helpers read raw bytes once and delegate verification to
-`constructWebhookEvent` from the server SDK.
+`webhooks.verify` from the server SDK.
 
 Template routes use the same application-owned authorization boundary. Project
 scope and Cloud API session selection are resolver callbacks that run only on
@@ -396,16 +492,12 @@ subpath exports an inert mount function.
 
 ## Coverage status
 
-`contracts/coverage.json` records all 402 Messaging and Platform operations in
-its pinned contract: 226 covered, 103 missing, 73 excluded, and zero changed
-fingerprints. Covered mappings include methods in the server, browser, and
-Calls packages. A mapping records an HTTP operation, not package publication
-or live-call readiness.
-
-The five programmatic Calls operations map to `HttpCallsApi.place`, `accept`,
-`reject`, `addParticipant`, and `setMode`. QuickLink routes and the new durable
-Platform resources retain explicit missing entries. Existing widget methods
-still request removed routes and do not count as QuickLink coverage.
+`contracts/coverage.json` records every Messaging and Platform operation in its
+pinned contracts. Covered mappings include methods in the server, browser, and
+Calls packages. A mapping records an HTTP operation, not package publication or
+live-call readiness. The durable management resources and QuickLink settings
+map to typed `Client` resources; dashboard, staff, and CLI-listener routes keep
+explicit credential-boundary exclusions.
 
 `npm run check:coverage` requires every contract operation to have a ledger
 row. It permits explicit missing and excluded entries; passing that check does

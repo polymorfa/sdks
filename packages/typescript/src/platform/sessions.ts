@@ -11,6 +11,7 @@ import type {
   SessionBatchStopResult,
   SessionProjectContext,
   SessionRemoveResult,
+  SessionStartResult,
   SessionStopResult,
   SessionTierOverrideRequest,
 } from "./types.js";
@@ -28,6 +29,19 @@ export class PlatformSessionsResource {
       ...(params.projectId === undefined
         ? {}
         : { query: { projectId: params.projectId } }),
+      ...options,
+    });
+  }
+
+  start(
+    sessionId: string,
+    body: SessionProjectContext = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SessionStartResult>>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionPath(sessionId)}/start`,
+      body,
       ...options,
     });
   }

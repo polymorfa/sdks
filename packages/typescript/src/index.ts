@@ -1,12 +1,29 @@
 export {
   assertServerRuntime,
+  validateClientCredential,
   validateMessagingCredential,
-  validatePlatformApiKey,
+  validateOrganizationApiKey,
+  type ClientCredential,
+  type ClientOptions,
   type MessagingClientOptions,
   type MessagingCredential,
-  type PlatformClientOptions,
+  type OrganizationClientOptions,
+  type ProjectScopedClientOptions,
   type SharedClientOptions,
 } from "./credentials.js";
+export {
+  Client,
+  type ClientBase,
+  type ClientConstructor,
+  type EventsResourceFor,
+  type OperationsResourceFor,
+  type OrganizationControlPlaneResources,
+  type RawResourceFor,
+  type WebhookDeliveriesResourceFor,
+  type WebhooksResourceFor,
+  type Client as ClientInstance,
+} from "./client.js";
+export type * from "./platform/developer-types.js";
 export {
   PolymorfaAuthenticationError,
   PolymorfaAuthorizationError,
@@ -23,6 +40,15 @@ export {
   type PolymorfaErrorOptions,
 } from "./errors.js";
 export { MessagingClient } from "./messaging/client.js";
+export {
+  BridgeClient,
+  BridgeRoutesResource,
+  type BridgeClientOptions,
+  type BridgeKind,
+  type BridgeRegion,
+  type BridgeRoute,
+  type BridgeSignal,
+} from "./bridge.js";
 export { ChatsResource } from "./messaging/chats.js";
 export { ChannelsResource } from "./messaging/channels.js";
 export { BusinessResource } from "./messaging/business.js";
@@ -413,7 +439,7 @@ export type {
   CreateLabelRequest,
   CreateLabelResponse,
 } from "./messaging/types.js";
-export { WebhooksResource } from "./messaging/webhooks.js";
+export { WebhooksResource as MessagingWebhooksResource } from "./messaging/webhooks.js";
 export { CursorPage, type PageDecoder, type PageResult } from "./pagination.js";
 export { AudiencesResource } from "./platform/audiences.js";
 export { ApiKeysResource } from "./platform/api-keys.js";
@@ -421,18 +447,26 @@ export { AuditLogsResource } from "./platform/audit-logs.js";
 export { BillingResource } from "./platform/billing.js";
 export { CampaignsResource } from "./platform/campaigns.js";
 export { CustomersResource } from "./platform/customers.js";
-export { PlatformClient } from "./platform/client.js";
 export { MediaResource } from "./platform/media.js";
 export { MembersResource } from "./platform/members.js";
 export { OptOutsResource } from "./platform/opt-outs.js";
-export { PlatformOperationsResource } from "./platform/operations.js";
+export {
+  QuickLinkSettingsResource,
+  type OrganizationQuickLinkSettings,
+  type ProjectQuickLinkSettings,
+  type QuickLinkHistorySync,
+  type QuickLinkLogoMode,
+  type QuickLinkMethod,
+  type QuickLinkShape,
+  type QuickLinkTheme,
+  type UpdateQuickLinkSettingsInput,
+} from "./platform/quicklink-settings.js";
 export { OrganizationsResource } from "./platform/organizations.js";
 export { ProjectTokensResource } from "./platform/project-tokens.js";
 export { ProjectsResource } from "./platform/projects.js";
 export { SecurityIncidentsResource } from "./platform/security-incidents.js";
 export { SessionBansResource } from "./platform/session-bans.js";
 export { PlatformSessionsResource } from "./platform/sessions.js";
-export { WidgetSettingsResource } from "./platform/widget-settings.js";
 export type {
   ApiKey,
   ApiKeyDeactivation,
@@ -470,8 +504,6 @@ export type {
   ListCampaignsParams,
   ListCustomerEventsParams,
   ListCustomersParams,
-  ManagementOperation,
-  ManagementOperationStatus,
   ManagedSession,
   Organization,
   OrganizationMember,
@@ -495,6 +527,7 @@ export type {
   SessionBanStatus,
   SessionProjectContext,
   SessionRemoveResult,
+  SessionStartResult,
   SessionStopResult,
   SessionTier,
   SessionTierOverrideRequest,
@@ -502,19 +535,8 @@ export type {
   TransferCustomerNumberRequest,
   UpdateBillingReminderSettingsRequest,
   UpdateCustomerRequest,
-  RetrieveWidgetSettingsParams,
-  UpdateWidgetSettingsRequest,
-  WidgetColorPalette,
-  WidgetColors,
-  WidgetHistorySync,
-  WidgetLogoMode,
-  WidgetMethod,
-  WidgetMode,
-  WidgetSettings,
-  WidgetShape,
-  WidgetTheme,
 } from "./platform/types.js";
-export { RawClient } from "./raw.js";
+export { RawClient, type ProjectScopedRawClient } from "./raw.js";
 export type {
   ApiResponse,
   HttpMethod,
@@ -526,10 +548,20 @@ export type {
 } from "./transport/types.js";
 export { SDK_VERSION } from "./version.js";
 export {
+  SystemClient,
+  type HealthCheck,
+  type HealthResponse,
+  type PingResponse,
+  type StatusResponse,
+  type SystemClientOptions,
+  type VersionResponse,
+} from "./system.js";
+export {
   KNOWN_WEBHOOK_EVENT_TYPES,
   WebhookSignatureError,
   constructWebhookEvent,
   isEvent,
+  webhooks,
   verifyWebhookSignature,
   type BlocklistChange,
   type BlocklistUpdatePayload,
@@ -578,6 +610,12 @@ export {
   type SessionStatusPayload,
   type UnknownWebhookEvent,
   type WebhookBody,
+  type WebhookFixture,
+  type WebhookUtilities,
+  type VerifyWebhookInput,
+  type VerifyWebhookSignatureInput,
+  type VerifyLocalWebhookInput,
+  type CreateWebhookFixtureInput,
   type WebhookEvent,
   type WebhookEventOf,
   type WebhookPayloadMap,

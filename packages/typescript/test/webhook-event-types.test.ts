@@ -4,12 +4,14 @@ import type {
   BlocklistUpdatePayload,
   BusinessQuickReplyUpdatePayload,
   CallAcceptedPayload,
+  CallEndedPayload,
   CallMissedPayload,
   CallParticipant,
   CallParticipantLeftPayload,
   CallParticipantPayload,
   CallReceivedPayload,
   CallRejectedPayload,
+  CallTelemetryPayload,
   ChatArchivePayload,
   ChatClearPayload,
   ChatDeletePayload,
@@ -126,6 +128,14 @@ type ExpectedPayloads = {
     readonly from: ExpectedJidReference;
     readonly callId: string;
   };
+  readonly "call.ended": {
+    readonly from: ExpectedJidReference | null;
+    readonly callId: string;
+    readonly durationSeconds: number;
+    readonly reason: string;
+    readonly direction: "inbound" | "outbound";
+    readonly hadVideo: boolean;
+  };
   readonly "call.missed": {
     readonly from: ExpectedJidReference;
     readonly callId: string;
@@ -163,6 +173,19 @@ type ExpectedPayloads = {
   readonly "call.rejected": {
     readonly from: ExpectedJidReference;
     readonly callId: string;
+  };
+  readonly "call.telemetry": {
+    readonly callId: string;
+    readonly setupMs: number;
+    readonly ringMs: number;
+    readonly durationSeconds: number;
+    readonly terminateReason: string;
+    readonly codec: string;
+    readonly jitterMs: number;
+    readonly packetsLost: number;
+    readonly rttMs: number;
+    readonly recvKbps: number;
+    readonly sendKbps: number;
   };
   readonly "chat.archive": {
     readonly from: ExpectedJidReference;
@@ -284,12 +307,14 @@ type ExportedPayloads = {
   readonly "blocklist.update": BlocklistUpdatePayload;
   readonly "business.quick_reply.update": BusinessQuickReplyUpdatePayload;
   readonly "call.accepted": CallAcceptedPayload;
+  readonly "call.ended": CallEndedPayload;
   readonly "call.missed": CallMissedPayload;
   readonly "call.participant_joined": CallParticipantPayload;
   readonly "call.participant_left": CallParticipantLeftPayload;
   readonly "call.participant_state": CallParticipantPayload;
   readonly "call.received": CallReceivedPayload;
   readonly "call.rejected": CallRejectedPayload;
+  readonly "call.telemetry": CallTelemetryPayload;
   readonly "chat.archive": ChatArchivePayload;
   readonly "chat.clear": ChatClearPayload;
   readonly "chat.delete": ChatDeletePayload;

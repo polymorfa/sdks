@@ -334,28 +334,6 @@ export interface SecurityIncidentAcknowledgement {
   readonly acknowledged: true;
 }
 
-export type ManagementOperationStatus =
-  | "pending"
-  | "running"
-  | "action_required"
-  | "succeeded"
-  | "failed"
-  | "cancelled";
-
-export interface ManagementOperation {
-  readonly id: string;
-  readonly kind: string;
-  readonly resourceType: string;
-  readonly resourceId: string;
-  readonly projectId: string | null;
-  readonly status: ManagementOperationStatus;
-  readonly progressCode: string | null;
-  readonly failureCode: string | null;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-  readonly completedAt: string | null;
-}
-
 /** Project-token metadata. The bearer token itself is never returned. */
 export interface ProjectToken {
   readonly id: string;
@@ -470,6 +448,11 @@ export interface SessionProjectContext {
   readonly projectId?: string;
 }
 
+export interface SessionStartResult {
+  readonly starting: true;
+  readonly sessionId: string;
+}
+
 export interface SessionStopResult {
   readonly stopping: true;
   readonly sessionId: string;
@@ -505,85 +488,4 @@ export interface CreateTestingSessionRequest {
   readonly projectId: string;
   readonly name?: string;
   readonly country?: "US" | "GB" | "BR" | "IN";
-}
-
-export type WidgetMode = "embedded" | "redirect";
-export type WidgetMethod = "qr" | "pairing" | "cloud-api";
-export type WidgetTheme = "light" | "dark" | "system";
-export type WidgetShape = "square" | "rounded" | "pill";
-export type WidgetLogoMode = "none" | "custom" | "organization" | "project";
-export type WidgetHistorySync = "ask" | "force_on" | "force_off";
-
-export interface WidgetColorPalette {
-  readonly background?: string;
-  readonly foreground?: string;
-  readonly card?: string;
-  readonly cardForeground?: string;
-  readonly primary?: string;
-  readonly primaryForeground?: string;
-  readonly muted?: string;
-  readonly mutedForeground?: string;
-  readonly border?: string;
-  readonly accent?: string;
-  readonly destructive?: string;
-  readonly ring?: string;
-}
-
-export interface WidgetColors {
-  readonly light?: WidgetColorPalette;
-  readonly dark?: WidgetColorPalette;
-}
-
-/** Saved widget configuration returned by the live Platform repository. */
-export interface WidgetSettings {
-  readonly id: string;
-  readonly projectId: string | null;
-  readonly enabled: boolean;
-  readonly modesAllowed: readonly WidgetMode[];
-  readonly allowedRedirectUris: readonly string[];
-  readonly allowedOrigins: readonly string[];
-  readonly businessName: string | null;
-  readonly accent: string | null;
-  readonly theme: WidgetTheme;
-  readonly hideWatermark: boolean;
-  readonly colors: WidgetColors | null;
-  readonly shape: WidgetShape | null;
-  readonly radiusPx: number | null;
-  readonly qrLogoMode: WidgetLogoMode;
-  readonly qrLogoStorageId: string | null;
-  readonly qrLogoSourceStorageId: string | null;
-  readonly historySync: WidgetHistorySync;
-  readonly methods: readonly WidgetMethod[] | null;
-  readonly createdAt: number;
-  readonly updatedAt: number;
-}
-
-export interface RetrieveWidgetSettingsParams {
-  readonly projectId?: string;
-}
-
-/**
- * Partial settings update accepted by `PUT /v1/widget`.
- *
- * URL, palette, uniqueness, and numeric bounds are enforced by the API. Empty
- * `businessName` strings are normalized to `null` by the live handler.
- */
-export interface UpdateWidgetSettingsRequest {
-  readonly projectId?: string;
-  readonly enabled?: boolean;
-  readonly modesAllowed?: readonly WidgetMode[];
-  readonly allowedRedirectUris?: readonly string[];
-  readonly allowedOrigins?: readonly string[];
-  readonly businessName?: string | null;
-  readonly accent?: string | null;
-  readonly theme?: WidgetTheme;
-  readonly hideWatermark?: boolean;
-  readonly colors?: WidgetColors | null;
-  readonly shape?: WidgetShape | null;
-  readonly radiusPx?: number | null;
-  readonly qrLogoMode?: WidgetLogoMode;
-  readonly qrLogoStorageId?: string | null;
-  readonly qrLogoSourceStorageId?: string | null;
-  readonly historySync?: WidgetHistorySync;
-  readonly methods?: readonly WidgetMethod[] | null;
 }
