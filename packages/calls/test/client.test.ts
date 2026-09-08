@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  Call,
   CallsClient,
   MediaSocket,
   encodeAudioFrame,
-  type Call,
   type CallsClientOptions,
   type Participant,
 } from "../src/index.js";
@@ -1055,6 +1055,92 @@ describe("CallsClient — review round four", () => {
 });
 
 describe("pending placement roster pressure", () => {
+  it.each([
+    [
+      "a duplicate departure omits it",
+      "call.participant_left",
+      { callId: "CALL-FAST", participantId: "p-1" },
+    ],
+    [
+      "a state-left frame follows it",
+      "call.participant_state",
+      {
+        callId: "CALL-FAST",
+        participant: {
+          id: "p-1",
+          handle: "+15550101",
+          state: "left",
+          audioMuted: false,
+          video: false,
+        },
+      },
+    ],
+    [
+      "a joined-left frame follows it",
+      "call.participant_joined",
+      {
+        callId: "CALL-FAST",
+        participant: {
+          id: "p-1",
+          handle: "+15550101",
+          state: "left",
+          audioMuted: false,
+          video: false,
+        },
+      },
+    ],
+  ] as const)(
+    "retains the first departure reason when %s",
+    async (_, event, payload) => {
+      const applied: Parameters<Call["_remoteParticipant"]>[0][] = [];
+      const original = Call.prototype._remoteParticipant;
+      const participant = vi
+        .spyOn(Call.prototype, "_remoteParticipant")
+        .mockImplementation(function (this: Call, frame) {
+          applied.push(frame);
+          original.call(this, frame);
+        });
+      const api = fakeApi();
+      let resolvePlace!: (value: { callId: string }) => void;
+      api.place.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolvePlace = resolve;
+          }),
+      );
+      const h = clientWith(api, { mediaMode: "external" });
+      const life = await connected(h);
+      const placing = h.client.place("+15550100");
+      await flush();
+
+      life.text({
+        type: "event",
+        event: "call.participant_left",
+        callId: "CALL-FAST",
+        timestamp: "",
+        payload: {
+          callId: "CALL-FAST",
+          participantId: "p-1",
+          reason: "hangup",
+        },
+      });
+      life.text({
+        type: "event",
+        event,
+        callId: "CALL-FAST",
+        timestamp: "",
+        payload,
+      });
+
+      resolvePlace({ callId: "CALL-FAST" });
+      await placing;
+      expect(applied).toEqual([
+        { type: "participant_left", participantId: "p-1", reason: "hangup" },
+      ]);
+      participant.mockRestore();
+    },
+  );
+
   it("evicts the oldest roster entry when a ninth participant arrives", async () => {
     const api = fakeApi();
     let resolvePlace!: (value: { callId: string }) => void;

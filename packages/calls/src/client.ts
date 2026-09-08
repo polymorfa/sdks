@@ -349,7 +349,18 @@ export class CallsClient extends Emitter<ClientEvents> {
             : queued.participant.id) === id
         );
       });
-      if (previous >= 0) queue.splice(previous, 1);
+      if (previous >= 0) {
+        const queued = participantControlFrom(queue[previous]!);
+        // A tracked call suppresses duplicate departures after emitting the
+        // first one's metadata. Preserve the same behavior while pending.
+        if (
+          queued !== undefined &&
+          isParticipantDeparture(queued) &&
+          isParticipantDeparture(frame)
+        )
+          return;
+        queue.splice(previous, 1);
+      }
     }
     if (queue.length >= PENDING_EVENTS_PER_ID) {
       const oldestRoster = queue.findIndex(
@@ -417,6 +428,12 @@ type ParticipantControlFrame = Extract<
   MediaControlFrame,
   { type: "participant_joined" | "participant_state" | "participant_left" }
 >;
+
+function isParticipantDeparture(frame: ParticipantControlFrame): boolean {
+  return (
+    frame.type === "participant_left" || frame.participant.state === "left"
+  );
+}
 
 function participantControlFrom(
   event: LifecycleEvent,
