@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 
 import { PolymorfaConfigurationError } from "../src/errors.js";
-import { PlatformClient } from "../src/platform/client.js";
+import { Client } from "../src/client.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -15,7 +15,7 @@ afterEach(async () => {
 });
 
 async function platformServer(): Promise<{
-  client: PlatformClient;
+  client: Client;
   requests: RecordedRequest[];
 }> {
   const server = await startTestServer(() => ({
@@ -28,26 +28,32 @@ async function platformServer(): Promise<{
   servers.push(server);
   return {
     requests: server.requests,
-    client: new PlatformClient({
-      apiKey: "pmfa_platform",
+    client: new Client({
+      credential: { type: "organizationApiKey", value: "pmfa_platform" },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     }),
   };
 }
 
-describe("PlatformClient credentials", () => {
+describe("Client credentials", () => {
   it("rejects client and project tokens before issuing a request", () => {
-    expect(() => new PlatformClient({ apiKey: "pmfa_ct_browser" })).toThrow(
-      PolymorfaConfigurationError,
-    );
-    expect(() => new PlatformClient({ apiKey: "pmfa_pt_project" })).toThrow(
-      PolymorfaConfigurationError,
-    );
+    expect(
+      () =>
+        new Client({
+          credential: { type: "organizationApiKey", value: "pmfa_ct_browser" },
+        }),
+    ).toThrow(PolymorfaConfigurationError);
+    expect(
+      () =>
+        new Client({
+          credential: { type: "organizationApiKey", value: "pmfa_pt_project" },
+        }),
+    ).toThrow(PolymorfaConfigurationError);
   });
 });
 
-describe("PlatformClient organizations and projects", () => {
+describe("Client organizations and projects", () => {
   it("retrieves the active organization without exposing dashboard-only updates", async () => {
     const { client, requests } = await platformServer();
     await client.organizations.retrieve();
@@ -104,7 +110,7 @@ describe("PlatformClient organizations and projects", () => {
   });
 });
 
-describe("PlatformClient sessions", () => {
+describe("Client sessions", () => {
   it("lists sessions with optional project scope", async () => {
     const { client, requests } = await platformServer();
     await client.sessions.list();

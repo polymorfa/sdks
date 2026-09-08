@@ -29,7 +29,7 @@ import type {
 
 export class HttpTransport {
   readonly #baseUrl: string;
-  readonly #authorization: string;
+  readonly #authorization: string | undefined;
   readonly #apiVersion: string | undefined;
   readonly #timeoutMs: number;
   readonly #maxNetworkRetries: number;
@@ -164,7 +164,9 @@ export class HttpTransport {
     const url = requestUrl(this.#baseUrl, request.path, request.query);
     const headers = new Headers(request.headers);
     if (!headers.has("accept")) headers.set("accept", accept);
-    headers.set("authorization", this.#authorization);
+    if (this.#authorization !== undefined) {
+      headers.set("authorization", this.#authorization);
+    }
     headers.set("user-agent", `polymorfa-node/${SDK_VERSION}`);
     const apiVersion = request.apiVersion ?? this.#apiVersion;
     if (apiVersion !== undefined) {
@@ -262,9 +264,10 @@ function responseMetadata(
   attempts: number,
 ): ResponseMetadata {
   const headerRecord: Record<string, string> = {};
-  response.headers.forEach((value, key) => {
-    headerRecord[key] = value;
-  });
+  for (const key of SAFE_RESPONSE_HEADERS) {
+    const value = response.headers.get(key);
+    if (value !== null) headerRecord[key] = value;
+  }
   const requestId =
     response.headers.get("x-request-id") ??
     response.headers.get("request-id") ??
@@ -278,6 +281,15 @@ function responseMetadata(
     headers: Object.freeze(headerRecord),
   });
 }
+
+const SAFE_RESPONSE_HEADERS = [
+  "content-type",
+  "x-request-id",
+  "polymorfa-version",
+  "retry-after",
+  "x-ratelimit-limit",
+  "x-ratelimit-remaining",
+] as const;
 
 function apiError(
   response: Response,

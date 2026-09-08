@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   assertServerRuntime,
+  validateClientCredential,
   validateMessagingCredential,
-  validatePlatformApiKey,
+  validateOrganizationApiKey,
 } from "../src/credentials.js";
 import { PolymorfaConfigurationError } from "../src/errors.js";
 
@@ -41,13 +42,25 @@ describe("credential validation", () => {
     ).toThrow(/Messaging client token/);
   });
 
-  it("rejects client and project tokens as Platform server keys", () => {
-    expect(() => validatePlatformApiKey("pmfa_ct_example")).toThrow(
+  it("rejects client, project, and listener tokens as organization keys", () => {
+    expect(() => validateOrganizationApiKey("pmfa_ct_example")).toThrow(
       PolymorfaConfigurationError,
     );
-    expect(() => validatePlatformApiKey("pmfa_pt_example")).toThrow(
-      /Platform server API key/,
+    expect(() => validateOrganizationApiKey("pmfa_pt_example")).toThrow(
+      /Organization server API key/,
     );
+    expect(() => validateOrganizationApiKey("pmfa_ls_example")).toThrow(
+      /Listener credentials/,
+    );
+  });
+
+  it("accepts the single opaque project token format", () => {
+    expect(
+      validateClientCredential({
+        type: "projectToken",
+        value: "pmfa_pt_example",
+      }),
+    ).toEqual({ type: "projectToken", value: "pmfa_pt_example" });
   });
 
   it("rejects server API keys in a browser runtime", () => {

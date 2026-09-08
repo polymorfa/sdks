@@ -203,7 +203,7 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
       },
       metadata: { requestId: "req_compact_surface" },
     });
-    expect(result.metadata.headers["cache-control"]).toBe("private, no-store");
+    expect(result.metadata.headers).not.toHaveProperty("cache-control");
     expect(result.data.data).not.toHaveProperty("verificationQRCode");
     expect(requests).toHaveLength(1);
     expect(requests[0]).toMatchObject({

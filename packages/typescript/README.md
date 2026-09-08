@@ -8,16 +8,18 @@ Install the development branch:
 npm install github:polymorfa/sdks#dev
 ```
 
-Import Messaging and Platform clients, errors, response metadata, request
-options, pagination, webhook utilities, and all public request/response types
-from the package root:
+Import the management and Messaging clients, errors, response metadata,
+request options, pagination, webhook utilities, and public request/response
+types from the package root:
 
 ```ts
 import {
+  BridgeClient,
+  Client,
   MessagingClient,
-  PlatformClient,
   PolymorfaError,
-  constructWebhookEvent,
+  SystemClient,
+  webhooks,
   type RequestOptions,
 } from "@polymorfa/sdk";
 ```
@@ -26,9 +28,88 @@ See the repository README for the complete development contract and current
 typed-resource coverage. This package has no runtime dependencies and requires
 Node.js 20 or newer.
 
+## Management client and project views
+
+`Client` has one ownership context for its lifetime. Construct an organization
+client with an organization API key, then derive immutable project views with
+`project(projectId)`:
+
+```ts
+const platform = new Client({
+  credential: {
+    type: "organizationApiKey",
+    value: process.env.POLYMORFA_PLATFORM_API_KEY!,
+  },
+  apiVersion: "1.0.0",
+});
+
+const project = platform.project("project_123");
+const events = await project.events.list({ limit: 25 });
+console.log(events.items, events.response.metadata.requestId);
+```
+
+A project token can construct only a project view and requires `projectId`:
+
+```ts
+const project = new Client({
+  credential: {
+    type: "projectToken",
+    value: process.env.POLYMORFA_PROJECT_TOKEN!,
+  },
+  projectId: "project_123",
+});
+```
+
+The server verifies that initial binding. Rebinding the same project-token
+client to a different project fails before transport. A project view exposes
+only owner-bound management resources; organization resources such as
+`projects`, `members`, and `billing` stay on the organization client.
+`MessagingClient` remains separate because its session APIs and credentials
+have a different authorization boundary.
+
+The SDK rejects `pmfa_ct_` browser tokens and CLI-only `pmfa_ls_` listener
+credentials before a management request. It does not expose a listener,
+`AsyncIterable`, event emitter, or forwarding API. Live forwarding belongs to
+`polymorfa listen`.
+
+## System and Bridge clients
+
+`SystemClient` is credential-free. Its four methods preserve the normal
+`ApiResponse<T>` metadata while calling public service probes:
+
+```ts
+const system = new SystemClient();
+const [status, version, health, ping] = await Promise.all([
+  system.status(),
+  system.version(),
+  system.health(),
+  system.ping(),
+]);
+```
+
+`BridgeClient` accepts only `{ type: "projectToken", value }`. It exposes
+`routes.resolve()` for regional Bridge route discovery:
+
+```ts
+const bridge = new BridgeClient({
+  credential: {
+    type: "projectToken",
+    value: process.env.POLYMORFA_PROJECT_TOKEN!,
+  },
+});
+
+const route = await bridge.routes.resolve();
+console.log(route.data.wsUrl, route.metadata.requestId);
+```
+
+`BridgeClient` does not open the returned WebSocket or manage its lifecycle.
+It is also unrelated to the CLI-only SSE listener protocol. Project tokens and
+listener credentials are not interchangeable; `pmfa_ls_` fails before a
+Bridge request.
+
 ## Customers
 
-Use `PlatformClient.customers` to manage project-owned Customers and their
+Use `Client.customers` to manage project-owned Customers and their
 Numbers. The resource covers the complete Customers contract, including
 enablement, profile lifecycle, pairing links, recent events, and Number
 transfers.
@@ -321,7 +402,7 @@ client-token allowlist.
 
 ## Messaging media
 
-`MessagingClient.media` is distinct from `PlatformClient.media`. It exposes all
+`MessagingClient.media` is distinct from `Client.media`. It exposes all
 three operations in the Messaging Media tag for Linked Device sessions:
 
 - `download(mediaId)` returns `ApiResponse<ArrayBuffer>` and requires
@@ -844,7 +925,7 @@ error. Its `{ requeued }` result is the number actually moved. Lists are
 complete newest-first arrays; the source exposes no cursor, page token, search,
 event history, replay, or delivery-listener endpoint.
 
-This Messaging family is distinct from `PlatformClient.campaigns`, which maps
+This Messaging family is distinct from `Client.campaigns`, which maps
 the Management API's organization-key campaign model. The Messaging routes
 accept organization API keys. Their live authorization layer also accepts a
 project token only when it is bound to the exact path project, but the public
@@ -910,12 +991,16 @@ webhook registrations with a server credential carrying `webhooks:manage`.
 Webhook mutations accept the same `RequestOptions` as every other resource,
 including idempotency keys, cancellation, timeouts, and API-version overrides.
 
-Use `constructWebhookEvent` with the exact raw request bytes before inspecting
-an inbound delivery. `isEvent` narrows recognized event names to their exported
-payload types:
+Use `webhooks.verify` with the exact raw request bytes before inspecting an
+inbound Messaging delivery. `isEvent` narrows known event names to their
+exported payload types:
 
 ```ts
-const event = await constructWebhookEvent(rawBody, signature, webhookSecret);
+const event = await webhooks.verify({
+  body: rawBody,
+  signature,
+  secret: webhookSecret,
+});
 
 if (isEvent(event, "history.sync")) {
   console.log(event.payload.syncType, event.payload.progress);
@@ -930,12 +1015,64 @@ the media host disappeared before reporting the caller. The reason is
 `pod_lost` for those recovered terminal events. Telemetry fields `recvKbps`
 and `sendKbps` contain cumulative kilobits, not rates.
 
-The Platform contract exposes campaign events through
-`PlatformClient.campaigns.events`. It does not expose key-authenticated webhook
-delivery inspection, replay, test delivery, or a general event list. Console
-webhook settings require a dashboard identity; staff webhook inspection and
-disable operations require a staff identity. Those routes are intentionally
-absent from the server client, including its raw-request guidance.
+`webhooks.verifySignature()` performs the same production signature check and
+returns a boolean without parsing. `webhooks.createFixture()` creates an exact
+JSON byte sequence and matching production signature for local tests.
+`webhooks.verifyLocal()` verifies the timestamped signature used by local CLI
+forwarding. These helpers are credential-free. The older
+`constructWebhookEvent` and `verifyWebhookSignature` exports remain available
+through the first stable major. A later major can remove them with a migration
+release.
+
+The management `Client` owns a separate durable developer API at both
+organization and project scope:
+
+- `events.list`, `retrieve`, and `replay`
+- `webhooks.list`, `create`, `retrieve`, `update`, `delete`, `test`, and
+  `rotateSecret`
+- `webhookDeliveries.list`, `retrieve`, `listAttempts`, `retrieveAttempt`, and
+  `retry`
+- `operations.list`, `retrieve`, `listTransitions`, `cancel`, and `wait`
+
+```ts
+const deliveries = await project.webhookDeliveries.list({
+  webhookId: "wh_123",
+  limit: 25,
+});
+
+const delivery = deliveries.items[0];
+if (delivery) {
+  const attempts = await project.webhookDeliveries.listAttempts(delivery.id);
+  if (attempts.items[0]) {
+    await project.webhookDeliveries.retrieveAttempt(
+      delivery.id,
+      attempts.items[0].id,
+    );
+  }
+}
+
+const replay = await project.events.replay(
+  "evt_123",
+  { webhookId: "wh_123" },
+  { idempotencyKey: crypto.randomUUID() },
+);
+
+await project.operations.wait(replay.data.operationId, {
+  maxWaitMs: 30_000,
+  pollIntervalMs: 1_000,
+});
+```
+
+List methods return `CursorPage<T>`. Mutations return owner-specific typed
+receipts and preserve response metadata, request IDs, and idempotency receipts.
+`operations.wait` is a local polling helper. Aborting or timing out the wait
+does not cancel the remote operation. A larger server `Retry-After` raises the
+next poll delay without extending `maxWaitMs`. The SDK has no operation watch
+or event listener transport.
+
+Console and staff routes remain absent from the server client and its raw
+guidance. The CLI listener protocol is separate from the durable events API;
+the SDK exposes no connection, cursor, reconnect, gap, or forwarding methods.
 
 ## Platform automation
 
@@ -958,13 +1095,13 @@ console.log(campaign.data.data, campaign.metadata.requestId);
 ```
 
 The pinned contract defines these operation payloads as open objects, exposed
-as `PlatformPayload`. Templates and Flows are not methods on `PlatformClient`:
+as `PlatformPayload`. Templates and Flows are not methods on `Client`:
 their endpoints require a dashboard bearer and reject the organization API key
 used by the server client.
 
 ## Billing and usage
 
-`PlatformClient.billing` exposes the complete organization-key billing family.
+`Client.billing` exposes the complete organization-key billing family.
 Reads require `sessions:read`; updating reminder settings requires
 `sessions:manage`.
 
@@ -993,26 +1130,24 @@ console.log({
 });
 ```
 
-## Organization access, security, and operations
+## Organization access and security
 
-The organization-key Platform surface exposes ten exact operations through
-seven resources:
+The organization view exposes key metadata, members, audit logs, session bans,
+security incidents, and project-token metadata:
 
 ```ts
-const [keys, members, audit, bans, incidents, operation, tokens] =
-  await Promise.all([
-    platform.apiKeys.list(),
-    platform.members.list(),
-    platform.auditLogs.list({
-      action: "session.stop",
-      resource: "session",
-      limit: 100,
-    }),
-    platform.sessionBans.listActive(),
-    platform.securityIncidents.list(),
-    platform.operations.retrieve("018f0000-0000-7000-8000-000000000001"),
-    platform.projectTokens.list("018f0000-0000-7000-8000-000000000002"),
-  ]);
+const [keys, members, audit, bans, incidents, tokens] = await Promise.all([
+  platform.apiKeys.list(),
+  platform.members.list(),
+  platform.auditLogs.list({
+    action: "session.stop",
+    resource: "session",
+    limit: 100,
+  }),
+  platform.sessionBans.listActive(),
+  platform.securityIncidents.list(),
+  platform.projectTokens.list("018f0000-0000-7000-8000-000000000002"),
+]);
 
 await platform.securityIncidents.acknowledge(incidents.data.data[0]!.id, {
   idempotencyKey: "acknowledge-incident-1",
@@ -1022,15 +1157,13 @@ await platform.apiKeys.deactivate(keys.data.data[0]!.keyId, {
 });
 ```
 
-The read operations require `sessions:read`. API-key deactivation and incident
+These read operations require `sessions:read`. API-key deactivation and incident
 acknowledgement require `sessions:manage`. The two mutations are direct
 organization-scoped writes rather than asynchronous operations. The SDK retries
 them only when an idempotency key is supplied, but the pinned handlers do not
 persist that header. Incident acknowledgement is repeatable; an API-key
 deactivation retry after an unseen successful response can return `404` because
-the key is already inactive. `operations.retrieve` polls the durable state of
-asynchronous work started elsewhere and does not open a stream or wait for
-completion.
+the key is already inactive.
 
 These list responses are complete arrays. The source exposes no cursor or
 page token. The live audit handler accepts exact `action` and `resource`
@@ -1049,22 +1182,49 @@ string rather than a dashboard user ID.
 Organization updates, member role changes, member deletion, invitations,
 billing top-ups, and console usage insights require a dashboard session and
 are not exposed by the server SDK. Browser client tokens are rejected by the
-Management API, and `PlatformClient` deliberately rejects project and browser
-client tokens before transport.
+Management API. Project tokens are accepted only by a project-scoped `Client`;
+organization-only resources are absent from that view's public type.
 
-## Legacy widget settings
+## QuickLink settings
 
-`PlatformClient.widgetSettings.retrieve` and `update` still request
-`/v1/widget`, which is absent from the pinned API contract. The API now exposes
-QuickLink settings at `/v1/quicklink`. These methods do not implement that
-contract, and the ledger marks both QuickLink settings operations missing.
-Do not use the widget settings methods against this API revision.
+`Client.quickLinkSettings.retrieve` and `update` map the management
+`GET /v1/quicklink` and `PUT /v1/quicklink` operations. Use them on the root
+organization client or an immutable project view:
 
-## Batch session lifecycle
+```ts
+const organizationSettings = await platform.quickLinkSettings.retrieve();
+const projectSettings = await platform
+  .project("project_123")
+  .quickLinkSettings.update(
+    { theme: "dark", enabled: true },
+    { idempotencyKey: "quicklink-project-123-dark" },
+  );
+```
 
-`PlatformClient.sessions.stopMany` and `deleteMany` cover the two exact batch
-operations. They require `sessions:manage` and accept `sessionIds` plus an
-optional `projectId`:
+These methods manage saved settings only. The server SDK has no hosted
+QuickLink creation, inspection, or cancellation method for `/api/quicklinks`.
+Those ephemeral flows belong to an application adapter and the browser
+QuickLink controller. Console-only logo routes are also outside this client.
+
+## Management session lifecycle
+
+The organization client's `sessions.start` requests a start for one stopped or
+failed session. It accepts a session UUID or stable slug and an optional project
+context:
+
+```ts
+const start = await platform.sessions.start(
+  "support",
+  { projectId: "11111111-2222-4333-8444-555555555555" },
+  { idempotencyKey: "start-support" },
+);
+```
+
+The returned `SessionStartResult` confirms that the start request was accepted;
+it does not claim that the session has connected. `sessions.stopMany` and
+`deleteMany` cover the two bounded batch operations. All three require
+`sessions:manage`. Batch methods accept `sessionIds` plus an optional
+`projectId`:
 
 ```ts
 const stop = await platform.sessions.stopMany(
@@ -1093,5 +1253,5 @@ stream, watcher, or completion status.
 The transport retries these mutations only when an idempotency key is
 provided. The pinned handlers do not persist that header. A repeated stop can
 enqueue another stop command; a repeated delete reports only rows still found.
-Widget updates are state upserts and can safely converge on the same supplied
-values.
+QuickLink settings updates are state upserts and can safely converge on the
+same supplied values.

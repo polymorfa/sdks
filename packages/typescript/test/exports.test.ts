@@ -28,8 +28,8 @@ import {
   PresenceResource,
   PrivacyResource,
   QuickRepliesResource,
-  PlatformClient,
-  PlatformOperationsResource,
+  QuickLinkSettingsResource,
+  Client,
   ProjectTokensResource,
   PRIVACY_SETTING_VALUES,
   PRESENCE_CHAT_STATES,
@@ -47,7 +47,6 @@ import {
   TemplatesResource,
   UsersResource,
   VoipResource,
-  WidgetSettingsResource,
   constructWebhookEvent,
   isEvent,
   verifyWebhookSignature,
@@ -92,7 +91,7 @@ import {
   type ManagementOperation,
   type OrganizationMember,
   type PlatformPayload,
-  type PlatformClientOptions,
+  type ClientOptions,
   type ProjectToken,
   type RawRequest,
   type RequestOptions,
@@ -107,7 +106,8 @@ import {
   type UpdateBillingReminderSettingsRequest,
   type WebhookEvent,
   type UserSecurityCode,
-  type WidgetSettings,
+  type OrganizationQuickLinkSettings,
+  type ProjectQuickLinkSettings,
 } from "../src/index.js";
 
 describe("public exports", () => {
@@ -124,7 +124,7 @@ describe("public exports", () => {
       MessagingClient,
       MessagingCampaignsResource,
       MessagingMediaResource,
-      PlatformClient,
+      Client,
       ApiKeysResource,
       AuditLogsResource,
       AudiencesResource,
@@ -148,7 +148,6 @@ describe("public exports", () => {
       PrivacyResource,
       PresenceResource,
       QuickRepliesResource,
-      PlatformOperationsResource,
       ProjectTokensResource,
       CursorPage,
       PolymorfaError,
@@ -162,11 +161,11 @@ describe("public exports", () => {
       TemplatesResource,
       UsersResource,
       VoipResource,
-      WidgetSettingsResource,
+      QuickLinkSettingsResource,
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(45);
+    ]).toHaveLength(44);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -190,7 +189,7 @@ describe("public exports", () => {
     >();
     expectTypeOf<RawRequest>().toHaveProperty("path");
     expectTypeOf<MessagingClientOptions>().toHaveProperty("credential");
-    expectTypeOf<PlatformClientOptions>().toHaveProperty("apiKey");
+    expectTypeOf<ClientOptions>().toHaveProperty("credential");
     expectTypeOf<ListCampaignsParams>().toHaveProperty("projectId");
     expectTypeOf<ManagementOperation>().toHaveProperty("status");
     expectTypeOf<OrganizationMember>().toHaveProperty("role");
@@ -231,7 +230,13 @@ describe("public exports", () => {
     expectTypeOf<TemplateDefinition>().toHaveProperty("variables");
     expectTypeOf<WebhookEvent>().toHaveProperty("event");
     expectTypeOf<UserSecurityCode>().toHaveProperty("numericCode");
-    expectTypeOf<WidgetSettings>().toHaveProperty("allowedOrigins");
+    expectTypeOf<OrganizationQuickLinkSettings>().toHaveProperty("headline");
+    expectTypeOf<
+      OrganizationQuickLinkSettings["projectId"]
+    >().toEqualTypeOf<null>();
+    expectTypeOf<
+      ProjectQuickLinkSettings["projectId"]
+    >().toEqualTypeOf<string>();
     expectTypeOf<MessageReceivedEvent>().toHaveProperty("payload");
   });
 });

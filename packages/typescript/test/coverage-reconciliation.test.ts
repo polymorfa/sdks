@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it, vi } from "vitest";
 import { HttpCallsApi } from "../../calls/src/index.js";
-import { PlatformClient } from "../src/index.js";
+import { Client } from "../src/index.js";
 
 type LedgerEntry = {
   family: string;
@@ -163,45 +163,44 @@ describe("reconciled coverage evidence", () => {
     },
   );
 
-  it("does not transfer obsolete widget settings coverage to QuickLink", async () => {
+  it("covers QuickLink settings through the exact management routes", async () => {
     const fetch = vi.fn(async () => Response.json({ data: {} }));
-    const client = new PlatformClient({ apiKey: "pmfa_coverage", fetch });
-    await client.widgetSettings.retrieve();
-    await client.widgetSettings.update({});
+    const client = new Client({
+      credential: { type: "organizationApiKey", value: "pmfa_coverage" },
+      fetch,
+    });
+    await client.quickLinkSettings.retrieve();
+    await client.quickLinkSettings.update({});
     expect(fetch.mock.calls).toHaveLength(2);
     for (const call of fetch.mock.calls) {
       const [url] = call as unknown as [string];
-      expect(new URL(url).pathname).toBe("/v1/widget");
+      expect(new URL(url).pathname).toBe("/v1/quicklink");
     }
-    for (const operationId of [
-      "getQuickLinkSettings",
-      "updateQuickLinkSettings",
-    ]) {
-      expect(entry(operationId).typescript).toMatchObject({
-        status: "missing",
-        reason: expect.stringContaining("/v1/widget"),
-      });
-    }
-    expect(
-      ledger.operations.filter(({ path }) => /\/widget(?:\/|$)/.test(path)),
-    ).toEqual([]);
+    expect(entry("getQuickLinkSettings").typescript).toEqual({
+      status: "covered",
+      method: "Client.quickLinkSettings.retrieve",
+    });
+    expect(entry("updateQuickLinkSettings").typescript).toEqual({
+      status: "covered",
+      method: "Client.quickLinkSettings.update",
+    });
   });
 
-  it("keeps unimplemented durable Platform resources explicitly missing", () => {
+  it("covers every durable Platform developer resource", () => {
     const operations = ledger.operations.filter(
       ({ family, path, operationId }) =>
         family === "platform" &&
         /^\/v1\/(?:projects\/\{projectId\}\/)?(?:events|operations|webhooks|webhook-deliveries)(?:\/|$)/.test(
           path,
         ) &&
-        operationId !== "getOrganizationOperation",
+        operationId.length > 0,
     );
-    expect(operations).toHaveLength(37);
+    expect(operations).toHaveLength(38);
     for (const operation of operations) {
       expect(operation.typescript.status, operation.operationId).toBe(
-        "missing",
+        "covered",
       );
-      expect(operation.typescript.method).toBeUndefined();
+      expect(operation.typescript.method).toMatch(/^Client\./);
     }
     expect(
       ledger.operations.some(

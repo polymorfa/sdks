@@ -7,9 +7,9 @@ paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        226 |
-| Missing             |        103 |
-| Excluded            |         73 |
+| Covered             |        271 |
+| Missing             |          0 |
+| Excluded            |        131 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
 | Total               |        402 |
@@ -28,30 +28,20 @@ nullable terminal-call callers, participant lifecycle events, client-token
 delegation scopes, and TURN health diagnostics. These changes do not alter the
 operation coverage totals or the existing missing-operation inventory.
 
-## Previous reconciliation
-
-The previous snapshot added 22 operations and removed 11 widget operations.
-The added operations were five implemented Calls
-operations, ten missing QuickLink operations, and seven Console-only
-operations excluded by their credential contract.
+This snapshot records complete handwritten TypeScript coverage for every
+customer-credential-compatible operation in the pinned contracts. Routes that
+require console, staff, browser, or ephemeral QuickLink credentials are
+excluded with an operation-specific reason.
 
 `HttpCallsApi.place`, `accept`, `reject`, `addParticipant`, and `setMode` cover
 the five Calls operations. Request tests invoke these methods and check the
 HTTP method, encoded path, body, authentication, and response handling.
 
-The removed widget rows included three covered mappings. Two pointed to
-`PlatformClient.widgetSettings` methods that still request `/v1/widget`; one
-pointed to `BrowserMessagingClient.widget.handoff`. None implements the new
-QuickLink routes. The ledger removes those old rows and keeps QuickLink
-missing.
-
-All 93 existing missing entries remain missing. Of those, 38 had the stale
-reason "Operation is absent from the coverage ledger" even though their rows
-were already present. Their reasons now describe the missing methods. The
-existing durable Platform gaps comprise 37 operations across organization and
-project events, webhooks, deliveries, and operations; session start is the
-other entry in that group of 38. Organization operation retrieval remains
-covered by `PlatformClient.operations.retrieve`.
+The unified `Client` owns organization control-plane resources and creates
+immutable project views with `client.project(projectId)`. QuickLink management
+uses `Client.quickLinkSettings`; obsolete `/v1/widget` mappings are gone.
+Credential-free service probes use `SystemClient`, project-token Bridge route
+discovery uses `BridgeClient`, and listener transport remains CLI-only.
 
 ## Updating the ledger
 
