@@ -80,7 +80,13 @@ describe("credential validation", () => {
 
   it("rejects server API keys in a browser runtime", () => {
     expect(() => assertServerRuntime({ window: {} })).toThrow(
-      /server API keys cannot be used in browsers/,
+      /server credentials cannot be used in browser runtimes/,
     );
+  });
+
+  it("rejects server credentials in browser workers", () => {
+    expect(() =>
+      assertServerRuntime({ importScripts: () => undefined }),
+    ).toThrow(/server credentials cannot be used in browser runtimes/);
   });
 });

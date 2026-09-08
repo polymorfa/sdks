@@ -112,13 +112,23 @@ function rejectListenerCredential(value: string): void {
 }
 
 export function assertServerRuntime(
-  runtime: { readonly window?: unknown } = globalThis as {
+  runtime: {
     readonly window?: unknown;
-  },
+    readonly importScripts?: unknown;
+    readonly constructor?: { readonly name?: string };
+  } = globalThis,
 ): void {
-  if (typeof runtime.window !== "undefined") {
+  const globalName = runtime.constructor?.name ?? "";
+  const isBrowserWorker =
+    typeof runtime.importScripts === "function" ||
+    globalName === "DedicatedWorkerGlobalScope" ||
+    globalName === "SharedWorkerGlobalScope" ||
+    globalName === "ServiceWorkerGlobalScope" ||
+    globalName.endsWith("WorkletGlobalScope");
+
+  if (typeof runtime.window !== "undefined" || isBrowserWorker) {
     throw new PolymorfaConfigurationError(
-      "Polymorfa server API keys cannot be used in browsers.",
+      "Polymorfa server credentials cannot be used in browser runtimes.",
       "runtime",
     );
   }

@@ -13,6 +13,7 @@ import { startTestServer, type TestServer } from "./support/http-server.js";
 const servers: TestServer[] = [];
 
 afterEach(async () => {
+  vi.unstubAllGlobals();
   await Promise.all(servers.splice(0).map((server) => server.close()));
 });
 
@@ -135,6 +136,21 @@ describe("MessagingClient.quickLinks", () => {
     expect(
       new Headers(fetch.mock.calls[0]?.[1]?.headers).get("authorization"),
     ).toBe("Bearer pmfa_pt_project");
+  });
+
+  it("rejects project tokens before transport in a browser worker", () => {
+    const fetch = vi.fn<typeof globalThis.fetch>();
+    vi.stubGlobal("importScripts", () => undefined);
+
+    expect(
+      () =>
+        new MessagingClient({
+          credential: { type: "projectToken", value: "pmfa_pt_project" },
+          baseUrl: "https://api.example.com",
+          fetch,
+        }),
+    ).toThrow(PolymorfaConfigurationError);
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it("rejects browser client tokens before transport", async () => {
