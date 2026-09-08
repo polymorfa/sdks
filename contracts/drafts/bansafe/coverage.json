@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "platformSha256": "9b37273ee85a1ce07d456060d46ce18a70832895f03e20ad83319d053232e0c5",
+  "platformSha256": "d529a62ddcc8e5b661b90db7ca9a36dddc30ca48a6a016c4f6b46e0fd471b9df",
   "scope": "OpenAPI operations tagged bansafe",
   "covered": 25,
   "excluded": 2,

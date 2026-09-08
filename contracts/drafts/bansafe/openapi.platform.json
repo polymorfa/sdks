@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/v1/…` — **public registry** (150 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (50 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n- `/admin/…` — **staff-only** (53 endpoints): Polymorfa internal staff. EXCLUDED.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/v1/…` — **public registry** (150 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (52 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n- `/admin/…` — **staff-only** (53 endpoints): Polymorfa internal staff. EXCLUDED.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -6454,6 +6454,154 @@
           },
           "501": {
             "$ref": "#/components/responses/NotImplemented"
+          }
+        }
+      }
+    },
+    "/console/projects/{projectId}": {
+      "patch": {
+        "operationId": "updateProject",
+        "tags": [
+          "projects"
+        ],
+        "summary": "Update project settings",
+        "description": "Updates the display name, icon, or default number plan without changing the project ID, URL, stage, or individual number overrides.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Dashboard project name, icon, and default number plan settings. Requires a current owner or admin.",
+        "x-required-organization-role": "owner_or_admin",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "defaultTier": {
+                    "type": "string",
+                    "enum": [
+                      "free",
+                      "standard",
+                      "pro"
+                    ]
+                  },
+                  "icon": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "type",
+                      "value"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "emoji",
+                          "icon",
+                          "image"
+                        ]
+                      },
+                      "value": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "color": {
+                        "type": "string",
+                        "maxLength": 64
+                      },
+                      "storageId": {
+                        "type": "string",
+                        "maxLength": 256
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "saved"
+                      ],
+                      "properties": {
+                        "saved": {
+                          "type": "boolean",
+                          "enum": [
+                            true
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -13110,18 +13258,18 @@
         }
       }
     },
-    "/v1/widget": {
+    "/v1/quicklink": {
       "get": {
-        "operationId": "getWidgetSettings",
+        "operationId": "getQuickLinkSettings",
         "tags": [
-          "widget"
+          "quicklink"
         ],
-        "summary": "Get widget settings",
-        "description": "Public Management API. Organization API-key callers require `widget:create`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "summary": "Read QuickLink settings",
+        "description": "Returns the saved QuickLink settings for the authenticated organization or one project, or null when nothing has been saved for that scope. There is no separate read permission: reading and updating both require `quicklink:manage`, because the settings include the redirect allowlist and branding that only a QuickLink manager should see.\n\nOrganization API-key callers require `quicklink:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
-        "x-required-scope": "widget:create",
+        "x-required-scope": "quicklink:manage",
         "security": [
           {
             "ApiKeyAuth": []
@@ -13160,7 +13308,21 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "nullable": true,
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/QuickLinkSettings"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
@@ -13170,23 +13332,20 @@
           },
           "403": {
             "$ref": "#/components/responses/Forbidden"
-          },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
           }
         }
       },
       "put": {
-        "operationId": "updateWidgetSettings",
+        "operationId": "updateQuickLinkSettings",
         "tags": [
-          "widget"
+          "quicklink"
         ],
-        "summary": "Update widget settings",
-        "description": "Updates the widget settings for the authenticated organization and project.\n\nOrganization API-key callers require `widget:create`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "summary": "Update QuickLink settings",
+        "description": "Updates the saved QuickLink settings for the authenticated organization or project and returns the saved record.\n\nOrganization API-key callers require `quicklink:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
-        "x-required-scope": "widget:create",
+        "x-required-scope": "quicklink:manage",
         "security": [
           {
             "ApiKeyAuth": []
@@ -13200,7 +13359,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateWidgetSettingsRequest"
+                "$ref": "#/components/schemas/UpdateQuickLinkSettingsRequest"
               }
             }
           }
@@ -13229,8 +13388,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "type": "object",
-                      "additionalProperties": true
+                      "$ref": "#/components/schemas/QuickLinkSettings"
                     }
                   },
                   "required": [
@@ -15317,13 +15475,13 @@
         }
       }
     },
-    "/console/widget/logo/uploads": {
+    "/console/quicklink/logo/uploads": {
       "post": {
-        "operationId": "generateWidgetSettingsLogoUploadUrl",
+        "operationId": "generateQuickLinkSettingsLogoUploadUrl",
         "tags": [
-          "widget"
+          "quicklink"
         ],
-        "summary": "Generate widget settings logo upload url",
+        "summary": "Generate quick link settings logo upload url",
         "description": "**EXCLUDED from the public API** (`console`). Browser logo-upload flow.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
@@ -15382,13 +15540,13 @@
         }
       }
     },
-    "/console/widget/logo": {
+    "/console/quicklink/logo": {
       "put": {
-        "operationId": "attachLogoWidgetSettings",
+        "operationId": "attachLogoQuickLinkSettings",
         "tags": [
-          "widget"
+          "quicklink"
         ],
-        "summary": "Attach logo widget settings",
+        "summary": "Attach logo quick link settings",
         "description": "**EXCLUDED from the public API** (`console`). Browser logo-upload flow.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
@@ -15447,11 +15605,11 @@
         }
       },
       "delete": {
-        "operationId": "removeLogoWidgetSettings",
+        "operationId": "removeLogoQuickLinkSettings",
         "tags": [
-          "widget"
+          "quicklink"
         ],
-        "summary": "Remove logo widget settings",
+        "summary": "Remove logo quick link settings",
         "description": "**EXCLUDED from the public API** (`console`). Browser logo-upload flow.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
@@ -15499,13 +15657,13 @@
         }
       }
     },
-    "/console/widget/logo/org": {
+    "/console/quicklink/logo/org": {
       "post": {
-        "operationId": "useOrgLogoWidgetSettings",
+        "operationId": "useOrgLogoQuickLinkSettings",
         "tags": [
-          "widget"
+          "quicklink"
         ],
-        "summary": "Use org logo widget settings",
+        "summary": "Use org logo quick link settings",
         "description": "**EXCLUDED from the public API** (`console`). Console snapshot flow (copies org logo).",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
@@ -15564,13 +15722,13 @@
         }
       }
     },
-    "/console/widget/logo/project": {
+    "/console/quicklink/logo/project": {
       "post": {
-        "operationId": "useProjectIconWidgetSettings",
+        "operationId": "useProjectIconQuickLinkSettings",
         "tags": [
-          "widget"
+          "quicklink"
         ],
-        "summary": "Use project icon widget settings",
+        "summary": "Use project icon quick link settings",
         "description": "**EXCLUDED from the public API** (`console`). Console snapshot flow (copies project icon).",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
@@ -15997,6 +16155,89 @@
         "security": [
           {
             "ConsoleSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "501": {
+            "$ref": "#/components/responses/NotImplemented"
+          }
+        }
+      }
+    },
+    "/console/calls": {
+      "get": {
+        "operationId": "listCalls",
+        "tags": [
+          "calls"
+        ],
+        "summary": "List calls",
+        "description": "**EXCLUDED from the public API** (`console`). Customer console view of the organization's own call records.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Customer console view of the organization's own call records.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
           }
         ],
         "responses": {
@@ -19947,7 +20188,7 @@
       "ApiKeyAuth": {
         "type": "http",
         "scheme": "bearer",
-        "description": "Polymorfa server credential: a scoped pmfa_ organization key, or a pmfa_pt_ project token on project- and session-bound operations inside its exact authenticated project. Listener and browser client credentials are rejected."
+        "description": "Polymorfa server credential: a scoped pmfa_ organization key, or a pmfa_pt_ project token on project- and session-bound operations inside its exact authenticated project. Keys may be personal or service-account owned. Both enforce selected action scopes; organization keys can address team resources and every project in the organization. Listener and browser client credentials are rejected."
       },
       "ConsoleSession": {
         "type": "http",
@@ -20445,7 +20686,8 @@
             "type": "string",
             "enum": [
               "en",
-              "pt-BR"
+              "pt-BR",
+              null
             ],
             "nullable": true
           },
@@ -20454,7 +20696,8 @@
             "enum": [
               "light",
               "dark",
-              "system"
+              "system",
+              null
             ],
             "nullable": true
           },
@@ -20618,7 +20861,8 @@
             "type": "string",
             "enum": [
               "en",
-              "pt-BR"
+              "pt-BR",
+              null
             ],
             "nullable": true
           },
@@ -20627,7 +20871,8 @@
             "enum": [
               "light",
               "dark",
-              "system"
+              "system",
+              null
             ],
             "nullable": true
           },
@@ -20794,7 +21039,8 @@
             "type": "string",
             "enum": [
               "en",
-              "pt-BR"
+              "pt-BR",
+              null
             ],
             "nullable": true
           },
@@ -20803,7 +21049,8 @@
             "enum": [
               "light",
               "dark",
-              "system"
+              "system",
+              null
             ],
             "nullable": true
           }
@@ -21032,82 +21279,181 @@
           "removed"
         ]
       },
-      "WidgetColorPalette": {
+      "QuickLinkSettings": {
         "type": "object",
         "additionalProperties": false,
+        "description": "Saved QuickLink settings for one scope. `logoUrl` is a short-lived read URL for the saved logo.",
         "properties": {
-          "background": {
+          "id": {
             "type": "string",
-            "pattern": "^#[0-9A-Fa-f]{6}$"
+            "format": "uuid"
           },
-          "foreground": {
+          "projectId": {
             "type": "string",
-            "pattern": "^#[0-9A-Fa-f]{6}$"
+            "format": "uuid",
+            "nullable": true
           },
-          "card": {
-            "type": "string",
-            "pattern": "^#[0-9A-Fa-f]{6}$"
+          "enabled": {
+            "type": "boolean"
           },
-          "cardForeground": {
-            "type": "string",
-            "pattern": "^#[0-9A-Fa-f]{6}$"
+          "allowedRedirectUris": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
-          "primary": {
+          "businessName": {
             "type": "string",
-            "pattern": "^#[0-9A-Fa-f]{6}$"
+            "nullable": true
           },
-          "primaryForeground": {
+          "headline": {
             "type": "string",
-            "pattern": "^#[0-9A-Fa-f]{6}$"
+            "nullable": true
           },
-          "muted": {
+          "description": {
             "type": "string",
-            "pattern": "^#[0-9A-Fa-f]{6}$"
+            "nullable": true
           },
-          "mutedForeground": {
+          "successMessage": {
             "type": "string",
-            "pattern": "^#[0-9A-Fa-f]{6}$"
+            "nullable": true
           },
-          "border": {
+          "supportUrl": {
             "type": "string",
-            "pattern": "^#[0-9A-Fa-f]{6}$"
+            "nullable": true
+          },
+          "privacyUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "termsUrl": {
+            "type": "string",
+            "nullable": true
           },
           "accent": {
             "type": "string",
-            "pattern": "^#[0-9A-Fa-f]{6}$"
+            "nullable": true
           },
-          "destructive": {
+          "theme": {
             "type": "string",
-            "pattern": "^#[0-9A-Fa-f]{6}$"
+            "enum": [
+              "light",
+              "dark",
+              "system"
+            ]
           },
-          "ring": {
+          "hideWatermark": {
+            "type": "boolean"
+          },
+          "shape": {
             "type": "string",
-            "pattern": "^#[0-9A-Fa-f]{6}$"
+            "enum": [
+              "square",
+              "rounded",
+              "pill",
+              null
+            ],
+            "nullable": true
+          },
+          "radiusPx": {
+            "type": "number",
+            "nullable": true
+          },
+          "logoMode": {
+            "type": "string",
+            "enum": [
+              "none",
+              "custom",
+              "organization",
+              "project"
+            ]
+          },
+          "logoStorageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoSourceStorageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "historySync": {
+            "type": "string",
+            "enum": [
+              "ask",
+              "force_on",
+              "force_off"
+            ]
+          },
+          "methods": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "qr",
+                "pairing"
+              ]
+            }
+          },
+          "defaultMethod": {
+            "type": "string",
+            "enum": [
+              "qr",
+              "pairing",
+              null
+            ],
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "integer"
           }
-        }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "enabled",
+          "allowedRedirectUris",
+          "businessName",
+          "headline",
+          "description",
+          "successMessage",
+          "supportUrl",
+          "privacyUrl",
+          "termsUrl",
+          "accent",
+          "theme",
+          "hideWatermark",
+          "shape",
+          "radiusPx",
+          "logoMode",
+          "logoStorageId",
+          "logoSourceStorageId",
+          "logoUrl",
+          "historySync",
+          "methods",
+          "defaultMethod",
+          "createdAt",
+          "updatedAt"
+        ]
       },
-      "UpdateWidgetSettingsRequest": {
+      "UpdateQuickLinkSettingsRequest": {
         "type": "object",
         "additionalProperties": false,
+        "description": "QuickLink settings for the organization or one project. Omitted fields keep their saved value; `null` clears an optional field.",
         "properties": {
           "projectId": {
             "$ref": "#/components/schemas/ProjectId"
           },
           "enabled": {
-            "type": "boolean"
-          },
-          "modesAllowed": {
-            "type": "array",
-            "minItems": 1,
-            "maxItems": 50,
-            "uniqueItems": true,
-            "items": {
-              "type": "string",
-              "enum": [
-                "embedded",
-                "redirect"
-              ]
-            }
+            "type": "boolean",
+            "description": "Allows QuickLinks to be created for the scope."
           },
           "allowedRedirectUris": {
             "type": "array",
@@ -21118,23 +21464,54 @@
               "pattern": "^[Hh][Tt][Tt][Pp][Ss]://",
               "maxLength": 2048
             },
-            "description": "Up to 50 exact HTTPS callback URLs without credentials."
-          },
-          "allowedOrigins": {
-            "type": "array",
-            "maxItems": 50,
-            "items": {
-              "type": "string",
-              "format": "uri",
-              "pattern": "^[Hh][Tt][Tt][Pp][Ss]://[^/?#@,]+/?$",
-              "maxLength": 2048
-            },
-            "description": "Up to 50 exact HTTPS origins without credentials, paths, queries, fragments, or commas. A trailing root slash is accepted and removed."
+            "description": "Up to 50 exact HTTPS callback URLs without credentials. A QuickLink callbackUrl must match one of them."
           },
           "businessName": {
             "type": "string",
             "maxLength": 120,
             "nullable": true
+          },
+          "headline": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true,
+            "description": "Page title shown above the pairing flow. Defaults to “Connect WhatsApp”."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 280,
+            "nullable": true,
+            "description": "Intro sentence shown under the headline."
+          },
+          "successMessage": {
+            "type": "string",
+            "maxLength": 280,
+            "nullable": true,
+            "description": "Message shown after the number connects."
+          },
+          "supportUrl": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^[Hh][Tt][Tt][Pp][Ss]://",
+            "maxLength": 2048,
+            "nullable": true,
+            "description": "Help link shown on the page."
+          },
+          "privacyUrl": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^[Hh][Tt][Tt][Pp][Ss]://",
+            "maxLength": 2048,
+            "nullable": true,
+            "description": "Privacy policy link shown on the consent step."
+          },
+          "termsUrl": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^[Hh][Tt][Tt][Pp][Ss]://",
+            "maxLength": 2048,
+            "nullable": true,
+            "description": "Terms link shown on the consent step."
           },
           "accent": {
             "type": "string",
@@ -21152,25 +21529,13 @@
           "hideWatermark": {
             "type": "boolean"
           },
-          "colors": {
-            "type": "object",
-            "additionalProperties": false,
-            "nullable": true,
-            "properties": {
-              "light": {
-                "$ref": "#/components/schemas/WidgetColorPalette"
-              },
-              "dark": {
-                "$ref": "#/components/schemas/WidgetColorPalette"
-              }
-            }
-          },
           "shape": {
             "type": "string",
             "enum": [
               "square",
               "rounded",
-              "pill"
+              "pill",
+              null
             ],
             "nullable": true
           },
@@ -21180,7 +21545,7 @@
             "maximum": 999,
             "nullable": true
           },
-          "qrLogoMode": {
+          "logoMode": {
             "type": "string",
             "enum": [
               "none",
@@ -21189,11 +21554,11 @@
               "project"
             ]
           },
-          "qrLogoStorageId": {
+          "logoStorageId": {
             "type": "string",
             "nullable": true
           },
-          "qrLogoSourceStorageId": {
+          "logoSourceStorageId": {
             "type": "string",
             "nullable": true
           },
@@ -21209,16 +21574,26 @@
             "type": "array",
             "nullable": true,
             "minItems": 1,
-            "maxItems": 50,
+            "maxItems": 2,
             "uniqueItems": true,
             "items": {
               "type": "string",
               "enum": [
                 "qr",
-                "pairing",
-                "cloud-api"
+                "pairing"
               ]
-            }
+            },
+            "description": "Connection methods offered on hosted QuickLink pages."
+          },
+          "defaultMethod": {
+            "type": "string",
+            "enum": [
+              "qr",
+              "pairing",
+              null
+            ],
+            "nullable": true,
+            "description": "Method the page opens first. Unset lets the page choose by device."
           }
         }
       },
@@ -21553,7 +21928,8 @@
             "enum": [
               "free",
               "standard",
-              "pro"
+              "pro",
+              null
             ],
             "nullable": true
           }
@@ -21896,7 +22272,8 @@
             "enum": [
               "free",
               "standard",
-              "pro"
+              "pro",
+              null
             ],
             "nullable": true
           }
@@ -21950,7 +22327,8 @@
               "free",
               "standard",
               "pro",
-              "scale"
+              "scale",
+              null
             ],
             "nullable": true
           },
@@ -22903,7 +23281,8 @@
               "superseded",
               "expired",
               "not_applied",
-              "delivery_failed"
+              "delivery_failed",
+              null
             ]
           }
         },
@@ -23142,7 +23521,8 @@
               "healthy",
               "limited",
               "restricted",
-              "banned"
+              "banned",
+              null
             ],
             "nullable": true
           },
@@ -23232,7 +23612,8 @@
             "enum": [
               "info",
               "warning",
-              "critical"
+              "critical",
+              null
             ],
             "nullable": true
           },
@@ -23413,7 +23794,8 @@
               "healthy",
               "limited",
               "restricted",
-              "banned"
+              "banned",
+              null
             ],
             "nullable": true
           },
@@ -23494,7 +23876,8 @@
             "enum": [
               "history",
               "link",
-              "plan"
+              "plan",
+              null
             ],
             "nullable": true,
             "description": "Retained evidence anchoring the ramp; null when legacy evidence cannot be classified."
@@ -23588,7 +23971,8 @@
               "fair",
               "poor",
               "failing",
-              "unknown"
+              "unknown",
+              null
             ],
             "nullable": true
           },
@@ -23650,7 +24034,8 @@
               "healthy",
               "limited",
               "restricted",
-              "banned"
+              "banned",
+              null
             ],
             "nullable": true
           },
@@ -23876,7 +24261,8 @@
               "healthy",
               "limited",
               "restricted",
-              "banned"
+              "banned",
+              null
             ],
             "nullable": true
           },
@@ -26735,7 +27121,8 @@
               "cancelling",
               "succeeded",
               "failed",
-              "cancelled"
+              "cancelled",
+              null
             ],
             "nullable": true
           },

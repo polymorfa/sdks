@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa WhatsApp API",
     "version": "1.0.0",
-    "description": "Public Polymorfa REST API for sessions, messaging, media, webhooks, campaigns, templates, client tokens, widgets, and bridge routing.",
+    "description": "Public Polymorfa REST API for sessions, messaging, media, webhooks, campaigns, templates, client tokens, QuickLinks, and bridge routing.",
     "contact": {
       "name": "Polymorfa API",
       "url": "https://docs.polymorfa.com"
@@ -244,9 +244,7 @@
           },
           "interactive": {
             "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            }
+            "additionalProperties": {}
           }
         },
         "required": [
@@ -283,6 +281,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.received"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -341,6 +342,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.sent"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -403,6 +407,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.ack"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -434,6 +441,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.revoked"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -465,6 +475,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.reaction"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -496,6 +509,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.edited"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -527,6 +543,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -581,6 +600,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.delete"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -638,6 +660,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.vote"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -708,6 +733,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "session.status"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -750,6 +778,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "session.qr"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -806,6 +837,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "session.connected"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -848,6 +882,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "session.logged_out"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -910,6 +947,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "session.phone_offline"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -961,6 +1001,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "group.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1027,6 +1070,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "group.participant"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1087,6 +1133,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "presence.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1163,6 +1212,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "contact.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1211,6 +1263,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "chat.archive"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1260,6 +1315,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "chat.mute"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1306,6 +1364,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "chat.read"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1348,6 +1409,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "chat.clear"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1390,6 +1454,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "chat.delete"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1412,11 +1479,17 @@
           },
           "callId": {
             "type": "string"
+          },
+          "hasVideo": {
+            "type": "boolean",
+            "description": "Whether the offered call advertised video.",
+            "example": false
           }
         },
         "required": [
           "from",
-          "callId"
+          "callId",
+          "hasVideo"
         ]
       },
       "CallReceivedEvent": {
@@ -1436,6 +1509,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "call.received"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1486,6 +1562,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "call.missed"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1532,6 +1611,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "call.accepted"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1578,10 +1660,398 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "call.rejected"
+            ],
             "description": "Event type"
           },
           "payload": {
             "$ref": "#/components/schemas/CallRejectedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CallEndedPayload": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "phoneNumber": {
+                "type": "string"
+              },
+              "username": {
+                "type": "string"
+              },
+              "lid": {
+                "type": "string",
+                "deprecated": true
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "pn",
+                  "lid"
+                ],
+                "deprecated": true
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "callId": {
+            "type": "string"
+          },
+          "durationSeconds": {
+            "type": "integer",
+            "description": "Total connected duration in seconds (0 if never answered).",
+            "example": 42
+          },
+          "reason": {
+            "type": "string",
+            "description": "Termination reason: user_hangup | timeout | lost_connection | rejected | capacity | pod_lost.",
+            "example": "user_hangup"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "inbound",
+              "outbound"
+            ],
+            "description": "Call direction.",
+            "example": "inbound"
+          },
+          "hadVideo": {
+            "type": "boolean",
+            "description": "Whether the call carried video.",
+            "example": false
+          }
+        },
+        "required": [
+          "from",
+          "callId",
+          "durationSeconds",
+          "reason",
+          "direction",
+          "hadVideo"
+        ]
+      },
+      "CallEndedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.ended"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallEndedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CallTelemetryPayload": {
+        "type": "object",
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "setupMs": {
+            "type": "integer",
+            "description": "Time from offer to media_ready, in milliseconds.",
+            "example": 850
+          },
+          "ringMs": {
+            "type": "integer",
+            "description": "Time spent ringing before accept, in milliseconds.",
+            "example": 3200
+          },
+          "durationSeconds": {
+            "type": "integer",
+            "description": "Total connected duration in seconds.",
+            "example": 42
+          },
+          "terminateReason": {
+            "type": "string",
+            "description": "Termination reason: user_hangup | timeout | lost_connection | rejected | capacity.",
+            "example": "user_hangup"
+          },
+          "codec": {
+            "type": "string",
+            "description": "Negotiated audio codec's bare subtype; empty when no codec stats.",
+            "example": "opus"
+          },
+          "jitterMs": {
+            "type": "number",
+            "description": "Inbound RTP jitter for the audio stream, in milliseconds.",
+            "example": 12.5
+          },
+          "packetsLost": {
+            "type": "integer",
+            "description": "Cumulative inbound RTP packets lost for the audio stream.",
+            "example": 3
+          },
+          "rttMs": {
+            "type": "number",
+            "description": "Estimated round-trip time from the remote-inbound report, in milliseconds.",
+            "example": 48.2
+          },
+          "recvKbps": {
+            "type": "number",
+            "description": "Total inbound volume across all RTP streams, in kilobits (cumulative).",
+            "example": 2048
+          },
+          "sendKbps": {
+            "type": "number",
+            "description": "Total outbound volume across all RTP streams, in kilobits (cumulative).",
+            "example": 2011
+          }
+        },
+        "required": [
+          "callId",
+          "setupMs",
+          "ringMs",
+          "durationSeconds",
+          "terminateReason",
+          "codec",
+          "jitterMs",
+          "packetsLost",
+          "rttMs",
+          "recvKbps",
+          "sendKbps"
+        ]
+      },
+      "CallTelemetryEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.telemetry"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallTelemetryPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CallParticipant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "audioMuted": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "Reserved; false until WhatsApp exposes authoritative participant mute state."
+          },
+          "video": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "Reserved; false until WhatsApp exposes authoritative participant video state."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "invited",
+              "ringing",
+              "connected",
+              "left"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "handle",
+          "audioMuted",
+          "video",
+          "state"
+        ]
+      },
+      "CallParticipantPayload": {
+        "type": "object",
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "participant": {
+            "$ref": "#/components/schemas/CallParticipant"
+          }
+        },
+        "required": [
+          "callId",
+          "participant"
+        ]
+      },
+      "CallParticipantJoinedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.participant_joined"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallParticipantPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CallParticipantStateEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.participant_state"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallParticipantPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CallParticipantLeftPayload": {
+        "type": "object",
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "participantId": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "callId",
+          "participantId"
+        ]
+      },
+      "CallParticipantLeftEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.participant_left"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallParticipantLeftPayload"
           }
         },
         "required": [
@@ -1627,6 +2097,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "newsletter.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1701,6 +2174,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "blocklist.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1798,6 +2274,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "labels.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1879,6 +2358,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "business.quick_reply.update"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -1974,6 +2456,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "history.sync"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2002,9 +2487,7 @@
           },
           "data": {
             "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            }
+            "additionalProperties": {}
           },
           "error": {
             "type": "string"
@@ -2033,6 +2516,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "command.result"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2113,6 +2599,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.enabled"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2189,6 +2678,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.created"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2279,6 +2771,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.updated"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2365,6 +2860,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.archiving"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2441,6 +2939,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.archived"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2517,6 +3018,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.restored"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2598,6 +3102,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.pairing_link.created"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2679,6 +3186,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.pairing_link.opened"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2765,6 +3275,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.pairing_link.connected"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2851,6 +3364,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.pairing_link.failed"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -2932,6 +3448,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.pairing_link.expired"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3022,6 +3541,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.pairing_link.revoked"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3107,6 +3629,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.number.attached"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3193,6 +3718,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.number.transferred"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3279,6 +3807,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "customer.number.disconnected"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3385,6 +3916,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "bansafe.enforcement"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3478,7 +4012,8 @@
               "notify",
               "throttle",
               "block_cold",
-              "suspend"
+              "suspend",
+              null
             ],
             "description": "Restriction previously in force, or null when none was."
           },
@@ -3602,6 +4137,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "bansafe.action"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3717,6 +4255,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "bansafe.health_threshold"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3843,6 +4384,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "bansafe.incident"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -3988,6 +4532,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "bansafe.claim"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -4076,6 +4623,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "message.failed"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -4150,6 +4700,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "template.status"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -4213,6 +4766,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "campaign.paused"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -4300,6 +4856,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "campaign.completed"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -4357,6 +4916,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "campaign.failed"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -4439,6 +5001,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "campaign.recipient_sent"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -4514,6 +5079,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "campaign.recipient_failed"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -4583,6 +5151,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "campaign.recipient_skipped"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -4652,6 +5223,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "campaign.throttled"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -4734,6 +5308,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "campaign.cap_reached"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -4809,6 +5386,9 @@
           },
           "event": {
             "type": "string",
+            "enum": [
+              "campaign.cold_blocked"
+            ],
             "description": "Event type"
           },
           "payload": {
@@ -5090,6 +5670,21 @@
           },
           "enabled": {
             "type": "boolean"
+          },
+          "maxConcurrency": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0
+          },
+          "allowedNumber": {
+            "type": "string",
+            "default": ""
+          },
+          "maxSetupsPerMinute": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 600,
+            "default": 0
           }
         },
         "required": [
@@ -5206,9 +5801,7 @@
           },
           "config": {
             "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            }
+            "additionalProperties": {}
           },
           "createdAt": {
             "type": "string"
@@ -6470,9 +7063,7 @@
               },
               "components": {
                 "type": "array",
-                "items": {
-                  "nullable": true
-                }
+                "items": {}
               }
             },
             "required": [
@@ -6673,6 +7264,510 @@
         },
         "required": [
           "from"
+        ]
+      },
+      "ICEServer": {
+        "type": "object",
+        "properties": {
+          "urls": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "username": {
+            "type": "string"
+          },
+          "credential": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "urls"
+        ]
+      },
+      "SDPAnswer": {
+        "type": "object",
+        "properties": {
+          "sdp": {
+            "type": "string"
+          },
+          "iceServers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ICEServer"
+            }
+          }
+        },
+        "required": [
+          "sdp",
+          "iceServers"
+        ]
+      },
+      "VoipOfferResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/SDPAnswer"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipOfferRequest": {
+        "type": "object",
+        "properties": {
+          "sdp": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "sdp"
+        ]
+      },
+      "VoipRenegotiateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/SDPAnswer"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipRenegotiateRequest": {
+        "type": "object",
+        "properties": {
+          "sdp": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "sdp"
+        ]
+      },
+      "VoipSocketTicket": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "number"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket",
+          "expiresAt",
+          "url"
+        ]
+      },
+      "VoipSocketTicketResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/VoipSocketTicket"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipSocketTicketRequest": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "VoipAgentToken": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "token",
+          "expiresAt"
+        ]
+      },
+      "VoipAgentTokenResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/VoipAgentToken"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipAgentTokenRequest": {
+        "type": "object",
+        "properties": {
+          "ttlSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3600
+          }
+        }
+      },
+      "VoipPlacedCall": {
+        "type": "object",
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "session": {
+            "type": "string"
+          },
+          "video": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "callId",
+          "session",
+          "video"
+        ]
+      },
+      "VoipPlacedCallResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/VoipPlacedCall"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipPlaceCallRequest": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "minLength": 1,
+            "example": "support"
+          },
+          "to": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "example": "+15550100"
+          },
+          "video": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "to"
+        ]
+      },
+      "VoipAcceptCallRequest": {
+        "type": "object",
+        "properties": {
+          "video": {
+            "type": "boolean"
+          }
+        }
+      },
+      "VoipParticipant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "audioMuted": {
+            "type": "boolean"
+          },
+          "video": {
+            "type": "boolean"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "invited",
+              "ringing",
+              "connected",
+              "left"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "handle",
+          "audioMuted",
+          "video",
+          "state"
+        ]
+      },
+      "VoipAddParticipantResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/VoipParticipant"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipAddParticipantRequest": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "example": "+15550100"
+          }
+        },
+        "required": [
+          "to"
+        ]
+      },
+      "VoipModeResponse": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "browser",
+              "agent",
+              "sdk"
+            ]
+          }
+        },
+        "required": [
+          "session",
+          "mode"
+        ]
+      },
+      "VoipModeResult": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/VoipModeResponse"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipModeRequest": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "minLength": 1,
+            "example": "support"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "browser",
+              "agent",
+              "sdk"
+            ]
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "VoipCandidateRequest": {
+        "type": "object",
+        "properties": {
+          "candidate": {
+            "type": "string"
+          },
+          "sdpMid": {
+            "type": "string"
+          },
+          "sdpMLineIndex": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "candidate"
+        ]
+      },
+      "TrickleCandidate": {
+        "type": "object",
+        "properties": {
+          "candidate": {
+            "type": "string"
+          },
+          "sdpMid": {
+            "type": "string"
+          },
+          "sdpMLineIndex": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "candidate"
+        ]
+      },
+      "VoipCandidatesResponse": {
+        "type": "object",
+        "properties": {
+          "candidates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrickleCandidate"
+            }
+          }
+        },
+        "required": [
+          "candidates"
+        ]
+      },
+      "VoipCandidatesEnvelope": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/VoipCandidatesResponse"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipToken": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "token",
+          "expiresAt"
+        ]
+      },
+      "VoipTokenResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/VoipToken"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "VoipTokenRequest": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ephemeralId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ttlSeconds": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "session",
+          "ephemeralId"
         ]
       },
       "Participant": {
@@ -11640,17 +12735,11 @@
           "kind": {
             "type": "string"
           },
-          "definition": {
-            "nullable": true
-          },
-          "sampleValues": {
-            "nullable": true
-          },
+          "definition": {},
+          "sampleValues": {},
           "cloudLinks": {
             "type": "array",
-            "items": {
-              "nullable": true
-            }
+            "items": {}
           },
           "createdAt": {
             "type": "number"
@@ -11738,9 +12827,7 @@
           },
           "definition": {
             "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            }
+            "additionalProperties": {}
           },
           "sampleValues": {
             "type": "object",
@@ -11784,9 +12871,7 @@
           },
           "definition": {
             "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            }
+            "additionalProperties": {}
           },
           "sampleValues": {
             "type": "object",
@@ -11807,9 +12892,7 @@
           },
           "data": {
             "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            }
+            "additionalProperties": {}
           }
         },
         "required": [
@@ -11847,9 +12930,7 @@
           },
           "data": {
             "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            }
+            "additionalProperties": {}
           }
         },
         "required": [
@@ -11995,9 +13076,7 @@
           },
           "data": {
             "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            }
+            "additionalProperties": {}
           }
         },
         "required": [
@@ -12038,9 +13117,7 @@
           },
           "senderConfig": {
             "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            }
+            "additionalProperties": {}
           },
           "scheduledAt": {
             "type": "number"
@@ -12160,9 +13237,7 @@
           },
           "data": {
             "type": "object",
-            "additionalProperties": {
-              "nullable": true
-            }
+            "additionalProperties": {}
           }
         },
         "required": [
@@ -12178,30 +13253,34 @@
           }
         }
       },
-      "WidgetSessionResponse": {
+      "QuickLink": {
         "type": "object",
         "properties": {
-          "widgetUrl": {
-            "type": "string"
+          "id": {
+            "type": "string",
+            "description": "Stable QuickLink identifier, prefixed `ql_`."
           },
-          "redirectUrl": {
-            "type": "string"
-          },
-          "clientToken": {
-            "type": "string"
+          "url": {
+            "type": "string",
+            "description": "Hosted connection URL. Share it only with the person holding the phone."
           },
           "session": {
-            "type": "string"
+            "type": "string",
+            "description": "Session name that receives the connected number."
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "ISO-8601 expiry. QuickLinks live 15 minutes unless `expiresInSeconds` was set."
           }
         },
         "required": [
-          "widgetUrl",
-          "redirectUrl",
-          "clientToken",
-          "session"
+          "id",
+          "url",
+          "session",
+          "expiresAt"
         ]
       },
-      "WidgetSessionResponseWrapper": {
+      "QuickLinkResponse": {
         "type": "object",
         "properties": {
           "success": {
@@ -12211,7 +13290,7 @@
             ]
           },
           "data": {
-            "$ref": "#/components/schemas/WidgetSessionResponse"
+            "$ref": "#/components/schemas/QuickLink"
           }
         },
         "required": [
@@ -12219,23 +13298,18 @@
           "data"
         ]
       },
-      "CreateWidgetSessionRequest": {
+      "CreateQuickLinkRequest": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "enum": [
-              "embedded",
-              "redirect"
-            ]
-          },
           "projectId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "Project that receives the connected number. Required for organization keys with more than one project."
           },
           "customerId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "Customer that owns the connected number when Customers is enabled for the project."
           },
           "methods": {
             "type": "array",
@@ -12243,44 +13317,33 @@
               "type": "string",
               "enum": [
                 "qr",
-                "pairing",
-                "cloud-api"
+                "pairing"
               ]
-            }
+            },
+            "minItems": 1,
+            "maxItems": 2,
+            "description": "Connection methods offered on the hosted page. Defaults to the saved settings, then to both."
           },
           "businessName": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 120
+            "maxLength": 120,
+            "description": "Name shown to the recipient when no saved business name exists."
           },
           "historySync": {
             "type": "string",
             "enum": [
+              "ask",
               "force_on",
-              "force_off",
-              "ask"
+              "force_off"
             ]
-          },
-          "sessionName": {
-            "type": "string"
           },
           "callbackUrl": {
             "type": "string",
             "maxLength": 2048,
             "format": "uri",
             "pattern": "^[Hh][Tt][Tt][Pp][Ss]://",
-            "description": "Exact HTTPS URL without credentials."
-          },
-          "allowedOrigins": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "maxLength": 2048,
-              "format": "uri",
-              "pattern": "^[Hh][Tt][Tt][Pp][Ss]://[^/?#@,]+/?$",
-              "description": "Exact HTTPS origin without credentials, path, query, fragment, or comma. A trailing root slash is removed."
-            },
-            "maxItems": 50
+            "description": "Exact HTTPS URL without credentials. Must match a saved redirect URL."
           },
           "theme": {
             "type": "string",
@@ -12296,92 +13359,282 @@
           },
           "prefillPhone": {
             "type": "string",
-            "pattern": "^\\+?\\d{6,15}$"
+            "pattern": "^\\+?\\d{6,15}$",
+            "description": "Pre-fills the phone number for the pairing-code method."
           },
-          "autoSubmitPhone": {
-            "type": "boolean"
-          },
-          "analytics": {
-            "type": "object",
-            "properties": {
-              "posthogKey": {
-                "type": "string"
-              },
-              "posthogHost": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "posthogKey"
-            ]
-          },
-          "metaApp": {
-            "type": "object",
-            "properties": {
-              "appId": {
-                "type": "string",
-                "minLength": 1
-              },
-              "appSecret": {
-                "type": "string",
-                "minLength": 1
-              }
-            },
-            "required": [
-              "appId",
-              "appSecret"
-            ]
+          "expiresInSeconds": {
+            "type": "integer",
+            "minimum": 300,
+            "maximum": 3600,
+            "description": "Link lifetime in seconds, 300–3600. Defaults to 900."
           }
         }
       },
-      "WidgetHandoffResponse": {
+      "QuickLinkStatus": {
         "type": "object",
         "properties": {
-          "handoffUrl": {
+          "id": {
             "type": "string"
           },
-          "metaQrSvg": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "opened",
+              "linked",
+              "connected",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "session": {
             "type": "string"
           },
           "expiresAt": {
             "type": "string"
-          }
-        },
-        "required": [
-          "handoffUrl",
-          "metaQrSvg",
-          "expiresAt"
-        ]
-      },
-      "WidgetHandoffState": {
-        "type": "object",
-        "properties": {
-          "qr": {
+          },
+          "openedAt": {
             "type": "string",
             "nullable": true
           },
-          "status": {
-            "type": "string"
+          "connectedAt": {
+            "type": "string",
+            "nullable": true
           },
-          "sessionName": {
-            "type": "string"
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "description": "Connected phone in E.164 once the link is connected."
           },
-          "businessName": {
-            "type": "string"
+          "errorCode": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
-          "qr",
+          "id",
           "status",
-          "sessionName"
+          "session",
+          "expiresAt",
+          "openedAt",
+          "connectedAt",
+          "phone",
+          "errorCode"
         ]
+      },
+      "QuickLinkStatusResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/QuickLinkStatus"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "QuickLinkState": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "opened",
+              "linked",
+              "connected",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "methods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "qr",
+                "pairing"
+              ]
+            }
+          },
+          "defaultMethod": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "qr",
+              "pairing",
+              null
+            ]
+          },
+          "businessName": {
+            "type": "string"
+          },
+          "headline": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "successMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "supportUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "privacyUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "termsUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "theme": {
+            "type": "string",
+            "enum": [
+              "light",
+              "dark",
+              "system"
+            ]
+          },
+          "accent": {
+            "type": "string",
+            "nullable": true
+          },
+          "shape": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "square",
+              "rounded",
+              "pill",
+              null
+            ]
+          },
+          "radiusPx": {
+            "type": "number",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "hideWatermark": {
+            "type": "boolean"
+          },
+          "historySync": {
+            "type": "string",
+            "enum": [
+              "ask",
+              "force_on",
+              "force_off"
+            ]
+          },
+          "prefillPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer": {
+            "type": "boolean",
+            "description": "True when the link assigns the number to a Customer."
+          },
+          "session": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "required": [
+              "status",
+              "phone"
+            ]
+          },
+          "qrSvg": {
+            "type": "string",
+            "nullable": true,
+            "description": "Inline SVG of the current WhatsApp QR code, when the QR method is offered and the number is not linked yet."
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "expiresAt",
+          "methods",
+          "defaultMethod",
+          "businessName",
+          "headline",
+          "description",
+          "successMessage",
+          "supportUrl",
+          "privacyUrl",
+          "termsUrl",
+          "theme",
+          "accent",
+          "shape",
+          "radiusPx",
+          "logoUrl",
+          "hideWatermark",
+          "historySync",
+          "prefillPhone",
+          "customer",
+          "session",
+          "qrSvg",
+          "errorCode"
+        ]
+      },
+      "QuickLinkCodeRequest": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "phone"
+        ]
+      },
+      "QuickLinkConfirmRequest": {
+        "type": "object",
+        "properties": {
+          "historySync": {
+            "type": "boolean"
+          }
+        }
       }
     },
     "securitySchemes": {
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "description": "Polymorfa API key (pmfa_ prefix) or client token (pmfa_ct_ prefix)."
+        "description": "Polymorfa organization key (pmfa_ prefix), project token (pmfa_pt_ prefix) where supported, or short-lived client token (pmfa_ct_ prefix). Organization and project keys may be personal or service-account owned and enforce selected action scopes. Organization keys cover the team and its projects; project tokens stay inside one project. Client tokens stay inside their live project and session and enforce their client rules."
       }
     }
   },
@@ -12613,7 +13866,15 @@
             "BearerAuth": []
           }
         ],
-        "x-required-scope": "sessions:manage",
+        "x-required-scopes": [
+          "sessions:manage",
+          "messages:write",
+          "contacts:read",
+          "presence:read",
+          "presence:observe",
+          "mcp"
+        ],
+        "x-required-scope-mode": "all",
         "requestBody": {
           "content": {
             "application/json": {
@@ -12686,9 +13947,9 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
         },
-        "description": "**Required scope:** `sessions:manage`"
+        "description": "**Required scopes (all):** `sessions:manage` · `messages:write` · `contacts:read` · `presence:read` · `presence:observe` · `mcp`"
       }
     },
     "/api/sessions/{session}/client-rules": {
@@ -12792,7 +14053,15 @@
             "BearerAuth": []
           }
         ],
-        "x-required-scope": "sessions:manage",
+        "x-required-scopes": [
+          "sessions:manage",
+          "messages:write",
+          "contacts:read",
+          "presence:read",
+          "presence:observe",
+          "mcp"
+        ],
+        "x-required-scope-mode": "all",
         "parameters": [
           {
             "schema": {
@@ -12875,9 +14144,9 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
         },
-        "description": "**Required scope:** `sessions:manage`"
+        "description": "**Required scopes (all):** `sessions:manage` · `messages:write` · `contacts:read` · `presence:read` · `presence:observe` · `mcp`"
       },
       "delete": {
         "operationId": "deleteClientRules",
@@ -15794,6 +17063,1605 @@
           "Linked Device API"
         ],
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `chats:manage`"
+      }
+    },
+    "/api/voip/calls/{id}/offer": {
+      "post": {
+        "operationId": "voipOffer",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Submit an SDP offer and receive the pod's answer + ICE servers",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipOfferRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SDP answer with STUN/TURN ICE servers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipOfferResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Call setup rate exceeded for this client token, or its concurrency limit is reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
+        "description": "**Required scope:** `sessions:manage`"
+      }
+    },
+    "/api/voip/calls/{id}/renegotiate": {
+      "post": {
+        "operationId": "voipRenegotiate",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Re-offer on an established call (add video, restart ICE) and receive the pod's answer",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipRenegotiateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SDP answer for the re-offer, on the same peer connection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipRenegotiateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
+        "description": "**Required scope:** `sessions:manage`"
+      }
+    },
+    "/api/voip/ws-ticket": {
+      "post": {
+        "operationId": "voipSocketTicket",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Mint a single-use ticket for the calls WebSocket",
+        "description": "**Required scope:** `sessions:manage`\n\nBrowsers cannot send an Authorization header on a WebSocket upgrade, so the calls socket (`GET /voip/ws?ticket=…`) is opened with a ticket obtained here. Tickets are single-use and expire after 60 seconds. Client tokens are bound to their session; server keys must name one.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipSocketTicketRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ticket minted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipSocketTicketResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/api/voip/calls/{id}/agent-token": {
+      "post": {
+        "operationId": "voipAgentToken",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Mint a per-call ticket for a voice agent's media WebSocket",
+        "description": "**Required scope:** `sessions:manage`\n\nServer keys only. The ticket is bound to this call, expires after `ttlSeconds` (default 300, max 3600) and is presented by the agent to the voip pod as `Authorization: Bearer <token>`. It grants nothing else.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipAgentTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agent ticket minted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipAgentTokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/api/voip/calls": {
+      "post": {
+        "operationId": "voipPlaceCall",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Place an outbound call from a session",
+        "description": "**Required scope:** `sessions:manage`\n\nOriginates a WhatsApp call to `to` (an E.164 phone number or a WhatsApp JID) from the named session. The call rings on the callee's device: `call.accepted` follows when they pick up and `call.ended` when either side hangs up. Attach media like any other call — `/offer` for a browser, the SDK media socket for programmatic audio/video. Client tokens place from their bound session; server keys must name one. Outbound starts share a rate limit per organization and source session across server keys and client tokens; client-token rules also apply.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipPlaceCallRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Call placed and ringing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipPlacedCallResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Session not ready — the named session cannot place an outbound call yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Outbound call rate exceeded for this organization and source session, or a client-token setup or concurrency limit was reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Outbound calls are not available on this deployment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/api/voip/calls/{id}/accept": {
+      "post": {
+        "operationId": "voipAcceptCall",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Answer a ringing inbound call",
+        "description": "**Required scope:** `sessions:manage`\n\nAnswers a call the pod is holding for the SDK (sessions in `sdk` client mode ring instead of auto-answering). 409 when the call is not ringing — already answered, ended, or hosted by a session that auto-answers.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipAcceptCallRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Call answered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/api/voip/calls/{id}/reject": {
+      "post": {
+        "operationId": "voipRejectCall",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Decline a ringing inbound call",
+        "description": "**Required scope:** `sessions:manage`\n\nDeclines a call the pod is holding for the SDK and releases it. 409 when the call is not ringing.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Call declined",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/api/voip/calls/{id}/participants": {
+      "post": {
+        "operationId": "voipAddParticipant",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Invite another party into a live call",
+        "description": "**Required scope:** `sessions:manage`\n\nRings `to` (an E.164 phone number or a WhatsApp JID) into the call, turning a 1:1 call into a group call. The invitee enters the roster as `invited`; roster changes reach the SDK media socket as `participant_joined` / `participant_state` / `participant_left` frames. 409 until the call has a live leg.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipAddParticipantRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Participant invited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipAddParticipantResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Call setup rate exceeded for this client token, or its concurrency limit is reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/api/voip/mode": {
+      "post": {
+        "operationId": "voipSetMode",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Choose how a session answers inbound calls",
+        "description": "**Required scope:** `sessions:manage`\n\n`browser` (default) answers each inbound call and bridges it to a browser through `/offer`; `agent` answers and bridges to the raw-audio socket; `sdk` lets the call ring and waits for your `/accept` or `/reject`. The claim persists until changed and applies to calls that arrive after it. Client tokens configure their bound session; server keys must name one.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipModeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mode recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipModeResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/api/voip/calls/{id}/candidate": {
+      "post": {
+        "operationId": "voipCandidate",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Trickle a local ICE candidate to the owning pod",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipCandidateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Candidate accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
+        "description": "**Required scope:** `sessions:manage`"
+      }
+    },
+    "/api/voip/calls/{id}/candidates": {
+      "get": {
+        "operationId": "voipCandidates",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Poll remote ICE candidates queued for the browser",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Queued remote candidates (drained on read)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipCandidatesEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
+        "description": "**Required scope:** `sessions:manage`"
+      }
+    },
+    "/api/voip/calls/{id}": {
+      "delete": {
+        "operationId": "voipTeardown",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Tear down a call's browser media session",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Call torn down",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
+        "description": "**Required scope:** `sessions:manage`"
+      }
+    },
+    "/api/voip/token": {
+      "post": {
+        "operationId": "voipToken",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Mint a short-lived browser client token for the VoIP SDK",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scopes": [
+          "sessions:manage",
+          "messages:write",
+          "contacts:read",
+          "presence:read",
+          "presence:observe",
+          "mcp"
+        ],
+        "x-required-scope-mode": "all",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Client token minted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipTokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
+        },
+        "description": "**Required scopes (all):** `sessions:manage` · `messages:write` · `contacts:read` · `presence:read` · `presence:observe` · `mcp`"
       }
     },
     "/api/{session}/groups": {
@@ -29882,35 +32750,36 @@
         "description": "**Required scope:** `campaigns:manage`"
       }
     },
-    "/api/widget/sessions": {
+    "/api/quicklinks": {
       "post": {
-        "operationId": "createWidgetSession",
+        "operationId": "createQuickLink",
         "tags": [
-          "Widget"
+          "QuickLink"
         ],
-        "summary": "Create a widget session for embedding the connect flow",
+        "summary": "Create a QuickLink",
+        "description": "**Required scope:** `quicklink:manage`\n\nCreates a 15-minute hosted link that connects one WhatsApp number to a new session in the project.",
         "security": [
           {
             "BearerAuth": []
           }
         ],
-        "x-required-scope": "widget:create",
+        "x-required-scope": "quicklink:manage",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateWidgetSessionRequest"
+                "$ref": "#/components/schemas/CreateQuickLinkRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Widget session created",
+            "description": "QuickLink created",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WidgetSessionResponseWrapper"
+                  "$ref": "#/components/schemas/QuickLinkResponse"
                 }
               }
             }
@@ -29967,24 +32836,113 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">widget:create</Badge>"
-        },
-        "description": "**Required scope:** `widget:create`"
+          "content": "<Badge color=\"yellow\" icon=\"key\">quicklink:manage</Badge>"
+        }
       }
     },
-    "/api/widget/sessions/{id}": {
-      "delete": {
-        "operationId": "cancelWidgetSession",
+    "/api/quicklinks/{id}": {
+      "get": {
+        "operationId": "getQuickLink",
         "tags": [
-          "Widget"
+          "QuickLink"
         ],
-        "summary": "Cancel a pending widget session and revoke its CST",
+        "summary": "Read QuickLink status",
         "security": [
           {
             "BearerAuth": []
           }
         ],
-        "x-required-scope": "widget:create",
+        "x-required-scope": "quicklink:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current QuickLink status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuickLinkStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">quicklink:manage</Badge>"
+        },
+        "description": "**Required scope:** `quicklink:manage`"
+      },
+      "delete": {
+        "operationId": "cancelQuickLink",
+        "tags": [
+          "QuickLink"
+        ],
+        "summary": "Cancel a QuickLink",
+        "description": "**Required scope:** `quicklink:manage`\n\nInvalidates the link and removes its pending session. Connected links cannot be cancelled.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "quicklink:manage",
         "parameters": [
           {
             "schema": {
@@ -30073,54 +33031,43 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">widget:create</Badge>"
-        },
-        "description": "**Required scope:** `widget:create`"
+          "content": "<Badge color=\"yellow\" icon=\"key\">quicklink:manage</Badge>"
+        }
       }
     },
-    "/api/widget/sessions/{id}/handoff": {
-      "post": {
-        "operationId": "createWidgetHandoff",
+    "/quicklink/{token}": {
+      "get": {
+        "operationId": "getQuickLinkState",
         "tags": [
-          "Widget"
+          "QuickLink"
         ],
-        "summary": "Mint a TV-style handoff token + meta-QR so the user can finish the connect flow on another device.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "x-required-scope": "widget:create",
+        "security": [],
+        "summary": "Read QuickLink state",
+        "description": "Returns the hosted page state for a QuickLink. Public; the token in the URL is the credential. Starts the session on first read.",
         "parameters": [
           {
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Opaque QuickLink token from the hosted URL."
             },
             "required": true,
-            "name": "id",
+            "name": "token",
             "in": "path"
           }
         ],
         "responses": {
-          "201": {
-            "description": "Handoff minted",
+          "200": {
+            "description": "Current QuickLink state",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
-                    },
                     "data": {
-                      "$ref": "#/components/schemas/WidgetHandoffResponse"
+                      "$ref": "#/components/schemas/QuickLinkState"
                     }
                   },
                   "required": [
-                    "success",
                     "data"
                   ]
                 }
@@ -30177,25 +33124,23 @@
               }
             }
           }
-        },
-        "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">widget:create</Badge>"
-        },
-        "description": "**Required scope:** `widget:create`"
+        }
       }
     },
-    "/widget/handoff/{token}/state": {
+    "/quicklink/{token}/logo": {
       "get": {
-        "operationId": "getWidgetHandoffState",
+        "operationId": "getQuickLinkLogo",
         "tags": [
-          "Widget"
+          "QuickLink"
         ],
         "security": [],
-        "summary": "Resolve a handoff token to the current QR + session status. Public — the token in the URL is the bearer.",
+        "summary": "Read the QuickLink page logo",
+        "description": "Returns the saved logo image for the page. Public; the token in the URL is the credential.",
         "parameters": [
           {
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Opaque QuickLink token from the hosted URL."
             },
             "required": true,
             "name": "token",
@@ -30204,24 +33149,355 @@
         ],
         "responses": {
           "200": {
-            "description": "Current QR + status",
+            "description": "Logo image",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quicklink/{token}/code": {
+      "post": {
+        "operationId": "requestQuickLinkCode",
+        "tags": [
+          "QuickLink"
+        ],
+        "security": [],
+        "summary": "Request a QuickLink pairing code",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Opaque QuickLink token from the hosted URL."
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuickLinkCodeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pairing code issued",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
-                    },
                     "data": {
-                      "$ref": "#/components/schemas/WidgetHandoffState"
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "phone": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "phone"
+                      ]
                     }
                   },
                   "required": [
-                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quicklink/{token}/confirm": {
+      "post": {
+        "operationId": "confirmQuickLink",
+        "tags": [
+          "QuickLink"
+        ],
+        "security": [],
+        "summary": "Confirm a linked QuickLink",
+        "description": "Records consent, applies the chat-history choice, assigns Customer ownership when applicable, and returns the redirect target.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Opaque QuickLink token from the hosted URL."
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuickLinkConfirmRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Connected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "connected"
+                          ]
+                        },
+                        "phone": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "historySync": {
+                          "type": "boolean"
+                        },
+                        "redirectUrl": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "phone",
+                        "historySync",
+                        "redirectUrl"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quicklink/{token}/cancel": {
+      "post": {
+        "operationId": "cancelQuickLinkByToken",
+        "tags": [
+          "QuickLink"
+        ],
+        "security": [],
+        "summary": "Cancel a QuickLink from the hosted page",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Opaque QuickLink token from the hosted URL."
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "cancelled"
+                          ]
+                        },
+                        "redirectUrl": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "redirectUrl"
+                      ]
+                    }
+                  },
+                  "required": [
                     "data"
                   ]
                 }
@@ -30301,7 +33577,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30325,7 +33601,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30349,7 +33625,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30373,7 +33649,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30397,7 +33673,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30421,7 +33697,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30445,7 +33721,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30469,7 +33745,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30493,7 +33769,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30517,7 +33793,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30541,7 +33817,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30565,7 +33841,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30589,7 +33865,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30613,7 +33889,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30637,7 +33913,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30661,7 +33937,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30685,7 +33961,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30709,7 +33985,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30733,7 +34009,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30757,7 +34033,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30781,7 +34057,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30805,7 +34081,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30829,7 +34105,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30853,7 +34129,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30877,7 +34153,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30901,7 +34177,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30925,7 +34201,127 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "call.ended": {
+      "post": {
+        "operationId": "onCallEnded",
+        "summary": "Call ended",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallEndedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "call.telemetry": {
+      "post": {
+        "operationId": "onCallTelemetry",
+        "summary": "Call telemetry",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallTelemetryEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "call.participant_joined": {
+      "post": {
+        "operationId": "onCallParticipantJoined",
+        "summary": "Participant joined a call",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallParticipantJoinedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "call.participant_state": {
+      "post": {
+        "operationId": "onCallParticipantState",
+        "summary": "Participant call state changed",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallParticipantStateEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "call.participant_left": {
+      "post": {
+        "operationId": "onCallParticipantLeft",
+        "summary": "Participant left a call",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallParticipantLeftEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30949,7 +34345,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30973,7 +34369,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -30997,7 +34393,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31021,7 +34417,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31045,7 +34441,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31069,7 +34465,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31093,7 +34489,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31117,7 +34513,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31141,7 +34537,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31165,7 +34561,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31189,7 +34585,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31213,7 +34609,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31237,7 +34633,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31261,7 +34657,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31285,7 +34681,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31309,7 +34705,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31333,7 +34729,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31357,7 +34753,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31381,7 +34777,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31405,7 +34801,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31429,7 +34825,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31453,7 +34849,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31477,7 +34873,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31501,7 +34897,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31525,7 +34921,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31549,7 +34945,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31573,7 +34969,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31597,7 +34993,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31621,7 +35017,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31645,7 +35041,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31669,7 +35065,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31693,7 +35089,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31717,7 +35113,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31741,7 +35137,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31765,7 +35161,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31789,7 +35185,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
@@ -31813,7 +35209,7 @@
           }
         },
         "responses": {
-          "200": {
+          "2XX": {
             "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
           }
         }
