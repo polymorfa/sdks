@@ -3,4 +3,6 @@ packages/*/dist/
 coverage/
 contracts/openapi.messaging.json
 contracts/openapi.platform.json
+contracts/drafts/bansafe/openapi.messaging.json
+contracts/drafts/bansafe/openapi.platform.json
 package-lock.json
