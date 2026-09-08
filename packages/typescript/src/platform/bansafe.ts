@@ -132,7 +132,7 @@ export class BanSafeResource {
 
   createIncident(
     body: ReportBanSafeIncidentRequest,
-    options: RequestOptions = {},
+    options: RequestOptions,
   ): Promise<ApiResponse<DataEnvelope<BanSafeIncidentReceipt>>> {
     return this.transport.request({
       method: "POST",

@@ -173,19 +173,6 @@ describe("PlatformClient BanSafe resources", () => {
     });
   });
 
-  it("reports an incident without requiring request options", async () => {
-    const { client, requests } = await testClient();
-
-    await client.banSafe.createIncident({ session: "session/a" });
-
-    expect(requests).toMatchObject([
-      {
-        method: "POST",
-        path: "/v1/bansafe/incidents",
-      },
-    ]);
-  });
-
   it("maps project and session safety settings to their typed owners", async () => {
     const { client, requests } = await testClient();
     await client.projects.getSafeMode("project/a");
