@@ -11,7 +11,7 @@ export class ProjectTokensResource {
   ): Promise<ApiResponse<DataEnvelope<readonly ProjectToken[]>>> {
     return this.transport.request({
       method: "GET",
-      path: "/v1/tokens",
+      path: "/platform/tokens",
       query: { projectId },
       ...options,
     });

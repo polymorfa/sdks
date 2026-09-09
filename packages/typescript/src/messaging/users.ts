@@ -12,7 +12,7 @@ export class UsersResource {
   ): Promise<ApiResponse<GetUserSecurityCodeResponse>> {
     return this.transport.request({
       method: "GET",
-      path: `/api/${encodeURIComponent(session)}/users/${encodeURIComponent(userId)}/security-code`,
+      path: `/messaging/${encodeURIComponent(session)}/users/${encodeURIComponent(userId)}/security-code`,
       ...options,
     });
   }

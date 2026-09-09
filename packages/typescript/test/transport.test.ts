@@ -55,7 +55,7 @@ describe("HttpTransport", () => {
     );
     const transport = makeTransport("https://api.example.com", { fetch });
 
-    await transport.request({ method: "GET", path: "/v1/check" });
+    await transport.request({ method: "GET", path: "/platform/check" });
 
     expect(fetch.mock.calls[0]?.[1]?.redirect).toBe("error");
   });
@@ -77,7 +77,7 @@ describe("HttpTransport", () => {
       apiVersion: "2026-08-19",
     }).request<{ ok: true }>({
       method: "GET",
-      path: "/v1/check",
+      path: "/platform/check",
       headers: { authorization: "Bearer attacker", "x-client-context": "cli" },
     });
 
@@ -109,7 +109,7 @@ describe("HttpTransport", () => {
     }));
     await makeTransport(server.url, { apiVersion: "2026-01-01" }).request({
       method: "POST",
-      path: "/v1/projects",
+      path: "/platform/projects",
       query: {
         include: ["members", "keys"],
         archived: false,
@@ -122,7 +122,7 @@ describe("HttpTransport", () => {
 
     expect(server.requests[0]).toMatchObject({
       method: "POST",
-      path: "/v1/projects?include=members&include=keys&archived=false",
+      path: "/platform/projects?include=members&include=keys&archived=false",
       body: '{"name":"Support"}',
     });
     expect(server.requests[0]?.headers["content-type"]).toBe(

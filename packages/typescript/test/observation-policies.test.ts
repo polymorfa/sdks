@@ -128,8 +128,8 @@ describe("MessagingClient observation policies", () => {
     expect(project.metadata.requestId).toBe("req_policy");
     expect(session.data.data.sessionName).toBe("support");
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /api/projects/00000000-0000-4000-8000-000000000001/observation-policy",
-      "GET /api/support%2Feu/observation-policy",
+      "GET /messaging/projects/00000000-0000-4000-8000-000000000001/observation-policy",
+      "GET /messaging/support%2Feu/observation-policy",
     ]);
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
   });
@@ -162,12 +162,12 @@ describe("MessagingClient observation policies", () => {
     ).toEqual([
       {
         method: "PUT",
-        path: "/api/projects/00000000-0000-4000-8000-000000000001/observation-policy",
+        path: "/messaging/projects/00000000-0000-4000-8000-000000000001/observation-policy",
         body: '{"presenceMode":"events","typingMode":"cache","labelMode":"project"}',
       },
       {
         method: "PUT",
-        path: "/api/support%2Feu/observation-policy",
+        path: "/messaging/support%2Feu/observation-policy",
         body: '{"presenceMode":"inherit","typingMode":"off","labelMode":"cache"}',
       },
     ]);

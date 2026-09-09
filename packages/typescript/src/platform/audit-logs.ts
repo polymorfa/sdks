@@ -11,7 +11,7 @@ export class AuditLogsResource {
   ): Promise<ApiResponse<DataEnvelope<readonly AuditLog[]>>> {
     return this.transport.request({
       method: "GET",
-      path: "/v1/audit",
+      path: "/platform/audit",
       query: {
         ...(params.action === undefined ? {} : { action: params.action }),
         ...(params.resource === undefined ? {} : { resource: params.resource }),

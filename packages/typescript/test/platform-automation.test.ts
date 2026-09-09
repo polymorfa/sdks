@@ -49,10 +49,10 @@ describe("Client billing", () => {
     await client.billing.listPricing();
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/billing",
-      "GET /v1/billing/usage",
-      "GET /v1/billing/transactions",
-      "GET /v1/billing/pricing",
+      "GET /platform/billing",
+      "GET /platform/billing/usage",
+      "GET /platform/billing/transactions",
+      "GET /platform/billing/pricing",
     ]);
     expect(billing.metadata.requestId).toBe("req_platform_automation");
   });
@@ -70,7 +70,7 @@ describe("Client billing", () => {
 
     expect(requests[0]).toMatchObject({
       method: "PATCH",
-      path: "/v1/billing/reminders",
+      path: "/platform/billing/reminders",
       body: '{"lowBalanceThresholdCents":2500,"reminderChannels":["email","inApp"]}',
     });
     expect(requests[0]?.headers["idempotency-key"]).toBe("billing-reminders-1");
@@ -88,9 +88,9 @@ describe("Client media", () => {
     );
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/media/media%2Fa",
-      "DELETE /v1/media/media%2Fa",
-      "POST /v1/media/uploads",
+      "GET /platform/media/media%2Fa",
+      "DELETE /platform/media/media%2Fa",
+      "POST /platform/media/uploads",
     ]);
     expect(requests[2]?.body).toBe(
       '{"projectId":"project_1","contentType":"image/png"}',
@@ -112,10 +112,10 @@ describe("Client opt-outs", () => {
     await client.optOuts.delete("+1/555");
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/optouts",
-      "POST /v1/optouts",
-      "POST /v1/optouts/batch",
-      "DELETE /v1/optouts/%2B1%2F555",
+      "GET /platform/optouts",
+      "POST /platform/optouts",
+      "POST /platform/optouts/batch",
+      "DELETE /platform/optouts/%2B1%2F555",
     ]);
     expect(requests[1]?.body).toBe('{"phone":"+1 555"}');
     expect(requests[1]?.headers["idempotency-key"]).toBe("opt-out-1");
@@ -136,11 +136,11 @@ describe("Client audiences", () => {
     await client.audiences.createUpload({ filename: "audience.csv" });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/audiences",
-      "POST /v1/audiences",
-      "GET /v1/audiences/list%2Fa",
-      "DELETE /v1/audiences/list%2Fa",
-      "POST /v1/audiences/uploads",
+      "GET /platform/audiences",
+      "POST /platform/audiences",
+      "GET /platform/audiences/list%2Fa",
+      "DELETE /platform/audiences/list%2Fa",
+      "POST /platform/audiences/uploads",
     ]);
     expect(requests[1]?.body).toBe('{"name":"August"}');
     expect(requests[1]?.headers["idempotency-key"]).toBe("audience-1");
@@ -164,11 +164,11 @@ describe("Client campaigns", () => {
     await client.campaigns.delete("campaign/a");
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/campaigns?projectId=project%2Fa&projectSlug=support",
-      "POST /v1/campaigns",
-      "GET /v1/campaigns/campaign%2Fa",
-      "PATCH /v1/campaigns/campaign%2Fa",
-      "DELETE /v1/campaigns/campaign%2Fa",
+      "GET /platform/campaigns?projectId=project%2Fa&projectSlug=support",
+      "POST /platform/campaigns",
+      "GET /platform/campaigns/campaign%2Fa",
+      "PATCH /platform/campaigns/campaign%2Fa",
+      "DELETE /platform/campaigns/campaign%2Fa",
     ]);
     expect(requests[1]?.body).toBe('{"projectId":"project/a","name":"August"}');
     expect(requests[1]?.headers["idempotency-key"]).toBe("campaign-1");
@@ -189,16 +189,16 @@ describe("Client campaigns", () => {
     await client.campaigns.recipients("campaign/a");
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "POST /v1/campaigns/campaign%2Fa/launch",
-      "POST /v1/campaigns/campaign%2Fa/pause",
-      "POST /v1/campaigns/campaign%2Fa/resume",
-      "POST /v1/campaigns/campaign%2Fa/stop",
-      "POST /v1/campaigns/campaign%2Fa/archive",
-      "POST /v1/campaigns/campaign%2Fa/duplicate",
-      "POST /v1/campaigns/campaign%2Fa/requeue",
-      "GET /v1/campaigns/campaign%2Fa/analytics",
-      "GET /v1/campaigns/campaign%2Fa/events",
-      "GET /v1/campaigns/campaign%2Fa/recipients",
+      "POST /platform/campaigns/campaign%2Fa/launch",
+      "POST /platform/campaigns/campaign%2Fa/pause",
+      "POST /platform/campaigns/campaign%2Fa/resume",
+      "POST /platform/campaigns/campaign%2Fa/stop",
+      "POST /platform/campaigns/campaign%2Fa/archive",
+      "POST /platform/campaigns/campaign%2Fa/duplicate",
+      "POST /platform/campaigns/campaign%2Fa/requeue",
+      "GET /platform/campaigns/campaign%2Fa/analytics",
+      "GET /platform/campaigns/campaign%2Fa/events",
+      "GET /platform/campaigns/campaign%2Fa/recipients",
     ]);
     expect(requests.slice(0, 7).map(({ body }) => body)).toEqual([
       '{"reason":"launch"}',

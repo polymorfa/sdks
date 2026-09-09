@@ -140,7 +140,7 @@ describe("MessagingClient quick replies", () => {
     expect(listed.metadata.requestId).toBe("req_quick_replies");
     expect(requests[0]).toMatchObject({
       method: "GET",
-      path: "/api/support%2Feu/business/quick-replies",
+      path: "/messaging/support%2Feu/business/quick-replies",
     });
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
     expect(requests[0]?.headers["x-client-context"]).toBe("cli");
@@ -191,17 +191,17 @@ describe("MessagingClient quick replies", () => {
     ).toEqual([
       {
         method: "POST",
-        path: "/api/support%2Feu/business/quick-replies",
+        path: "/messaging/support%2Feu/business/quick-replies",
         body: '{"shortcut":"hours","message":"We are open until 18:00."}',
       },
       {
         method: "PUT",
-        path: "/api/support%2Feu/business/quick-replies/1700%2F000000",
+        path: "/messaging/support%2Feu/business/quick-replies/1700%2F000000",
         body: '{"shortcut":"hours","message":"We are open until 18:00.","keywords":["open","hours"],"count":7}',
       },
       {
         method: "DELETE",
-        path: "/api/support%2Feu/business/quick-replies/1700%2F000000",
+        path: "/messaging/support%2Feu/business/quick-replies/1700%2F000000",
         body: "",
       },
     ]);

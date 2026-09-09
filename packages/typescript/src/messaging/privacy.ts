@@ -50,5 +50,5 @@ export class PrivacyResource {
 }
 
 function privacyPath(session: string): string {
-  return `/api/${encodeURIComponent(session)}/privacy`;
+  return `/messaging/${encodeURIComponent(session)}/privacy`;
 }

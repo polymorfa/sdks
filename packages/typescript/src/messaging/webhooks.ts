@@ -18,7 +18,7 @@ export class WebhooksResource {
   ): Promise<ApiResponse<ListWebhooksResponse>> {
     return this.transport.request({
       method: "GET",
-      path: "/api/webhooks",
+      path: "/messaging/webhooks",
       ...options,
     });
   }
@@ -29,7 +29,7 @@ export class WebhooksResource {
   ): Promise<ApiResponse<CreateWebhookResponse>> {
     return this.transport.request({
       method: "POST",
-      path: "/api/webhooks",
+      path: "/messaging/webhooks",
       body,
       ...options,
     });
@@ -72,5 +72,5 @@ export class WebhooksResource {
 }
 
 function webhookPath(id: string): string {
-  return `/api/webhooks/${encodeURIComponent(id)}`;
+  return `/messaging/webhooks/${encodeURIComponent(id)}`;
 }

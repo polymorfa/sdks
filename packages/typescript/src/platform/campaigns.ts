@@ -20,7 +20,7 @@ export class CampaignsResource {
   ): CampaignResponse {
     return this.transport.request({
       method: "GET",
-      path: "/v1/campaigns",
+      path: "/platform/campaigns",
       query: {
         projectId: params.projectId,
         ...(params.projectSlug === undefined
@@ -35,7 +35,7 @@ export class CampaignsResource {
     body?: PlatformPayload,
     options: RequestOptions = {},
   ): CampaignResponse {
-    return this.write("POST", "/v1/campaigns", body, options);
+    return this.write("POST", "/platform/campaigns", body, options);
   }
 
   retrieve(campaignId: string, options: RequestOptions = {}): CampaignResponse {
@@ -178,5 +178,5 @@ export class CampaignsResource {
 }
 
 function campaignPath(campaignId: string): string {
-  return `/v1/campaigns/${encodeURIComponent(campaignId)}`;
+  return `/platform/campaigns/${encodeURIComponent(campaignId)}`;
 }

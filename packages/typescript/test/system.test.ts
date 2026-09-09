@@ -14,13 +14,13 @@ describe("SystemClient", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async (input) => {
       const path = new URL(String(input)).pathname;
       const data: Record<string, unknown> = {
-        "/api/info/status": {
+        "/messaging/info/status": {
           status: "ready",
           uptime: "2h",
           version: "1.2.3",
           env: "staging",
         },
-        "/api/info/version": {
+        "/messaging/info/version": {
           version: "1.2.3",
           buildTime: "2026-09-08T00:00:00Z",
           env: "staging",
@@ -51,7 +51,7 @@ describe("SystemClient", () => {
     expectTypeOf(ping).toEqualTypeOf<ApiResponse<PingResponse>>();
     expect(
       fetch.mock.calls.map(([input]) => new URL(String(input)).pathname),
-    ).toEqual(["/api/info/status", "/api/info/version", "/health", "/ping"]);
+    ).toEqual(["/messaging/info/status", "/messaging/info/version", "/health", "/ping"]);
     for (const [, init] of fetch.mock.calls) {
       expect(new Headers(init?.headers).has("authorization")).toBe(false);
     }

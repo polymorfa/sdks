@@ -14,7 +14,7 @@ export class SecurityIncidentsResource {
   ): Promise<ApiResponse<DataEnvelope<readonly SecurityIncident[]>>> {
     return this.transport.request({
       method: "GET",
-      path: "/v1/incidents",
+      path: "/platform/incidents",
       ...options,
     });
   }
@@ -25,7 +25,7 @@ export class SecurityIncidentsResource {
   ): Promise<ApiResponse<DataEnvelope<SecurityIncidentAcknowledgement>>> {
     return this.transport.request({
       method: "POST",
-      path: `/v1/incidents/${encodeURIComponent(incidentId)}/acknowledge`,
+      path: `/platform/incidents/${encodeURIComponent(incidentId)}/acknowledge`,
       ...options,
     });
   }

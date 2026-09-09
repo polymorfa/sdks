@@ -82,7 +82,7 @@ export class ChatsResource {
 }
 
 function chatPath(session: string, chatId: string): string {
-  return `/api/${encodeURIComponent(session)}/chats/${encodeURIComponent(chatId)}`;
+  return `/messaging/${encodeURIComponent(session)}/chats/${encodeURIComponent(chatId)}`;
 }
 
 function chatMessagePath(

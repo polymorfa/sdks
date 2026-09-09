@@ -1379,7 +1379,7 @@ export type ClientAction =
   | "voip_answer"
   | "voip_signal";
 
-/** Rules as returned by `GET /api/sessions/{session}/client-rules`. */
+/** Rules as returned by `GET /messaging/sessions/{session}/client-rules`. */
 export interface ClientRules {
   readonly recipientMode: ClientRecipientMode | "";
   /** Comma-separated {@link ClientAction} list. */
@@ -1418,7 +1418,7 @@ export interface SetClientRulesRequest {
 }
 
 /**
- * Body for `POST /api/voip/token`: the same claims as
+ * Body for `POST /messaging/voip/token`: the same claims as
  * {@link MintClientTokenRequest}, minting the browser token that
  * `@polymorfa/browser` call signaling runs on.
  */
@@ -1437,7 +1437,7 @@ export interface VoipTokenValue {
 export type VoipTokenResponse = SuccessEnvelope<VoipTokenValue>;
 
 /**
- * Body for `POST /api/voip/ws-ticket`. Required here because this client
+ * Body for `POST /messaging/voip/ws-ticket`. Required here because this client
  * authenticates with a server key, and the route answers 400 when one of
  * those does not name a session. (The wire contract leaves it optional for
  * client tokens, which are already bound to theirs.)
@@ -1455,7 +1455,7 @@ export interface VoipSocketTicketValue {
 }
 export type VoipSocketTicketResponse = SuccessEnvelope<VoipSocketTicketValue>;
 
-/** Body for `POST /api/voip/calls/{id}/agent-token`. */
+/** Body for `POST /messaging/voip/calls/{id}/agent-token`. */
 export interface VoipAgentTokenRequest {
   /** Ticket lifetime in seconds (default 300, max 3600). */
   readonly ttlSeconds?: number;

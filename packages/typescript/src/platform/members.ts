@@ -10,7 +10,7 @@ export class MembersResource {
   ): Promise<ApiResponse<DataEnvelope<readonly OrganizationMember[]>>> {
     return this.transport.request({
       method: "GET",
-      path: "/v1/members",
+      path: "/platform/members",
       ...options,
     });
   }

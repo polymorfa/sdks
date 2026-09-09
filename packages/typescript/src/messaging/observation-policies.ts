@@ -62,9 +62,9 @@ export class ObservationPoliciesResource {
 }
 
 function projectPolicyPath(projectId: string): string {
-  return `/api/projects/${encodeURIComponent(projectId)}/observation-policy`;
+  return `/messaging/projects/${encodeURIComponent(projectId)}/observation-policy`;
 }
 
 function sessionPolicyPath(session: string): string {
-  return `/api/${encodeURIComponent(session)}/observation-policy`;
+  return `/messaging/${encodeURIComponent(session)}/observation-policy`;
 }

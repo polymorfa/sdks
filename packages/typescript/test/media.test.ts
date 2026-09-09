@@ -88,7 +88,7 @@ describe("MessagingClient media", () => {
     expect(downloaded.metadata.headers["content-type"]).toBe("image/jpeg");
     expect(requests[0]).toMatchObject({
       method: "GET",
-      path: "/api/media/media%2Fid",
+      path: "/messaging/media/media%2Fid",
     });
     expect(requests[0]?.headers.accept).toBe("application/octet-stream, */*");
     expect(requests[0]?.headers["x-client-context"]).toBe("cli");
@@ -141,10 +141,10 @@ describe("MessagingClient media", () => {
     expect(
       requests.map(({ method, path, body }) => ({ method, path, body })),
     ).toEqual([
-      { method: "GET", path: "/api/media/media%2Fid/info", body: "" },
+      { method: "GET", path: "/messaging/media/media%2Fid/info", body: "" },
       {
         method: "POST",
-        path: "/api/media/media%2Fid/download-and-save",
+        path: "/messaging/media/media%2Fid/download-and-save",
         body: "",
       },
     ]);

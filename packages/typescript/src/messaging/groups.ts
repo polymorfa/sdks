@@ -320,7 +320,7 @@ export class GroupsResource {
 }
 
 function groupsPath(session: string): string {
-  return `/api/${encodeURIComponent(session)}/groups`;
+  return `/messaging/${encodeURIComponent(session)}/groups`;
 }
 
 function groupPath(session: string, groupId: string): string {

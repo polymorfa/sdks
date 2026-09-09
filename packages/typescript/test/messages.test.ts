@@ -208,7 +208,7 @@ describe("MessagingClient message routes", () => {
 
     expect(requests).toHaveLength(8);
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual(
-      Array(8).fill("POST /api/support%2Feu/messages/send"),
+      Array(8).fill("POST /messaging/support%2Feu/messages/send"),
     );
     expect(requests[0]?.body).toBe(JSON.stringify(sends[0]));
     expect(requests[1]?.body).toBe(JSON.stringify(sends[1]));
@@ -255,12 +255,12 @@ describe("MessagingClient message routes", () => {
     );
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "POST /api/support%2Feu/messages/seen",
-      "POST /api/support%2Feu/messages/typing",
-      "POST /api/support%2Feu/messages/react",
-      "POST /api/support%2Feu/messages/star",
-      "PUT /api/support%2Feu/chats/chat%2F1/messages/message%2F1",
-      "DELETE /api/support%2Feu/chats/chat%2F1/messages/message%2F1",
+      "POST /messaging/support%2Feu/messages/seen",
+      "POST /messaging/support%2Feu/messages/typing",
+      "POST /messaging/support%2Feu/messages/react",
+      "POST /messaging/support%2Feu/messages/star",
+      "PUT /messaging/support%2Feu/chats/chat%2F1/messages/message%2F1",
+      "DELETE /messaging/support%2Feu/chats/chat%2F1/messages/message%2F1",
     ]);
     expect(requests.map(({ headers }) => headers["idempotency-key"])).toEqual(
       Array(6).fill("message-action"),

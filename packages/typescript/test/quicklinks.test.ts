@@ -100,9 +100,9 @@ describe("MessagingClient.quickLinks", () => {
     expect(
       server.requests.map(({ method, path }) => `${method} ${path}`),
     ).toEqual([
-      "POST /api/quicklinks",
-      "GET /api/quicklinks/ql%2F123",
-      "DELETE /api/quicklinks/ql%2F123",
+      "POST /messaging/quicklinks",
+      "GET /messaging/quicklinks/ql%2F123",
+      "DELETE /messaging/quicklinks/ql%2F123",
     ]);
     expect(server.requests[0]?.body).toContain('"expiresInSeconds":900');
     expect(server.requests[0]?.headers["idempotency-key"]).toBe(

@@ -12,7 +12,7 @@ export class LidsResource {
   ): Promise<ApiResponse<ResolveLidsResponse>> {
     return this.transport.request({
       method: "GET",
-      path: `/api/${encodeURIComponent(session)}/lids/resolve`,
+      path: `/messaging/${encodeURIComponent(session)}/identities/resolve`,
       query: {
         phoneNumber: params.phoneNumber,
         id: params.id,

@@ -22,7 +22,7 @@ export class SessionsResource {
   ): Promise<ApiResponse<ListSessionsResponse>> {
     return this.transport.request({
       method: "GET",
-      path: "/api/sessions",
+      path: "/messaging/sessions",
       ...options,
     });
   }
@@ -33,7 +33,7 @@ export class SessionsResource {
   ): Promise<ApiResponse<CreateSessionResponse>> {
     return this.transport.request({
       method: "POST",
-      path: "/api/sessions",
+      path: "/messaging/sessions",
       body,
       ...options,
     });
@@ -120,7 +120,7 @@ export class SessionsResource {
   ): Promise<ApiResponse<GetQRCodeResponse>> {
     return this.transport.request({
       method: "GET",
-      path: `/api/${encodeURIComponent(session)}/pair/qr`,
+      path: `/messaging/${encodeURIComponent(session)}/pair/qr`,
       query: { format: "json" },
       ...options,
     });
@@ -134,7 +134,7 @@ export class SessionsResource {
   ): Promise<ApiResponse<RequestPairCodeResponse>> {
     return this.transport.request({
       method: "POST",
-      path: `/api/${encodeURIComponent(session)}/pair/code`,
+      path: `/messaging/${encodeURIComponent(session)}/pair/code`,
       body,
       ...options,
     });
@@ -154,5 +154,5 @@ export class SessionsResource {
 }
 
 function sessionPath(session: string): string {
-  return `/api/sessions/${encodeURIComponent(session)}`;
+  return `/messaging/sessions/${encodeURIComponent(session)}`;
 }

@@ -131,7 +131,7 @@ export class MessagingCampaignsResource {
 }
 
 function campaignsPath(projectSlug: string): string {
-  return `/api/projects/${encodeURIComponent(projectSlug)}/campaigns`;
+  return `/messaging/projects/${encodeURIComponent(projectSlug)}/campaigns`;
 }
 
 function campaignPath(projectSlug: string, campaignId: string): string {

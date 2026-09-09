@@ -11,7 +11,7 @@ export class OperationsResource {
   ): Promise<ApiResponse<GetOperationResponse>> {
     return this.transport.request({
       method: "GET",
-      path: `/api/operations/${encodeURIComponent(operationId)}`,
+      path: `/messaging/operations/${encodeURIComponent(operationId)}`,
       ...options,
     });
   }

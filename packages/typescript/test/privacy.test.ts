@@ -135,7 +135,7 @@ describe("MessagingClient privacy", () => {
     expect(result.data).toEqual({ success: true, data: settings });
     expect(result.metadata.requestId).toBe("req_privacy");
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /api/support%2Feu/privacy",
+      "GET /messaging/support%2Feu/privacy",
     ]);
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
     expect(requests[0]?.headers["x-cli-command"]).toBe("privacy view");
@@ -169,12 +169,12 @@ describe("MessagingClient privacy", () => {
     ).toEqual([
       {
         method: "PUT",
-        path: "/api/support%2Feu/privacy/defense",
+        path: "/messaging/support%2Feu/privacy/defense",
         body: '{"value":"off"}',
       },
       {
         method: "PUT",
-        path: "/api/support%2Feu/privacy/disappearing/default",
+        path: "/messaging/support%2Feu/privacy/disappearing/default",
         body: '{"durationSeconds":0}',
       },
     ]);

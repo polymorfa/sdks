@@ -50,7 +50,7 @@ export class CustomersResource {
   ): Promise<ApiResponse<CustomerListEnvelope>> {
     return this.transport.request({
       method: "GET",
-      path: "/v1/customers",
+      path: "/platform/customers",
       query: {
         projectId: params.projectId,
         ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
@@ -77,7 +77,7 @@ export class CustomersResource {
   ): Promise<ApiResponse<DataEnvelope<Customer>>> {
     return this.transport.request({
       method: "POST",
-      path: "/v1/customers",
+      path: "/platform/customers",
       body,
       ...options,
     });
@@ -224,9 +224,9 @@ export class CustomersResource {
 }
 
 function customerPath(customerId: string): string {
-  return `/v1/customers/${encodeURIComponent(customerId)}`;
+  return `/platform/customers/${encodeURIComponent(customerId)}`;
 }
 
 function projectCustomersPath(projectId: string): string {
-  return `/v1/projects/${encodeURIComponent(projectId)}/customers`;
+  return `/platform/projects/${encodeURIComponent(projectId)}/customers`;
 }

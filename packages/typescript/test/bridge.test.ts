@@ -36,7 +36,7 @@ describe("BridgeClient", () => {
     expect(response.data).toEqual(route);
     expect(fetch).toHaveBeenCalledTimes(1);
     const [url, init] = fetch.mock.calls[0]!;
-    expect(new URL(String(url)).pathname).toBe("/v1/bridge/route");
+    expect(new URL(String(url)).pathname).toBe("/messaging/bridge/route");
     expect(new Headers(init?.headers).get("authorization")).toBe(
       `Bearer ${PROJECT_TOKEN}`,
     );

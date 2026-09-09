@@ -86,8 +86,8 @@ describe("Client ownership", () => {
     await client.events.retrieve("event/org");
     await project.events.retrieve("event/project");
     expect(requests.map(({ path }) => path)).toEqual([
-      "/v1/events/event%2Forg",
-      "/v1/projects/project%2Fone/events/event%2Fproject",
+      "/platform/events/event%2Forg",
+      "/platform/projects/project%2Fone/events/event%2Fproject",
     ]);
   });
 
@@ -195,13 +195,13 @@ describe("project raw confinement", () => {
   it("prefixes safe relative paths and rejects escape attempts before fetch", async () => {
     const { client, requests } = await testClient("project/a");
     await client.raw.request({ method: "GET", path: "/custom" });
-    expect(requests[0]?.path).toBe("/v1/projects/project%2Fa/custom");
+    expect(requests[0]?.path).toBe("/platform/projects/project%2Fa/custom");
 
     for (const path of [
       "https://evil.test/x",
       "//evil.test/x",
       "/../events",
-      "/v1/projects/project_2/events",
+      "/platform/projects/project_2/events",
       "/\\evil.test/x",
     ]) {
       await expect(
@@ -237,11 +237,11 @@ describe("durable developer resources", () => {
     });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/projects/project%2Fa/events?type=message.received&limit=10",
-      "POST /v1/projects/project%2Fa/events/event%2Fa/replays",
-      "GET /v1/projects/project%2Fa/webhook-deliveries/delivery%2Fa/attempts/attempt%2Fa",
-      "GET /v1/projects/project%2Fa/operations/operation%2Fa/transitions?afterSequence=4",
-      "POST /v1/projects/project%2Fa/operations/operation%2Fa/cancel",
+      "GET /platform/projects/project%2Fa/events?type=message.received&limit=10",
+      "POST /platform/projects/project%2Fa/events/event%2Fa/replays",
+      "GET /platform/projects/project%2Fa/webhook-deliveries/delivery%2Fa/attempts/attempt%2Fa",
+      "GET /platform/projects/project%2Fa/operations/operation%2Fa/transitions?afterSequence=4",
+      "POST /platform/projects/project%2Fa/operations/operation%2Fa/cancel",
     ]);
     expect(requests[1]?.body).toBe('{"webhookId":"webhook/a"}');
     expect(requests[1]?.headers["idempotency-key"]).toBe("replay-1");
@@ -273,10 +273,10 @@ describe("QuickLink settings", () => {
     );
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/quicklink",
-      "GET /v1/quicklink?projectId=project%2Fa",
-      "PUT /v1/quicklink",
-      "PUT /v1/quicklink",
+      "GET /platform/quicklink",
+      "GET /platform/quicklink?projectId=project%2Fa",
+      "PUT /platform/quicklink",
+      "PUT /platform/quicklink",
     ]);
     expect(requests[0]?.headers["polymorfa-version"]).toBe("1.0.0");
     expect(requests[2]?.body).toBe(

@@ -138,65 +138,65 @@ describe("MessagingClient channels", () => {
     expect(
       requests.map(({ method, path, body }) => ({ method, path, body })),
     ).toEqual([
-      { method: "GET", path: "/api/support%2Feu/channels", body: "" },
+      { method: "GET", path: "/messaging/support%2Feu/channels", body: "" },
       {
         method: "POST",
-        path: "/api/support%2Feu/channels",
+        path: "/messaging/support%2Feu/channels",
         body: '{"name":"Product updates","description":"New releases","picture":"https://cdn.example/channel.jpg"}',
       },
       {
         method: "GET",
-        path: "/api/support%2Feu/channels/120363%2F7%40newsletter",
+        path: "/messaging/support%2Feu/channels/120363%2F7%40newsletter",
         body: "",
       },
       {
         method: "DELETE",
-        path: "/api/support%2Feu/channels/120363%2F7%40newsletter",
+        path: "/messaging/support%2Feu/channels/120363%2F7%40newsletter",
         body: "",
       },
       {
         method: "GET",
-        path: "/api/support%2Feu/channels/120363%2F7%40newsletter/messages?count=25&before=91",
+        path: "/messaging/support%2Feu/channels/120363%2F7%40newsletter/messages?count=25&before=91",
         body: "",
       },
       {
         method: "GET",
-        path: "/api/support%2Feu/channels/120363%2F7%40newsletter/message-updates?count=10&since=1787212800&after=92",
+        path: "/messaging/support%2Feu/channels/120363%2F7%40newsletter/message-updates?count=10&since=1787212800&after=92",
         body: "",
       },
       {
         method: "POST",
-        path: "/api/support%2Feu/channels/120363%2F7%40newsletter/messages/93/viewed",
+        path: "/messaging/support%2Feu/channels/120363%2F7%40newsletter/messages/93/viewed",
         body: "",
       },
       {
         method: "POST",
-        path: "/api/support%2Feu/channels/120363%2F7%40newsletter/messages/94/reaction",
+        path: "/messaging/support%2Feu/channels/120363%2F7%40newsletter/messages/94/reaction",
         body: '{"reaction":"🔥"}',
       },
       {
         method: "POST",
-        path: "/api/support%2Feu/channels/120363%2F7%40newsletter/live-updates",
+        path: "/messaging/support%2Feu/channels/120363%2F7%40newsletter/live-updates",
         body: "",
       },
       {
         method: "POST",
-        path: "/api/support%2Feu/channels/120363%2F7%40newsletter/follow",
+        path: "/messaging/support%2Feu/channels/120363%2F7%40newsletter/follow",
         body: "",
       },
       {
         method: "POST",
-        path: "/api/support%2Feu/channels/120363%2F7%40newsletter/unfollow",
+        path: "/messaging/support%2Feu/channels/120363%2F7%40newsletter/unfollow",
         body: "",
       },
       {
         method: "POST",
-        path: "/api/support%2Feu/channels/120363%2F7%40newsletter/mute",
+        path: "/messaging/support%2Feu/channels/120363%2F7%40newsletter/mute",
         body: "",
       },
       {
         method: "POST",
-        path: "/api/support%2Feu/channels/120363%2F7%40newsletter/unmute",
+        path: "/messaging/support%2Feu/channels/120363%2F7%40newsletter/unmute",
         body: "",
       },
     ]);

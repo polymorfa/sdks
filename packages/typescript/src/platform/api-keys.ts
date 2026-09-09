@@ -10,7 +10,7 @@ export class ApiKeysResource {
   ): Promise<ApiResponse<DataEnvelope<readonly ApiKey[]>>> {
     return this.transport.request({
       method: "GET",
-      path: "/v1/keys",
+      path: "/platform/keys",
       ...options,
     });
   }
@@ -21,7 +21,7 @@ export class ApiKeysResource {
   ): Promise<ApiResponse<DataEnvelope<ApiKeyDeactivation>>> {
     return this.transport.request({
       method: "DELETE",
-      path: `/v1/keys/${encodeURIComponent(keyId)}`,
+      path: `/platform/keys/${encodeURIComponent(keyId)}`,
       ...options,
     });
   }

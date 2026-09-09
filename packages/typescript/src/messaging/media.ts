@@ -43,5 +43,5 @@ export class MessagingMediaResource {
 }
 
 function mediaPath(mediaId: string): string {
-  return `/api/media/${encodeURIComponent(mediaId)}`;
+  return `/messaging/media/${encodeURIComponent(mediaId)}`;
 }

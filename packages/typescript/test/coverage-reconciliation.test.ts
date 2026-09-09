@@ -178,7 +178,7 @@ describe("reconciled coverage evidence", () => {
     expect(fetch.mock.calls).toHaveLength(2);
     for (const call of fetch.mock.calls) {
       const [url] = call as unknown as [string];
-      expect(new URL(url).pathname).toBe("/v1/quicklink");
+      expect(new URL(url).pathname).toBe("/platform/quicklink");
     }
     expect(entry("getQuickLinkSettings").typescript).toEqual({
       status: "covered",

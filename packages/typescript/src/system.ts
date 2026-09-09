@@ -52,7 +52,7 @@ export class SystemClient {
   status(options: RequestOptions = {}): Promise<ApiResponse<StatusResponse>> {
     return this.#transport.request({
       method: "GET",
-      path: "/api/info/status",
+      path: "/messaging/info/status",
       ...options,
     });
   }
@@ -60,7 +60,7 @@ export class SystemClient {
   version(options: RequestOptions = {}): Promise<ApiResponse<VersionResponse>> {
     return this.#transport.request({
       method: "GET",
-      path: "/api/info/version",
+      path: "/messaging/info/version",
       ...options,
     });
   }

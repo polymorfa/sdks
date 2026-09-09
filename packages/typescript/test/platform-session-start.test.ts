@@ -37,7 +37,7 @@ describe("Client.sessions.start", () => {
     });
     const [url, init] = fetch.mock.calls[0]!;
     expect(new URL(String(url)).pathname).toBe(
-      "/v1/sessions/support%2Fus/start",
+      "/platform/sessions/support%2Fus/start",
     );
     expect(init?.method).toBe("POST");
     expect(JSON.parse(String(init?.body))).toEqual({ projectId: "project-a" });

@@ -128,22 +128,22 @@ describe("MessagingClient presence", () => {
     ).toEqual([
       {
         method: "POST",
-        path: "/api/support%2Feu/presence",
+        path: "/messaging/support%2Feu/presence",
         body: '{"presence":"available"}',
       },
       {
         method: "GET",
-        path: "/api/support%2Feu/presence",
+        path: "/messaging/support%2Feu/presence",
         body: "",
       },
       {
         method: "GET",
-        path: "/api/support%2Feu/presence/1555%2F7%40s.whatsapp.net",
+        path: "/messaging/support%2Feu/presence/1555%2F7%40s.whatsapp.net",
         body: "",
       },
       {
         method: "POST",
-        path: "/api/support%2Feu/presence/1555%2F7%40s.whatsapp.net/subscribe",
+        path: "/messaging/support%2Feu/presence/1555%2F7%40s.whatsapp.net/subscribe",
         body: "",
       },
     ]);

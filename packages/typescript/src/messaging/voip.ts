@@ -11,7 +11,7 @@ import type {
 
 /**
  * Server-side calls support: minting the short-lived client token that
- * `@polymorfa/browser` uses for the `/api/voip/calls/{id}` signaling paths,
+ * `@polymorfa/browser` uses for the `/messaging/voip/calls/{id}` signaling paths,
  * socket tickets for a server-driven calls WebSocket, and per-call agent
  * tickets for voice agents. The session's client rules must grant
  * `voip_place`, `voip_answer`, and `voip_signal` to browsers.
@@ -25,7 +25,7 @@ export class VoipResource {
   ): Promise<ApiResponse<VoipTokenResponse>> {
     return this.transport.request({
       method: "POST",
-      path: "/api/voip/token",
+      path: "/messaging/voip/token",
       body,
       ...options,
     });
@@ -38,7 +38,7 @@ export class VoipResource {
   ): Promise<ApiResponse<VoipSocketTicketResponse>> {
     return this.transport.request({
       method: "POST",
-      path: "/api/voip/ws-ticket",
+      path: "/messaging/voip/ws-ticket",
       body,
       ...options,
     });
@@ -52,7 +52,7 @@ export class VoipResource {
   ): Promise<ApiResponse<VoipAgentTokenResponse>> {
     return this.transport.request({
       method: "POST",
-      path: `/api/voip/calls/${encodeURIComponent(callId)}/agent-token`,
+      path: `/messaging/voip/calls/${encodeURIComponent(callId)}/agent-token`,
       body,
       ...options,
     });

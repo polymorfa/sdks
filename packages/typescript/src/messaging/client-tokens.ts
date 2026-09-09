@@ -17,7 +17,7 @@ export class ClientTokensResource {
   ): Promise<ApiResponse<MintClientTokenResponse>> {
     return this.transport.request({
       method: "POST",
-      path: "/api/client-tokens",
+      path: "/messaging/client-tokens",
       body,
       ...options,
     });
@@ -60,5 +60,5 @@ export class ClientTokensResource {
 }
 
 function rulesPath(session: string): string {
-  return `/api/sessions/${encodeURIComponent(session)}/client-rules`;
+  return `/messaging/sessions/${encodeURIComponent(session)}/client-rules`;
 }

@@ -143,7 +143,7 @@ export class ContactsResource {
 }
 
 function contactsPath(session: string): string {
-  return `/api/${encodeURIComponent(session)}/contacts`;
+  return `/messaging/${encodeURIComponent(session)}/contacts`;
 }
 
 function contactPath(session: string, contactId: string): string {

@@ -118,40 +118,40 @@ describe("MessagingClient business", () => {
     expect(
       requests.map(({ method, path, body }) => ({ method, path, body })),
     ).toEqual([
-      { method: "GET", path: "/api/sales%2Feu/business/profile", body: "" },
+      { method: "GET", path: "/messaging/sales%2Feu/business/profile", body: "" },
       {
         method: "PATCH",
-        path: "/api/sales%2Feu/business/profile",
+        path: "/messaging/sales%2Feu/business/profile",
         body: '{"address":"12 Market Street","email":"care@example.com","description":"Tea shop","websites":["https://example.com"],"hours":{"timeZone":"Asia/Beirut","days":[{"dayOfWeek":"mon","mode":"specific_hours","openTime":540,"closeTime":1020}]}}',
       },
       {
         method: "PUT",
-        path: "/api/sales%2Feu/business/profile/cover-photo",
+        path: "/messaging/sales%2Feu/business/profile/cover-photo",
         body: '{"url":"https://cdn.example/cover.jpg"}',
       },
       {
         method: "DELETE",
-        path: "/api/sales%2Feu/business/profile/cover-photo/cover%2F100",
+        path: "/messaging/sales%2Feu/business/profile/cover-photo/cover%2F100",
         body: "",
       },
       {
         method: "GET",
-        path: "/api/sales%2Feu/business/compliance",
+        path: "/messaging/sales%2Feu/business/compliance",
         body: "",
       },
       {
         method: "PUT",
-        path: "/api/sales%2Feu/business/compliance",
+        path: "/messaging/sales%2Feu/business/compliance",
         body: JSON.stringify(compliance),
       },
       {
         method: "GET",
-        path: "/api/sales%2Feu/business/linked-accounts",
+        path: "/messaging/sales%2Feu/business/linked-accounts",
         body: "",
       },
       {
         method: "GET",
-        path: "/api/sales%2Feu/business/eligibility",
+        path: "/messaging/sales%2Feu/business/eligibility",
         body: "",
       },
     ]);
@@ -216,47 +216,47 @@ describe("MessagingClient business", () => {
     ).toEqual([
       {
         method: "GET",
-        path: "/api/sales%2Feu/business/catalog?jid=15551234567%40s.whatsapp.net&after=next+page&limit=25&width=640&height=480",
+        path: "/messaging/sales%2Feu/business/catalog?jid=15551234567%40s.whatsapp.net&after=next+page&limit=25&width=640&height=480",
         body: "",
       },
       {
         method: "POST",
-        path: "/api/sales%2Feu/business/catalog",
+        path: "/messaging/sales%2Feu/business/catalog",
         body: "",
       },
       {
         method: "PATCH",
-        path: "/api/sales%2Feu/business/catalog/cart",
+        path: "/messaging/sales%2Feu/business/catalog/cart",
         body: '{"enabled":false}',
       },
       {
         method: "GET",
-        path: "/api/sales%2Feu/business/products/tea%2F1?jid=15551234567%40s.whatsapp.net",
+        path: "/messaging/sales%2Feu/business/products/tea%2F1?jid=15551234567%40s.whatsapp.net",
         body: "",
       },
       {
         method: "POST",
-        path: "/api/sales%2Feu/business/products",
+        path: "/messaging/sales%2Feu/business/products",
         body: '{"name":"Mint tea","currency":"USD","price":"12000","images":[{"url":"https://cdn.example/tea.jpg"}]}',
       },
       {
         method: "PUT",
-        path: "/api/sales%2Feu/business/products/tea%2F1",
+        path: "/messaging/sales%2Feu/business/products/tea%2F1",
         body: '{"name":"Mint tea","hidden":true,"images":[{"base64":"aW1hZ2U="},{"mediaUrl":"https://lookaside.facebook.com/tea.jpg"}]}',
       },
       {
         method: "DELETE",
-        path: "/api/sales%2Feu/business/products/tea%2F1",
+        path: "/messaging/sales%2Feu/business/products/tea%2F1",
         body: "",
       },
       {
         method: "PATCH",
-        path: "/api/sales%2Feu/business/products/tea%2F1/visibility",
+        path: "/messaging/sales%2Feu/business/products/tea%2F1/visibility",
         body: '{"hidden":false}',
       },
       {
         method: "POST",
-        path: "/api/sales%2Feu/business/products/tea%2F1/appeal",
+        path: "/messaging/sales%2Feu/business/products/tea%2F1/appeal",
         body: '{"reason":"Incorrect rejection"}',
       },
     ]);
@@ -325,42 +325,42 @@ describe("MessagingClient business", () => {
     ).toEqual([
       {
         method: "GET",
-        path: "/api/sales%2Feu/business/collections?jid=15551234567%40lid&after=collections+next&collectionLimit=10&itemLimit=50&width=512&height=512",
+        path: "/messaging/sales%2Feu/business/collections?jid=15551234567%40lid&after=collections+next&collectionLimit=10&itemLimit=50&width=512&height=512",
         body: "",
       },
       {
         method: "GET",
-        path: "/api/sales%2Feu/business/collections/summer%2F1?jid=15551234567%40lid&after=items+next&limit=20&width=320&height=240",
+        path: "/messaging/sales%2Feu/business/collections/summer%2F1?jid=15551234567%40lid&after=items+next&limit=20&width=320&height=240",
         body: "",
       },
       {
         method: "POST",
-        path: "/api/sales%2Feu/business/collections",
+        path: "/messaging/sales%2Feu/business/collections",
         body: '{"name":"Summer","productIds":["tea/1"]}',
       },
       {
         method: "PATCH",
-        path: "/api/sales%2Feu/business/collections/summer%2F1",
+        path: "/messaging/sales%2Feu/business/collections/summer%2F1",
         body: '{"name":"Cold drinks","addProductIds":["coffee/1"],"removeProductIds":["tea/1"]}',
       },
       {
         method: "DELETE",
-        path: "/api/sales%2Feu/business/collections/summer%2F1",
+        path: "/messaging/sales%2Feu/business/collections/summer%2F1",
         body: "",
       },
       {
         method: "POST",
-        path: "/api/sales%2Feu/business/collections/reorder",
+        path: "/messaging/sales%2Feu/business/collections/reorder",
         body: '{"moves":[{"collectionId":"summer/1","fromIndex":2,"toIndex":0}]}',
       },
       {
         method: "POST",
-        path: "/api/sales%2Feu/business/collections/summer%2F1/appeal",
+        path: "/messaging/sales%2Feu/business/collections/summer%2F1/appeal",
         body: '{"reason":"Products comply"}',
       },
       {
         method: "POST",
-        path: "/api/sales%2Feu/business/orders/order%2F1/lookup",
+        path: "/messaging/sales%2Feu/business/orders/order%2F1/lookup",
         body: '{"token":"opaque order token"}',
       },
     ]);
