@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -7,7 +8,12 @@ import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import { HttpCallsApi } from "../../calls/src/index.js";
 import { BrowserMessagingClient } from "../../browser/src/index.js";
-import { MessagingClient, PlatformClient } from "../src/index.js";
+import {
+  BridgeClient,
+  Client,
+  MessagingClient,
+  SystemClient,
+} from "../src/index.js";
 
 const checker = fileURLToPath(
   new URL("../../../scripts/check-coverage.mjs", import.meta.url),
@@ -145,12 +151,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "8c244aab0e5626d101a2c8c4915287427f39e014",
+      sourceCommit: "6918c56135e28ba64557e344cb72889f1f517eb5",
       total: 402,
-      covered: 226,
+      covered: 274,
       partial: 0,
-      missing: 103,
-      excluded: 73,
+      missing: 0,
+      excluded: 128,
       changed: 0,
       resolutions: [],
     });
@@ -171,20 +177,20 @@ describe("coverage checker", () => {
     );
 
     expect(customerMappings).toEqual({
-      archiveCustomer: "PlatformClient.customers.archive",
-      createCustomer: "PlatformClient.customers.create",
-      createCustomerPairingLink: "PlatformClient.customers.createPairingLink",
-      enableCustomers: "PlatformClient.customers.enable",
-      getCustomer: "PlatformClient.customers.retrieve",
-      getCustomersStatus: "PlatformClient.customers.status",
-      listCustomerEvents: "PlatformClient.customers.listEvents",
-      listCustomerNumbers: "PlatformClient.customers.listNumbers",
-      listCustomerPairingLinks: "PlatformClient.customers.listPairingLinks",
-      listCustomers: "PlatformClient.customers.list",
-      restoreCustomer: "PlatformClient.customers.restore",
-      revokeCustomerPairingLink: "PlatformClient.customers.revokePairingLink",
-      transferCustomerNumber: "PlatformClient.customers.transferNumber",
-      updateCustomer: "PlatformClient.customers.update",
+      archiveCustomer: "Client.customers.archive",
+      createCustomer: "Client.customers.create",
+      createCustomerPairingLink: "Client.customers.createPairingLink",
+      enableCustomers: "Client.customers.enable",
+      getCustomer: "Client.customers.retrieve",
+      getCustomersStatus: "Client.customers.status",
+      listCustomerEvents: "Client.customers.listEvents",
+      listCustomerNumbers: "Client.customers.listNumbers",
+      listCustomerPairingLinks: "Client.customers.listPairingLinks",
+      listCustomers: "Client.customers.list",
+      restoreCustomer: "Client.customers.restore",
+      revokeCustomerPairingLink: "Client.customers.revokePairingLink",
+      transferCustomerNumber: "Client.customers.transferNumber",
+      updateCustomer: "Client.customers.update",
     });
   });
 
@@ -240,8 +246,8 @@ describe("coverage checker", () => {
     );
 
     expect(mappings).toEqual({
-      deleteSessions: "PlatformClient.sessions.deleteMany",
-      stopSessions: "PlatformClient.sessions.stopMany",
+      deleteSessions: "Client.sessions.deleteMany",
+      stopSessions: "Client.sessions.stopMany",
     });
   });
 
@@ -251,11 +257,28 @@ describe("coverage checker", () => {
         typescript: { status: string; method?: string };
       }>;
     };
+    const client = new Client({
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
+    });
+    const projectClient = client.project("project_coverage");
     const roots: Readonly<Record<string, unknown>> = {
       MessagingClient: new MessagingClient({
-        credential: { type: "apiKey", value: "pmfa_messaging" },
+        credential: {
+          type: "apiKey",
+          value: ORGANIZATION_API_KEY,
+        },
       }),
-      PlatformClient: new PlatformClient({ apiKey: "pmfa_platform" }),
+      Client: client,
+      SystemClient: new SystemClient(),
+      BridgeClient: new BridgeClient({
+        credential: {
+          type: "projectToken",
+          value: PROJECT_TOKEN,
+        },
+      }),
       HttpCallsApi: new HttpCallsApi({ apiKey: "pmfa_calls" }),
       BrowserMessagingClient: new BrowserMessagingClient({
         session: "coverage",
@@ -266,8 +289,11 @@ describe("coverage checker", () => {
     for (const operation of ledger.operations) {
       if (operation.typescript.status !== "covered") continue;
       const parts = operation.typescript.method?.split(".") ?? [];
-      let value: unknown = roots[parts[0] ?? ""];
-      for (const part of parts.slice(1)) {
+      const projectScoped = parts[1] === "project(projectId)";
+      let value: unknown = projectScoped
+        ? projectClient
+        : roots[parts[0] ?? ""];
+      for (const part of parts.slice(projectScoped ? 2 : 1)) {
         expect(value, operation.typescript.method).toBeTypeOf("object");
         value = (value as Readonly<Record<string, unknown>>)[part];
       }
@@ -557,43 +583,43 @@ describe("coverage checker", () => {
     expect(mappings).toMatchObject({
       deactivateApiKey: {
         status: "covered",
-        method: "PlatformClient.apiKeys.deactivate",
+        method: "Client.apiKeys.deactivate",
       },
       listApiKeys: {
         status: "covered",
-        method: "PlatformClient.apiKeys.list",
+        method: "Client.apiKeys.list",
       },
       listMembers: {
         status: "covered",
-        method: "PlatformClient.members.list",
+        method: "Client.members.list",
       },
       listAuditLogs: {
         status: "covered",
-        method: "PlatformClient.auditLogs.list",
+        method: "Client.auditLogs.list",
       },
       listSessionBans: {
         status: "covered",
-        method: "PlatformClient.sessionBans.list",
+        method: "Client.sessionBans.list",
       },
       listActiveSessionBans: {
         status: "covered",
-        method: "PlatformClient.sessionBans.listActive",
+        method: "Client.sessionBans.listActive",
       },
       listSecurityIncidents: {
         status: "covered",
-        method: "PlatformClient.securityIncidents.list",
+        method: "Client.securityIncidents.list",
       },
       acknowledgeSecurityIncident: {
         status: "covered",
-        method: "PlatformClient.securityIncidents.acknowledge",
+        method: "Client.securityIncidents.acknowledge",
       },
       getOrganizationOperation: {
         status: "covered",
-        method: "PlatformClient.operations.retrieve",
+        method: "Client.operations.retrieve",
       },
       listPolymorfaTokens: {
         status: "covered",
-        method: "PlatformClient.projectTokens.list",
+        method: "Client.projectTokens.list",
       },
       inviteMember: { status: "excluded" },
       updateMemberRole: { status: "excluded" },

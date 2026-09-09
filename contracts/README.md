@@ -2,14 +2,14 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`8c244aab0e5626d101a2c8c4915287427f39e014`. `source.json` records their original
+`6918c56135e28ba64557e344cb72889f1f517eb5`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        226 |
-| Missing             |        103 |
-| Excluded            |         73 |
+| Covered             |        274 |
+| Missing             |          0 |
+| Excluded            |        128 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
 | Total               |        402 |
@@ -20,38 +20,32 @@ successful live call.
 
 ## Reconciliation
 
-This refresh adds and removes no operations. Two Messaging operation
-fingerprints changed: browser candidate retrieval remains excluded from the
-server SDK, and `MessagingClient.voip.agentToken` remains covered by its typed
-method and request test. Schema updates include literal webhook event names,
-nullable terminal-call callers, participant lifecycle events, client-token
-delegation scopes, and TURN health diagnostics. These changes do not alter the
-operation coverage totals or the existing missing-operation inventory.
+This contract refresh adds and removes no operations and changes no operation
+fingerprints. It retires the `session.qr` webhook schema and callback, and it
+documents that direct QR and pairing-code session routes require an
+organization entitlement while hosted QuickLinks are the standard pairing
+flow.
 
-## Previous reconciliation
+The SDK now covers the three existing QuickLink operations through
+`MessagingClient.quickLinks.create`, `retrieve`, and `cancel`. Those rows moved
+from excluded to covered, increasing covered operations from 271 to 274 and
+reducing excluded operations from 131 to 128. The missing-operation inventory
+remains empty.
 
-The previous snapshot added 22 operations and removed 11 widget operations.
-The added operations were five implemented Calls
-operations, ten missing QuickLink operations, and seven Console-only
-operations excluded by their credential contract.
+This snapshot records complete handwritten TypeScript coverage for every
+customer-credential-compatible operation in the pinned contracts. Routes that
+require console, staff, browser, or ephemeral QuickLink credentials are
+excluded with an operation-specific reason.
 
 `HttpCallsApi.place`, `accept`, `reject`, `addParticipant`, and `setMode` cover
 the five Calls operations. Request tests invoke these methods and check the
 HTTP method, encoded path, body, authentication, and response handling.
 
-The removed widget rows included three covered mappings. Two pointed to
-`PlatformClient.widgetSettings` methods that still request `/v1/widget`; one
-pointed to `BrowserMessagingClient.widget.handoff`. None implements the new
-QuickLink routes. The ledger removes those old rows and keeps QuickLink
-missing.
-
-All 93 existing missing entries remain missing. Of those, 38 had the stale
-reason "Operation is absent from the coverage ledger" even though their rows
-were already present. Their reasons now describe the missing methods. The
-existing durable Platform gaps comprise 37 operations across organization and
-project events, webhooks, deliveries, and operations; session start is the
-other entry in that group of 38. Organization operation retrieval remains
-covered by `PlatformClient.operations.retrieve`.
+The unified `Client` owns organization control-plane resources and creates
+immutable project views with `client.project(projectId)`. QuickLink management
+uses `Client.quickLinkSettings`; obsolete `/v1/widget` mappings are gone.
+Credential-free service probes use `SystemClient`, project-token Bridge route
+discovery uses `BridgeClient`, and listener transport remains CLI-only.
 
 ## Updating the ledger
 

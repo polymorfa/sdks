@@ -1,6 +1,7 @@
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { PlatformClient } from "../src/platform/client.js";
+import { Client } from "../src/client.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -14,7 +15,7 @@ afterEach(async () => {
 });
 
 async function customersServer(): Promise<{
-  client: PlatformClient;
+  client: Client;
   requests: RecordedRequest[];
 }> {
   const server = await startTestServer((request) => {
@@ -38,15 +39,18 @@ async function customersServer(): Promise<{
   servers.push(server);
   return {
     requests: server.requests,
-    client: new PlatformClient({
-      apiKey: "pmfa_platform",
+    client: new Client({
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     }),
   };
 }
 
-describe("PlatformClient customers", () => {
+describe("Client customers", () => {
   it("maps enablement, collection, and profile operations", async () => {
     const { client, requests } = await customersServer();
 

@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Added typed BanSafe Health, telemetry, collection, findings, enforcement,
-  incidents, claims, and Health action reads to `PlatformClient.banSafe`.
+  incidents, claims, and Health action reads to `Client.banSafe`.
   Project and session resources now cover Safe Mode, warm-up, Ban Insurance
   evidence, and Health policy settings. Dashboard-only finding acknowledgement
   and appeals remain outside the server-key client.

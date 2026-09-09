@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "8c244aab0e5626d101a2c8c4915287427f39e014",
+  "sourceCommit": "6918c56135e28ba64557e344cb72889f1f517eb5",
   "excludedContracts": [
     {
       "family": "graph",
@@ -26,9 +26,8 @@
       "operationId": "cancelQuickLink",
       "fingerprint": "763ce4c4e8f4fdec20a081a53a40bcbc10101940bbe9fc41647ca5338215d5f7",
       "typescript": {
-        "status": "missing",
-        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.quickLinks.cancel"
       }
     },
     {
@@ -182,9 +181,8 @@
       "operationId": "getStatus",
       "fingerprint": "d718b1693efe722ebf046a8fe6525eccb179052320870a2ce40dbeb63e612f87",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "SystemClient.status"
       }
     },
     {
@@ -194,9 +192,8 @@
       "operationId": "getVersion",
       "fingerprint": "2ab7906884ffa07c978e9378490a193652ce1e1e960459908e23c4ab76838996",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "SystemClient.version"
       }
     },
     {
@@ -305,9 +302,8 @@
       "operationId": "getQuickLink",
       "fingerprint": "76ece78254ba9f50816a3ebb40365ac699bd7b2ceb4b15134a3e6c2521672b4c",
       "typescript": {
-        "status": "missing",
-        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.quickLinks.retrieve"
       }
     },
     {
@@ -791,9 +787,8 @@
       "operationId": "getHealth",
       "fingerprint": "05bab58b71b5692f804870852a686a9b4e140255899a6058b9aa284b5a0ed45c",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "SystemClient.health"
       }
     },
     {
@@ -803,9 +798,8 @@
       "operationId": "ping",
       "fingerprint": "59aa902499566c7e84335b9f53e2ef306e5732bdf1228f03d571c03077c7b329",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "SystemClient.ping"
       }
     },
     {
@@ -815,9 +809,9 @@
       "operationId": "getQuickLinkState",
       "fingerprint": "3d23a1ff64a1b8d149d49f511048526b58c11754de51e8b1b6b3e2a386c26731",
       "typescript": {
-        "status": "missing",
-        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
+        "milestone": "not-server-sdk"
       }
     },
     {
@@ -827,9 +821,9 @@
       "operationId": "getQuickLinkLogo",
       "fingerprint": "36238ba60ff6e55aa2cf2bc0a0558d9da149de02e6b75c3592c1f8274665fd0d",
       "typescript": {
-        "status": "missing",
-        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
+        "milestone": "not-server-sdk"
       }
     },
     {
@@ -839,9 +833,8 @@
       "operationId": "getBridgeRoute",
       "fingerprint": "c6e3c36cb20cdcf0c6c6991a495c676891c1e6d5f53ef83e754d4c9d66a2d801",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "BridgeClient.routes.resolve"
       }
     },
     {
@@ -1027,9 +1020,8 @@
       "operationId": "createQuickLink",
       "fingerprint": "0f8aa33283ca0a7b8f5ce21aec512a471ec96fee773a16f1bf96e55c5cea9367",
       "typescript": {
-        "status": "missing",
-        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "MessagingClient.quickLinks.create"
       }
     },
     {
@@ -1050,9 +1042,9 @@
       "operationId": "sessionHandoffAck",
       "fingerprint": "24eb38203f6a285b118bc82facb5351a42fe70243ef790cef65be01fd6d71139",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+        "milestone": "security-design"
       }
     },
     {
@@ -1062,9 +1054,9 @@
       "operationId": "sessionHandoffImport",
       "fingerprint": "8912116b0231eb1a64c7d45aedb45aa11c9251c8fed13a0db8e7ca936a4ba5bf",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+        "milestone": "security-design"
       }
     },
     {
@@ -1074,9 +1066,9 @@
       "operationId": "sessionHandoffKeys",
       "fingerprint": "a528ac23c017ee7e74576d55862bd80793b4bbecf68bb1e353d38b7a3f647fc7",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+        "milestone": "security-design"
       }
     },
     {
@@ -1130,9 +1122,9 @@
       "operationId": "sessionUploadAppStateKeys",
       "fingerprint": "dcfe439c4855dd14296883928f3fa9a3b0d9b1a2e75394c361880f3dc7dd5af2",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+        "milestone": "security-design"
       }
     },
     {
@@ -1694,9 +1686,9 @@
       "operationId": "cancelQuickLinkByToken",
       "fingerprint": "5447efd63f6d2dae94fad5a3f4373f8952d45d88e67009285a0cab08a037a28d",
       "typescript": {
-        "status": "missing",
-        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
+        "milestone": "not-server-sdk"
       }
     },
     {
@@ -1706,9 +1698,9 @@
       "operationId": "requestQuickLinkCode",
       "fingerprint": "bab38293fe497b4e710cfeeb2f02d02ef3448106271de993df4a07191f8c4a59",
       "typescript": {
-        "status": "missing",
-        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
+        "milestone": "not-server-sdk"
       }
     },
     {
@@ -1718,9 +1710,9 @@
       "operationId": "confirmQuickLink",
       "fingerprint": "776fd122dd6f6bf8b69b86c4a4289718e660e989fd6053f02b212b12f06a2e0e",
       "typescript": {
-        "status": "missing",
-        "reason": "The QuickLink controller uses an application-provided backend; no handwritten transport implements this QuickLink route.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
+        "milestone": "not-server-sdk"
       }
     },
     {
@@ -2005,9 +1997,9 @@
       "operationId": "adminRevokeApiKeyApiKey",
       "fingerprint": "a4ad0cb9129d422eb4da110b5c2fe93d0ee437cf7b8878f8afd1b1e1bf0c4736",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2017,9 +2009,9 @@
       "operationId": "adminRemoveMember",
       "fingerprint": "75d3e00264714ff72c0e528d36e599ff734d6ac84f24a90eeedd353b71e38f41",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2029,9 +2021,9 @@
       "operationId": "adminRevokeOrganizationInvitation",
       "fingerprint": "fc969ae102b8fa7b5a9cffce1db7cc909764e6937ab248a690ee51d283b22cbf",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2041,9 +2033,9 @@
       "operationId": "adminCascadeDeleteOrganization",
       "fingerprint": "4e099164b6c7541cec09a27f50ae82c89cfa860f24d4c7ba23c0e0331df3c98e",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2053,9 +2045,9 @@
       "operationId": "adminForceDeleteSession",
       "fingerprint": "85c5c1a65cc2541606d9eaf2d12843af119952e4e508fae77116bd201a8ad8c6",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2065,9 +2057,9 @@
       "operationId": "adminResetOnboardingUser",
       "fingerprint": "87e04025c3c6ce6859b53da46e3493d43ede6a17d776b1b24eba3618cd8e1b37",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2150,7 +2142,7 @@
       "fingerprint": "89db8d46b387f9b7ea94363f3205e01abdc11a81250bd4029e78b0d54dea5726",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.audiences.delete"
+        "method": "Client.audiences.delete"
       }
     },
     {
@@ -2161,7 +2153,7 @@
       "fingerprint": "6e2e2556a22b8f5110eefed455820a0be2a58ed7ca60392ef3b865eef2b073a7",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.delete"
+        "method": "Client.campaigns.delete"
       }
     },
     {
@@ -2172,7 +2164,7 @@
       "fingerprint": "0e3a8b41ae00c04078420785edd14df2b073216b6135790a0a6bfbbd27e78a50",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.revokePairingLink"
+        "method": "Client.customers.revokePairingLink"
       }
     },
     {
@@ -2183,7 +2175,7 @@
       "fingerprint": "75623976db5350942aef9181408d6d7a3264013ba9c34e37abd1288a671d9f3c",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -2195,7 +2187,7 @@
       "fingerprint": "ad299f8afd661838296ea39fce5b41a50c678a6e5aaf8425625815fa1d4885a7",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.apiKeys.deactivate"
+        "method": "Client.apiKeys.deactivate"
       }
     },
     {
@@ -2206,7 +2198,7 @@
       "fingerprint": "21733c4f3e2c6fa9c0fdb7dc40e32cdd27e22a282b3fa5708b1b008684a301b1",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.media.delete"
+        "method": "Client.media.delete"
       }
     },
     {
@@ -2217,7 +2209,7 @@
       "fingerprint": "88c312dbdc2b8ef1d666704ca7e94d457611c4c6e66ff54d1ea2331baa8e0e55",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only member mutation accepts ConsoleSession authentication and rejects the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only member mutation accepts ConsoleSession authentication and rejects the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -2229,7 +2221,7 @@
       "fingerprint": "1107ac53c52a4b3bf8f517974d437a03abc8b947ba50b47a90b5e308a8907ec9",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.optOuts.delete"
+        "method": "Client.optOuts.delete"
       }
     },
     {
@@ -2239,9 +2231,8 @@
       "operationId": "deleteProjectWebhook",
       "fingerprint": "2555d7a3c0501769b3560377c8595ee3413e7d38e29d91a21156b8a26cabc47b",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).webhooks.delete"
       }
     },
     {
@@ -2252,7 +2243,7 @@
       "fingerprint": "009cdf86b86ea287b943a22b2958b1d4bdbbd641d67881b6193868d847322d44",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.sessions.delete"
+        "method": "Client.sessions.delete"
       }
     },
     {
@@ -2263,7 +2254,7 @@
       "fingerprint": "dd72834096e3536cd909d750f8f8fd88e8f94c3d3ce041cacf760eecbd873fcd",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -2274,9 +2265,8 @@
       "operationId": "deleteOrganizationWebhook",
       "fingerprint": "315c17d7e078e1003e719e9794627813f51d9e1ae40281f1b2c374555a41cfc5",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.webhooks.delete"
       }
     },
     {
@@ -2286,9 +2276,9 @@
       "operationId": "adminListAuditLogGlobal",
       "fingerprint": "cf1754fa03d280a52fefd8da466f6791cb168f5d5212537a49ecb21e9451fb87",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2298,9 +2288,9 @@
       "operationId": "adminListAuditLogAdminActions",
       "fingerprint": "9db6b2947639b5d9727b846289d5f785004909020203b50bf58d6f602ecc0606",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2310,9 +2300,9 @@
       "operationId": "adminListRecentSessionBans",
       "fingerprint": "31e808f02991d35bc911897f5e56cf5955be273eef1e2d69969fb3b00284c5da",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2322,9 +2312,9 @@
       "operationId": "adminTopOrgsByRevenueBilling",
       "fingerprint": "bd551d50b3841132a0d7337450cd6ba3516db319c0fc62ce444c18d6076c5db2",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2334,9 +2324,9 @@
       "operationId": "adminLowBalanceOrgsBilling",
       "fingerprint": "b6c693576751caa97b26aca1f99a775912d709d5ad893f1b96223dc857b27c14",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2346,9 +2336,9 @@
       "operationId": "adminPlatformRevenueBilling",
       "fingerprint": "e5efb95d6c75256293676aa700e66d0c6d874720d030ef0dc96ef3c708bd42d7",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2358,9 +2348,9 @@
       "operationId": "adminListCampaigns",
       "fingerprint": "5cf420fbac81f17078fdb6cf52907e73b866a437ebf15a6a094e69bd91f6da56",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2370,9 +2360,9 @@
       "operationId": "adminOptOutLeaderboardCampaign",
       "fingerprint": "9aa141b46fd96c01548f8b69892aa06179fd23d15966b8e7cea1f216ecd2d629",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2382,9 +2372,9 @@
       "operationId": "adminListApiKeys",
       "fingerprint": "1ff6c744e353cd170fb5d3d7e2e8061a7b0f47ae2f408a1117929792503d727f",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2394,9 +2384,9 @@
       "operationId": "adminPlatformKpisPlatform",
       "fingerprint": "3ad6c63b3e7a6caea00363b21c287c1c5bd2dfa08e05fdd41345c7cb8ce1e144",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2406,9 +2396,9 @@
       "operationId": "adminListOrganizationInvitations",
       "fingerprint": "09dacaf2b15866b1ee597569d2395ddff156029e79b0681e6b4f2aea956fdbe9",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2418,9 +2408,9 @@
       "operationId": "adminListOrganizations",
       "fingerprint": "9d41dedfb00afac7a6013df50893fb36be67e179a7ab86dbc06a133bee284a5a",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2430,9 +2420,9 @@
       "operationId": "adminListOrganizationFeatureGroups",
       "fingerprint": "eb809ba63426a43d95fea2c35a9c2c2d5927d181de64027b99362696a997ca15",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2442,9 +2432,9 @@
       "operationId": "adminGetOrganization",
       "fingerprint": "6b9c45cf94ebbc2eb88ba59a6d0c65ffd3adb7d85610306624f9200391f232b2",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2454,9 +2444,9 @@
       "operationId": "adminListPricing",
       "fingerprint": "6fffbc67d71392d03997c21708e1430cc817706464a1ddf6b4c2973325b03af3",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2466,9 +2456,9 @@
       "operationId": "adminListSessions",
       "fingerprint": "8c9f9acacf56ae316a16d182adecb72df4497b2a147a10014e9c9619198701d4",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2478,9 +2468,9 @@
       "operationId": "adminRecentSignupsPlatform",
       "fingerprint": "60138e38218bf8afa1093c6c689f22f7ff78ab1d214f4ac8cc77c7ce40a913fd",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2490,9 +2480,9 @@
       "operationId": "adminListTenants",
       "fingerprint": "1c2524576a92fe2fc94a4151ecd2b9ca15ce8ac71b5fdddc603facda7b149582",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2502,9 +2492,9 @@
       "operationId": "adminSearchUser",
       "fingerprint": "70f33c4a358d4b371c7280011504cbaffb466626663175452fb39caa2ed76043",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2514,9 +2504,9 @@
       "operationId": "adminGetUser",
       "fingerprint": "29577189dc3923646b9578bec4cbabbefcbc01e12032d823550e3f582f9c03c2",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -2527,7 +2517,7 @@
       "fingerprint": "747e9241cf93f1f137d5b03441e34d2768e196f2fcab1c1f4d9d1cbab4f396fb",
       "typescript": {
         "status": "excluded",
-        "reason": "This Polymorfa staff route requires a staff dashboard identity and never accepts server credentials.",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
         "milestone": "credential-boundary"
       }
     },
@@ -2743,7 +2733,7 @@
       "fingerprint": "203826fc7769c25645eceac8e1f711d964344d6de8afc5f591f7a5c51bf0a86a",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.audiences.list"
+        "method": "Client.audiences.list"
       }
     },
     {
@@ -2754,7 +2744,7 @@
       "fingerprint": "0faa242ed87367ed7f3776955e9923148ff5ba162e1ecf0e652dd8cbbbfd304a",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.audiences.retrieve"
+        "method": "Client.audiences.retrieve"
       }
     },
     {
@@ -2765,7 +2755,7 @@
       "fingerprint": "677185d7ed1e85806e95ebaff70014686ce20e118712b5ba4f1adb32568d80ee",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.auditLogs.list"
+        "method": "Client.auditLogs.list"
       }
     },
     {
@@ -2776,7 +2766,7 @@
       "fingerprint": "888d886c7dcee97ade64909ad73bc187c5e12696492198579c56e1fb98805ef5",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.sessionBans.list"
+        "method": "Client.sessionBans.list"
       }
     },
     {
@@ -2787,7 +2777,7 @@
       "fingerprint": "2245fb243558391a9e6e0b9253144743bf42dfb5c90d5b1cb0d74f3df38dce61",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.sessionBans.listActive"
+        "method": "Client.sessionBans.listActive"
       }
     },
     {
@@ -2798,7 +2788,7 @@
       "fingerprint": "b79ffd5c2db93f74b53fbb286d340853e4193609be3b25c3c221a065e80aa5ac",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.billing.retrieve"
+        "method": "Client.billing.retrieve"
       }
     },
     {
@@ -2809,7 +2799,7 @@
       "fingerprint": "552594051767287f7d22abb45a38e2bd91fa07242905b92eda6d98d24838e99c",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.billing.listPricing"
+        "method": "Client.billing.listPricing"
       }
     },
     {
@@ -2820,7 +2810,7 @@
       "fingerprint": "521773873dbc673426bf4d013f058b10c0b3505f65af83e0de49dc114d052940",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.billing.listTransactions"
+        "method": "Client.billing.listTransactions"
       }
     },
     {
@@ -2831,7 +2821,7 @@
       "fingerprint": "49314723af2ef845963a473abbfeba6b3c331fc524b8223f3223bc8569e07a47",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.billing.usage"
+        "method": "Client.billing.usage"
       }
     },
     {
@@ -2842,7 +2832,7 @@
       "fingerprint": "13541c77e70ae753f224408e344829aacf76d3a88416f686cdf19b4434b6dc12",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.list"
+        "method": "Client.campaigns.list"
       }
     },
     {
@@ -2853,7 +2843,7 @@
       "fingerprint": "8a62796d923adf424de9e19e952073a71d11776745221373bbcdd8ab5d2f997b",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.retrieve"
+        "method": "Client.campaigns.retrieve"
       }
     },
     {
@@ -2864,7 +2854,7 @@
       "fingerprint": "f6af6d45f076a5eafd9ddcb441cd44cc3b0ff6e9b8021dcab8ef9c6708db1daf",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.analytics"
+        "method": "Client.campaigns.analytics"
       }
     },
     {
@@ -2875,7 +2865,7 @@
       "fingerprint": "66c0c14c9cf8608854050ae3fd7677cd320d7c8b2289aef64d6f7857c9322e93",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.events"
+        "method": "Client.campaigns.events"
       }
     },
     {
@@ -2886,7 +2876,7 @@
       "fingerprint": "dc30a8e28bc4801b30c9b95230a61fa6a3392cc56dad1dc6466eb1026837d512",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.recipients"
+        "method": "Client.campaigns.recipients"
       }
     },
     {
@@ -2897,7 +2887,7 @@
       "fingerprint": "a54c14d80d3504882f5902952563038e37d5bb85fd045dcd2e570c2ba0e16be6",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.list"
+        "method": "Client.customers.list"
       }
     },
     {
@@ -2908,7 +2898,7 @@
       "fingerprint": "62ae84a5ee3d5c3783070bfc03e5f9535d67a80c0f2cb0d7f6c5c67e07bd718e",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.retrieve"
+        "method": "Client.customers.retrieve"
       }
     },
     {
@@ -2919,7 +2909,7 @@
       "fingerprint": "839539469ae5e671420c089392077f47808c77cabc43fce7db54be34ac126f5f",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.listEvents"
+        "method": "Client.customers.listEvents"
       }
     },
     {
@@ -2930,7 +2920,7 @@
       "fingerprint": "14ddf26d897bc605a839082e43ac77675f4a82e935cfdca8aa80adc398a2a3a2",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.listNumbers"
+        "method": "Client.customers.listNumbers"
       }
     },
     {
@@ -2941,7 +2931,7 @@
       "fingerprint": "6d419c3d4369c5020e8e11588a62e23882dd58f81546d57796235d816f366543",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.listPairingLinks"
+        "method": "Client.customers.listPairingLinks"
       }
     },
     {
@@ -2951,9 +2941,8 @@
       "operationId": "listOrganizationEvents",
       "fingerprint": "5be3e55ec98b3beed960218f6af5a5ace861a5a6811b1c62814085f57e1b238c",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.events.list"
       }
     },
     {
@@ -2963,9 +2952,8 @@
       "operationId": "getOrganizationEvent",
       "fingerprint": "160c5e4c7b91b8b633b004961d2039b0a974fd56f3b8560abb67e5dd22ae5dbf",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.events.retrieve"
       }
     },
     {
@@ -2976,7 +2964,7 @@
       "fingerprint": "b77ce1c733584fa605761e207035cef871bc49341c665cfc82643243debfd47f",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -2988,7 +2976,7 @@
       "fingerprint": "30eb629b546bed2aeab2450a75fb32ac25831c3f522fa8ae0fff2ffa5cebf301",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -3000,7 +2988,7 @@
       "fingerprint": "c2e69c4b877a1914f1a5bfcbd4820c13749b1ccf70ea0c5e878e1a3fd86c153a",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.securityIncidents.list"
+        "method": "Client.securityIncidents.list"
       }
     },
     {
@@ -3011,7 +2999,7 @@
       "fingerprint": "603de482c9fbe57d09fbbca97920c80f2b9b7fd06a2e4e29bd07b2abcfbde6fe",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.apiKeys.list"
+        "method": "Client.apiKeys.list"
       }
     },
     {
@@ -3022,7 +3010,7 @@
       "fingerprint": "860947f02650cea2d14e5827bdd8a8788c2f1714cdd6d3465bf78eb6424b7b77",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.media.retrieve"
+        "method": "Client.media.retrieve"
       }
     },
     {
@@ -3033,7 +3021,7 @@
       "fingerprint": "76ff2fcdeb2b299974b01dd5ff26b0b1d209b802e08d0d523fa7c2ea4d09a232",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.members.list"
+        "method": "Client.members.list"
       }
     },
     {
@@ -3043,9 +3031,8 @@
       "operationId": "listOrganizationOperations",
       "fingerprint": "b82282f9c6348a836b3f21000e080efb517b701d988758b0fa802ff30dae56b3",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.operations.list"
       }
     },
     {
@@ -3056,7 +3043,7 @@
       "fingerprint": "93c96fd49f49773bbf8006cba357f42f26370c3da1af9e9d73518389ba54bfca",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.operations.retrieve"
+        "method": "Client.operations.retrieve"
       }
     },
     {
@@ -3066,9 +3053,8 @@
       "operationId": "listOrganizationOperationTransitions",
       "fingerprint": "eb99e217f76bca9939974be5ff17ed8f5f71c4c6a3ff0923981254efdb936486",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.operations.listTransitions"
       }
     },
     {
@@ -3079,7 +3065,7 @@
       "fingerprint": "fa236cca96686c6191aa1f2cdb84272e025f89aef0a25504b9cf532028fe1ae6",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.optOuts.list"
+        "method": "Client.optOuts.list"
       }
     },
     {
@@ -3090,7 +3076,7 @@
       "fingerprint": "1cc1249633ee2ef286e59fdee2f8d51a78648a4a68f6cf67614d39a6fd8c7ef9",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.organizations.retrieve"
+        "method": "Client.organizations.retrieve"
       }
     },
     {
@@ -3101,7 +3087,7 @@
       "fingerprint": "8b4f569d2828572eecd824d2f28b33775e894faa1dba9693de6729e586fce628",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.projects.list"
+        "method": "Client.projects.list"
       }
     },
     {
@@ -3112,7 +3098,7 @@
       "fingerprint": "2ea59c9703c76cf8bfd04d74166ce4504d70fa53090049fd6614ba1044d103a2",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.status"
+        "method": "Client.customers.status"
       }
     },
     {
@@ -3122,9 +3108,8 @@
       "operationId": "listProjectEvents",
       "fingerprint": "ab2f389ed49a29b77d55e2431a671a7dfa328a2fd3bd64b8ea3ca07704dae671",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).events.list"
       }
     },
     {
@@ -3134,9 +3119,8 @@
       "operationId": "getProjectEvent",
       "fingerprint": "625009ef487d2c3140be83fd59a68577224e782fef48476132702ac96d2ff15a",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).events.retrieve"
       }
     },
     {
@@ -3146,9 +3130,8 @@
       "operationId": "listProjectOperations",
       "fingerprint": "402c9db5f517ca805d26c82cb2da0a4d417d1482cba1910c168ef0c7402b4498",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).operations.list"
       }
     },
     {
@@ -3158,9 +3141,8 @@
       "operationId": "getProjectOperation",
       "fingerprint": "c2e69bf06e704272dddb0c998ab8a665e4b48df8243ae511c5d64b14febb9b80",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).operations.retrieve"
       }
     },
     {
@@ -3170,9 +3152,8 @@
       "operationId": "listProjectOperationTransitions",
       "fingerprint": "791d29cded696ad923666f84ed184b18af05d03da0a938a4ffa7fa926adb63d6",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).operations.listTransitions"
       }
     },
     {
@@ -3182,9 +3163,8 @@
       "operationId": "listProjectWebhookDeliveries",
       "fingerprint": "05ef9b32c73de411c31d8f6fc859764a13be04b9d5fdb46fe374a10d982ece12",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).webhookDeliveries.list"
       }
     },
     {
@@ -3194,9 +3174,8 @@
       "operationId": "getProjectWebhookDelivery",
       "fingerprint": "abb159dcd6242c16f333dd17b7f32b471d8548d17e447285d346622c602563e7",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).webhookDeliveries.retrieve"
       }
     },
     {
@@ -3206,9 +3185,8 @@
       "operationId": "listProjectWebhookDeliveryAttempts",
       "fingerprint": "faf7d82f3c2c65faf4397cddcbc66566a51dbc46f0e7390509430168f0a23fd5",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).webhookDeliveries.listAttempts"
       }
     },
     {
@@ -3218,9 +3196,8 @@
       "operationId": "getProjectWebhookDeliveryAttempt",
       "fingerprint": "6cb230760cc6dd4c4a5572c634b3350af4ca47762fea75a4b62bfa7014b70aef",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).webhookDeliveries.retrieveAttempt"
       }
     },
     {
@@ -3230,9 +3207,8 @@
       "operationId": "listProjectWebhooks",
       "fingerprint": "b0ef0ff74c50c943198af2ae17c79bba7cf2321fafc7b82199f10bddc5d3c6f1",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).webhooks.list"
       }
     },
     {
@@ -3242,9 +3218,8 @@
       "operationId": "getProjectWebhook",
       "fingerprint": "08ef24fe00067de9e010e41acd4c79f285e257652c61186c62ee8f0ebf6a95fb",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).webhooks.retrieve"
       }
     },
     {
@@ -3254,9 +3229,8 @@
       "operationId": "getQuickLinkSettings",
       "fingerprint": "2da393403c39ff81e2ec7ee4d62bbe50d8ce6feb96eb8a5f34c62af48ae98b80",
       "typescript": {
-        "status": "missing",
-        "reason": "PlatformClient.widgetSettings still requests /v1/widget; it does not implement the /v1/quicklink contract.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.quickLinkSettings.retrieve"
       }
     },
     {
@@ -3267,7 +3241,7 @@
       "fingerprint": "7bfd8c212e34f1f5e496f582608769d1667b0eaee3581609873591566b1c0e89",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.sessions.list"
+        "method": "Client.sessions.list"
       }
     },
     {
@@ -3278,7 +3252,7 @@
       "fingerprint": "f38d5515565c7d1ef8ddc82968906af4d7e0c0f15b8ffca2cfeea272583b26fd",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -3290,7 +3264,7 @@
       "fingerprint": "8cb15afe849c0c8d223fdf4e6c9e9d220715778da80f94f7572b8f5966aaa8de",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -3302,7 +3276,7 @@
       "fingerprint": "b8d5d76ce747845f745082489c05037c0cdaf9d20a03a6d7809459d9a5ce35ce",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.projectTokens.list"
+        "method": "Client.projectTokens.list"
       }
     },
     {
@@ -3312,9 +3286,8 @@
       "operationId": "listOrganizationWebhookDeliveries",
       "fingerprint": "b34dcc5f989890f4a244c7b98cd2a1103a1ae7587eaaff5990c6ae35dce6eab3",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.webhookDeliveries.list"
       }
     },
     {
@@ -3324,9 +3297,8 @@
       "operationId": "getOrganizationWebhookDelivery",
       "fingerprint": "d4fa1bc619a17a6e42609717f2094506d670c6faac93bf1673fcca18c71e99d4",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.webhookDeliveries.retrieve"
       }
     },
     {
@@ -3336,9 +3308,8 @@
       "operationId": "listOrganizationWebhookDeliveryAttempts",
       "fingerprint": "9dd8f70e0f94223481cdeebb2308330492b6ee916b1f14cfcc19d92a93b9fbe3",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.webhookDeliveries.listAttempts"
       }
     },
     {
@@ -3348,9 +3319,8 @@
       "operationId": "getOrganizationWebhookDeliveryAttempt",
       "fingerprint": "504298df2cd3af0e90a3395523a507d4f053a718b0e346fa75f1f21651fcc366",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.webhookDeliveries.retrieveAttempt"
       }
     },
     {
@@ -3360,9 +3330,8 @@
       "operationId": "listOrganizationWebhooks",
       "fingerprint": "52475b3163f0fbc7862a8462b030677e326da65807f10659d5df0942ffca49e8",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.webhooks.list"
       }
     },
     {
@@ -3372,9 +3341,8 @@
       "operationId": "getOrganizationWebhook",
       "fingerprint": "573b9da2a147e13f7b6191db6554eea579e3a4d8cc555119ae9d65c00e6dd5e9",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.webhooks.retrieve"
       }
     },
     {
@@ -3384,9 +3352,9 @@
       "operationId": "adminSetMemberRole",
       "fingerprint": "1d40f79d50a6ab2e1187fa1efe66060a3200d0d545a7e67099b16c22a97a10a3",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3396,9 +3364,9 @@
       "operationId": "adminRenameOrganization",
       "fingerprint": "e0e6d6798056ed6f37d726a3f7a60b1e81a47078a14c9bb7c676b49184974261",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3408,9 +3376,9 @@
       "operationId": "adminSetOrganizationFeatureGroups",
       "fingerprint": "db5781f4cfddd0bead2de6e502755eac0831478c2ad28353ac95a5fbedc4aa3c",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3420,9 +3388,9 @@
       "operationId": "adminSetPricingActive",
       "fingerprint": "9eddf6277243ee32343ab00f6a70fb184677b604f9e841b6d6ab9f81a209fcbf",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3432,9 +3400,9 @@
       "operationId": "adminSetTenantActive",
       "fingerprint": "8731e12cb798c00e9b4fcc17912a0164c80d6d2b6656b06e358706a5a23614ed",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3481,7 +3449,7 @@
       "fingerprint": "58ee9e21033128d7f90773953f5b9900107e4dc7a2c83a024bf3b4b145f195a8",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.billing.updateReminderSettings"
+        "method": "Client.billing.updateReminderSettings"
       }
     },
     {
@@ -3492,7 +3460,7 @@
       "fingerprint": "15a5e192d9251828c843d90675e686f38eb4dabaadc39027e50390bcc8867b20",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.update"
+        "method": "Client.campaigns.update"
       }
     },
     {
@@ -3503,7 +3471,7 @@
       "fingerprint": "66eb57975826a76c2d96816688450d24afe6eea4195cbcbf5473f1f14295ea33",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.update"
+        "method": "Client.customers.update"
       }
     },
     {
@@ -3514,7 +3482,7 @@
       "fingerprint": "5ca2b5ea86279e32bc071141d4e90078fdf01b77afff2bc415846058e8ceb62c",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -3526,7 +3494,7 @@
       "fingerprint": "e8a2544274d583bb7c406bc52818bdc172cc605a9c2fee184a876a7e55c2dbc5",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only member mutation accepts ConsoleSession authentication and rejects the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only member mutation accepts ConsoleSession authentication and rejects the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -3538,7 +3506,7 @@
       "fingerprint": "9f1712477bf16a8a2372cbfbec20197d822cd0f29868b49f2f648540b52e31ff",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -3549,9 +3517,8 @@
       "operationId": "updateProjectWebhook",
       "fingerprint": "ab722f393f3d724aff5bcac6b48e7e62e27221fa7e5216d772be7fa1f9668f4f",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).webhooks.update"
       }
     },
     {
@@ -3562,7 +3529,7 @@
       "fingerprint": "b9a55c4616ef53fe433885201e23e4a6638f2c2afd78516ac90f2fabf0ba02bb",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.sessions.setTierOverride"
+        "method": "Client.sessions.setTierOverride"
       }
     },
     {
@@ -3573,7 +3540,7 @@
       "fingerprint": "e84a8b125bb33aac5b8bff0443710eba04ba613c7ae117de12f8e178428ff4ec",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -3584,9 +3551,8 @@
       "operationId": "updateOrganizationWebhook",
       "fingerprint": "7a951130d9739ea4f6c3b9af13dd19a91ef5942d06d60f5d353f842a3ace2233",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.webhooks.update"
       }
     },
     {
@@ -3596,9 +3562,9 @@
       "operationId": "adminCompCreditsBilling",
       "fingerprint": "5dfeaa55ddc13056abf53756e6b7e927b5483a5d4aa20c72ad70e90707d84412",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3608,9 +3574,9 @@
       "operationId": "adminRefundBilling",
       "fingerprint": "4a3af41a249fb8bedcde2947e5cd067d0cb4288b56f37458cf143fb85f7d5c17",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3620,9 +3586,9 @@
       "operationId": "adminForcePauseCampaign",
       "fingerprint": "ca6cfea9e0133062915100b3e281ad66ac71495d79025cab5c0f9c8eb9d089e2",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3632,9 +3598,9 @@
       "operationId": "adminForceStopCampaign",
       "fingerprint": "e7b428272304f94eebcb48f487c872ccb6cf990adde488509971dd05315cf410",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3644,9 +3610,9 @@
       "operationId": "adminInviteMember",
       "fingerprint": "48ded54b69d484be6d960b8f04baa62fda2d0d704314e4492660e23f730e9c24",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3656,9 +3622,9 @@
       "operationId": "adminCreateOrganizationInvitation",
       "fingerprint": "d8f635f3ed51be3f91be8da22e575a52752b423b2915f3ecb80deeee2c655828",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3668,9 +3634,9 @@
       "operationId": "adminFreezeOrganization",
       "fingerprint": "29491cbdbba0b1131c42557c2d0da16387028278b6bf6f66e7bae610a9b506d8",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3680,9 +3646,9 @@
       "operationId": "adminUnfreezeOrganization",
       "fingerprint": "471b13a4f50084fd4b7e852f1c430d11c74173f89a0c8de7236a6cb7b6fa4a9d",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3692,9 +3658,9 @@
       "operationId": "adminCompSessionDaySession",
       "fingerprint": "2805d221840da8a5acb4da164b01ff5c6996cb9875db2878057b2a3b39f5f9c8",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3704,9 +3670,9 @@
       "operationId": "adminForceStopSession",
       "fingerprint": "59de376f0586fb9fe59349d74928d981feab8226a4edc760108288d81cf47a45",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3716,9 +3682,9 @@
       "operationId": "adminEnsureCurrentUserStaffSyncStaffSync",
       "fingerprint": "f6dcffee982955559462f37e30d42545847d5531e6b4303c34476dde6cee7552",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3728,9 +3694,9 @@
       "operationId": "adminForceSignOutUser",
       "fingerprint": "71a604cf9f25b568ae4573f771aa5159b6b576ebde45163b1a5dccf34ee43de1",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3740,9 +3706,9 @@
       "operationId": "adminSuspendUser",
       "fingerprint": "d93139af07a146aaab9f6f8c100dbc05d084099f8566708c6348a60c43125c1c",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3752,9 +3718,9 @@
       "operationId": "adminUnsuspendUser",
       "fingerprint": "026f63ffee48400ed53c6a9c8b106063dc3db734a1f32b432460457b294c7d54",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -3765,7 +3731,7 @@
       "fingerprint": "d724d71c360d348db65ed19fcba6bb3d490bbb47066f2434ba59a237a2afcf63",
       "typescript": {
         "status": "excluded",
-        "reason": "This Polymorfa staff route requires a staff dashboard identity and never accepts server credentials.",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
         "milestone": "credential-boundary"
       }
     },
@@ -4029,7 +3995,7 @@
       "fingerprint": "b6b0ecd9fc2086a2fd2002f36d9cc7bd7d3d8815cd1646a019058551eece7b79",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.audiences.create"
+        "method": "Client.audiences.create"
       }
     },
     {
@@ -4040,7 +4006,7 @@
       "fingerprint": "181687aae5b6bf19a47f468db80b99a60186d2a6a0b607be6f3940e3b31ced0c",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.audiences.createUpload"
+        "method": "Client.audiences.createUpload"
       }
     },
     {
@@ -4051,7 +4017,7 @@
       "fingerprint": "e1b2ad3a76c285b136e3930a6f0a757b2c53bbd2e80419bc48ca51e4e15d7d4d",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.create"
+        "method": "Client.campaigns.create"
       }
     },
     {
@@ -4062,7 +4028,7 @@
       "fingerprint": "7874cacdb5473efcbf5ec60537359dde02f6c8ed107f65464c103c9a0c956c59",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.archive"
+        "method": "Client.campaigns.archive"
       }
     },
     {
@@ -4073,7 +4039,7 @@
       "fingerprint": "980f5484a2c7d11062cfecc4e089728c96d4e020c419f84e995cd8b927d834ca",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.duplicate"
+        "method": "Client.campaigns.duplicate"
       }
     },
     {
@@ -4084,7 +4050,7 @@
       "fingerprint": "05e3a309a4b13e603a677acedc813bfeb532f1d2f40724955630e3338bbe76f1",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.launch"
+        "method": "Client.campaigns.launch"
       }
     },
     {
@@ -4095,7 +4061,7 @@
       "fingerprint": "525a5e4ace1bea4dbd1fa38c5ab4a34f53381556c2351cf2983fc36461d6ff55",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.pause"
+        "method": "Client.campaigns.pause"
       }
     },
     {
@@ -4106,7 +4072,7 @@
       "fingerprint": "9ac17764dba881792d291a1637803a072833bf9647046eca3a7e13cad2913bd6",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.requeue"
+        "method": "Client.campaigns.requeue"
       }
     },
     {
@@ -4117,7 +4083,7 @@
       "fingerprint": "d41ef90149f1305467359427caa89809cc5cb08796dbc3095f7336fb3c60dbcd",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.resume"
+        "method": "Client.campaigns.resume"
       }
     },
     {
@@ -4128,7 +4094,7 @@
       "fingerprint": "e7fafb4cf9730d92363f799dcb536b89c4d5a42a07fc5d5765e4df622258d2c8",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.campaigns.stop"
+        "method": "Client.campaigns.stop"
       }
     },
     {
@@ -4139,7 +4105,7 @@
       "fingerprint": "5ef3cee3b57f10bc9854638bb35f47c4014aa5c9b4951e783df5472fda8b2144",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.create"
+        "method": "Client.customers.create"
       }
     },
     {
@@ -4150,7 +4116,7 @@
       "fingerprint": "f9d55c6babd4f5abd9e2391f9db9152cc9440c1416585397b0ff65842447dac3",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.archive"
+        "method": "Client.customers.archive"
       }
     },
     {
@@ -4161,7 +4127,7 @@
       "fingerprint": "40346a290d32c5795e327291bfead6c7332c97d5150c87263b0887f6b272189a",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.transferNumber"
+        "method": "Client.customers.transferNumber"
       }
     },
     {
@@ -4172,7 +4138,7 @@
       "fingerprint": "7e6677d1c9fbb6174106818aa7fb1fe426f4bf274ccd60958c45060eb7057fbf",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.createPairingLink"
+        "method": "Client.customers.createPairingLink"
       }
     },
     {
@@ -4183,7 +4149,7 @@
       "fingerprint": "e13571eea373b7bea4ebb134a3d8a7fb158c92c30007b8d9f9493e426500e841",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.restore"
+        "method": "Client.customers.restore"
       }
     },
     {
@@ -4193,9 +4159,8 @@
       "operationId": "replayOrganizationEvent",
       "fingerprint": "eba8005fe5674692bf863d4ae911fe03819398729b8369a4448189b7fe129e0d",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.events.replay"
       }
     },
     {
@@ -4206,7 +4171,7 @@
       "fingerprint": "88b3342941cdb519d5725b10edad1faa124b74785571b88fc6df7248a4de805e",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -4218,7 +4183,7 @@
       "fingerprint": "e53ce0bd9846707155d28030c572ca4ced5b494c62d242274b18f579f653350a",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.securityIncidents.acknowledge"
+        "method": "Client.securityIncidents.acknowledge"
       }
     },
     {
@@ -4229,7 +4194,7 @@
       "fingerprint": "1b72058d61aebe5d619aee99e5547b1de93d3f90c8232805cadfdbe8d944e750",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.media.createUpload"
+        "method": "Client.media.createUpload"
       }
     },
     {
@@ -4240,7 +4205,7 @@
       "fingerprint": "2762d14d85c446fd0d0144bfefe588590b4cbf93fd5bcb75a2e6b50a12c9223e",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only invitation accepts ConsoleSession authentication and rejects the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only invitation accepts ConsoleSession authentication and rejects the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -4251,9 +4216,8 @@
       "operationId": "cancelOrganizationOperation",
       "fingerprint": "a7a33415d944a39d49dc5d7907b498c9985a2c9967fe71975fe76b6bf5061c23",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.operations.cancel"
       }
     },
     {
@@ -4264,7 +4228,7 @@
       "fingerprint": "fc46f65b20f6df48dc7abd557fa6ab8c63d0381f8b85f3810c813387b6f3816b",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.optOuts.create"
+        "method": "Client.optOuts.create"
       }
     },
     {
@@ -4275,7 +4239,7 @@
       "fingerprint": "af7de5f6d5c838aa65da25ddfa1376ac38cba86ff9ba05b79b7d695eb72134ee",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.optOuts.createBatch"
+        "method": "Client.optOuts.createBatch"
       }
     },
     {
@@ -4286,7 +4250,7 @@
       "fingerprint": "61809f2781d79bffe3ec2c4ef23a9dc04b0ad1df60cc0f9823390f15d24a6e93",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.projects.create"
+        "method": "Client.projects.create"
       }
     },
     {
@@ -4297,7 +4261,7 @@
       "fingerprint": "d65936aee2325cf0fa55bc9c22bba407bda8efc1110307c1e0d2d3176698e265",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.customers.enable"
+        "method": "Client.customers.enable"
       }
     },
     {
@@ -4307,9 +4271,8 @@
       "operationId": "replayProjectEvent",
       "fingerprint": "2339cad5119c3d95b56f85e05d252373c32197a75a739ce174f8ce8e7f0b9af4",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).events.replay"
       }
     },
     {
@@ -4319,9 +4282,8 @@
       "operationId": "cancelProjectOperation",
       "fingerprint": "368d5301a8dc02d5348208e3b6d1789adb8cb11867e2cb32511e90efdbc7d3e2",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).operations.cancel"
       }
     },
     {
@@ -4332,7 +4294,7 @@
       "fingerprint": "2895433633925a3c7cf2486e569584c47f80c14265202df7c5538274202ab154",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.projects.approveProductionEnrollment"
+        "method": "Client.projects.approveProductionEnrollment"
       }
     },
     {
@@ -4343,7 +4305,7 @@
       "fingerprint": "3ed9c7d417bc287059160de229e698c11feea210c2c5300bc6dcf55a1bfaf662",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.projects.cancelProductionEnrollment"
+        "method": "Client.projects.cancelProductionEnrollment"
       }
     },
     {
@@ -4354,7 +4316,7 @@
       "fingerprint": "9ef810d6c24aeca305cd3c325af2354cea607798e82247a3e95a0ee0f97425bf",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.projects.requestProductionEnrollment"
+        "method": "Client.projects.requestProductionEnrollment"
       }
     },
     {
@@ -4364,9 +4326,8 @@
       "operationId": "retryProjectWebhookDelivery",
       "fingerprint": "38edb41227ef675157277de18e0d9bf7f6639677818f8c2a8f69e280b45214df",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).webhookDeliveries.retry"
       }
     },
     {
@@ -4376,9 +4337,8 @@
       "operationId": "createProjectWebhook",
       "fingerprint": "1a84d699c6a8fc774bfe85b4eaaddbd31addd61809c403bbaa010a6dd6021a59",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).webhooks.create"
       }
     },
     {
@@ -4388,9 +4348,8 @@
       "operationId": "rotateProjectWebhookSecret",
       "fingerprint": "b6db4b2f05eacb82576c3fb6a72cbecd7bcefbd1cb605308822ff5bd7a5b050a",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).webhooks.rotateSecret"
       }
     },
     {
@@ -4400,9 +4359,8 @@
       "operationId": "testProjectWebhook",
       "fingerprint": "41f3f02723d73d84ee76a503e44a4ac4320f53d40c728577379eaf6016455376",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.project(projectId).webhooks.test"
       }
     },
     {
@@ -4413,7 +4371,7 @@
       "fingerprint": "7729d4347e0be6d3cbdfc9b092449fe2b9203126eefef68dff93091fb6acab10",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.sessions.deleteMany"
+        "method": "Client.sessions.deleteMany"
       }
     },
     {
@@ -4424,7 +4382,7 @@
       "fingerprint": "30243b9f92c42b9d34e62970ef42f7a275594bf9bc87c313858162bd6b146cb2",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.sessions.stopMany"
+        "method": "Client.sessions.stopMany"
       }
     },
     {
@@ -4435,7 +4393,7 @@
       "fingerprint": "64cb2649c764e746de9cc02c2ac90b18dee5c0d1c44db5f5e4a3e487f8d49aef",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.sessions.createTesting"
+        "method": "Client.sessions.createTesting"
       }
     },
     {
@@ -4445,9 +4403,8 @@
       "operationId": "startPlatformSession",
       "fingerprint": "6c00282c3715a7b87ea17c2add03033ad5fa03a8dd6b12d709fa03aecae62157",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.sessions.start"
       }
     },
     {
@@ -4458,7 +4415,7 @@
       "fingerprint": "066950a07954551deda3e02880db38a88cb47f8b3466d69a243fff357dc53d8c",
       "typescript": {
         "status": "covered",
-        "method": "PlatformClient.sessions.stop"
+        "method": "Client.sessions.stop"
       }
     },
     {
@@ -4469,7 +4426,7 @@
       "fingerprint": "5a6b8831c17b9a824f1d20f8de747176199e2b88828f841ccbdbe16ee3dd49da",
       "typescript": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by PlatformClient.",
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
       }
     },
@@ -4480,9 +4437,8 @@
       "operationId": "retryOrganizationWebhookDelivery",
       "fingerprint": "3c4842a2d3eff7bc2d5d4c96cb93d44edd4466eb98ef9d0919489f66574c2957",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.webhookDeliveries.retry"
       }
     },
     {
@@ -4492,9 +4448,8 @@
       "operationId": "createOrganizationWebhook",
       "fingerprint": "310c07a9659ec0c5f399ecc795e31d9210387a547a8e5db59b33887c1ebf8d4f",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.webhooks.create"
       }
     },
     {
@@ -4504,9 +4459,8 @@
       "operationId": "rotateOrganizationWebhookSecret",
       "fingerprint": "eb920d819c359f828ebef495c874215afc8d0a5b5cf0e5a5f9b02c164cf4fd00",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.webhooks.rotateSecret"
       }
     },
     {
@@ -4516,9 +4470,8 @@
       "operationId": "testOrganizationWebhook",
       "fingerprint": "b65a74eb4c4e71a057a0d0176eeca1aa3fcc67fe1b89cdac4917e3f5e2660abb",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.webhooks.test"
       }
     },
     {
@@ -4528,9 +4481,9 @@
       "operationId": "adminUpdatePricing",
       "fingerprint": "5b0e99a7aea998fd8b86838992f36690b5e21cc047d820fc061973c5e113c18a",
       "typescript": {
-        "status": "missing",
-        "reason": "No handwritten TypeScript resource method exists for this operation yet.",
-        "milestone": "typescript-parity"
+        "status": "excluded",
+        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
+        "milestone": "credential-boundary"
       }
     },
     {
@@ -4600,9 +4553,8 @@
       "operationId": "updateQuickLinkSettings",
       "fingerprint": "da2606f6c7967e7642fae7930f54f8482151d1b9d443ada79cc092ee1108f510",
       "typescript": {
-        "status": "missing",
-        "reason": "PlatformClient.widgetSettings still requests /v1/widget; it does not implement the /v1/quicklink contract.",
-        "milestone": "typescript-parity"
+        "status": "covered",
+        "method": "Client.quickLinkSettings.update"
       }
     }
   ]

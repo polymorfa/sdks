@@ -1,6 +1,7 @@
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { PlatformClient } from "../src/platform/client.js";
+import { Client } from "../src/client.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -14,7 +15,7 @@ afterEach(async () => {
 });
 
 async function platformServer(): Promise<{
-  client: PlatformClient;
+  client: Client;
   requests: RecordedRequest[];
 }> {
   const server = await startTestServer(() => ({
@@ -27,15 +28,18 @@ async function platformServer(): Promise<{
   servers.push(server);
   return {
     requests: server.requests,
-    client: new PlatformClient({
-      apiKey: "pmfa_platform",
+    client: new Client({
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     }),
   };
 }
 
-describe("PlatformClient billing", () => {
+describe("Client billing", () => {
   it("maps the complete organization-key billing read surface", async () => {
     const { client, requests } = await platformServer();
 
@@ -73,7 +77,7 @@ describe("PlatformClient billing", () => {
   });
 });
 
-describe("PlatformClient media", () => {
+describe("Client media", () => {
   it("maps media URL, delete, and upload operations", async () => {
     const { client, requests } = await platformServer();
     const retrieved = await client.media.retrieve("media/a");
@@ -96,7 +100,7 @@ describe("PlatformClient media", () => {
   });
 });
 
-describe("PlatformClient opt-outs", () => {
+describe("Client opt-outs", () => {
   it("maps list, single, batch, and encoded delete operations", async () => {
     const { client, requests } = await platformServer();
     await client.optOuts.list();
@@ -119,7 +123,7 @@ describe("PlatformClient opt-outs", () => {
   });
 });
 
-describe("PlatformClient audiences", () => {
+describe("Client audiences", () => {
   it("maps collection, encoded item, and upload operations", async () => {
     const { client, requests } = await platformServer();
     await client.audiences.list();
@@ -144,7 +148,7 @@ describe("PlatformClient audiences", () => {
   });
 });
 
-describe("PlatformClient campaigns", () => {
+describe("Client campaigns", () => {
   it("maps collection, encoded item, and project query operations", async () => {
     const { client, requests } = await platformServer();
     await client.campaigns.list({

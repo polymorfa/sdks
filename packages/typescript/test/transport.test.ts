@@ -1,8 +1,9 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   PolymorfaAuthenticationError,
   PolymorfaCancelledError,
+  PolymorfaConfigurationError,
   PolymorfaConnectionError,
   PolymorfaRateLimitError,
   PolymorfaServerError,
@@ -42,6 +43,23 @@ function makeTransport(
 }
 
 describe("HttpTransport", () => {
+  it("rejects cleartext credential transport outside loopback", () => {
+    expect(() => makeTransport("http://api.example.com")).toThrow(
+      PolymorfaConfigurationError,
+    );
+  });
+
+  it("disables automatic redirects for credentialed requests", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ ok: true }),
+    );
+    const transport = makeTransport("https://api.example.com", { fetch });
+
+    await transport.request({ method: "GET", path: "/v1/check" });
+
+    expect(fetch.mock.calls[0]?.[1]?.redirect).toBe("error");
+  });
+
   it("sends protected headers and returns immutable response metadata", async () => {
     const server = await serverFor(() => ({
       headers: {
@@ -49,6 +67,8 @@ describe("HttpTransport", () => {
         "x-request-id": "req_123",
         "polymorfa-version": "2026-08-19",
         "x-ratelimit-remaining": "41",
+        "set-cookie": "session=secret",
+        "x-internal-debug": "database-host",
       },
       body: '{"ok":true}',
     }));
@@ -69,6 +89,8 @@ describe("HttpTransport", () => {
       attempts: 1,
     });
     expect(response.metadata.headers["x-ratelimit-remaining"]).toBe("41");
+    expect(response.metadata.headers).not.toHaveProperty("set-cookie");
+    expect(response.metadata.headers).not.toHaveProperty("x-internal-debug");
     expect(Object.isFrozen(response.metadata)).toBe(true);
     expect(server.requests[0]?.headers.authorization).toBe(
       "Bearer pmfa_example",

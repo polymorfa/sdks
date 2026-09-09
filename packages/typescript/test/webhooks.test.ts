@@ -9,6 +9,7 @@ import {
   type CallTelemetryPayload,
   constructWebhookEvent,
   isEvent,
+  webhooks,
   verifyWebhookSignature,
   type MessageReceivedEvent,
 } from "../src/webhooks/index.js";
@@ -50,6 +51,66 @@ describe("verifyWebhookSignature", () => {
     await expect(
       verifyWebhookSignature(raw, "not-hex", "fixture-secret"),
     ).resolves.toBe(false);
+  });
+});
+
+describe("webhook utilities", () => {
+  it("does not advertise the retired direct-QR event", () => {
+    expect(KNOWN_WEBHOOK_EVENT_TYPES).not.toContain("session.qr");
+  });
+
+  it("creates canonical exact-byte fixtures and verifies them", async () => {
+    const event = JSON.parse(raw.toString("utf8")) as MessageReceivedEvent;
+    const fixture = await webhooks.createFixture({
+      event,
+      secret: "fixture-secret",
+    });
+    expect(Buffer.from(fixture.body)).toEqual(raw);
+    expect(fixture.signature).toBe(signature);
+    expect(fixture.contentType).toBe("application/json");
+    expect(fixture.headers).toEqual({
+      "content-type": "application/json",
+      "x-webhook-signature": fixture.signature,
+    });
+    await expect(
+      webhooks.verifySignature({
+        body: fixture.body,
+        signature: fixture.signature,
+        secret: "fixture-secret",
+      }),
+    ).resolves.toBe(true);
+    await expect(
+      webhooks.verify({
+        body: fixture.body,
+        signature: fixture.signature,
+        secret: "fixture-secret",
+      }),
+    ).resolves.toEqual(event);
+  });
+
+  it("keeps the timestamped local-forward signature separate", async () => {
+    const secretBytes = Buffer.alloc(32, 7);
+    const secret = secretBytes.toString("base64url");
+    const timestamp = 1_787_133_600;
+    const digest = createHmac("sha256", secretBytes)
+      .update(Buffer.from(`${timestamp}.`))
+      .update(raw)
+      .digest("hex");
+    await expect(
+      webhooks.verifyLocal({
+        body: raw,
+        signature: `t=${timestamp},v1=${digest}`,
+        secret,
+        nowUnixSeconds: timestamp + 10,
+      }),
+    ).resolves.toMatchObject({ id: "evt_1", event: "message.received" });
+    await expect(
+      webhooks.verify({
+        body: raw,
+        signature: `t=${timestamp},v1=${digest}`,
+        secret,
+      }),
+    ).rejects.toThrow(WebhookSignatureError);
   });
 });
 

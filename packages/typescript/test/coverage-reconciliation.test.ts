@@ -1,9 +1,10 @@
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 import { describe, expect, it, vi } from "vitest";
 import { HttpCallsApi } from "../../calls/src/index.js";
-import { PlatformClient } from "../src/index.js";
+import { Client } from "../src/index.js";
 
 type LedgerEntry = {
   family: string;
@@ -103,7 +104,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("8c244aab0e5626d101a2c8c4915287427f39e014");
+    expect(source.commit).toBe("6918c56135e28ba64557e344cb72889f1f517eb5");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -129,7 +130,7 @@ describe("reconciled coverage evidence", () => {
         Response.json(fixture.response, { status: fixture.status }),
       );
       const api = new HttpCallsApi({
-        apiKey: "pmfa_coverage",
+        apiKey: ORGANIZATION_API_KEY,
         baseUrl: "https://api.example.com",
         fetch,
       });
@@ -153,7 +154,7 @@ describe("reconciled coverage evidence", () => {
         expect(JSON.parse(init.body as string)).toEqual(fixture.body);
       }
       expect(new Headers(init.headers).get("authorization")).toBe(
-        "Bearer pmfa_coverage",
+        `Bearer ${ORGANIZATION_API_KEY}`,
       );
       if (fixture.method === "place") {
         expect(new Headers(init.headers).get("idempotency-key")).toBe(
@@ -163,45 +164,47 @@ describe("reconciled coverage evidence", () => {
     },
   );
 
-  it("does not transfer obsolete widget settings coverage to QuickLink", async () => {
+  it("covers QuickLink settings through the exact management routes", async () => {
     const fetch = vi.fn(async () => Response.json({ data: {} }));
-    const client = new PlatformClient({ apiKey: "pmfa_coverage", fetch });
-    await client.widgetSettings.retrieve();
-    await client.widgetSettings.update({});
+    const client = new Client({
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
+      fetch,
+    });
+    await client.quickLinkSettings.retrieve();
+    await client.quickLinkSettings.update({});
     expect(fetch.mock.calls).toHaveLength(2);
     for (const call of fetch.mock.calls) {
       const [url] = call as unknown as [string];
-      expect(new URL(url).pathname).toBe("/v1/widget");
+      expect(new URL(url).pathname).toBe("/v1/quicklink");
     }
-    for (const operationId of [
-      "getQuickLinkSettings",
-      "updateQuickLinkSettings",
-    ]) {
-      expect(entry(operationId).typescript).toMatchObject({
-        status: "missing",
-        reason: expect.stringContaining("/v1/widget"),
-      });
-    }
-    expect(
-      ledger.operations.filter(({ path }) => /\/widget(?:\/|$)/.test(path)),
-    ).toEqual([]);
+    expect(entry("getQuickLinkSettings").typescript).toEqual({
+      status: "covered",
+      method: "Client.quickLinkSettings.retrieve",
+    });
+    expect(entry("updateQuickLinkSettings").typescript).toEqual({
+      status: "covered",
+      method: "Client.quickLinkSettings.update",
+    });
   });
 
-  it("keeps unimplemented durable Platform resources explicitly missing", () => {
+  it("covers every durable Platform developer resource", () => {
     const operations = ledger.operations.filter(
       ({ family, path, operationId }) =>
         family === "platform" &&
         /^\/v1\/(?:projects\/\{projectId\}\/)?(?:events|operations|webhooks|webhook-deliveries)(?:\/|$)/.test(
           path,
         ) &&
-        operationId !== "getOrganizationOperation",
+        operationId.length > 0,
     );
-    expect(operations).toHaveLength(37);
+    expect(operations).toHaveLength(38);
     for (const operation of operations) {
       expect(operation.typescript.status, operation.operationId).toBe(
-        "missing",
+        "covered",
       );
-      expect(operation.typescript.method).toBeUndefined();
+      expect(operation.typescript.method).toMatch(/^Client\./);
     }
     expect(
       ledger.operations.some(

@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -51,5 +51,16 @@ describe("retired product-name checker", () => {
     );
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("README.md");
+  });
+
+  it("ignores a tracked file removed in the working tree", () => {
+    const directory = makeRepository("Polymorfa SDK");
+    unlinkSync(join(directory, "README.md"));
+
+    const result = spawnSync(process.execPath, [checker, "--root", directory], {
+      encoding: "utf8",
+    });
+
+    expect(result.status, result.stderr).toBe(0);
   });
 });

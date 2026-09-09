@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
@@ -24,7 +25,10 @@ afterEach(async () => {
 
 function mediaClient(baseUrl: string, timeoutMs = 500): MessagingClient {
   return new MessagingClient({
-    credential: { type: "apiKey", value: "pmfa_example" },
+    credential: {
+      type: "apiKey",
+      value: ORGANIZATION_API_KEY,
+    },
     baseUrl,
     timeoutMs,
     maxNetworkRetries: 0,

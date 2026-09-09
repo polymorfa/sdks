@@ -44,7 +44,6 @@ export {
   type SessionConnectedPayload,
   type SessionLoggedOutPayload,
   type SessionPhoneOfflinePayload,
-  type SessionQrPayload,
   type SessionStatusPayload,
   type UnknownWebhookEvent,
   type WebhookEvent,
@@ -57,3 +56,12 @@ export {
   verifyWebhookSignature,
   type WebhookBody,
 } from "./verify.js";
+export {
+  webhooks,
+  type CreateWebhookFixtureInput,
+  type VerifyLocalWebhookInput,
+  type VerifyWebhookInput,
+  type VerifyWebhookSignatureInput,
+  type WebhookFixture,
+  type WebhookUtilities,
+} from "./utilities.js";

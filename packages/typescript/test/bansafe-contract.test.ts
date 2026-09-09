@@ -3,7 +3,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { PlatformClient } from "../src/index.js";
+import { Client } from "../src/index.js";
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 
 const root = resolve(import.meta.dirname, "../../..");
 const source = JSON.parse(
@@ -76,15 +77,16 @@ describe("BanSafe draft contract coverage", () => {
   });
 
   it("maps covered operations to methods and excludes dashboard-only actions", () => {
-    const client = new PlatformClient({
-      apiKey: "pmfa_contract",
+    const client = new Client({
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: "https://example.invalid",
     });
     for (const operation of coverage.operations) {
       if (operation.status === "excluded") continue;
-      const path = operation
-        .sdkPath!.replace(/^PlatformClient\./, "")
-        .split(".");
+      const path = operation.sdkPath!.replace(/^Client\./, "").split(".");
       let value: unknown = client;
       for (const part of path) value = (value as Record<string, unknown>)[part];
       expect(typeof value, operation.sdkPath).toBe("function");

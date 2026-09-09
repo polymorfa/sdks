@@ -23,6 +23,7 @@ import { ProfileResource } from "./profile.js";
 import { PrivacyResource } from "./privacy.js";
 import { PresenceResource } from "./presence.js";
 import { QuickRepliesResource } from "./quick-replies.js";
+import { QuickLinksResource } from "./quicklinks.js";
 import { SessionsResource } from "./sessions.js";
 import { TemplatesResource } from "./templates.js";
 import { UsersResource } from "./users.js";
@@ -49,6 +50,7 @@ export class MessagingClient {
   readonly privacy: PrivacyResource;
   readonly presence: PresenceResource;
   readonly quickReplies: QuickRepliesResource;
+  readonly quickLinks: QuickLinksResource;
   readonly templates: TemplatesResource;
   readonly users: UsersResource;
   readonly voip: VoipResource;
@@ -57,7 +59,7 @@ export class MessagingClient {
 
   constructor(options: MessagingClientOptions) {
     const credential = validateMessagingCredential(options.credential);
-    if (credential.type === "apiKey") assertServerRuntime();
+    if (credential.type !== "clientToken") assertServerRuntime();
     const transport = new HttpTransport({
       baseUrl: options.baseUrl ?? "https://api.polymorfa.com",
       authorization: `Bearer ${credential.value}`,
@@ -87,6 +89,7 @@ export class MessagingClient {
     this.privacy = new PrivacyResource(transport);
     this.presence = new PresenceResource(transport);
     this.quickReplies = new QuickRepliesResource(transport);
+    this.quickLinks = new QuickLinksResource(transport, credential.type);
     this.templates = new TemplatesResource(transport);
     this.users = new UsersResource(transport);
     this.voip = new VoipResource(transport);

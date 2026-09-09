@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
@@ -55,7 +56,10 @@ async function compactSurfaceServer(): Promise<{
   return {
     requests: server.requests,
     client: new MessagingClient({
-      credential: { type: "apiKey", value: "pmfa_example" },
+      credential: {
+        type: "apiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     }),
@@ -203,7 +207,7 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
       },
       metadata: { requestId: "req_compact_surface" },
     });
-    expect(result.metadata.headers["cache-control"]).toBe("private, no-store");
+    expect(result.metadata.headers).not.toHaveProperty("cache-control");
     expect(result.data.data).not.toHaveProperty("verificationQRCode");
     expect(requests).toHaveLength(1);
     expect(requests[0]).toMatchObject({

@@ -1,11 +1,11 @@
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
   ApiKeysResource,
   AuditLogsResource,
   MembersResource,
-  PlatformClient,
-  PlatformOperationsResource,
+  Client,
   ProjectTokensResource,
   SecurityIncidentsResource,
   SessionBansResource,
@@ -14,6 +14,7 @@ import {
   type AuditLog,
   type DataEnvelope,
   type ManagementOperation,
+  type OrganizationOperation,
   type OrganizationMember,
   type ProjectToken,
   type SecurityIncident,
@@ -32,7 +33,7 @@ afterEach(async () => {
 });
 
 async function platformAccessServer(): Promise<{
-  client: PlatformClient;
+  client: Client;
   requests: RecordedRequest[];
 }> {
   const server = await startTestServer(() => ({
@@ -45,32 +46,29 @@ async function platformAccessServer(): Promise<{
   servers.push(server);
   return {
     requests: server.requests,
-    client: new PlatformClient({
-      apiKey: "pmfa_platform",
+    client: new Client({
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     }),
   };
 }
 
-describe("PlatformClient organization access and operations", () => {
+describe("Client organization access and operations", () => {
   it("exports the complete resource and response contracts", () => {
-    expectTypeOf<PlatformClient["apiKeys"]>().toEqualTypeOf<ApiKeysResource>();
-    expectTypeOf<PlatformClient["members"]>().toEqualTypeOf<MembersResource>();
+    expectTypeOf<Client["apiKeys"]>().toEqualTypeOf<ApiKeysResource>();
+    expectTypeOf<Client["members"]>().toEqualTypeOf<MembersResource>();
+    expectTypeOf<Client["auditLogs"]>().toEqualTypeOf<AuditLogsResource>();
+    expectTypeOf<Client["sessionBans"]>().toEqualTypeOf<SessionBansResource>();
     expectTypeOf<
-      PlatformClient["auditLogs"]
-    >().toEqualTypeOf<AuditLogsResource>();
-    expectTypeOf<
-      PlatformClient["sessionBans"]
-    >().toEqualTypeOf<SessionBansResource>();
-    expectTypeOf<
-      PlatformClient["securityIncidents"]
+      Client["securityIncidents"]
     >().toEqualTypeOf<SecurityIncidentsResource>();
+    expectTypeOf<Client["operations"]>().toHaveProperty("list");
     expectTypeOf<
-      PlatformClient["operations"]
-    >().toEqualTypeOf<PlatformOperationsResource>();
-    expectTypeOf<
-      PlatformClient["projectTokens"]
+      Client["projectTokens"]
     >().toEqualTypeOf<ProjectTokensResource>();
 
     expectTypeOf<ApiKey>().toHaveProperty("lastUsed");
@@ -78,7 +76,7 @@ describe("PlatformClient organization access and operations", () => {
     expectTypeOf<AuditLog>().toHaveProperty("metadata");
     expectTypeOf<SessionBan>().toHaveProperty("banExpiresAt");
     expectTypeOf<SecurityIncident>().toHaveProperty("acknowledgedAt");
-    expectTypeOf<ManagementOperation>().toHaveProperty("failureCode");
+    expectTypeOf<ManagementOperation>().toHaveProperty("capabilities");
     expectTypeOf<ProjectToken>().toHaveProperty("revokedAt");
   });
 
@@ -187,9 +185,7 @@ describe("PlatformClient organization access and operations", () => {
       timeoutMs: 5_000,
     });
 
-    expectTypeOf(operation).toEqualTypeOf<
-      ApiResponse<DataEnvelope<ManagementOperation>>
-    >();
+    expectTypeOf(operation).toEqualTypeOf<ApiResponse<OrganizationOperation>>();
     expectTypeOf(tokens).toEqualTypeOf<
       ApiResponse<DataEnvelope<readonly ProjectToken[]>>
     >();

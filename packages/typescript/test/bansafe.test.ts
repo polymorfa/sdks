@@ -2,7 +2,7 @@ import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
   BanSafeResource,
-  PlatformClient,
+  Client,
   type ApiResponse,
   type BanSafeCollectionEnvelope,
   type BanSafeHealthActionsEnvelope,
@@ -16,6 +16,7 @@ import {
   type DataEnvelope,
   type ProjectHealthPolicy,
 } from "../src/index.js";
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -29,7 +30,7 @@ afterEach(async () => {
 });
 
 async function testClient(): Promise<{
-  client: PlatformClient;
+  client: Client;
   requests: RecordedRequest[];
 }> {
   const server = await startTestServer(() => ({
@@ -38,8 +39,11 @@ async function testClient(): Promise<{
   }));
   servers.push(server);
   return {
-    client: new PlatformClient({
-      apiKey: "pmfa_bansafe",
+    client: new Client({
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     }),
@@ -47,7 +51,7 @@ async function testClient(): Promise<{
   };
 }
 
-describe("PlatformClient BanSafe resources", () => {
+describe("Client BanSafe resources", () => {
   it("exposes typed Health and telemetry reads without dashboard-only mutations", async () => {
     const { client, requests } = await testClient();
     expectTypeOf(client.banSafe).toEqualTypeOf<BanSafeResource>();
