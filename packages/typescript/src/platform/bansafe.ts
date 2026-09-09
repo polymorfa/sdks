@@ -40,7 +40,7 @@ export class BanSafeResource {
     params: ListBanSafeHealthParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<BanSafeHealthEnvelope>> {
-    return this.get("/v1/bansafe/health", params, options);
+    return this.get("/platform/bansafe/health", params, options);
   }
 
   getHealth(
@@ -48,7 +48,7 @@ export class BanSafeResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<BanSafeNumberDetail>>> {
     return this.get(
-      `/v1/bansafe/health/${encodeURIComponent(session)}`,
+      `/platform/bansafe/health/${encodeURIComponent(session)}`,
       {},
       options,
     );
@@ -60,7 +60,7 @@ export class BanSafeResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<BanSafeHealthHistory>>> {
     return this.get(
-      `/v1/bansafe/health/${encodeURIComponent(session)}/history`,
+      `/platform/bansafe/health/${encodeURIComponent(session)}/history`,
       params,
       options,
     );
@@ -69,7 +69,7 @@ export class BanSafeResource {
   listSignals(
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<readonly BanSafeSignalDefinition[]>>> {
-    return this.get("/v1/bansafe/signals", {}, options);
+    return this.get("/platform/bansafe/signals", {}, options);
   }
 
   getTelemetry(
@@ -77,7 +77,7 @@ export class BanSafeResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<BanSafeTelemetryDetail>>> {
     return this.get(
-      `/v1/bansafe/telemetry/${encodeURIComponent(session)}`,
+      `/platform/bansafe/telemetry/${encodeURIComponent(session)}`,
       {},
       options,
     );
@@ -89,7 +89,7 @@ export class BanSafeResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<BanSafeTelemetryHistoryEnvelope>> {
     return this.get(
-      `/v1/bansafe/telemetry/${encodeURIComponent(session)}/history`,
+      `/platform/bansafe/telemetry/${encodeURIComponent(session)}/history`,
       params,
       options,
     );
@@ -99,35 +99,35 @@ export class BanSafeResource {
     params: ListBanSafeCollectionParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<BanSafeCollectionEnvelope>> {
-    return this.get("/v1/bansafe/collection", params, options);
+    return this.get("/platform/bansafe/collection", params, options);
   }
 
   listHealthActions(
     params: ListBanSafeHealthActionsParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<BanSafeHealthActionsEnvelope>> {
-    return this.get("/v1/bansafe/health-actions", params, options);
+    return this.get("/platform/bansafe/health-actions", params, options);
   }
 
   listFindings(
     params: ListBanSafeFindingsParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<BanSafeFindingsEnvelope>> {
-    return this.get("/v1/bansafe/findings", params, options);
+    return this.get("/platform/bansafe/findings", params, options);
   }
 
   listEnforcement(
     params: ListBanSafeEnforcementParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<BanSafeEnforcementEnvelope>> {
-    return this.get("/v1/bansafe/enforcement", params, options);
+    return this.get("/platform/bansafe/enforcement", params, options);
   }
 
   listIncidents(
     params: ListBanSafeIncidentsParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<BanSafeIncidentsEnvelope>> {
-    return this.get("/v1/bansafe/incidents", params, options);
+    return this.get("/platform/bansafe/incidents", params, options);
   }
 
   createIncident(
@@ -136,7 +136,7 @@ export class BanSafeResource {
   ): Promise<ApiResponse<DataEnvelope<BanSafeIncidentReceipt>>> {
     return this.transport.request({
       method: "POST",
-      path: "/v1/bansafe/incidents",
+      path: "/platform/bansafe/incidents",
       body,
       ...options,
     });
@@ -148,7 +148,7 @@ export class BanSafeResource {
   ): Promise<ApiResponse<DataEnvelope<BanSafeIncident>>> {
     return this.transport.request({
       method: "POST",
-      path: `/v1/bansafe/incidents/${encodeURIComponent(incidentId)}/retract`,
+      path: `/platform/bansafe/incidents/${encodeURIComponent(incidentId)}/retract`,
       ...options,
     });
   }
@@ -157,7 +157,7 @@ export class BanSafeResource {
     params: ListBanSafeClaimsParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<BanSafeClaimsEnvelope>> {
-    return this.get("/v1/bansafe/claims", params, options);
+    return this.get("/platform/bansafe/claims", params, options);
   }
 
   getClaim(
@@ -165,7 +165,7 @@ export class BanSafeResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<BanSafeClaim>>> {
     return this.get(
-      `/v1/bansafe/claims/${encodeURIComponent(claimId)}`,
+      `/platform/bansafe/claims/${encodeURIComponent(claimId)}`,
       {},
       options,
     );

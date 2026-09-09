@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/v1/…` — **public registry** (150 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (52 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n- `/admin/…` — **staff-only** (53 endpoints): Polymorfa internal staff. EXCLUDED.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (138 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (64 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n- `/admin/…` — **staff-only** (53 endpoints): Polymorfa internal staff. EXCLUDED.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -15,14 +15,14 @@
     }
   ],
   "paths": {
-    "/v1/sessions": {
+    "/platform/sessions": {
       "get": {
         "operationId": "listPlatformSessions",
         "tags": [
           "sessions"
         ],
         "summary": "List sessions",
-        "description": "Lists every session in the authenticated organization or selected project, including disconnected sessions and their latest status reason.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists every session in the authenticated organization or selected project, including disconnected sessions and their latest status reason.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -97,14 +97,14 @@
         }
       }
     },
-    "/v1/sessions/{sessionId}/start": {
+    "/platform/sessions/{sessionId}/start": {
       "post": {
         "operationId": "startPlatformSession",
         "tags": [
           "sessions"
         ],
         "summary": "Start a session",
-        "description": "Starts a stopped session or retries a session whose runtime failed. The identifier may be the session UUID or stable session slug.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `session` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Starts a stopped session or retries a session whose runtime failed. The identifier may be the session UUID or stable session slug.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -190,14 +190,14 @@
         }
       }
     },
-    "/v1/sessions/{sessionId}/stop": {
+    "/platform/sessions/{sessionId}/stop": {
       "post": {
         "operationId": "stopPlatformSession",
         "tags": [
           "sessions"
         ],
         "summary": "Stop a session",
-        "description": "Requests an asynchronous stop for one session. The identifier may be the session UUID or stable session slug.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `session` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Requests an asynchronous stop for one session. The identifier may be the session UUID or stable session slug.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -280,14 +280,14 @@
         }
       }
     },
-    "/v1/sessions/{sessionId}": {
+    "/platform/sessions/{sessionId}": {
       "delete": {
         "operationId": "deletePlatformSession",
         "tags": [
           "sessions"
         ],
         "summary": "Remove a session",
-        "description": "Permanently removes one session and terminates its active connection when needed.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `session` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Permanently removes one session and terminates its active connection when needed.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -362,7 +362,7 @@
           "sessions"
         ],
         "summary": "Set a session tier override",
-        "description": "Sets an explicit session tier or clears the override with null.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `session` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Sets an explicit session tier or clears the override with null.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -445,14 +445,14 @@
         }
       }
     },
-    "/v1/sessions/stop": {
+    "/platform/sessions/stop": {
       "post": {
         "operationId": "stopSessions",
         "tags": [
           "sessions"
         ],
         "summary": "Stop multiple sessions",
-        "description": "Requests asynchronous stops for up to 100 session UUIDs or slugs in the authenticated project scope.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Requests asynchronous stops for up to 100 session UUIDs or slugs in the authenticated project scope.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -524,14 +524,14 @@
         }
       }
     },
-    "/v1/sessions/delete": {
+    "/platform/sessions/delete": {
       "post": {
         "operationId": "deleteSessions",
         "tags": [
           "sessions"
         ],
         "summary": "Remove multiple sessions",
-        "description": "Permanently removes up to 100 session UUIDs or slugs and terminates any rows that were still active.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Permanently removes up to 100 session UUIDs or slugs and terminates any rows that were still active.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -600,14 +600,14 @@
         }
       }
     },
-    "/v1/sessions/testing": {
+    "/platform/sessions/testing": {
       "post": {
         "operationId": "createTestingSession",
         "tags": [
           "sessions"
         ],
         "summary": "Create a testing number",
-        "description": "Creates a disconnected simulated session with testMode enabled. Organization keys and dashboard bearers must provide a projectId in the body.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Creates a disconnected simulated session with testMode enabled. Team API keys require projectId in the body.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -682,14 +682,14 @@
         }
       }
     },
-    "/v1/bans": {
+    "/platform/bans": {
       "get": {
         "operationId": "listSessionBans",
         "tags": [
           "bans"
         ],
         "summary": "List session bans",
-        "description": "Public Management API. Organization API-key callers require `sessions:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -739,14 +739,14 @@
         }
       }
     },
-    "/v1/bans/active": {
+    "/platform/bans/active": {
       "get": {
         "operationId": "listActiveSessionBans",
         "tags": [
           "bans"
         ],
         "summary": "List active session bans",
-        "description": "Public Management API. Organization API-key callers require `sessions:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -796,14 +796,14 @@
         }
       }
     },
-    "/v1/bansafe/health": {
+    "/platform/bansafe/health": {
       "get": {
         "operationId": "listBanSafeHealth",
         "tags": [
           "bansafe"
         ],
         "summary": "List number safety",
-        "description": "Lists present Health, findings counts, and the active Polymorfa restriction for every number in one project. Health is a 0 to 100 estimate from rules v1 or a validated learned model. It remains null until enough fresh evidence is available.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists present Health, findings counts, and the active Polymorfa restriction for every number in one project. Health is a 0 to 100 estimate from rules v1 or a validated learned model. It remains null until enough fresh evidence is available.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -901,14 +901,14 @@
         }
       }
     },
-    "/v1/bansafe/health/{session}": {
+    "/platform/bansafe/health/{session}": {
       "get": {
         "operationId": "getBanSafeHealth",
         "tags": [
           "bansafe"
         ],
         "summary": "Get number safety",
-        "description": "Returns one number's present Health estimate and model metadata, retained open and acknowledged findings with their observation times, directly observed account state, the active Polymorfa restriction, and how that restriction lifts. Recorded findings and observed state remain separate from the estimate.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns one number's present Health estimate and model metadata, retained open and acknowledged findings with their observation times, directly observed account state, the active Polymorfa restriction, and how that restriction lifts. Recorded findings and observed state remain separate from the estimate.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -980,14 +980,14 @@
         }
       }
     },
-    "/v1/bansafe/health/{session}/history": {
+    "/platform/bansafe/health/{session}/history": {
       "get": {
         "operationId": "listBanSafeHealthHistory",
         "tags": [
           "bansafe"
         ],
         "summary": "List number health history",
-        "description": "Returns the newest Health evaluations since the requested date, up to the limit, ordered oldest to newest. Each point carries its estimator source and version, evidence coverage, reliability, and availability reason.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns the newest Health evaluations since the requested date, up to the limit, ordered oldest to newest. Each point carries its estimator source and version, evidence coverage, reliability, and availability reason.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -1079,14 +1079,14 @@
         }
       }
     },
-    "/v1/bansafe/signals": {
+    "/platform/bansafe/signals": {
       "get": {
         "operationId": "listBanSafeSignals",
         "tags": [
           "bansafe"
         ],
         "summary": "List BanSafe telemetry signals",
-        "description": "Lists the bounded numeric, boolean, enum, histogram, and error-code aggregate signals that BanSafe can return. The catalogue contains no message content, recipient identifiers, or raw telemetry records.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists the bounded numeric, boolean, enum, histogram, and error-code aggregate signals that BanSafe can return. The catalogue contains no message content, recipient identifiers, or raw telemetry records.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -1151,14 +1151,14 @@
         }
       }
     },
-    "/v1/bansafe/telemetry/{session}": {
+    "/platform/bansafe/telemetry/{session}": {
       "get": {
         "operationId": "getBanSafeTelemetry",
         "tags": [
           "bansafe"
         ],
         "summary": "Get latest BanSafe telemetry",
-        "description": "Returns collection availability and the latest supported telemetry snapshot for one number. Empty collection is reported as not collected, not as a disabled collector.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns collection availability and the latest supported telemetry snapshot for one number. Empty collection is reported as not collected, not as a disabled collector.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -1230,14 +1230,14 @@
         }
       }
     },
-    "/v1/bansafe/telemetry/{session}/history": {
+    "/platform/bansafe/telemetry/{session}/history": {
       "get": {
         "operationId": "listBanSafeTelemetryHistory",
         "tags": [
           "bansafe"
         ],
         "summary": "List BanSafe telemetry history",
-        "description": "Returns the newest supported telemetry snapshots for one number. Signals are fixed-schema safe aggregates with explicit measured state; raw records and identifiers inside them are not returned.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns the newest supported telemetry snapshots for one number. Signals are fixed-schema safe aggregates with explicit measured state; raw records and identifiers inside them are not returned.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -1353,14 +1353,14 @@
         }
       }
     },
-    "/v1/bansafe/collection": {
+    "/platform/bansafe/collection": {
       "get": {
         "operationId": "listBanSafeCollection",
         "tags": [
           "bansafe"
         ],
         "summary": "List BanSafe collection status",
-        "description": "Lists telemetry collection freshness for the numbers in one project. Status is derived from ingested records and does not guess whether a collector flag is configured.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists telemetry collection freshness for the numbers in one project. Status is derived from ingested records and does not guess whether a collector flag is configured.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -1458,14 +1458,14 @@
         }
       }
     },
-    "/v1/bansafe/health-actions": {
+    "/platform/bansafe/health-actions": {
       "get": {
         "operationId": "listBanSafeHealthActions",
         "tags": [
           "bansafe"
         ],
         "summary": "List Health rule actions",
-        "description": "Lists the durable customer-visible outcomes of project Health rule actions, newest first. Internal leases, retry bookkeeping, runtime identifiers, and free-form outcomes are omitted.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists the durable customer-visible outcomes of project Health rule actions, newest first. Internal leases, retry bookkeeping, runtime identifiers, and free-form outcomes are omitted.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -1588,14 +1588,14 @@
         }
       }
     },
-    "/v1/bansafe/findings": {
+    "/platform/bansafe/findings": {
       "get": {
         "operationId": "listBanSafeFindings",
         "tags": [
           "bansafe"
         ],
         "summary": "List safety findings",
-        "description": "Lists safety findings across the organization, filterable by project, number, status, and severity. Evidence is numbers only and never contains message content or a recipient identifier.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists safety findings across the organization, filterable by project, number, status, and severity. Evidence is numbers only and never contains message content or a recipient identifier.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -1729,7 +1729,7 @@
         }
       }
     },
-    "/v1/bansafe/findings/{findingId}/acknowledge": {
+    "/platform/bansafe/findings/{findingId}/acknowledge": {
       "post": {
         "operationId": "acknowledgeBanSafeFinding",
         "tags": [
@@ -1816,14 +1816,14 @@
         }
       }
     },
-    "/v1/bansafe/enforcement": {
+    "/platform/bansafe/enforcement": {
       "get": {
         "operationId": "listBanSafeEnforcement",
         "tags": [
           "bansafe"
         ],
         "summary": "List number restrictions",
-        "description": "Lists every number Polymorfa is currently restricting, what the restriction blocks, and the exact condition that lifts it.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists every number Polymorfa is currently restricting, what the restriction blocks, and the exact condition that lifts it.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -1936,7 +1936,7 @@
         }
       }
     },
-    "/v1/bansafe/enforcement/{session}/appeal": {
+    "/platform/bansafe/enforcement/{session}/appeal": {
       "post": {
         "operationId": "appealBanSafeEnforcement",
         "tags": [
@@ -2025,14 +2025,14 @@
         }
       }
     },
-    "/v1/bansafe/incidents": {
+    "/platform/bansafe/incidents": {
       "get": {
         "operationId": "listBanSafeIncidents",
         "tags": [
           "bansafe"
         ],
         "summary": "List safety incidents",
-        "description": "Lists the WhatsApp restrictions and customer reports recorded for the organization's numbers.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists the WhatsApp restrictions and customer reports recorded for the organization's numbers.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -2145,7 +2145,7 @@
           "bansafe"
         ],
         "summary": "Report a ban",
-        "description": "Records that WhatsApp restricted or banned one of your numbers. Send the same `Idempotency-Key` to retry safely for the same number; a repeat returns the original report. Reusing the key for a different number returns `409 bansafe_incident_idempotency_scope_conflict`.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Records that WhatsApp restricted or banned one of your numbers. Send the same `Idempotency-Key` to retry safely for the same number; a repeat returns the original report. Reusing the key for a different number returns `409 bansafe_incident_idempotency_scope_conflict`.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -2232,14 +2232,14 @@
         }
       }
     },
-    "/v1/bansafe/incidents/{incidentId}/retract": {
+    "/platform/bansafe/incidents/{incidentId}/retract": {
       "post": {
         "operationId": "retractBanSafeIncident",
         "tags": [
           "bansafe"
         ],
         "summary": "Withdraw a ban report",
-        "description": "Withdraws a customer report and returns its incident record. Repeating the request returns the closed record. An incident observed from WhatsApp cannot be withdrawn and returns `409 bansafe_incident_not_a_report`. An unknown incident returns 404.\n\nOrganization API-key callers require `sessions:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Withdraws a customer report and returns its incident record. Repeating the request returns the closed record. An incident observed from WhatsApp cannot be withdrawn and returns `409 bansafe_incident_not_a_report`. An unknown incident returns 404.\n\nRequires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -2314,14 +2314,14 @@
         }
       }
     },
-    "/v1/bansafe/claims": {
+    "/platform/bansafe/claims": {
       "get": {
         "operationId": "listBanSafeClaims",
         "tags": [
           "bansafe"
         ],
         "summary": "List Ban Insurance claims",
-        "description": "Lists the Ban Insurance claims filed on your numbers, newest first. A claim is filed automatically when a ban is recorded on a number whose plan includes insurance; there is no request to file one.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists the Ban Insurance claims filed on your numbers, newest first. A claim is filed automatically when a ban is recorded on a number whose plan includes insurance; there is no request to file one.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -2445,14 +2445,14 @@
         }
       }
     },
-    "/v1/bansafe/claims/{claimId}": {
+    "/platform/bansafe/claims/{claimId}": {
       "get": {
         "operationId": "getBanSafeClaim",
         "tags": [
           "bansafe"
         ],
         "summary": "Get a Ban Insurance claim",
-        "description": "Returns one claim: the 30 days it covers, the credits that number consumed in them, the most the plan returns, what the claim returns, what the ban was attributed to, and the evidence counts behind that.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns one claim: the 30 days it covers, the credits that number consumed in them, the most the plan returns, what the claim returns, what the ban was attributed to, and the evidence counts behind that.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -2524,14 +2524,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/safe-mode": {
+    "/platform/projects/{projectId}/safe-mode": {
       "get": {
         "operationId": "getProjectSafeModeCeiling",
         "tags": [
           "bansafe"
         ],
         "summary": "Get a project's Safe Mode ceiling",
-        "description": "Returns the most visible sending behaviour any number in this project may use. Every setting is off by default. `entitled` reports whether the plan includes BanSafe Lite, which Safe Mode is part of, and `entitlementReason` gives the reason a raise would be refused.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns the most visible sending behaviour any number in this project may use. Every setting is off by default. `entitled` reports whether the plan includes BanSafe Lite, which Safe Mode is part of, and `entitlementReason` gives the reason a raise would be refused.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -2609,7 +2609,7 @@
           "bansafe"
         ],
         "summary": "Set a project's Safe Mode ceiling",
-        "description": "Sets the most visible behaviour any number in this project may use. Send only the settings you want to change. Presence and read receipts are visible to the people these numbers message: turning them on makes a number appear online, exposes last seen subject to the account's privacy settings, and puts blue ticks on incoming messages. Raising a setting requires a plan that includes BanSafe Lite, and lowering one is always allowed. A signed-in caller must be an organization owner, admin, or developer.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Sets the most visible behaviour any number in this project may use. Send only the settings you want to change. Presence and read receipts are visible to the people these numbers message: turning them on makes a number appear online, exposes last seen subject to the account's privacy settings, and puts blue ticks on incoming messages. Raising a setting requires a plan that includes BanSafe Lite, and lowering one is always allowed. A signed-in caller must be an organization owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -2698,14 +2698,14 @@
         }
       }
     },
-    "/v1/sessions/{sessionId}/safe-mode": {
+    "/platform/sessions/{sessionId}/safe-mode": {
       "get": {
         "operationId": "getNumberSafeMode",
         "tags": [
           "bansafe"
         ],
         "summary": "Get a number's Safe Mode",
-        "description": "Returns the project ceiling, this number's override, the policy in force, and what the number last reported it is running. `mismatch` is true when the two differ. `entitled` reports whether the plan includes BanSafe Lite, which Safe Mode is part of, and `entitlementReason` gives the reason a raise would be refused.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `session` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns the project ceiling, this number's override, the policy in force, and what the number last reported it is running. `mismatch` is true when the two differ. `entitled` reports whether the plan includes BanSafe Lite, which Safe Mode is part of, and `entitlementReason` gives the reason a raise would be refused.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -2783,7 +2783,7 @@
           "bansafe"
         ],
         "summary": "Set a number's Safe Mode",
-        "description": "Sets one number's Safe Mode. Each setting accepts `inherit` to follow the project ceiling. An override may only be equally or more conservative than the ceiling; a more visible value is refused with `safe_mode_exceeds_project_ceiling`. Raising a setting requires a plan that includes BanSafe Lite, and lowering one is always allowed. A signed-in caller must be an organization owner, admin, or developer.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `session` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Sets one number's Safe Mode. Each setting accepts `inherit` to follow the project ceiling. An override may only be equally or more conservative than the ceiling; a more visible value is refused with `safe_mode_exceeds_project_ceiling`. Raising a setting requires a plan that includes BanSafe Lite, and lowering one is always allowed. A signed-in caller must be an organization owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -2872,14 +2872,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/warmup-plan": {
+    "/platform/projects/{projectId}/warmup-plan": {
       "get": {
         "operationId": "getProjectWarmupPlanSettings",
         "tags": [
           "bansafe"
         ],
         "summary": "Get a project's warm-up plan",
-        "description": "Returns whether numbers in this project have a daily allowance, the two settings that shape the ramp, the per-number daily cap it climbs to, and the projected allowance day by day. `entitled` reports whether the plan includes BanSafe Lite, which the warm-up plan is part of.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns whether numbers in this project have a daily allowance, the two settings that shape the ramp, the per-number daily cap it climbs to, and the projected allowance day by day. `entitled` reports whether the plan includes BanSafe Lite, which the warm-up plan is part of.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -2957,7 +2957,7 @@
           "bansafe"
         ],
         "summary": "Set a project's warm-up plan",
-        "description": "Turns the warm-up plan on or off for a project and sets how long the ramp takes and how many messages a number may send on its first day. Send only the settings you want to change. While the plan is on, a send past a number's allowance is refused with `bansafe_daily_allowance_reached` and campaign recipients are deferred to the next reset. Turning the plan on requires a plan that includes BanSafe Lite; turning it off is always allowed. A signed-in caller must be an organization owner, admin, or developer.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Turns the warm-up plan on or off for a project and sets how long the ramp takes and how many messages a number may send on its first day. Send only the settings you want to change. While the plan is on, a send past a number's allowance is refused with `bansafe_daily_allowance_reached` and campaign recipients are deferred to the next reset. Turning the plan on requires a plan that includes BanSafe Lite; turning it off is always allowed. A signed-in caller must be an organization owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -3046,14 +3046,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/health-policy": {
+    "/platform/projects/{projectId}/health-policy": {
       "get": {
         "operationId": "getProjectHealthPolicySettings",
         "tags": [
           "bansafe"
         ],
         "summary": "Get a project's health policy",
-        "description": "Returns the health threshold and the actions configured for numbers in this project. Integration flags report whether email and webhook delivery are ready to use.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns the health threshold and the actions configured for numbers in this project. Integration flags report whether email and webhook delivery are ready to use.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -3131,7 +3131,7 @@
           "bansafe"
         ],
         "summary": "Set a project's health policy",
-        "description": "Replaces the project policy when the supplied version matches the stored version. The rule applies only when an available health estimate is below the threshold; an unavailable estimate triggers no action. Stopping disconnects a session and retains its linked credentials. Logging out requires relinking.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Replaces the project policy when the supplied version matches the stored version. The rule applies only when an available health estimate is below the threshold; an unavailable estimate triggers no action. Stopping disconnects a session and retains its linked credentials. Logging out requires relinking.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -3217,14 +3217,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/insurance-evidence": {
+    "/platform/projects/{projectId}/insurance-evidence": {
       "get": {
         "operationId": "getInsuranceEvidenceSettings",
         "tags": [
           "bansafe"
         ],
         "summary": "Get a project's insurance evidence setting",
-        "description": "Returns whether evidence collection about other linked devices is enabled and whether any number in the project has Ban Insurance included in its plan. Collection is off until explicitly enabled.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns whether evidence collection about other linked devices is enabled and whether any number in the project has Ban Insurance included in its plan. Collection is off until explicitly enabled.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -3302,7 +3302,7 @@
           "bansafe"
         ],
         "summary": "Set a project's insurance evidence setting",
-        "description": "Enables or disables collection of counts about other linked devices. Collection never includes messages, recipient identities, or device names. Disabling collection discards stored device evidence. A 503 `propagation_pending` means the setting was stored but a connected number has not confirmed it; retry the request. A signed-in caller must be an organization owner, admin, or developer.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Enables or disables collection of counts about other linked devices. Collection never includes messages, recipient identities, or device names. Disabling collection discards stored device evidence. A 503 `propagation_pending` means the setting was stored but a connected number has not confirmed it; retry the request. A signed-in caller must be an organization owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -3388,14 +3388,14 @@
         }
       }
     },
-    "/v1/campaigns": {
+    "/platform/campaigns": {
       "get": {
         "operationId": "listPlatformCampaigns",
         "tags": [
           "campaigns"
         ],
         "summary": "List platform campaigns",
-        "description": "Public Management API. Organization API-key callers require `campaigns:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -3468,7 +3468,7 @@
           "campaigns"
         ],
         "summary": "Create campaign",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -3529,14 +3529,14 @@
         }
       }
     },
-    "/v1/campaigns/{campaignId}": {
+    "/platform/campaigns/{campaignId}": {
       "get": {
         "operationId": "getPlatformCampaign",
         "tags": [
           "campaigns"
         ],
         "summary": "Get campaign",
-        "description": "Public Management API. Organization API-key callers require `campaigns:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -3601,7 +3601,7 @@
           "campaigns"
         ],
         "summary": "Update campaign",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -3677,7 +3677,7 @@
           "campaigns"
         ],
         "summary": "Delete campaign",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -3737,14 +3737,14 @@
         }
       }
     },
-    "/v1/campaigns/{campaignId}/launch": {
+    "/platform/campaigns/{campaignId}/launch": {
       "post": {
         "operationId": "launchPlatformCampaign",
         "tags": [
           "campaigns"
         ],
         "summary": "Launch campaign",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -3815,14 +3815,14 @@
         }
       }
     },
-    "/v1/campaigns/{campaignId}/pause": {
+    "/platform/campaigns/{campaignId}/pause": {
       "post": {
         "operationId": "pausePlatformCampaign",
         "tags": [
           "campaigns"
         ],
         "summary": "Pause campaign",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -3893,14 +3893,14 @@
         }
       }
     },
-    "/v1/campaigns/{campaignId}/resume": {
+    "/platform/campaigns/{campaignId}/resume": {
       "post": {
         "operationId": "resumePlatformCampaign",
         "tags": [
           "campaigns"
         ],
         "summary": "Resume campaign",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -3971,14 +3971,14 @@
         }
       }
     },
-    "/v1/campaigns/{campaignId}/stop": {
+    "/platform/campaigns/{campaignId}/stop": {
       "post": {
         "operationId": "stopPlatformCampaign",
         "tags": [
           "campaigns"
         ],
         "summary": "Stop campaign",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -4049,14 +4049,14 @@
         }
       }
     },
-    "/v1/campaigns/{campaignId}/archive": {
+    "/platform/campaigns/{campaignId}/archive": {
       "post": {
         "operationId": "archiveCampaign",
         "tags": [
           "campaigns"
         ],
         "summary": "Archive campaign",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -4127,14 +4127,14 @@
         }
       }
     },
-    "/v1/campaigns/{campaignId}/duplicate": {
+    "/platform/campaigns/{campaignId}/duplicate": {
       "post": {
         "operationId": "duplicateCampaign",
         "tags": [
           "campaigns"
         ],
         "summary": "Duplicate campaign",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -4205,14 +4205,14 @@
         }
       }
     },
-    "/v1/campaigns/{campaignId}/requeue": {
+    "/platform/campaigns/{campaignId}/requeue": {
       "post": {
         "operationId": "requeueFailedCampaign",
         "tags": [
           "campaigns"
         ],
         "summary": "Requeue failed campaign",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -4283,14 +4283,14 @@
         }
       }
     },
-    "/v1/campaigns/{campaignId}/analytics": {
+    "/platform/campaigns/{campaignId}/analytics": {
       "get": {
         "operationId": "getPlatformCampaignAnalytics",
         "tags": [
           "campaigns"
         ],
         "summary": "Get campaign analytics",
-        "description": "Public Management API. Organization API-key callers require `campaigns:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -4350,14 +4350,14 @@
         }
       }
     },
-    "/v1/campaigns/{campaignId}/events": {
+    "/platform/campaigns/{campaignId}/events": {
       "get": {
         "operationId": "listCampaignEvents",
         "tags": [
           "campaigns"
         ],
         "summary": "List campaign events",
-        "description": "Public Management API. Organization API-key callers require `campaigns:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -4417,14 +4417,14 @@
         }
       }
     },
-    "/v1/campaigns/{campaignId}/recipients": {
+    "/platform/campaigns/{campaignId}/recipients": {
       "get": {
         "operationId": "listCampaignRecipients",
         "tags": [
           "campaigns"
         ],
         "summary": "List campaign recipients",
-        "description": "Public Management API. Organization API-key callers require `campaigns:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -4484,14 +4484,14 @@
         }
       }
     },
-    "/v1/audiences": {
+    "/platform/audiences": {
       "get": {
         "operationId": "listAudiences",
         "tags": [
           "audiences"
         ],
         "summary": "List audiences",
-        "description": "Public Management API. Organization API-key callers require `campaigns:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `campaigns:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -4546,7 +4546,7 @@
           "audiences"
         ],
         "summary": "Create audience",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -4607,14 +4607,14 @@
         }
       }
     },
-    "/v1/audiences/{listId}": {
+    "/platform/audiences/{listId}": {
       "get": {
         "operationId": "getAudience",
         "tags": [
           "audiences"
         ],
         "summary": "Get audience",
-        "description": "Public Management API. Organization API-key callers require `campaigns:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `campaigns:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -4679,7 +4679,7 @@
           "audiences"
         ],
         "summary": "Delete audience",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -4739,14 +4739,14 @@
         }
       }
     },
-    "/v1/audiences/uploads": {
+    "/platform/audiences/uploads": {
       "post": {
         "operationId": "createAudienceUploadUrl",
         "tags": [
           "audiences"
         ],
         "summary": "Create audience upload url",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -4807,14 +4807,14 @@
         }
       }
     },
-    "/v1/templates": {
+    "/platform/templates": {
       "get": {
         "operationId": "listMessageTemplates",
         "tags": [
           "templates"
         ],
         "summary": "List message templates",
-        "description": "Lists the message-template drafts in one project.\n\nOrganization API-key callers require `templates:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists the message-template drafts in one project.\n\nRequires `templates:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -4895,7 +4895,7 @@
           "templates"
         ],
         "summary": "Create a message-template draft",
-        "description": "Creates an incomplete or complete message-template draft in one project.\n\nOrganization API-key callers require `templates:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Creates an incomplete or complete message-template draft in one project.\n\nRequires `templates:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -4967,14 +4967,14 @@
         }
       }
     },
-    "/v1/templates/{templateId}": {
+    "/platform/templates/{templateId}": {
       "get": {
         "operationId": "getMessageTemplate",
         "tags": [
           "templates"
         ],
         "summary": "Get a message-template draft",
-        "description": "Gets one message-template draft from the specified project.\n\nOrganization API-key callers require `templates:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Gets one message-template draft from the specified project.\n\nRequires `templates:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -5065,7 +5065,7 @@
           "templates"
         ],
         "summary": "Update a message-template draft",
-        "description": "Updates one message-template draft in the project supplied in the request body.\n\nOrganization API-key callers require `templates:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Updates one message-template draft in the project supplied in the request body.\n\nRequires `templates:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -5152,7 +5152,7 @@
           "templates"
         ],
         "summary": "Delete a message-template draft",
-        "description": "Deletes one message-template draft from the specified project.\n\nOrganization API-key callers require `templates:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Deletes one message-template draft from the specified project.\n\nRequires `templates:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -5232,14 +5232,14 @@
         }
       }
     },
-    "/v1/flows": {
+    "/platform/flows": {
       "get": {
         "operationId": "listFlows",
         "tags": [
           "flows"
         ],
         "summary": "List Flow drafts",
-        "description": "Lists compact WhatsApp Flow draft summaries in one project.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists compact WhatsApp Flow draft summaries in one project.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -5320,7 +5320,7 @@
           "flows"
         ],
         "summary": "Create a Flow draft",
-        "description": "Creates a project-scoped WhatsApp Flow draft. A supplied draftId makes retries idempotent.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Creates a project-scoped WhatsApp Flow draft. A supplied draftId makes retries idempotent.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -5392,14 +5392,14 @@
         }
       }
     },
-    "/v1/flows/{flowId}": {
+    "/platform/flows/{flowId}": {
       "get": {
         "operationId": "getFlow",
         "tags": [
           "flows"
         ],
         "summary": "Get a Flow draft",
-        "description": "Gets one project-scoped WhatsApp Flow draft.\n\nOrganization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Gets one project-scoped WhatsApp Flow draft.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -5490,7 +5490,7 @@
           "flows"
         ],
         "summary": "Update a Flow draft",
-        "description": "Updates a Flow draft when expectedUpdatedAt matches the stored revision.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Updates a Flow draft when expectedUpdatedAt matches the stored revision.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -5580,7 +5580,7 @@
           "flows"
         ],
         "summary": "Delete a Flow draft",
-        "description": "Deletes a local Flow draft without deleting linked Meta Flow assets.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Deletes a local Flow draft without deleting linked Meta Flow assets.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -5660,14 +5660,14 @@
         }
       }
     },
-    "/v1/optouts": {
+    "/platform/optouts": {
       "get": {
         "operationId": "listOptOuts",
         "tags": [
           "optouts"
         ],
         "summary": "List opt outs",
-        "description": "Public Management API. Organization API-key callers require `campaigns:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `campaigns:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -5722,7 +5722,7 @@
           "optouts"
         ],
         "summary": "Create opt out",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -5783,14 +5783,14 @@
         }
       }
     },
-    "/v1/optouts/batch": {
+    "/platform/optouts/batch": {
       "post": {
         "operationId": "createOptOuts",
         "tags": [
           "optouts"
         ],
         "summary": "Create opt outs",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -5851,14 +5851,14 @@
         }
       }
     },
-    "/v1/optouts/{phone}": {
+    "/platform/optouts/{phone}": {
       "delete": {
         "operationId": "deleteOptOut",
         "tags": [
           "optouts"
         ],
         "summary": "Delete opt out",
-        "description": "Public Management API. Organization API-key callers require `campaigns:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -5918,14 +5918,14 @@
         }
       }
     },
-    "/v1/billing": {
+    "/platform/billing": {
       "get": {
         "operationId": "getBilling",
         "tags": [
           "billing"
         ],
         "summary": "Get billing",
-        "description": "Public Management API. Organization API-key callers require `sessions:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -5975,14 +5975,14 @@
         }
       }
     },
-    "/v1/billing/usage": {
+    "/platform/billing/usage": {
       "get": {
         "operationId": "listUsageMeters",
         "tags": [
           "billing"
         ],
         "summary": "List usage meters",
-        "description": "Public Management API. Organization API-key callers require `sessions:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -6032,14 +6032,14 @@
         }
       }
     },
-    "/v1/billing/transactions": {
+    "/platform/billing/transactions": {
       "get": {
         "operationId": "listBillingTransactions",
         "tags": [
           "billing"
         ],
         "summary": "List billing transactions",
-        "description": "Public Management API. Organization API-key callers require `sessions:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -6089,14 +6089,14 @@
         }
       }
     },
-    "/v1/billing/pricing": {
+    "/platform/billing/pricing": {
       "get": {
         "operationId": "listTierPricing",
         "tags": [
           "billing"
         ],
         "summary": "List tier pricing",
-        "description": "Public Management API. Organization API-key callers require `sessions:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -6146,14 +6146,14 @@
         }
       }
     },
-    "/v1/billing/reminders": {
+    "/platform/billing/reminders": {
       "patch": {
         "operationId": "updateBillingReminderSettings",
         "tags": [
           "billing"
         ],
         "summary": "Update billing reminder settings",
-        "description": "Public Management API. Organization API-key callers require `sessions:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -6214,14 +6214,14 @@
         }
       }
     },
-    "/v1/organization": {
+    "/platform/team": {
       "get": {
         "operationId": "getOrganization",
         "tags": [
-          "organization"
+          "team"
         ],
         "summary": "Get organization",
-        "description": "Public Management API. Organization API-key callers require `sessions:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -6269,17 +6269,20 @@
             "$ref": "#/components/responses/NotImplemented"
           }
         }
-      },
+      }
+    },
+    "/console/organization": {
       "patch": {
         "operationId": "updateOrganization",
         "tags": [
           "organization"
         ],
         "summary": "Update organization",
-        "description": "Public Management API. Requires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
-        "x-audience": "public",
+        "description": "**EXCLUDED from the public API** (`console`). Organization changes require an authenticated console member.",
+        "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
-        "x-excluded-from-public": false,
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Organization changes require an authenticated console member.",
         "x-dashboard-only": true,
         "x-required-organization-role": "owner_or_admin",
         "security": [
@@ -6335,14 +6338,14 @@
         }
       }
     },
-    "/v1/projects": {
+    "/platform/projects": {
       "get": {
         "operationId": "listProjects",
         "tags": [
           "projects"
         ],
         "summary": "List projects",
-        "description": "Public Management API. Organization API-key callers require `sessions:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -6397,7 +6400,7 @@
           "projects"
         ],
         "summary": "Create project",
-        "description": "Public Management API. Organization API-key callers require `sessions:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -6606,14 +6609,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/promote": {
+    "/platform/projects/{projectId}/promote": {
       "post": {
         "operationId": "requestProductionEnrollment",
         "tags": [
           "projects"
         ],
         "summary": "Request production enrollment",
-        "description": "Creates a durable production-enrollment operation. The project stays in development until provisioning succeeds. Poll the returned operationId for progress.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Creates a durable production-enrollment operation. The project stays in development until provisioning succeeds. Poll the returned operationId for progress.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -6699,14 +6702,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/customers/status": {
+    "/platform/projects/{projectId}/customers/status": {
       "get": {
         "operationId": "getCustomersStatus",
         "tags": [
           "customers"
         ],
         "summary": "Get Customers status",
-        "description": "Returns whether Customers is enabled for the exact project and its protected default Customer when enabled.\n\nOrganization API-key callers require `customers:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns whether Customers is enabled for the exact project and its protected default Customer when enabled.\n\nRequires `customers:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -6779,14 +6782,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/customers/enable": {
+    "/platform/projects/{projectId}/customers/enable": {
       "post": {
         "operationId": "enableCustomers",
         "tags": [
           "customers"
         ],
         "summary": "Enable Customers",
-        "description": "Enables Customers once, creates the default Customer, and assigns every existing Number in the project to it atomically.\n\nOrganization API-key callers require `customers:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Enables Customers once, creates the default Customer, and assigns every existing Number in the project to it atomically.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -6872,14 +6875,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/production-enrollments/{operationId}/approve": {
+    "/platform/projects/{projectId}/production-enrollments/{operationId}/approve": {
       "post": {
         "operationId": "approveProductionEnrollment",
         "tags": [
           "projects"
         ],
         "summary": "Approve production enrollment",
-        "description": "Resumes a production-enrollment operation that requires approval.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Resumes a production-enrollment operation that requires approval.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -6972,14 +6975,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/production-enrollments/{operationId}/cancel": {
+    "/platform/projects/{projectId}/production-enrollments/{operationId}/cancel": {
       "post": {
         "operationId": "cancelProductionEnrollment",
         "tags": [
           "projects"
         ],
         "summary": "Cancel production enrollment",
-        "description": "Requests cancellation of an active production-enrollment operation. Provisioned resources are compensated before cancellation completes.\n\nOrganization API-key callers require `sessions:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Requests cancellation of an active production-enrollment operation. Provisioned resources are compensated before cancellation completes.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -7072,14 +7075,14 @@
         }
       }
     },
-    "/v1/webhooks": {
+    "/platform/webhooks": {
       "get": {
         "operationId": "listOrganizationWebhooks",
         "tags": [
           "webhooks"
         ],
         "summary": "List organization webhooks",
-        "description": "Lists only organization-owned webhook endpoints. Project-owned endpoints are excluded.\n\nOrganization API-key callers require `webhooks:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Lists only organization-owned webhook endpoints. Project-owned endpoints are excluded.\n\nRequires a team API key with `webhooks:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -7189,7 +7192,7 @@
           "webhooks"
         ],
         "summary": "Create an organization webhook",
-        "description": "Creates an organization-owned webhook and returns its generated signing secret once.\n\nOrganization API-key callers require `webhooks:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Creates an organization-owned webhook and returns its generated signing secret once.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -7273,14 +7276,14 @@
         }
       }
     },
-    "/v1/webhooks/{webhookId}": {
+    "/platform/webhooks/{webhookId}": {
       "get": {
         "operationId": "getOrganizationWebhook",
         "tags": [
           "webhooks"
         ],
         "summary": "Get an organization webhook",
-        "description": "Returns one organization-owned webhook without secret values.\n\nOrganization API-key callers require `webhooks:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Returns one organization-owned webhook without secret values.\n\nRequires a team API key with `webhooks:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -7358,7 +7361,7 @@
           "webhooks"
         ],
         "summary": "Update an organization webhook",
-        "description": "Updates settings without rotating the signing secret.\n\nOrganization API-key callers require `webhooks:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Updates settings without rotating the signing secret.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -7459,7 +7462,7 @@
           "webhooks"
         ],
         "summary": "Delete an organization webhook",
-        "description": "Deletes one organization-owned webhook.\n\nOrganization API-key callers require `webhooks:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Deletes one organization-owned webhook.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -7545,14 +7548,14 @@
         }
       }
     },
-    "/v1/webhooks/{webhookId}/secret-rotations": {
+    "/platform/webhooks/{webhookId}/secret-rotations": {
       "post": {
         "operationId": "rotateOrganizationWebhookSecret",
         "tags": [
           "webhooks"
         ],
         "summary": "Rotate an organization webhook secret",
-        "description": "Rotates the signing secret and returns the new secret once.\n\nOrganization API-key callers require `webhooks:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Rotates the signing secret and returns the new secret once.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -7648,14 +7651,14 @@
         }
       }
     },
-    "/v1/webhooks/{webhookId}/tests": {
+    "/platform/webhooks/{webhookId}/tests": {
       "post": {
         "operationId": "testOrganizationWebhook",
         "tags": [
           "webhooks"
         ],
         "summary": "Send an organization webhook test",
-        "description": "Creates a synthetic organization event and a traceable webhook delivery.\n\nOrganization API-key callers require `webhooks:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Creates a synthetic organization event and a traceable webhook delivery.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -7751,14 +7754,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/webhooks": {
+    "/platform/projects/{projectId}/webhooks": {
       "get": {
         "operationId": "listProjectWebhooks",
         "tags": [
           "webhooks"
         ],
         "summary": "List project webhooks",
-        "description": "Lists webhooks owned by the exact project in the route.\n\nOrganization API-key callers require `webhooks:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists webhooks owned by the exact project in the route.\n\nRequires `webhooks:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -7880,7 +7883,7 @@
           "webhooks"
         ],
         "summary": "Create a project webhook",
-        "description": "Creates a project-owned webhook and returns its generated signing secret once.\n\nOrganization API-key callers require `webhooks:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Creates a project-owned webhook and returns its generated signing secret once.\n\nRequires `webhooks:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -7976,14 +7979,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/webhooks/{webhookId}": {
+    "/platform/projects/{projectId}/webhooks/{webhookId}": {
       "get": {
         "operationId": "getProjectWebhook",
         "tags": [
           "webhooks"
         ],
         "summary": "Get a project webhook",
-        "description": "Returns one webhook owned by the exact project without secret values.\n\nOrganization API-key callers require `webhooks:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns one webhook owned by the exact project without secret values.\n\nRequires `webhooks:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -8070,7 +8073,7 @@
           "webhooks"
         ],
         "summary": "Update a project webhook",
-        "description": "Updates settings without rotating the signing secret.\n\nOrganization API-key callers require `webhooks:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Updates settings without rotating the signing secret.\n\nRequires `webhooks:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -8180,7 +8183,7 @@
           "webhooks"
         ],
         "summary": "Delete a project webhook",
-        "description": "Deletes one webhook owned by the exact project.\n\nOrganization API-key callers require `webhooks:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Deletes one webhook owned by the exact project.\n\nRequires `webhooks:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -8275,14 +8278,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/webhooks/{webhookId}/secret-rotations": {
+    "/platform/projects/{projectId}/webhooks/{webhookId}/secret-rotations": {
       "post": {
         "operationId": "rotateProjectWebhookSecret",
         "tags": [
           "webhooks"
         ],
         "summary": "Rotate a project webhook secret",
-        "description": "Rotates the signing secret and returns the new secret once.\n\nOrganization API-key callers require `webhooks:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Rotates the signing secret and returns the new secret once.\n\nRequires `webhooks:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -8387,14 +8390,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/webhooks/{webhookId}/tests": {
+    "/platform/projects/{projectId}/webhooks/{webhookId}/tests": {
       "post": {
         "operationId": "testProjectWebhook",
         "tags": [
           "webhooks"
         ],
         "summary": "Send a project webhook test",
-        "description": "Creates a synthetic project event and a traceable webhook delivery. An optional complete native envelope is accepted only with an exact HMS-enabled project session.\n\nOrganization API-key callers require `webhooks:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Creates a synthetic project event and a traceable webhook delivery. An optional complete native envelope is accepted only with an exact HMS-enabled project session.\n\nRequires `webhooks:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -8502,14 +8505,14 @@
         }
       }
     },
-    "/v1/events": {
+    "/platform/events": {
       "get": {
         "operationId": "listOrganizationEvents",
         "tags": [
           "events"
         ],
         "summary": "List organization events",
-        "description": "Lists organization-owned event metadata. Project-owned events are excluded.\n\nOrganization API-key callers require `events:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Lists organization-owned event metadata. Project-owned events are excluded.\n\nRequires a team API key with `events:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -8622,14 +8625,14 @@
         }
       }
     },
-    "/v1/events/{eventId}": {
+    "/platform/events/{eventId}": {
       "get": {
         "operationId": "getOrganizationEvent",
         "tags": [
           "events"
         ],
         "summary": "Get an organization event",
-        "description": "Returns one organization-owned event and includes exact payload bytes only when requested and available.\n\nOrganization API-key callers require `events:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Returns one organization-owned event and includes exact payload bytes only when requested and available.\n\nRequires a team API key with `events:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -8711,14 +8714,14 @@
         }
       }
     },
-    "/v1/events/{eventId}/replays": {
+    "/platform/events/{eventId}/replays": {
       "post": {
         "operationId": "replayOrganizationEvent",
         "tags": [
           "events"
         ],
         "summary": "Replay an organization event",
-        "description": "Creates a new logical delivery for a retained organization event.\n\nOrganization API-key callers require `events:replay`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Creates a new logical delivery for a retained organization event.\n\nRequires a team API key with `events:replay`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -8817,14 +8820,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/events": {
+    "/platform/projects/{projectId}/events": {
       "get": {
         "operationId": "listProjectEvents",
         "tags": [
           "events"
         ],
         "summary": "List project events",
-        "description": "Lists event metadata owned by the exact project in the route.\n\nOrganization API-key callers require `events:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists event metadata owned by the exact project in the route.\n\nRequires `events:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -8949,14 +8952,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/events/{eventId}": {
+    "/platform/projects/{projectId}/events/{eventId}": {
       "get": {
         "operationId": "getProjectEvent",
         "tags": [
           "events"
         ],
         "summary": "Get a project event",
-        "description": "Returns one event owned by the exact project and includes exact payload bytes only when requested and available.\n\nOrganization API-key callers require `events:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns one event owned by the exact project and includes exact payload bytes only when requested and available.\n\nRequires `events:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -9047,14 +9050,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/events/{eventId}/replays": {
+    "/platform/projects/{projectId}/events/{eventId}/replays": {
       "post": {
         "operationId": "replayProjectEvent",
         "tags": [
           "events"
         ],
         "summary": "Replay a project event",
-        "description": "Creates a new logical delivery for a retained event owned by the exact project.\n\nOrganization API-key callers require `events:replay`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Creates a new logical delivery for a retained event owned by the exact project.\n\nRequires `events:replay`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -9162,14 +9165,14 @@
         }
       }
     },
-    "/v1/webhook-deliveries": {
+    "/platform/webhook-deliveries": {
       "get": {
         "operationId": "listOrganizationWebhookDeliveries",
         "tags": [
           "webhook deliveries"
         ],
         "summary": "List organization webhook deliveries",
-        "description": "Lists logical deliveries for organization-owned webhooks. Project-owned deliveries are excluded.\n\nOrganization API-key callers require `webhook-deliveries:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Lists logical deliveries for organization-owned webhooks. Project-owned deliveries are excluded.\n\nRequires a team API key with `webhook-deliveries:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -9307,14 +9310,14 @@
         }
       }
     },
-    "/v1/webhook-deliveries/{deliveryId}": {
+    "/platform/webhook-deliveries/{deliveryId}": {
       "get": {
         "operationId": "getOrganizationWebhookDelivery",
         "tags": [
           "webhook deliveries"
         ],
         "summary": "Get an organization webhook delivery",
-        "description": "Returns one logical organization webhook delivery.\n\nOrganization API-key callers require `webhook-deliveries:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Returns one logical organization webhook delivery.\n\nRequires a team API key with `webhook-deliveries:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -9387,14 +9390,14 @@
         }
       }
     },
-    "/v1/webhook-deliveries/{deliveryId}/retry": {
+    "/platform/webhook-deliveries/{deliveryId}/retry": {
       "post": {
         "operationId": "retryOrganizationWebhookDelivery",
         "tags": [
           "webhook deliveries"
         ],
         "summary": "Retry an organization webhook delivery",
-        "description": "Appends a new immutable attempt to the same logical delivery.\n\nOrganization API-key callers require `webhook-deliveries:retry`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Appends a new immutable attempt to the same logical delivery.\n\nRequires a team API key with `webhook-deliveries:retry`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -9483,14 +9486,14 @@
         }
       }
     },
-    "/v1/webhook-deliveries/{deliveryId}/attempts": {
+    "/platform/webhook-deliveries/{deliveryId}/attempts": {
       "get": {
         "operationId": "listOrganizationWebhookDeliveryAttempts",
         "tags": [
           "webhook deliveries"
         ],
         "summary": "List organization delivery attempts",
-        "description": "Lists immutable network attempts for one organization webhook delivery.\n\nOrganization API-key callers require `webhook-deliveries:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Lists immutable network attempts for one organization webhook delivery.\n\nRequires a team API key with `webhook-deliveries:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -9589,14 +9592,14 @@
         }
       }
     },
-    "/v1/webhook-deliveries/{deliveryId}/attempts/{attemptId}": {
+    "/platform/webhook-deliveries/{deliveryId}/attempts/{attemptId}": {
       "get": {
         "operationId": "getOrganizationWebhookDeliveryAttempt",
         "tags": [
           "webhook deliveries"
         ],
         "summary": "Get organization delivery attempt",
-        "description": "Returns one immutable network attempt.\n\nOrganization API-key callers require `webhook-deliveries:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Returns one immutable network attempt.\n\nRequires a team API key with `webhook-deliveries:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -9678,14 +9681,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/webhook-deliveries": {
+    "/platform/projects/{projectId}/webhook-deliveries": {
       "get": {
         "operationId": "listProjectWebhookDeliveries",
         "tags": [
           "webhook deliveries"
         ],
         "summary": "List project webhook deliveries",
-        "description": "Lists logical webhook deliveries owned by the exact project in the route.\n\nOrganization API-key callers require `webhook-deliveries:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists logical webhook deliveries owned by the exact project in the route.\n\nRequires `webhook-deliveries:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -9835,14 +9838,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/webhook-deliveries/{deliveryId}": {
+    "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}": {
       "get": {
         "operationId": "getProjectWebhookDelivery",
         "tags": [
           "webhook deliveries"
         ],
         "summary": "Get a project webhook delivery",
-        "description": "Returns one logical webhook delivery owned by the exact project.\n\nOrganization API-key callers require `webhook-deliveries:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns one logical webhook delivery owned by the exact project.\n\nRequires `webhook-deliveries:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -9924,14 +9927,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/webhook-deliveries/{deliveryId}/retry": {
+    "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/retry": {
       "post": {
         "operationId": "retryProjectWebhookDelivery",
         "tags": [
           "webhook deliveries"
         ],
         "summary": "Retry a project webhook delivery",
-        "description": "Appends a new immutable attempt to the same logical delivery owned by the exact project.\n\nOrganization API-key callers require `webhook-deliveries:retry`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Appends a new immutable attempt to the same logical delivery owned by the exact project.\n\nRequires `webhook-deliveries:retry`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -10029,14 +10032,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts": {
+    "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts": {
       "get": {
         "operationId": "listProjectWebhookDeliveryAttempts",
         "tags": [
           "webhook deliveries"
         ],
         "summary": "List project webhook delivery attempts",
-        "description": "Lists immutable network attempts for one project webhook delivery.\n\nOrganization API-key callers require `webhook-deliveries:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists immutable network attempts for one project webhook delivery.\n\nRequires `webhook-deliveries:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -10144,14 +10147,14 @@
         }
       }
     },
-    "/v1/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts/{attemptId}": {
+    "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts/{attemptId}": {
       "get": {
         "operationId": "getProjectWebhookDeliveryAttempt",
         "tags": [
           "webhook deliveries"
         ],
         "summary": "Get a project webhook delivery attempt",
-        "description": "Returns one immutable network attempt owned by the exact project.\n\nOrganization API-key callers require `webhook-deliveries:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns one immutable network attempt owned by the exact project.\n\nRequires `webhook-deliveries:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -10242,22 +10245,19 @@
         }
       }
     },
-    "/v1/operations": {
+    "/console/operations": {
       "get": {
         "operationId": "listOrganizationOperations",
         "tags": [
           "operations"
         ],
         "summary": "List organization operations",
-        "description": "Lists only organization-owned asynchronous operations. Project-owned operations are excluded.\n\nOrganization API-key callers require `operations:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
-        "x-audience": "public",
+        "description": "Lists only organization-owned asynchronous operations. Project-owned operations are excluded.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
         "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": false,
-        "x-required-scope": "operations:read",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
         "security": [
-          {
-            "ApiKeyAuth": []
-          },
           {
             "ConsoleSession": []
           }
@@ -10407,22 +10407,19 @@
         }
       }
     },
-    "/v1/operations/{operationId}": {
+    "/console/operations/{operationId}": {
       "get": {
         "operationId": "getOrganizationOperation",
         "tags": [
           "operations"
         ],
         "summary": "Get an organization operation",
-        "description": "Returns one organization-owned asynchronous operation.\n\nOrganization API-key callers require `operations:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
-        "x-audience": "public",
+        "description": "Returns one organization-owned asynchronous operation.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
         "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": false,
-        "x-required-scope": "operations:read",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
         "security": [
-          {
-            "ApiKeyAuth": []
-          },
           {
             "ConsoleSession": []
           }
@@ -10487,22 +10484,19 @@
         }
       }
     },
-    "/v1/operations/{operationId}/transitions": {
+    "/console/operations/{operationId}/transitions": {
       "get": {
         "operationId": "listOrganizationOperationTransitions",
         "tags": [
           "operations"
         ],
         "summary": "List organization operation transitions",
-        "description": "Lists immutable transitions for one organization-owned operation in ascending sequence.\n\nOrganization API-key callers require `operations:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
-        "x-audience": "public",
+        "description": "Lists immutable transitions for one organization-owned operation in ascending sequence.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
         "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": false,
-        "x-required-scope": "operations:read",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
         "security": [
-          {
-            "ApiKeyAuth": []
-          },
           {
             "ConsoleSession": []
           }
@@ -10603,22 +10597,19 @@
         }
       }
     },
-    "/v1/operations/{operationId}/cancel": {
+    "/console/operations/{operationId}/cancel": {
       "post": {
         "operationId": "cancelOrganizationOperation",
         "tags": [
           "operations"
         ],
         "summary": "Cancel an organization operation",
-        "description": "Requests cancellation after transactionally rechecking that the operation is cancellable.\n\nOrganization API-key callers require `operations:cancel`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
-        "x-audience": "public",
+        "description": "Requests cancellation after transactionally rechecking that the operation is cancellable.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
         "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": false,
-        "x-required-scope": "operations:cancel",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
         "security": [
-          {
-            "ApiKeyAuth": []
-          },
           {
             "ConsoleSession": []
           }
@@ -10696,22 +10687,19 @@
         }
       }
     },
-    "/v1/projects/{projectId}/operations": {
+    "/console/projects/{projectId}/operations": {
       "get": {
         "operationId": "listProjectOperations",
         "tags": [
           "operations"
         ],
         "summary": "List project operations",
-        "description": "Lists asynchronous operations owned by the exact project in the route.\n\nOrganization API-key callers require `operations:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
-        "x-audience": "public",
+        "description": "Lists asynchronous operations owned by the exact project in the route.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
         "x-polymorfa-resource-boundary": "project",
-        "x-excluded-from-public": false,
-        "x-required-scope": "operations:read",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
         "security": [
-          {
-            "ApiKeyAuth": []
-          },
           {
             "ConsoleSession": []
           }
@@ -10873,22 +10861,19 @@
         }
       }
     },
-    "/v1/projects/{projectId}/operations/{operationId}": {
+    "/console/projects/{projectId}/operations/{operationId}": {
       "get": {
         "operationId": "getProjectOperation",
         "tags": [
           "operations"
         ],
         "summary": "Get a project operation",
-        "description": "Returns one asynchronous operation owned by the exact project in the route.\n\nOrganization API-key callers require `operations:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
-        "x-audience": "public",
+        "description": "Returns one asynchronous operation owned by the exact project in the route.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
         "x-polymorfa-resource-boundary": "project",
-        "x-excluded-from-public": false,
-        "x-required-scope": "operations:read",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
         "security": [
-          {
-            "ApiKeyAuth": []
-          },
           {
             "ConsoleSession": []
           }
@@ -10962,22 +10947,19 @@
         }
       }
     },
-    "/v1/projects/{projectId}/operations/{operationId}/transitions": {
+    "/console/projects/{projectId}/operations/{operationId}/transitions": {
       "get": {
         "operationId": "listProjectOperationTransitions",
         "tags": [
           "operations"
         ],
         "summary": "List project operation transitions",
-        "description": "Lists immutable transitions for one project-owned operation in ascending sequence.\n\nOrganization API-key callers require `operations:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
-        "x-audience": "public",
+        "description": "Lists immutable transitions for one project-owned operation in ascending sequence.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
         "x-polymorfa-resource-boundary": "project",
-        "x-excluded-from-public": false,
-        "x-required-scope": "operations:read",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
         "security": [
-          {
-            "ApiKeyAuth": []
-          },
           {
             "ConsoleSession": []
           }
@@ -11087,22 +11069,19 @@
         }
       }
     },
-    "/v1/projects/{projectId}/operations/{operationId}/cancel": {
+    "/console/projects/{projectId}/operations/{operationId}/cancel": {
       "post": {
         "operationId": "cancelProjectOperation",
         "tags": [
           "operations"
         ],
         "summary": "Cancel a project operation",
-        "description": "Requests cancellation for an operation in the exact project after transactionally rechecking that it is cancellable.\n\nOrganization API-key callers require `operations:cancel`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
-        "x-audience": "public",
+        "description": "Requests cancellation for an operation in the exact project after transactionally rechecking that it is cancellable.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
         "x-polymorfa-resource-boundary": "project",
-        "x-excluded-from-public": false,
-        "x-required-scope": "operations:cancel",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
         "security": [
-          {
-            "ApiKeyAuth": []
-          },
           {
             "ConsoleSession": []
           }
@@ -11189,14 +11168,14 @@
         }
       }
     },
-    "/v1/customers": {
+    "/platform/customers": {
       "get": {
         "operationId": "listCustomers",
         "tags": [
           "customers"
         ],
         "summary": "List Customers",
-        "description": "Lists masked Customer summaries in the exact authenticated project with cursor pagination and filters.\n\nOrganization API-key callers require `customers:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists masked Customer summaries in the exact authenticated project with cursor pagination and filters.\n\nRequires `customers:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -11345,7 +11324,7 @@
           "customers"
         ],
         "summary": "Create a Customer",
-        "description": "Creates a Customer with optional name, phone, and caller-defined external identifier.\n\nOrganization API-key callers require `customers:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Creates a Customer with optional name, phone, and caller-defined external identifier.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -11432,14 +11411,14 @@
         }
       }
     },
-    "/v1/customers/{customerId}": {
+    "/platform/customers/{customerId}": {
       "get": {
         "operationId": "getCustomer",
         "tags": [
           "customers"
         ],
         "summary": "Get a Customer",
-        "description": "Returns one Customer from the exact authenticated project.\n\nOrganization API-key callers require `customers:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns one Customer from the exact authenticated project.\n\nRequires `customers:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -11525,7 +11504,7 @@
           "customers"
         ],
         "summary": "Update a Customer",
-        "description": "Updates supplied Customer profile fields. Null clears an optional field.\n\nOrganization API-key callers require `customers:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Updates supplied Customer profile fields. Null clears an optional field.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -11611,14 +11590,14 @@
         }
       }
     },
-    "/v1/customers/{customerId}/archive": {
+    "/platform/customers/{customerId}/archive": {
       "post": {
         "operationId": "archiveCustomer",
         "tags": [
           "customers"
         ],
         "summary": "Archive a Customer",
-        "description": "Archives a non-default Customer. The default Customer cannot be archived.\n\nOrganization API-key callers require `customers:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Archives a non-default Customer. The default Customer cannot be archived.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -11714,14 +11693,14 @@
         }
       }
     },
-    "/v1/customers/{customerId}/restore": {
+    "/platform/customers/{customerId}/restore": {
       "post": {
         "operationId": "restoreCustomer",
         "tags": [
           "customers"
         ],
         "summary": "Restore a Customer",
-        "description": "Restores an archived Customer.\n\nOrganization API-key callers require `customers:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Restores an archived Customer.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -11817,14 +11796,14 @@
         }
       }
     },
-    "/v1/customers/{customerId}/numbers": {
+    "/platform/customers/{customerId}/numbers": {
       "get": {
         "operationId": "listCustomerNumbers",
         "tags": [
           "customers"
         ],
         "summary": "List Customer Numbers",
-        "description": "Lists Numbers assigned to one Customer in the exact project.\n\nOrganization API-key callers require `customers:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists Numbers assigned to one Customer in the exact project.\n\nRequires `customers:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -11908,14 +11887,14 @@
         }
       }
     },
-    "/v1/customers/{customerId}/events": {
+    "/platform/customers/{customerId}/events": {
       "get": {
         "operationId": "listCustomerEvents",
         "tags": [
           "customers"
         ],
         "summary": "List recent Customer events",
-        "description": "Lists the newest Customer lifecycle events with safe metadata. Actor identities, message content, phone values, invitation tokens, and URLs are excluded.\n\nOrganization API-key callers require `customers:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists the newest Customer lifecycle events with safe metadata. Actor identities, message content, phone values, invitation tokens, and URLs are excluded.\n\nRequires `customers:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -12010,14 +11989,14 @@
         }
       }
     },
-    "/v1/customers/{customerId}/pairing-links": {
+    "/platform/customers/{customerId}/pairing-links": {
       "post": {
         "operationId": "createCustomerPairingLink",
         "tags": [
           "customers"
         ],
         "summary": "Create a Customer pairing link",
-        "description": "Creates a revocable Customer invitation. The raw URL is returned only in this response.\n\nOrganization API-key callers require `customers:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Creates a revocable Customer invitation. The raw URL is returned only in this response.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -12118,7 +12097,7 @@
           "customers"
         ],
         "summary": "List Customer pairing links",
-        "description": "Lists safe pairing-link metadata. Raw invitation tokens and URLs are never returned.\n\nOrganization API-key callers require `customers:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Lists safe pairing-link metadata. Raw invitation tokens and URLs are never returned.\n\nRequires `customers:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -12202,14 +12181,14 @@
         }
       }
     },
-    "/v1/customers/{customerId}/pairing-links/{pairingLinkId}": {
+    "/platform/customers/{customerId}/pairing-links/{pairingLinkId}": {
       "delete": {
         "operationId": "revokeCustomerPairingLink",
         "tags": [
           "customers"
         ],
         "summary": "Revoke a Customer pairing link",
-        "description": "Revokes an open pairing link.\n\nOrganization API-key callers require `customers:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Revokes an open pairing link.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -12301,14 +12280,14 @@
         }
       }
     },
-    "/v1/customers/{customerId}/numbers/{sessionId}/transfer": {
+    "/platform/customers/{customerId}/numbers/{sessionId}/transfer": {
       "post": {
         "operationId": "transferCustomerNumber",
         "tags": [
           "customers"
         ],
         "summary": "Transfer a Customer Number",
-        "description": "Atomically transfers one eligible Number from the explicitly confirmed source Customer to the destination Customer.\n\nOrganization API-key callers require `customers:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Atomically transfers one eligible Number from the explicitly confirmed source Customer to the destination Customer.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -12413,14 +12392,14 @@
         }
       }
     },
-    "/v1/members": {
+    "/platform/members": {
       "get": {
         "operationId": "listMembers",
         "tags": [
           "members"
         ],
         "summary": "List members",
-        "description": "Public Management API. Organization API-key callers require `sessions:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -12470,17 +12449,18 @@
         }
       }
     },
-    "/v1/members/invites": {
+    "/console/members/invites": {
       "post": {
         "operationId": "inviteMember",
         "tags": [
           "members"
         ],
         "summary": "Invite member",
-        "description": "Public Management API. Requires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
-        "x-audience": "public",
+        "description": "**EXCLUDED from the public API** (`console`). Membership administration requires an authenticated console member.",
+        "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
-        "x-excluded-from-public": false,
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Membership administration requires an authenticated console member.",
         "x-dashboard-only": true,
         "x-required-organization-role": "owner_or_admin",
         "security": [
@@ -12536,17 +12516,18 @@
         }
       }
     },
-    "/v1/members/{memberId}": {
+    "/console/members/{memberId}": {
       "patch": {
         "operationId": "updateMemberRole",
         "tags": [
           "members"
         ],
         "summary": "Update member role",
-        "description": "Public Management API. Requires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
-        "x-audience": "public",
+        "description": "**EXCLUDED from the public API** (`console`). Membership administration requires an authenticated console member.",
+        "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
-        "x-excluded-from-public": false,
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Membership administration requires an authenticated console member.",
         "x-dashboard-only": true,
         "x-required-organization-role": "owner_or_admin",
         "security": [
@@ -12617,10 +12598,11 @@
           "members"
         ],
         "summary": "Delete member",
-        "description": "Public Management API. Requires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
-        "x-audience": "public",
+        "description": "**EXCLUDED from the public API** (`console`). Membership administration requires an authenticated console member.",
+        "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
-        "x-excluded-from-public": false,
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Membership administration requires an authenticated console member.",
         "x-dashboard-only": true,
         "x-required-organization-role": "owner_or_admin",
         "security": [
@@ -12675,14 +12657,14 @@
         }
       }
     },
-    "/v1/keys": {
+    "/platform/keys": {
       "get": {
         "operationId": "listApiKeys",
         "tags": [
           "keys"
         ],
         "summary": "List api keys",
-        "description": "Public Management API. Organization API-key callers require `sessions:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -12732,14 +12714,14 @@
         }
       }
     },
-    "/v1/keys/{keyId}": {
+    "/platform/keys/{keyId}": {
       "delete": {
         "operationId": "deactivateApiKey",
         "tags": [
           "keys"
         ],
         "summary": "Deactivate api key",
-        "description": "Public Management API. Organization API-key callers require `sessions:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -12799,14 +12781,14 @@
         }
       }
     },
-    "/v1/tokens": {
+    "/platform/tokens": {
       "get": {
         "operationId": "listPolymorfaTokens",
         "tags": [
           "tokens"
         ],
         "summary": "List polymorfa tokens",
-        "description": "Public Management API. Organization API-key callers require `sessions:read`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Public Management API. Requires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -12866,14 +12848,14 @@
         }
       }
     },
-    "/v1/audit": {
+    "/platform/audit": {
       "get": {
         "operationId": "listAuditLogs",
         "tags": [
           "audit"
         ],
         "summary": "List audit logs",
-        "description": "Public Management API. Organization API-key callers require `sessions:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -12923,14 +12905,14 @@
         }
       }
     },
-    "/v1/incidents": {
+    "/platform/incidents": {
       "get": {
         "operationId": "listSecurityIncidents",
         "tags": [
           "incidents"
         ],
         "summary": "List security incidents",
-        "description": "Public Management API. Organization API-key callers require `sessions:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -12980,14 +12962,14 @@
         }
       }
     },
-    "/v1/incidents/{incidentId}/acknowledge": {
+    "/platform/incidents/{incidentId}/acknowledge": {
       "post": {
         "operationId": "acknowledgeSecurityIncident",
         "tags": [
           "incidents"
         ],
         "summary": "Acknowledge security incident",
-        "description": "Public Management API. Organization API-key callers require `sessions:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -13058,14 +13040,14 @@
         }
       }
     },
-    "/v1/media/{mediaId}": {
+    "/platform/media/{mediaId}": {
       "get": {
         "operationId": "getMediaUrl",
         "tags": [
           "media"
         ],
         "summary": "Get media url",
-        "description": "Public Management API. Organization API-key callers require `media:read`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `media:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -13130,7 +13112,7 @@
           "media"
         ],
         "summary": "Delete media",
-        "description": "Public Management API. Organization API-key callers require `media:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `media:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -13190,14 +13172,14 @@
         }
       }
     },
-    "/v1/media/uploads": {
+    "/platform/media/uploads": {
       "post": {
         "operationId": "createMediaUploadUrl",
         "tags": [
           "media"
         ],
         "summary": "Create media upload url",
-        "description": "Public Management API. Organization API-key callers require `media:manage`; dashboard callers require current organization membership and authorization. Project tokens are rejected.",
+        "description": "Public Management API. Requires a team API key with `media:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -13258,14 +13240,14 @@
         }
       }
     },
-    "/v1/quicklink": {
+    "/platform/quicklink": {
       "get": {
         "operationId": "getQuickLinkSettings",
         "tags": [
           "quicklink"
         ],
         "summary": "Read QuickLink settings",
-        "description": "Returns the saved QuickLink settings for the authenticated organization or one project, or null when nothing has been saved for that scope. There is no separate read permission: reading and updating both require `quicklink:manage`, because the settings include the redirect allowlist and branding that only a QuickLink manager should see.\n\nOrganization API-key callers require `quicklink:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Returns the saved QuickLink settings for the authenticated organization or one project, or null when nothing has been saved for that scope. There is no separate read permission: reading and updating both require `quicklink:manage`, because the settings include the redirect allowlist and branding that only a QuickLink manager should see.\n\nRequires `quicklink:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -13341,7 +13323,7 @@
           "quicklink"
         ],
         "summary": "Update QuickLink settings",
-        "description": "Updates the saved QuickLink settings for the authenticated organization or project and returns the saved record.\n\nOrganization API-key callers require `quicklink:manage`; project-token callers require the same action scope and are accepted only for `project` resources inside the authenticated project; dashboard callers require current organization membership and authorization.",
+        "description": "Updates the saved QuickLink settings for the authenticated organization or project and returns the saved record.\n\nRequires `quicklink:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -20210,29 +20192,62 @@
       },
       "ErrorEnvelope": {
         "type": "object",
+        "required": [
+          "error",
+          "data",
+          "docs"
+        ],
         "properties": {
           "error": {
-            "type": "string",
-            "description": "Human-readable sentence describing the failure."
+            "type": "object",
+            "required": [
+              "type",
+              "code",
+              "message",
+              "param"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request_error",
+                  "authentication_error",
+                  "permission_error",
+                  "conflict_error",
+                  "rate_limit_error",
+                  "api_error",
+                  "upstream_error"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "description": "Stable failure code. Use this value for programmatic handling."
+              },
+              "message": {
+                "type": "string",
+                "description": "Safe explanation of the failure."
+              },
+              "param": {
+                "type": "string",
+                "nullable": true,
+                "description": "Invalid request field, or null when no field applies."
+              }
+            }
           },
-          "code": {
+          "data": {
             "type": "string",
-            "description": "Stable, documented identifier for this failure. Present when the failure has one."
+            "nullable": true,
+            "enum": [
+              null
+            ],
+            "description": "Always null for a failed request."
           },
           "docs": {
             "type": "string",
             "format": "uri",
-            "description": "Documentation for this failure, when one is published."
-          },
-          "retryAfter": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Seconds to wait before retrying, on a paced refusal or retryable service pause."
+            "description": "Documentation link to this failure code."
           }
-        },
-        "required": [
-          "error"
-        ]
+        }
       },
       "ProjectId": {
         "type": "string",

@@ -118,7 +118,11 @@ describe("MessagingClient business", () => {
     expect(
       requests.map(({ method, path, body }) => ({ method, path, body })),
     ).toEqual([
-      { method: "GET", path: "/messaging/sales%2Feu/business/profile", body: "" },
+      {
+        method: "GET",
+        path: "/messaging/sales%2Feu/business/profile",
+        body: "",
+      },
       {
         method: "PATCH",
         path: "/messaging/sales%2Feu/business/profile",

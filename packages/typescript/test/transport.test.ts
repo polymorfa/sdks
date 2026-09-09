@@ -163,7 +163,7 @@ describe("HttpTransport", () => {
             "content-type": "application/json",
             "x-request-id": "req_auth",
           },
-          body: '{"error":"bad key","code":"invalid_key"}',
+          body: '{"error":{"type":"authentication_error","code":"invalid_credential","message":"Supply a valid credential.","param":null},"data":null,"docs":"https://docs.polymorfa.com/api/errors#invalid-credential"}',
         };
       }
       return {
@@ -172,7 +172,7 @@ describe("HttpTransport", () => {
           "content-type": "application/json",
           "x-request-id": "req_validation",
         },
-        body: '{"error":"invalid project"}',
+        body: '{"error":{"type":"invalid_request_error","code":"invalid_parameter","message":"Correct the invalid project field.","param":"projectId"},"data":null,"docs":"https://docs.polymorfa.com/api/errors#invalid-parameter"}',
       };
     });
     const transport = makeTransport(server.url);
@@ -184,7 +184,18 @@ describe("HttpTransport", () => {
     expect(authError).toMatchObject({
       status: 401,
       requestId: "req_auth",
-      code: "invalid_key",
+      code: "invalid_credential",
+      message: "Supply a valid credential.",
+      details: {
+        error: {
+          type: "authentication_error",
+          code: "invalid_credential",
+          message: "Supply a valid credential.",
+          param: null,
+        },
+        data: null,
+        docs: "https://docs.polymorfa.com/api/errors#invalid-credential",
+      },
     });
 
     const validationError = await transport
@@ -194,6 +205,8 @@ describe("HttpTransport", () => {
     expect(validationError).toMatchObject({
       status: 400,
       requestId: "req_validation",
+      code: "invalid_parameter",
+      message: "Correct the invalid project field.",
     });
   });
 

@@ -1255,7 +1255,7 @@ pending session. Connected links cannot be cancelled. The source exposes no
 list, recover, or history operation.
 
 `Client.quickLinkSettings.retrieve` and `update` map the management
-`GET /v1/quicklink` and `PUT /v1/quicklink` operations. Use them on the root
+`GET /platform/quicklink` and `PUT /platform/quicklink` operations. Use them on the root
 organization client or an immutable project view:
 
 ```ts
@@ -1270,7 +1270,7 @@ const projectSettings = await platform
 
 These methods manage saved settings only. Hosted lifecycle methods stay on
 `MessagingClient.quickLinks`, not `Client` or `client.project(...)`, because
-the `/api/quicklinks/{id}` routes do not carry an immutable project path for an
+the `/messaging/quicklinks/{id}` routes do not carry an immutable project path for an
 organization-key project view. Console-only logo routes are outside the SDK.
 
 ## Management session lifecycle

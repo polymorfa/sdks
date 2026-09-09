@@ -116,14 +116,14 @@ describe("Client BanSafe resources", () => {
       ApiResponse<BanSafeHealthActionsEnvelope>
     >();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/bansafe/health?projectId=project%2Fa&cursor=cursor%2Fa&limit=25",
-      "GET /v1/bansafe/health/session%2Fa",
-      "GET /v1/bansafe/health/session%2Fa/history?since=2026-09-07T00%3A00%3A00.000Z&limit=12",
-      "GET /v1/bansafe/signals",
-      "GET /v1/bansafe/telemetry/session%2Fa",
-      "GET /v1/bansafe/telemetry/session%2Fa/history?since=2026-09-07T00%3A00%3A00.000Z&until=2026-09-08T00%3A00%3A00.000Z&cursor=cursor%2Fb&limit=10",
-      "GET /v1/bansafe/collection?projectId=project%2Fa&cursor=cursor%2Fc&limit=25",
-      "GET /v1/bansafe/health-actions?projectId=project%2Fa&session=session%2Fa&status=succeeded&cursor=cursor%2Fd&limit=25",
+      "GET /platform/bansafe/health?projectId=project%2Fa&cursor=cursor%2Fa&limit=25",
+      "GET /platform/bansafe/health/session%2Fa",
+      "GET /platform/bansafe/health/session%2Fa/history?since=2026-09-07T00%3A00%3A00.000Z&limit=12",
+      "GET /platform/bansafe/signals",
+      "GET /platform/bansafe/telemetry/session%2Fa",
+      "GET /platform/bansafe/telemetry/session%2Fa/history?since=2026-09-07T00%3A00%3A00.000Z&until=2026-09-08T00%3A00%3A00.000Z&cursor=cursor%2Fb&limit=10",
+      "GET /platform/bansafe/collection?projectId=project%2Fa&cursor=cursor%2Fc&limit=25",
+      "GET /platform/bansafe/health-actions?projectId=project%2Fa&session=session%2Fa&status=succeeded&cursor=cursor%2Fd&limit=25",
     ]);
   });
 
@@ -161,13 +161,13 @@ describe("Client BanSafe resources", () => {
     await client.banSafe.getClaim("claim/a");
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/bansafe/findings?projectId=project%2Fa&session=session%2Fa&status=open&severity=critical&limit=5",
-      "GET /v1/bansafe/enforcement?projectId=project%2Fa&rung=throttle",
-      "GET /v1/bansafe/incidents?projectId=project%2Fa&session=session%2Fa",
-      "POST /v1/bansafe/incidents",
-      "POST /v1/bansafe/incidents/incident%2Fa/retract",
-      "GET /v1/bansafe/claims?projectId=project%2Fa&session=session%2Fa&status=under_review",
-      "GET /v1/bansafe/claims/claim%2Fa",
+      "GET /platform/bansafe/findings?projectId=project%2Fa&session=session%2Fa&status=open&severity=critical&limit=5",
+      "GET /platform/bansafe/enforcement?projectId=project%2Fa&rung=throttle",
+      "GET /platform/bansafe/incidents?projectId=project%2Fa&session=session%2Fa",
+      "POST /platform/bansafe/incidents",
+      "POST /platform/bansafe/incidents/incident%2Fa/retract",
+      "GET /platform/bansafe/claims?projectId=project%2Fa&session=session%2Fa&status=under_review",
+      "GET /platform/bansafe/claims/claim%2Fa",
     ]);
     expect(requests[3]?.headers["idempotency-key"]).toBe("incident/a");
     expect(JSON.parse(requests[3]!.body)).toEqual({
@@ -208,16 +208,16 @@ describe("Client BanSafe resources", () => {
       ApiResponse<DataEnvelope<ProjectHealthPolicy>>
     >();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/projects/project%2Fa/safe-mode",
-      "PUT /v1/projects/project%2Fa/safe-mode",
-      "GET /v1/projects/project%2Fa/warmup-plan",
-      "PUT /v1/projects/project%2Fa/warmup-plan",
-      "GET /v1/projects/project%2Fa/insurance-evidence",
-      "PUT /v1/projects/project%2Fa/insurance-evidence",
-      "GET /v1/projects/project%2Fa/health-policy",
-      "PUT /v1/projects/project%2Fa/health-policy",
-      "GET /v1/sessions/session%2Fa/safe-mode",
-      "PUT /v1/sessions/session%2Fa/safe-mode",
+      "GET /platform/projects/project%2Fa/safe-mode",
+      "PUT /platform/projects/project%2Fa/safe-mode",
+      "GET /platform/projects/project%2Fa/warmup-plan",
+      "PUT /platform/projects/project%2Fa/warmup-plan",
+      "GET /platform/projects/project%2Fa/insurance-evidence",
+      "PUT /platform/projects/project%2Fa/insurance-evidence",
+      "GET /platform/projects/project%2Fa/health-policy",
+      "PUT /platform/projects/project%2Fa/health-policy",
+      "GET /platform/sessions/session%2Fa/safe-mode",
+      "PUT /platform/sessions/session%2Fa/safe-mode",
     ]);
   });
 });

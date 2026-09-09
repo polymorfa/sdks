@@ -8,6 +8,9 @@
   evidence, and Health policy settings. Dashboard-only finding acknowledgement
   and appeals remain outside the server-key client.
 
+- Aligned public requests with the `/messaging` and `/platform` namespaces.
+  Typed HTTP errors now preserve the canonical nested error code and message.
+
 - Export typed terminal Calls webhooks. `call.ended` preserves a nullable caller
   identity for `pod_lost`; `call.telemetry` preserves cumulative traffic values.
 
@@ -109,7 +112,7 @@
   and localized through new `calls.*` messages; `pmfa-call` follows the same
   controller contract.
 - Refreshed the Messaging and Platform contracts and the coverage ledger for
-  the `/api/voip/*` signaling routes and the `call.ended` / `call.telemetry`
+  the `/messaging/voip/*` signaling routes and the `call.ended` / `call.telemetry`
   webhook events.
 
 ## 0.1.0-dev.0 - 2026-08-19

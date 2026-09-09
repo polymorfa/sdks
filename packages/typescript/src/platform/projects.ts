@@ -185,7 +185,7 @@ export class ProjectsResource {
   ): Promise<ApiResponse<DataEnvelope<T>>> {
     return this.transport.request({
       method: "GET",
-      path: `/v1/projects/${encodeURIComponent(projectId)}/${setting}`,
+      path: `/platform/projects/${encodeURIComponent(projectId)}/${setting}`,
       ...options,
     });
   }
@@ -199,7 +199,7 @@ export class ProjectsResource {
   ): Promise<ApiResponse<DataEnvelope<T>>> {
     return this.transport.request({
       method: "PUT",
-      path: `/v1/projects/${encodeURIComponent(projectId)}/${setting}`,
+      path: `/platform/projects/${encodeURIComponent(projectId)}/${setting}`,
       body,
       ...options,
     });

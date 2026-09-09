@@ -42,7 +42,7 @@ const platform = JSON.parse(
 
 describe("BanSafe draft contract coverage", () => {
   it("pins the generated draft by content hash without claiming a merged source", () => {
-    expect(source.sourceState).toBe("uncommitted-bansafe-draft");
+    expect(source.sourceState).toBe("pull-request-head");
     for (const contract of Object.values(source.contracts)) {
       const hash = createHash("sha256")
         .update(readFileSync(resolve(root, contract.snapshotPath)))

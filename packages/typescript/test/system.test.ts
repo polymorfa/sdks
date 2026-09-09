@@ -51,7 +51,12 @@ describe("SystemClient", () => {
     expectTypeOf(ping).toEqualTypeOf<ApiResponse<PingResponse>>();
     expect(
       fetch.mock.calls.map(([input]) => new URL(String(input)).pathname),
-    ).toEqual(["/messaging/info/status", "/messaging/info/version", "/health", "/ping"]);
+    ).toEqual([
+      "/messaging/info/status",
+      "/messaging/info/version",
+      "/health",
+      "/ping",
+    ]);
     for (const [, init] of fetch.mock.calls) {
       expect(new Headers(init?.headers).has("authorization")).toBe(false);
     }
