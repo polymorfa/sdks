@@ -106,7 +106,7 @@ export class TemplatesResource {
 }
 
 function templatesPath(projectSlug: string): string {
-  return `/api/projects/${encodeURIComponent(projectSlug)}/templates`;
+  return `/messaging/projects/${encodeURIComponent(projectSlug)}/templates`;
 }
 
 function templatePath(projectSlug: string, templateId: string): string {

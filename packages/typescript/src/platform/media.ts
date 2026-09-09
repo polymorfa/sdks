@@ -29,7 +29,7 @@ export class MediaResource {
   ): MediaResponse {
     return this.transport.request({
       method: "POST",
-      path: "/v1/media/uploads",
+      path: "/platform/media/uploads",
       ...(body === undefined ? {} : { body }),
       ...options,
     });
@@ -37,5 +37,5 @@ export class MediaResource {
 }
 
 function mediaPath(mediaId: string): string {
-  return `/v1/media/${encodeURIComponent(mediaId)}`;
+  return `/platform/media/${encodeURIComponent(mediaId)}`;
 }

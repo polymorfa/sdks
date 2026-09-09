@@ -19,7 +19,7 @@ async function customersServer(): Promise<{
   requests: RecordedRequest[];
 }> {
   const server = await startTestServer((request) => {
-    if (request.path.startsWith("/v1/customers?")) {
+    if (request.path.startsWith("/platform/customers?")) {
       return {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -84,12 +84,12 @@ describe("Client customers", () => {
     });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/projects/project%2Fa/customers/status",
-      "POST /v1/projects/project%2Fa/customers/enable",
-      "GET /v1/customers?projectId=project%2Fa&cursor=cursor%2Fa&limit=20&search=Ada+Lovelace&status=active&isDefault=false&hasNumbers=true&needsAttention=false",
-      "POST /v1/customers",
-      "GET /v1/customers/customer%2Fa?projectId=project%2Fa",
-      "PATCH /v1/customers/customer%2Fa",
+      "GET /platform/projects/project%2Fa/customers/status",
+      "POST /platform/projects/project%2Fa/customers/enable",
+      "GET /platform/customers?projectId=project%2Fa&cursor=cursor%2Fa&limit=20&search=Ada+Lovelace&status=active&isDefault=false&hasNumbers=true&needsAttention=false",
+      "POST /platform/customers",
+      "GET /platform/customers/customer%2Fa?projectId=project%2Fa",
+      "PATCH /platform/customers/customer%2Fa",
     ]);
     expect(requests[1]?.headers["idempotency-key"]).toBe("enable-1");
     expect(requests[3]?.headers["idempotency-key"]).toBe("create-1");
@@ -151,14 +151,14 @@ describe("Client customers", () => {
     );
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "POST /v1/customers/customer%2Fa/archive",
-      "POST /v1/customers/customer%2Fa/restore",
-      "GET /v1/customers/customer%2Fa/numbers?projectId=project%2Fa",
-      "GET /v1/customers/customer%2Fa/events?projectId=project%2Fa&limit=25",
-      "POST /v1/customers/customer%2Fa/pairing-links",
-      "GET /v1/customers/customer%2Fa/pairing-links?projectId=project%2Fa",
-      "DELETE /v1/customers/customer%2Fa/pairing-links/link%2Fa?projectId=project%2Fa",
-      "POST /v1/customers/customer%2Fa/numbers/session%2Fa/transfer",
+      "POST /platform/customers/customer%2Fa/archive",
+      "POST /platform/customers/customer%2Fa/restore",
+      "GET /platform/customers/customer%2Fa/numbers?projectId=project%2Fa",
+      "GET /platform/customers/customer%2Fa/events?projectId=project%2Fa&limit=25",
+      "POST /platform/customers/customer%2Fa/pairing-links",
+      "GET /platform/customers/customer%2Fa/pairing-links?projectId=project%2Fa",
+      "DELETE /platform/customers/customer%2Fa/pairing-links/link%2Fa?projectId=project%2Fa",
+      "POST /platform/customers/customer%2Fa/numbers/session%2Fa/transfer",
     ]);
     expect(requests[0]?.headers["idempotency-key"]).toBe("archive-1");
     expect(requests[1]?.headers["idempotency-key"]).toBe("restore-1");

@@ -46,7 +46,7 @@ describe("VoipResource", () => {
     expectTypeOf(response).toEqualTypeOf<ApiResponse<VoipTokenResponse>>();
     expect(server.requests[0]).toMatchObject({
       method: "POST",
-      path: "/api/voip/token",
+      path: "/messaging/voip/token",
     });
     expect(JSON.parse(server.requests[0]?.body ?? "{}")).toEqual({
       session: "support",
@@ -79,7 +79,7 @@ describe("VoipResource", () => {
     const ticket = await client.voip.socketTicket({ session: "support" });
     expect(server.requests[0]).toMatchObject({
       method: "POST",
-      path: "/api/voip/ws-ticket",
+      path: "/messaging/voip/ws-ticket",
     });
     expect(JSON.parse(server.requests[0]?.body ?? "{}")).toEqual({
       session: "support",
@@ -89,7 +89,7 @@ describe("VoipResource", () => {
     const agent = await client.voip.agentToken("CALL 1", { ttlSeconds: 300 });
     expect(server.requests[1]).toMatchObject({
       method: "POST",
-      path: "/api/voip/calls/CALL%201/agent-token",
+      path: "/messaging/voip/calls/CALL%201/agent-token",
     });
     expect(JSON.parse(server.requests[1]?.body ?? "{}")).toEqual({
       ttlSeconds: 300,

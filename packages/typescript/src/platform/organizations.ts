@@ -10,7 +10,7 @@ export class OrganizationsResource {
   ): Promise<ApiResponse<DataEnvelope<Organization>>> {
     return this.transport.request({
       method: "GET",
-      path: "/v1/organization",
+      path: "/platform/team",
       ...options,
     });
   }

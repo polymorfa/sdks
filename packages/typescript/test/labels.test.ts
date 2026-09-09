@@ -117,8 +117,8 @@ describe("MessagingClient labels", () => {
     expectTypeOf(attached).toEqualTypeOf<ApiResponse<GetChatLabelsResponse>>();
     expect(listed.metadata.requestId).toBe("req_labels");
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /api/support%2Feu/labels?includeObservation=true",
-      "GET /api/support%2Feu/labels/chats/customer%2F1%40g.us?includeObservation=false",
+      "GET /messaging/support%2Feu/labels?includeObservation=true",
+      "GET /messaging/support%2Feu/labels/chats/customer%2F1%40g.us?includeObservation=false",
     ]);
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
   });
@@ -153,22 +153,22 @@ describe("MessagingClient labels", () => {
     ).toEqual([
       {
         method: "POST",
-        path: "/api/support%2Feu/labels",
+        path: "/messaging/support%2Feu/labels",
         body: '{"name":"Priority","color":3}',
       },
       {
         method: "PUT",
-        path: "/api/support%2Feu/labels/label%2F1",
+        path: "/messaging/support%2Feu/labels/label%2F1",
         body: '{"name":"Urgent"}',
       },
       {
         method: "DELETE",
-        path: "/api/support%2Feu/labels/label%2F1",
+        path: "/messaging/support%2Feu/labels/label%2F1",
         body: "",
       },
       {
         method: "PUT",
-        path: "/api/support%2Feu/labels/chats/customer%2F1%40g.us",
+        path: "/messaging/support%2Feu/labels/chats/customer%2F1%40g.us",
         body: '{"labels":["label/2","label/3"]}',
       },
     ]);

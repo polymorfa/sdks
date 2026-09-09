@@ -126,9 +126,9 @@ describe("MessagingClient campaigns", () => {
     expectTypeOf(retrieved).toEqualTypeOf<ApiResponse<GetCampaignResponse>>();
     expectTypeOf(analytics.data.data).toEqualTypeOf<CampaignAnalytics>();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /api/projects/launch%2Feu/campaigns",
-      `GET /api/projects/launch%2Feu/campaigns/${campaign.id}`,
-      `GET /api/projects/launch%2Feu/campaigns/${campaign.id}/analytics`,
+      "GET /messaging/projects/launch%2Feu/campaigns",
+      `GET /messaging/projects/launch%2Feu/campaigns/${campaign.id}`,
+      `GET /messaging/projects/launch%2Feu/campaigns/${campaign.id}/analytics`,
     ]);
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
     expect(listed.metadata.requestId).toBe("req_messaging_campaigns");
@@ -152,7 +152,7 @@ describe("MessagingClient campaigns", () => {
     expectTypeOf(created).toEqualTypeOf<ApiResponse<CreateCampaignResponse>>();
     expect(requests[0]).toMatchObject({
       method: "POST",
-      path: "/api/projects/launch%2Feu/campaigns",
+      path: "/messaging/projects/launch%2Feu/campaigns",
       body: JSON.stringify({
         name: "August launch",
         templateId: "template/a",
@@ -190,22 +190,22 @@ describe("MessagingClient campaigns", () => {
     ).toEqual([
       {
         method: "POST",
-        path: `/api/projects/launch%2Feu/campaigns/${campaign.id}/launch`,
+        path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}/launch`,
         body: '{"scheduledAt":1724086800000}',
       },
       {
         method: "POST",
-        path: `/api/projects/launch%2Feu/campaigns/${campaign.id}/pause`,
+        path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}/pause`,
         body: "",
       },
       {
         method: "POST",
-        path: `/api/projects/launch%2Feu/campaigns/${campaign.id}/resume`,
+        path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}/resume`,
         body: "",
       },
       {
         method: "POST",
-        path: `/api/projects/launch%2Feu/campaigns/${campaign.id}/stop`,
+        path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}/stop`,
         body: "",
       },
     ]);
@@ -233,7 +233,7 @@ describe("MessagingClient campaigns", () => {
     expect(requeued.data.data).toEqual({ requeued: 3 });
     expect(requests[0]).toMatchObject({
       method: "POST",
-      path: `/api/projects/launch%2Feu/campaigns/${campaign.id}/requeue`,
+      path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}/requeue`,
       body: '{"includeSkippedError":true}',
     });
     expect(requests[0]?.headers["idempotency-key"]).toBe(

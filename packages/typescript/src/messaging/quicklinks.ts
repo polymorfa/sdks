@@ -71,7 +71,7 @@ export class QuickLinksResource {
     this.assertServerCredential();
     return this.transport.request({
       method: "POST",
-      path: "/api/quicklinks",
+      path: "/messaging/quicklinks",
       body: input,
       ...options,
     });
@@ -112,5 +112,5 @@ export class QuickLinksResource {
 }
 
 function quickLinkPath(id: string): string {
-  return `/api/quicklinks/${encodeURIComponent(id)}`;
+  return `/messaging/quicklinks/${encodeURIComponent(id)}`;
 }

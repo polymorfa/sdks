@@ -213,7 +213,7 @@ export class ChannelsResource {
 }
 
 function channelsPath(session: string): string {
-  return `/api/${encodeURIComponent(session)}/channels`;
+  return `/messaging/${encodeURIComponent(session)}/channels`;
 }
 
 function channelPath(session: string, channelId: string): string {

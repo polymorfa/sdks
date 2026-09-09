@@ -23,7 +23,7 @@ export class SessionBansResource {
   ): SessionBansResponse {
     return this.transport.request({
       method: "GET",
-      path: `/v1/bans${suffix}`,
+      path: `/platform/bans${suffix}`,
       ...options,
     });
   }

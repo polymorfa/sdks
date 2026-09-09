@@ -125,11 +125,11 @@ describe("MessagingClient groups", () => {
     expectTypeOf(listed).toEqualTypeOf<ApiResponse<ListGroupsResponse>>();
     expect(listed.metadata.requestId).toBe("req_groups");
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /api/support%2Feu/groups",
-      "GET /api/support%2Feu/groups/120363%2Fgroup%40g.us",
-      "GET /api/support%2Feu/groups/join-info?code=invite%2Fcode",
-      "GET /api/support%2Feu/groups/120363%2Fgroup%40g.us/invite-code",
-      "GET /api/support%2Feu/groups/120363%2Fgroup%40g.us/participants",
+      "GET /messaging/support%2Feu/groups",
+      "GET /messaging/support%2Feu/groups/120363%2Fgroup%40g.us",
+      "GET /messaging/support%2Feu/groups/join-info?code=invite%2Fcode",
+      "GET /messaging/support%2Feu/groups/120363%2Fgroup%40g.us/invite-code",
+      "GET /messaging/support%2Feu/groups/120363%2Fgroup%40g.us/participants",
     ]);
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
   });
@@ -150,10 +150,10 @@ describe("MessagingClient groups", () => {
     await client.groups.leave(session, groupId, options);
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "POST /api/support%2Feu/groups",
-      "POST /api/support%2Feu/groups/join",
-      "DELETE /api/support%2Feu/groups/120363%2Fgroup%40g.us",
-      "POST /api/support%2Feu/groups/120363%2Fgroup%40g.us/leave",
+      "POST /messaging/support%2Feu/groups",
+      "POST /messaging/support%2Feu/groups/join",
+      "DELETE /messaging/support%2Feu/groups/120363%2Fgroup%40g.us",
+      "POST /messaging/support%2Feu/groups/120363%2Fgroup%40g.us/leave",
     ]);
     expect(requests.map(({ body }) => body)).toEqual([
       '{"name":"Support","participants":["15551234567"]}',
@@ -182,10 +182,10 @@ describe("MessagingClient groups", () => {
     await client.groups.demoteParticipants(session, groupId, body, options);
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "POST /api/support/groups/120363%40g.us/participants/add",
-      "POST /api/support/groups/120363%40g.us/participants/remove",
-      "POST /api/support/groups/120363%40g.us/admin/promote",
-      "POST /api/support/groups/120363%40g.us/admin/demote",
+      "POST /messaging/support/groups/120363%40g.us/participants/add",
+      "POST /messaging/support/groups/120363%40g.us/participants/remove",
+      "POST /messaging/support/groups/120363%40g.us/admin/promote",
+      "POST /messaging/support/groups/120363%40g.us/admin/demote",
     ]);
     expect(requests.map(({ body: requestBody }) => requestBody)).toEqual([
       '{"participants":["15551234567","15557654321"]}',
@@ -246,14 +246,14 @@ describe("MessagingClient groups", () => {
     );
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "PUT /api/support/groups/120363%40g.us/subject",
-      "PUT /api/support/groups/120363%40g.us/description",
-      "POST /api/support/groups/120363%40g.us/invite-code/revoke",
-      "PUT /api/support/groups/120363%40g.us/picture",
-      "PUT /api/support/groups/120363%40g.us/settings/info-edit",
-      "PUT /api/support/groups/120363%40g.us/settings/messages",
-      "PUT /api/support/groups/120363%40g.us/settings/member-add",
-      "PUT /api/support/groups/120363%40g.us/settings/join-approval",
+      "PUT /messaging/support/groups/120363%40g.us/subject",
+      "PUT /messaging/support/groups/120363%40g.us/description",
+      "POST /messaging/support/groups/120363%40g.us/invite-code/revoke",
+      "PUT /messaging/support/groups/120363%40g.us/picture",
+      "PUT /messaging/support/groups/120363%40g.us/settings/info-edit",
+      "PUT /messaging/support/groups/120363%40g.us/settings/messages",
+      "PUT /messaging/support/groups/120363%40g.us/settings/member-add",
+      "PUT /messaging/support/groups/120363%40g.us/settings/join-approval",
     ]);
     expect(requests.map(({ body }) => body)).toEqual([
       '{"value":"Support"}',

@@ -27,7 +27,7 @@ export class PlatformSessionsResource {
   ): Promise<ApiResponse<DataEnvelope<readonly PlatformSession[]>>> {
     return this.transport.request({
       method: "GET",
-      path: "/v1/sessions",
+      path: "/platform/sessions",
       ...(params.projectId === undefined
         ? {}
         : { query: { projectId: params.projectId } }),
@@ -68,7 +68,7 @@ export class PlatformSessionsResource {
   ): Promise<ApiResponse<DataEnvelope<SessionBatchStopResult>>> {
     return this.transport.request({
       method: "POST",
-      path: "/v1/sessions/stop",
+      path: "/platform/sessions/stop",
       body,
       ...options,
     });
@@ -92,7 +92,7 @@ export class PlatformSessionsResource {
   ): Promise<ApiResponse<DataEnvelope<SessionBatchRemoveResult>>> {
     return this.transport.request({
       method: "POST",
-      path: "/v1/sessions/delete",
+      path: "/platform/sessions/delete",
       body,
       ...options,
     });
@@ -117,7 +117,7 @@ export class PlatformSessionsResource {
   ): Promise<ApiResponse<DataEnvelope<string>>> {
     return this.transport.request({
       method: "POST",
-      path: "/v1/sessions/testing",
+      path: "/platform/sessions/testing",
       body,
       ...options,
     });
@@ -149,5 +149,5 @@ export class PlatformSessionsResource {
 }
 
 function sessionPath(sessionId: string): string {
-  return `/v1/sessions/${encodeURIComponent(sessionId)}`;
+  return `/platform/sessions/${encodeURIComponent(sessionId)}`;
 }

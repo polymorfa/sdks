@@ -84,7 +84,7 @@ export class QuickLinkSettingsResource<O extends ClientOwner> {
     return this.transport
       .request<DataEnvelope<QuickLinkSettingsFor<O> | null>>({
         method: "GET",
-        path: "/v1/quicklink",
+        path: "/platform/quicklink",
         ...(this.projectId === null
           ? {}
           : { query: { projectId: this.projectId } }),
@@ -102,7 +102,7 @@ export class QuickLinkSettingsResource<O extends ClientOwner> {
     return this.transport
       .request<DataEnvelope<QuickLinkSettingsFor<O>>>({
         method: "PUT",
-        path: "/v1/quicklink",
+        path: "/platform/quicklink",
         body,
         ...options,
       })

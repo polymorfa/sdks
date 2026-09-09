@@ -77,5 +77,5 @@ export class ProfileResource {
 }
 
 function profilePath(session: string): string {
-  return `/api/${encodeURIComponent(session)}/profile`;
+  return `/messaging/${encodeURIComponent(session)}/profile`;
 }

@@ -135,12 +135,12 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
     ).toEqual([
       {
         method: "POST",
-        path: "/api/support%2Feu/calls/call%2F42/reject",
+        path: "/messaging/support%2Feu/calls/call%2F42/reject",
         body: '{"from":"1555/7@s.whatsapp.net"}',
       },
       {
         method: "POST",
-        path: "/api/support%2Feu/calls/call%2F43/reject",
+        path: "/messaging/support%2Feu/calls/call%2F43/reject",
         body: '{"from":"1555/7@s.whatsapp.net"}',
       },
     ]);
@@ -175,10 +175,10 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
       metadata: { requestId: "req_compact_surface" },
     });
     expect(requests.map(({ path }) => path)).toEqual([
-      "/api/support%2Feu/lids/resolve?phoneNumber=%2B15551234567",
-      "/api/support%2Feu/lids/resolve?id=100000011111111%40lid",
-      "/api/support%2Feu/lids/resolve?lid=100000011111111%40lid",
-      "/api/support%2Feu/lids/resolve?username=support+name&usernameKey=1234",
+      "/messaging/support%2Feu/identities/resolve?phoneNumber=%2B15551234567",
+      "/messaging/support%2Feu/identities/resolve?id=100000011111111%40lid",
+      "/messaging/support%2Feu/identities/resolve?lid=100000011111111%40lid",
+      "/messaging/support%2Feu/identities/resolve?username=support+name&usernameKey=1234",
     ]);
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
     expect(requests[0]?.headers["x-cli-command"]).toBe("user resolve");
@@ -212,7 +212,7 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
     expect(requests).toHaveLength(1);
     expect(requests[0]).toMatchObject({
       method: "GET",
-      path: "/api/support%2Feu/users/100000011111111%40lid/security-code",
+      path: "/messaging/support%2Feu/users/100000011111111%40lid/security-code",
       body: "",
     });
   });

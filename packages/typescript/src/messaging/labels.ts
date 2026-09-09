@@ -102,7 +102,7 @@ export class LabelsResource {
 }
 
 function labelsPath(session: string): string {
-  return `/api/${encodeURIComponent(session)}/labels`;
+  return `/messaging/${encodeURIComponent(session)}/labels`;
 }
 
 function labelPath(session: string, labelId: string): string {

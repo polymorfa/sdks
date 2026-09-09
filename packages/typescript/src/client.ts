@@ -128,8 +128,8 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       });
     const prefix =
       projectId === null
-        ? "/v1"
-        : `/v1/projects/${encodeURIComponent(projectId)}`;
+        ? "/platform"
+        : `/platform/projects/${encodeURIComponent(projectId)}`;
     this.events = new EventsResource(this.#transport, prefix);
     this.webhooks = new WebhooksResource(this.#transport, prefix);
     this.webhookDeliveries = new WebhookDeliveriesResource(

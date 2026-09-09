@@ -66,7 +66,7 @@ describe("Client organizations and projects", () => {
     await client.organizations.retrieve();
     expect(client.organizations).not.toHaveProperty("update");
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/organization",
+      "GET /platform/team",
     ]);
   });
 
@@ -82,8 +82,8 @@ describe("Client organizations and projects", () => {
       { idempotencyKey: "project-support" },
     );
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/projects",
-      "POST /v1/projects",
+      "GET /platform/projects",
+      "POST /platform/projects",
     ]);
     expect(requests[1]?.headers["idempotency-key"]).toBe("project-support");
     expect(created.metadata.requestId).toBe("req_platform");
@@ -109,9 +109,9 @@ describe("Client organizations and projects", () => {
     );
 
     expect(requests.map(({ path }) => path)).toEqual([
-      "/v1/projects/project%2Fa/promote",
-      "/v1/projects/project%2Fa/production-enrollments/operation%2Fb/approve",
-      "/v1/projects/project%2Fa/production-enrollments/operation%2Fb/cancel",
+      "/platform/projects/project%2Fa/promote",
+      "/platform/projects/project%2Fa/production-enrollments/operation%2Fb/approve",
+      "/platform/projects/project%2Fa/production-enrollments/operation%2Fb/cancel",
     ]);
     expect(requests[0]?.body).toBe(JSON.stringify({ business }));
   });
@@ -123,8 +123,8 @@ describe("Client sessions", () => {
     await client.sessions.list();
     await client.sessions.list({ projectId: "project_1" });
     expect(requests.map(({ path }) => path)).toEqual([
-      "/v1/sessions",
-      "/v1/sessions?projectId=project_1",
+      "/platform/sessions",
+      "/platform/sessions?projectId=project_1",
     ]);
   });
 
@@ -143,10 +143,10 @@ describe("Client sessions", () => {
     });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "POST /v1/sessions/session%2Fa/stop",
-      "DELETE /v1/sessions/session%2Fa",
-      "PATCH /v1/sessions/session%2Fa",
-      "POST /v1/sessions/testing",
+      "POST /platform/sessions/session%2Fa/stop",
+      "DELETE /platform/sessions/session%2Fa",
+      "PATCH /platform/sessions/session%2Fa",
+      "POST /platform/sessions/testing",
     ]);
     expect(requests[0]?.body).toBe('{"projectId":"project_1"}');
     expect(requests[2]?.body).toBe(

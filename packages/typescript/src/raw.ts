@@ -67,7 +67,7 @@ export class ConfinedProjectRawClient implements ProjectScopedRawClient {
 
   constructor(transport: HttpTransport, projectId: string) {
     this.#raw = new RawClient(transport);
-    this.#prefix = `/v1/projects/${encodeURIComponent(projectId)}`;
+    this.#prefix = `/platform/projects/${encodeURIComponent(projectId)}`;
   }
 
   async request<T = unknown>(request: RawRequest): Promise<ApiResponse<T>> {
@@ -102,7 +102,7 @@ function validateProjectRelativeRequest(request: RawRequest): void {
     path.includes("\\") ||
     URL.canParse(path) ||
     decoded.split("/").includes("..") ||
-    decoded.startsWith("/v1/projects/")
+    decoded.startsWith("/platform/projects/")
   ) {
     throw invalidProjectRawPath();
   }

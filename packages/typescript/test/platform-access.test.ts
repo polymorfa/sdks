@@ -95,8 +95,8 @@ describe("Client organization access and operations", () => {
       readonly keyId: string;
     }>();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/keys",
-      "DELETE /v1/keys/key%2Fa",
+      "GET /platform/keys",
+      "DELETE /platform/keys/key%2Fa",
     ]);
     expect(requests[1]?.headers["idempotency-key"]).toBe("deactivate-key-a");
     expect(listed.metadata.requestId).toBe("req_platform_access");
@@ -113,7 +113,7 @@ describe("Client organization access and operations", () => {
     expect(client.members).not.toHaveProperty("updateRole");
     expect(client.members).not.toHaveProperty("delete");
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/members",
+      "GET /platform/members",
     ]);
   });
 
@@ -129,7 +129,7 @@ describe("Client organization access and operations", () => {
     >();
     expect(requests[0]).toMatchObject({
       method: "GET",
-      path: "/v1/audit?action=session.stop&resource=session%2Fa&limit=250",
+      path: "/platform/audit?action=session.stop&resource=session%2Fa&limit=250",
     });
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
   });
@@ -146,8 +146,8 @@ describe("Client organization access and operations", () => {
       ApiResponse<DataEnvelope<readonly SessionBan[]>>
     >();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/bans",
-      "GET /v1/bans/active",
+      "GET /platform/bans",
+      "GET /platform/bans/active",
     ]);
   });
 
@@ -168,10 +168,10 @@ describe("Client organization access and operations", () => {
     expect(
       requests.map(({ method, path, body }) => ({ method, path, body })),
     ).toEqual([
-      { method: "GET", path: "/v1/incidents", body: "" },
+      { method: "GET", path: "/platform/incidents", body: "" },
       {
         method: "POST",
-        path: "/v1/incidents/incident%2Fa/acknowledge",
+        path: "/platform/incidents/incident%2Fa/acknowledge",
         body: "",
       },
     ]);
@@ -190,8 +190,8 @@ describe("Client organization access and operations", () => {
       ApiResponse<DataEnvelope<readonly ProjectToken[]>>
     >();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/operations/operation%2Fa",
-      "GET /v1/tokens?projectId=project%2Fa",
+      "GET /platform/operations/operation%2Fa",
+      "GET /platform/tokens?projectId=project%2Fa",
     ]);
   });
 });

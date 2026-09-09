@@ -62,7 +62,7 @@ describe("Client batch session lifecycle", () => {
     >();
     expect(requests[0]).toMatchObject({
       method: "POST",
-      path: "/v1/sessions/stop",
+      path: "/platform/sessions/stop",
       body: '{"projectId":"project/a","sessionIds":["support","session/a"]}',
     });
     expect(requests[0]?.headers["idempotency-key"]).toBe("stop-sessions-1");
@@ -81,7 +81,7 @@ describe("Client batch session lifecycle", () => {
     >();
     expect(requests[0]).toMatchObject({
       method: "POST",
-      path: "/v1/sessions/delete",
+      path: "/platform/sessions/delete",
       body: '{"sessionIds":["support","sales"]}',
     });
     expect(requests[0]?.headers["idempotency-key"]).toBe("delete-sessions-1");

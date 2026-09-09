@@ -10,26 +10,26 @@ export class OptOutsResource {
   list(options: RequestOptions = {}): OptOutResponse {
     return this.transport.request({
       method: "GET",
-      path: "/v1/optouts",
+      path: "/platform/optouts",
       ...options,
     });
   }
 
   create(body?: PlatformPayload, options: RequestOptions = {}): OptOutResponse {
-    return this.write("/v1/optouts", body, options);
+    return this.write("/platform/optouts", body, options);
   }
 
   createBatch(
     body?: PlatformPayload,
     options: RequestOptions = {},
   ): OptOutResponse {
-    return this.write("/v1/optouts/batch", body, options);
+    return this.write("/platform/optouts/batch", body, options);
   }
 
   delete(phone: string, options: RequestOptions = {}): OptOutResponse {
     return this.transport.request({
       method: "DELETE",
-      path: `/v1/optouts/${encodeURIComponent(phone)}`,
+      path: `/platform/optouts/${encodeURIComponent(phone)}`,
       ...options,
     });
   }

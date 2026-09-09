@@ -61,7 +61,7 @@ export class PresenceResource {
 }
 
 function presencePath(session: string): string {
-  return `/api/${encodeURIComponent(session)}/presence`;
+  return `/messaging/${encodeURIComponent(session)}/presence`;
 }
 
 function chatPresencePath(session: string, chatId: string): string {

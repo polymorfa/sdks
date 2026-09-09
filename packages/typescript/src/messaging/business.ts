@@ -387,7 +387,7 @@ export class BusinessResource {
 }
 
 function businessPath(session: string): string {
-  return `/api/${encodeURIComponent(session)}/business`;
+  return `/messaging/${encodeURIComponent(session)}/business`;
 }
 
 function profilePath(session: string): string {

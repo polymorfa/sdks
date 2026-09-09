@@ -43,7 +43,7 @@ export class BillingResource {
   ): Promise<ApiResponse<DataEnvelope<BillingReminderSettings>>> {
     return this.transport.request({
       method: "PATCH",
-      path: "/v1/billing/reminders",
+      path: "/platform/billing/reminders",
       body,
       ...options,
     });
@@ -55,7 +55,7 @@ export class BillingResource {
   ): Promise<ApiResponse<DataEnvelope<T>>> {
     return this.transport.request({
       method: "GET",
-      path: `/v1/billing${suffix}`,
+      path: `/platform/billing${suffix}`,
       ...options,
     });
   }

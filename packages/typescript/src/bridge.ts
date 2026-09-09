@@ -33,7 +33,7 @@ export class BridgeRoutesResource {
   resolve(options: RequestOptions = {}): Promise<ApiResponse<BridgeRoute>> {
     return this.transport.request({
       method: "GET",
-      path: "/v1/bridge/route",
+      path: "/messaging/bridge/route",
       ...options,
     });
   }

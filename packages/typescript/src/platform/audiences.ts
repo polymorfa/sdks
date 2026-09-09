@@ -10,7 +10,7 @@ export class AudiencesResource {
   list(options: RequestOptions = {}): AudienceResponse {
     return this.transport.request({
       method: "GET",
-      path: "/v1/audiences",
+      path: "/platform/audiences",
       ...options,
     });
   }
@@ -19,7 +19,7 @@ export class AudiencesResource {
     body?: PlatformPayload,
     options: RequestOptions = {},
   ): AudienceResponse {
-    return this.write("/v1/audiences", body, options);
+    return this.write("/platform/audiences", body, options);
   }
 
   retrieve(listId: string, options: RequestOptions = {}): AudienceResponse {
@@ -42,7 +42,7 @@ export class AudiencesResource {
     body?: PlatformPayload,
     options: RequestOptions = {},
   ): AudienceResponse {
-    return this.write("/v1/audiences/uploads", body, options);
+    return this.write("/platform/audiences/uploads", body, options);
   }
 
   private write(
@@ -60,5 +60,5 @@ export class AudiencesResource {
 }
 
 function audiencePath(listId: string): string {
-  return `/v1/audiences/${encodeURIComponent(listId)}`;
+  return `/platform/audiences/${encodeURIComponent(listId)}`;
 }

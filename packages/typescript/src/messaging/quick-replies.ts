@@ -64,7 +64,7 @@ export class QuickRepliesResource {
 }
 
 function quickRepliesPath(session: string): string {
-  return `/api/${encodeURIComponent(session)}/business/quick-replies`;
+  return `/messaging/${encodeURIComponent(session)}/business/quick-replies`;
 }
 
 function quickReplyPath(session: string, quickReplyId: string): string {

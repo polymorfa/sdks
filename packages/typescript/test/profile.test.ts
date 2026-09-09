@@ -95,7 +95,7 @@ describe("MessagingClient profile", () => {
     });
     expect(result.metadata.requestId).toBe("req_profile");
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /api/support%2Feu/profile",
+      "GET /messaging/support%2Feu/profile",
     ]);
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
     expect(requests[0]?.headers["x-cli-command"]).toBe("profile view");
@@ -140,22 +140,22 @@ describe("MessagingClient profile", () => {
     ).toEqual([
       {
         method: "PUT",
-        path: "/api/support%2Feu/profile/name",
+        path: "/messaging/support%2Feu/profile/name",
         body: '{"name":"Support"}',
       },
       {
         method: "PUT",
-        path: "/api/support%2Feu/profile/status",
+        path: "/messaging/support%2Feu/profile/status",
         body: '{"status":"Available"}',
       },
       {
         method: "PUT",
-        path: "/api/support%2Feu/profile/picture",
+        path: "/messaging/support%2Feu/profile/picture",
         body: '{"url":"https://cdn.example/profile.jpg","base64":"cHJvZmlsZQ=="}',
       },
       {
         method: "DELETE",
-        path: "/api/support%2Feu/profile/picture",
+        path: "/messaging/support%2Feu/profile/picture",
         body: "",
       },
     ]);

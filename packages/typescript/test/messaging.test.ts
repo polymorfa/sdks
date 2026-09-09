@@ -51,12 +51,12 @@ describe("MessagingClient sessions", () => {
 
     expect(requests[0]).toMatchObject({
       method: "GET",
-      path: "/api/sessions",
+      path: "/messaging/sessions",
       body: "",
     });
     expect(requests[1]).toMatchObject({
       method: "POST",
-      path: "/api/sessions",
+      path: "/messaging/sessions",
       body: '{"projectId":"project_1","sessionId":"support","start":true}',
     });
     expect(requests[1]?.headers["idempotency-key"]).toBe("session-support");
@@ -76,14 +76,14 @@ describe("MessagingClient sessions", () => {
     await client.sessions.account(id);
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /api/sessions/support%2Feu",
-      "PUT /api/sessions/support%2Feu",
-      "POST /api/sessions/support%2Feu/start",
-      "POST /api/sessions/support%2Feu/stop",
-      "POST /api/sessions/support%2Feu/restart",
-      "POST /api/sessions/support%2Feu/logout",
-      "DELETE /api/sessions/support%2Feu",
-      "GET /api/sessions/support%2Feu/me",
+      "GET /messaging/sessions/support%2Feu",
+      "PUT /messaging/sessions/support%2Feu",
+      "POST /messaging/sessions/support%2Feu/start",
+      "POST /messaging/sessions/support%2Feu/stop",
+      "POST /messaging/sessions/support%2Feu/restart",
+      "POST /messaging/sessions/support%2Feu/logout",
+      "DELETE /messaging/sessions/support%2Feu",
+      "GET /messaging/sessions/support%2Feu/me",
     ]);
     expect(requests[1]?.body).toBe('{"config":{"presence":true}}');
   });
@@ -99,8 +99,8 @@ describe("MessagingClient sessions", () => {
     );
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /api/support%2Feu/pair/qr?format=json",
-      "POST /api/support%2Feu/pair/code",
+      "GET /messaging/support%2Feu/pair/qr?format=json",
+      "POST /messaging/support%2Feu/pair/code",
     ]);
     expect(qr.metadata.requestId).toBe("req_messaging");
     expect(requests[1]?.body).toBe('{"phone":"+15551234567"}');
@@ -116,7 +116,7 @@ describe("MessagingClient operations", () => {
 
     expect(requests[0]).toMatchObject({
       method: "GET",
-      path: "/api/operations/operation%2F123",
+      path: "/messaging/operations/operation%2F123",
     });
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
   });
@@ -133,7 +133,7 @@ describe("MessagingClient messages", () => {
 
     expect(requests[0]).toMatchObject({
       method: "POST",
-      path: "/api/support%2Feu/messages/send",
+      path: "/messaging/support%2Feu/messages/send",
       body: '{"chatId":"15551234567@s.whatsapp.net","type":"text","text":"Hello"}',
     });
     expect(response.data.success).toBe(true);
@@ -161,10 +161,10 @@ describe("MessagingClient messages", () => {
     });
 
     expect(requests.map(({ path }) => path)).toEqual([
-      "/api/support/messages/seen",
-      "/api/support/messages/typing",
-      "/api/support/messages/react",
-      "/api/support/messages/star",
+      "/messaging/support/messages/seen",
+      "/messaging/support/messages/typing",
+      "/messaging/support/messages/react",
+      "/messaging/support/messages/star",
     ]);
     expect(requests[1]?.body).toBe('{"chatId":"chat","state":"recording"}');
   });
@@ -194,10 +194,10 @@ describe("MessagingClient client tokens", () => {
     await client.clientTokens.deleteRules("support/eu");
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "POST /api/client-tokens",
-      "GET /api/sessions/support%2Feu/client-rules",
-      "PUT /api/sessions/support%2Feu/client-rules",
-      "DELETE /api/sessions/support%2Feu/client-rules",
+      "POST /messaging/client-tokens",
+      "GET /messaging/sessions/support%2Feu/client-rules",
+      "PUT /messaging/sessions/support%2Feu/client-rules",
+      "DELETE /messaging/sessions/support%2Feu/client-rules",
     ]);
     expect(requests[0]?.body).toBe(
       '{"session":"support/eu","ephemeralId":"user-1-tab-2","ttlSeconds":600}',
@@ -227,14 +227,14 @@ describe("MessagingClient contacts", () => {
     await client.contacts.businessProfile(session, contactId);
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /api/support%2Feu/contacts",
-      "GET /api/support%2Feu/contacts/check?phone=%2B15551234567%2C%2B15557654321",
-      "GET /api/support%2Feu/contacts/blocked",
-      "GET /api/support%2Feu/contacts/15551234567%2F1%40lid",
-      "GET /api/support%2Feu/contacts/15551234567%2F1%40lid/picture",
-      "GET /api/support%2Feu/contacts/15551234567%2F1%40lid/info",
-      "GET /api/support%2Feu/contacts/15551234567%2F1%40lid/devices",
-      "GET /api/support%2Feu/contacts/15551234567%2F1%40lid/business-profile",
+      "GET /messaging/support%2Feu/contacts",
+      "GET /messaging/support%2Feu/contacts/check?phone=%2B15551234567%2C%2B15557654321",
+      "GET /messaging/support%2Feu/contacts/blocked",
+      "GET /messaging/support%2Feu/contacts/15551234567%2F1%40lid",
+      "GET /messaging/support%2Feu/contacts/15551234567%2F1%40lid/picture",
+      "GET /messaging/support%2Feu/contacts/15551234567%2F1%40lid/info",
+      "GET /messaging/support%2Feu/contacts/15551234567%2F1%40lid/devices",
+      "GET /messaging/support%2Feu/contacts/15551234567%2F1%40lid/business-profile",
     ]);
   });
 
@@ -254,12 +254,12 @@ describe("MessagingClient contacts", () => {
     ).toEqual([
       {
         method: "POST",
-        path: "/api/support/contacts/15551234567%40lid/block",
+        path: "/messaging/support/contacts/15551234567%40lid/block",
         body: "",
       },
       {
         method: "POST",
-        path: "/api/support/contacts/15551234567%40lid/unblock",
+        path: "/messaging/support/contacts/15551234567%40lid/unblock",
         body: "",
       },
     ]);
@@ -287,8 +287,8 @@ describe("MessagingClient chats", () => {
     });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "PUT /api/support%2Feu/chats/15551234567%40g.us%2Fteam/messages/message%2F1",
-      "DELETE /api/support%2Feu/chats/15551234567%40g.us%2Fteam/messages/message%2F1",
+      "PUT /messaging/support%2Feu/chats/15551234567%40g.us%2Fteam/messages/message%2F1",
+      "DELETE /messaging/support%2Feu/chats/15551234567%40g.us%2Fteam/messages/message%2F1",
     ]);
     expect(requests[0]?.body).toBe('{"text":"Corrected copy"}');
     expect(requests[0]?.headers["idempotency-key"]).toBe("edit-message-1");
@@ -314,9 +314,9 @@ describe("MessagingClient chats", () => {
     );
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "POST /api/support/chats/15551234567%40s.whatsapp.net/archive",
-      "POST /api/support/chats/15551234567%40s.whatsapp.net/unarchive",
-      "PUT /api/support/chats/15551234567%40s.whatsapp.net/disappearing",
+      "POST /messaging/support/chats/15551234567%40s.whatsapp.net/archive",
+      "POST /messaging/support/chats/15551234567%40s.whatsapp.net/unarchive",
+      "PUT /messaging/support/chats/15551234567%40s.whatsapp.net/disappearing",
     ]);
     expect(requests[2]?.body).toBe('{"durationSeconds":604800}');
     expect(requests.map(({ headers }) => headers["idempotency-key"])).toEqual([
@@ -375,13 +375,13 @@ describe("MessagingClient templates", () => {
     });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /api/projects/support%2Feu/templates",
-      "POST /api/projects/support%2Feu/templates",
-      "GET /api/projects/support%2Feu/templates/template%2F1",
-      "PATCH /api/projects/support%2Feu/templates/template%2F1",
-      "DELETE /api/projects/support%2Feu/templates/template%2F1",
-      "POST /api/projects/support%2Feu/templates/template%2F1/preview",
-      "POST /api/projects/support%2Feu/templates/template%2F1/submit",
+      "GET /messaging/projects/support%2Feu/templates",
+      "POST /messaging/projects/support%2Feu/templates",
+      "GET /messaging/projects/support%2Feu/templates/template%2F1",
+      "PATCH /messaging/projects/support%2Feu/templates/template%2F1",
+      "DELETE /messaging/projects/support%2Feu/templates/template%2F1",
+      "POST /messaging/projects/support%2Feu/templates/template%2F1/preview",
+      "POST /messaging/projects/support%2Feu/templates/template%2F1/submit",
     ]);
     expect(requests[1]?.headers["idempotency-key"]).toBe(
       "template-order-ready",
@@ -415,11 +415,11 @@ describe("MessagingClient webhooks", () => {
     await client.webhooks.delete("hook/a");
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /api/webhooks",
-      "POST /api/webhooks",
-      "GET /api/webhooks/hook%2Fa",
-      "PUT /api/webhooks/hook%2Fa",
-      "DELETE /api/webhooks/hook%2Fa",
+      "GET /messaging/webhooks",
+      "POST /messaging/webhooks",
+      "GET /messaging/webhooks/hook%2Fa",
+      "PUT /messaging/webhooks/hook%2Fa",
+      "DELETE /messaging/webhooks/hook%2Fa",
     ]);
     expect(requests[1]?.body).toContain('"hmacKey":"fixture-secret"');
     expect(requests.every(({ path }) => !path.includes("fixture-secret"))).toBe(

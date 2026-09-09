@@ -13,7 +13,7 @@ export class CallsResource {
   ): Promise<ApiResponse<RejectCallResponse>> {
     return this.transport.request({
       method: "POST",
-      path: `/api/${encodeURIComponent(session)}/calls/${encodeURIComponent(callId)}/reject`,
+      path: `/messaging/${encodeURIComponent(session)}/calls/${encodeURIComponent(callId)}/reject`,
       body,
       ...options,
     });
