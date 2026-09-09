@@ -203,9 +203,15 @@ The organization view also exposes these management resources:
 - `projectTokens`: list token metadata for an explicit project
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing, and update low-balance reminders
-- `projects`: list, create, request production enrollment, approve, and cancel
+- `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
+  restrictions, incidents, claims, and Health action history; report and retract
+  customer incidents
+- `projects`: list, create, request production enrollment, approve, and cancel;
+  retrieve and update Safe Mode, warm-up, Ban Insurance evidence, and Health
+  policy settings
 - `sessions`: list, start, stop, or delete one session; stop or delete a bounded
-  batch; set tier override; and create a testing session
+  batch; set tier override; create a testing session; and retrieve or update
+  the session Safe Mode override
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and recipients
 - `customers`: enable Customers for a project; create, list, retrieve, update,
@@ -323,14 +329,14 @@ Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 ```ts
 const response = await client.raw.request<{ data: unknown }>({
   method: "GET",
-  path: "/v1/operations/operation_123",
+  path: "/platform/operations/operation_123",
   query: { projectId: "project_123" },
 });
 ```
 
 Organization raw paths remain relative API paths. Project raw paths are
 relative to the bound project and receive the encoded
-`/v1/projects/{projectId}` prefix automatically. Project raw requests reject
+`/platform/projects/{projectId}` prefix automatically. Project raw requests reject
 absolute URLs, traversal, explicit project prefixes, backslashes, and
 `Authorization` overrides before transport. Raw requests retain typed errors,
 metadata, cancellation, API versions, retry rules, and idempotency.
@@ -386,7 +392,7 @@ helpers.
 ## QuickLink lifecycle and settings
 
 `MessagingClient.quickLinks.create()`, `retrieve()`, and `cancel()` map the
-authenticated hosted lifecycle at `/api/quicklinks`. They accept organization
+authenticated hosted lifecycle at `/messaging/quicklinks`. They accept organization
 API keys or project tokens with `quicklink:manage`; browser client tokens fail
 before transport. Organization keys can set `projectId` on creation, while a
 project token remains bound by the server.
@@ -395,7 +401,7 @@ These methods expose the short-lived connection URL and status record. They do
 not add list, recovery, or history operations that the API does not provide.
 
 `client.quickLinkSettings.retrieve()` and `update()` map only the management
-`GET /v1/quicklink` and `PUT /v1/quicklink` settings contract. The same methods
+`GET /platform/quicklink` and `PUT /platform/quicklink` settings contract. The same methods
 on `client.project(projectId)` use the immutable project ownership context.
 
 ## Browser controllers and UI

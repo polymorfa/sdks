@@ -370,6 +370,10 @@ function apiError(
 function errorMessage(body: unknown, status: number): string {
   if (typeof body === "object" && body !== null) {
     const record = body as Record<string, unknown>;
+    if (typeof record.error === "object" && record.error !== null) {
+      const message = (record.error as Record<string, unknown>).message;
+      if (typeof message === "string") return message;
+    }
     if (typeof record.error === "string") return record.error;
     if (typeof record.message === "string") return record.message;
   }
@@ -379,7 +383,12 @@ function errorMessage(body: unknown, status: number): string {
 
 function errorCode(body: unknown): Pick<PolymorfaErrorOptions, "code"> {
   if (typeof body === "object" && body !== null) {
-    const code = (body as Record<string, unknown>).code;
+    const record = body as Record<string, unknown>;
+    if (typeof record.error === "object" && record.error !== null) {
+      const code = (record.error as Record<string, unknown>).code;
+      if (typeof code === "string") return { code };
+    }
+    const code = record.code;
     if (typeof code === "string") return { code };
   }
   return {};

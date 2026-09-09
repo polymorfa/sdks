@@ -16,6 +16,7 @@ import { ApiKeysResource } from "./platform/api-keys.js";
 import { AudiencesResource } from "./platform/audiences.js";
 import { AuditLogsResource } from "./platform/audit-logs.js";
 import { BillingResource } from "./platform/billing.js";
+import { BanSafeResource } from "./platform/bansafe.js";
 import { CampaignsResource } from "./platform/campaigns.js";
 import { CustomersResource } from "./platform/customers.js";
 import {
@@ -63,6 +64,7 @@ export interface OrganizationControlPlaneResources {
   readonly audiences: AudiencesResource;
   readonly auditLogs: AuditLogsResource;
   readonly billing: BillingResource;
+  readonly banSafe: BanSafeResource;
   readonly campaigns: CampaignsResource;
   readonly customers: CustomersResource;
   readonly members: MembersResource;
@@ -150,6 +152,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
         audiences: new AudiencesResource(this.#transport),
         auditLogs: new AuditLogsResource(this.#transport),
         billing: new BillingResource(this.#transport),
+        banSafe: new BanSafeResource(this.#transport),
         campaigns: new CampaignsResource(this.#transport),
         customers: new CustomersResource(this.#transport),
         members: new MembersResource(this.#transport),

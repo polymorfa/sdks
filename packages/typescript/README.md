@@ -150,6 +150,48 @@ The pairing URL is returned once. An idempotent replay returns the same link
 record with `url: null`. `customers.list()` preserves both the Customer array
 and the cursor metadata from the API response.
 
+## BanSafe Health and telemetry
+
+`Client.banSafe` reads Health, telemetry collection status, the fixed
+signal catalogue, findings, restrictions, incidents, claims, and Health action
+history. Paged methods preserve the API's `data` array and `page` metadata.
+
+```ts
+const health = await platform.banSafe.getHealth("support");
+const telemetry = await platform.banSafe.getTelemetry("support");
+const actions = await platform.banSafe.listHealthActions({
+  projectId: "project_123",
+  session: "support",
+  status: "succeeded",
+});
+
+console.log(
+  health.data.data.health,
+  telemetry.data.data.collection.state,
+  actions.data.page.hasMore,
+);
+```
+
+Use `platform.projects` for project Safe Mode, warm-up, Ban Insurance evidence,
+and Health policy settings. Use `platform.sessions` for one number's Safe Mode
+override.
+
+```ts
+const policy = await platform.projects.getHealthPolicy("project_123");
+await platform.projects.updateHealthPolicy("project_123", {
+  version: policy.data.data.version,
+  enabled: true,
+  threshold: 50,
+  sessionAction: "slow_down",
+  slowDownMps: 0.5,
+  emailNotification: true,
+  webhookNotification: true,
+});
+```
+
+Finding acknowledgement and restriction appeals require a signed-in dashboard
+user. The organization-key SDK does not expose those two mutations.
+
 ## Browser client tokens
 
 `MessagingClient.clientTokens` mints short-lived tokens and manages the live
@@ -1213,7 +1255,7 @@ pending session. Connected links cannot be cancelled. The source exposes no
 list, recover, or history operation.
 
 `Client.quickLinkSettings.retrieve` and `update` map the management
-`GET /v1/quicklink` and `PUT /v1/quicklink` operations. Use them on the root
+`GET /platform/quicklink` and `PUT /platform/quicklink` operations. Use them on the root
 organization client or an immutable project view:
 
 ```ts
@@ -1228,7 +1270,7 @@ const projectSettings = await platform
 
 These methods manage saved settings only. Hosted lifecycle methods stay on
 `MessagingClient.quickLinks`, not `Client` or `client.project(...)`, because
-the `/api/quicklinks/{id}` routes do not carry an immutable project path for an
+the `/messaging/quicklinks/{id}` routes do not carry an immutable project path for an
 organization-key project view. Console-only logo routes are outside the SDK.
 
 ## Management session lifecycle

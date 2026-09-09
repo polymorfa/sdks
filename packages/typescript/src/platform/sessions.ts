@@ -14,6 +14,8 @@ import type {
   SessionStartResult,
   SessionStopResult,
   SessionTierOverrideRequest,
+  SessionSafeMode,
+  UpdateSessionSafeModeRequest,
 } from "./types.js";
 
 export class PlatformSessionsResource {
@@ -116,6 +118,30 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "POST",
       path: "/platform/sessions/testing",
+      body,
+      ...options,
+    });
+  }
+
+  getSafeMode(
+    sessionId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SessionSafeMode>>> {
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionPath(sessionId)}/safe-mode`,
+      ...options,
+    });
+  }
+
+  updateSafeMode(
+    sessionId: string,
+    body: UpdateSessionSafeModeRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SessionSafeMode>>> {
+    return this.transport.request({
+      method: "PUT",
+      path: `${sessionPath(sessionId)}/safe-mode`,
       body,
       ...options,
     });
