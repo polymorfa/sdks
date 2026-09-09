@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "c9439c05305e4ccea6938a6ad2d5534494172743",
+  "sourceCommit": "579a53488d6af339ef358857ad0de2a45e8a5d30",
   "sourceState": "pull-request-head",
   "contracts": {
     "messaging": {
