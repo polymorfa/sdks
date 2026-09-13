@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const retiredName = Buffer.from([116, 105, 116, 97, 110]).toString("utf8");
@@ -23,7 +23,9 @@ try {
   );
   const matches = [];
   for (const path of output.split("\0").filter(Boolean)) {
-    const contents = readFileSync(resolve(root, path));
+    const absolutePath = resolve(root, path);
+    if (!existsSync(absolutePath)) continue;
+    const contents = readFileSync(absolutePath);
     if (contents.includes(0)) continue;
     if (contents.toString("utf8").toLowerCase().includes(retiredName))
       matches.push(path);

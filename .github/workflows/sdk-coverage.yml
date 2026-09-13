@@ -28,7 +28,7 @@ on:
         required: true
         type: string
     secrets:
-      SDK_COVERAGE_APP_ID:
+      SDK_COVERAGE_CLIENT_ID:
         required: true
       SDK_COVERAGE_APP_PRIVATE_KEY:
         required: true
@@ -66,7 +66,7 @@ jobs:
         id: sdk-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ secrets.SDK_COVERAGE_APP_ID }}
+          client-id: ${{ secrets.SDK_COVERAGE_CLIENT_ID }}
           private-key: ${{ secrets.SDK_COVERAGE_APP_PRIVATE_KEY }}
           owner: polymorfa
           repositories: sdks

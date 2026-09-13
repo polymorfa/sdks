@@ -18,7 +18,7 @@ export class ProjectsResource {
   ): Promise<ApiResponse<DataEnvelope<readonly ProjectWithStats[]>>> {
     return this.transport.request({
       method: "GET",
-      path: "/v1/projects",
+      path: "/platform/projects",
       ...options,
     });
   }
@@ -29,7 +29,7 @@ export class ProjectsResource {
   ): Promise<ApiResponse<DataEnvelope<Project>>> {
     return this.transport.request({
       method: "POST",
-      path: "/v1/projects",
+      path: "/platform/projects",
       body,
       ...options,
     });
@@ -42,7 +42,7 @@ export class ProjectsResource {
   ): Promise<ApiResponse<DataEnvelope<ProductionEnrollmentResult>>> {
     return this.transport.request({
       method: "POST",
-      path: `/v1/projects/${encodeURIComponent(projectId)}/promote`,
+      path: `/platform/projects/${encodeURIComponent(projectId)}/promote`,
       body,
       ...options,
     });
@@ -72,7 +72,7 @@ export class ProjectsResource {
   ): Promise<ApiResponse<DataEnvelope<ProductionEnrollmentCommandResult>>> {
     return this.transport.request({
       method: "POST",
-      path: `/v1/projects/${encodeURIComponent(projectId)}/production-enrollments/${encodeURIComponent(operationId)}/${action}`,
+      path: `/platform/projects/${encodeURIComponent(projectId)}/production-enrollments/${encodeURIComponent(operationId)}/${action}`,
       ...options,
     });
   }

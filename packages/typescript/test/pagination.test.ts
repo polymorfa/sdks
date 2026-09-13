@@ -50,7 +50,7 @@ describe("CursorPage", () => {
   it("exposes the first page and propagates the cursor to the next request", async () => {
     const { raw, server } = await paginatedClient();
     const first = await raw.paginate<Item>(
-      { method: "GET", path: "/v1/items" },
+      { method: "GET", path: "/platform/items" },
       decodePage,
     );
 
@@ -61,14 +61,14 @@ describe("CursorPage", () => {
     const second = await first.nextPage();
     expect(second?.items).toEqual([{ id: "three" }]);
     expect(second?.hasMore).toBe(false);
-    expect(server.requests[1]?.path).toBe("/v1/items?cursor=next_1");
+    expect(server.requests[1]?.path).toBe("/platform/items?cursor=next_1");
     await expect(second?.nextPage()).resolves.toBeNull();
   });
 
   it("iterates items across every page in stable order", async () => {
     const { raw } = await paginatedClient();
     const page = await raw.paginate<Item>(
-      { method: "GET", path: "/v1/items" },
+      { method: "GET", path: "/platform/items" },
       decodePage,
     );
     const ids: string[] = [];
@@ -80,7 +80,7 @@ describe("CursorPage", () => {
     const { raw } = await paginatedClient();
     const controller = new AbortController();
     const page = await raw.paginate<Item>(
-      { method: "GET", path: "/v1/items", signal: controller.signal },
+      { method: "GET", path: "/platform/items", signal: controller.signal },
       decodePage,
     );
     controller.abort();

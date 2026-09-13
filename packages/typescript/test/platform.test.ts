@@ -1,7 +1,8 @@
+import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { PolymorfaConfigurationError } from "../src/errors.js";
-import { PlatformClient } from "../src/platform/client.js";
+import { Client } from "../src/client.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -15,7 +16,7 @@ afterEach(async () => {
 });
 
 async function platformServer(): Promise<{
-  client: PlatformClient;
+  client: Client;
   requests: RecordedRequest[];
 }> {
   const server = await startTestServer(() => ({
@@ -28,40 +29,45 @@ async function platformServer(): Promise<{
   servers.push(server);
   return {
     requests: server.requests,
-    client: new PlatformClient({
-      apiKey: "pmfa_platform",
+    client: new Client({
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     }),
   };
 }
 
-describe("PlatformClient credentials", () => {
+describe("Client credentials", () => {
   it("rejects client and project tokens before issuing a request", () => {
-    expect(() => new PlatformClient({ apiKey: "pmfa_ct_browser" })).toThrow(
-      PolymorfaConfigurationError,
-    );
-    expect(() => new PlatformClient({ apiKey: "pmfa_pt_project" })).toThrow(
-      PolymorfaConfigurationError,
-    );
+    expect(
+      () =>
+        new Client({
+          credential: { type: "organizationApiKey", value: "pmfa_ct_browser" },
+        }),
+    ).toThrow(PolymorfaConfigurationError);
+    expect(
+      () =>
+        new Client({
+          credential: {
+            type: "organizationApiKey",
+            value: PROJECT_TOKEN,
+          },
+        }),
+    ).toThrow(PolymorfaConfigurationError);
   });
 });
 
-describe("PlatformClient organizations and projects", () => {
-  it("retrieves and updates the active organization", async () => {
+describe("Client organizations and projects", () => {
+  it("retrieves the active organization without exposing dashboard-only updates", async () => {
     const { client, requests } = await platformServer();
     await client.organizations.retrieve();
-    await client.organizations.update({
-      name: "Support Team",
-      timezone: "Asia/Beirut",
-    });
+    expect(client.organizations).not.toHaveProperty("update");
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/organization",
-      "PATCH /v1/organization",
+      "GET /platform/team",
     ]);
-    expect(requests[1]?.body).toBe(
-      '{"name":"Support Team","timezone":"Asia/Beirut"}',
-    );
   });
 
   it("lists and creates projects", async () => {
@@ -76,8 +82,8 @@ describe("PlatformClient organizations and projects", () => {
       { idempotencyKey: "project-support" },
     );
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /v1/projects",
-      "POST /v1/projects",
+      "GET /platform/projects",
+      "POST /platform/projects",
     ]);
     expect(requests[1]?.headers["idempotency-key"]).toBe("project-support");
     expect(created.metadata.requestId).toBe("req_platform");
@@ -103,22 +109,22 @@ describe("PlatformClient organizations and projects", () => {
     );
 
     expect(requests.map(({ path }) => path)).toEqual([
-      "/v1/projects/project%2Fa/promote",
-      "/v1/projects/project%2Fa/production-enrollments/operation%2Fb/approve",
-      "/v1/projects/project%2Fa/production-enrollments/operation%2Fb/cancel",
+      "/platform/projects/project%2Fa/promote",
+      "/platform/projects/project%2Fa/production-enrollments/operation%2Fb/approve",
+      "/platform/projects/project%2Fa/production-enrollments/operation%2Fb/cancel",
     ]);
     expect(requests[0]?.body).toBe(JSON.stringify({ business }));
   });
 });
 
-describe("PlatformClient sessions", () => {
+describe("Client sessions", () => {
   it("lists sessions with optional project scope", async () => {
     const { client, requests } = await platformServer();
     await client.sessions.list();
     await client.sessions.list({ projectId: "project_1" });
     expect(requests.map(({ path }) => path)).toEqual([
-      "/v1/sessions",
-      "/v1/sessions?projectId=project_1",
+      "/platform/sessions",
+      "/platform/sessions?projectId=project_1",
     ]);
   });
 
@@ -137,10 +143,10 @@ describe("PlatformClient sessions", () => {
     });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "POST /v1/sessions/session%2Fa/stop",
-      "DELETE /v1/sessions/session%2Fa",
-      "PATCH /v1/sessions/session%2Fa",
-      "POST /v1/sessions/testing",
+      "POST /platform/sessions/session%2Fa/stop",
+      "DELETE /platform/sessions/session%2Fa",
+      "PATCH /platform/sessions/session%2Fa",
+      "POST /platform/sessions/testing",
     ]);
     expect(requests[0]?.body).toBe('{"projectId":"project_1"}');
     expect(requests[2]?.body).toBe(

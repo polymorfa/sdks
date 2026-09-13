@@ -63,8 +63,13 @@ async function runScript(
 describe("coverage issue synchronizer", () => {
   it("creates the label, reopens and updates matches, creates new gaps, and closes resolved issues", async () => {
     const requests: RecordedRequest[] = [];
-    const existingMarker = marker("dev", "messaging", "GET", "/api/sessions");
-    const staleMarker = marker("dev", "platform", "GET", "/v1/old");
+    const existingMarker = marker(
+      "dev",
+      "messaging",
+      "GET",
+      "/messaging/sessions",
+    );
+    const staleMarker = marker("dev", "platform", "GET", "/platform/old");
     const server = await startTestServer((request) => {
       requests.push(request);
       if (
@@ -138,7 +143,7 @@ describe("coverage issue synchronizer", () => {
           {
             family: "messaging",
             method: "GET",
-            path: "/api/sessions",
+            path: "/messaging/sessions",
             operationId: "listSessions",
             fingerprint: "a".repeat(64),
             status: "changed",
@@ -150,7 +155,7 @@ describe("coverage issue synchronizer", () => {
           {
             family: "platform",
             method: "POST",
-            path: "/v1/new",
+            path: "/platform/new",
             operationId: "createNew",
             fingerprint: "b".repeat(64),
             status: "missing",

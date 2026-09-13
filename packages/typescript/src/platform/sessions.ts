@@ -6,8 +6,12 @@ import type {
   ListPlatformSessionsParams,
   ManagedSession,
   PlatformSession,
+  SessionBatchRemoveResult,
+  SessionBatchRequest,
+  SessionBatchStopResult,
   SessionProjectContext,
   SessionRemoveResult,
+  SessionStartResult,
   SessionStopResult,
   SessionTierOverrideRequest,
 } from "./types.js";
@@ -21,10 +25,23 @@ export class PlatformSessionsResource {
   ): Promise<ApiResponse<DataEnvelope<readonly PlatformSession[]>>> {
     return this.transport.request({
       method: "GET",
-      path: "/v1/sessions",
+      path: "/platform/sessions",
       ...(params.projectId === undefined
         ? {}
         : { query: { projectId: params.projectId } }),
+      ...options,
+    });
+  }
+
+  start(
+    sessionId: string,
+    body: SessionProjectContext = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SessionStartResult>>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionPath(sessionId)}/start`,
+      body,
       ...options,
     });
   }
@@ -42,6 +59,19 @@ export class PlatformSessionsResource {
     });
   }
 
+  /** Requests asynchronous stops for the matching 1 through 100 sessions. */
+  stopMany(
+    body: SessionBatchRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SessionBatchStopResult>>> {
+    return this.transport.request({
+      method: "POST",
+      path: "/platform/sessions/stop",
+      body,
+      ...options,
+    });
+  }
+
   delete(
     sessionId: string,
     options: RequestOptions = {},
@@ -49,6 +79,19 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "DELETE",
       path: sessionPath(sessionId),
+      ...options,
+    });
+  }
+
+  /** Permanently removes the matching 1 through 100 sessions. */
+  deleteMany(
+    body: SessionBatchRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SessionBatchRemoveResult>>> {
+    return this.transport.request({
+      method: "POST",
+      path: "/platform/sessions/delete",
+      body,
       ...options,
     });
   }
@@ -72,7 +115,7 @@ export class PlatformSessionsResource {
   ): Promise<ApiResponse<DataEnvelope<string>>> {
     return this.transport.request({
       method: "POST",
-      path: "/v1/sessions/testing",
+      path: "/platform/sessions/testing",
       body,
       ...options,
     });
@@ -80,5 +123,5 @@ export class PlatformSessionsResource {
 }
 
 function sessionPath(sessionId: string): string {
-  return `/v1/sessions/${encodeURIComponent(sessionId)}`;
+  return `/platform/sessions/${encodeURIComponent(sessionId)}`;
 }

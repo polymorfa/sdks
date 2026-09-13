@@ -36,7 +36,7 @@ export interface ApiResponse<T> {
 
 export interface TransportOptions {
   readonly baseUrl: string;
-  readonly authorization: string;
+  readonly authorization?: string;
   readonly apiVersion?: string;
   readonly timeoutMs: number;
   readonly maxNetworkRetries: number;

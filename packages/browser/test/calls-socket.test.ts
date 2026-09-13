@@ -1,0 +1,585 @@
+// @vitest-environment happy-dom
+import { describe, expect, it, vi } from "vitest";
+import {
+  CallsController,
+  CallsSocket,
+  createSignalingCallsBackend,
+  lifecycleEventFrom,
+  parseCallsSocketMessage,
+  type CallMediaFactory,
+  type CallMediaSession,
+  type CallsSignaling,
+  type SocketTicket,
+} from "../src/index.js";
+
+class FakeWebSocket {
+  static readonly OPEN = 1;
+  static readonly CLOSED = 3;
+  static instances: FakeWebSocket[] = [];
+  readyState = 0;
+  sent: string[] = [];
+  onopen: ((event: unknown) => void) | null = null;
+  onmessage: ((event: { data: unknown }) => void) | null = null;
+  onclose: ((event: unknown) => void) | null = null;
+  onerror: ((event: unknown) => void) | null = null;
+  constructor(readonly url: string) {
+    FakeWebSocket.instances.push(this);
+  }
+  open(): void {
+    this.readyState = FakeWebSocket.OPEN;
+    this.onopen?.({});
+  }
+  receive(message: unknown): void {
+    this.onmessage?.({ data: JSON.stringify(message) });
+  }
+  drop(): void {
+    this.readyState = FakeWebSocket.CLOSED;
+    this.onclose?.({ code: 1006 });
+  }
+  send(data: string): void {
+    this.sent.push(data);
+  }
+  close(): void {
+    this.readyState = FakeWebSocket.CLOSED;
+  }
+}
+
+function signaling(): CallsSignaling & {
+  socketTicket: ReturnType<typeof vi.fn>;
+} {
+  return {
+    offer: vi.fn(async () => ({ sdp: "v=0", iceServers: [] })),
+    candidate: vi.fn(async () => undefined),
+    candidates: vi.fn(async () => []),
+    teardown: vi.fn(async () => undefined),
+    socketTicket: vi.fn(async () => ({
+      ticket: "pmfa_wst_abc",
+      expiresAt: Date.now() + 60_000,
+      url: "/voip/ws?ticket=pmfa_wst_abc",
+    })),
+    socketUrl: (ticket) => `wss://api.example${ticket.url}`,
+  };
+}
+
+function socketWith(
+  options: Partial<ConstructorParameters<typeof CallsSocket>[0]> = {},
+) {
+  FakeWebSocket.instances = [];
+  const intervals: Array<{ fn: () => void; cleared?: boolean }> = [];
+  const timers: Array<{
+    fn: () => void;
+    ms: number;
+    cleared?: boolean;
+    fired?: boolean;
+  }> = [];
+  const socket = new CallsSocket({
+    signaling: signaling(),
+    WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
+    setTimeout: ((fn: () => void, ms: number) => {
+      const entry = {
+        ms,
+        fn: () => {
+          entry.fired = true;
+          fn();
+        },
+      } as (typeof timers)[number];
+      timers.push(entry);
+      return timers.length as unknown as ReturnType<typeof setTimeout>;
+    }) as unknown as typeof globalThis.setTimeout,
+    clearTimeout: ((handle: number) => {
+      const entry = timers[handle - 1];
+      if (entry !== undefined) entry.cleared = true;
+    }) as unknown as typeof globalThis.clearTimeout,
+    setInterval: ((fn: () => void) => {
+      intervals.push({ fn });
+      return intervals.length as unknown as ReturnType<typeof setInterval>;
+    }) as unknown as typeof globalThis.setInterval,
+    clearInterval: ((handle: number) => {
+      const entry = intervals[handle - 1];
+      if (entry !== undefined) entry.cleared = true;
+    }) as unknown as typeof globalThis.clearInterval,
+    random: () => 0.5,
+    ...options,
+  });
+  return {
+    socket,
+    timers,
+    intervals,
+    // Fire every live heartbeat tick.
+    beat: () => {
+      for (const entry of [...intervals])
+        if (entry.cleared !== true) entry.fn();
+    },
+    ws: () => FakeWebSocket.instances.at(-1)!,
+  };
+}
+
+describe("CallsSocket", () => {
+  it("settles and retries when the WebSocket constructor throws", async () => {
+    class Throwing {
+      static readonly OPEN = 1;
+      constructor() {
+        throw new Error("insecure url");
+      }
+    }
+    const { socket, timers } = socketWith({
+      WebSocket: Throwing as unknown as typeof globalThis.WebSocket,
+    });
+    // A constructor that throws must not leave connect() pending forever, or
+    // every later connect() would return that same dead promise.
+    await socket.connect();
+    expect(socket.connected).toBe(false);
+    expect(timers).toHaveLength(1);
+    await socket.connect();
+    socket.close();
+  });
+
+  it("stops on a signaling client that cannot mint tickets, retries on a failed request", async () => {
+    const noTickets = socketWith({
+      signaling: { socketTicket: undefined, socketUrl: undefined } as never,
+    });
+    const unsupported: { code: string; message: string }[] = [];
+    noTickets.socket.onError((error) => unsupported.push(error));
+    await noTickets.socket.connect();
+    // Retrying this can never succeed, so it must report and stop rather than
+    // back off against it for the life of the page.
+    expect(unsupported.map((e) => e.code)).toEqual(["unsupported"]);
+    expect(noTickets.timers).toHaveLength(0);
+    noTickets.socket.close();
+
+    const failing = signaling();
+    failing.socketTicket = vi.fn(async () => {
+      throw new Error("ticket route down");
+    });
+    const transient = socketWith({ signaling: failing });
+    const errors: { code: string; message: string }[] = [];
+    transient.socket.onError((error) => errors.push(error));
+    await transient.socket.connect();
+    // A ticket route that is merely down is worth retrying — but not silently.
+    expect(errors).toEqual([
+      { code: "ticket_failed", message: "ticket route down" },
+    ]);
+    expect(transient.timers).toHaveLength(1);
+    transient.socket.close();
+  });
+
+  it("carries the configured line onto socket-delivered incoming calls", async () => {
+    const { socket, ws } = socketWith({ line: "cloudApi" });
+    const backend = createSignalingCallsBackend({
+      signaling: signaling(),
+      incoming: socket,
+    });
+    const session: CallMediaSession = {
+      localStream: {} as MediaStream,
+      remoteStream: {} as MediaStream,
+      setMuted: vi.fn(),
+      audioEnabled: () => true,
+      videoEnabled: () => false,
+      close: vi.fn(async () => undefined),
+    };
+    const controller = new CallsController(backend, {
+      open: vi.fn(async () => session),
+    });
+    controller.initialize();
+    const connecting = socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    ws().open();
+    await connecting;
+
+    ws().receive({
+      type: "event",
+      event: "call.received",
+      callId: "CALL-9",
+      payload: { callId: "CALL-9", from: "+15550100", hasVideo: true },
+      timestamp: "",
+    });
+    // Hardcoding linkedDevice here offered video controls on a line that has
+    // no video at all.
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "incoming",
+      line: "cloudApi",
+      video: false,
+      capabilities: { video: false },
+    });
+    controller.dispose();
+    socket.close();
+  });
+
+  it("pings, and drops a socket that stops answering", async () => {
+    const h = socketWith({ heartbeatMs: 1_000 });
+    const states: boolean[] = [];
+    h.socket.onState((connected) => states.push(connected));
+    const connecting = h.socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    const first = h.ws();
+    first.open();
+    await connecting;
+
+    h.beat();
+    expect(JSON.parse(first.sent.at(-1) ?? "{}")).toEqual({ type: "ping" });
+    // Answered every tick: the connection stays up.
+    first.receive({ type: "pong" });
+    h.beat();
+    first.receive({ type: "pong" });
+    expect(h.socket.connected).toBe(true);
+    expect(states).toEqual([true]);
+
+    // Unanswered: a half-open socket still reports OPEN and fires no onclose,
+    // so nothing else would ever notice ICE had stopped flowing. The tick
+    // after the unanswered ping drops it.
+    h.beat();
+    expect(h.socket.connected).toBe(true);
+    h.beat();
+    expect(states).toEqual([true, false]);
+    expect(h.socket.connected).toBe(false);
+    expect(h.timers.length).toBeGreaterThan(0);
+    expect(h.intervals.every((t) => t.cleared === true)).toBe(true);
+    h.socket.close();
+  });
+
+  it("drops a socket whose handshake never completes", async () => {
+    const h = socketWith({ openTimeoutMs: 5_000, minBackoffMs: 100 });
+    const states: boolean[] = [];
+    h.socket.onState((connected) => states.push(connected));
+    const connecting = h.socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    const stalled = h.ws();
+    // The browser never fires onopen or onclose for a stalled upgrade, so
+    // only the handshake deadline can move this attempt on.
+    const open = h.timers.find((t) => t.ms === 5_000);
+    expect(open).toBeDefined();
+    open?.fn();
+    await connecting;
+    expect(h.socket.connected).toBe(false);
+    expect(stalled.readyState).toBe(FakeWebSocket.CLOSED);
+    expect(states).toEqual([false]);
+    // A reconnect is scheduled with backoff, not another bare handshake.
+    const backoff = h.timers.filter(
+      (t) => t.cleared !== true && t.fired !== true,
+    );
+    expect(backoff).toHaveLength(1);
+    // A second connect() is a fresh attempt rather than the dead one.
+    backoff[0]?.fn();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(FakeWebSocket.instances).toHaveLength(2);
+    h.socket.close();
+  });
+
+  it("clears the handshake deadline once the socket opens", async () => {
+    const h = socketWith({ openTimeoutMs: 5_000 });
+    const connecting = h.socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    h.ws().open();
+    await connecting;
+    const open = h.timers.find((t) => t.ms === 5_000);
+    expect(open?.cleared).toBe(true);
+    expect(h.socket.connected).toBe(true);
+    h.socket.close();
+  });
+
+  it("surfaces server error frames to onError", async () => {
+    const { socket, ws } = socketWith();
+    const seen: { code: string; message: string }[] = [];
+    socket.onError((error) => seen.push(error));
+    const connecting = socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    ws().open();
+    await connecting;
+
+    ws().receive({ type: "error", code: "ticket_expired", message: "Expired" });
+    // Dropped silently, the socket would keep reconnecting against a
+    // permanent failure with nothing for the consumer to act on.
+    expect(seen).toEqual([{ code: "ticket_expired", message: "Expired" }]);
+    ws().receive({ type: "pong" });
+    ws().receive({ type: "error", code: "x" });
+    expect(seen).toHaveLength(1);
+    socket.close();
+  });
+
+  it("mints a ticket, opens the socket, and feeds lifecycle events to the backend", async () => {
+    const { socket, ws } = socketWith();
+    const connecting = socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(ws().url).toBe("wss://api.example/voip/ws?ticket=pmfa_wst_abc");
+    ws().open();
+    await connecting;
+    expect(socket.connected).toBe(true);
+
+    const backend = createSignalingCallsBackend({
+      signaling: signaling(),
+      incoming: socket,
+    });
+    const session: CallMediaSession = {
+      localStream: {} as MediaStream,
+      remoteStream: {} as MediaStream,
+      setMuted: vi.fn(),
+      audioEnabled: () => true,
+      videoEnabled: () => false,
+      close: vi.fn(async () => undefined),
+    };
+    const media: CallMediaFactory = { open: vi.fn(async () => session) };
+    const controller = new CallsController(backend, media);
+    controller.initialize();
+
+    ws().receive({
+      type: "event",
+      event: "call.received",
+      callId: "CALL-1",
+      payload: {
+        callId: "CALL-1",
+        from: { id: "15550100@s.whatsapp.net", phoneNumber: "+15550100" },
+        hasVideo: true,
+      },
+      timestamp: "2026-09-06T12:00:00.000Z",
+    });
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "incoming",
+      callId: "CALL-1",
+      peer: "+15550100",
+      video: true,
+    });
+
+    ws().receive({
+      type: "event",
+      event: "call.ended",
+      callId: "CALL-1",
+      payload: { callId: "CALL-1", reason: "user_hangup" },
+      timestamp: "",
+    });
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      endReason: "remote_hangup",
+    });
+    controller.dispose();
+  });
+
+  it("carries candidates both ways and reports false while down", async () => {
+    const { socket, ws } = socketWith();
+    const remote: Array<[string, unknown]> = [];
+    socket.onCandidate((callId, candidate) => remote.push([callId, candidate]));
+    expect(socket.sendCandidate("CALL-1", { candidate: "c" })).toBe(false);
+    const connecting = socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    ws().open();
+    await connecting;
+    expect(
+      socket.sendCandidate("CALL-1", { candidate: "candidate:1", sdpMid: "0" }),
+    ).toBe(true);
+    expect(JSON.parse(ws().sent[0] ?? "{}")).toEqual({
+      type: "candidate",
+      callId: "CALL-1",
+      candidate: { candidate: "candidate:1", sdpMid: "0" },
+    });
+    ws().receive({
+      type: "candidate",
+      callId: "CALL-1",
+      candidate: { candidate: "candidate:9" },
+    });
+    expect(remote).toEqual([["CALL-1", { candidate: "candidate:9" }]]);
+  });
+
+  it("reconnects with capped backoff and a fresh ticket until closed", async () => {
+    const { socket, timers, ws } = socketWith({
+      minBackoffMs: 100,
+      maxBackoffMs: 1_000,
+    });
+    const states: boolean[] = [];
+    socket.onState((connected) => states.push(connected));
+    const connecting = socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    ws().open();
+    await connecting;
+    ws().drop();
+    expect(states).toEqual([true, false]);
+    // Pending timers only: the open-handshake deadline is cleared on open and
+    // a fired backoff stays in the list.
+    const live = () =>
+      timers.filter((t) => t.cleared !== true && t.fired !== true);
+    expect(live()).toHaveLength(1);
+    expect(live()[0]?.ms).toBe(75); // 100ms × (0.5 + 0.5/2)
+    live()[0]?.fn();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(FakeWebSocket.instances).toHaveLength(2);
+    ws().drop();
+    expect(live()[0]?.ms).toBe(150); // doubled
+    socket.close();
+    live()[0]?.fn();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(FakeWebSocket.instances).toHaveLength(2); // no reconnect after close
+  });
+});
+
+describe("CallsSocket lifecycle", () => {
+  it("settles a pending connect() when close() is called mid-attempt", async () => {
+    const { socket } = socketWith();
+    const connecting = socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    // The fake socket never opens; teardown must not leave connect() hanging.
+    socket.close();
+    await expect(
+      Promise.race([
+        connecting,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("connect() hung")), 200),
+        ),
+      ]),
+    ).resolves.toBeUndefined();
+    expect(socket.connected).toBe(false);
+  });
+
+  it("settles connect() and aborts the ticket request when closed during acquisition", async () => {
+    let resolveTicket: ((t: SocketTicket) => void) | undefined;
+    let ticketSignal: AbortSignal | undefined;
+    const sig = signaling();
+    sig.socketTicket = vi.fn((_session?: string, signal?: AbortSignal) => {
+      ticketSignal = signal;
+      return new Promise<SocketTicket>((resolve) => {
+        resolveTicket = resolve;
+      });
+    });
+    FakeWebSocket.instances = [];
+    const socket = new CallsSocket({
+      signaling: sig,
+      WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
+    });
+    const connecting = socket.connect();
+    await Promise.resolve();
+    socket.close();
+    await expect(
+      Promise.race([
+        connecting,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("connect() hung")), 200),
+        ),
+      ]),
+    ).resolves.toBeUndefined();
+    expect(ticketSignal?.aborted).toBe(true);
+    // The stale ticket completing later must not open a socket.
+    resolveTicket?.({
+      ticket: "pmfa_wst_late",
+      expiresAt: Date.now() + 60_000,
+      url: "/voip/ws?ticket=pmfa_wst_late",
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(FakeWebSocket.instances).toHaveLength(0);
+    // A fresh connect() after close works again.
+    sig.socketTicket = vi.fn(async () => ({
+      ticket: "pmfa_wst_new",
+      expiresAt: Date.now() + 60_000,
+      url: "/voip/ws?ticket=pmfa_wst_new",
+    }));
+    const again = socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    FakeWebSocket.instances[0]?.open();
+    await again;
+    expect(socket.connected).toBe(true);
+  });
+
+  it("ignores a second connect() while a socket exists", async () => {
+    const { socket, ws } = socketWith();
+    const first = socket.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    ws().open();
+    await first;
+    await socket.connect();
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    expect(socket.connected).toBe(true);
+  });
+});
+
+describe("socket frame mapping", () => {
+  it("drops unknown frames and maps pod reasons onto the controller vocabulary", () => {
+    expect(parseCallsSocketMessage("not json")).toBeUndefined();
+    expect(
+      parseCallsSocketMessage(JSON.stringify({ type: "offer" })),
+    ).toBeUndefined();
+    expect(parseCallsSocketMessage(JSON.stringify({ type: "pong" }))).toEqual({
+      type: "pong",
+    });
+    // A known `type` is not enough: an incomplete frame would otherwise reach
+    // the receiver with missing fields.
+    expect(
+      parseCallsSocketMessage(JSON.stringify({ type: "event", event: "x" })),
+    ).toBeUndefined();
+    expect(
+      parseCallsSocketMessage(
+        JSON.stringify({ type: "candidate", callId: "c" }),
+      ),
+    ).toBeUndefined();
+    expect(
+      parseCallsSocketMessage(
+        JSON.stringify({
+          type: "candidate",
+          callId: "c",
+          candidate: { sdpMid: "0" },
+        }),
+      ),
+    ).toBeUndefined();
+    expect(
+      parseCallsSocketMessage(JSON.stringify({ type: "ready" })),
+    ).toBeUndefined();
+    expect(
+      parseCallsSocketMessage(JSON.stringify({ type: "error", code: "nope" })),
+    ).toBeUndefined();
+    // A serialized RTCIceCandidate carries null for an absent sdpMid.
+    expect(
+      parseCallsSocketMessage(
+        JSON.stringify({
+          type: "candidate",
+          callId: "c",
+          candidate: {
+            candidate: "candidate:1",
+            sdpMid: null,
+            sdpMLineIndex: null,
+          },
+        }),
+      ),
+    ).toMatchObject({ type: "candidate", callId: "c" });
+    const ev = (event: string, payload: unknown) =>
+      lifecycleEventFrom({
+        type: "event",
+        event,
+        callId: "CALL-1",
+        payload,
+        timestamp: "",
+      });
+    expect(ev("call.ended", { reason: "media_timeout" })).toEqual({
+      type: "ended",
+      callId: "CALL-1",
+      reason: "ice_timeout",
+    });
+    expect(ev("call.ended", { reason: "pod_draining" })).toEqual({
+      type: "ended",
+      callId: "CALL-1",
+      reason: "pod_draining",
+    });
+    expect(ev("call.missed", {})).toEqual({
+      type: "ended",
+      callId: "CALL-1",
+      reason: "missed",
+    });
+    expect(
+      ev("call.received", { from: "+15550100", direction: "outgoing" }),
+    ).toBeUndefined();
+    expect(ev("call.received", { from: { lid: "5550100@lid" } })).toMatchObject(
+      { type: "incomingCall", call: { from: "5550100@lid", video: false } },
+    );
+    expect(ev("call.telemetry", {})).toBeUndefined();
+  });
+});

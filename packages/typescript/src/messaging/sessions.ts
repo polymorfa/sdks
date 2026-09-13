@@ -5,8 +5,11 @@ import type {
   CreateSessionResponse,
   GetSessionAccountResponse,
   GetSessionResponse,
+  GetQRCodeResponse,
   ListSessionsResponse,
   OperationAccepted,
+  PairCodeRequest,
+  RequestPairCodeResponse,
   UpdateSessionRequest,
   UpdateSessionResponse,
 } from "./types.js";
@@ -19,7 +22,7 @@ export class SessionsResource {
   ): Promise<ApiResponse<ListSessionsResponse>> {
     return this.transport.request({
       method: "GET",
-      path: "/api/sessions",
+      path: "/messaging/sessions",
       ...options,
     });
   }
@@ -30,7 +33,7 @@ export class SessionsResource {
   ): Promise<ApiResponse<CreateSessionResponse>> {
     return this.transport.request({
       method: "POST",
-      path: "/api/sessions",
+      path: "/messaging/sessions",
       body,
       ...options,
     });
@@ -110,6 +113,33 @@ export class SessionsResource {
     });
   }
 
+  /** Direct pairing is entitlement-gated. Use QuickLink for the standard flow. */
+  qr(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<GetQRCodeResponse>> {
+    return this.transport.request({
+      method: "GET",
+      path: `/messaging/${encodeURIComponent(session)}/pair/qr`,
+      query: { format: "json" },
+      ...options,
+    });
+  }
+
+  /** Direct pairing is entitlement-gated. Use QuickLink for the standard flow. */
+  requestPairingCode(
+    session: string,
+    body: PairCodeRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<RequestPairCodeResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: `/messaging/${encodeURIComponent(session)}/pair/code`,
+      body,
+      ...options,
+    });
+  }
+
   private action(
     session: string,
     action: "start" | "stop" | "restart" | "logout",
@@ -124,5 +154,5 @@ export class SessionsResource {
 }
 
 function sessionPath(session: string): string {
-  return `/api/sessions/${encodeURIComponent(session)}`;
+  return `/messaging/sessions/${encodeURIComponent(session)}`;
 }

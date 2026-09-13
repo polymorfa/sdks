@@ -1,0 +1,51 @@
+{
+  "name": "@polymorfa/elements",
+  "version": "0.1.0-dev.0",
+  "description": "Portable Polymorfa Web Components",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./quicklink": {
+      "types": "./dist/quicklink.d.ts",
+      "import": "./dist/quicklink.js"
+    },
+    "./chat": {
+      "types": "./dist/chat.d.ts",
+      "import": "./dist/chat.js"
+    },
+    "./templates": {
+      "types": "./dist/templates.d.ts",
+      "import": "./dist/templates.js"
+    },
+    "./calls": {
+      "types": "./dist/calls.d.ts",
+      "import": "./dist/calls.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@polymorfa/ui": "0.1.0-dev.0"
+  },
+  "peerDependencies": {
+    "@polymorfa/browser": "0.1.0-dev.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

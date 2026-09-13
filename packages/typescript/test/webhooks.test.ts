@@ -4,8 +4,12 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { WebhookSignatureError } from "../src/webhooks/verify.js";
 import {
+  KNOWN_WEBHOOK_EVENT_TYPES,
+  type CallEndedPayload,
+  type CallTelemetryPayload,
   constructWebhookEvent,
   isEvent,
+  webhooks,
   verifyWebhookSignature,
   type MessageReceivedEvent,
 } from "../src/webhooks/index.js";
@@ -50,6 +54,66 @@ describe("verifyWebhookSignature", () => {
   });
 });
 
+describe("webhook utilities", () => {
+  it("does not advertise the retired direct-QR event", () => {
+    expect(KNOWN_WEBHOOK_EVENT_TYPES).not.toContain("session.qr");
+  });
+
+  it("creates canonical exact-byte fixtures and verifies them", async () => {
+    const event = JSON.parse(raw.toString("utf8")) as MessageReceivedEvent;
+    const fixture = await webhooks.createFixture({
+      event,
+      secret: "fixture-secret",
+    });
+    expect(Buffer.from(fixture.body)).toEqual(raw);
+    expect(fixture.signature).toBe(signature);
+    expect(fixture.contentType).toBe("application/json");
+    expect(fixture.headers).toEqual({
+      "content-type": "application/json",
+      "x-webhook-signature": fixture.signature,
+    });
+    await expect(
+      webhooks.verifySignature({
+        body: fixture.body,
+        signature: fixture.signature,
+        secret: "fixture-secret",
+      }),
+    ).resolves.toBe(true);
+    await expect(
+      webhooks.verify({
+        body: fixture.body,
+        signature: fixture.signature,
+        secret: "fixture-secret",
+      }),
+    ).resolves.toEqual(event);
+  });
+
+  it("keeps the timestamped local-forward signature separate", async () => {
+    const secretBytes = Buffer.alloc(32, 7);
+    const secret = secretBytes.toString("base64url");
+    const timestamp = 1_787_133_600;
+    const digest = createHmac("sha256", secretBytes)
+      .update(Buffer.from(`${timestamp}.`))
+      .update(raw)
+      .digest("hex");
+    await expect(
+      webhooks.verifyLocal({
+        body: raw,
+        signature: `t=${timestamp},v1=${digest}`,
+        secret,
+        nowUnixSeconds: timestamp + 10,
+      }),
+    ).resolves.toMatchObject({ id: "evt_1", event: "message.received" });
+    await expect(
+      webhooks.verify({
+        body: raw,
+        signature: `t=${timestamp},v1=${digest}`,
+        secret,
+      }),
+    ).rejects.toThrow(WebhookSignatureError);
+  });
+});
+
 describe("constructWebhookEvent", () => {
   it("verifies before parsing and narrows a known event", async () => {
     const event = await constructWebhookEvent(raw, signature, "fixture-secret");
@@ -57,6 +121,80 @@ describe("constructWebhookEvent", () => {
     if (isEvent(event, "message.received")) {
       expectTypeOf(event).toEqualTypeOf<MessageReceivedEvent>();
       expect(event.payload.id).toBe("m1");
+    }
+  });
+
+  it.each([null, { id: "15550100@s.whatsapp.net" }])(
+    "preserves terminal caller identity %j through signature verification",
+    async (from) => {
+      const payload: CallEndedPayload = {
+        from,
+        callId: "call-555",
+        durationSeconds: 42,
+        reason: from === null ? "pod_lost" : "user_hangup",
+        direction: "outbound",
+        hadVideo: false,
+      };
+      const body = Buffer.from(
+        JSON.stringify({
+          id: "event-555",
+          session: "support",
+          timestamp: "2026-09-07T00:00:00Z",
+          event: "call.ended",
+          payload,
+        }),
+      );
+      const event = await constructWebhookEvent(
+        body,
+        sign(body),
+        "fixture-secret",
+      );
+      expect(KNOWN_WEBHOOK_EVENT_TYPES).toContain("call.ended");
+      expect(isEvent(event, "call.ended")).toBe(true);
+      if (isEvent(event, "call.ended")) {
+        expectTypeOf(event.payload).toEqualTypeOf<CallEndedPayload>();
+        expectTypeOf(event.payload.direction).toEqualTypeOf<
+          "inbound" | "outbound"
+        >();
+        expect(event.payload).toEqual(payload);
+        expect(event.payload.from?.id ?? null).toBe(from?.id ?? null);
+      }
+    },
+  );
+
+  it("exposes terminal telemetry without reinterpreting cumulative kilobits", async () => {
+    const payload: CallTelemetryPayload = {
+      callId: "call-555",
+      setupMs: 300,
+      ringMs: 2000,
+      durationSeconds: 42,
+      terminateReason: "user_hangup",
+      codec: "opus",
+      jitterMs: 4,
+      packetsLost: 2,
+      rttMs: 35,
+      recvKbps: 450,
+      sendKbps: 460,
+    };
+    const body = Buffer.from(
+      JSON.stringify({
+        id: "telemetry-555",
+        session: "support",
+        timestamp: "2026-09-07T00:00:00Z",
+        event: "call.telemetry",
+        payload,
+      }),
+    );
+    const event = await constructWebhookEvent(
+      body,
+      sign(body),
+      "fixture-secret",
+    );
+    expect(KNOWN_WEBHOOK_EVENT_TYPES).toContain("call.telemetry");
+    expect(isEvent(event, "call.telemetry")).toBe(true);
+    if (isEvent(event, "call.telemetry")) {
+      expectTypeOf(event.payload).toEqualTypeOf<CallTelemetryPayload>();
+      expect(event.payload).toEqual(payload);
     }
   });
 

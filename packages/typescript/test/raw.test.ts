@@ -34,7 +34,7 @@ describe("RawClient", () => {
 
     const response = await raw.request<{ ok: true }>({
       method: "POST",
-      path: "/v1/custom",
+      path: "/platform/custom",
       query: { projectId: "project_1", include: ["members", "keys"] },
       body: { enabled: true },
       apiVersion: "2026-08-19",
@@ -46,7 +46,7 @@ describe("RawClient", () => {
     expect(response.metadata.requestId).toBe("req_raw");
     expect(server.requests[0]).toMatchObject({
       method: "POST",
-      path: "/v1/custom?projectId=project_1&include=members&include=keys",
+      path: "/platform/custom?projectId=project_1&include=members&include=keys",
       body: '{"enabled":true}',
     });
     expect(server.requests[0]?.headers["x-trace"]).toBe("cli");

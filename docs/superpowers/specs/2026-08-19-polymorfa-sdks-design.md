@@ -226,8 +226,9 @@ requiring privileged access call an application-owned server transport.
   history, pagination, optimistic sends, delivery updates, and subscriptions.
 - `MessageComposerController` manages text, attachments, reply context,
   validation, upload state, and send state.
-- `TemplateBuilderTransport` validates drafts and delegates privileged read,
-  preview, submit, and update operations to an application server.
+- `TemplateBuilderController` validates canonical drafts locally, while
+  `TemplateBuilderTransport` delegates privileged load, save, preview, delete,
+  and Meta submission operations to an application server.
 - `CallsController` manages capabilities, media permissions, devices,
   signaling state, participants, reconnection, and hang-up.
 
@@ -276,7 +277,7 @@ render callbacks without forking the controller.
 >
   <QuickLink />
   <ChatDrawer dataSource={chatDataSource} />
-  <TemplateBuilder transport={templateTransport} />
+  <TemplateBuilder controller={templateBuilderController} />
   <Calls />
 </PolymorfaProvider>
 ```

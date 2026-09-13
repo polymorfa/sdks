@@ -63,7 +63,7 @@ export class MessagesResource {
   ): Promise<ApiResponse<T>> {
     return this.transport.request({
       method: "POST",
-      path: `/api/${encodeURIComponent(session)}/messages/${action}`,
+      path: `/messaging/${encodeURIComponent(session)}/messages/${action}`,
       body,
       ...options,
     });
