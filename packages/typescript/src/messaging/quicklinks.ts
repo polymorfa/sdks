@@ -1,9 +1,5 @@
 import { PolymorfaConfigurationError } from "../errors.js";
-import type {
-  QuickLinkHistorySync,
-  QuickLinkMethod,
-  QuickLinkTheme,
-} from "../platform/quicklink-settings.js";
+import type { QuickLinkMethod } from "../platform/quicklink-settings.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type { MessagingCredential } from "../credentials.js";
@@ -13,10 +9,6 @@ export interface CreateQuickLinkRequest {
   readonly externalId?: string;
   readonly customerId?: string;
   readonly methods?: readonly QuickLinkMethod[];
-  readonly businessName?: string;
-  readonly historySync?: QuickLinkHistorySync;
-  readonly theme?: QuickLinkTheme;
-  readonly accent?: string;
   readonly prefillPhone?: string;
   readonly expiresInSeconds?: number;
 }

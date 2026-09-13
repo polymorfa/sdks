@@ -127,8 +127,6 @@ describe("Client customers", () => {
         expectedPhone: "+15551234567",
         methods: ["qr", "phone"],
         expiresInSeconds: 3600,
-        locale: "en",
-        theme: "system",
       },
       { idempotencyKey: "link-1" },
     );

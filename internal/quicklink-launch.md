@@ -28,3 +28,9 @@ Customer profiles no longer expose phone/phoneMasked or accept phone on create
 or update. Pairing invitations retain their own expectedPhone and connected
 Numbers retain phone information. CLI must adopt this SDK commit together with
 its removed profile phone flags.
+
+Invitation policy enforcement: creation now omits branding, theme, history and
+connection overrides. Customer pairing requests omit locale/theme. These values
+belong to saved settings; only pairing methods remain configurable per invitation.
+Typecheck and all407tests pass after this contract delta. Exact final API source
+will be recorded after the companion checkpoint is pushed.

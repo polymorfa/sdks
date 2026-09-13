@@ -536,3 +536,7 @@ release instruction.
 ## License
 
 MIT
+
+QuickLink creation accepts pairing methods, identity/correlation and expiry.
+Configure connection policy, history, branding and theme in saved QuickLink settings.
+Customer pairing-link creation does not accept locale or theme overrides.

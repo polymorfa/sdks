@@ -152,8 +152,6 @@ export interface CreateCustomerPairingLinkRequest {
   readonly expectedPhone?: string | null;
   readonly methods?: readonly CustomerPairingMethod[];
   readonly expiresInSeconds?: number;
-  readonly locale?: CustomerPairingLocale | null;
-  readonly theme?: CustomerPairingTheme | null;
 }
 
 export interface ListCustomerEventsParams {
