@@ -25,7 +25,9 @@ interface QuickLinkSettingsBase {
   readonly failureCallbackUrl: string | null;
   readonly accent: string | null;
   readonly theme: QuickLinkTheme;
+  /** Hiding the Polymorfa footer requires Premium team access. */
   readonly hideWatermark: boolean;
+  readonly allowPhoneChange: boolean;
   readonly shape: QuickLinkShape | null;
   readonly radiusPx: number | null;
   readonly logoMode: QuickLinkLogoMode;
@@ -62,7 +64,10 @@ export interface UpdateQuickLinkSettingsInput {
   readonly failureCallbackUrl?: string | null;
   readonly accent?: string | null;
   readonly theme?: QuickLinkTheme;
+  /** Hiding the Polymorfa footer requires Premium team access. */
   readonly hideWatermark?: boolean;
+  /** Allow recipients to change a prefilled phone number; false by default. */
+  readonly allowPhoneChange?: boolean;
   readonly shape?: QuickLinkShape | null;
   readonly radiusPx?: number | null;
   readonly logoMode?: QuickLinkLogoMode;

@@ -1299,3 +1299,12 @@ request bytes before processing these events.
 
 Customers have optional names and project-unique external IDs. Set a phone
 restriction on an individual pairing invitation; it is not Customer profile data.
+
+### Phone confirmation and attribution
+
+Use `project.quickLinkSettings.update({ allowPhoneChange: true })` to allow recipients
+to replace a prefilled number. Set it to `false` to keep the invitation's number fixed.
+These settings are saved for the project and snapshotted into new invitations.
+`hideWatermark: true` requires Premium team access; `false` retains Polymorfa attribution.
+Phone confirmation and Brazil number selection happen on the hosted QuickLink page.
+An unregistered number requires an allowed, available Meta Cloud API connection.

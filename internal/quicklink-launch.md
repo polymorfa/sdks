@@ -55,3 +55,37 @@ The root README also corrects stale lifecycle/settings paths to `/messaging/quic
 and `/platform/quicklink`, matching the existing implementation and package README.
 No package publication, enrollment change, provider rollout or live Meta acceptance
 is included.
+
+## Phone-first and Premium attribution checkpoint
+
+Implementation audited against monorepo phone lifecycle commit `9f7358523` and
+combined branch `69e7b2bee19dd58d2079c78bd32baaa4288d3cd1`, including its staged
+management specification. The specification is still being regenerated; these
+are artifact identifiers, not a new repository-wide contract pin:
+
+- Messaging SHA-256: `cc097dca55226fe44a9cbd0c298349c92f858b7bf3105fc9044295b06e8b059a`.
+- Platform SHA-256: `c6b98cd2623128476d2cd7ff11e8cde6b4446a82fb7d2bb7afdd33ce6390623e`.
+
+The saved settings resource adds `allowPhoneChange` to reads and updates and
+serializes explicit `false` for it and `hideWatermark`. Premium enforcement stays
+server-side. Creation still accepts only methods, identity/correlation, and expiry.
+Customer types retain `externalCustomerId` and invitation `expectedPhone`, without
+Customer profile phone fields or appearance overrides. Existing request tests
+exercise the actual `/messaging/quicklinks` and `/platform/customers` paths.
+The browser package's QuickLink controller consumes an integrator-provided
+transport; hosted invitation-token phone confirmation is not a server-credential
+SDK resource. Its transport contract remains unchanged.
+
+A read-only ledger comparison against the artifacts above reports 454 operations,
+347 absent ledger rows and six changed fingerprints. Scoped QuickLink/Customer
+rows still name older prefixes in the pinned ledger; inspected handwritten
+methods already use the new prefixes. This is stale accounting, not evidence of
+347 missing implementations. The full snapshot/ledger reconciliation remains
+blocked until the final combined API specification is committed and every
+affected consumer is checked. No hashes were restamped to imply parity.
+
+API: updated in the companion monorepo. SDK: settings types, serialization tests
+and both package guides updated. CLI: saved settings already pass a typed JSON
+body; its SDK dependency must be repinned to the verified SDK commit. Public
+Mintlify guidance and feature-release records remain owned by monorepo PR147.
+No registry release or deployed availability is established by this checkpoint.

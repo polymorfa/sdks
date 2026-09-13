@@ -546,3 +546,13 @@ MIT
 QuickLink creation accepts pairing methods, identity/correlation and expiry.
 Configure connection policy, history, branding and theme in saved QuickLink settings.
 Customer pairing-link creation does not accept locale or theme overrides.
+
+### QuickLink phone entry and branding
+
+QuickLink asks the recipient to confirm their number before starting a connection.
+Set `allowPhoneChange` in saved project QuickLink settings to let recipients change
+an invitation's prefilled number. The default is `false`; it is not a per-link
+override. Unregistered numbers require an available, allowed Meta Cloud API path.
+`hideWatermark: true` requires Premium team access. Issued links retain their
+saved settings. The hosted phone-selection routes use the invitation bearer;
+server SDK callers continue to create and track links through the existing methods.

@@ -271,6 +271,8 @@ describe("QuickLink settings", () => {
       {
         headline: "Connect your number",
         defaultMethod: "qr",
+        allowPhoneChange: false,
+        hideWatermark: false,
         connectionPreference: "cloud",
         connectionEnforcement: "prefer",
         successCallbackUrl: "https://example.com/connected",
@@ -290,7 +292,7 @@ describe("QuickLink settings", () => {
       '{"enabled":true,"methods":["qr","pairing"]}',
     );
     expect(requests[3]?.body).toBe(
-      '{"headline":"Connect your number","defaultMethod":"qr","connectionPreference":"cloud","connectionEnforcement":"prefer","successCallbackUrl":"https://example.com/connected","failureCallbackUrl":"https://example.com/failed","projectId":"project/a"}',
+      '{"headline":"Connect your number","defaultMethod":"qr","allowPhoneChange":false,"hideWatermark":false,"connectionPreference":"cloud","connectionEnforcement":"prefer","successCallbackUrl":"https://example.com/connected","failureCallbackUrl":"https://example.com/failed","projectId":"project/a"}',
     );
     expect(requests[2]?.headers["idempotency-key"]).toBe("quicklink-org-1");
     expect(requests[3]?.headers["idempotency-key"]).toBe("quicklink-project-1");
