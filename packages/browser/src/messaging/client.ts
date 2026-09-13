@@ -26,7 +26,6 @@ import type {
   BrowserSuccessEnvelope,
   BrowserSuccessResponse,
   BrowserTypingRequest,
-  BrowserWidgetHandoff,
 } from "./types.js";
 
 export interface BrowserMessagingClientOptions extends BrowserTransportOptions {
@@ -278,18 +277,6 @@ export class BrowserWidgetResource {
       method: "POST",
       path: `${sessionRoot(this.session)}/pair/code`,
       body,
-      ...options,
-    });
-  }
-
-  handoff(
-    options: BrowserActionOptions = {},
-  ): Promise<
-    BrowserActionResponse<BrowserSuccessEnvelope<BrowserWidgetHandoff>>
-  > {
-    return this.transport.request({
-      method: "POST",
-      path: `/api/widget/sessions/${encodeURIComponent(this.session)}/handoff`,
       ...options,
     });
   }

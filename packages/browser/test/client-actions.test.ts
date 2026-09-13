@@ -105,7 +105,6 @@ describe("BrowserMessagingClient", () => {
     await client.widget.status();
     await client.widget.qr();
     await client.widget.requestPairingCode({ phone: "+15550001" });
-    await client.widget.handoff();
 
     expect(
       requests.map(
@@ -116,7 +115,6 @@ describe("BrowserMessagingClient", () => {
       "GET /messaging/sessions/widget-1",
       "GET /messaging/widget-1/pair/qr",
       "POST /messaging/widget-1/pair/code",
-      "POST /api/widget/sessions/widget-1/handoff",
     ]);
     expect(requests[3]?.init?.body).toBe('{"phone":"+15550001"}');
   });

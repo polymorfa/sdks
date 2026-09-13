@@ -99,8 +99,9 @@ unrecorded fingerprint changes. This does not claim full SDK parity. Exact rows
 are retained in contracts/coverage.json and cloud-reconciliation.json.
 
 Authenticated Cloud onboarding now has a typed server resource. Calls/browser
-transport prefixes use /messaging; widget handoff's retired route remains an
-explicit gap. New unrelated identity/BanSafe methods remain missing or partial.
+transport prefixes use /messaging. The unpublished browser widget handoff method
+and type were removed because their endpoint was retired; no Bartender endpoint
+was substituted. New unrelated identity/BanSafe methods remain missing or partial.
 No deployment, registry publication or live Meta acceptance is implied.
 API and Mintlify/release documentation remain owned by monorepo PR147. CLI
 requires a dependency repin after this SDK checkpoint is published.

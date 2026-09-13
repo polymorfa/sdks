@@ -21,8 +21,8 @@ name credential boundaries; Graph remains outside this ledger's two API families
 The Cloud/QuickLink update verifies saved settings, Customers, invitations and
 `MessagingClient.cloudOnboarding.advance`. Calls and browser messaging use the
 `/messaging` prefix. Integrator-owned `/api/polymorfa` routes remain unchanged.
-The browser widget handoff still targets a retired endpoint and is not verified
-against this revision; it must not be treated as supported hosted QuickLink onboarding.
+The retired, unpublished browser widget handoff method and type were removed.
+It has no equivalent in this contract; hosted QuickLink onboarding is separate.
 
 The one-time migration is reproducible from the preceding ledger with
 `node scripts/reconcile-cloud-contracts.mjs <api-repository> b61d3198aa242d8cba5705e468d2845dc826bf5b`.
