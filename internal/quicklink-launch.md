@@ -1,6 +1,6 @@
 # QuickLink launch contract checkpoint
 
-Source: polymorfa/polymorfa commit c012141e64049c64200dedb00892221c745bdc03,
+Source: polymorfa/polymorfa commit 85f2955c95cf183fa284ee28a618466972f2ff6a,
 draft PR https://github.com/polymorfa/polymorfa/pull/147. SDK base dev is
 e15da860973ee9c81a8ffcccc95463ce3b22166f.
 
@@ -23,3 +23,8 @@ flags still need alignment with the final project-owned policy. No package relea
 feature rollout, registry publication or deployment is part of this checkpoint.
 This is a contract correction to the existing QuickLink methods; the broader new
 feature's narrated video belongs to PR147 and remains required there.
+
+Customer profiles no longer expose phone/phoneMasked or accept phone on create
+or update. Pairing invitations retain their own expectedPhone and connected
+Numbers retain phone information. CLI must adopt this SDK commit together with
+its removed profile phone flags.

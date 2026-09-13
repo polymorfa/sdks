@@ -72,7 +72,6 @@ describe("Client customers", () => {
       {
         projectId: "project/a",
         name: "Ada",
-        phone: "+15551234567",
         externalCustomerId: "crm/a",
       },
       { idempotencyKey: "create-1" },
@@ -94,7 +93,7 @@ describe("Client customers", () => {
     expect(requests[1]?.headers["idempotency-key"]).toBe("enable-1");
     expect(requests[3]?.headers["idempotency-key"]).toBe("create-1");
     expect(requests[3]?.body).toBe(
-      '{"projectId":"project/a","name":"Ada","phone":"+15551234567","externalCustomerId":"crm/a"}',
+      '{"projectId":"project/a","name":"Ada","externalCustomerId":"crm/a"}',
     );
     expect(requests[5]?.body).toBe('{"projectId":"project/a","name":null}');
     expect(listed.data.page).toEqual({

@@ -128,7 +128,6 @@ const customer = await platform.customers.create(
   {
     projectId: "project_123",
     name: "Ada",
-    phone: "+15551234567",
     externalCustomerId: "crm_456",
   },
   { idempotencyKey: crypto.randomUUID() },
@@ -1293,3 +1292,6 @@ handling a Meta Cloud API JSON batch; linked-device history carries the compress
 `data` field. `contact.sync` uses `kind: "contacts"`, and `message.echo` identifies
 messages sent through the WhatsApp Business app. Verify signatures over the raw
 request bytes before processing these events.
+
+Customers have optional names and project-unique external IDs. Set a phone
+restriction on an individual pairing invitation; it is not Customer profile data.
