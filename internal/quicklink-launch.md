@@ -40,3 +40,18 @@ The broader new feature's narrated video remains required in PR147. Phone-first
 lookup, Customer original-issuance policy snapshots, four setup videos and real
 Meta acceptance remain unfinished. This checkpoint records contract corrections,
 not a launch completion claim.
+
+## Onboarding availability checkpoint
+
+API commit `c77ab109b` adds live feature-engine eligibility for Meta Cloud API
+onboarding: active organization/project authority, beta enrollment, release
+eligibility and operational enable. New work stops on revocation or outage;
+already accepted operation results remain recoverable. No API request/response
+shape changed, so SDK methods and serialization are unchanged. The README
+availability guidance now reflects this behavior. This availability check does
+not repin the older contract ledger or claim full parity with a moving API head.
+
+The root README also corrects stale lifecycle/settings paths to `/messaging/quicklinks`
+and `/platform/quicklink`, matching the existing implementation and package README.
+No package publication, enrollment change, provider rollout or live Meta acceptance
+is included.

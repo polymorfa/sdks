@@ -385,8 +385,14 @@ helpers.
 
 ## QuickLink lifecycle and settings
 
+Meta Cloud API onboarding requires organization beta access and an active project.
+Installing this SDK or configuring Meta app IDs does not grant that access.
+Unavailable optional choices are hidden; forced Meta Cloud API invitations cannot
+be created without access. Withdrawal stops new onboarding and history requests
+while accepted upstream results remain recoverable.
+
 `MessagingClient.quickLinks.create()`, `retrieve()`, and `cancel()` map the
-authenticated hosted lifecycle at `/api/quicklinks`. They accept organization
+authenticated hosted lifecycle at `/messaging/quicklinks`. They accept organization
 API keys or project tokens with `quicklink:manage`; browser client tokens fail
 before transport. Organization keys can set `projectId` on creation, while a
 project token remains bound by the server.
@@ -395,7 +401,7 @@ These methods expose the short-lived connection URL and status record. They do
 not add list, recovery, or history operations that the API does not provide.
 
 `client.quickLinkSettings.retrieve()` and `update()` map only the management
-`GET /v1/quicklink` and `PUT /v1/quicklink` settings contract. The same methods
+`GET /platform/quicklink` and `PUT /platform/quicklink` settings contract. The same methods
 on `client.project(projectId)` use the immutable project ownership context.
 
 ## Browser controllers and UI

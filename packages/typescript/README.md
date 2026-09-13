@@ -1188,6 +1188,10 @@ organization-only resources are absent from that view's public type.
 
 ## QuickLink lifecycle and settings
 
+Meta Cloud API onboarding requires organization beta access and an active project.
+An installed SDK method or configured Meta app IDs do not grant access. Withdrawal
+stops new onboarding work while accepted upstream results remain recoverable.
+
 Set `successCallbackUrl` and `failureCallbackUrl` on the project. QuickLink
 creation does not accept a callback override. The API snapshots destinations
 when issuing a link. Supply `externalId` at creation to correlate the resulting
