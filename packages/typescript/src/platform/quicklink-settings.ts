@@ -12,6 +12,8 @@ export type QuickLinkMethod = "qr" | "pairing";
 interface QuickLinkSettingsBase {
   readonly id: string;
   readonly enabled: boolean;
+  readonly connectionPreference: "cloud" | "linked" | "both";
+  readonly connectionEnforcement: "prefer" | "force";
   readonly businessName: string | null;
   readonly headline: string | null;
   readonly description: string | null;
@@ -47,6 +49,8 @@ export interface ProjectQuickLinkSettings extends QuickLinkSettingsBase {
 
 export interface UpdateQuickLinkSettingsInput {
   readonly enabled?: boolean;
+  readonly connectionPreference?: "cloud" | "linked" | "both";
+  readonly connectionEnforcement?: "prefer" | "force";
   readonly businessName?: string | null;
   readonly headline?: string | null;
   readonly description?: string | null;
