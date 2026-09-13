@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "baseCommit": "2321fd89d6d2b55ebef5e6636c984a4ae6470344",
-  "state": "unpublished-working-tree",
+  "baseCommit": "cfca00dacf37fa632d799bbf1eaad2b7e9ce2a06",
+  "state": "unpublished-local-commit",
   "sourcePath": "apps/api/docs/openapi.management.json",
-  "sourceSha256": "ce5d32751a6f17b3b7a51c993153a57aecfa84ba7767eb68f67beebf76e413fe",
+  "sourceSha256": "e91e0e695bbcaebf6c2290dfc28a0b9a5a5d73e69e3ff8727657956fd04b4b69",
   "snapshotPath": "contracts/billing-redesign.openapi.json",
   "snapshotSha256": "5e91653d9bcc6706c823a1dbc407d7b6c7bcf8e3a3f9a4fe5161470e4dfe6760",
   "operationIds": [
