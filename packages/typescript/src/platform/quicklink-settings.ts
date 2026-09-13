@@ -12,7 +12,8 @@ export type QuickLinkMethod = "qr" | "pairing";
 interface QuickLinkSettingsBase {
   readonly id: string;
   readonly enabled: boolean;
-  readonly allowedRedirectUris: readonly string[];
+  readonly connectionPreference: "cloud" | "linked" | "both";
+  readonly connectionEnforcement: "prefer" | "force";
   readonly businessName: string | null;
   readonly headline: string | null;
   readonly description: string | null;
@@ -20,9 +21,13 @@ interface QuickLinkSettingsBase {
   readonly supportUrl: string | null;
   readonly privacyUrl: string | null;
   readonly termsUrl: string | null;
+  readonly successCallbackUrl: string | null;
+  readonly failureCallbackUrl: string | null;
   readonly accent: string | null;
   readonly theme: QuickLinkTheme;
+  /** Hiding the Polymorfa footer requires Premium team access. */
   readonly hideWatermark: boolean;
+  readonly allowPhoneChange: boolean;
   readonly shape: QuickLinkShape | null;
   readonly radiusPx: number | null;
   readonly logoMode: QuickLinkLogoMode;
@@ -46,7 +51,8 @@ export interface ProjectQuickLinkSettings extends QuickLinkSettingsBase {
 
 export interface UpdateQuickLinkSettingsInput {
   readonly enabled?: boolean;
-  readonly allowedRedirectUris?: readonly string[];
+  readonly connectionPreference?: "cloud" | "linked" | "both";
+  readonly connectionEnforcement?: "prefer" | "force";
   readonly businessName?: string | null;
   readonly headline?: string | null;
   readonly description?: string | null;
@@ -54,9 +60,14 @@ export interface UpdateQuickLinkSettingsInput {
   readonly supportUrl?: string | null;
   readonly privacyUrl?: string | null;
   readonly termsUrl?: string | null;
+  readonly successCallbackUrl?: string | null;
+  readonly failureCallbackUrl?: string | null;
   readonly accent?: string | null;
   readonly theme?: QuickLinkTheme;
+  /** Hiding the Polymorfa footer requires Premium team access. */
   readonly hideWatermark?: boolean;
+  /** Allow recipients to change a prefilled phone number; false by default. */
+  readonly allowPhoneChange?: boolean;
   readonly shape?: QuickLinkShape | null;
   readonly radiusPx?: number | null;
   readonly logoMode?: QuickLinkLogoMode;

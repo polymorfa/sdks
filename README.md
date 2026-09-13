@@ -385,8 +385,14 @@ helpers.
 
 ## QuickLink lifecycle and settings
 
+Meta Cloud API onboarding requires organization beta access and an active project.
+Installing this SDK or configuring Meta app IDs does not grant that access.
+Unavailable optional choices are hidden; forced Meta Cloud API invitations cannot
+be created without access. Withdrawal stops new onboarding and history requests
+while accepted upstream results remain recoverable.
+
 `MessagingClient.quickLinks.create()`, `retrieve()`, and `cancel()` map the
-authenticated hosted lifecycle at `/api/quicklinks`. They accept organization
+authenticated hosted lifecycle at `/messaging/quicklinks`. They accept organization
 API keys or project tokens with `quicklink:manage`; browser client tokens fail
 before transport. Organization keys can set `projectId` on creation, while a
 project token remains bound by the server.
@@ -395,7 +401,7 @@ These methods expose the short-lived connection URL and status record. They do
 not add list, recovery, or history operations that the API does not provide.
 
 `client.quickLinkSettings.retrieve()` and `update()` map only the management
-`GET /v1/quicklink` and `PUT /v1/quicklink` settings contract. The same methods
+`GET /platform/quicklink` and `PUT /platform/quicklink` settings contract. The same methods
 on `client.project(projectId)` use the immutable project ownership context.
 
 ## Browser controllers and UI
@@ -536,3 +542,26 @@ release instruction.
 ## License
 
 MIT
+
+QuickLink creation accepts pairing methods, identity/correlation and expiry.
+Configure connection policy, history, branding and theme in saved QuickLink settings.
+Customer pairing-link creation does not accept locale or theme overrides.
+
+### QuickLink phone entry and branding
+
+QuickLink asks the recipient to confirm their number before starting a connection.
+Set `allowPhoneChange` in saved project QuickLink settings to let recipients change
+an invitation's prefilled number. The default is `false`; it is not a per-link
+override. Unregistered numbers require an available, allowed Meta Cloud API path.
+`hideWatermark: true` requires Premium team access. Issued links retain their
+saved settings. The hosted phone-selection routes use the invitation bearer;
+server SDK callers continue to create and track links through the existing methods.
+
+### Authenticated Meta Cloud API onboarding
+
+Use `messaging.cloudOnboarding.advance({ session, result })` with an organization
+API key or project token. The result contains `code`, `wabaId`, `phoneNumberId`,
+and optional `coexistence` and `historySync`. Omitting `result` advances or polls
+the reserved session. Hosted QuickLink recipients use the invitation flow;
+never pass trusted-server `metaApp` secrets to the browser. Read the returned
+`data.stage` before treating onboarding as complete.

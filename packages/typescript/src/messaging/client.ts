@@ -23,6 +23,7 @@ import { ProfileResource } from "./profile.js";
 import { PrivacyResource } from "./privacy.js";
 import { PresenceResource } from "./presence.js";
 import { QuickRepliesResource } from "./quick-replies.js";
+import { CloudOnboardingResource } from "./cloud-onboarding.js";
 import { QuickLinksResource } from "./quicklinks.js";
 import { SessionsResource } from "./sessions.js";
 import { TemplatesResource } from "./templates.js";
@@ -51,6 +52,7 @@ export class MessagingClient {
   readonly presence: PresenceResource;
   readonly quickReplies: QuickRepliesResource;
   readonly quickLinks: QuickLinksResource;
+  readonly cloudOnboarding: CloudOnboardingResource;
   readonly templates: TemplatesResource;
   readonly users: UsersResource;
   readonly voip: VoipResource;
@@ -90,6 +92,10 @@ export class MessagingClient {
     this.presence = new PresenceResource(transport);
     this.quickReplies = new QuickRepliesResource(transport);
     this.quickLinks = new QuickLinksResource(transport, credential.type);
+    this.cloudOnboarding = new CloudOnboardingResource(
+      transport,
+      credential.type,
+    );
     this.templates = new TemplatesResource(transport);
     this.users = new UsersResource(transport);
     this.voip = new VoipResource(transport);

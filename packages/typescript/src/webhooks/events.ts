@@ -17,6 +17,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "chat.read",
   "command.result",
   "contact.update",
+  "contact.sync",
   "group.participant",
   "group.update",
   "history.sync",
@@ -24,6 +25,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "message.ack",
   "message.delete",
   "message.edited",
+  "message.echo",
   "message.reaction",
   "message.received",
   "message.revoked",
@@ -333,7 +335,7 @@ export interface LabelsUpdatePayload {
   readonly starred?: boolean;
 }
 
-export interface HistorySyncPayload {
+export interface LinkedHistorySyncPayload {
   readonly messageId: string;
   readonly originalMessageId?: string;
   readonly mode: "deliver";
@@ -346,6 +348,24 @@ export interface HistorySyncPayload {
   readonly pushNameCount: number;
   readonly statusMessageCount: number;
   readonly data: string;
+}
+
+export interface CloudHistorySyncPayload {
+  readonly kind: "history";
+  readonly value: Readonly<Record<string, unknown>>;
+}
+
+export type HistorySyncPayload =
+  LinkedHistorySyncPayload | CloudHistorySyncPayload;
+
+export interface ContactsSyncPayload {
+  readonly kind: "contacts";
+  readonly value: Readonly<Record<string, unknown>>;
+}
+
+export interface MessageEchoPayload {
+  readonly source: "whatsapp_business_app";
+  readonly value: Readonly<Record<string, unknown>>;
 }
 
 export interface CommandResultPayload {
@@ -387,6 +407,7 @@ export interface WebhookPayloadMap {
   readonly "chat.read": ChatReadPayload;
   readonly "command.result": CommandResultPayload;
   readonly "contact.update": ContactUpdatePayload;
+  readonly "contact.sync": ContactsSyncPayload;
   readonly "group.participant": GroupParticipantPayload;
   readonly "group.update": GroupUpdatePayload;
   readonly "history.sync": HistorySyncPayload;
@@ -394,6 +415,7 @@ export interface WebhookPayloadMap {
   readonly "message.ack": MessageAckPayload;
   readonly "message.delete": MessageDeletePayload;
   readonly "message.edited": MessagePayload;
+  readonly "message.echo": MessageEchoPayload;
   readonly "message.reaction": MessagePayload;
   readonly "message.received": MessageReceivedPayload;
   readonly "message.revoked": MessagePayload;
@@ -410,6 +432,8 @@ export interface WebhookPayloadMap {
 
 export interface WebhookEventOf<TEvent extends string, TPayload> {
   readonly id: string;
+  /** QuickLink integrator reference on session lifecycle events. */
+  readonly externalId?: string;
   readonly session: string;
   readonly timestamp: string;
   readonly event: TEvent;

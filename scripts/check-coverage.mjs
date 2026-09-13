@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from "node:url";
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -28,24 +29,29 @@ const COVERAGE_STATUSES = new Set([
   "excluded",
 ]);
 
-try {
-  const args = parseArguments(process.argv.slice(2));
-  const ledger = readJson(args.ledger);
-  const actual = [
-    ...extractOperations("messaging", readJson(args.messaging)),
-    ...extractOperations("platform", readJson(args.platform)),
-  ];
-  const report = compareCoverage(actual, ledger, args.strict === true);
-  if (args.report !== undefined) {
-    writeFileSync(args.report, `${JSON.stringify(report, null, 2)}\n`);
-  } else {
-    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  try {
+    const args = parseArguments(process.argv.slice(2));
+    const ledger = readJson(args.ledger);
+    const actual = [
+      ...extractOperations("messaging", readJson(args.messaging)),
+      ...extractOperations("platform", readJson(args.platform)),
+    ];
+    const report = compareCoverage(actual, ledger, args.strict === true);
+    if (args.report !== undefined) {
+      writeFileSync(args.report, `${JSON.stringify(report, null, 2)}\n`);
+    } else {
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    }
+  } catch (error) {
+    process.stderr.write(
+      `${error instanceof Error ? error.message : String(error)}\n`,
+    );
+    process.exitCode = 1;
   }
-} catch (error) {
-  process.stderr.write(
-    `${error instanceof Error ? error.message : String(error)}\n`,
-  );
-  process.exitCode = 1;
 }
 
 function parseArguments(argv) {
@@ -327,3 +333,5 @@ function operationKey(operation) {
 function displayKey(operation) {
   return `${operation.family} ${operation.method.toUpperCase()} ${operation.path}`;
 }
+
+export { extractOperations };

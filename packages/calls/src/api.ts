@@ -147,7 +147,7 @@ export class HttpCallsApi implements CallsApi {
   ): Promise<SocketTicket> {
     const data = await this.#request<unknown>(
       "POST",
-      "/api/voip/ws-ticket",
+      "/messaging/voip/ws-ticket",
       { session },
       signal,
     );
@@ -169,7 +169,7 @@ export class HttpCallsApi implements CallsApi {
   ): Promise<MediaTicket> {
     const data = await this.#request<unknown>(
       "POST",
-      `/api/voip/calls/${encodeURIComponent(callId)}/agent-token`,
+      `/messaging/voip/calls/${encodeURIComponent(callId)}/agent-token`,
       {},
       signal,
     );
@@ -197,7 +197,7 @@ export class HttpCallsApi implements CallsApi {
   ): Promise<{ readonly callId: string }> {
     const data = await this.#request<unknown>(
       "POST",
-      "/api/voip/calls",
+      "/messaging/voip/calls",
       { session: input.session, to: input.to, video: input.video },
       signal,
       { "idempotency-key": input.idempotencyKey },
@@ -215,7 +215,12 @@ export class HttpCallsApi implements CallsApi {
     mode: AnswerMode,
     signal?: AbortSignal,
   ): Promise<void> {
-    await this.#request("POST", "/api/voip/mode", { session, mode }, signal);
+    await this.#request(
+      "POST",
+      "/messaging/voip/mode",
+      { session, mode },
+      signal,
+    );
   }
 
   async accept(
@@ -225,7 +230,7 @@ export class HttpCallsApi implements CallsApi {
   ): Promise<void> {
     await this.#request(
       "POST",
-      `/api/voip/calls/${encodeURIComponent(callId)}/accept`,
+      `/messaging/voip/calls/${encodeURIComponent(callId)}/accept`,
       options,
       signal,
     );
@@ -234,7 +239,7 @@ export class HttpCallsApi implements CallsApi {
   async reject(callId: string, signal?: AbortSignal): Promise<void> {
     await this.#request(
       "POST",
-      `/api/voip/calls/${encodeURIComponent(callId)}/reject`,
+      `/messaging/voip/calls/${encodeURIComponent(callId)}/reject`,
       undefined,
       signal,
     );
@@ -243,7 +248,7 @@ export class HttpCallsApi implements CallsApi {
   async hangup(callId: string, signal?: AbortSignal): Promise<void> {
     await this.#request(
       "DELETE",
-      `/api/voip/calls/${encodeURIComponent(callId)}`,
+      `/messaging/voip/calls/${encodeURIComponent(callId)}`,
       undefined,
       signal,
       {
@@ -259,7 +264,7 @@ export class HttpCallsApi implements CallsApi {
   ): Promise<Participant> {
     const data = await this.#request<unknown>(
       "POST",
-      `/api/voip/calls/${encodeURIComponent(callId)}/participants`,
+      `/messaging/voip/calls/${encodeURIComponent(callId)}/participants`,
       { to },
       signal,
     );

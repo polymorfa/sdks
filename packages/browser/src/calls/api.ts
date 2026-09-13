@@ -26,7 +26,7 @@ export class BrowserCallsApi implements CallsApi {
   ): Promise<SocketTicket> {
     const response = await this.#transport.request<{ data?: SocketTicket }>({
       method: "POST",
-      path: "/api/voip/ws-ticket",
+      path: "/messaging/voip/ws-ticket",
       body: {},
       ...(signal === undefined ? {} : { signal }),
     });
@@ -54,7 +54,7 @@ export class BrowserCallsApi implements CallsApi {
       throw new Error("Browser calls require browser answer mode for WebRTC.");
     await this.#transport.request({
       method: "POST",
-      path: "/api/voip/mode",
+      path: "/messaging/voip/mode",
       body: { mode },
       ...(signal === undefined ? {} : { signal }),
     });
@@ -76,7 +76,7 @@ export class BrowserCallsApi implements CallsApi {
       data?: { callId?: unknown };
     }>({
       method: "POST",
-      path: "/api/voip/calls",
+      path: "/messaging/voip/calls",
       body: { to: input.to, video: input.video },
       idempotencyKey: input.idempotencyKey,
       ...(signal === undefined ? {} : { signal }),
@@ -111,7 +111,7 @@ export class BrowserCallsApi implements CallsApi {
   ): Promise<Participant> {
     const response = await this.#transport.request<{ data?: Participant }>({
       method: "POST",
-      path: `/api/voip/calls/${encodeURIComponent(callId)}/participants`,
+      path: `/messaging/voip/calls/${encodeURIComponent(callId)}/participants`,
       body: { to },
       ...(signal === undefined ? {} : { signal }),
     });

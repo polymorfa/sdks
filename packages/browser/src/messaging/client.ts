@@ -26,7 +26,6 @@ import type {
   BrowserSuccessEnvelope,
   BrowserSuccessResponse,
   BrowserTypingRequest,
-  BrowserWidgetHandoff,
 } from "./types.js";
 
 export interface BrowserMessagingClientOptions extends BrowserTransportOptions {
@@ -241,7 +240,7 @@ export class BrowserWidgetResource {
   ): Promise<BrowserActionResponse<BrowserOperationAccepted>> {
     return this.transport.request({
       method: "POST",
-      path: `/api/sessions/${encodeURIComponent(this.session)}/start`,
+      path: `/messaging/sessions/${encodeURIComponent(this.session)}/start`,
       ...options,
     });
   }
@@ -253,7 +252,7 @@ export class BrowserWidgetResource {
   > {
     return this.transport.request({
       method: "GET",
-      path: `/api/sessions/${encodeURIComponent(this.session)}`,
+      path: `/messaging/sessions/${encodeURIComponent(this.session)}`,
       ...options,
     });
   }
@@ -281,20 +280,8 @@ export class BrowserWidgetResource {
       ...options,
     });
   }
-
-  handoff(
-    options: BrowserActionOptions = {},
-  ): Promise<
-    BrowserActionResponse<BrowserSuccessEnvelope<BrowserWidgetHandoff>>
-  > {
-    return this.transport.request({
-      method: "POST",
-      path: `/api/widget/sessions/${encodeURIComponent(this.session)}/handoff`,
-      ...options,
-    });
-  }
 }
 
 function sessionRoot(session: string): string {
-  return `/api/${encodeURIComponent(session)}`;
+  return `/messaging/${encodeURIComponent(session)}`;
 }

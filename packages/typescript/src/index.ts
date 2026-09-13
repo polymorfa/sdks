@@ -596,6 +596,10 @@ export {
   type GroupParticipantPayload,
   type GroupUpdatePayload,
   type HistorySyncPayload,
+  type LinkedHistorySyncPayload,
+  type CloudHistorySyncPayload,
+  type ContactsSyncPayload,
+  type MessageEchoPayload,
   type JidReference,
   type KnownWebhookEvent,
   type KnownWebhookEventType,
@@ -629,3 +633,10 @@ export {
   type WebhookEventOf,
   type WebhookPayloadMap,
 } from "./webhooks/index.js";
+
+export {
+  CloudOnboardingResource,
+  type EmbeddedSignupResult,
+  type AdvanceCloudOnboardingRequest,
+  type CloudOnboardingResponse,
+} from "./messaging/cloud-onboarding.js";

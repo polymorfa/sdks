@@ -208,12 +208,6 @@ export interface BrowserSessionStatus {
   readonly updatedAt: string;
 }
 
-export interface BrowserWidgetHandoff {
-  readonly handoffUrl: string;
-  readonly metaQrSvg: string;
-  readonly expiresAt: string;
-}
-
 export type BrowserRequestOptions = Pick<
   BrowserRequest,
   "signal" | "timeoutMs" | "maxNetworkRetries" | "idempotencyKey" | "headers"

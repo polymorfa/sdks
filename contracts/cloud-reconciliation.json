@@ -1,0 +1,3668 @@
+{
+  "sourceCommit": "b61d3198aa242d8cba5705e468d2845dc826bf5b",
+  "previousSourceCommit": "6918c56135e28ba64557e344cb72889f1f517eb5",
+  "operations": [
+    {
+      "operationId": "deleteBusinessCollection",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "previousPath": "/api/{session}/business/collections/{collectionId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "deleteBusinessProduct",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "previousPath": "/api/{session}/business/products/{productId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "deleteBusinessCoverPhoto",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/profile/cover-photo/{coverPhotoId}",
+      "previousPath": "/api/{session}/business/profile/cover-photo/{coverPhotoId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "deleteBusinessQuickReply",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
+      "previousPath": "/api/{session}/business/quick-replies/{quickReplyId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "deleteChannel",
+      "method": "DELETE",
+      "path": "/messaging/{session}/channels/{id}",
+      "previousPath": "/api/{session}/channels/{id}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "deleteMessage",
+      "method": "DELETE",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "previousPath": "/api/{session}/chats/{chatId}/messages/{messageId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "deleteGroup",
+      "method": "DELETE",
+      "path": "/messaging/{session}/groups/{id}",
+      "previousPath": "/api/{session}/groups/{id}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "deleteLabel",
+      "method": "DELETE",
+      "path": "/messaging/{session}/labels/{labelId}",
+      "previousPath": "/api/{session}/labels/{labelId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "deleteProfilePicture",
+      "method": "DELETE",
+      "path": "/messaging/{session}/profile/picture",
+      "previousPath": "/api/{session}/profile/picture",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "deleteProjectTemplate",
+      "method": "DELETE",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}",
+      "previousPath": "/api/projects/{projectSlug}/templates/{id}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "cancelQuickLink",
+      "method": "DELETE",
+      "path": "/messaging/quicklinks/{id}",
+      "previousPath": "/api/quicklinks/{id}",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "deleteSession",
+      "method": "DELETE",
+      "path": "/messaging/sessions/{session}",
+      "previousPath": "/api/sessions/{session}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "deleteClientRules",
+      "method": "DELETE",
+      "path": "/messaging/sessions/{session}/client-rules",
+      "previousPath": "/api/sessions/{session}/client-rules",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "voipTeardown",
+      "method": "DELETE",
+      "path": "/messaging/voip/calls/{id}",
+      "previousPath": "/api/voip/calls/{id}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "deleteWebhook",
+      "method": "DELETE",
+      "path": "/messaging/webhooks/{id}",
+      "previousPath": "/api/webhooks/{id}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getHealth",
+      "method": "GET",
+      "path": "/health",
+      "previousPath": "/health",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getBusinessCatalog",
+      "method": "GET",
+      "path": "/messaging/{session}/business/catalog",
+      "previousPath": "/api/{session}/business/catalog",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getBusinessCollections",
+      "method": "GET",
+      "path": "/messaging/{session}/business/collections",
+      "previousPath": "/api/{session}/business/collections",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getBusinessCollection",
+      "method": "GET",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "previousPath": "/api/{session}/business/collections/{collectionId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getBusinessMerchantCompliance",
+      "method": "GET",
+      "path": "/messaging/{session}/business/compliance",
+      "previousPath": "/api/{session}/business/compliance",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getBusinessEligibility",
+      "method": "GET",
+      "path": "/messaging/{session}/business/eligibility",
+      "previousPath": "/api/{session}/business/eligibility",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getBusinessLinkedAccounts",
+      "method": "GET",
+      "path": "/messaging/{session}/business/linked-accounts",
+      "previousPath": "/api/{session}/business/linked-accounts",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getBusinessProduct",
+      "method": "GET",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "previousPath": "/api/{session}/business/products/{productId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getOwnBusinessProfile",
+      "method": "GET",
+      "path": "/messaging/{session}/business/profile",
+      "previousPath": "/api/{session}/business/profile",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "listBusinessQuickReplies",
+      "method": "GET",
+      "path": "/messaging/{session}/business/quick-replies",
+      "previousPath": "/api/{session}/business/quick-replies",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "listChannels",
+      "method": "GET",
+      "path": "/messaging/{session}/channels",
+      "previousPath": "/api/{session}/channels",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getChannel",
+      "method": "GET",
+      "path": "/messaging/{session}/channels/{id}",
+      "previousPath": "/api/{session}/channels/{id}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "listChannelMessageUpdates",
+      "method": "GET",
+      "path": "/messaging/{session}/channels/{id}/message-updates",
+      "previousPath": "/api/{session}/channels/{id}/message-updates",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "listChannelMessages",
+      "method": "GET",
+      "path": "/messaging/{session}/channels/{id}/messages",
+      "previousPath": "/api/{session}/channels/{id}/messages",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "listContacts",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts",
+      "previousPath": "/api/{session}/contacts",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getContact",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}",
+      "previousPath": "/api/{session}/contacts/{contactId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getBusinessProfile",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/business-profile",
+      "previousPath": "/api/{session}/contacts/{contactId}/business-profile",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getUserDevices",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/devices",
+      "previousPath": "/api/{session}/contacts/{contactId}/devices",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getUserInfo",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/info",
+      "previousPath": "/api/{session}/contacts/{contactId}/info",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getContactPicture",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/picture",
+      "previousPath": "/api/{session}/contacts/{contactId}/picture",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getBlocklist",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/blocked",
+      "previousPath": "/api/{session}/contacts/blocked",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "checkContacts",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/check",
+      "previousPath": "/api/{session}/contacts/check",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "listGroups",
+      "method": "GET",
+      "path": "/messaging/{session}/groups",
+      "previousPath": "/api/{session}/groups",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getGroup",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/{id}",
+      "previousPath": "/api/{session}/groups/{id}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getGroupInviteCode",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/{id}/invite-code",
+      "previousPath": "/api/{session}/groups/{id}/invite-code",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getGroupParticipants",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/{id}/participants",
+      "previousPath": "/api/{session}/groups/{id}/participants",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getGroupJoinInfo",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/join-info",
+      "previousPath": "/api/{session}/groups/join-info",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "resolveIdentity",
+      "method": "GET",
+      "path": "/messaging/{session}/identities/resolve",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "listLabels",
+      "method": "GET",
+      "path": "/messaging/{session}/labels",
+      "previousPath": "/api/{session}/labels",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getChatLabels",
+      "method": "GET",
+      "path": "/messaging/{session}/labels/chats/{conversation}",
+      "previousPath": "/api/{session}/labels/chats/{chatId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getSessionObservationPolicy",
+      "method": "GET",
+      "path": "/messaging/{session}/observation-policy",
+      "previousPath": "/api/{session}/observation-policy",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getQRCode",
+      "method": "GET",
+      "path": "/messaging/{session}/pair/qr",
+      "previousPath": "/api/{session}/pair/qr",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getPresence",
+      "method": "GET",
+      "path": "/messaging/{session}/presence",
+      "previousPath": "/api/{session}/presence",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getChatPresence",
+      "method": "GET",
+      "path": "/messaging/{session}/presence/{conversation}",
+      "previousPath": "/api/{session}/presence/{chatId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getPrivacySettings",
+      "method": "GET",
+      "path": "/messaging/{session}/privacy",
+      "previousPath": "/api/{session}/privacy",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getProfile",
+      "method": "GET",
+      "path": "/messaging/{session}/profile",
+      "previousPath": "/api/{session}/profile",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getSessionSafeMode",
+      "method": "GET",
+      "path": "/messaging/{session}/safe-mode",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "getUserSecurityCode",
+      "method": "GET",
+      "path": "/messaging/{session}/users/{id}/security-code",
+      "previousPath": "/api/{session}/users/{id}/security-code",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getBridgeRoute",
+      "method": "GET",
+      "path": "/messaging/bridge/route",
+      "previousPath": "/v1/bridge/route",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getStatus",
+      "method": "GET",
+      "path": "/messaging/info/status",
+      "previousPath": "/api/info/status",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getVersion",
+      "method": "GET",
+      "path": "/messaging/info/version",
+      "previousPath": "/api/info/version",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "downloadMedia",
+      "method": "GET",
+      "path": "/messaging/media/{id}",
+      "previousPath": "/api/media/{id}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getMediaInfo",
+      "method": "GET",
+      "path": "/messaging/media/{id}/info",
+      "previousPath": "/api/media/{id}/info",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getProjectHealthPolicy",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/health-policy",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "getProjectInsuranceEvidence",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/insurance-evidence",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "getProjectObservationPolicy",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/observation-policy",
+      "previousPath": "/api/projects/{projectId}/observation-policy",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getProjectSafeMode",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/safe-mode",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "getProjectWarmupPlan",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/warmup-plan",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "listCampaigns",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns",
+      "previousPath": "/api/projects/{projectSlug}/campaigns",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getCampaign",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
+      "previousPath": "/api/projects/{projectSlug}/campaigns/{id}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getCampaignAnalytics",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/analytics",
+      "previousPath": "/api/projects/{projectSlug}/campaigns/{id}/analytics",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "listProjectTemplates",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/templates",
+      "previousPath": "/api/projects/{projectSlug}/templates",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getProjectTemplate",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}",
+      "previousPath": "/api/projects/{projectSlug}/templates/{id}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getQuickLink",
+      "method": "GET",
+      "path": "/messaging/quicklinks/{id}",
+      "previousPath": "/api/quicklinks/{id}",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "listSessions",
+      "method": "GET",
+      "path": "/messaging/sessions",
+      "previousPath": "/api/sessions",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getSession",
+      "method": "GET",
+      "path": "/messaging/sessions/{session}",
+      "previousPath": "/api/sessions/{session}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getClientRules",
+      "method": "GET",
+      "path": "/messaging/sessions/{session}/client-rules",
+      "previousPath": "/api/sessions/{session}/client-rules",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getSessionAccount",
+      "method": "GET",
+      "path": "/messaging/sessions/{session}/me",
+      "previousPath": "/api/sessions/{session}/me",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "voipCandidates",
+      "method": "GET",
+      "path": "/messaging/voip/calls/{id}/candidates",
+      "previousPath": "/api/voip/calls/{id}/candidates",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listWebhooks",
+      "method": "GET",
+      "path": "/messaging/webhooks",
+      "previousPath": "/api/webhooks",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getWebhook",
+      "method": "GET",
+      "path": "/messaging/webhooks/{id}",
+      "previousPath": "/api/webhooks/{id}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "ping",
+      "method": "GET",
+      "path": "/ping",
+      "previousPath": "/ping",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getQuickLinkState",
+      "method": "GET",
+      "path": "/quicklink/{token}",
+      "previousPath": "/quicklink/{token}",
+      "status": "excluded",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "getQuickLinkLogo",
+      "method": "GET",
+      "path": "/quicklink/{token}/logo",
+      "previousPath": "/quicklink/{token}/logo",
+      "status": "excluded",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "setBusinessCartEnabled",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/catalog/cart",
+      "previousPath": "/api/{session}/business/catalog/cart",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "updateBusinessCollection",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "previousPath": "/api/{session}/business/collections/{collectionId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setBusinessProductVisibility",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/products/{productId}/visibility",
+      "previousPath": "/api/{session}/business/products/{productId}/visibility",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "updateBusinessProfile",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/profile",
+      "previousPath": "/api/{session}/business/profile",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "updateProjectTemplate",
+      "method": "PATCH",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}",
+      "previousPath": "/api/projects/{projectSlug}/templates/{id}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "createBusinessCatalog",
+      "method": "POST",
+      "path": "/messaging/{session}/business/catalog",
+      "previousPath": "/api/{session}/business/catalog",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "createBusinessCollection",
+      "method": "POST",
+      "path": "/messaging/{session}/business/collections",
+      "previousPath": "/api/{session}/business/collections",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "appealBusinessCollection",
+      "method": "POST",
+      "path": "/messaging/{session}/business/collections/{collectionId}/appeal",
+      "previousPath": "/api/{session}/business/collections/{collectionId}/appeal",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "reorderBusinessCollections",
+      "method": "POST",
+      "path": "/messaging/{session}/business/collections/reorder",
+      "previousPath": "/api/{session}/business/collections/reorder",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getBusinessOrder",
+      "method": "POST",
+      "path": "/messaging/{session}/business/orders/{orderId}/lookup",
+      "previousPath": "/api/{session}/business/orders/{orderId}/lookup",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "createBusinessProduct",
+      "method": "POST",
+      "path": "/messaging/{session}/business/products",
+      "previousPath": "/api/{session}/business/products",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "appealBusinessProduct",
+      "method": "POST",
+      "path": "/messaging/{session}/business/products/{productId}/appeal",
+      "previousPath": "/api/{session}/business/products/{productId}/appeal",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "createBusinessQuickReply",
+      "method": "POST",
+      "path": "/messaging/{session}/business/quick-replies",
+      "previousPath": "/api/{session}/business/quick-replies",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "rejectCall",
+      "method": "POST",
+      "path": "/messaging/{session}/calls/{callId}/reject",
+      "previousPath": "/api/{session}/calls/{callId}/reject",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "createChannel",
+      "method": "POST",
+      "path": "/messaging/{session}/channels",
+      "previousPath": "/api/{session}/channels",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "followChannel",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/follow",
+      "previousPath": "/api/{session}/channels/{id}/follow",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "subscribeChannelLiveUpdates",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/live-updates",
+      "previousPath": "/api/{session}/channels/{id}/live-updates",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "reactToChannelMessage",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/messages/{serverId}/reaction",
+      "previousPath": "/api/{session}/channels/{id}/messages/{serverId}/reaction",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "markChannelMessageViewed",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/messages/{serverId}/viewed",
+      "previousPath": "/api/{session}/channels/{id}/messages/{serverId}/viewed",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "muteChannel",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/mute",
+      "previousPath": "/api/{session}/channels/{id}/mute",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "unfollowChannel",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/unfollow",
+      "previousPath": "/api/{session}/channels/{id}/unfollow",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "unmuteChannel",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/unmute",
+      "previousPath": "/api/{session}/channels/{id}/unmute",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "archiveChat",
+      "method": "POST",
+      "path": "/messaging/{session}/chats/{conversation}/archive",
+      "previousPath": "/api/{session}/chats/{chatId}/archive",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "unarchiveChat",
+      "method": "POST",
+      "path": "/messaging/{session}/chats/{conversation}/unarchive",
+      "previousPath": "/api/{session}/chats/{chatId}/unarchive",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "blockContact",
+      "method": "POST",
+      "path": "/messaging/{session}/contacts/{contactId}/block",
+      "previousPath": "/api/{session}/contacts/{contactId}/block",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "unblockContact",
+      "method": "POST",
+      "path": "/messaging/{session}/contacts/{contactId}/unblock",
+      "previousPath": "/api/{session}/contacts/{contactId}/unblock",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "createGroup",
+      "method": "POST",
+      "path": "/messaging/{session}/groups",
+      "previousPath": "/api/{session}/groups",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "demoteGroupAdmin",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/admin/demote",
+      "previousPath": "/api/{session}/groups/{id}/admin/demote",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "promoteGroupAdmin",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/admin/promote",
+      "previousPath": "/api/{session}/groups/{id}/admin/promote",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "revokeGroupInviteCode",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/invite-code/revoke",
+      "previousPath": "/api/{session}/groups/{id}/invite-code/revoke",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "leaveGroup",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/leave",
+      "previousPath": "/api/{session}/groups/{id}/leave",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "addGroupParticipants",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/participants/add",
+      "previousPath": "/api/{session}/groups/{id}/participants/add",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "removeGroupParticipants",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/participants/remove",
+      "previousPath": "/api/{session}/groups/{id}/participants/remove",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "joinGroup",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/join",
+      "previousPath": "/api/{session}/groups/join",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "createLabel",
+      "method": "POST",
+      "path": "/messaging/{session}/labels",
+      "previousPath": "/api/{session}/labels",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "sendReaction",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/react",
+      "previousPath": "/api/{session}/messages/react",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "sendSeen",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/seen",
+      "previousPath": "/api/{session}/messages/seen",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "sendMessage",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/send",
+      "previousPath": "/api/{session}/messages/send",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "starMessage",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/star",
+      "previousPath": "/api/{session}/messages/star",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setTyping",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/typing",
+      "previousPath": "/api/{session}/messages/typing",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "requestPairCode",
+      "method": "POST",
+      "path": "/messaging/{session}/pair/code",
+      "previousPath": "/api/{session}/pair/code",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setPresence",
+      "method": "POST",
+      "path": "/messaging/{session}/presence",
+      "previousPath": "/api/{session}/presence",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "subscribePresence",
+      "method": "POST",
+      "path": "/messaging/{session}/presence/{conversation}/subscribe",
+      "previousPath": "/api/{session}/presence/{chatId}/subscribe",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "mintClientToken",
+      "method": "POST",
+      "path": "/messaging/client-tokens",
+      "previousPath": "/api/client-tokens",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "embeddedSignup",
+      "method": "POST",
+      "path": "/messaging/cloud-api/embedded-signup",
+      "previousPath": null,
+      "status": "covered",
+      "evidence": "Typed Cloud resource and exact request/credential tests"
+    },
+    {
+      "operationId": "evaluateFeatures",
+      "method": "POST",
+      "path": "/messaging/features/evaluate",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "downloadAndSaveMedia",
+      "method": "POST",
+      "path": "/messaging/media/{id}/download-and-save",
+      "previousPath": "/api/media/{id}/download-and-save",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "createCampaign",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns",
+      "previousPath": "/api/projects/{projectSlug}/campaigns",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "launchCampaign",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/launch",
+      "previousPath": "/api/projects/{projectSlug}/campaigns/{id}/launch",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "pauseCampaign",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/pause",
+      "previousPath": "/api/projects/{projectSlug}/campaigns/{id}/pause",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "requeueCampaign",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/requeue",
+      "previousPath": "/api/projects/{projectSlug}/campaigns/{id}/requeue",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "resumeCampaign",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/resume",
+      "previousPath": "/api/projects/{projectSlug}/campaigns/{id}/resume",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "stopCampaign",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/stop",
+      "previousPath": "/api/projects/{projectSlug}/campaigns/{id}/stop",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "createProjectTemplate",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/templates",
+      "previousPath": "/api/projects/{projectSlug}/templates",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "previewProjectTemplate",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}/preview",
+      "previousPath": "/api/projects/{projectSlug}/templates/{id}/preview",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "submitProjectTemplateToMeta",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}/submit",
+      "previousPath": "/api/projects/{projectSlug}/templates/{id}/submit",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "createQuickLink",
+      "method": "POST",
+      "path": "/messaging/quicklinks",
+      "previousPath": "/api/quicklinks",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "createSession",
+      "method": "POST",
+      "path": "/messaging/sessions/{projectId}/",
+      "previousPath": "/api/sessions",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "sessionHandoffAck",
+      "method": "POST",
+      "path": "/messaging/sessions/{session}/handoff-ack",
+      "previousPath": "/api/sessions/{session}/handoff-ack",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "sessionHandoffImport",
+      "method": "POST",
+      "path": "/messaging/sessions/{session}/handoff-import",
+      "previousPath": "/api/sessions/{session}/handoff-import",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "sessionHandoffKeys",
+      "method": "POST",
+      "path": "/messaging/sessions/{session}/handoff-keys",
+      "previousPath": "/api/sessions/{session}/handoff-keys",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "logoutSession",
+      "method": "POST",
+      "path": "/messaging/sessions/{session}/logout",
+      "previousPath": "/api/sessions/{session}/logout",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "restartSession",
+      "method": "POST",
+      "path": "/messaging/sessions/{session}/restart",
+      "previousPath": "/api/sessions/{session}/restart",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "startSession",
+      "method": "POST",
+      "path": "/messaging/sessions/{session}/start",
+      "previousPath": "/api/sessions/{session}/start",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "stopSession",
+      "method": "POST",
+      "path": "/messaging/sessions/{session}/stop",
+      "previousPath": "/api/sessions/{session}/stop",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "sessionUploadAppStateKeys",
+      "method": "POST",
+      "path": "/messaging/sessions/{session}/upload-appstate-keys",
+      "previousPath": "/api/sessions/{session}/upload-appstate-keys",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "voipPlaceCall",
+      "method": "POST",
+      "path": "/messaging/voip/calls",
+      "previousPath": "/api/voip/calls",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "voipAcceptCall",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/accept",
+      "previousPath": "/api/voip/calls/{id}/accept",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "voipAgentToken",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/agent-token",
+      "previousPath": "/api/voip/calls/{id}/agent-token",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "voipCandidate",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/candidate",
+      "previousPath": "/api/voip/calls/{id}/candidate",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "voipOffer",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/offer",
+      "previousPath": "/api/voip/calls/{id}/offer",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "voipAddParticipant",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/participants",
+      "previousPath": "/api/voip/calls/{id}/participants",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "voipRejectCall",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/reject",
+      "previousPath": "/api/voip/calls/{id}/reject",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "voipRenegotiate",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/renegotiate",
+      "previousPath": "/api/voip/calls/{id}/renegotiate",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "voipSetMode",
+      "method": "POST",
+      "path": "/messaging/voip/mode",
+      "previousPath": "/api/voip/mode",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "voipToken",
+      "method": "POST",
+      "path": "/messaging/voip/token",
+      "previousPath": "/api/voip/token",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "voipSocketTicket",
+      "method": "POST",
+      "path": "/messaging/voip/ws-ticket",
+      "previousPath": "/api/voip/ws-ticket",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "createWebhook",
+      "method": "POST",
+      "path": "/messaging/webhooks",
+      "previousPath": "/api/webhooks",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "cancelQuickLinkByToken",
+      "method": "POST",
+      "path": "/quicklink/{token}/cancel",
+      "previousPath": "/quicklink/{token}/cancel",
+      "status": "excluded",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "completeQuickLinkCloudSignup",
+      "method": "POST",
+      "path": "/quicklink/{token}/cloud",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "requestQuickLinkCode",
+      "method": "POST",
+      "path": "/quicklink/{token}/code",
+      "previousPath": "/quicklink/{token}/code",
+      "status": "excluded",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "confirmQuickLink",
+      "method": "POST",
+      "path": "/quicklink/{token}/confirm",
+      "previousPath": "/quicklink/{token}/confirm",
+      "status": "excluded",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "selectQuickLinkConnection",
+      "method": "POST",
+      "path": "/quicklink/{token}/connection",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "confirmQuickLinkPhone",
+      "method": "POST",
+      "path": "/quicklink/{token}/phone",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "resetQuickLinkPhone",
+      "method": "POST",
+      "path": "/quicklink/{token}/phone/reset",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "setBusinessMerchantCompliance",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/compliance",
+      "previousPath": "/api/{session}/business/compliance",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "updateBusinessProduct",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "previousPath": "/api/{session}/business/products/{productId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setBusinessCoverPhoto",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/profile/cover-photo",
+      "previousPath": "/api/{session}/business/profile/cover-photo",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setBusinessQuickReply",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
+      "previousPath": "/api/{session}/business/quick-replies/{quickReplyId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setChatDisappearingTimer",
+      "method": "PUT",
+      "path": "/messaging/{session}/chats/{conversation}/disappearing",
+      "previousPath": "/api/{session}/chats/{chatId}/disappearing",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "editMessage",
+      "method": "PUT",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "previousPath": "/api/{session}/chats/{chatId}/messages/{messageId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setGroupDescription",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/description",
+      "previousPath": "/api/{session}/groups/{id}/description",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setGroupPicture",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/picture",
+      "previousPath": "/api/{session}/groups/{id}/picture",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setGroupInfoEditing",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/info-edit",
+      "previousPath": "/api/{session}/groups/{id}/settings/info-edit",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setGroupJoinApproval",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/join-approval",
+      "previousPath": "/api/{session}/groups/{id}/settings/join-approval",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setGroupMemberAddMode",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/member-add",
+      "previousPath": "/api/{session}/groups/{id}/settings/member-add",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setGroupMessaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/messages",
+      "previousPath": "/api/{session}/groups/{id}/settings/messages",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setGroupSubject",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/subject",
+      "previousPath": "/api/{session}/groups/{id}/subject",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "updateLabel",
+      "method": "PUT",
+      "path": "/messaging/{session}/labels/{labelId}",
+      "previousPath": "/api/{session}/labels/{labelId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setChatLabels",
+      "method": "PUT",
+      "path": "/messaging/{session}/labels/chats/{conversation}",
+      "previousPath": "/api/{session}/labels/chats/{chatId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "updateSessionObservationPolicy",
+      "method": "PUT",
+      "path": "/messaging/{session}/observation-policy",
+      "previousPath": "/api/{session}/observation-policy",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setPrivacySetting",
+      "method": "PUT",
+      "path": "/messaging/{session}/privacy/{setting}",
+      "previousPath": "/api/{session}/privacy/{setting}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setDefaultDisappearingTimer",
+      "method": "PUT",
+      "path": "/messaging/{session}/privacy/disappearing/default",
+      "previousPath": "/api/{session}/privacy/disappearing/default",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setProfileName",
+      "method": "PUT",
+      "path": "/messaging/{session}/profile/name",
+      "previousPath": "/api/{session}/profile/name",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setProfilePicture",
+      "method": "PUT",
+      "path": "/messaging/{session}/profile/picture",
+      "previousPath": "/api/{session}/profile/picture",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setProfileStatus",
+      "method": "PUT",
+      "path": "/messaging/{session}/profile/status",
+      "previousPath": "/api/{session}/profile/status",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "updateSessionSafeMode",
+      "method": "PUT",
+      "path": "/messaging/{session}/safe-mode",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "updateProjectHealthPolicy",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/health-policy",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "updateProjectInsuranceEvidence",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/insurance-evidence",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "updateProjectObservationPolicy",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/observation-policy",
+      "previousPath": "/api/projects/{projectId}/observation-policy",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "updateProjectSafeMode",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/safe-mode",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "updateProjectWarmupPlan",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/warmup-plan",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "updateSession",
+      "method": "PUT",
+      "path": "/messaging/sessions/{session}",
+      "previousPath": "/api/sessions/{session}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "setClientRules",
+      "method": "PUT",
+      "path": "/messaging/sessions/{session}/client-rules",
+      "previousPath": "/api/sessions/{session}/client-rules",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "updateWebhook",
+      "method": "PUT",
+      "path": "/messaging/webhooks/{id}",
+      "previousPath": "/api/webhooks/{id}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "adminRevokeApiKeyApiKey",
+      "method": "DELETE",
+      "path": "/admin/keys/{keyId}",
+      "previousPath": "/admin/keys/{keyId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminRemoveMember",
+      "method": "DELETE",
+      "path": "/admin/members/{memberId}",
+      "previousPath": "/admin/members/{memberId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminRevokeOrganizationInvitation",
+      "method": "DELETE",
+      "path": "/admin/organization-invitations/{invitationId}",
+      "previousPath": "/admin/organization-invitations/{invitationId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminCascadeDeleteOrganization",
+      "method": "DELETE",
+      "path": "/admin/orgs/{orgId}",
+      "previousPath": "/admin/orgs/{orgId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminForceDeleteSession",
+      "method": "DELETE",
+      "path": "/admin/sessions/{sessionId}",
+      "previousPath": "/admin/sessions/{sessionId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminResetOnboardingUser",
+      "method": "DELETE",
+      "path": "/admin/users/{userId}/onboarding",
+      "previousPath": "/admin/users/{userId}/onboarding",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "revokeTeamMetaApp",
+      "method": "DELETE",
+      "path": "/api/account/meta-app",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "deleteUserProfileAuthFactor",
+      "method": "DELETE",
+      "path": "/console/auth/factors/{factorId}",
+      "previousPath": "/console/auth/factors/{factorId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "disconnectProviderUserProfile",
+      "method": "DELETE",
+      "path": "/console/auth/providers/{provider}",
+      "previousPath": "/console/auth/providers/{provider}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "deleteMember",
+      "method": "DELETE",
+      "path": "/console/members/{memberId}",
+      "previousPath": "/v1/members/{memberId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "removeAvatarOrganization",
+      "method": "DELETE",
+      "path": "/console/organization/avatar",
+      "previousPath": "/console/organization/avatar",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "removeAvatarUserProfile",
+      "method": "DELETE",
+      "path": "/console/profile/avatar",
+      "previousPath": "/console/profile/avatar",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "removeLogoQuickLinkSettings",
+      "method": "DELETE",
+      "path": "/console/quicklink/logo",
+      "previousPath": "/console/quicklink/logo",
+      "status": "excluded",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "deleteWebhook",
+      "method": "DELETE",
+      "path": "/console/webhooks/{webhookId}",
+      "previousPath": "/console/webhooks/{webhookId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "deleteAudience",
+      "method": "DELETE",
+      "path": "/platform/audiences/{listId}",
+      "previousPath": "/v1/audiences/{listId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "deleteCampaign",
+      "method": "DELETE",
+      "path": "/platform/campaigns/{campaignId}",
+      "previousPath": "/v1/campaigns/{campaignId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "revokeCustomerPairingLink",
+      "method": "DELETE",
+      "path": "/platform/customers/{customerId}/pairing-links/{pairingLinkId}",
+      "previousPath": "/v1/customers/{customerId}/pairing-links/{pairingLinkId}",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "deleteFlow",
+      "method": "DELETE",
+      "path": "/platform/flows/{flowId}",
+      "previousPath": "/v1/flows/{flowId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "deactivateApiKey",
+      "method": "DELETE",
+      "path": "/platform/keys/{keyId}",
+      "previousPath": "/v1/keys/{keyId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "deleteMedia",
+      "method": "DELETE",
+      "path": "/platform/media/{mediaId}",
+      "previousPath": "/v1/media/{mediaId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "deleteOptOut",
+      "method": "DELETE",
+      "path": "/platform/optouts/{phone}",
+      "previousPath": "/v1/optouts/{phone}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "deleteProjectWebhook",
+      "method": "DELETE",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
+      "previousPath": "/v1/projects/{projectId}/webhooks/{webhookId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "deletePlatformSession",
+      "method": "DELETE",
+      "path": "/platform/sessions/{sessionId}",
+      "previousPath": "/v1/sessions/{sessionId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "deleteMessageTemplate",
+      "method": "DELETE",
+      "path": "/platform/templates/{templateId}",
+      "previousPath": "/v1/templates/{templateId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "deleteOrganizationWebhook",
+      "method": "DELETE",
+      "path": "/platform/webhooks/{webhookId}",
+      "previousPath": "/v1/webhooks/{webhookId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminListAuditLogGlobal",
+      "method": "GET",
+      "path": "/admin/audit",
+      "previousPath": "/admin/audit",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminListAuditLogAdminActions",
+      "method": "GET",
+      "path": "/admin/audit/actions",
+      "previousPath": "/admin/audit/actions",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminListRecentSessionBans",
+      "method": "GET",
+      "path": "/admin/bans",
+      "previousPath": "/admin/bans",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminListBanSafeClaims",
+      "method": "GET",
+      "path": "/admin/bansafe/claims",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "adminTopOrgsByRevenueBilling",
+      "method": "GET",
+      "path": "/admin/billing/leaderboard",
+      "previousPath": "/admin/billing/leaderboard",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminLowBalanceOrgsBilling",
+      "method": "GET",
+      "path": "/admin/billing/lowbalance",
+      "previousPath": "/admin/billing/lowbalance",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminPlatformRevenueBilling",
+      "method": "GET",
+      "path": "/admin/billing/revenue",
+      "previousPath": "/admin/billing/revenue",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminListCampaigns",
+      "method": "GET",
+      "path": "/admin/campaigns",
+      "previousPath": "/admin/campaigns",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminOptOutLeaderboardCampaign",
+      "method": "GET",
+      "path": "/admin/campaigns/optouts",
+      "previousPath": "/admin/campaigns/optouts",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminListApiKeys",
+      "method": "GET",
+      "path": "/admin/keys",
+      "previousPath": "/admin/keys",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminPlatformKpisPlatform",
+      "method": "GET",
+      "path": "/admin/kpis",
+      "previousPath": "/admin/kpis",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminListOrganizationInvitations",
+      "method": "GET",
+      "path": "/admin/organization-invitations",
+      "previousPath": "/admin/organization-invitations",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminListOrganizations",
+      "method": "GET",
+      "path": "/admin/orgs",
+      "previousPath": "/admin/orgs",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminGetOrganization",
+      "method": "GET",
+      "path": "/admin/orgs/{orgId}",
+      "previousPath": "/admin/orgs/{orgId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminListOrganizationFeatureGroups",
+      "method": "GET",
+      "path": "/admin/orgs/features",
+      "previousPath": "/admin/orgs/features",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminListPricing",
+      "method": "GET",
+      "path": "/admin/pricing",
+      "previousPath": "/admin/pricing",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminListSessions",
+      "method": "GET",
+      "path": "/admin/sessions",
+      "previousPath": "/admin/sessions",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminRecentSignupsPlatform",
+      "method": "GET",
+      "path": "/admin/signups",
+      "previousPath": "/admin/signups",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminListTenants",
+      "method": "GET",
+      "path": "/admin/tenants",
+      "previousPath": "/admin/tenants",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminSearchUser",
+      "method": "GET",
+      "path": "/admin/users",
+      "previousPath": "/admin/users",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminGetUser",
+      "method": "GET",
+      "path": "/admin/users/{userId}",
+      "previousPath": "/admin/users/{userId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminListWebhooks",
+      "method": "GET",
+      "path": "/admin/webhooks",
+      "previousPath": "/admin/webhooks",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getTeamMetaApp",
+      "method": "GET",
+      "path": "/api/account/meta-app",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "getUserProfileAuthMethods",
+      "method": "GET",
+      "path": "/console/auth/methods",
+      "previousPath": "/console/auth/methods",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getUserProfileProviderConnectionUrl",
+      "method": "GET",
+      "path": "/console/auth/providers",
+      "previousPath": "/console/auth/providers",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listCalls",
+      "method": "GET",
+      "path": "/console/calls",
+      "previousPath": "/console/calls",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listDeployments",
+      "method": "GET",
+      "path": "/console/deployments",
+      "previousPath": "/console/deployments",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "analyticsInsight",
+      "method": "GET",
+      "path": "/console/insights/analytics",
+      "previousPath": "/console/insights/analytics",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "logsInsight",
+      "method": "GET",
+      "path": "/console/insights/logs",
+      "previousPath": "/console/insights/logs",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getInsightPreferences",
+      "method": "GET",
+      "path": "/console/insights/preferences",
+      "previousPath": "/console/insights/preferences",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "usageInsight",
+      "method": "GET",
+      "path": "/console/insights/usage",
+      "previousPath": "/console/insights/usage",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listNotificationInbox",
+      "method": "GET",
+      "path": "/console/notifications",
+      "previousPath": "/console/notifications",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listNotificationArchived",
+      "method": "GET",
+      "path": "/console/notifications/archived",
+      "previousPath": "/console/notifications/archived",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "unreadCountNotification",
+      "method": "GET",
+      "path": "/console/notifications/count",
+      "previousPath": "/console/notifications/count",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getNotificationPreferences",
+      "method": "GET",
+      "path": "/console/notifications/preferences",
+      "previousPath": "/console/notifications/preferences",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listOrganizationOperations",
+      "method": "GET",
+      "path": "/console/operations",
+      "previousPath": "/v1/operations",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getOrganizationOperation",
+      "method": "GET",
+      "path": "/console/operations/{operationId}",
+      "previousPath": "/v1/operations/{operationId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "listOrganizationOperationTransitions",
+      "method": "GET",
+      "path": "/console/operations/{operationId}/transitions",
+      "previousPath": "/v1/operations/{operationId}/transitions",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getOrganizationBySlug",
+      "method": "GET",
+      "path": "/console/organizations/{slug}",
+      "previousPath": "/console/organizations/{slug}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getUserProfile",
+      "method": "GET",
+      "path": "/console/profile",
+      "previousPath": "/console/profile",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listProjectOperations",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/operations",
+      "previousPath": "/v1/projects/{projectId}/operations",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getProjectOperation",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/operations/{operationId}",
+      "previousPath": "/v1/projects/{projectId}/operations/{operationId}",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "listProjectOperationTransitions",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/operations/{operationId}/transitions",
+      "previousPath": "/v1/projects/{projectId}/operations/{operationId}/transitions",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "getSandboxProjectPool",
+      "method": "GET",
+      "path": "/console/sandbox/pool",
+      "previousPath": "/console/sandbox/pool",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listUserProfileTeams",
+      "method": "GET",
+      "path": "/console/teams",
+      "previousPath": "/console/teams",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listWebhooks",
+      "method": "GET",
+      "path": "/console/webhooks",
+      "previousPath": "/console/webhooks",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listAudiences",
+      "method": "GET",
+      "path": "/platform/audiences",
+      "previousPath": "/v1/audiences",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getAudience",
+      "method": "GET",
+      "path": "/platform/audiences/{listId}",
+      "previousPath": "/v1/audiences/{listId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listAuditLogs",
+      "method": "GET",
+      "path": "/platform/audit",
+      "previousPath": "/v1/audit",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listSessionBans",
+      "method": "GET",
+      "path": "/platform/bans",
+      "previousPath": "/v1/bans",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listActiveSessionBans",
+      "method": "GET",
+      "path": "/platform/bans/active",
+      "previousPath": "/v1/bans/active",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listBanSafeClaims",
+      "method": "GET",
+      "path": "/platform/bansafe/claims",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "getBanSafeClaim",
+      "method": "GET",
+      "path": "/platform/bansafe/claims/{claimId}",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "listBanSafeCollection",
+      "method": "GET",
+      "path": "/platform/bansafe/collection",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "listBanSafeEnforcement",
+      "method": "GET",
+      "path": "/platform/bansafe/enforcement",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "listBanSafeFindings",
+      "method": "GET",
+      "path": "/platform/bansafe/findings",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "listBanSafeHealth",
+      "method": "GET",
+      "path": "/platform/bansafe/health",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "listBanSafeHealthActions",
+      "method": "GET",
+      "path": "/platform/bansafe/health-actions",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "getBanSafeHealth",
+      "method": "GET",
+      "path": "/platform/bansafe/health/{session}",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "listBanSafeHealthHistory",
+      "method": "GET",
+      "path": "/platform/bansafe/health/{session}/history",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "listBanSafeIncidents",
+      "method": "GET",
+      "path": "/platform/bansafe/incidents",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "listBanSafeSignals",
+      "method": "GET",
+      "path": "/platform/bansafe/signals",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "getBanSafeTelemetry",
+      "method": "GET",
+      "path": "/platform/bansafe/telemetry/{session}",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "listBanSafeTelemetryHistory",
+      "method": "GET",
+      "path": "/platform/bansafe/telemetry/{session}/history",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "getBilling",
+      "method": "GET",
+      "path": "/platform/billing",
+      "previousPath": "/v1/billing",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listTierPricing",
+      "method": "GET",
+      "path": "/platform/billing/pricing",
+      "previousPath": "/v1/billing/pricing",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listBillingTransactions",
+      "method": "GET",
+      "path": "/platform/billing/transactions",
+      "previousPath": "/v1/billing/transactions",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listUsageMeters",
+      "method": "GET",
+      "path": "/platform/billing/usage",
+      "previousPath": "/v1/billing/usage",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listPlatformCampaigns",
+      "method": "GET",
+      "path": "/platform/campaigns",
+      "previousPath": "/v1/campaigns",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getPlatformCampaign",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}",
+      "previousPath": "/v1/campaigns/{campaignId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getPlatformCampaignAnalytics",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/analytics",
+      "previousPath": "/v1/campaigns/{campaignId}/analytics",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listCampaignEvents",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/events",
+      "previousPath": "/v1/campaigns/{campaignId}/events",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listCampaignRecipients",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/recipients",
+      "previousPath": "/v1/campaigns/{campaignId}/recipients",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listCustomers",
+      "method": "GET",
+      "path": "/platform/customers",
+      "previousPath": "/v1/customers",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "getCustomer",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}",
+      "previousPath": "/v1/customers/{customerId}",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "listCustomerEvents",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}/events",
+      "previousPath": "/v1/customers/{customerId}/events",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "listCustomerNumbers",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}/numbers",
+      "previousPath": "/v1/customers/{customerId}/numbers",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "listCustomerPairingLinks",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}/pairing-links",
+      "previousPath": "/v1/customers/{customerId}/pairing-links",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "listOrganizationEvents",
+      "method": "GET",
+      "path": "/platform/events",
+      "previousPath": "/v1/events",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getOrganizationEvent",
+      "method": "GET",
+      "path": "/platform/events/{eventId}",
+      "previousPath": "/v1/events/{eventId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listFlows",
+      "method": "GET",
+      "path": "/platform/flows",
+      "previousPath": "/v1/flows",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getFlow",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}",
+      "previousPath": "/v1/flows/{flowId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listSecurityIncidents",
+      "method": "GET",
+      "path": "/platform/incidents",
+      "previousPath": "/v1/incidents",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listApiKeys",
+      "method": "GET",
+      "path": "/platform/keys",
+      "previousPath": "/v1/keys",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getMediaUrl",
+      "method": "GET",
+      "path": "/platform/media/{mediaId}",
+      "previousPath": "/v1/media/{mediaId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listMembers",
+      "method": "GET",
+      "path": "/platform/members",
+      "previousPath": "/v1/members",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listOptOuts",
+      "method": "GET",
+      "path": "/platform/optouts",
+      "previousPath": "/v1/optouts",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listProjects",
+      "method": "GET",
+      "path": "/platform/projects",
+      "previousPath": "/v1/projects",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getCustomersStatus",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/customers/status",
+      "previousPath": "/v1/projects/{projectId}/customers/status",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "listProjectEvents",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/events",
+      "previousPath": "/v1/projects/{projectId}/events",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getProjectEvent",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/events/{eventId}",
+      "previousPath": "/v1/projects/{projectId}/events/{eventId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getProjectHealthPolicySettings",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/health-policy",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "getInsuranceEvidenceSettings",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/insurance-evidence",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "getProjectSafeModeCeiling",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/safe-mode",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "getProjectWarmupPlanSettings",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/warmup-plan",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "listProjectWebhookDeliveries",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries",
+      "previousPath": "/v1/projects/{projectId}/webhook-deliveries",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getProjectWebhookDelivery",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}",
+      "previousPath": "/v1/projects/{projectId}/webhook-deliveries/{deliveryId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listProjectWebhookDeliveryAttempts",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts",
+      "previousPath": "/v1/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getProjectWebhookDeliveryAttempt",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
+      "previousPath": "/v1/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listProjectWebhooks",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhooks",
+      "previousPath": "/v1/projects/{projectId}/webhooks",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getProjectWebhook",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
+      "previousPath": "/v1/projects/{projectId}/webhooks/{webhookId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getQuickLinkSettings",
+      "method": "GET",
+      "path": "/platform/quicklink",
+      "previousPath": "/v1/quicklink",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "listPlatformSessions",
+      "method": "GET",
+      "path": "/platform/sessions",
+      "previousPath": "/v1/sessions",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getNumberSafeMode",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/safe-mode",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "getOrganization",
+      "method": "GET",
+      "path": "/platform/team",
+      "previousPath": "/v1/organization",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listMessageTemplates",
+      "method": "GET",
+      "path": "/platform/templates",
+      "previousPath": "/v1/templates",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getMessageTemplate",
+      "method": "GET",
+      "path": "/platform/templates/{templateId}",
+      "previousPath": "/v1/templates/{templateId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listPolymorfaTokens",
+      "method": "GET",
+      "path": "/platform/tokens",
+      "previousPath": "/v1/tokens",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listOrganizationWebhookDeliveries",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries",
+      "previousPath": "/v1/webhook-deliveries",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getOrganizationWebhookDelivery",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries/{deliveryId}",
+      "previousPath": "/v1/webhook-deliveries/{deliveryId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listOrganizationWebhookDeliveryAttempts",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries/{deliveryId}/attempts",
+      "previousPath": "/v1/webhook-deliveries/{deliveryId}/attempts",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getOrganizationWebhookDeliveryAttempt",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
+      "previousPath": "/v1/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "listOrganizationWebhooks",
+      "method": "GET",
+      "path": "/platform/webhooks",
+      "previousPath": "/v1/webhooks",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "getOrganizationWebhook",
+      "method": "GET",
+      "path": "/platform/webhooks/{webhookId}",
+      "previousPath": "/v1/webhooks/{webhookId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminSetMemberRole",
+      "method": "PATCH",
+      "path": "/admin/members/{memberId}",
+      "previousPath": "/admin/members/{memberId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminRenameOrganization",
+      "method": "PATCH",
+      "path": "/admin/orgs/{orgId}",
+      "previousPath": "/admin/orgs/{orgId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminSetOrganizationFeatureGroups",
+      "method": "PATCH",
+      "path": "/admin/orgs/{orgId}/features",
+      "previousPath": "/admin/orgs/{orgId}/features",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminSetPricingActive",
+      "method": "PATCH",
+      "path": "/admin/pricing/{tier}",
+      "previousPath": "/admin/pricing/{tier}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminSetTenantActive",
+      "method": "PATCH",
+      "path": "/admin/tenants/{tenantId}",
+      "previousPath": "/admin/tenants/{tenantId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "updateMemberRole",
+      "method": "PATCH",
+      "path": "/console/members/{memberId}",
+      "previousPath": "/v1/members/{memberId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "updateOrganization",
+      "method": "PATCH",
+      "path": "/console/organization",
+      "previousPath": "/v1/organization",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "updateUserProfileField",
+      "method": "PATCH",
+      "path": "/console/profile",
+      "previousPath": "/console/profile",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "updateProject",
+      "method": "PATCH",
+      "path": "/console/projects/{projectId}",
+      "previousPath": "/console/projects/{projectId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "updateWebhook",
+      "method": "PATCH",
+      "path": "/console/webhooks/{webhookId}",
+      "previousPath": "/console/webhooks/{webhookId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "updateBillingReminderSettings",
+      "method": "PATCH",
+      "path": "/platform/billing/reminders",
+      "previousPath": "/v1/billing/reminders",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "updateCampaign",
+      "method": "PATCH",
+      "path": "/platform/campaigns/{campaignId}",
+      "previousPath": "/v1/campaigns/{campaignId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "updateCustomer",
+      "method": "PATCH",
+      "path": "/platform/customers/{customerId}",
+      "previousPath": "/v1/customers/{customerId}",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "updateFlow",
+      "method": "PATCH",
+      "path": "/platform/flows/{flowId}",
+      "previousPath": "/v1/flows/{flowId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "updateProjectWebhook",
+      "method": "PATCH",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
+      "previousPath": "/v1/projects/{projectId}/webhooks/{webhookId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "setSessionTierOverride",
+      "method": "PATCH",
+      "path": "/platform/sessions/{sessionId}",
+      "previousPath": "/v1/sessions/{sessionId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "updateMessageTemplate",
+      "method": "PATCH",
+      "path": "/platform/templates/{templateId}",
+      "previousPath": "/v1/templates/{templateId}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "updateOrganizationWebhook",
+      "method": "PATCH",
+      "path": "/platform/webhooks/{webhookId}",
+      "previousPath": "/v1/webhooks/{webhookId}",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminApproveBanSafeClaim",
+      "method": "POST",
+      "path": "/admin/bansafe/claims/{claimId}/approve",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "adminDenyBanSafeClaim",
+      "method": "POST",
+      "path": "/admin/bansafe/claims/{claimId}/deny",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "adminReverseBanSafeClaim",
+      "method": "POST",
+      "path": "/admin/bansafe/claims/{claimId}/reverse",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "adminLiftBanSafeEnforcement",
+      "method": "POST",
+      "path": "/admin/bansafe/enforcement/{orgId}/{sessionId}/lift",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "adminCompCreditsBilling",
+      "method": "POST",
+      "path": "/admin/billing/credits",
+      "previousPath": "/admin/billing/credits",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminRefundBilling",
+      "method": "POST",
+      "path": "/admin/billing/refunds",
+      "previousPath": "/admin/billing/refunds",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminForcePauseCampaign",
+      "method": "POST",
+      "path": "/admin/campaigns/{campaignId}/pause",
+      "previousPath": "/admin/campaigns/{campaignId}/pause",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminForceStopCampaign",
+      "method": "POST",
+      "path": "/admin/campaigns/{campaignId}/stop",
+      "previousPath": "/admin/campaigns/{campaignId}/stop",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminInviteMember",
+      "method": "POST",
+      "path": "/admin/members/invites",
+      "previousPath": "/admin/members/invites",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminCreateOrganizationInvitation",
+      "method": "POST",
+      "path": "/admin/organization-invitations",
+      "previousPath": "/admin/organization-invitations",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminFreezeOrganization",
+      "method": "POST",
+      "path": "/admin/orgs/{orgId}/freeze",
+      "previousPath": "/admin/orgs/{orgId}/freeze",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminUnfreezeOrganization",
+      "method": "POST",
+      "path": "/admin/orgs/{orgId}/unfreeze",
+      "previousPath": "/admin/orgs/{orgId}/unfreeze",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminCompSessionDaySession",
+      "method": "POST",
+      "path": "/admin/sessions/{sessionId}/comp",
+      "previousPath": "/admin/sessions/{sessionId}/comp",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminForceStopSession",
+      "method": "POST",
+      "path": "/admin/sessions/{sessionId}/stop",
+      "previousPath": "/admin/sessions/{sessionId}/stop",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminEnsureCurrentUserStaffSyncStaffSync",
+      "method": "POST",
+      "path": "/admin/sync",
+      "previousPath": "/admin/sync",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminForceSignOutUser",
+      "method": "POST",
+      "path": "/admin/users/{userId}/signout",
+      "previousPath": "/admin/users/{userId}/signout",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminSuspendUser",
+      "method": "POST",
+      "path": "/admin/users/{userId}/suspend",
+      "previousPath": "/admin/users/{userId}/suspend",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminUnsuspendUser",
+      "method": "POST",
+      "path": "/admin/users/{userId}/unsuspend",
+      "previousPath": "/admin/users/{userId}/unsuspend",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminForceDisableWebhook",
+      "method": "POST",
+      "path": "/admin/webhooks/{webhookId}/disable",
+      "previousPath": "/admin/webhooks/{webhookId}/disable",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "setFeatureEnrollment",
+      "method": "POST",
+      "path": "/api/account/features/enrollment",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "evaluateAccountFeatures",
+      "method": "POST",
+      "path": "/api/account/features/evaluate",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "recordFeatureExposure",
+      "method": "POST",
+      "path": "/api/account/features/exposure",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "setFeatureControl",
+      "method": "POST",
+      "path": "/api/admin/features/control",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "enrollTotpUserProfile",
+      "method": "POST",
+      "path": "/console/auth/totp",
+      "previousPath": "/console/auth/totp",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "verifyTotpUserProfile",
+      "method": "POST",
+      "path": "/console/auth/totp/verify",
+      "previousPath": "/console/auth/totp/verify",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "topUpBilling",
+      "method": "POST",
+      "path": "/console/billing/topup",
+      "previousPath": "/console/billing/topup",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "mintForConsoleApiKey",
+      "method": "POST",
+      "path": "/console/keys",
+      "previousPath": "/console/keys",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "inviteMember",
+      "method": "POST",
+      "path": "/console/members/invites",
+      "previousPath": "/v1/members/invites",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "archiveNotification",
+      "method": "POST",
+      "path": "/console/notifications/{notificationId}/archive",
+      "previousPath": "/console/notifications/{notificationId}/archive",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "markReadNotification",
+      "method": "POST",
+      "path": "/console/notifications/{notificationId}/read",
+      "previousPath": "/console/notifications/{notificationId}/read",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "archiveAllNotification",
+      "method": "POST",
+      "path": "/console/notifications/archive",
+      "previousPath": "/console/notifications/archive",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "markAllReadNotification",
+      "method": "POST",
+      "path": "/console/notifications/read",
+      "previousPath": "/console/notifications/read",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "sendTestNotificationEmail",
+      "method": "POST",
+      "path": "/console/notifications/test",
+      "previousPath": "/console/notifications/test",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "cancelOrganizationOperation",
+      "method": "POST",
+      "path": "/console/operations/{operationId}/cancel",
+      "previousPath": "/v1/operations/{operationId}/cancel",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "acceptOrganizationInvitation",
+      "method": "POST",
+      "path": "/console/organization-invitations/{invitationId}/accept",
+      "previousPath": "/console/organization-invitations/{invitationId}/accept",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "generateOrganizationAvatarUploadUrl",
+      "method": "POST",
+      "path": "/console/organization/avatar/uploads",
+      "previousPath": "/console/organization/avatar/uploads",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "ensureForCurrentUserOrganization",
+      "method": "POST",
+      "path": "/console/organizations/ensure",
+      "previousPath": "/console/organizations/ensure",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "generateUserProfileAvatarUploadUrl",
+      "method": "POST",
+      "path": "/console/profile/avatar/uploads",
+      "previousPath": "/console/profile/avatar/uploads",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "ensureProfileUserProfile",
+      "method": "POST",
+      "path": "/console/profile/ensure",
+      "previousPath": "/console/profile/ensure",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "generateProjectUploadUrl",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/icon",
+      "previousPath": "/console/projects/{projectId}/icon",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "cancelProjectOperation",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/operations/{operationId}/cancel",
+      "previousPath": "/v1/projects/{projectId}/operations/{operationId}/cancel",
+      "status": "partial",
+      "evidence": "Changed shape is explicitly partial, not inherited coverage"
+    },
+    {
+      "operationId": "useOrgLogoQuickLinkSettings",
+      "method": "POST",
+      "path": "/console/quicklink/logo/org",
+      "previousPath": "/console/quicklink/logo/org",
+      "status": "excluded",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "useProjectIconQuickLinkSettings",
+      "method": "POST",
+      "path": "/console/quicklink/logo/project",
+      "previousPath": "/console/quicklink/logo/project",
+      "status": "excluded",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "generateQuickLinkSettingsLogoUploadUrl",
+      "method": "POST",
+      "path": "/console/quicklink/logo/uploads",
+      "previousPath": "/console/quicklink/logo/uploads",
+      "status": "excluded",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "deleteUserProfileTeam",
+      "method": "POST",
+      "path": "/console/teams/{teamId}/delete",
+      "previousPath": "/console/teams/{teamId}/delete",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "leaveTeamUserProfile",
+      "method": "POST",
+      "path": "/console/teams/leave",
+      "previousPath": "/console/teams/leave",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "createWebhook",
+      "method": "POST",
+      "path": "/console/webhooks",
+      "previousPath": "/console/webhooks",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "createAudience",
+      "method": "POST",
+      "path": "/platform/audiences",
+      "previousPath": "/v1/audiences",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "createAudienceUploadUrl",
+      "method": "POST",
+      "path": "/platform/audiences/uploads",
+      "previousPath": "/v1/audiences/uploads",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "appealBanSafeEnforcement",
+      "method": "POST",
+      "path": "/platform/bansafe/enforcement/{session}/appeal",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "acknowledgeBanSafeFinding",
+      "method": "POST",
+      "path": "/platform/bansafe/findings/{findingId}/acknowledge",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "createBanSafeIncident",
+      "method": "POST",
+      "path": "/platform/bansafe/incidents",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "retractBanSafeIncident",
+      "method": "POST",
+      "path": "/platform/bansafe/incidents/{incidentId}/retract",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "createPlatformCampaign",
+      "method": "POST",
+      "path": "/platform/campaigns",
+      "previousPath": "/v1/campaigns",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "archiveCampaign",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/archive",
+      "previousPath": "/v1/campaigns/{campaignId}/archive",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "duplicateCampaign",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/duplicate",
+      "previousPath": "/v1/campaigns/{campaignId}/duplicate",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "launchPlatformCampaign",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/launch",
+      "previousPath": "/v1/campaigns/{campaignId}/launch",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "pausePlatformCampaign",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/pause",
+      "previousPath": "/v1/campaigns/{campaignId}/pause",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "requeueFailedCampaign",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/requeue",
+      "previousPath": "/v1/campaigns/{campaignId}/requeue",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "resumePlatformCampaign",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/resume",
+      "previousPath": "/v1/campaigns/{campaignId}/resume",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "stopPlatformCampaign",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/stop",
+      "previousPath": "/v1/campaigns/{campaignId}/stop",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "createCustomer",
+      "method": "POST",
+      "path": "/platform/customers",
+      "previousPath": "/v1/customers",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "archiveCustomer",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/archive",
+      "previousPath": "/v1/customers/{customerId}/archive",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "transferCustomerNumber",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/numbers/{sessionId}/transfer",
+      "previousPath": "/v1/customers/{customerId}/numbers/{sessionId}/transfer",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "createCustomerPairingLink",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/pairing-links",
+      "previousPath": "/v1/customers/{customerId}/pairing-links",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "restoreCustomer",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/restore",
+      "previousPath": "/v1/customers/{customerId}/restore",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "replayOrganizationEvent",
+      "method": "POST",
+      "path": "/platform/events/{eventId}/replays",
+      "previousPath": "/v1/events/{eventId}/replays",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "createFlow",
+      "method": "POST",
+      "path": "/platform/flows",
+      "previousPath": "/v1/flows",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "acknowledgeSecurityIncident",
+      "method": "POST",
+      "path": "/platform/incidents/{incidentId}/acknowledge",
+      "previousPath": "/v1/incidents/{incidentId}/acknowledge",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "createMediaUploadUrl",
+      "method": "POST",
+      "path": "/platform/media/uploads",
+      "previousPath": "/v1/media/uploads",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "createOptOut",
+      "method": "POST",
+      "path": "/platform/optouts",
+      "previousPath": "/v1/optouts",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "createOptOuts",
+      "method": "POST",
+      "path": "/platform/optouts/batch",
+      "previousPath": "/v1/optouts/batch",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "createProject",
+      "method": "POST",
+      "path": "/platform/projects",
+      "previousPath": "/v1/projects",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "enableCustomers",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/customers/enable",
+      "previousPath": "/v1/projects/{projectId}/customers/enable",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "replayProjectEvent",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/events/{eventId}/replays",
+      "previousPath": "/v1/projects/{projectId}/events/{eventId}/replays",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "approveProductionEnrollment",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/approve",
+      "previousPath": "/v1/projects/{projectId}/production-enrollments/{operationId}/approve",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "cancelProductionEnrollment",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/cancel",
+      "previousPath": "/v1/projects/{projectId}/production-enrollments/{operationId}/cancel",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "requestProductionEnrollment",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/promote",
+      "previousPath": "/v1/projects/{projectId}/promote",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "retryProjectWebhookDelivery",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/retry",
+      "previousPath": "/v1/projects/{projectId}/webhook-deliveries/{deliveryId}/retry",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "createProjectWebhook",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhooks",
+      "previousPath": "/v1/projects/{projectId}/webhooks",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "rotateProjectWebhookSecret",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}/secret-rotations",
+      "previousPath": "/v1/projects/{projectId}/webhooks/{webhookId}/secret-rotations",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "testProjectWebhook",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}/tests",
+      "previousPath": "/v1/projects/{projectId}/webhooks/{webhookId}/tests",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "startPlatformSession",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/start",
+      "previousPath": "/v1/sessions/{sessionId}/start",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "stopPlatformSession",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/stop",
+      "previousPath": "/v1/sessions/{sessionId}/stop",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "deleteSessions",
+      "method": "POST",
+      "path": "/platform/sessions/delete",
+      "previousPath": "/v1/sessions/delete",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "stopSessions",
+      "method": "POST",
+      "path": "/platform/sessions/stop",
+      "previousPath": "/v1/sessions/stop",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "createTestingSession",
+      "method": "POST",
+      "path": "/platform/sessions/testing",
+      "previousPath": "/v1/sessions/testing",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "createMessageTemplate",
+      "method": "POST",
+      "path": "/platform/templates",
+      "previousPath": "/v1/templates",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "retryOrganizationWebhookDelivery",
+      "method": "POST",
+      "path": "/platform/webhook-deliveries/{deliveryId}/retry",
+      "previousPath": "/v1/webhook-deliveries/{deliveryId}/retry",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "createOrganizationWebhook",
+      "method": "POST",
+      "path": "/platform/webhooks",
+      "previousPath": "/v1/webhooks",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "rotateOrganizationWebhookSecret",
+      "method": "POST",
+      "path": "/platform/webhooks/{webhookId}/secret-rotations",
+      "previousPath": "/v1/webhooks/{webhookId}/secret-rotations",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "testOrganizationWebhook",
+      "method": "POST",
+      "path": "/platform/webhooks/{webhookId}/tests",
+      "previousPath": "/v1/webhooks/{webhookId}/tests",
+      "status": "covered",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "adminUpdatePricing",
+      "method": "PUT",
+      "path": "/admin/pricing/{tier}",
+      "previousPath": "/admin/pricing/{tier}",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "configureTeamMetaApp",
+      "method": "PUT",
+      "path": "/api/account/meta-app",
+      "previousPath": null,
+      "status": "excluded",
+      "evidence": "Owning route credential boundary inspected"
+    },
+    {
+      "operationId": "updateInsightPreferences",
+      "method": "PUT",
+      "path": "/console/insights/preferences",
+      "previousPath": "/console/insights/preferences",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "updateNotificationPreferences",
+      "method": "PUT",
+      "path": "/console/notifications/preferences",
+      "previousPath": "/console/notifications/preferences",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "saveAvatarOrganization",
+      "method": "PUT",
+      "path": "/console/organization/avatar",
+      "previousPath": "/console/organization/avatar",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "saveAvatarUserProfile",
+      "method": "PUT",
+      "path": "/console/profile/avatar",
+      "previousPath": "/console/profile/avatar",
+      "status": "excluded",
+      "evidence": "Existing mapping retained after path-only structural comparison or credential exclusion review"
+    },
+    {
+      "operationId": "attachLogoQuickLinkSettings",
+      "method": "PUT",
+      "path": "/console/quicklink/logo",
+      "previousPath": "/console/quicklink/logo",
+      "status": "excluded",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "updateProjectHealthPolicySettings",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/health-policy",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "updateInsuranceEvidenceSettings",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/insurance-evidence",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "updateProjectSafeModeCeiling",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/safe-mode",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "updateProjectWarmupPlanSettings",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/warmup-plan",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    },
+    {
+      "operationId": "updateQuickLinkSettings",
+      "method": "PUT",
+      "path": "/platform/quicklink",
+      "previousPath": "/v1/quicklink",
+      "status": "covered",
+      "evidence": "QuickLink/Customer request methods and serialization tests reviewed"
+    },
+    {
+      "operationId": "updateNumberSafeMode",
+      "method": "PUT",
+      "path": "/platform/sessions/{sessionId}/safe-mode",
+      "previousPath": null,
+      "status": "missing",
+      "evidence": "New operation remains an explicit gap"
+    }
+  ],
+  "removed": [
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/operations/{operation}",
+      "operationId": "getOperation"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/api/{session}/lids/resolve",
+      "operationId": "resolveLIDs"
+    }
+  ]
+}

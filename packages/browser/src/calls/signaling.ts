@@ -14,7 +14,7 @@ export interface TrickleCandidate {
   readonly sdpMid?: string;
   readonly sdpMLineIndex?: number;
 }
-/** A single-use ticket for the calls WebSocket (`POST /api/voip/ws-ticket`). */
+/** A single-use ticket for the calls WebSocket (`POST /messaging/voip/ws-ticket`). */
 export interface SocketTicket {
   readonly ticket: string;
   /** Unix epoch milliseconds. */
@@ -52,7 +52,7 @@ export interface CallsSignaling {
 export class CallsSignalingClient implements CallsSignaling {
   readonly #transport: BrowserTransport;
   readonly #prefix: string;
-  constructor(transport: BrowserTransport, apiPrefix = "/api") {
+  constructor(transport: BrowserTransport, apiPrefix = "/messaging") {
     this.#transport = transport;
     this.#prefix = apiPrefix.replace(/\/$/, "");
   }

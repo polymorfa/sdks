@@ -128,7 +128,6 @@ const customer = await platform.customers.create(
   {
     projectId: "project_123",
     name: "Ada",
-    phone: "+15551234567",
     externalCustomerId: "crm_456",
   },
   { idempotencyKey: crypto.randomUUID() },
@@ -1189,6 +1188,15 @@ organization-only resources are absent from that view's public type.
 
 ## QuickLink lifecycle and settings
 
+Meta Cloud API onboarding requires organization beta access and an active project.
+An installed SDK method or configured Meta app IDs do not grant access. Withdrawal
+stops new onboarding work while accepted upstream results remain recoverable.
+
+Set `successCallbackUrl` and `failureCallbackUrl` on the project. QuickLink
+creation does not accept a callback override. The API snapshots destinations
+when issuing a link. Supply `externalId` at creation to correlate the resulting
+session and callbacks; it does not replace Polymorfa IDs or grant access.
+
 `MessagingClient.quickLinks` owns the authenticated hosted pairing lifecycle:
 
 ```ts
@@ -1213,7 +1221,7 @@ pending session. Connected links cannot be cancelled. The source exposes no
 list, recover, or history operation.
 
 `Client.quickLinkSettings.retrieve` and `update` map the management
-`GET /v1/quicklink` and `PUT /v1/quicklink` operations. Use them on the root
+`GET /platform/quicklink` and `PUT /platform/quicklink` operations. Use them on the root
 organization client or an immutable project view:
 
 ```ts
@@ -1228,7 +1236,7 @@ const projectSettings = await platform
 
 These methods manage saved settings only. Hosted lifecycle methods stay on
 `MessagingClient.quickLinks`, not `Client` or `client.project(...)`, because
-the `/api/quicklinks/{id}` routes do not carry an immutable project path for an
+the `/messaging/quicklinks/{id}` routes do not carry an immutable project path for an
 organization-key project view. Console-only logo routes are outside the SDK.
 
 ## Management session lifecycle
@@ -1280,3 +1288,32 @@ provided. The pinned handlers do not persist that header. A repeated stop can
 enqueue another stop command; a repeated delete reports only rows still found.
 QuickLink settings updates are state upserts and can safely converge on the
 same supplied values.
+
+### Meta Cloud API synchronization webhooks
+
+`history.sync` payloads have two forms. Check for `kind: "history"` before
+handling a Meta Cloud API JSON batch; linked-device history carries the compressed
+`data` field. `contact.sync` uses `kind: "contacts"`, and `message.echo` identifies
+messages sent through the WhatsApp Business app. Verify signatures over the raw
+request bytes before processing these events.
+
+Customers have optional names and project-unique external IDs. Set a phone
+restriction on an individual pairing invitation; it is not Customer profile data.
+
+### Phone confirmation and attribution
+
+Use `project.quickLinkSettings.update({ allowPhoneChange: true })` to allow recipients
+to replace a prefilled number. Set it to `false` to keep the invitation's number fixed.
+These settings are saved for the project and snapshotted into new invitations.
+`hideWatermark: true` requires Premium team access; `false` retains Polymorfa attribution.
+Phone confirmation and Brazil number selection happen on the hosted QuickLink page.
+An unregistered number requires an allowed, available Meta Cloud API connection.
+
+### Authenticated Meta Cloud API onboarding
+
+Use `messaging.cloudOnboarding.advance({ session, result })` with an organization
+API key or project token. The result contains `code`, `wabaId`, `phoneNumberId`,
+and optional `coexistence` and `historySync`. Omitting `result` advances or polls
+the reserved session. Hosted QuickLink recipients use the invitation flow;
+never pass trusted-server `metaApp` secrets to the browser. Read the returned
+`data.stage` before treating onboarding as complete.

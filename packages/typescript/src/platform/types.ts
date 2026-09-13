@@ -11,7 +11,6 @@ export interface Customer {
   readonly orgId: string;
   readonly projectId: string;
   readonly name: string | null;
-  readonly phone: string | null;
   readonly externalCustomerId: string | null;
   readonly status: CustomerStatus;
   readonly isDefault: boolean;
@@ -20,8 +19,7 @@ export interface Customer {
   readonly updatedAt: number;
 }
 
-export interface CustomerSummary extends Omit<Customer, "phone"> {
-  readonly phoneMasked: string | null;
+export interface CustomerSummary extends Customer {
   readonly numberCount: number;
   readonly connectedNumberCount: number;
   readonly activePairingLinkState: string | null;
@@ -47,14 +45,12 @@ export interface CustomerProjectRequest {
 export interface CreateCustomerRequest {
   readonly projectId?: string;
   readonly name?: string | null;
-  readonly phone?: string | null;
   readonly externalCustomerId?: string | null;
 }
 
 export interface UpdateCustomerRequest {
   readonly projectId?: string;
   readonly name?: string | null;
-  readonly phone?: string | null;
   readonly externalCustomerId?: string | null;
 }
 
@@ -156,8 +152,6 @@ export interface CreateCustomerPairingLinkRequest {
   readonly expectedPhone?: string | null;
   readonly methods?: readonly CustomerPairingMethod[];
   readonly expiresInSeconds?: number;
-  readonly locale?: CustomerPairingLocale | null;
-  readonly theme?: CustomerPairingTheme | null;
 }
 
 export interface ListCustomerEventsParams {

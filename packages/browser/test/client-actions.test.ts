@@ -41,11 +41,11 @@ describe("BrowserMessagingClient", () => {
         ({ url, init }) => `${init?.method} ${new URL(url).pathname}`,
       ),
     ).toEqual([
-      "POST /api/support%2Feu/messages/send",
-      "POST /api/support%2Feu/messages/seen",
-      "POST /api/support%2Feu/messages/typing",
-      "POST /api/support%2Feu/messages/react",
-      "POST /api/support%2Feu/messages/star",
+      "POST /messaging/support%2Feu/messages/send",
+      "POST /messaging/support%2Feu/messages/seen",
+      "POST /messaging/support%2Feu/messages/typing",
+      "POST /messaging/support%2Feu/messages/react",
+      "POST /messaging/support%2Feu/messages/star",
     ]);
     expect(new Headers(requests[0]?.init?.headers).get("idempotency-key")).toBe(
       "message-1",
@@ -73,13 +73,13 @@ describe("BrowserMessagingClient", () => {
     await client.contacts.check(["+15550001", "+15550002"]);
 
     expect(urls.map((url) => new URL(url).pathname)).toEqual([
-      "/api/support/presence",
-      "/api/support/presence/1555%40s.whatsapp.net",
-      "/api/support/presence/1555%40s.whatsapp.net/subscribe",
-      "/api/support/contacts",
-      "/api/support/contacts/1555%40s.whatsapp.net",
-      "/api/support/contacts/1555%40s.whatsapp.net/picture",
-      "/api/support/contacts/check",
+      "/messaging/support/presence",
+      "/messaging/support/presence/1555%40s.whatsapp.net",
+      "/messaging/support/presence/1555%40s.whatsapp.net/subscribe",
+      "/messaging/support/contacts",
+      "/messaging/support/contacts/1555%40s.whatsapp.net",
+      "/messaging/support/contacts/1555%40s.whatsapp.net/picture",
+      "/messaging/support/contacts/check",
     ]);
     expect(new URL(urls[6] ?? "").searchParams.get("phone")).toBe(
       "+15550001,+15550002",
@@ -105,18 +105,16 @@ describe("BrowserMessagingClient", () => {
     await client.widget.status();
     await client.widget.qr();
     await client.widget.requestPairingCode({ phone: "+15550001" });
-    await client.widget.handoff();
 
     expect(
       requests.map(
         ({ url, init }) => `${init?.method} ${new URL(url).pathname}`,
       ),
     ).toEqual([
-      "POST /api/sessions/widget-1/start",
-      "GET /api/sessions/widget-1",
-      "GET /api/widget-1/pair/qr",
-      "POST /api/widget-1/pair/code",
-      "POST /api/widget/sessions/widget-1/handoff",
+      "POST /messaging/sessions/widget-1/start",
+      "GET /messaging/sessions/widget-1",
+      "GET /messaging/widget-1/pair/qr",
+      "POST /messaging/widget-1/pair/code",
     ]);
     expect(requests[3]?.init?.body).toBe('{"phone":"+15550001"}');
   });
