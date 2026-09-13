@@ -1,10 +1,12 @@
 import { HttpTransport } from "../transport/http.js";
+import { PolymorfaValidationError } from "../errors.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   CreateTestingSessionRequest,
   DataEnvelope,
   ListPlatformSessionsParams,
-  ManagedSession,
+  NumberTierChange,
+  NumberTierQuoteRequest,
   PlatformSession,
   SessionBatchRemoveResult,
   SessionBatchRequest,
@@ -96,11 +98,43 @@ export class PlatformSessionsResource {
     });
   }
 
+  /** Review the returned charge and effective time before confirming this quote. */
+  quoteTierChange(
+    sessionId: string,
+    body: NumberTierQuoteRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionPath(sessionId)}/tier-quotes`,
+      body,
+      ...options,
+    });
+  }
+
+  retrieveTierChange(
+    sessionId: string,
+    quoteId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionPath(sessionId)}/tier-quotes/${encodeURIComponent(quoteId)}`,
+      ...options,
+    });
+  }
+
+  /** Confirms a reviewed quote. Poll retrieveTierChange until applied or rejected. */
   setTierOverride(
     sessionId: string,
     body: SessionTierOverrideRequest,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<ManagedSession>>> {
+  ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
+    if (typeof body?.quoteId !== "string" || !body.quoteId.trim()) {
+      throw new PolymorfaValidationError(
+        "Review a tier quote and supply its quoteId before confirming a number tier change.",
+      );
+    }
     return this.transport.request({
       method: "PATCH",
       path: sessionPath(sessionId),

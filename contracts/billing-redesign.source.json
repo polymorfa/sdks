@@ -1,0 +1,22 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "baseCommit": "2321fd89d6d2b55ebef5e6636c984a4ae6470344",
+  "state": "unpublished-working-tree",
+  "sourcePath": "apps/api/docs/openapi.management.json",
+  "sourceSha256": "34c39a4ae8ebd54b3d3f13a13abb2efa4c8486587b3312314c45fd4b58983e03",
+  "snapshotPath": "contracts/billing-redesign.openapi.json",
+  "snapshotSha256": "dd063751b457fb867caf5e733778f7800720a7d1fc30e4bab09241b6d02ba29b",
+  "operationIds": [
+    "getBilling",
+    "getSessionTierChange",
+    "listBillingTransactions",
+    "listTierPricing",
+    "listUsageMeters",
+    "quoteSessionTierChange",
+    "setSessionTierOverride"
+  ],
+  "retiredOperationIds": [
+    "updateBillingReminderSettings"
+  ],
+  "releaseGate": "Repin to the merged API commit and reconcile the full SDK contract before publication."
+}

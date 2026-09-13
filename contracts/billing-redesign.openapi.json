@@ -1,0 +1,815 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Polymorfa billing contract",
+    "version": "billing-redesign-draft"
+  },
+  "paths": {
+    "/platform/sessions/{sessionId}": {
+      "patch": {
+        "operationId": "setSessionTierOverride",
+        "tags": ["sessions"],
+        "summary": "Confirm a number tier change",
+        "description": "Confirms a previously reviewed tier quote. An upgrade purchases a full fresh 24-hour window without refunding remaining time. A downgrade applies at the paid-window end. Poll the tier quote until applied or rejected; accepting the request does not grant the new tier.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "session",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Database session UUID or stable session slug.",
+            "schema": {
+              "$ref": "#/components/schemas/SessionIdentifier"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionTierOverrideRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NumberTierChange"
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/platform/sessions/{sessionId}/tier-quotes": {
+      "post": {
+        "operationId": "quoteSessionTierChange",
+        "tags": ["sessions"],
+        "summary": "Preview a number tier change",
+        "description": "Returns the full credit charge and effective time before confirmation. Null tierOverride restores project inheritance. Creating a quote does not change the number or consume credit. Quotes expire after ten minutes and are invalidated when the number or price changes.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "session",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Database session UUID or stable session slug.",
+            "schema": {
+              "$ref": "#/components/schemas/SessionIdentifier"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NumberTierQuoteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NumberTierChange"
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/platform/sessions/{sessionId}/tier-quotes/{quoteId}": {
+      "get": {
+        "operationId": "getSessionTierChange",
+        "tags": ["sessions"],
+        "summary": "Read a number tier change",
+        "description": "Reads the quote and durable result for a number in the authenticated project scope.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "session",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Database session UUID or stable session slug.",
+            "schema": {
+              "$ref": "#/components/schemas/SessionIdentifier"
+            }
+          },
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NumberTierChange"
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/platform/billing": {
+      "get": {
+        "operationId": "getBilling",
+        "tags": ["billing"],
+        "summary": "Get billing",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "501": {
+            "$ref": "#/components/responses/NotImplemented"
+          }
+        }
+      }
+    },
+    "/platform/billing/usage": {
+      "get": {
+        "operationId": "listUsageMeters",
+        "tags": ["billing"],
+        "summary": "List usage meters",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "501": {
+            "$ref": "#/components/responses/NotImplemented"
+          }
+        }
+      }
+    },
+    "/platform/billing/transactions": {
+      "get": {
+        "operationId": "listBillingTransactions",
+        "tags": ["billing"],
+        "summary": "List billing transactions",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "501": {
+            "$ref": "#/components/responses/NotImplemented"
+          }
+        }
+      }
+    },
+    "/platform/billing/pricing": {
+      "get": {
+        "operationId": "listTierPricing",
+        "tags": ["billing"],
+        "summary": "List tier pricing",
+        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "501": {
+            "$ref": "#/components/responses/NotImplemented"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SessionIdentifier": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "description": "Database session UUID or stable session slug."
+      },
+      "SessionTierOverrideRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "quoteId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": ["quoteId"]
+      },
+      "ProjectId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Project UUID. Optional where an operation can infer or search organization scope; required where the operation creates a project-owned resource."
+      },
+      "NumberTierChange": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["quoted", "queued", "applied", "rejected"]
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAtMs": {
+            "type": "integer"
+          },
+          "quote": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "tier": {
+                "type": "string"
+              },
+              "tierOverride": {
+                "type": "string",
+                "nullable": true
+              },
+              "amountCents": {
+                "type": "number",
+                "minimum": 0,
+                "multipleOf": 1e-6,
+                "description": "Credits charged on application, with up to six decimal places."
+              },
+              "priceVersion": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string",
+                "enum": ["upgrade", "downgrade", "configure"]
+              },
+              "effectiveAtMs": {
+                "type": "integer"
+              },
+              "replacesWindowId": {
+                "type": "string",
+                "format": "uuid",
+                "nullable": true
+              }
+            },
+            "required": [
+              "tier",
+              "tierOverride",
+              "amountCents",
+              "priceVersion",
+              "action",
+              "effectiveAtMs",
+              "replacesWindowId"
+            ]
+          }
+        },
+        "required": ["id", "status", "failureReason", "expiresAtMs", "quote"]
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "required": ["error", "data", "docs"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["type", "code", "message", "param"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request_error",
+                  "authentication_error",
+                  "permission_error",
+                  "conflict_error",
+                  "rate_limit_error",
+                  "api_error",
+                  "upstream_error"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "description": "Stable failure code. Use this value for programmatic handling."
+              },
+              "message": {
+                "type": "string",
+                "description": "Safe explanation of the failure."
+              },
+              "param": {
+                "type": "string",
+                "nullable": true,
+                "description": "Invalid request field, or null when no field applies."
+              }
+            }
+          },
+          "data": {
+            "type": "string",
+            "nullable": true,
+            "enum": [null],
+            "description": "Always null for a failed request."
+          },
+          "docs": {
+            "type": "string",
+            "format": "uri",
+            "description": "Documentation link to this failure code."
+          }
+        }
+      },
+      "NumberTierQuoteRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "tierOverride": {
+            "type": "string",
+            "enum": ["free", "standard", "pro", null],
+            "nullable": true
+          }
+        },
+        "required": ["tierOverride"]
+      },
+      "DataEnvelope": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "Operation result."
+          }
+        },
+        "required": ["data"]
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "A path, query, or request-body value did not pass validation.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Missing/invalid credential for this audience.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Authenticated but lacks the required scope/role/audience.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "The requested resource was not found inside the authenticated organization or project scope.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "The request conflicts with the resource's current state.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "NotImplemented": {
+        "description": "Endpoint registered; handler not yet wired to a repository.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Polymorfa server credential: a scoped pmfa_ organization key, or a pmfa_pt_ project token on project- and session-bound operations inside its exact authenticated project. Keys may be personal or service-account owned. Both enforce selected action scopes; organization keys can address team resources and every project in the organization. Listener and browser client credentials are rejected."
+      },
+      "ConsoleSession": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Verified dashboard JWT for signed-in Console requests. This is not a server credential."
+      }
+    }
+  }
+}

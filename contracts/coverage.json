@@ -3867,8 +3867,9 @@
       "operationId": "updateBillingReminderSettings",
       "fingerprint": "0a543d6338478d78b5ba06ab17f8b14ed5ed658fc099b6780ff99829d17fedab",
       "typescript": {
-        "status": "covered",
-        "method": "Client.billing.updateReminderSettings"
+        "status": "excluded",
+        "reason": "The prepaid billing contract retires this mutation. Team warnings use fixed forecast timings and Console notification preferences. See billing-redesign.source.json for the draft replacement contract.",
+        "milestone": "retired-billing-reminders"
       }
     },
     {

@@ -134,7 +134,7 @@ describe("Client sessions", () => {
     await client.sessions.delete("session/a");
     await client.sessions.setTierOverride("session/a", {
       projectId: "project_1",
-      tierOverride: "pro",
+      quoteId: "quote_1",
     });
     await client.sessions.createTesting({
       projectId: "project_1",
@@ -150,7 +150,7 @@ describe("Client sessions", () => {
     ]);
     expect(requests[0]?.body).toBe('{"projectId":"project_1"}');
     expect(requests[2]?.body).toBe(
-      '{"projectId":"project_1","tierOverride":"pro"}',
+      '{"projectId":"project_1","quoteId":"quote_1"}',
     );
   });
 });

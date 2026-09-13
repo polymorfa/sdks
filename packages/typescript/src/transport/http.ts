@@ -3,6 +3,7 @@ import {
   PolymorfaAuthorizationError,
   PolymorfaCancelledError,
   PolymorfaConflictError,
+  PolymorfaPaymentRequiredError,
   PolymorfaConfigurationError,
   PolymorfaConnectionError,
   PolymorfaError,
@@ -357,6 +358,8 @@ function apiError(
     return new PolymorfaAuthenticationError(message, options);
   if (response.status === 403)
     return new PolymorfaAuthorizationError(message, options);
+  if (response.status === 402)
+    return new PolymorfaPaymentRequiredError(message, options);
   if (response.status === 404)
     return new PolymorfaNotFoundError(message, options);
   if (response.status === 409)

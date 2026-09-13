@@ -229,18 +229,6 @@ export interface TierPricing {
   readonly features: readonly string[];
 }
 
-export type BillingReminderChannel = "email" | "inApp";
-
-export interface UpdateBillingReminderSettingsRequest {
-  readonly lowBalanceThresholdCents: number;
-  readonly reminderChannels?: readonly BillingReminderChannel[];
-}
-
-export interface BillingReminderSettings {
-  readonly lowBalanceThresholdCents: number;
-  readonly reminderChannels: readonly BillingReminderChannel[];
-}
-
 /** Metadata for an organization server API key. Raw key material is never returned. */
 export interface ApiKey {
   readonly _id: string;
@@ -481,7 +469,29 @@ export interface SessionBatchRemoveResult {
 
 export interface SessionTierOverrideRequest {
   readonly projectId?: string;
-  readonly tierOverride: SessionTier | null;
+  readonly quoteId: string;
+}
+
+export interface NumberTierQuoteRequest {
+  readonly projectId?: string;
+  readonly tierOverride: "free" | "standard" | "pro" | null;
+}
+
+export interface NumberTierChange {
+  readonly id: string;
+  readonly status: "quoted" | "queued" | "applied" | "rejected";
+  readonly failureReason: string | null;
+  readonly expiresAtMs: number;
+  readonly quote: {
+    readonly tier: string;
+    readonly tierOverride: string | null;
+    /** Credits, with up to six decimal places; this is not a cash amount. */
+    readonly amountCents: number;
+    readonly priceVersion: string;
+    readonly action: "upgrade" | "downgrade" | "configure";
+    readonly effectiveAtMs: number;
+    readonly replacesWindowId: string | null;
+  };
 }
 
 export interface CreateTestingSessionRequest {

@@ -107,7 +107,9 @@ import {
   type SendMessageRequest,
   type TemplateDefinition,
   type TierPricing,
-  type UpdateBillingReminderSettingsRequest,
+  type NumberTierChange,
+  type NumberTierQuoteRequest,
+  type SessionTierOverrideRequest,
   type WebhookEvent,
   type UserSecurityCode,
   type OrganizationQuickLinkSettings,
@@ -182,9 +184,9 @@ describe("public exports", () => {
     expectTypeOf<CampaignAnalytics>().toHaveProperty("responseRate");
     expectTypeOf<CreateCampaignRequest>().toHaveProperty("name");
     expectTypeOf<TierPricing>().toHaveProperty("dailyRateCents");
-    expectTypeOf<UpdateBillingReminderSettingsRequest>().toHaveProperty(
-      "lowBalanceThresholdCents",
-    );
+    expectTypeOf<NumberTierChange>().toHaveProperty("quote");
+    expectTypeOf<NumberTierQuoteRequest>().toHaveProperty("tierOverride");
+    expectTypeOf<SessionTierOverrideRequest>().toHaveProperty("quoteId");
     expectTypeOf<ResponseMetadata>().toHaveProperty("requestId");
     expectTypeOf<RequestOptions>().toHaveProperty("signal");
     expectTypeOf<ResolveIdentityParams>().toMatchTypeOf<
