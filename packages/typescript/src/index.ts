@@ -633,3 +633,10 @@ export {
   type WebhookEventOf,
   type WebhookPayloadMap,
 } from "./webhooks/index.js";
+
+export {
+  CloudOnboardingResource,
+  type EmbeddedSignupResult,
+  type AdvanceCloudOnboardingRequest,
+  type CloudOnboardingResponse,
+} from "./messaging/cloud-onboarding.js";

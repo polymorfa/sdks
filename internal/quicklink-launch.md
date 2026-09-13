@@ -89,3 +89,18 @@ and both package guides updated. CLI: saved settings already pass a typed JSON
 body; its SDK dependency must be repinned to the verified SDK commit. Public
 Mintlify guidance and feature-release records remain owned by monorepo PR147.
 No registry release or deployed availability is established by this checkpoint.
+
+## Final contract reconciliation
+
+Supersedes the stale-ledger checkpoint above: snapshots and operation inventory
+now pin `b61d3198aa242d8cba5705e468d2845dc826bf5b`. Of 456 operations, 114 are
+covered, 159 partial, 39 missing and 144 explicitly excluded. There are zero
+unrecorded fingerprint changes. This does not claim full SDK parity. Exact rows
+are retained in contracts/coverage.json and cloud-reconciliation.json.
+
+Authenticated Cloud onboarding now has a typed server resource. Calls/browser
+transport prefixes use /messaging; widget handoff's retired route remains an
+explicit gap. New unrelated identity/BanSafe methods remain missing or partial.
+No deployment, registry publication or live Meta acceptance is implied.
+API and Mintlify/release documentation remain owned by monorepo PR147. CLI
+requires a dependency repin after this SDK checkpoint is published.

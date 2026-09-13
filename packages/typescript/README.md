@@ -1308,3 +1308,12 @@ These settings are saved for the project and snapshotted into new invitations.
 `hideWatermark: true` requires Premium team access; `false` retains Polymorfa attribution.
 Phone confirmation and Brazil number selection happen on the hosted QuickLink page.
 An unregistered number requires an allowed, available Meta Cloud API connection.
+
+### Authenticated Meta Cloud API onboarding
+
+Use `messaging.cloudOnboarding.advance({ session, result })` with an organization
+API key or project token. The result contains `code`, `wabaId`, `phoneNumberId`,
+and optional `coexistence` and `historySync`. Omitting `result` advances or polls
+the reserved session. Hosted QuickLink recipients use the invitation flow;
+never pass trusted-server `metaApp` secrets to the browser. Read the returned
+`data.stage` before treating onboarding as complete.

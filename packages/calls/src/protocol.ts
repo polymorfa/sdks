@@ -3,11 +3,11 @@
  * call:
  *
  * 1. The **lifecycle socket** (`GET /voip/ws?ticket=`, ticket from
- *    `POST /api/voip/ws-ticket`) — one per client, follows one session. It
+ *    `POST /messaging/voip/ws-ticket`) — one per client, follows one session. It
  *    pushes `call.*` events and answers `ping` with `pong`.
  *
  * 2. The **media socket** (pod `/voip/sdk?callId=`, bearer ticket from
- *    `POST /api/voip/calls/{id}/agent-token`) — one per call. Binary frames
+ *    `POST /messaging/voip/calls/{id}/agent-token`) — one per call. Binary frames
  *    carry media, text frames carry JSON control. Every binary frame starts
  *    with a one-byte kind tag so audio and video share the socket.
  *

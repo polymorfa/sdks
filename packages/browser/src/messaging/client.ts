@@ -241,7 +241,7 @@ export class BrowserWidgetResource {
   ): Promise<BrowserActionResponse<BrowserOperationAccepted>> {
     return this.transport.request({
       method: "POST",
-      path: `/api/sessions/${encodeURIComponent(this.session)}/start`,
+      path: `/messaging/sessions/${encodeURIComponent(this.session)}/start`,
       ...options,
     });
   }
@@ -253,7 +253,7 @@ export class BrowserWidgetResource {
   > {
     return this.transport.request({
       method: "GET",
-      path: `/api/sessions/${encodeURIComponent(this.session)}`,
+      path: `/messaging/sessions/${encodeURIComponent(this.session)}`,
       ...options,
     });
   }
@@ -296,5 +296,5 @@ export class BrowserWidgetResource {
 }
 
 function sessionRoot(session: string): string {
-  return `/api/${encodeURIComponent(session)}`;
+  return `/messaging/${encodeURIComponent(session)}`;
 }

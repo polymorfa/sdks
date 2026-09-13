@@ -151,12 +151,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "6918c56135e28ba64557e344cb72889f1f517eb5",
-      total: 402,
-      covered: 274,
-      partial: 0,
-      missing: 0,
-      excluded: 128,
+      sourceCommit: "b61d3198aa242d8cba5705e468d2845dc826bf5b",
+      total: 456,
+      covered: 114,
+      partial: 159,
+      missing: 39,
+      excluded: 144,
       changed: 0,
       resolutions: [],
     });
@@ -540,15 +540,10 @@ describe("coverage checker", () => {
       .map(({ operationId }) => operationId)
       .sort();
 
-    expect(contractOperationIds).toEqual([
-      "getUserSecurityCode",
-      "rejectCall",
-      "resolveLIDs",
-    ]);
+    expect(contractOperationIds).toEqual(["getUserSecurityCode", "rejectCall"]);
     expect(mappings).toEqual({
       getUserSecurityCode: "MessagingClient.users.getSecurityCode",
       rejectCall: "MessagingClient.calls.reject",
-      resolveLIDs: "MessagingClient.lids.resolve",
     });
   });
 
@@ -614,7 +609,7 @@ describe("coverage checker", () => {
         method: "Client.securityIncidents.acknowledge",
       },
       getOrganizationOperation: {
-        status: "covered",
+        status: "partial",
         method: "Client.operations.retrieve",
       },
       listPolymorfaTokens: {

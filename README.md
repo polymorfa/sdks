@@ -556,3 +556,12 @@ override. Unregistered numbers require an available, allowed Meta Cloud API path
 `hideWatermark: true` requires Premium team access. Issued links retain their
 saved settings. The hosted phone-selection routes use the invitation bearer;
 server SDK callers continue to create and track links through the existing methods.
+
+### Authenticated Meta Cloud API onboarding
+
+Use `messaging.cloudOnboarding.advance({ session, result })` with an organization
+API key or project token. The result contains `code`, `wabaId`, `phoneNumberId`,
+and optional `coexistence` and `historySync`. Omitting `result` advances or polls
+the reserved session. Hosted QuickLink recipients use the invitation flow;
+never pass trusted-server `metaApp` secrets to the browser. Read the returned
+`data.stage` before treating onboarding as complete.

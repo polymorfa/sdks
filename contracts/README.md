@@ -1,51 +1,34 @@
 # Contract coverage
 
-The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` commit
-`6918c56135e28ba64557e344cb72889f1f517eb5`. `source.json` records their original
-paths and SHA-256 hashes. `coverage.json` uses the same source revision.
+The snapshots are byte-identical copies from `polymorfa/polymorfa` commit
+`b61d3198aa242d8cba5705e468d2845dc826bf5b`. `source.json` records paths and hashes.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        274 |
-| Missing             |          0 |
-| Excluded            |        128 |
-| Partial             |          0 |
+| Covered             |        114 |
+| Partial             |        159 |
+| Missing             |         39 |
+| Excluded            |        144 |
 | Changed fingerprint |          0 |
-| Total               |        402 |
+| Total               |        456 |
 
-Coverage spans the TypeScript server SDK, browser transport, and Calls package.
-It does not claim coverage in other languages, package publication, or a
-successful live call.
+This is a refreshed inventory, not full SDK parity. `cloud-reconciliation.json`
+records each operation's prior path, current status and evidence. Partial rows
+retain existing methods whose changed request identity or response contracts
+remain unverified. Missing rows have no reviewed typed implementation. Exclusions
+name credential boundaries; Graph remains outside this ledger's two API families.
 
-## Reconciliation
+The Cloud/QuickLink update verifies saved settings, Customers, invitations and
+`MessagingClient.cloudOnboarding.advance`. Calls and browser messaging use the
+`/messaging` prefix. Integrator-owned `/api/polymorfa` routes remain unchanged.
+The browser widget handoff still targets a retired endpoint and is not verified
+against this revision; it must not be treated as supported hosted QuickLink onboarding.
 
-This contract refresh adds and removes no operations and changes no operation
-fingerprints. It retires the `session.qr` webhook schema and callback, and it
-documents that direct QR and pairing-code session routes require an
-organization entitlement while hosted QuickLinks are the standard pairing
-flow.
-
-The SDK now covers the three existing QuickLink operations through
-`MessagingClient.quickLinks.create`, `retrieve`, and `cancel`. Those rows moved
-from excluded to covered, increasing covered operations from 271 to 274 and
-reducing excluded operations from 131 to 128. The missing-operation inventory
-remains empty.
-
-This snapshot records complete handwritten TypeScript coverage for every
-customer-credential-compatible operation in the pinned contracts. Routes that
-require console, staff, browser, or ephemeral QuickLink credentials are
-excluded with an operation-specific reason.
-
-`HttpCallsApi.place`, `accept`, `reject`, `addParticipant`, and `setMode` cover
-the five Calls operations. Request tests invoke these methods and check the
-HTTP method, encoded path, body, authentication, and response handling.
-
-The unified `Client` owns organization control-plane resources and creates
-immutable project views with `client.project(projectId)`. QuickLink management
-uses `Client.quickLinkSettings`; obsolete `/v1/widget` mappings are gone.
-Credential-free service probes use `SystemClient`, project-token Bridge route
-discovery uses `BridgeClient`, and listener transport remains CLI-only.
+The one-time migration is reproducible from the preceding ledger with
+`node scripts/reconcile-cloud-contracts.mjs <api-repository> b61d3198aa242d8cba5705e468d2845dc826bf5b`.
+It refuses another source revision and is idempotent after migration. Shape-only
+path relocation does not establish runtime coverage; the affected route consumers
+and request tests are updated together.
 
 ## Updating the ledger
 
