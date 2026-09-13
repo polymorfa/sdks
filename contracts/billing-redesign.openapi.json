@@ -5,6 +5,98 @@
     "version": "billing-redesign-draft"
   },
   "paths": {
+    "/platform/sessions/{sessionId}/start": {
+      "post": {
+        "operationId": "startPlatformSession",
+        "tags": ["sessions"],
+        "summary": "Start a session",
+        "description": "Starts a stopped session or retries a session whose runtime failed. A hosted paid number must reserve credit before connecting; insufficient available credit returns 402. A new paid window is charged only after the messaging connection succeeds. The identifier may be the session UUID or stable session slug.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "session",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Database session UUID or stable session slug.",
+            "schema": {
+              "$ref": "#/components/schemas/SessionIdentifier"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionProjectContext"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SessionStartResult"
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/platform/sessions/{sessionId}": {
       "patch": {
         "operationId": "setSessionTierOverride",
@@ -496,6 +588,83 @@
         "maxLength": 64,
         "description": "Database session UUID or stable session slug."
       },
+      "SessionProjectContext": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          }
+        }
+      },
+      "ProjectId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Project UUID. Optional where an operation can infer or search organization scope; required where the operation creates a project-owned resource."
+      },
+      "SessionStartResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "starting": {
+            "type": "boolean",
+            "enum": [true]
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": ["starting", "sessionId"]
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "required": ["error", "data", "docs"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["type", "code", "message", "param"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request_error",
+                  "authentication_error",
+                  "permission_error",
+                  "conflict_error",
+                  "rate_limit_error",
+                  "api_error",
+                  "upstream_error"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "description": "Stable failure code. Use this value for programmatic handling."
+              },
+              "message": {
+                "type": "string",
+                "description": "Safe explanation of the failure."
+              },
+              "param": {
+                "type": "string",
+                "nullable": true,
+                "description": "Invalid request field, or null when no field applies."
+              }
+            }
+          },
+          "data": {
+            "type": "string",
+            "nullable": true,
+            "enum": [null],
+            "description": "Always null for a failed request."
+          },
+          "docs": {
+            "type": "string",
+            "format": "uri",
+            "description": "Documentation link to this failure code."
+          }
+        }
+      },
       "SessionTierOverrideRequest": {
         "type": "object",
         "additionalProperties": false,
@@ -509,11 +678,6 @@
           }
         },
         "required": ["quoteId"]
-      },
-      "ProjectId": {
-        "type": "string",
-        "format": "uuid",
-        "description": "Project UUID. Optional where an operation can infer or search organization scope; required where the operation creates a project-owned resource."
       },
       "NumberTierChange": {
         "type": "object",
@@ -580,54 +744,6 @@
         },
         "required": ["id", "status", "failureReason", "expiresAtMs", "quote"]
       },
-      "ErrorEnvelope": {
-        "type": "object",
-        "required": ["error", "data", "docs"],
-        "properties": {
-          "error": {
-            "type": "object",
-            "required": ["type", "code", "message", "param"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": [
-                  "invalid_request_error",
-                  "authentication_error",
-                  "permission_error",
-                  "conflict_error",
-                  "rate_limit_error",
-                  "api_error",
-                  "upstream_error"
-                ]
-              },
-              "code": {
-                "type": "string",
-                "description": "Stable failure code. Use this value for programmatic handling."
-              },
-              "message": {
-                "type": "string",
-                "description": "Safe explanation of the failure."
-              },
-              "param": {
-                "type": "string",
-                "nullable": true,
-                "description": "Invalid request field, or null when no field applies."
-              }
-            }
-          },
-          "data": {
-            "type": "string",
-            "nullable": true,
-            "enum": [null],
-            "description": "Always null for a failed request."
-          },
-          "docs": {
-            "type": "string",
-            "format": "uri",
-            "description": "Documentation link to this failure code."
-          }
-        }
-      },
       "NumberTierQuoteRequest": {
         "type": "object",
         "additionalProperties": false,
@@ -654,8 +770,8 @@
       }
     },
     "responses": {
-      "BadRequest": {
-        "description": "A path, query, or request-body value did not pass validation.",
+      "Unauthorized": {
+        "description": "Missing/invalid credential for this audience.",
         "headers": {
           "X-Request-Id": {
             "schema": {
@@ -678,8 +794,8 @@
           }
         }
       },
-      "Unauthorized": {
-        "description": "Missing/invalid credential for this audience.",
+      "PaymentRequired": {
+        "description": "The number's plan does not include this capability.",
         "headers": {
           "X-Request-Id": {
             "schema": {
@@ -752,6 +868,54 @@
       },
       "Conflict": {
         "description": "The request conflicts with the resource's current state.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "InternalError": {
+        "description": "The session-control publisher or testing-number persistence path is temporarily unavailable.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "A path, query, or request-body value did not pass validation.",
         "headers": {
           "X-Request-Id": {
             "schema": {

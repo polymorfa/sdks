@@ -32,6 +32,9 @@ it("pins the draft billing contract and keeps confirmation separate from quoting
       .sort(),
   ).toEqual(source.operationIds);
   expect(spec.paths["/platform/billing/reminders"]).toBeUndefined();
+  expect(
+    spec.paths["/platform/sessions/{sessionId}/start"].post.responses["402"],
+  ).toEqual({ $ref: "#/components/responses/PaymentRequired" });
   expect(spec.components.schemas.SessionTierOverrideRequest.required).toEqual([
     "quoteId",
   ]);

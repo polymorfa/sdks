@@ -110,12 +110,13 @@ it("exposes insufficient funding as a payment-required error without retrying a 
       "content-type": "application/json",
       "x-request-id": "req_funding",
     },
-    body: '{"code":"billing_credit_required","error":"Credit is unavailable for this number. Review team billing."}',
+    body: '{"error":{"type":"permission_error","code":"entitlement_required","message":"The account needs the required entitlement for this action.","param":null},"data":null,"docs":"https://docs.polymorfa.com/api/errors#entitlement-required"}',
   }));
   await expect(client(server).sessions.start("number")).rejects.toMatchObject({
     name: PolymorfaPaymentRequiredError.name,
     status: 402,
-    code: "billing_credit_required",
+    code: "entitlement_required",
+    message: "The account needs the required entitlement for this action.",
     requestId: "req_funding",
   });
   expect(server.requests).toHaveLength(1);

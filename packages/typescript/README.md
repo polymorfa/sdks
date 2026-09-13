@@ -1258,7 +1258,11 @@ const start = await platform.sessions.start(
 ```
 
 The returned `SessionStartResult` confirms that the start request was accepted;
-it does not claim that the session has connected. `sessions.stopMany` and
+it does not claim that the session has connected. A paid start first reserves
+credit. An HTTP 402 response throws `PolymorfaPaymentRequiredError`, preserving
+the API's error code, message, and request ID. It is not automatically retried;
+resolve the funding or entitlement problem before submitting another start.
+The charge is committed on successful connection. `sessions.stopMany` and
 `deleteMany` cover the two bounded batch operations. All three require
 `sessions:manage`. Batch methods accept `sessionIds` plus an optional
 `projectId`:

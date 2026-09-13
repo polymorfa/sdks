@@ -3,9 +3,9 @@
   "baseCommit": "2321fd89d6d2b55ebef5e6636c984a4ae6470344",
   "state": "unpublished-working-tree",
   "sourcePath": "apps/api/docs/openapi.management.json",
-  "sourceSha256": "34c39a4ae8ebd54b3d3f13a13abb2efa4c8486587b3312314c45fd4b58983e03",
+  "sourceSha256": "ce5d32751a6f17b3b7a51c993153a57aecfa84ba7767eb68f67beebf76e413fe",
   "snapshotPath": "contracts/billing-redesign.openapi.json",
-  "snapshotSha256": "dd063751b457fb867caf5e733778f7800720a7d1fc30e4bab09241b6d02ba29b",
+  "snapshotSha256": "5e91653d9bcc6706c823a1dbc407d7b6c7bcf8e3a3f9a4fe5161470e4dfe6760",
   "operationIds": [
     "getBilling",
     "getSessionTierChange",
@@ -13,7 +13,8 @@
     "listTierPricing",
     "listUsageMeters",
     "quoteSessionTierChange",
-    "setSessionTierOverride"
+    "setSessionTierOverride",
+    "startPlatformSession"
   ],
   "retiredOperationIds": [
     "updateBillingReminderSettings"
