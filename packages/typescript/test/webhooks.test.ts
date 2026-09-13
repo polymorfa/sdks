@@ -238,3 +238,34 @@ describe("constructWebhookEvent", () => {
     ).rejects.toThrow(/event envelope/);
   });
 });
+
+describe("Meta Cloud API synchronization events", () => {
+  it.each([
+    ["history.sync", { kind: "history", value: { history: [] } }],
+    ["contact.sync", { kind: "contacts", value: { contacts: [] } }],
+    [
+      "message.echo",
+      { source: "whatsapp_business_app", value: { message_echoes: [] } },
+    ],
+  ])(
+    "verifies signed %s JSON without treating it as compressed linked history",
+    async (event, payload) => {
+      const body = Buffer.from(
+        JSON.stringify({
+          id: "evt_cloud",
+          session: "cloud",
+          timestamp: "2026-09-13T00:00:00Z",
+          event,
+          payload,
+        }),
+      );
+      const result = await constructWebhookEvent(
+        body,
+        sign(body),
+        "fixture-secret",
+      );
+      expect(KNOWN_WEBHOOK_EVENT_TYPES).toContain(event);
+      expect(result.payload).toEqual(payload);
+    },
+  );
+});

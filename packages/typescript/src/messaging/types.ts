@@ -17,6 +17,7 @@ export interface HistorySyncPolicy {
 }
 
 export interface Session {
+  readonly externalId?: string;
   readonly sessionId?: string;
   readonly name: string;
   readonly tenantId: string;

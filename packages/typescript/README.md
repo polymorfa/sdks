@@ -1189,6 +1189,11 @@ organization-only resources are absent from that view's public type.
 
 ## QuickLink lifecycle and settings
 
+Set `successCallbackUrl` and `failureCallbackUrl` on the project. QuickLink
+creation does not accept a callback override. The API snapshots destinations
+when issuing a link. Supply `externalId` at creation to correlate the resulting
+session and callbacks; it does not replace Polymorfa IDs or grant access.
+
 `MessagingClient.quickLinks` owns the authenticated hosted pairing lifecycle:
 
 ```ts
@@ -1213,7 +1218,7 @@ pending session. Connected links cannot be cancelled. The source exposes no
 list, recover, or history operation.
 
 `Client.quickLinkSettings.retrieve` and `update` map the management
-`GET /v1/quicklink` and `PUT /v1/quicklink` operations. Use them on the root
+`GET /platform/quicklink` and `PUT /platform/quicklink` operations. Use them on the root
 organization client or an immutable project view:
 
 ```ts
@@ -1280,3 +1285,11 @@ provided. The pinned handlers do not persist that header. A repeated stop can
 enqueue another stop command; a repeated delete reports only rows still found.
 QuickLink settings updates are state upserts and can safely converge on the
 same supplied values.
+
+### Meta Cloud API synchronization webhooks
+
+`history.sync` payloads have two forms. Check for `kind: "history"` before
+handling a Meta Cloud API JSON batch; linked-device history carries the compressed
+`data` field. `contact.sync` uses `kind: "contacts"`, and `message.echo` identifies
+messages sent through the WhatsApp Business app. Verify signatures over the raw
+request bytes before processing these events.

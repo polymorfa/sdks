@@ -12,7 +12,6 @@ export type QuickLinkMethod = "qr" | "pairing";
 interface QuickLinkSettingsBase {
   readonly id: string;
   readonly enabled: boolean;
-  readonly allowedRedirectUris: readonly string[];
   readonly businessName: string | null;
   readonly headline: string | null;
   readonly description: string | null;
@@ -20,6 +19,8 @@ interface QuickLinkSettingsBase {
   readonly supportUrl: string | null;
   readonly privacyUrl: string | null;
   readonly termsUrl: string | null;
+  readonly successCallbackUrl: string | null;
+  readonly failureCallbackUrl: string | null;
   readonly accent: string | null;
   readonly theme: QuickLinkTheme;
   readonly hideWatermark: boolean;
@@ -46,7 +47,6 @@ export interface ProjectQuickLinkSettings extends QuickLinkSettingsBase {
 
 export interface UpdateQuickLinkSettingsInput {
   readonly enabled?: boolean;
-  readonly allowedRedirectUris?: readonly string[];
   readonly businessName?: string | null;
   readonly headline?: string | null;
   readonly description?: string | null;
@@ -54,6 +54,8 @@ export interface UpdateQuickLinkSettingsInput {
   readonly supportUrl?: string | null;
   readonly privacyUrl?: string | null;
   readonly termsUrl?: string | null;
+  readonly successCallbackUrl?: string | null;
+  readonly failureCallbackUrl?: string | null;
   readonly accent?: string | null;
   readonly theme?: QuickLinkTheme;
   readonly hideWatermark?: boolean;

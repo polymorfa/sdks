@@ -237,20 +237,25 @@ type ExpectedPayloads = {
     readonly newDescription?: string;
     readonly action?: string;
   };
-  readonly "history.sync": {
-    readonly messageId: string;
-    readonly originalMessageId?: string;
-    readonly mode: "deliver";
-    readonly syncType: string;
-    readonly chunkOrder?: number;
-    readonly progress?: number;
-    readonly fileLength: number;
-    readonly conversationCount: number;
-    readonly messageCount: number;
-    readonly pushNameCount: number;
-    readonly statusMessageCount: number;
-    readonly data: string;
-  };
+  readonly "history.sync":
+    | {
+        readonly messageId: string;
+        readonly originalMessageId?: string;
+        readonly mode: "deliver";
+        readonly syncType: string;
+        readonly chunkOrder?: number;
+        readonly progress?: number;
+        readonly fileLength: number;
+        readonly conversationCount: number;
+        readonly messageCount: number;
+        readonly pushNameCount: number;
+        readonly statusMessageCount: number;
+        readonly data: string;
+      }
+    | {
+        readonly kind: "history";
+        readonly value: Readonly<Record<string, unknown>>;
+      };
   readonly "labels.update": {
     readonly action: string;
     readonly labelId?: string;
