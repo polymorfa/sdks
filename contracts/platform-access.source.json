@@ -1,11 +1,11 @@
 {
   "repository": "titan-api/titan",
-  "baseCommit": "561b48d98145778565b62853ef33fd88178326ce",
+  "baseCommit": "1e237ecf2ffc0059137f298d91958c2692b38ec0",
   "state": "unpublished-local-commit",
   "sourcePath": "docs/api-reference/openapi.management.json",
-  "sourceSha256": "f9e0d3d0660023074388cdd87df98ebea5dfff9c1b9909319e18fcab13aec7b3",
+  "sourceSha256": "6b8d60134d0e4114a01a40c269081a89c82944ecf890d138506a7559928e026a",
   "snapshotPath": "contracts/platform-access.openapi.json",
-  "snapshotSha256": "f9e0d3d0660023074388cdd87df98ebea5dfff9c1b9909319e18fcab13aec7b3",
+  "snapshotSha256": "6b8d60134d0e4114a01a40c269081a89c82944ecf890d138506a7559928e026a",
   "operationIds": [
     "createSession",
     "deleteClientRules",

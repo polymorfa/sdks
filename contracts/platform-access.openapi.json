@@ -3934,93 +3934,6 @@
         }
       }
     },
-    "/platform/bansafe/findings/{findingId}/acknowledge": {
-      "post": {
-        "operationId": "acknowledgeBanSafeFinding",
-        "tags": [
-          "bansafe"
-        ],
-        "summary": "Acknowledge a safety finding",
-        "description": "Records that a named person on the team has seen this finding, optionally silences its notifications for up to 30 days, and unlocks the appeal form. It does not change the Health estimate, the restriction, or any campaign limit. Requires a signed-in team owner, admin, or developer; an API key or token is refused with `bansafe_ack_requires_dashboard_identity`.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
-        "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": false,
-        "x-dashboard-only": true,
-        "security": [
-          {
-            "ConsoleSession": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "findingId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AcknowledgeBanSafeFindingInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "Stable request correlation identifier."
-              },
-              "Polymorfa-Version": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "API version applied to this response."
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/BanSafeFindingAcknowledgement"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          }
-        }
-      }
-    },
     "/platform/bansafe/enforcement": {
       "get": {
         "operationId": "listBanSafeEnforcement",
@@ -4134,95 +4047,6 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
-          }
-        }
-      }
-    },
-    "/platform/bansafe/enforcement/{session}/appeal": {
-      "post": {
-        "operationId": "appealBanSafeEnforcement",
-        "tags": [
-          "bansafe"
-        ],
-        "summary": "Appeal a number restriction",
-        "description": "Files one appeal against a number's restriction. Every open finding on the number must be acknowledged first, otherwise the request is refused with `findings_unacknowledged`. Filing an appeal does not change the restriction. Requires a signed-in team owner, admin, or developer.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
-        "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": false,
-        "x-dashboard-only": true,
-        "security": [
-          {
-            "ConsoleSession": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "session",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AppealBanSafeEnforcementInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "Stable request correlation identifier."
-              },
-              "Polymorfa-Version": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "API version applied to this response."
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/BanSafeAppealReceipt"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -17491,23 +17315,6 @@
           "points"
         ]
       },
-      "BanSafeFindingAcknowledgement": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "finding": {
-            "$ref": "#/components/schemas/BanSafeFinding"
-          },
-          "message": {
-            "type": "string",
-            "description": "The exact sentence shown in the console next to the button."
-          }
-        },
-        "required": [
-          "finding",
-          "message"
-        ]
-      },
       "BanSafeEnforcementSummary": {
         "type": "object",
         "additionalProperties": false,
@@ -17756,58 +17563,6 @@
           "operatorHold",
           "appealState",
           "state"
-        ]
-      },
-      "BanSafeAppealReceipt": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "sessionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "session": {
-            "type": "string"
-          },
-          "rung": {
-            "type": "string",
-            "enum": [
-              "none",
-              "notify",
-              "throttle",
-              "block_cold",
-              "suspend"
-            ]
-          },
-          "appealState": {
-            "type": "string",
-            "enum": [
-              "none",
-              "requested",
-              "granted",
-              "denied"
-            ]
-          },
-          "requestedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "liftRequires": {
-            "type": "string"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "sessionId",
-          "session",
-          "rung",
-          "appealState",
-          "requestedAt",
-          "liftRequires",
-          "message"
         ]
       },
       "BanSafeIncident": {
@@ -18116,36 +17871,6 @@
           "decidedAt",
           "paidAt",
           "createdAt"
-        ]
-      },
-      "AcknowledgeBanSafeFindingInput": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "note": {
-            "type": "string",
-            "maxLength": 500
-          },
-          "snoozeDays": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 30,
-            "description": "Silence this finding's notifications for this many days."
-          }
-        }
-      },
-      "AppealBanSafeEnforcementInput": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "note": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 1000
-          }
-        },
-        "required": [
-          "note"
         ]
       },
       "ReportBanSafeIncidentInput": {
