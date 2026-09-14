@@ -419,6 +419,8 @@ export interface PlatformSession {
   readonly status: string;
   readonly messageCount: number;
   readonly lastActiveAt: number | null;
+  /** Charged rolling-window expiry in epoch milliseconds; null if never charged. */
+  readonly paidUntil: number | null;
 }
 
 export interface ManagedSession {

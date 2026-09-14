@@ -5,10 +5,94 @@
     "version": "billing-redesign-draft"
   },
   "paths": {
+    "/platform/sessions": {
+      "get": {
+        "operationId": "listPlatformSessions",
+        "tags": [
+          "sessions"
+        ],
+        "summary": "List sessions",
+        "description": "Lists every session in the authenticated organization or selected project, including disconnected sessions and their latest status reason.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "x-merged-endpoints": [
+          "listSessionsByOrganization"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PlatformSession"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
     "/platform/sessions/{sessionId}/start": {
       "post": {
         "operationId": "startPlatformSession",
-        "tags": ["sessions"],
+        "tags": [
+          "sessions"
+        ],
         "summary": "Start a session",
         "description": "Starts a stopped session or retries a session whose runtime failed. A hosted paid number must reserve credit before connecting; insufficient available credit returns 402. A new paid window is charged only after the messaging connection succeeds. The identifier may be the session UUID or stable session slug.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -71,7 +155,9 @@
                       "$ref": "#/components/schemas/SessionStartResult"
                     }
                   },
-                  "required": ["data"]
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
@@ -100,7 +186,9 @@
     "/platform/sessions/{sessionId}": {
       "patch": {
         "operationId": "setSessionTierOverride",
-        "tags": ["sessions"],
+        "tags": [
+          "sessions"
+        ],
         "summary": "Confirm a number tier change",
         "description": "Confirms a previously reviewed tier quote. An upgrade purchases a full fresh 24-hour window without refunding remaining time. A downgrade applies at the paid-window end. Poll the tier quote until applied or rejected; accepting the request does not grant the new tier.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -163,7 +251,9 @@
                       "$ref": "#/components/schemas/NumberTierChange"
                     }
                   },
-                  "required": ["data"]
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
@@ -189,7 +279,9 @@
     "/platform/sessions/{sessionId}/tier-quotes": {
       "post": {
         "operationId": "quoteSessionTierChange",
-        "tags": ["sessions"],
+        "tags": [
+          "sessions"
+        ],
         "summary": "Preview a number tier change",
         "description": "Returns the full credit charge and effective time before confirmation. Null tierOverride restores project inheritance. Creating a quote does not change the number or consume credit. Quotes expire after ten minutes and are invalidated when the number or price changes.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -252,7 +344,9 @@
                       "$ref": "#/components/schemas/NumberTierChange"
                     }
                   },
-                  "required": ["data"]
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
@@ -278,7 +372,9 @@
     "/platform/sessions/{sessionId}/tier-quotes/{quoteId}": {
       "get": {
         "operationId": "getSessionTierChange",
-        "tags": ["sessions"],
+        "tags": [
+          "sessions"
+        ],
         "summary": "Read a number tier change",
         "description": "Reads the quote and durable result for a number in the authenticated project scope.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -339,7 +435,9 @@
                       "$ref": "#/components/schemas/NumberTierChange"
                     }
                   },
-                  "required": ["data"]
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
@@ -362,7 +460,9 @@
     "/platform/billing": {
       "get": {
         "operationId": "getBilling",
-        "tags": ["billing"],
+        "tags": [
+          "billing"
+        ],
         "summary": "Get billing",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -417,7 +517,9 @@
     "/platform/billing/usage": {
       "get": {
         "operationId": "listUsageMeters",
-        "tags": ["billing"],
+        "tags": [
+          "billing"
+        ],
         "summary": "List usage meters",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -472,7 +574,9 @@
     "/platform/billing/transactions": {
       "get": {
         "operationId": "listBillingTransactions",
-        "tags": ["billing"],
+        "tags": [
+          "billing"
+        ],
         "summary": "List billing transactions",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -527,7 +631,9 @@
     "/platform/billing/pricing": {
       "get": {
         "operationId": "listTierPricing",
-        "tags": ["billing"],
+        "tags": [
+          "billing"
+        ],
         "summary": "List tier pricing",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -581,7 +687,184 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Polymorfa server credential: a scoped pmfa_ organization key, or a pmfa_pt_ project token on project- and session-bound operations inside its exact authenticated project. Keys may be personal or service-account owned. Both enforce selected action scopes; organization keys can address team resources and every project in the organization. Listener and browser client credentials are rejected."
+      },
+      "ConsoleSession": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Verified dashboard JWT for signed-in Console requests. This is not a server credential."
+      }
+    },
     "schemas": {
+      "PlatformSession": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "_creationTime": {
+            "type": "number",
+            "description": "Creation time as Unix epoch milliseconds."
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "sessionId": {
+            "$ref": "#/components/schemas/SessionIdentifier"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "platform": {
+            "type": "string",
+            "nullable": true
+          },
+          "isBusiness": {
+            "type": "boolean"
+          },
+          "testMode": {
+            "type": "boolean"
+          },
+          "tierOverride": {
+            "type": "string",
+            "enum": [
+              "free",
+              "standard",
+              "pro",
+              "scale",
+              null
+            ],
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Latest runtime connection status."
+          },
+          "statusReason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Machine-readable reason for the latest connection status, when available."
+          },
+          "messageCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lastActiveAt": {
+            "type": "number",
+            "nullable": true,
+            "description": "Last activity time as Unix epoch milliseconds."
+          },
+          "paidUntil": {
+            "type": "number",
+            "nullable": true,
+            "description": "End of the charged rolling 24-hour window as Unix epoch milliseconds. Null when no charged window exists; expired windows retain their expiry."
+          },
+          "customer": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "name": {
+                "type": "string",
+                "nullable": true
+              },
+              "isDefault": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "isDefault"
+            ]
+          },
+          "claim": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "unclaimed"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "claimed-elsewhere"
+                    ]
+                  },
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "avatarUrl": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "avatarSeed": {
+                    "type": "string"
+                  },
+                  "claimedAt": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "displayName",
+                  "avatarUrl",
+                  "avatarSeed",
+                  "claimedAt"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "_id",
+          "_creationTime",
+          "projectId",
+          "sessionId",
+          "name",
+          "phone",
+          "platform",
+          "isBusiness",
+          "testMode",
+          "tierOverride",
+          "status",
+          "statusReason",
+          "messageCount",
+          "lastActiveAt",
+          "paidUntil",
+          "customer",
+          "claim"
+        ]
+      },
       "SessionIdentifier": {
         "type": "string",
         "minLength": 1,
@@ -597,33 +880,176 @@
           }
         }
       },
-      "ProjectId": {
-        "type": "string",
-        "format": "uuid",
-        "description": "Project UUID. Optional where an operation can infer or search organization scope; required where the operation creates a project-owned resource."
-      },
       "SessionStartResult": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "starting": {
             "type": "boolean",
-            "enum": [true]
+            "enum": [
+              true
+            ]
           },
           "sessionId": {
             "type": "string",
             "format": "uuid"
           }
         },
-        "required": ["starting", "sessionId"]
+        "required": [
+          "starting",
+          "sessionId"
+        ]
+      },
+      "SessionTierOverrideRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "quoteId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "quoteId"
+        ]
+      },
+      "NumberTierChange": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "quoted",
+              "queued",
+              "applied",
+              "rejected"
+            ]
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAtMs": {
+            "type": "integer"
+          },
+          "quote": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "tier": {
+                "type": "string"
+              },
+              "tierOverride": {
+                "type": "string",
+                "nullable": true
+              },
+              "amountCents": {
+                "type": "number",
+                "minimum": 0,
+                "multipleOf": 1e-06,
+                "description": "Credits charged on application, with up to six decimal places."
+              },
+              "priceVersion": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string",
+                "enum": [
+                  "upgrade",
+                  "downgrade",
+                  "configure"
+                ]
+              },
+              "effectiveAtMs": {
+                "type": "integer"
+              },
+              "replacesWindowId": {
+                "type": "string",
+                "format": "uuid",
+                "nullable": true
+              }
+            },
+            "required": [
+              "tier",
+              "tierOverride",
+              "amountCents",
+              "priceVersion",
+              "action",
+              "effectiveAtMs",
+              "replacesWindowId"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "failureReason",
+          "expiresAtMs",
+          "quote"
+        ]
+      },
+      "NumberTierQuoteRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "tierOverride": {
+            "type": "string",
+            "enum": [
+              "free",
+              "standard",
+              "pro",
+              null
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "tierOverride"
+        ]
+      },
+      "DataEnvelope": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "Operation result."
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ProjectId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Project UUID. Optional where an operation can infer or search organization scope; required where the operation creates a project-owned resource."
       },
       "ErrorEnvelope": {
         "type": "object",
-        "required": ["error", "data", "docs"],
+        "required": [
+          "error",
+          "data",
+          "docs"
+        ],
         "properties": {
           "error": {
             "type": "object",
-            "required": ["type", "code", "message", "param"],
+            "required": [
+              "type",
+              "code",
+              "message",
+              "param"
+            ],
             "properties": {
               "type": {
                 "type": "string",
@@ -655,7 +1081,9 @@
           "data": {
             "type": "string",
             "nullable": true,
-            "enum": [null],
+            "enum": [
+              null
+            ],
             "description": "Always null for a failed request."
           },
           "docs": {
@@ -664,112 +1092,33 @@
             "description": "Documentation link to this failure code."
           }
         }
-      },
-      "SessionTierOverrideRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "projectId": {
-            "$ref": "#/components/schemas/ProjectId"
-          },
-          "quoteId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": ["quoteId"]
-      },
-      "NumberTierChange": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string",
-            "enum": ["quoted", "queued", "applied", "rejected"]
-          },
-          "failureReason": {
-            "type": "string",
-            "nullable": true
-          },
-          "expiresAtMs": {
-            "type": "integer"
-          },
-          "quote": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "tier": {
-                "type": "string"
-              },
-              "tierOverride": {
-                "type": "string",
-                "nullable": true
-              },
-              "amountCents": {
-                "type": "number",
-                "minimum": 0,
-                "multipleOf": 1e-6,
-                "description": "Credits charged on application, with up to six decimal places."
-              },
-              "priceVersion": {
-                "type": "string"
-              },
-              "action": {
-                "type": "string",
-                "enum": ["upgrade", "downgrade", "configure"]
-              },
-              "effectiveAtMs": {
-                "type": "integer"
-              },
-              "replacesWindowId": {
-                "type": "string",
-                "format": "uuid",
-                "nullable": true
-              }
-            },
-            "required": [
-              "tier",
-              "tierOverride",
-              "amountCents",
-              "priceVersion",
-              "action",
-              "effectiveAtMs",
-              "replacesWindowId"
-            ]
-          }
-        },
-        "required": ["id", "status", "failureReason", "expiresAtMs", "quote"]
-      },
-      "NumberTierQuoteRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "projectId": {
-            "$ref": "#/components/schemas/ProjectId"
-          },
-          "tierOverride": {
-            "type": "string",
-            "enum": ["free", "standard", "pro", null],
-            "nullable": true
-          }
-        },
-        "required": ["tierOverride"]
-      },
-      "DataEnvelope": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "description": "Operation result."
-          }
-        },
-        "required": ["data"]
       }
     },
     "responses": {
+      "BadRequest": {
+        "description": "A path, query, or request-body value did not pass validation.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
       "Unauthorized": {
         "description": "Missing/invalid credential for this audience.",
         "headers": {
@@ -794,8 +1143,8 @@
           }
         }
       },
-      "PaymentRequired": {
-        "description": "The number's plan does not include this capability.",
+      "Forbidden": {
+        "description": "Authenticated but lacks the required scope/role/audience.",
         "headers": {
           "X-Request-Id": {
             "schema": {
@@ -818,8 +1167,8 @@
           }
         }
       },
-      "Forbidden": {
-        "description": "Authenticated but lacks the required scope/role/audience.",
+      "PaymentRequired": {
+        "description": "The number's plan does not include this capability.",
         "headers": {
           "X-Request-Id": {
             "schema": {
@@ -914,30 +1263,6 @@
           }
         }
       },
-      "BadRequest": {
-        "description": "A path, query, or request-body value did not pass validation.",
-        "headers": {
-          "X-Request-Id": {
-            "schema": {
-              "type": "string"
-            },
-            "description": "Stable request correlation identifier."
-          },
-          "Polymorfa-Version": {
-            "schema": {
-              "type": "string"
-            },
-            "description": "API version applied to this response."
-          }
-        },
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorEnvelope"
-            }
-          }
-        }
-      },
       "NotImplemented": {
         "description": "Endpoint registered; handler not yet wired to a repository.",
         "headers": {
@@ -961,18 +1286,6 @@
             }
           }
         }
-      }
-    },
-    "securitySchemes": {
-      "ApiKeyAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "description": "Polymorfa server credential: a scoped pmfa_ organization key, or a pmfa_pt_ project token on project- and session-bound operations inside its exact authenticated project. Keys may be personal or service-account owned. Both enforce selected action scopes; organization keys can address team resources and every project in the organization. Listener and browser client credentials are rejected."
-      },
-      "ConsoleSession": {
-        "type": "http",
-        "scheme": "bearer",
-        "description": "Verified dashboard JWT for signed-in Console requests. This is not a server credential."
       }
     }
   }

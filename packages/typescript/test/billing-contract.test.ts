@@ -32,6 +32,8 @@ it("pins the draft billing contract and keeps confirmation separate from quoting
       .sort(),
   ).toEqual(source.operationIds);
   expect(spec.paths["/platform/billing/reminders"]).toBeUndefined();
+  expect(spec.components.schemas.PlatformSession.required).toContain("paidUntil");
+  expect(spec.components.schemas.PlatformSession.properties.paidUntil).toMatchObject({ type: "number", nullable: true });
   expect(
     spec.paths["/platform/sessions/{sessionId}/start"].post.responses["402"],
   ).toEqual({ $ref: "#/components/responses/PaymentRequired" });
