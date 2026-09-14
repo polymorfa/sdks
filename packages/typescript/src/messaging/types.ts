@@ -1370,7 +1370,7 @@ export type ClientAction =
   | "voip_answer"
   | "voip_signal";
 
-/** Rules as returned by `GET /messaging/sessions/{session}/client-rules`. */
+/** Rules as returned by `GET /platform/sessions/{session}/client-rules`. */
 export interface ClientRules {
   readonly recipientMode: ClientRecipientMode | "";
   /** Comma-separated {@link ClientAction} list. */

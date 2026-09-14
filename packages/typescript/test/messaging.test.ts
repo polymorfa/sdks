@@ -194,10 +194,10 @@ describe("MessagingClient client tokens", () => {
     await client.clientTokens.deleteRules("support/eu");
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "POST /messaging/client-tokens",
-      "GET /messaging/sessions/support%2Feu/client-rules",
-      "PUT /messaging/sessions/support%2Feu/client-rules",
-      "DELETE /messaging/sessions/support%2Feu/client-rules",
+      "POST /platform/client-tokens",
+      "GET /platform/sessions/support%2Feu/client-rules",
+      "PUT /platform/sessions/support%2Feu/client-rules",
+      "DELETE /platform/sessions/support%2Feu/client-rules",
     ]);
     expect(requests[0]?.body).toBe(
       '{"session":"support/eu","ephemeralId":"user-1-tab-2","ttlSeconds":600}',

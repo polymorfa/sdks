@@ -1,0 +1,16 @@
+{
+  "repository": "titan-api/titan",
+  "baseCommit": "7d3dfc1d3d58dea42153945e27355425f14b35c3",
+  "state": "unpublished-local-commit",
+  "sourcePath": "apps/api/docs/openapi.platform-native.json",
+  "sourceSha256": "6be19801ad5de45bfdffce0bfe750630e1c49a43d557de6255f516f6796ded76",
+  "snapshotPath": "contracts/platform-access.openapi.json",
+  "snapshotSha256": "6be19801ad5de45bfdffce0bfe750630e1c49a43d557de6255f516f6796ded76",
+  "operationIds": [
+    "deleteClientRules",
+    "getClientRules",
+    "mintClientToken",
+    "setClientRules"
+  ],
+  "releaseGate": "Release with the matching Platform API route change; repin to the merged API revision before publication."
+}
