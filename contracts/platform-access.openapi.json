@@ -14,9 +14,7 @@
     "/platform/client-tokens": {
       "post": {
         "operationId": "mintClientToken",
-        "tags": [
-          "Client Tokens"
-        ],
+        "tags": ["Client Tokens"],
         "summary": "Mint a short-lived browser-safe client token",
         "security": [
           {
@@ -163,9 +161,7 @@
     "/platform/sessions/{session}/client-rules": {
       "get": {
         "operationId": "getClientRules",
-        "tags": [
-          "Client Tokens"
-        ],
+        "tags": ["Client Tokens"],
         "summary": "Get client-token rules for a session",
         "security": [
           {
@@ -303,9 +299,7 @@
       },
       "put": {
         "operationId": "setClientRules",
-        "tags": [
-          "Client Tokens"
-        ],
+        "tags": ["Client Tokens"],
         "summary": "Set client-token rules for a session",
         "security": [
           {
@@ -460,9 +454,7 @@
       },
       "delete": {
         "operationId": "deleteClientRules",
-        "tags": [
-          "Client Tokens"
-        ],
+        "tags": ["Client Tokens"],
         "summary": "Delete client-token rules for a session",
         "security": [
           {
@@ -602,9 +594,7 @@
     "/platform/projects/{projectId}/sessions": {
       "post": {
         "operationId": "createSession",
-        "tags": [
-          "Sessions"
-        ],
+        "tags": ["Sessions"],
         "summary": "Create a new session",
         "security": [
           {
@@ -775,9 +765,7 @@
     "/platform/sessions/{sessionId}": {
       "get": {
         "operationId": "getSession",
-        "tags": [
-          "Sessions"
-        ],
+        "tags": ["Sessions"],
         "summary": "Get session details",
         "security": [
           {
@@ -915,9 +903,7 @@
       },
       "put": {
         "operationId": "updateSession",
-        "tags": [
-          "Sessions"
-        ],
+        "tags": ["Sessions"],
         "summary": "Update session configuration",
         "security": [
           {
@@ -1084,9 +1070,7 @@
       },
       "delete": {
         "operationId": "deletePlatformSession",
-        "tags": [
-          "sessions"
-        ],
+        "tags": ["sessions"],
         "summary": "Remove a session",
         "description": "Permanently removes one session and terminates its active connection when needed.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -1136,9 +1120,7 @@
                       "$ref": "#/components/schemas/SessionRemoveResult"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -1156,9 +1138,7 @@
       },
       "patch": {
         "operationId": "setSessionTierOverride",
-        "tags": [
-          "sessions"
-        ],
+        "tags": ["sessions"],
         "summary": "Confirm a number tier change",
         "description": "Confirms a previously reviewed tier quote. An upgrade purchases a full fresh 24-hour window without refunding remaining time. A downgrade applies at the paid-window end. Poll the tier quote until applied or rejected; accepting the request does not grant the new tier.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -1218,9 +1198,7 @@
                       "$ref": "#/components/schemas/NumberTierChange"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -1246,9 +1224,7 @@
     "/platform/sessions/{sessionId}/restart": {
       "post": {
         "operationId": "restartSession",
-        "tags": [
-          "Sessions"
-        ],
+        "tags": ["Sessions"],
         "summary": "Restart a session",
         "security": [
           {
@@ -1388,9 +1364,7 @@
     "/platform/sessions/{sessionId}/logout": {
       "post": {
         "operationId": "logoutSession",
-        "tags": [
-          "Sessions"
-        ],
+        "tags": ["Sessions"],
         "summary": "Log the session out of WhatsApp",
         "security": [
           {
@@ -1530,9 +1504,7 @@
     "/platform/sessions/{sessionId}/me": {
       "get": {
         "operationId": "getSessionAccount",
-        "tags": [
-          "Sessions"
-        ],
+        "tags": ["Sessions"],
         "summary": "Get the connected WhatsApp account info",
         "security": [
           {
@@ -1672,9 +1644,7 @@
     "/platform/sessions/{sessionId}/handoff-keys": {
       "post": {
         "operationId": "sessionHandoffKeys",
-        "tags": [
-          "Sessions"
-        ],
+        "tags": ["Sessions"],
         "summary": "Initiate M↔P toggle: fetch the destination Curve25519 pubkey",
         "security": [
           {
@@ -1814,9 +1784,7 @@
     "/platform/sessions/{sessionId}/handoff-import": {
       "post": {
         "operationId": "sessionHandoffImport",
-        "tags": [
-          "Sessions"
-        ],
+        "tags": ["Sessions"],
         "summary": "Ship a sealed SignalStoreSnapshot from customer Baileys to the runner",
         "security": [
           {
@@ -1965,9 +1933,7 @@
     "/platform/sessions/{sessionId}/upload-appstate-keys": {
       "post": {
         "operationId": "sessionUploadAppStateKeys",
-        "tags": [
-          "Sessions"
-        ],
+        "tags": ["Sessions"],
         "summary": "Upload selected AppStateSyncKeys (Track P+ tier)",
         "security": [
           {
@@ -2116,9 +2082,7 @@
     "/platform/sessions/{sessionId}/handoff-ack": {
       "post": {
         "operationId": "sessionHandoffAck",
-        "tags": [
-          "Sessions"
-        ],
+        "tags": ["Sessions"],
         "summary": "Acknowledge receipt of an M→P export; API flips bartenderMode after hash verify",
         "security": [
           {
@@ -2267,18 +2231,14 @@
     "/platform/sessions": {
       "get": {
         "operationId": "listPlatformSessions",
-        "tags": [
-          "sessions"
-        ],
+        "tags": ["sessions"],
         "summary": "List sessions",
         "description": "Lists every session in the authenticated team or selected project, including disconnected sessions and their latest status reason.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:read",
-        "x-merged-endpoints": [
-          "listSessionsByOrganization"
-        ],
+        "x-merged-endpoints": ["listSessionsByOrganization"],
         "security": [
           {
             "ApiKeyAuth": []
@@ -2324,9 +2284,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -2346,9 +2304,7 @@
     "/platform/sessions/{sessionId}/start": {
       "post": {
         "operationId": "startPlatformSession",
-        "tags": [
-          "sessions"
-        ],
+        "tags": ["sessions"],
         "summary": "Start a session",
         "description": "Starts a stopped session or retries a session whose runtime failed. A hosted paid number must reserve credit before connecting; insufficient available credit returns 402. A new paid window is charged only after the messaging connection succeeds. The identifier may be the session UUID or stable session slug.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -2408,9 +2364,7 @@
                       "$ref": "#/components/schemas/SessionStartResult"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -2439,9 +2393,7 @@
     "/platform/sessions/{sessionId}/stop": {
       "post": {
         "operationId": "stopPlatformSession",
-        "tags": [
-          "sessions"
-        ],
+        "tags": ["sessions"],
         "summary": "Stop a session",
         "description": "Requests an asynchronous stop for one session. The identifier may be the session UUID or stable session slug.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -2501,9 +2453,7 @@
                       "$ref": "#/components/schemas/SessionStopResult"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -2526,9 +2476,7 @@
     "/platform/sessions/{sessionId}/tier-quotes": {
       "post": {
         "operationId": "quoteSessionTierChange",
-        "tags": [
-          "sessions"
-        ],
+        "tags": ["sessions"],
         "summary": "Preview a number tier change",
         "description": "Returns the full credit charge and effective time before confirmation. Null tierOverride restores project inheritance. Creating a quote does not change the number or consume credit. Quotes expire after ten minutes and are invalidated when the number or price changes.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -2588,9 +2536,7 @@
                       "$ref": "#/components/schemas/NumberTierChange"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -2616,9 +2562,7 @@
     "/platform/sessions/{sessionId}/tier-quotes/{quoteId}": {
       "get": {
         "operationId": "getSessionTierChange",
-        "tags": [
-          "sessions"
-        ],
+        "tags": ["sessions"],
         "summary": "Read a number tier change",
         "description": "Reads the quote and durable result for a number in the authenticated project scope.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -2676,9 +2620,7 @@
                       "$ref": "#/components/schemas/NumberTierChange"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -2701,9 +2643,7 @@
     "/platform/sessions/stop": {
       "post": {
         "operationId": "stopSessions",
-        "tags": [
-          "sessions"
-        ],
+        "tags": ["sessions"],
         "summary": "Stop multiple sessions",
         "description": "Requests asynchronous stops for up to 100 session UUIDs or slugs in the authenticated project scope.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -2752,9 +2692,7 @@
                       "$ref": "#/components/schemas/SessionBatchStopResult"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -2777,9 +2715,7 @@
     "/platform/sessions/delete": {
       "post": {
         "operationId": "deleteSessions",
-        "tags": [
-          "sessions"
-        ],
+        "tags": ["sessions"],
         "summary": "Remove multiple sessions",
         "description": "Permanently removes up to 100 session UUIDs or slugs and terminates any rows that were still active.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -2828,9 +2764,7 @@
                       "$ref": "#/components/schemas/SessionBatchRemoveResult"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -2850,9 +2784,7 @@
     "/platform/sessions/testing": {
       "post": {
         "operationId": "createTestingSession",
-        "tags": [
-          "sessions"
-        ],
+        "tags": ["sessions"],
         "summary": "Create a testing number",
         "description": "Creates a disconnected simulated session with testMode enabled. Team API keys require projectId in the body.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -2901,9 +2833,7 @@
                       "$ref": "#/components/schemas/TestingSessionId"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -2929,9 +2859,7 @@
     "/platform/bans": {
       "get": {
         "operationId": "listSessionBans",
-        "tags": [
-          "bans"
-        ],
+        "tags": ["bans"],
         "summary": "List session bans",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -2980,9 +2908,7 @@
     "/platform/bans/active": {
       "get": {
         "operationId": "listActiveSessionBans",
-        "tags": [
-          "bans"
-        ],
+        "tags": ["bans"],
         "summary": "List active session bans",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -3031,9 +2957,7 @@
     "/platform/bansafe/health": {
       "get": {
         "operationId": "listBanSafeHealth",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "List number safety",
         "description": "Lists present Health, findings counts, and the active Polymorfa restriction for every number in one project. Health is a 0 to 100 estimate from rules v1 or a validated learned model. It remains null until enough fresh evidence is available.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -3107,10 +3031,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -3133,9 +3054,7 @@
     "/platform/bansafe/health/{session}": {
       "get": {
         "operationId": "getBanSafeHealth",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Get number safety",
         "description": "Returns one number's present Health estimate and model metadata, retained open and acknowledged findings with their observation times, directly observed account state, the active Polymorfa restriction, and how that restriction lifts. Recorded findings and observed state remain separate from the estimate.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -3184,9 +3103,7 @@
                       "$ref": "#/components/schemas/BanSafeNumberDetail"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -3209,9 +3126,7 @@
     "/platform/bansafe/health/{session}/history": {
       "get": {
         "operationId": "listBanSafeHealthHistory",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "List number health history",
         "description": "Returns the newest Health evaluations since the requested date, up to the limit, ordered oldest to newest. Each point carries its estimator source and version, evidence coverage, reliability, and availability reason.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -3280,9 +3195,7 @@
                       "$ref": "#/components/schemas/BanSafeHealthHistory"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -3305,9 +3218,7 @@
     "/platform/bansafe/signals": {
       "get": {
         "operationId": "listBanSafeSignals",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "List BanSafe telemetry signals",
         "description": "Lists the bounded numeric, boolean, enum, histogram, and error-code aggregate signals that BanSafe can return. The catalogue contains no message content, recipient identifiers, or raw telemetry records.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -3349,9 +3260,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -3374,9 +3283,7 @@
     "/platform/bansafe/telemetry/{session}": {
       "get": {
         "operationId": "getBanSafeTelemetry",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Get latest BanSafe telemetry",
         "description": "Returns collection availability and the latest supported telemetry snapshot for one number. Empty collection is reported as not collected, not as a disabled collector.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -3425,9 +3332,7 @@
                       "$ref": "#/components/schemas/BanSafeTelemetryDetail"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -3450,9 +3355,7 @@
     "/platform/bansafe/telemetry/{session}/history": {
       "get": {
         "operationId": "listBanSafeTelemetryHistory",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "List BanSafe telemetry history",
         "description": "Returns the newest supported telemetry snapshots for one number. Signals are fixed-schema safe aggregates with explicit measured state; raw records and identifiers inside them are not returned.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -3544,10 +3447,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -3570,9 +3470,7 @@
     "/platform/bansafe/collection": {
       "get": {
         "operationId": "listBanSafeCollection",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "List BanSafe collection status",
         "description": "Lists telemetry collection freshness for the numbers in one project. Status is derived from ingested records and does not guess whether a collector flag is configured.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -3646,10 +3544,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -3672,9 +3567,7 @@
     "/platform/bansafe/health-actions": {
       "get": {
         "operationId": "listBanSafeHealthActions",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "List Health rule actions",
         "description": "Lists the durable customer-visible outcomes of project Health rule actions, newest first. Internal leases, retry bookkeeping, runtime identifiers, and free-form outcomes are omitted.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -3711,13 +3604,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "pending",
-                "running",
-                "succeeded",
-                "failed",
-                "cancelled"
-              ]
+              "enum": ["pending", "running", "succeeded", "failed", "cancelled"]
             }
           },
           {
@@ -3773,10 +3660,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -3799,9 +3683,7 @@
     "/platform/bansafe/findings": {
       "get": {
         "operationId": "listBanSafeFindings",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "List safety findings",
         "description": "Lists safety findings across the team, filterable by project, number, status, and severity. Evidence is numbers only and never contains message content or a recipient identifier.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -3838,11 +3720,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "open",
-                "acknowledged",
-                "resolved"
-              ]
+              "enum": ["open", "acknowledged", "resolved"]
             }
           },
           {
@@ -3851,11 +3729,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "info",
-                "warning",
-                "critical"
-              ]
+              "enum": ["info", "warning", "critical"]
             }
           },
           {
@@ -3911,10 +3785,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -3937,9 +3808,7 @@
     "/platform/bansafe/enforcement": {
       "get": {
         "operationId": "listBanSafeEnforcement",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "List number restrictions",
         "description": "Lists every number Polymorfa is currently restricting, what the restriction blocks, and the exact condition that lifts it.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -3966,13 +3835,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "none",
-                "notify",
-                "throttle",
-                "block_cold",
-                "suspend"
-              ]
+              "enum": ["none", "notify", "throttle", "block_cold", "suspend"]
             }
           },
           {
@@ -4028,10 +3891,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -4054,9 +3914,7 @@
     "/platform/bansafe/incidents": {
       "get": {
         "operationId": "listBanSafeIncidents",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "List safety incidents",
         "description": "Lists the WhatsApp restrictions and customer reports recorded for the team's numbers.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -4140,10 +3998,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -4164,9 +4019,7 @@
       },
       "post": {
         "operationId": "createBanSafeIncident",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Report a ban",
         "description": "Records that WhatsApp restricted or banned one of your numbers. Send the same `Idempotency-Key` to retry safely for the same number; a repeat returns the original report. Reusing the key for a different number returns `409 bansafe_incident_idempotency_scope_conflict`.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -4227,9 +4080,7 @@
                       "$ref": "#/components/schemas/BanSafeIncidentReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -4255,9 +4106,7 @@
     "/platform/bansafe/incidents/{incidentId}/retract": {
       "post": {
         "operationId": "retractBanSafeIncident",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Withdraw a ban report",
         "description": "Withdraws a customer report and returns its incident record. Repeating the request returns the closed record. An incident observed from WhatsApp cannot be withdrawn and returns `409 bansafe_incident_not_a_report`. An unknown incident returns 404.\n\nRequires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -4306,9 +4155,7 @@
                       "$ref": "#/components/schemas/BanSafeIncident"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -4334,9 +4181,7 @@
     "/platform/bansafe/claims": {
       "get": {
         "operationId": "listBanSafeClaims",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "List Ban Insurance claims",
         "description": "Lists the Ban Insurance claims filed on your numbers, newest first. A claim is filed automatically when a ban is recorded on a number whose plan includes insurance; there is no request to file one.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -4436,10 +4281,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -4462,9 +4304,7 @@
     "/platform/bansafe/claims/{claimId}": {
       "get": {
         "operationId": "getBanSafeClaim",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Get a Ban Insurance claim",
         "description": "Returns one claim: the 30 days it covers, the credits that number consumed in them, the most the plan returns, what the claim returns, what the ban was attributed to, and the evidence counts behind that.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -4513,9 +4353,7 @@
                       "$ref": "#/components/schemas/BanSafeClaim"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -4538,9 +4376,7 @@
     "/platform/projects/{projectId}/safe-mode": {
       "get": {
         "operationId": "getProjectSafeModeCeiling",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Get a project's Safe Mode ceiling",
         "description": "Returns the most visible sending behaviour any number in this project may use. Every setting is off by default. `entitled` reports whether the plan includes BanSafe Lite, which Safe Mode is part of, and `entitlementReason` gives the reason a raise would be refused.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -4590,9 +4426,7 @@
                       "$ref": "#/components/schemas/ProjectSafeMode"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -4613,9 +4447,7 @@
       },
       "put": {
         "operationId": "updateProjectSafeModeCeiling",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Set a project's Safe Mode ceiling",
         "description": "Sets the most visible behaviour any number in this project may use. Send only the settings you want to change. Presence and read receipts are visible to the people these numbers message: turning them on makes a number appear online, exposes last seen subject to the account's privacy settings, and puts blue ticks on incoming messages. Raising a setting requires a plan that includes BanSafe Lite, and lowering one is always allowed. A signed-in caller must be an team owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -4675,9 +4507,7 @@
                       "$ref": "#/components/schemas/ProjectSafeMode"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -4706,9 +4536,7 @@
     "/platform/sessions/{sessionId}/safe-mode": {
       "get": {
         "operationId": "getNumberSafeMode",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Get a number's Safe Mode",
         "description": "Returns the project ceiling, this number's override, the policy in force, and what the number last reported it is running. `mismatch` is true when the two differ. `entitled` reports whether the plan includes BanSafe Lite, which Safe Mode is part of, and `entitlementReason` gives the reason a raise would be refused.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -4758,9 +4586,7 @@
                       "$ref": "#/components/schemas/SessionSafeMode"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -4781,9 +4607,7 @@
       },
       "put": {
         "operationId": "updateNumberSafeMode",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Set a number's Safe Mode",
         "description": "Sets one number's Safe Mode. Each setting accepts `inherit` to follow the project ceiling. An override may only be equally or more conservative than the ceiling; a more visible value is refused with `safe_mode_exceeds_project_ceiling`. Raising a setting requires a plan that includes BanSafe Lite, and lowering one is always allowed. A signed-in caller must be an team owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -4843,9 +4667,7 @@
                       "$ref": "#/components/schemas/SessionSafeMode"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -4874,9 +4696,7 @@
     "/platform/projects/{projectId}/warmup-plan": {
       "get": {
         "operationId": "getProjectWarmupPlanSettings",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Get a project's warm-up plan",
         "description": "Returns whether numbers in this project have a daily allowance, the two settings that shape the ramp, the per-number daily cap it climbs to, and the projected allowance day by day. `entitled` reports whether the plan includes BanSafe Lite, which the warm-up plan is part of.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -4926,9 +4746,7 @@
                       "$ref": "#/components/schemas/ProjectWarmupPlan"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -4949,9 +4767,7 @@
       },
       "put": {
         "operationId": "updateProjectWarmupPlanSettings",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Set a project's warm-up plan",
         "description": "Turns the warm-up plan on or off for a project and sets how long the ramp takes and how many messages a number may send on its first day. Send only the settings you want to change. While the plan is on, a send past a number's allowance is refused with `bansafe_daily_allowance_reached` and campaign recipients are deferred to the next reset. Turning the plan on requires a plan that includes BanSafe Lite; turning it off is always allowed. A signed-in caller must be an team owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5011,9 +4827,7 @@
                       "$ref": "#/components/schemas/ProjectWarmupPlan"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -5042,9 +4856,7 @@
     "/platform/projects/{projectId}/health-policy": {
       "get": {
         "operationId": "getProjectHealthPolicySettings",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Get a project's health policy",
         "description": "Returns the health threshold and the actions configured for numbers in this project. Integration flags report whether email and webhook delivery are ready to use.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5094,9 +4906,7 @@
                       "$ref": "#/components/schemas/ProjectHealthPolicy"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -5117,9 +4927,7 @@
       },
       "put": {
         "operationId": "updateProjectHealthPolicySettings",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Set a project's health policy",
         "description": "Replaces the project policy when the supplied version matches the stored version. The rule applies only when an available health estimate is below the threshold; an unavailable estimate triggers no action. Stopping disconnects a session and retains its linked credentials. Logging out requires relinking.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5179,9 +4987,7 @@
                       "$ref": "#/components/schemas/ProjectHealthPolicy"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -5207,9 +5013,7 @@
     "/platform/projects/{projectId}/insurance-evidence": {
       "get": {
         "operationId": "getInsuranceEvidenceSettings",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Get a project's insurance evidence setting",
         "description": "Returns whether evidence collection about other linked devices is enabled and whether any number in the project has Ban Insurance included in its plan. Collection is off until explicitly enabled.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5259,9 +5063,7 @@
                       "$ref": "#/components/schemas/ProjectInsuranceEvidence"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -5282,9 +5084,7 @@
       },
       "put": {
         "operationId": "updateInsuranceEvidenceSettings",
-        "tags": [
-          "bansafe"
-        ],
+        "tags": ["bansafe"],
         "summary": "Set a project's insurance evidence setting",
         "description": "Enables or disables collection of counts about other linked devices. Collection never includes messages, recipient identities, or device names. Disabling collection discards stored device evidence. A 503 `propagation_pending` means the setting was stored but a connected number has not confirmed it; retry the request. A signed-in caller must be an team owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5344,9 +5144,7 @@
                       "$ref": "#/components/schemas/ProjectInsuranceEvidence"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -5372,9 +5170,7 @@
     "/platform/campaigns": {
       "get": {
         "operationId": "listPlatformCampaigns",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "List platform campaigns",
         "description": "Public Management API. Requires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5439,9 +5235,7 @@
       },
       "post": {
         "operationId": "createPlatformCampaign",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "Create campaign",
         "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5501,9 +5295,7 @@
     "/platform/campaigns/{campaignId}": {
       "get": {
         "operationId": "getPlatformCampaign",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "Get campaign",
         "description": "Public Management API. Requires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5560,9 +5352,7 @@
       },
       "patch": {
         "operationId": "updateCampaign",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "Update campaign",
         "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5630,9 +5420,7 @@
       },
       "delete": {
         "operationId": "deleteCampaign",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "Delete campaign",
         "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5691,9 +5479,7 @@
     "/platform/campaigns/{campaignId}/launch": {
       "post": {
         "operationId": "launchPlatformCampaign",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "Launch campaign",
         "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5763,9 +5549,7 @@
     "/platform/campaigns/{campaignId}/pause": {
       "post": {
         "operationId": "pausePlatformCampaign",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "Pause campaign",
         "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5835,9 +5619,7 @@
     "/platform/campaigns/{campaignId}/resume": {
       "post": {
         "operationId": "resumePlatformCampaign",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "Resume campaign",
         "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5907,9 +5689,7 @@
     "/platform/campaigns/{campaignId}/stop": {
       "post": {
         "operationId": "stopPlatformCampaign",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "Stop campaign",
         "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -5979,9 +5759,7 @@
     "/platform/campaigns/{campaignId}/archive": {
       "post": {
         "operationId": "archiveCampaign",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "Archive campaign",
         "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -6051,9 +5829,7 @@
     "/platform/campaigns/{campaignId}/duplicate": {
       "post": {
         "operationId": "duplicateCampaign",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "Duplicate campaign",
         "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -6123,9 +5899,7 @@
     "/platform/campaigns/{campaignId}/requeue": {
       "post": {
         "operationId": "requeueFailedCampaign",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "Requeue failed campaign",
         "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -6195,9 +5969,7 @@
     "/platform/campaigns/{campaignId}/analytics": {
       "get": {
         "operationId": "getPlatformCampaignAnalytics",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "Get campaign analytics",
         "description": "Public Management API. Requires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -6256,9 +6028,7 @@
     "/platform/campaigns/{campaignId}/events": {
       "get": {
         "operationId": "listCampaignEvents",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "List campaign events",
         "description": "Public Management API. Requires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -6317,9 +6087,7 @@
     "/platform/campaigns/{campaignId}/recipients": {
       "get": {
         "operationId": "listCampaignRecipients",
-        "tags": [
-          "campaigns"
-        ],
+        "tags": ["campaigns"],
         "summary": "List campaign recipients",
         "description": "Public Management API. Requires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -6378,9 +6146,7 @@
     "/platform/audiences": {
       "get": {
         "operationId": "listAudiences",
-        "tags": [
-          "audiences"
-        ],
+        "tags": ["audiences"],
         "summary": "List audiences",
         "description": "Public Management API. Requires a team API key with `campaigns:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -6427,9 +6193,7 @@
       },
       "post": {
         "operationId": "createAudience",
-        "tags": [
-          "audiences"
-        ],
+        "tags": ["audiences"],
         "summary": "Create audience",
         "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -6489,9 +6253,7 @@
     "/platform/audiences/{listId}": {
       "get": {
         "operationId": "getAudience",
-        "tags": [
-          "audiences"
-        ],
+        "tags": ["audiences"],
         "summary": "Get audience",
         "description": "Public Management API. Requires a team API key with `campaigns:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -6548,9 +6310,7 @@
       },
       "delete": {
         "operationId": "deleteAudience",
-        "tags": [
-          "audiences"
-        ],
+        "tags": ["audiences"],
         "summary": "Delete audience",
         "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -6609,9 +6369,7 @@
     "/platform/audiences/uploads": {
       "post": {
         "operationId": "createAudienceUploadUrl",
-        "tags": [
-          "audiences"
-        ],
+        "tags": ["audiences"],
         "summary": "Create audience upload url",
         "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -6671,9 +6429,7 @@
     "/platform/templates": {
       "get": {
         "operationId": "listMessageTemplates",
-        "tags": [
-          "templates"
-        ],
+        "tags": ["templates"],
         "summary": "List message templates",
         "description": "Lists the message-template drafts in one project.\n\nRequires `templates:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -6726,9 +6482,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -6749,9 +6503,7 @@
       },
       "post": {
         "operationId": "createMessageTemplate",
-        "tags": [
-          "templates"
-        ],
+        "tags": ["templates"],
         "summary": "Create a message-template draft",
         "description": "Creates an incomplete or complete message-template draft in one project.\n\nRequires `templates:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -6800,9 +6552,7 @@
                       "$ref": "#/components/schemas/TemplateId"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -6825,9 +6575,7 @@
     "/platform/templates/{templateId}": {
       "get": {
         "operationId": "getMessageTemplate",
-        "tags": [
-          "templates"
-        ],
+        "tags": ["templates"],
         "summary": "Get a message-template draft",
         "description": "Gets one message-template draft from the specified project.\n\nRequires `templates:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -6890,9 +6638,7 @@
                       "nullable": true
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -6913,9 +6659,7 @@
       },
       "patch": {
         "operationId": "updateMessageTemplate",
-        "tags": [
-          "templates"
-        ],
+        "tags": ["templates"],
         "summary": "Update a message-template draft",
         "description": "Updates one message-template draft in the project supplied in the request body.\n\nRequires `templates:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -6974,9 +6718,7 @@
                       "$ref": "#/components/schemas/ManagementTemplate"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -6997,9 +6739,7 @@
       },
       "delete": {
         "operationId": "deleteMessageTemplate",
-        "tags": [
-          "templates"
-        ],
+        "tags": ["templates"],
         "summary": "Delete a message-template draft",
         "description": "Deletes one message-template draft from the specified project.\n\nRequires `templates:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -7056,9 +6796,7 @@
                       "$ref": "#/components/schemas/DeleteManagementTemplateResult"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -7081,9 +6819,7 @@
     "/platform/flows": {
       "get": {
         "operationId": "listFlows",
-        "tags": [
-          "flows"
-        ],
+        "tags": ["flows"],
         "summary": "List Flow drafts",
         "description": "Lists compact WhatsApp Flow draft summaries in one project.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -7136,9 +6872,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -7159,9 +6893,7 @@
       },
       "post": {
         "operationId": "createFlow",
-        "tags": [
-          "flows"
-        ],
+        "tags": ["flows"],
         "summary": "Create a Flow draft",
         "description": "Creates a project-scoped WhatsApp Flow draft. A supplied draftId makes retries idempotent.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -7210,9 +6942,7 @@
                       "$ref": "#/components/schemas/FlowDraft"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -7235,9 +6965,7 @@
     "/platform/flows/{flowId}": {
       "get": {
         "operationId": "getFlow",
-        "tags": [
-          "flows"
-        ],
+        "tags": ["flows"],
         "summary": "Get a Flow draft",
         "description": "Gets one project-scoped WhatsApp Flow draft.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -7300,9 +7028,7 @@
                       "nullable": true
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -7323,9 +7049,7 @@
       },
       "patch": {
         "operationId": "updateFlow",
-        "tags": [
-          "flows"
-        ],
+        "tags": ["flows"],
         "summary": "Update a Flow draft",
         "description": "Updates a Flow draft when expectedUpdatedAt matches the stored revision.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -7384,9 +7108,7 @@
                       "$ref": "#/components/schemas/FlowDraft"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -7410,9 +7132,7 @@
       },
       "delete": {
         "operationId": "deleteFlow",
-        "tags": [
-          "flows"
-        ],
+        "tags": ["flows"],
         "summary": "Delete a Flow draft",
         "description": "Deletes a local Flow draft without deleting linked Meta Flow assets.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -7469,9 +7189,7 @@
                       "$ref": "#/components/schemas/DeleteFlowResult"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -7494,9 +7212,7 @@
     "/platform/optouts": {
       "get": {
         "operationId": "listOptOuts",
-        "tags": [
-          "optouts"
-        ],
+        "tags": ["optouts"],
         "summary": "List opt outs",
         "description": "Public Management API. Requires a team API key with `campaigns:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -7543,9 +7259,7 @@
       },
       "post": {
         "operationId": "createOptOut",
-        "tags": [
-          "optouts"
-        ],
+        "tags": ["optouts"],
         "summary": "Create opt out",
         "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -7605,9 +7319,7 @@
     "/platform/optouts/batch": {
       "post": {
         "operationId": "createOptOuts",
-        "tags": [
-          "optouts"
-        ],
+        "tags": ["optouts"],
         "summary": "Create opt outs",
         "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -7667,9 +7379,7 @@
     "/platform/optouts/{phone}": {
       "delete": {
         "operationId": "deleteOptOut",
-        "tags": [
-          "optouts"
-        ],
+        "tags": ["optouts"],
         "summary": "Delete opt out",
         "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -7728,9 +7438,7 @@
     "/platform/billing": {
       "get": {
         "operationId": "getBilling",
-        "tags": [
-          "billing"
-        ],
+        "tags": ["billing"],
         "summary": "Get billing",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -7779,9 +7487,7 @@
     "/platform/billing/usage": {
       "get": {
         "operationId": "listUsageMeters",
-        "tags": [
-          "billing"
-        ],
+        "tags": ["billing"],
         "summary": "List usage meters",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -7830,9 +7536,7 @@
     "/platform/billing/transactions": {
       "get": {
         "operationId": "listBillingTransactions",
-        "tags": [
-          "billing"
-        ],
+        "tags": ["billing"],
         "summary": "List billing transactions",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -7881,9 +7585,7 @@
     "/platform/billing/pricing": {
       "get": {
         "operationId": "listTierPricing",
-        "tags": [
-          "billing"
-        ],
+        "tags": ["billing"],
         "summary": "List tier pricing",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -7932,9 +7634,7 @@
     "/platform/team": {
       "get": {
         "operationId": "getOrganization",
-        "tags": [
-          "team"
-        ],
+        "tags": ["team"],
         "summary": "Get organization",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -7983,9 +7683,7 @@
     "/platform/projects": {
       "get": {
         "operationId": "listProjects",
-        "tags": [
-          "projects"
-        ],
+        "tags": ["projects"],
         "summary": "List projects",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -8032,9 +7730,7 @@
       },
       "post": {
         "operationId": "createProject",
-        "tags": [
-          "projects"
-        ],
+        "tags": ["projects"],
         "summary": "Create project",
         "description": "Public Management API. Requires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -8094,9 +7790,7 @@
     "/platform/projects/{projectId}/promote": {
       "post": {
         "operationId": "requestProductionEnrollment",
-        "tags": [
-          "projects"
-        ],
+        "tags": ["projects"],
         "summary": "Request production enrollment",
         "description": "Creates a durable production-enrollment operation. The project stays in development until provisioning succeeds. Poll the returned operationId for progress.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -8156,9 +7850,7 @@
                       "$ref": "#/components/schemas/ProductionEnrollmentResult"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -8184,9 +7876,7 @@
     "/platform/projects/{projectId}/customers/status": {
       "get": {
         "operationId": "getCustomersStatus",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "Get Customers status",
         "description": "Returns whether Customers is enabled for the exact project and its protected default Customer when enabled.\n\nRequires `customers:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -8236,9 +7926,7 @@
                       "$ref": "#/components/schemas/CustomersStatus"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -8261,9 +7949,7 @@
     "/platform/projects/{projectId}/customers/enable": {
       "post": {
         "operationId": "enableCustomers",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "Enable Customers",
         "description": "Enables Customers once, creates the default Customer, and assigns every existing Number in the project to it atomically.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -8323,9 +8009,7 @@
                       "$ref": "#/components/schemas/CustomersEnablement"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -8351,9 +8035,7 @@
     "/platform/projects/{projectId}/production-enrollments/{operationId}/approve": {
       "post": {
         "operationId": "approveProductionEnrollment",
-        "tags": [
-          "projects"
-        ],
+        "tags": ["projects"],
         "summary": "Approve production enrollment",
         "description": "Resumes a production-enrollment operation that requires approval.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -8423,9 +8105,7 @@
                       "$ref": "#/components/schemas/ProductionEnrollmentCommandResult"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -8448,9 +8128,7 @@
     "/platform/projects/{projectId}/production-enrollments/{operationId}/cancel": {
       "post": {
         "operationId": "cancelProductionEnrollment",
-        "tags": [
-          "projects"
-        ],
+        "tags": ["projects"],
         "summary": "Cancel production enrollment",
         "description": "Requests cancellation of an active production-enrollment operation. Provisioned resources are compensated before cancellation completes.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -8520,9 +8198,7 @@
                       "$ref": "#/components/schemas/ProductionEnrollmentCommandResult"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -8545,9 +8221,7 @@
     "/platform/webhooks": {
       "get": {
         "operationId": "listOrganizationWebhooks",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "List team webhooks",
         "description": "Lists only team-owned webhook endpoints. Project-owned endpoints are excluded.\n\nRequires a team API key with `webhooks:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -8631,10 +8305,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -8652,9 +8323,7 @@
       },
       "post": {
         "operationId": "createOrganizationWebhook",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "Create an team webhook",
         "description": "Creates an team-owned webhook and returns its generated signing secret once.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -8715,9 +8384,7 @@
                       "$ref": "#/components/schemas/OrganizationWebhookCreationReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -8740,9 +8407,7 @@
     "/platform/webhooks/{webhookId}": {
       "get": {
         "operationId": "getOrganizationWebhook",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "Get an team webhook",
         "description": "Returns one team-owned webhook without secret values.\n\nRequires a team API key with `webhooks:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -8792,9 +8457,7 @@
                       "$ref": "#/components/schemas/OrganizationWebhook"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -8815,9 +8478,7 @@
       },
       "patch": {
         "operationId": "updateOrganizationWebhook",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "Update an team webhook",
         "description": "Updates settings without rotating the signing secret.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -8887,9 +8548,7 @@
                       "$ref": "#/components/schemas/OrganizationWebhookMutationReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -8913,9 +8572,7 @@
       },
       "delete": {
         "operationId": "deleteOrganizationWebhook",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "Delete an team webhook",
         "description": "Deletes one team-owned webhook.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -8975,9 +8632,7 @@
                       "$ref": "#/components/schemas/OrganizationWebhookDeletionReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -9003,9 +8658,7 @@
     "/platform/webhooks/{webhookId}/secret-rotations": {
       "post": {
         "operationId": "rotateOrganizationWebhookSecret",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "Rotate an team webhook secret",
         "description": "Rotates the signing secret and returns the new secret once.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -9075,9 +8728,7 @@
                       "$ref": "#/components/schemas/OrganizationWebhookSecretRotationReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -9103,9 +8754,7 @@
     "/platform/webhooks/{webhookId}/tests": {
       "post": {
         "operationId": "testOrganizationWebhook",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "Send an team webhook test",
         "description": "Creates a synthetic team event and a traceable webhook delivery.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -9175,9 +8824,7 @@
                       "$ref": "#/components/schemas/OrganizationWebhookTestReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -9203,9 +8850,7 @@
     "/platform/projects/{projectId}/webhooks": {
       "get": {
         "operationId": "listProjectWebhooks",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "List project webhooks",
         "description": "Lists webhooks owned by the exact project in the route.\n\nRequires `webhooks:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -9298,10 +8943,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -9322,9 +8964,7 @@
       },
       "post": {
         "operationId": "createProjectWebhook",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "Create a project webhook",
         "description": "Creates a project-owned webhook and returns its generated signing secret once.\n\nRequires `webhooks:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -9394,9 +9034,7 @@
                       "$ref": "#/components/schemas/ProjectWebhookCreationReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -9422,9 +9060,7 @@
     "/platform/projects/{projectId}/webhooks/{webhookId}": {
       "get": {
         "operationId": "getProjectWebhook",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "Get a project webhook",
         "description": "Returns one webhook owned by the exact project without secret values.\n\nRequires `webhooks:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -9483,9 +9119,7 @@
                       "$ref": "#/components/schemas/ProjectWebhook"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -9506,9 +9140,7 @@
       },
       "patch": {
         "operationId": "updateProjectWebhook",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "Update a project webhook",
         "description": "Updates settings without rotating the signing secret.\n\nRequires `webhooks:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -9587,9 +9219,7 @@
                       "$ref": "#/components/schemas/ProjectWebhookMutationReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -9613,9 +9243,7 @@
       },
       "delete": {
         "operationId": "deleteProjectWebhook",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "Delete a project webhook",
         "description": "Deletes one webhook owned by the exact project.\n\nRequires `webhooks:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -9684,9 +9312,7 @@
                       "$ref": "#/components/schemas/ProjectWebhookDeletionReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -9712,9 +9338,7 @@
     "/platform/projects/{projectId}/webhooks/{webhookId}/secret-rotations": {
       "post": {
         "operationId": "rotateProjectWebhookSecret",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "Rotate a project webhook secret",
         "description": "Rotates the signing secret and returns the new secret once.\n\nRequires `webhooks:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -9793,9 +9417,7 @@
                       "$ref": "#/components/schemas/ProjectWebhookSecretRotationReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -9821,9 +9443,7 @@
     "/platform/projects/{projectId}/webhooks/{webhookId}/tests": {
       "post": {
         "operationId": "testProjectWebhook",
-        "tags": [
-          "webhooks"
-        ],
+        "tags": ["webhooks"],
         "summary": "Send a project webhook test",
         "description": "Creates a synthetic project event and a traceable webhook delivery. An optional complete native envelope is accepted only with an exact HMS-enabled project session.\n\nRequires `webhooks:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -9902,9 +9522,7 @@
                       "$ref": "#/components/schemas/ProjectWebhookTestReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -9933,9 +9551,7 @@
     "/platform/events": {
       "get": {
         "operationId": "listOrganizationEvents",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "summary": "List team events",
         "description": "Lists team-owned event metadata. Project-owned events are excluded.\n\nRequires a team API key with `events:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -10027,10 +9643,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -10050,9 +9663,7 @@
     "/platform/events/{eventId}": {
       "get": {
         "operationId": "getOrganizationEvent",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "summary": "Get an team event",
         "description": "Returns one team-owned event and includes exact payload bytes only when requested and available.\n\nRequires a team API key with `events:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -10111,9 +9722,7 @@
                       "$ref": "#/components/schemas/OrganizationEvent"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -10136,9 +9745,7 @@
     "/platform/events/{eventId}/replays": {
       "post": {
         "operationId": "replayOrganizationEvent",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "summary": "Replay an team event",
         "description": "Creates a new logical delivery for a retained team event.\n\nRequires a team API key with `events:replay`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -10208,9 +9815,7 @@
                       "$ref": "#/components/schemas/OrganizationEventReplayReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -10239,9 +9844,7 @@
     "/platform/projects/{projectId}/events": {
       "get": {
         "operationId": "listProjectEvents",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "summary": "List project events",
         "description": "Lists event metadata owned by the exact project in the route.\n\nRequires `events:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -10342,10 +9945,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -10368,9 +9968,7 @@
     "/platform/projects/{projectId}/events/{eventId}": {
       "get": {
         "operationId": "getProjectEvent",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "summary": "Get a project event",
         "description": "Returns one event owned by the exact project and includes exact payload bytes only when requested and available.\n\nRequires `events:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -10438,9 +10036,7 @@
                       "$ref": "#/components/schemas/ProjectEvent"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -10463,9 +10059,7 @@
     "/platform/projects/{projectId}/events/{eventId}/replays": {
       "post": {
         "operationId": "replayProjectEvent",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "summary": "Replay a project event",
         "description": "Creates a new logical delivery for a retained event owned by the exact project.\n\nRequires `events:replay`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -10544,9 +10138,7 @@
                       "$ref": "#/components/schemas/ProjectEventReplayReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -10575,9 +10167,7 @@
     "/platform/webhook-deliveries": {
       "get": {
         "operationId": "listOrganizationWebhookDeliveries",
-        "tags": [
-          "webhook deliveries"
-        ],
+        "tags": ["webhook deliveries"],
         "summary": "List team webhook deliveries",
         "description": "Lists logical deliveries for team-owned webhooks. Project-owned deliveries are excluded.\n\nRequires a team API key with `webhook-deliveries:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -10694,10 +10284,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -10717,9 +10304,7 @@
     "/platform/webhook-deliveries/{deliveryId}": {
       "get": {
         "operationId": "getOrganizationWebhookDelivery",
-        "tags": [
-          "webhook deliveries"
-        ],
+        "tags": ["webhook deliveries"],
         "summary": "Get an team webhook delivery",
         "description": "Returns one logical team webhook delivery.\n\nRequires a team API key with `webhook-deliveries:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -10769,9 +10354,7 @@
                       "$ref": "#/components/schemas/OrganizationWebhookDelivery"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -10794,9 +10377,7 @@
     "/platform/webhook-deliveries/{deliveryId}/retry": {
       "post": {
         "operationId": "retryOrganizationWebhookDelivery",
-        "tags": [
-          "webhook deliveries"
-        ],
+        "tags": ["webhook deliveries"],
         "summary": "Retry an team webhook delivery",
         "description": "Appends a new immutable attempt to the same logical delivery.\n\nRequires a team API key with `webhook-deliveries:retry`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -10856,9 +10437,7 @@
                       "$ref": "#/components/schemas/OrganizationWebhookDeliveryRetryReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -10887,9 +10466,7 @@
     "/platform/webhook-deliveries/{deliveryId}/attempts": {
       "get": {
         "operationId": "listOrganizationWebhookDeliveryAttempts",
-        "tags": [
-          "webhook deliveries"
-        ],
+        "tags": ["webhook deliveries"],
         "summary": "List team delivery attempts",
         "description": "Lists immutable network attempts for one team webhook delivery.\n\nRequires a team API key with `webhook-deliveries:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -10964,10 +10541,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -10990,9 +10564,7 @@
     "/platform/webhook-deliveries/{deliveryId}/attempts/{attemptId}": {
       "get": {
         "operationId": "getOrganizationWebhookDeliveryAttempt",
-        "tags": [
-          "webhook deliveries"
-        ],
+        "tags": ["webhook deliveries"],
         "summary": "Get team delivery attempt",
         "description": "Returns one immutable network attempt.\n\nRequires a team API key with `webhook-deliveries:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -11051,9 +10623,7 @@
                       "$ref": "#/components/schemas/OrganizationWebhookDeliveryAttempt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -11076,9 +10646,7 @@
     "/platform/projects/{projectId}/webhook-deliveries": {
       "get": {
         "operationId": "listProjectWebhookDeliveries",
-        "tags": [
-          "webhook deliveries"
-        ],
+        "tags": ["webhook deliveries"],
         "summary": "List project webhook deliveries",
         "description": "Lists logical webhook deliveries owned by the exact project in the route.\n\nRequires `webhook-deliveries:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -11204,10 +10772,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -11230,9 +10795,7 @@
     "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}": {
       "get": {
         "operationId": "getProjectWebhookDelivery",
-        "tags": [
-          "webhook deliveries"
-        ],
+        "tags": ["webhook deliveries"],
         "summary": "Get a project webhook delivery",
         "description": "Returns one logical webhook delivery owned by the exact project.\n\nRequires `webhook-deliveries:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -11291,9 +10854,7 @@
                       "$ref": "#/components/schemas/ProjectWebhookDelivery"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -11316,9 +10877,7 @@
     "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/retry": {
       "post": {
         "operationId": "retryProjectWebhookDelivery",
-        "tags": [
-          "webhook deliveries"
-        ],
+        "tags": ["webhook deliveries"],
         "summary": "Retry a project webhook delivery",
         "description": "Appends a new immutable attempt to the same logical delivery owned by the exact project.\n\nRequires `webhook-deliveries:retry`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -11387,9 +10946,7 @@
                       "$ref": "#/components/schemas/ProjectWebhookDeliveryRetryReceipt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -11418,9 +10975,7 @@
     "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts": {
       "get": {
         "operationId": "listProjectWebhookDeliveryAttempts",
-        "tags": [
-          "webhook deliveries"
-        ],
+        "tags": ["webhook deliveries"],
         "summary": "List project webhook delivery attempts",
         "description": "Lists immutable network attempts for one project webhook delivery.\n\nRequires `webhook-deliveries:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -11504,10 +11059,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -11530,9 +11082,7 @@
     "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts/{attemptId}": {
       "get": {
         "operationId": "getProjectWebhookDeliveryAttempt",
-        "tags": [
-          "webhook deliveries"
-        ],
+        "tags": ["webhook deliveries"],
         "summary": "Get a project webhook delivery attempt",
         "description": "Returns one immutable network attempt owned by the exact project.\n\nRequires `webhook-deliveries:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -11600,9 +11150,7 @@
                       "$ref": "#/components/schemas/ProjectWebhookDeliveryAttempt"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -11625,9 +11173,7 @@
     "/platform/customers": {
       "get": {
         "operationId": "listCustomers",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "List Customers",
         "description": "Lists masked Customer summaries in the exact authenticated project with cursor pagination and filters.\n\nRequires `customers:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -11681,12 +11227,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "active",
-                "archiving",
-                "archived",
-                "all"
-              ]
+              "enum": ["active", "archiving", "archived", "all"]
             }
           },
           {
@@ -11747,10 +11288,7 @@
                       "$ref": "#/components/schemas/CursorPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -11771,9 +11309,7 @@
       },
       "post": {
         "operationId": "createCustomer",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "Create a Customer",
         "description": "Creates a Customer with optional name and caller-defined external identifier.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -11834,9 +11370,7 @@
                       "$ref": "#/components/schemas/Customer"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -11862,9 +11396,7 @@
     "/platform/customers/{customerId}": {
       "get": {
         "operationId": "getCustomer",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "Get a Customer",
         "description": "Returns one Customer from the exact authenticated project.\n\nRequires `customers:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -11922,9 +11454,7 @@
                       "$ref": "#/components/schemas/Customer"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -11945,9 +11475,7 @@
       },
       "patch": {
         "operationId": "updateCustomer",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "Update a Customer",
         "description": "Updates supplied Customer profile fields. Null clears an optional field.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -12007,9 +11535,7 @@
                       "$ref": "#/components/schemas/Customer"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -12035,9 +11561,7 @@
     "/platform/customers/{customerId}/archive": {
       "post": {
         "operationId": "archiveCustomer",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "Archive a Customer",
         "description": "Archives a non-default Customer. The default Customer cannot be archived.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -12107,9 +11631,7 @@
                       "$ref": "#/components/schemas/Customer"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -12135,9 +11657,7 @@
     "/platform/customers/{customerId}/restore": {
       "post": {
         "operationId": "restoreCustomer",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "Restore a Customer",
         "description": "Restores an archived Customer.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -12207,9 +11727,7 @@
                       "$ref": "#/components/schemas/Customer"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -12235,9 +11753,7 @@
     "/platform/customers/{customerId}/numbers": {
       "get": {
         "operationId": "listCustomerNumbers",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "List Customer Numbers",
         "description": "Lists Numbers assigned to one Customer in the exact project.\n\nRequires `customers:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -12298,9 +11814,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -12323,9 +11837,7 @@
     "/platform/customers/{customerId}/events": {
       "get": {
         "operationId": "listCustomerEvents",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "List recent Customer events",
         "description": "Lists the newest Customer lifecycle events with safe metadata. Actor identities, message content, phone values, invitation tokens, and URLs are excluded.\n\nRequires `customers:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -12397,9 +11909,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -12422,9 +11932,7 @@
     "/platform/customers/{customerId}/pairing-links": {
       "post": {
         "operationId": "createCustomerPairingLink",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "Create a Customer pairing link",
         "description": "Creates a revocable Customer invitation. The raw URL is returned only in this response.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -12494,9 +12002,7 @@
                       "$ref": "#/components/schemas/CreatedCustomerPairingLink"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -12520,9 +12026,7 @@
       },
       "get": {
         "operationId": "listCustomerPairingLinks",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "List Customer pairing links",
         "description": "Lists safe pairing-link metadata. Raw invitation tokens and URLs are never returned.\n\nRequires `customers:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -12583,9 +12087,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -12608,9 +12110,7 @@
     "/platform/customers/{customerId}/pairing-links/{pairingLinkId}": {
       "delete": {
         "operationId": "revokeCustomerPairingLink",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "Revoke a Customer pairing link",
         "description": "Revokes an open pairing link.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -12676,9 +12176,7 @@
                       "$ref": "#/components/schemas/CustomerPairingLink"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -12704,9 +12202,7 @@
     "/platform/customers/{customerId}/numbers/{sessionId}/transfer": {
       "post": {
         "operationId": "transferCustomerNumber",
-        "tags": [
-          "customers"
-        ],
+        "tags": ["customers"],
         "summary": "Transfer a Customer Number",
         "description": "Atomically transfers one eligible Number from the explicitly confirmed source Customer to the destination Customer.\n\nRequires `customers:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -12785,9 +12281,7 @@
                       "$ref": "#/components/schemas/CustomerNumber"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -12813,9 +12307,7 @@
     "/platform/members": {
       "get": {
         "operationId": "listMembers",
-        "tags": [
-          "members"
-        ],
+        "tags": ["members"],
         "summary": "List members",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -12864,9 +12356,7 @@
     "/platform/keys": {
       "get": {
         "operationId": "listApiKeys",
-        "tags": [
-          "keys"
-        ],
+        "tags": ["keys"],
         "summary": "List api keys",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -12915,9 +12405,7 @@
     "/platform/keys/{keyId}": {
       "delete": {
         "operationId": "deactivateApiKey",
-        "tags": [
-          "keys"
-        ],
+        "tags": ["keys"],
         "summary": "Deactivate api key",
         "description": "Public Management API. Requires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -12976,9 +12464,7 @@
     "/platform/tokens": {
       "get": {
         "operationId": "listPolymorfaTokens",
-        "tags": [
-          "tokens"
-        ],
+        "tags": ["tokens"],
         "summary": "List polymorfa tokens",
         "description": "Public Management API. Requires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -13037,9 +12523,7 @@
     "/platform/audit": {
       "get": {
         "operationId": "listAuditLogs",
-        "tags": [
-          "audit"
-        ],
+        "tags": ["audit"],
         "summary": "List audit logs",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -13088,9 +12572,7 @@
     "/platform/incidents": {
       "get": {
         "operationId": "listSecurityIncidents",
-        "tags": [
-          "incidents"
-        ],
+        "tags": ["incidents"],
         "summary": "List security incidents",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -13139,9 +12621,7 @@
     "/platform/incidents/{incidentId}/acknowledge": {
       "post": {
         "operationId": "acknowledgeSecurityIncident",
-        "tags": [
-          "incidents"
-        ],
+        "tags": ["incidents"],
         "summary": "Acknowledge security incident",
         "description": "Public Management API. Requires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -13211,9 +12691,7 @@
     "/platform/media/{mediaId}": {
       "get": {
         "operationId": "getMediaUrl",
-        "tags": [
-          "media"
-        ],
+        "tags": ["media"],
         "summary": "Get media url",
         "description": "Public Management API. Requires a team API key with `media:read`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -13270,9 +12748,7 @@
       },
       "delete": {
         "operationId": "deleteMedia",
-        "tags": [
-          "media"
-        ],
+        "tags": ["media"],
         "summary": "Delete media",
         "description": "Public Management API. Requires a team API key with `media:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -13331,9 +12807,7 @@
     "/platform/media/uploads": {
       "post": {
         "operationId": "createMediaUploadUrl",
-        "tags": [
-          "media"
-        ],
+        "tags": ["media"],
         "summary": "Create media upload url",
         "description": "Public Management API. Requires a team API key with `media:manage`. Project tokens are not accepted.",
         "x-audience": "public",
@@ -13393,9 +12867,7 @@
     "/platform/quicklink": {
       "get": {
         "operationId": "getQuickLinkSettings",
-        "tags": [
-          "quicklink"
-        ],
+        "tags": ["quicklink"],
         "summary": "Read QuickLink settings",
         "description": "Returns the saved QuickLink settings for the authenticated team or one project, or null when nothing has been saved for that scope. There is no separate read permission: reading and updating both require `quicklink:manage`, because the settings include the redirect allowlist and branding that only a QuickLink manager should see.\n\nRequires `quicklink:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -13449,9 +12921,7 @@
                       ]
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -13466,9 +12936,7 @@
       },
       "put": {
         "operationId": "updateQuickLinkSettings",
-        "tags": [
-          "quicklink"
-        ],
+        "tags": ["quicklink"],
         "summary": "Update QuickLink settings",
         "description": "Updates the saved QuickLink settings for the authenticated team or project and returns the saved record.\n\nRequires `quicklink:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -13517,9 +12985,7 @@
                       "$ref": "#/components/schemas/QuickLinkSettings"
                     }
                   },
-                  "required": [
-                    "data"
-                  ]
+                  "required": ["data"]
                 }
               }
             }
@@ -13553,26 +13019,15 @@
             "description": "Operation result."
           }
         },
-        "required": [
-          "data"
-        ]
+        "required": ["data"]
       },
       "ErrorEnvelope": {
         "type": "object",
-        "required": [
-          "error",
-          "data",
-          "docs"
-        ],
+        "required": ["error", "data", "docs"],
         "properties": {
           "error": {
             "type": "object",
-            "required": [
-              "type",
-              "code",
-              "message",
-              "param"
-            ],
+            "required": ["type", "code", "message", "param"],
             "properties": {
               "type": {
                 "type": "string",
@@ -13604,9 +13059,7 @@
           "data": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ],
+            "enum": [null],
             "description": "Always null for a failed request."
           },
           "docs": {
@@ -13652,11 +13105,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "active",
-              "archiving",
-              "archived"
-            ]
+            "enum": ["active", "archiving", "archived"]
           },
           "isDefault": {
             "type": "boolean"
@@ -13714,11 +13163,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "active",
-              "archiving",
-              "archived"
-            ]
+            "enum": ["active", "archiving", "archived"]
           },
           "isDefault": {
             "type": "boolean"
@@ -13801,12 +13246,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "enabled",
-          "enabledAt",
-          "enabledBy",
-          "defaultCustomer"
-        ]
+        "required": ["enabled", "enabledAt", "enabledBy", "defaultCustomer"]
       },
       "CustomersEnablement": {
         "type": "object",
@@ -13983,11 +13423,7 @@
                 "uniqueItems": true,
                 "items": {
                   "type": "string",
-                  "enum": [
-                    "name",
-                    "phone",
-                    "externalCustomerId"
-                  ]
+                  "enum": ["name", "phone", "externalCustomerId"]
                 }
               }
             }
@@ -14037,29 +13473,17 @@
             "uniqueItems": true,
             "items": {
               "type": "string",
-              "enum": [
-                "qr",
-                "phone"
-              ]
+              "enum": ["qr", "phone"]
             }
           },
           "locale": {
             "type": "string",
-            "enum": [
-              "en",
-              "pt-BR",
-              null
-            ],
+            "enum": ["en", "pt-BR", null],
             "nullable": true
           },
           "theme": {
             "type": "string",
-            "enum": [
-              "light",
-              "dark",
-              "system",
-              null
-            ],
+            "enum": ["light", "dark", "system", null],
             "nullable": true
           },
           "expiresAt": {
@@ -14212,29 +13636,17 @@
             "uniqueItems": true,
             "items": {
               "type": "string",
-              "enum": [
-                "qr",
-                "phone"
-              ]
+              "enum": ["qr", "phone"]
             }
           },
           "locale": {
             "type": "string",
-            "enum": [
-              "en",
-              "pt-BR",
-              null
-            ],
+            "enum": ["en", "pt-BR", null],
             "nullable": true
           },
           "theme": {
             "type": "string",
-            "enum": [
-              "light",
-              "dark",
-              "system",
-              null
-            ],
+            "enum": ["light", "dark", "system", null],
             "nullable": true
           },
           "expiresAt": {
@@ -14375,7 +13787,7 @@
           "expectedPhone": {
             "type": "string",
             "nullable": true,
-            "description": "Optional expected phone, normalized to E.164. Creation checks WhatsApp registration; confirmed nonregistration is rejected and lookup unavailability is retryable."
+            "description": "Optional expected phone, normalized to E.164. Creation attempts WhatsApp registration resolution; confirmed nonregistration is rejected, while an inconclusive result remains unknown."
           },
           "methods": {
             "type": "array",
@@ -14384,10 +13796,7 @@
             "uniqueItems": true,
             "items": {
               "type": "string",
-              "enum": [
-                "qr",
-                "phone"
-              ]
+              "enum": ["qr", "phone"]
             }
           },
           "expiresInSeconds": {
@@ -14410,16 +13819,10 @@
           },
           "confirm": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           }
         },
-        "required": [
-          "projectId",
-          "sourceCustomerId",
-          "confirm"
-        ]
+        "required": ["projectId", "sourceCustomerId", "confirm"]
       },
       "TemplateId": {
         "type": "string",
@@ -14489,11 +13892,7 @@
           },
           "theme": {
             "type": "string",
-            "enum": [
-              "light",
-              "dark",
-              "system"
-            ]
+            "enum": ["light", "dark", "system"]
           },
           "hideWatermark": {
             "type": "boolean",
@@ -14505,12 +13904,7 @@
           },
           "shape": {
             "type": "string",
-            "enum": [
-              "square",
-              "rounded",
-              "pill",
-              null
-            ],
+            "enum": ["square", "rounded", "pill", null],
             "nullable": true
           },
           "radiusPx": {
@@ -14519,12 +13913,7 @@
           },
           "logoMode": {
             "type": "string",
-            "enum": [
-              "none",
-              "custom",
-              "organization",
-              "project"
-            ]
+            "enum": ["none", "custom", "organization", "project"]
           },
           "logoStorageId": {
             "type": "string",
@@ -14540,30 +13929,19 @@
           },
           "historySync": {
             "type": "string",
-            "enum": [
-              "ask",
-              "force_on",
-              "force_off"
-            ]
+            "enum": ["ask", "force_on", "force_off"]
           },
           "methods": {
             "type": "array",
             "nullable": true,
             "items": {
               "type": "string",
-              "enum": [
-                "qr",
-                "pairing"
-              ]
+              "enum": ["qr", "pairing"]
             }
           },
           "defaultMethod": {
             "type": "string",
-            "enum": [
-              "qr",
-              "pairing",
-              null
-            ],
+            "enum": ["qr", "pairing", null],
             "nullable": true
           },
           "createdAt": {
@@ -14685,11 +14063,7 @@
           },
           "theme": {
             "type": "string",
-            "enum": [
-              "light",
-              "dark",
-              "system"
-            ]
+            "enum": ["light", "dark", "system"]
           },
           "hideWatermark": {
             "type": "boolean",
@@ -14701,12 +14075,7 @@
           },
           "shape": {
             "type": "string",
-            "enum": [
-              "square",
-              "rounded",
-              "pill",
-              null
-            ],
+            "enum": ["square", "rounded", "pill", null],
             "nullable": true
           },
           "radiusPx": {
@@ -14717,12 +14086,7 @@
           },
           "logoMode": {
             "type": "string",
-            "enum": [
-              "none",
-              "custom",
-              "organization",
-              "project"
-            ]
+            "enum": ["none", "custom", "organization", "project"]
           },
           "logoStorageId": {
             "type": "string",
@@ -14734,11 +14098,7 @@
           },
           "historySync": {
             "type": "string",
-            "enum": [
-              "ask",
-              "force_on",
-              "force_off"
-            ]
+            "enum": ["ask", "force_on", "force_off"]
           },
           "methods": {
             "type": "array",
@@ -14748,20 +14108,13 @@
             "uniqueItems": true,
             "items": {
               "type": "string",
-              "enum": [
-                "qr",
-                "pairing"
-              ]
+              "enum": ["qr", "pairing"]
             },
             "description": "Connection methods offered on hosted QuickLink pages."
           },
           "defaultMethod": {
             "type": "string",
-            "enum": [
-              "qr",
-              "pairing",
-              null
-            ],
+            "enum": ["qr", "pairing", null],
             "nullable": true,
             "description": "Method the page opens first. Unset lets the page choose by device."
           }
@@ -14786,11 +14139,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "draft",
-              "ready",
-              "archived"
-            ]
+            "enum": ["draft", "ready", "archived"]
           },
           "version": {
             "type": "string"
@@ -14842,9 +14191,7 @@
                 "additionalProperties": true
               }
             },
-            "required": [
-              "definition"
-            ]
+            "required": ["definition"]
           }
         ]
       },
@@ -14868,11 +14215,7 @@
             "additionalProperties": true
           }
         },
-        "required": [
-          "projectId",
-          "name",
-          "definition"
-        ]
+        "required": ["projectId", "name", "definition"]
       },
       "UpdateFlowRequest": {
         "type": "object",
@@ -14893,21 +14236,14 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "draft",
-              "ready",
-              "archived"
-            ]
+            "enum": ["draft", "ready", "archived"]
           },
           "definition": {
             "type": "object",
             "additionalProperties": true
           }
         },
-        "required": [
-          "projectId",
-          "expectedUpdatedAt"
-        ]
+        "required": ["projectId", "expectedUpdatedAt"]
       },
       "DeleteFlowResult": {
         "type": "object",
@@ -14915,14 +14251,10 @@
         "properties": {
           "ok": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           }
         },
-        "required": [
-          "ok"
-        ]
+        "required": ["ok"]
       },
       "ManagementTemplate": {
         "type": "object",
@@ -15019,11 +14351,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "projectId",
-          "name",
-          "definition"
-        ]
+        "required": ["projectId", "name", "definition"]
       },
       "UpdateManagementTemplateRequest": {
         "type": "object",
@@ -15052,9 +14380,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "projectId"
-        ]
+        "required": ["projectId"]
       },
       "DeleteManagementTemplateResult": {
         "type": "object",
@@ -15062,14 +14388,10 @@
         "properties": {
           "ok": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           }
         },
-        "required": [
-          "ok"
-        ]
+        "required": ["ok"]
       },
       "SessionIdentifier": {
         "type": "string",
@@ -15098,9 +14420,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "quoteId"
-        ]
+        "required": ["quoteId"]
       },
       "NumberTierChange": {
         "type": "object",
@@ -15112,12 +14432,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "quoted",
-              "queued",
-              "applied",
-              "rejected"
-            ]
+            "enum": ["quoted", "queued", "applied", "rejected"]
           },
           "failureReason": {
             "type": "string",
@@ -15148,11 +14463,7 @@
               },
               "action": {
                 "type": "string",
-                "enum": [
-                  "upgrade",
-                  "downgrade",
-                  "configure"
-                ]
+                "enum": ["upgrade", "downgrade", "configure"]
               },
               "effectiveAtMs": {
                 "type": "integer"
@@ -15174,13 +14485,7 @@
             ]
           }
         },
-        "required": [
-          "id",
-          "status",
-          "failureReason",
-          "expiresAtMs",
-          "quote"
-        ]
+        "required": ["id", "status", "failureReason", "expiresAtMs", "quote"]
       },
       "NumberTierQuoteRequest": {
         "type": "object",
@@ -15191,18 +14496,11 @@
           },
           "tierOverride": {
             "type": "string",
-            "enum": [
-              "free",
-              "standard",
-              "pro",
-              null
-            ],
+            "enum": ["free", "standard", "pro", null],
             "nullable": true
           }
         },
-        "required": [
-          "tierOverride"
-        ]
+        "required": ["tierOverride"]
       },
       "SessionBatchRequest": {
         "type": "object",
@@ -15221,9 +14519,7 @@
             }
           }
         },
-        "required": [
-          "sessionIds"
-        ]
+        "required": ["sessionIds"]
       },
       "CreateTestingNumberRequest": {
         "type": "object",
@@ -15494,9 +14790,7 @@
             "description": "WhatsApp-supported ISO 3166-1 alpha-2 country used to generate a realistic E.164 identity."
           }
         },
-        "required": [
-          "projectId"
-        ]
+        "required": ["projectId"]
       },
       "PlatformSession": {
         "type": "object",
@@ -15536,13 +14830,7 @@
           },
           "tierOverride": {
             "type": "string",
-            "enum": [
-              "free",
-              "standard",
-              "pro",
-              "scale",
-              null
-            ],
+            "enum": ["free", "standard", "pro", "scale", null],
             "nullable": true
           },
           "status": {
@@ -15585,11 +14873,7 @@
                 "type": "boolean"
               }
             },
-            "required": [
-              "id",
-              "name",
-              "isDefault"
-            ]
+            "required": ["id", "name", "isDefault"]
           },
           "claim": {
             "oneOf": [
@@ -15599,14 +14883,10 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": [
-                      "unclaimed"
-                    ]
+                    "enum": ["unclaimed"]
                   }
                 },
-                "required": [
-                  "kind"
-                ]
+                "required": ["kind"]
               },
               {
                 "type": "object",
@@ -15614,9 +14894,7 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": [
-                      "claimed-elsewhere"
-                    ]
+                    "enum": ["claimed-elsewhere"]
                   },
                   "displayName": {
                     "type": "string"
@@ -15669,19 +14947,14 @@
         "properties": {
           "stopping": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "sessionId": {
             "type": "string",
             "format": "uuid"
           }
         },
-        "required": [
-          "stopping",
-          "sessionId"
-        ]
+        "required": ["stopping", "sessionId"]
       },
       "SessionStartResult": {
         "type": "object",
@@ -15689,19 +14962,14 @@
         "properties": {
           "starting": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "sessionId": {
             "type": "string",
             "format": "uuid"
           }
         },
-        "required": [
-          "starting",
-          "sessionId"
-        ]
+        "required": ["starting", "sessionId"]
       },
       "SessionRemoveResult": {
         "type": "object",
@@ -15709,19 +14977,14 @@
         "properties": {
           "removed": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "sessionId": {
             "type": "string",
             "format": "uuid"
           }
         },
-        "required": [
-          "removed",
-          "sessionId"
-        ]
+        "required": ["removed", "sessionId"]
       },
       "SessionBatchStopResult": {
         "type": "object",
@@ -15733,9 +14996,7 @@
             "maximum": 100
           }
         },
-        "required": [
-          "stopping"
-        ]
+        "required": ["stopping"]
       },
       "SessionBatchRemoveResult": {
         "type": "object",
@@ -15747,9 +15008,7 @@
             "maximum": 100
           }
         },
-        "required": [
-          "removed"
-        ]
+        "required": ["removed"]
       },
       "TestingSessionId": {
         "type": "string",
@@ -15781,16 +15040,10 @@
                 "maxLength": 320
               }
             },
-            "required": [
-              "name",
-              "website",
-              "supportEmail"
-            ]
+            "required": ["name", "website", "supportEmail"]
           }
         },
-        "required": [
-          "business"
-        ]
+        "required": ["business"]
       },
       "ProductionEnrollmentResult": {
         "type": "object",
@@ -15811,9 +15064,7 @@
           },
           "stage": {
             "type": "string",
-            "enum": [
-              "development"
-            ]
+            "enum": ["development"]
           },
           "operationId": {
             "type": "string",
@@ -15821,12 +15072,7 @@
           },
           "enrollmentStatus": {
             "type": "string",
-            "enum": [
-              "requested",
-              "approval_required",
-              "provisioning",
-              "ready"
-            ]
+            "enum": ["requested", "approval_required", "provisioning", "ready"]
           }
         },
         "required": [
@@ -15849,23 +15095,14 @@
           },
           "action": {
             "type": "string",
-            "enum": [
-              "approve",
-              "cancel"
-            ]
+            "enum": ["approve", "cancel"]
           },
           "accepted": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           }
         },
-        "required": [
-          "operationId",
-          "action",
-          "accepted"
-        ]
+        "required": ["operationId", "action", "accepted"]
       },
       "CursorPageMetadata": {
         "type": "object",
@@ -15879,10 +15116,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "nextCursor",
-          "hasMore"
-        ]
+        "required": ["nextCursor", "hasMore"]
       },
       "BanSafeHealthProbabilities": {
         "type": "object",
@@ -15909,12 +15143,7 @@
             "maximum": 1
           }
         },
-        "required": [
-          "healthy",
-          "limited",
-          "restricted",
-          "banned"
-        ]
+        "required": ["healthy", "limited", "restricted", "banned"]
       },
       "BanSafeObservedAccountState": {
         "type": "object",
@@ -15923,12 +15152,7 @@
         "properties": {
           "state": {
             "type": "string",
-            "enum": [
-              "healthy",
-              "limited",
-              "restricted",
-              "banned"
-            ]
+            "enum": ["healthy", "limited", "restricted", "banned"]
           },
           "observedAt": {
             "type": "string",
@@ -15936,17 +15160,10 @@
           },
           "source": {
             "type": "string",
-            "enum": [
-              "account_check",
-              "restriction_event"
-            ]
+            "enum": ["account_check", "restriction_event"]
           }
         },
-        "required": [
-          "state",
-          "observedAt",
-          "source"
-        ]
+        "required": ["state", "observedAt", "source"]
       },
       "BanSafeHealthExplanationFactor": {
         "type": "object",
@@ -15996,13 +15213,7 @@
             "minimum": 0
           }
         },
-        "required": [
-          "group",
-          "key",
-          "penalty",
-          "observedValue",
-          "sampleSize"
-        ]
+        "required": ["group", "key", "penalty", "observedValue", "sampleSize"]
       },
       "BanSafeHealthExplanation": {
         "type": "object",
@@ -16085,12 +15296,7 @@
             }
           }
         },
-        "required": [
-          "penalties",
-          "factors",
-          "measuredGroups",
-          "missingGroups"
-        ]
+        "required": ["penalties", "factors", "measuredGroups", "missingGroups"]
       },
       "BanSafeSignalDefinition": {
         "type": "object",
@@ -16107,13 +15313,7 @@
           },
           "kind": {
             "type": "string",
-            "enum": [
-              "number",
-              "boolean",
-              "enum",
-              "histogram",
-              "code_counts"
-            ]
+            "enum": ["number", "boolean", "enum", "histogram", "code_counts"]
           },
           "unit": {
             "type": "string",
@@ -16129,14 +15329,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "key",
-          "label",
-          "group",
-          "kind",
-          "unit",
-          "description"
-        ]
+        "required": ["key", "label", "group", "kind", "unit", "description"]
       },
       "BanSafeSignalCodeCount": {
         "type": "object",
@@ -16151,10 +15344,7 @@
             "minimum": 0
           }
         },
-        "required": [
-          "code",
-          "count"
-        ]
+        "required": ["code", "count"]
       },
       "BanSafeSignal": {
         "type": "object",
@@ -16171,13 +15361,7 @@
           },
           "kind": {
             "type": "string",
-            "enum": [
-              "number",
-              "boolean",
-              "enum",
-              "histogram",
-              "code_counts"
-            ]
+            "enum": ["number", "boolean", "enum", "histogram", "code_counts"]
           },
           "unit": {
             "type": "string",
@@ -16247,12 +15431,7 @@
         "properties": {
           "state": {
             "type": "string",
-            "enum": [
-              "fresh",
-              "stale",
-              "not_collected",
-              "unsupported"
-            ]
+            "enum": ["fresh", "stale", "not_collected", "unsupported"]
           },
           "latestFlushedAt": {
             "type": "string",
@@ -16359,12 +15538,7 @@
             "$ref": "#/components/schemas/BanSafeCollectionStatus"
           }
         },
-        "required": [
-          "sessionId",
-          "session",
-          "projectId",
-          "collection"
-        ]
+        "required": ["sessionId", "session", "projectId", "collection"]
       },
       "BanSafeTelemetryDetail": {
         "type": "object",
@@ -16422,30 +15596,15 @@
           },
           "mode": {
             "type": "string",
-            "enum": [
-              "apply",
-              "clear"
-            ]
+            "enum": ["apply", "clear"]
           },
           "action": {
             "type": "string",
-            "enum": [
-              "stop",
-              "slow_down",
-              "log_out",
-              "email",
-              "webhook"
-            ]
+            "enum": ["stop", "slow_down", "log_out", "email", "webhook"]
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending",
-              "running",
-              "succeeded",
-              "failed",
-              "cancelled"
-            ]
+            "enum": ["pending", "running", "succeeded", "failed", "cancelled"]
           },
           "health": {
             "type": "number",
@@ -16459,10 +15618,7 @@
           },
           "healthSource": {
             "type": "string",
-            "enum": [
-              "rules_v1",
-              "ml_model"
-            ]
+            "enum": ["rules_v1", "ml_model"]
           },
           "estimatorVersion": {
             "type": "string"
@@ -16531,33 +15687,15 @@
         "properties": {
           "rung": {
             "type": "string",
-            "enum": [
-              "none",
-              "notify",
-              "throttle",
-              "block_cold",
-              "suspend"
-            ]
+            "enum": ["none", "notify", "throttle", "block_cold", "suspend"]
           },
           "previousRung": {
             "type": "string",
-            "enum": [
-              "none",
-              "notify",
-              "throttle",
-              "block_cold",
-              "suspend"
-            ]
+            "enum": ["none", "notify", "throttle", "block_cold", "suspend"]
           },
           "organizationFloor": {
             "type": "string",
-            "enum": [
-              "none",
-              "notify",
-              "throttle",
-              "block_cold",
-              "suspend"
-            ],
+            "enum": ["none", "notify", "throttle", "block_cold", "suspend"],
             "description": "The lowest restriction every number in this workspace is held to."
           },
           "reason": {
@@ -16565,10 +15703,7 @@
           },
           "source": {
             "type": "string",
-            "enum": [
-              "automatic",
-              "operator"
-            ]
+            "enum": ["automatic", "operator"]
           },
           "throughputPerMinute": {
             "type": "number",
@@ -16608,19 +15743,11 @@
           },
           "appealState": {
             "type": "string",
-            "enum": [
-              "none",
-              "requested",
-              "granted",
-              "denied"
-            ]
+            "enum": ["none", "requested", "granted", "denied"]
           },
           "state": {
             "type": "string",
-            "enum": [
-              "applied",
-              "applying"
-            ],
+            "enum": ["applied", "applying"],
             "description": "`applying` while the number has not confirmed the restriction."
           }
         },
@@ -16669,21 +15796,11 @@
           },
           "band": {
             "type": "string",
-            "enum": [
-              "good",
-              "fair",
-              "poor",
-              "failing",
-              "unknown"
-            ]
+            "enum": ["good", "fair", "poor", "failing", "unknown"]
           },
           "healthSource": {
             "type": "string",
-            "enum": [
-              "rules_v1",
-              "ml_model",
-              "unavailable"
-            ],
+            "enum": ["rules_v1", "ml_model", "unavailable"],
             "description": "Estimator family. rules_v1 is deterministic; unavailable carries no numeric Health."
           },
           "healthEstimatorVersion": {
@@ -16709,11 +15826,7 @@
           },
           "healthReliability": {
             "type": "string",
-            "enum": [
-              "rules_based",
-              "validated",
-              "unavailable"
-            ],
+            "enum": ["rules_based", "validated", "unavailable"],
             "description": "Support category, not a confidence score."
           },
           "healthUnavailableReason": {
@@ -16736,13 +15849,7 @@
           },
           "mostLikelyHealthState": {
             "type": "string",
-            "enum": [
-              "healthy",
-              "limited",
-              "restricted",
-              "banned",
-              null
-            ],
+            "enum": ["healthy", "limited", "restricted", "banned", null],
             "nullable": true
           },
           "healthExplanation": {
@@ -16819,21 +15926,11 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "open",
-              "acknowledged",
-              "resolved",
-              "not_measured"
-            ]
+            "enum": ["open", "acknowledged", "resolved", "not_measured"]
           },
           "severity": {
             "type": "string",
-            "enum": [
-              "info",
-              "warning",
-              "critical",
-              null
-            ],
+            "enum": ["info", "warning", "critical", null],
             "nullable": true
           },
           "occurrences": {
@@ -16896,13 +15993,7 @@
           "resolveReason": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              "clean",
-              "key_retired",
-              "number_removed",
-              "stale",
-              null
-            ]
+            "enum": ["clean", "key_retired", "number_removed", "stale", null]
           }
         },
         "required": [
@@ -16942,21 +16033,11 @@
           },
           "band": {
             "type": "string",
-            "enum": [
-              "good",
-              "fair",
-              "poor",
-              "failing",
-              "unknown"
-            ]
+            "enum": ["good", "fair", "poor", "failing", "unknown"]
           },
           "healthSource": {
             "type": "string",
-            "enum": [
-              "rules_v1",
-              "ml_model",
-              "unavailable"
-            ],
+            "enum": ["rules_v1", "ml_model", "unavailable"],
             "description": "Estimator family. rules_v1 is deterministic; unavailable carries no numeric Health."
           },
           "healthEstimatorVersion": {
@@ -16982,11 +16063,7 @@
           },
           "healthReliability": {
             "type": "string",
-            "enum": [
-              "rules_based",
-              "validated",
-              "unavailable"
-            ],
+            "enum": ["rules_based", "validated", "unavailable"],
             "description": "Support category, not a confidence score."
           },
           "healthUnavailableReason": {
@@ -17009,13 +16086,7 @@
           },
           "mostLikelyHealthState": {
             "type": "string",
-            "enum": [
-              "healthy",
-              "limited",
-              "restricted",
-              "banned",
-              null
-            ],
+            "enum": ["healthy", "limited", "restricted", "banned", null],
             "nullable": true
           },
           "healthExplanation": {
@@ -17050,12 +16121,7 @@
           },
           "appealState": {
             "type": "string",
-            "enum": [
-              "none",
-              "requested",
-              "granted",
-              "denied"
-            ]
+            "enum": ["none", "requested", "granted", "denied"]
           }
         },
         "required": [
@@ -17092,12 +16158,7 @@
           },
           "tenureSource": {
             "type": "string",
-            "enum": [
-              "history",
-              "link",
-              "plan",
-              null
-            ],
+            "enum": ["history", "link", "plan", null],
             "nullable": true,
             "description": "Retained evidence anchoring the ramp; null when legacy evidence cannot be classified."
           },
@@ -17155,11 +16216,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "projectId",
-          "enabled",
-          "banInsuranceIncluded"
-        ]
+        "required": ["projectId", "enabled", "banInsuranceIncluded"]
       },
       "UpdateProjectInsuranceEvidenceInput": {
         "type": "object",
@@ -17169,9 +16226,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "enabled"
-        ]
+        "required": ["enabled"]
       },
       "BanSafeHealthPoint": {
         "type": "object",
@@ -17185,23 +16240,12 @@
           },
           "band": {
             "type": "string",
-            "enum": [
-              "good",
-              "fair",
-              "poor",
-              "failing",
-              "unknown",
-              null
-            ],
+            "enum": ["good", "fair", "poor", "failing", "unknown", null],
             "nullable": true
           },
           "healthSource": {
             "type": "string",
-            "enum": [
-              "rules_v1",
-              "ml_model",
-              "unavailable"
-            ]
+            "enum": ["rules_v1", "ml_model", "unavailable"]
           },
           "healthEstimatorVersion": {
             "type": "string",
@@ -17223,11 +16267,7 @@
           },
           "healthReliability": {
             "type": "string",
-            "enum": [
-              "rules_based",
-              "validated",
-              "unavailable"
-            ]
+            "enum": ["rules_based", "validated", "unavailable"]
           },
           "healthUnavailableReason": {
             "type": "string",
@@ -17249,13 +16289,7 @@
           },
           "mostLikelyHealthState": {
             "type": "string",
-            "enum": [
-              "healthy",
-              "limited",
-              "restricted",
-              "banned",
-              null
-            ],
+            "enum": ["healthy", "limited", "restricted", "banned", null],
             "nullable": true
           },
           "healthExplanation": {
@@ -17309,11 +16343,7 @@
             }
           }
         },
-        "required": [
-          "sessionId",
-          "session",
-          "points"
-        ]
+        "required": ["sessionId", "session", "points"]
       },
       "BanSafeEnforcementSummary": {
         "type": "object",
@@ -17335,43 +16365,22 @@
           },
           "rung": {
             "type": "string",
-            "enum": [
-              "none",
-              "notify",
-              "throttle",
-              "block_cold",
-              "suspend"
-            ]
+            "enum": ["none", "notify", "throttle", "block_cold", "suspend"]
           },
           "previousRung": {
             "type": "string",
-            "enum": [
-              "none",
-              "notify",
-              "throttle",
-              "block_cold",
-              "suspend"
-            ]
+            "enum": ["none", "notify", "throttle", "block_cold", "suspend"]
           },
           "organizationFloor": {
             "type": "string",
-            "enum": [
-              "none",
-              "notify",
-              "throttle",
-              "block_cold",
-              "suspend"
-            ]
+            "enum": ["none", "notify", "throttle", "block_cold", "suspend"]
           },
           "reason": {
             "type": "string"
           },
           "source": {
             "type": "string",
-            "enum": [
-              "automatic",
-              "operator"
-            ]
+            "enum": ["automatic", "operator"]
           },
           "throughputPerMinute": {
             "type": "number",
@@ -17392,21 +16401,11 @@
           },
           "band": {
             "type": "string",
-            "enum": [
-              "good",
-              "fair",
-              "poor",
-              "failing",
-              "unknown"
-            ]
+            "enum": ["good", "fair", "poor", "failing", "unknown"]
           },
           "healthSource": {
             "type": "string",
-            "enum": [
-              "rules_v1",
-              "ml_model",
-              "unavailable"
-            ],
+            "enum": ["rules_v1", "ml_model", "unavailable"],
             "description": "Estimator family. rules_v1 is deterministic; unavailable carries no numeric Health."
           },
           "healthEstimatorVersion": {
@@ -17432,11 +16431,7 @@
           },
           "healthReliability": {
             "type": "string",
-            "enum": [
-              "rules_based",
-              "validated",
-              "unavailable"
-            ],
+            "enum": ["rules_based", "validated", "unavailable"],
             "description": "Support category, not a confidence score."
           },
           "healthUnavailableReason": {
@@ -17459,13 +16454,7 @@
           },
           "mostLikelyHealthState": {
             "type": "string",
-            "enum": [
-              "healthy",
-              "limited",
-              "restricted",
-              "banned",
-              null
-            ],
+            "enum": ["healthy", "limited", "restricted", "banned", null],
             "nullable": true
           },
           "healthExplanation": {
@@ -17515,19 +16504,11 @@
           },
           "appealState": {
             "type": "string",
-            "enum": [
-              "none",
-              "requested",
-              "granted",
-              "denied"
-            ]
+            "enum": ["none", "requested", "granted", "denied"]
           },
           "state": {
             "type": "string",
-            "enum": [
-              "applied",
-              "applying"
-            ]
+            "enum": ["applied", "applying"]
           }
         },
         "required": [
@@ -17601,10 +16582,7 @@
           },
           "source": {
             "type": "string",
-            "enum": [
-              "runtime",
-              "customer"
-            ]
+            "enum": ["runtime", "customer"]
           },
           "resolution": {
             "type": "string"
@@ -17891,9 +16869,7 @@
             "maxLength": 500
           }
         },
-        "required": [
-          "session"
-        ]
+        "required": ["session"]
       },
       "SafeModeSettings": {
         "type": "object",
@@ -17901,35 +16877,19 @@
         "properties": {
           "presence": {
             "type": "string",
-            "enum": [
-              "dark",
-              "online_while_sending",
-              "online_hours"
-            ]
+            "enum": ["dark", "online_while_sending", "online_hours"]
           },
           "typing": {
             "type": "string",
-            "enum": [
-              "off",
-              "before_text",
-              "before_all"
-            ]
+            "enum": ["off", "before_text", "before_all"]
           },
           "reads": {
             "type": "string",
-            "enum": [
-              "off",
-              "replied_chats",
-              "all_inbound"
-            ]
+            "enum": ["off", "replied_chats", "all_inbound"]
           },
           "pacing": {
             "type": "string",
-            "enum": [
-              "off",
-              "jittered",
-              "conversation"
-            ]
+            "enum": ["off", "jittered", "conversation"]
           },
           "onlineStart": {
             "type": "integer",
@@ -17957,47 +16917,22 @@
         "properties": {
           "presence": {
             "type": "string",
-            "enum": [
-              "inherit",
-              "dark",
-              "online_while_sending",
-              "online_hours"
-            ]
+            "enum": ["inherit", "dark", "online_while_sending", "online_hours"]
           },
           "typing": {
             "type": "string",
-            "enum": [
-              "inherit",
-              "off",
-              "before_text",
-              "before_all"
-            ]
+            "enum": ["inherit", "off", "before_text", "before_all"]
           },
           "reads": {
             "type": "string",
-            "enum": [
-              "inherit",
-              "off",
-              "replied_chats",
-              "all_inbound"
-            ]
+            "enum": ["inherit", "off", "replied_chats", "all_inbound"]
           },
           "pacing": {
             "type": "string",
-            "enum": [
-              "inherit",
-              "off",
-              "jittered",
-              "conversation"
-            ]
+            "enum": ["inherit", "off", "jittered", "conversation"]
           }
         },
-        "required": [
-          "presence",
-          "typing",
-          "reads",
-          "pacing"
-        ]
+        "required": ["presence", "typing", "reads", "pacing"]
       },
       "SafeModeApplied": {
         "type": "object",
@@ -18025,13 +16960,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "observedAt",
-          "presence",
-          "typing",
-          "reads",
-          "pacing"
-        ]
+        "required": ["observedAt", "presence", "typing", "reads", "pacing"]
       },
       "ProjectSafeMode": {
         "type": "object",
@@ -18054,12 +16983,7 @@
             "description": "Why a raise would be refused. Null when the plan includes BanSafe Lite."
           }
         },
-        "required": [
-          "projectId",
-          "ceiling",
-          "entitled",
-          "entitlementReason"
-        ]
+        "required": ["projectId", "ceiling", "entitled", "entitlementReason"]
       },
       "SessionSafeMode": {
         "type": "object",
@@ -18123,35 +17047,19 @@
         "properties": {
           "presence": {
             "type": "string",
-            "enum": [
-              "dark",
-              "online_while_sending",
-              "online_hours"
-            ]
+            "enum": ["dark", "online_while_sending", "online_hours"]
           },
           "typing": {
             "type": "string",
-            "enum": [
-              "off",
-              "before_text",
-              "before_all"
-            ]
+            "enum": ["off", "before_text", "before_all"]
           },
           "reads": {
             "type": "string",
-            "enum": [
-              "off",
-              "replied_chats",
-              "all_inbound"
-            ]
+            "enum": ["off", "replied_chats", "all_inbound"]
           },
           "pacing": {
             "type": "string",
-            "enum": [
-              "off",
-              "jittered",
-              "conversation"
-            ]
+            "enum": ["off", "jittered", "conversation"]
           },
           "onlineStart": {
             "type": "integer",
@@ -18172,39 +17080,19 @@
         "properties": {
           "presence": {
             "type": "string",
-            "enum": [
-              "inherit",
-              "dark",
-              "online_while_sending",
-              "online_hours"
-            ]
+            "enum": ["inherit", "dark", "online_while_sending", "online_hours"]
           },
           "typing": {
             "type": "string",
-            "enum": [
-              "inherit",
-              "off",
-              "before_text",
-              "before_all"
-            ]
+            "enum": ["inherit", "off", "before_text", "before_all"]
           },
           "reads": {
             "type": "string",
-            "enum": [
-              "inherit",
-              "off",
-              "replied_chats",
-              "all_inbound"
-            ]
+            "enum": ["inherit", "off", "replied_chats", "all_inbound"]
           },
           "pacing": {
             "type": "string",
-            "enum": [
-              "inherit",
-              "off",
-              "jittered",
-              "conversation"
-            ]
+            "enum": ["inherit", "off", "jittered", "conversation"]
           }
         }
       },
@@ -18229,11 +17117,7 @@
             "description": "Messages a number may send on its first day."
           }
         },
-        "required": [
-          "enabled",
-          "warmupDays",
-          "dailyStart"
-        ]
+        "required": ["enabled", "warmupDays", "dailyStart"]
       },
       "WarmupCurvePoint": {
         "type": "object",
@@ -18250,10 +17134,7 @@
             "description": "Messages allowed on that day."
           }
         },
-        "required": [
-          "day",
-          "allowance"
-        ]
+        "required": ["day", "allowance"]
       },
       "ProjectWarmupPlan": {
         "type": "object",
@@ -18331,10 +17212,7 @@
             "description": "Whether an enabled webhook exists for this team or project."
           }
         },
-        "required": [
-          "emailConfigured",
-          "webhookConfigured"
-        ]
+        "required": ["emailConfigured", "webhookConfigured"]
       },
       "ProjectHealthPolicy": {
         "type": "object",
@@ -18360,12 +17238,7 @@
           },
           "sessionAction": {
             "type": "string",
-            "enum": [
-              "none",
-              "stop",
-              "slow_down",
-              "log_out"
-            ]
+            "enum": ["none", "stop", "slow_down", "log_out"]
           },
           "slowDownMps": {
             "type": "number",
@@ -18413,12 +17286,7 @@
           },
           "sessionAction": {
             "type": "string",
-            "enum": [
-              "none",
-              "stop",
-              "slow_down",
-              "log_out"
-            ]
+            "enum": ["none", "stop", "slow_down", "log_out"]
           },
           "slowDownMps": {
             "type": "number",
@@ -18454,11 +17322,7 @@
           },
           "backoff": {
             "type": "string",
-            "enum": [
-              "constant",
-              "linear",
-              "exponential"
-            ]
+            "enum": ["constant", "linear", "exponential"]
           },
           "initialDelaySeconds": {
             "type": "integer",
@@ -18466,11 +17330,7 @@
             "maximum": 3600
           }
         },
-        "required": [
-          "maximumAttempts",
-          "backoff",
-          "initialDelaySeconds"
-        ]
+        "required": ["maximumAttempts", "backoff", "initialDelaySeconds"]
       },
       "WebhookRetryPolicy": {
         "type": "object",
@@ -18483,11 +17343,7 @@
           },
           "backoff": {
             "type": "string",
-            "enum": [
-              "constant",
-              "linear",
-              "exponential"
-            ]
+            "enum": ["constant", "linear", "exponential"]
           },
           "initialDelaySeconds": {
             "type": "integer",
@@ -18495,11 +17351,7 @@
             "maximum": 3600
           }
         },
-        "required": [
-          "maximumAttempts",
-          "backoff",
-          "initialDelaySeconds"
-        ]
+        "required": ["maximumAttempts", "backoff", "initialDelaySeconds"]
       },
       "WebhookHeaderInput": {
         "type": "object",
@@ -18520,10 +17372,7 @@
             "description": "Encrypted write-only HTTP field value. Limited to 4096 UTF-8 bytes. Line breaks, NUL, and other control characters except horizontal tab are rejected."
           }
         },
-        "required": [
-          "name",
-          "value"
-        ]
+        "required": ["name", "value"]
       },
       "WebhookHeaderMetadata": {
         "type": "object",
@@ -18535,9 +17384,7 @@
             "maxLength": 128
           }
         },
-        "required": [
-          "name"
-        ]
+        "required": ["name"]
       },
       "WebhookSigningSecretMetadata": {
         "type": "object",
@@ -18557,11 +17404,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "version",
-          "createdAt",
-          "previousValidUntil"
-        ]
+        "required": ["version", "createdAt", "previousValidUntil"]
       },
       "CreateOrganizationWebhookInput": {
         "type": "object",
@@ -18590,10 +17433,7 @@
           },
           "format": {
             "type": "string",
-            "enum": [
-              "native",
-              "meta"
-            ],
+            "enum": ["native", "meta"],
             "default": "native"
           },
           "retryPolicy": {
@@ -18607,10 +17447,7 @@
             }
           }
         },
-        "required": [
-          "url",
-          "eventTypes"
-        ]
+        "required": ["url", "eventTypes"]
       },
       "CreateProjectWebhookInput": {
         "type": "object",
@@ -18639,10 +17476,7 @@
           },
           "format": {
             "type": "string",
-            "enum": [
-              "native",
-              "meta"
-            ],
+            "enum": ["native", "meta"],
             "default": "native"
           },
           "retryPolicy": {
@@ -18656,10 +17490,7 @@
             }
           }
         },
-        "required": [
-          "url",
-          "eventTypes"
-        ]
+        "required": ["url", "eventTypes"]
       },
       "UpdateOrganizationWebhookInput": {
         "type": "object",
@@ -18687,10 +17518,7 @@
           },
           "format": {
             "type": "string",
-            "enum": [
-              "native",
-              "meta"
-            ]
+            "enum": ["native", "meta"]
           },
           "retryPolicy": {
             "$ref": "#/components/schemas/WebhookRetryPolicyInput"
@@ -18731,10 +17559,7 @@
           },
           "format": {
             "type": "string",
-            "enum": [
-              "native",
-              "meta"
-            ]
+            "enum": ["native", "meta"]
           },
           "retryPolicy": {
             "$ref": "#/components/schemas/WebhookRetryPolicyInput"
@@ -18775,16 +17600,12 @@
           },
           "owner": {
             "type": "string",
-            "enum": [
-              "organization"
-            ]
+            "enum": ["organization"]
           },
           "projectId": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ]
+            "enum": [null]
           },
           "url": {
             "type": "string",
@@ -18807,10 +17628,7 @@
           },
           "format": {
             "type": "string",
-            "enum": [
-              "native",
-              "meta"
-            ]
+            "enum": ["native", "meta"]
           },
           "retryPolicy": {
             "$ref": "#/components/schemas/WebhookRetryPolicy"
@@ -18864,9 +17682,7 @@
           },
           "owner": {
             "type": "string",
-            "enum": [
-              "project"
-            ]
+            "enum": ["project"]
           },
           "projectId": {
             "type": "string",
@@ -18893,10 +17709,7 @@
           },
           "format": {
             "type": "string",
-            "enum": [
-              "native",
-              "meta"
-            ]
+            "enum": ["native", "meta"]
           },
           "retryPolicy": {
             "$ref": "#/components/schemas/WebhookRetryPolicy"
@@ -18946,9 +17759,7 @@
           "operationId": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ]
+            "enum": [null]
           },
           "idempotency": {
             "$ref": "#/components/schemas/IdempotencyReceipt"
@@ -18980,9 +17791,7 @@
           "operationId": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ]
+            "enum": [null]
           },
           "idempotency": {
             "$ref": "#/components/schemas/IdempotencyReceipt"
@@ -19014,19 +17823,13 @@
           "operationId": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ]
+            "enum": [null]
           },
           "idempotency": {
             "$ref": "#/components/schemas/IdempotencyReceipt"
           }
         },
-        "required": [
-          "webhook",
-          "operationId",
-          "idempotency"
-        ]
+        "required": ["webhook", "operationId", "idempotency"]
       },
       "ProjectWebhookMutationReceipt": {
         "type": "object",
@@ -19038,19 +17841,13 @@
           "operationId": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ]
+            "enum": [null]
           },
           "idempotency": {
             "$ref": "#/components/schemas/IdempotencyReceipt"
           }
         },
-        "required": [
-          "webhook",
-          "operationId",
-          "idempotency"
-        ]
+        "required": ["webhook", "operationId", "idempotency"]
       },
       "OrganizationWebhookDeletionReceipt": {
         "type": "object",
@@ -19062,27 +17859,18 @@
           },
           "deleted": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "operationId": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ]
+            "enum": [null]
           },
           "idempotency": {
             "$ref": "#/components/schemas/IdempotencyReceipt"
           }
         },
-        "required": [
-          "webhookId",
-          "deleted",
-          "operationId",
-          "idempotency"
-        ]
+        "required": ["webhookId", "deleted", "operationId", "idempotency"]
       },
       "ProjectWebhookDeletionReceipt": {
         "type": "object",
@@ -19094,27 +17882,18 @@
           },
           "deleted": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "operationId": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ]
+            "enum": [null]
           },
           "idempotency": {
             "$ref": "#/components/schemas/IdempotencyReceipt"
           }
         },
-        "required": [
-          "webhookId",
-          "deleted",
-          "operationId",
-          "idempotency"
-        ]
+        "required": ["webhookId", "deleted", "operationId", "idempotency"]
       },
       "OrganizationWebhookSecretRotationReceipt": {
         "type": "object",
@@ -19127,9 +17906,7 @@
           "operationId": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ]
+            "enum": [null]
           },
           "secret": {
             "type": "string",
@@ -19166,9 +17943,7 @@
           "operationId": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ]
+            "enum": [null]
           },
           "secret": {
             "type": "string",
@@ -19200,15 +17975,11 @@
         "properties": {
           "encoding": {
             "type": "string",
-            "enum": [
-              "base64"
-            ]
+            "enum": ["base64"]
           },
           "contentType": {
             "type": "string",
-            "enum": [
-              "application/json"
-            ]
+            "enum": ["application/json"]
           },
           "data": {
             "type": "string",
@@ -19217,11 +17988,7 @@
             "description": "Canonical base64 for the complete native webhook body; decoded bytes are limited to 65,536 bytes."
           }
         },
-        "required": [
-          "encoding",
-          "contentType",
-          "data"
-        ]
+        "required": ["encoding", "contentType", "data"]
       },
       "OrganizationEvent": {
         "type": "object",
@@ -19238,9 +18005,7 @@
           "projectId": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ]
+            "enum": [null]
           },
           "type": {
             "type": "string",
@@ -19249,18 +18014,11 @@
           },
           "source": {
             "type": "string",
-            "enum": [
-              "runtime",
-              "platform",
-              "test"
-            ]
+            "enum": ["runtime", "platform", "test"]
           },
           "environment": {
             "type": "string",
-            "enum": [
-              "development",
-              "production"
-            ]
+            "enum": ["development", "production"]
           },
           "createdAt": {
             "type": "string",
@@ -19331,18 +18089,11 @@
           },
           "source": {
             "type": "string",
-            "enum": [
-              "runtime",
-              "platform",
-              "test"
-            ]
+            "enum": ["runtime", "platform", "test"]
           },
           "environment": {
             "type": "string",
-            "enum": [
-              "development",
-              "production"
-            ]
+            "enum": ["development", "production"]
           },
           "createdAt": {
             "type": "string",
@@ -19405,9 +18156,7 @@
           "projectId": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ]
+            "enum": [null]
           },
           "eventId": {
             "type": "string",
@@ -19419,13 +18168,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending",
-              "delivering",
-              "retrying",
-              "succeeded",
-              "failed"
-            ]
+            "enum": ["pending", "delivering", "retrying", "succeeded", "failed"]
           },
           "attemptCount": {
             "type": "integer",
@@ -19439,9 +18182,7 @@
                 "type": "boolean"
               }
             },
-            "required": [
-              "retryable"
-            ]
+            "required": ["retryable"]
           },
           "payloadAvailability": {
             "type": "string",
@@ -19501,10 +18242,7 @@
                 "nullable": true
               }
             },
-            "required": [
-              "statusCode",
-              "errorCode"
-            ]
+            "required": ["statusCode", "errorCode"]
           }
         },
         "required": [
@@ -19553,13 +18291,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending",
-              "delivering",
-              "retrying",
-              "succeeded",
-              "failed"
-            ]
+            "enum": ["pending", "delivering", "retrying", "succeeded", "failed"]
           },
           "attemptCount": {
             "type": "integer",
@@ -19573,9 +18305,7 @@
                 "type": "boolean"
               }
             },
-            "required": [
-              "retryable"
-            ]
+            "required": ["retryable"]
           },
           "payloadAvailability": {
             "type": "string",
@@ -19635,10 +18365,7 @@
                 "nullable": true
               }
             },
-            "required": [
-              "statusCode",
-              "errorCode"
-            ]
+            "required": ["statusCode", "errorCode"]
           }
         },
         "required": [
@@ -19676,9 +18403,7 @@
           "projectId": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ]
+            "enum": [null]
           },
           "deliveryId": {
             "type": "string",
@@ -19690,12 +18415,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending",
-              "delivering",
-              "succeeded",
-              "failed"
-            ]
+            "enum": ["pending", "delivering", "succeeded", "failed"]
           },
           "startedAt": {
             "type": "string",
@@ -19747,11 +18467,7 @@
                 "type": "boolean"
               }
             },
-            "required": [
-              "contentType",
-              "excerpt",
-              "truncated"
-            ]
+            "required": ["contentType", "excerpt", "truncated"]
           },
           "metadataExpiresAt": {
             "type": "string",
@@ -19801,12 +18517,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending",
-              "delivering",
-              "succeeded",
-              "failed"
-            ]
+            "enum": ["pending", "delivering", "succeeded", "failed"]
           },
           "startedAt": {
             "type": "string",
@@ -19858,11 +18569,7 @@
                 "type": "boolean"
               }
             },
-            "required": [
-              "contentType",
-              "excerpt",
-              "truncated"
-            ]
+            "required": ["contentType", "excerpt", "truncated"]
           },
           "metadataExpiresAt": {
             "type": "string",
@@ -19911,13 +18618,7 @@
             "format": "date-time"
           }
         },
-        "required": [
-          "id",
-          "key",
-          "replayed",
-          "createdAt",
-          "expiresAt"
-        ]
+        "required": ["id", "key", "replayed", "createdAt", "expiresAt"]
       },
       "ReplayEventInput": {
         "type": "object",
@@ -19928,9 +18629,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "webhookId"
-        ]
+        "required": ["webhookId"]
       },
       "TestWebhookInput": {
         "oneOf": [
@@ -19961,10 +18660,7 @@
                 "format": "uuid"
               }
             },
-            "required": [
-              "body",
-              "sessionId"
-            ]
+            "required": ["body", "sessionId"]
           }
         ]
       },
@@ -19988,12 +18684,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "eventId",
-          "deliveryId",
-          "operationId",
-          "idempotency"
-        ]
+        "required": ["eventId", "deliveryId", "operationId", "idempotency"]
       },
       "ProjectEventReplayReceipt": {
         "type": "object",
@@ -20015,12 +18706,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "eventId",
-          "deliveryId",
-          "operationId",
-          "idempotency"
-        ]
+        "required": ["eventId", "deliveryId", "operationId", "idempotency"]
       },
       "OrganizationWebhookDeliveryRetryReceipt": {
         "type": "object",
@@ -20042,12 +18728,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "deliveryId",
-          "attemptId",
-          "operationId",
-          "idempotency"
-        ]
+        "required": ["deliveryId", "attemptId", "operationId", "idempotency"]
       },
       "ProjectWebhookDeliveryRetryReceipt": {
         "type": "object",
@@ -20069,12 +18750,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "deliveryId",
-          "attemptId",
-          "operationId",
-          "idempotency"
-        ]
+        "required": ["deliveryId", "attemptId", "operationId", "idempotency"]
       },
       "OrganizationWebhookTestReceipt": {
         "type": "object",
@@ -20096,12 +18772,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "eventId",
-          "deliveryId",
-          "operationId",
-          "idempotency"
-        ]
+        "required": ["eventId", "deliveryId", "operationId", "idempotency"]
       },
       "ProjectWebhookTestReceipt": {
         "type": "object",
@@ -20123,12 +18794,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "eventId",
-          "deliveryId",
-          "operationId",
-          "idempotency"
-        ]
+        "required": ["eventId", "deliveryId", "operationId", "idempotency"]
       },
       "PlatformAccessSuccessResponse": {
         "type": "object",
@@ -20140,9 +18806,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "success"
-        ]
+        "required": ["success"]
       },
       "PlatformAccessClientToken": {
         "type": "object",
@@ -20155,28 +18819,20 @@
             "type": "string"
           }
         },
-        "required": [
-          "token",
-          "expiresAt"
-        ]
+        "required": ["token", "expiresAt"]
       },
       "PlatformAccessMintClientTokenResponse": {
         "type": "object",
         "properties": {
           "success": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "data": {
             "$ref": "#/components/schemas/PlatformAccessClientToken"
           }
         },
-        "required": [
-          "success",
-          "data"
-        ]
+        "required": ["success", "data"]
       },
       "PlatformAccessMintClientTokenRequest": {
         "type": "object",
@@ -20196,10 +18852,7 @@
             "description": "Token lifetime in seconds. Must be at least 1 and within the maximum allowed lifetime. Omit to use that maximum."
           }
         },
-        "required": [
-          "session",
-          "ephemeralId"
-        ]
+        "required": ["session", "ephemeralId"]
       },
       "PlatformAccessClientRules": {
         "type": "object",
@@ -20233,28 +18886,20 @@
             }
           }
         },
-        "required": [
-          "actions",
-          "recipientMode"
-        ]
+        "required": ["actions", "recipientMode"]
       },
       "PlatformAccessGetClientRulesResponse": {
         "type": "object",
         "properties": {
           "success": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "data": {
             "$ref": "#/components/schemas/PlatformAccessClientRules"
           }
         },
-        "required": [
-          "success",
-          "data"
-        ]
+        "required": ["success", "data"]
       },
       "PlatformAccessSetClientRulesRequest": {
         "type": "object",
@@ -20297,10 +18942,7 @@
             "default": 0
           }
         },
-        "required": [
-          "recipientMode",
-          "enabled"
-        ]
+        "required": ["recipientMode", "enabled"]
       },
       "PlatformAccessSession": {
         "type": "object",
@@ -20322,10 +18964,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "linked_device",
-              "cloud_api"
-            ],
+            "enum": ["linked_device", "cloud_api"],
             "description": "How the session connects to WhatsApp. 'linked_device' pairs as a WhatsApp linked device; 'cloud_api' uses the Meta Cloud API. Immutable after create."
           },
           "testMode": {
@@ -20347,19 +18986,13 @@
                 "properties": {
                   "mode": {
                     "type": "string",
-                    "enum": [
-                      "metadata_only",
-                      "deliver"
-                    ]
+                    "enum": ["metadata_only", "deliver"]
                   },
                   "requestFull": {
                     "type": "boolean"
                   }
                 },
-                "required": [
-                  "mode",
-                  "requestFull"
-                ]
+                "required": ["mode", "requestFull"]
               }
             }
           },
@@ -20398,18 +19031,13 @@
         "properties": {
           "success": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "data": {
             "$ref": "#/components/schemas/PlatformAccessSessionOperation"
           }
         },
-        "required": [
-          "success",
-          "data"
-        ]
+        "required": ["success", "data"]
       },
       "PlatformAccessCloudApiCredentials": {
         "type": "object",
@@ -20457,10 +19085,7 @@
         "properties": {
           "mode": {
             "type": "string",
-            "enum": [
-              "metadata_only",
-              "deliver"
-            ],
+            "enum": ["metadata_only", "deliver"],
             "default": "metadata_only"
           },
           "requestFull": {
@@ -20495,10 +19120,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "linked_device",
-              "cloud_api"
-            ],
+            "enum": ["linked_device", "cloud_api"],
             "default": "linked_device",
             "description": "Connection type. Immutable after creation."
           },
@@ -20521,36 +19143,26 @@
         "properties": {
           "success": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "data": {
             "$ref": "#/components/schemas/PlatformAccessSession"
           }
         },
-        "required": [
-          "success",
-          "data"
-        ]
+        "required": ["success", "data"]
       },
       "PlatformAccessUpdateSessionResponse": {
         "type": "object",
         "properties": {
           "success": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "data": {
             "$ref": "#/components/schemas/PlatformAccessSession"
           }
         },
-        "required": [
-          "success",
-          "data"
-        ]
+        "required": ["success", "data"]
       },
       "PlatformAccessUpdateSessionRequest": {
         "type": "object",
@@ -20569,9 +19181,7 @@
         "properties": {
           "success": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "message": {
             "type": "string"
@@ -20580,10 +19190,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "success",
-          "message"
-        ]
+        "required": ["success", "message"]
       },
       "PlatformAccessWhatsAppAccount": {
         "type": "object",
@@ -20616,27 +19223,20 @@
             "type": "string"
           }
         },
-        "required": [
-          "pushName"
-        ]
+        "required": ["pushName"]
       },
       "PlatformAccessGetSessionAccountResponse": {
         "type": "object",
         "properties": {
           "success": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "data": {
             "$ref": "#/components/schemas/PlatformAccessWhatsAppAccount"
           }
         },
-        "required": [
-          "success",
-          "data"
-        ]
+        "required": ["success", "data"]
       },
       "PlatformAccessHandoffKeysResponse": {
         "type": "object",
@@ -20649,46 +19249,33 @@
             "type": "string"
           }
         },
-        "required": [
-          "runnerPublicKeyB64",
-          "handoffId"
-        ]
+        "required": ["runnerPublicKeyB64", "handoffId"]
       },
       "PlatformAccessHandoffKeysSuccess": {
         "type": "object",
         "properties": {
           "success": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "data": {
             "$ref": "#/components/schemas/PlatformAccessHandoffKeysResponse"
           }
         },
-        "required": [
-          "success",
-          "data"
-        ]
+        "required": ["success", "data"]
       },
       "PlatformAccessHandoffImportSuccess": {
         "type": "object",
         "properties": {
           "success": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "data": {
             "$ref": "#/components/schemas/PlatformAccessSuccessResponse"
           }
         },
-        "required": [
-          "success",
-          "data"
-        ]
+        "required": ["success", "data"]
       },
       "PlatformAccessHandoffImportRequest": {
         "type": "object",
@@ -20706,29 +19293,20 @@
             "description": "SHA-256 of the unsealed snapshot JSON, hex-encoded. The runner verifies after decrypt before flipping bartenderMode."
           }
         },
-        "required": [
-          "handoffId",
-          "sealedEnvelopeB64",
-          "snapshotHashHex"
-        ]
+        "required": ["handoffId", "sealedEnvelopeB64", "snapshotHashHex"]
       },
       "PlatformAccessUploadAppStateKeysSuccess": {
         "type": "object",
         "properties": {
           "success": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "data": {
             "$ref": "#/components/schemas/PlatformAccessSuccessResponse"
           }
         },
-        "required": [
-          "success",
-          "data"
-        ]
+        "required": ["success", "data"]
       },
       "PlatformAccessUploadAppStateKeysRequest": {
         "type": "object",
@@ -20755,42 +19333,29 @@
                   "description": "Unix-seconds timestamp WA stamped on the key."
                 }
               },
-              "required": [
-                "keyId",
-                "keyB64",
-                "timestamp"
-              ]
+              "required": ["keyId", "keyB64", "timestamp"]
             }
           },
           "upgradeTo": {
             "type": "string",
-            "enum": [
-              "passthrough_plus"
-            ],
+            "enum": ["passthrough_plus"],
             "description": "When set, atomically flips sessions.config.bartenderMode → passthrough_plus after the keys persist. Eliminates the window where mode is set but no keys are staged."
           }
         },
-        "required": [
-          "keys"
-        ]
+        "required": ["keys"]
       },
       "PlatformAccessHandoffAckSuccess": {
         "type": "object",
         "properties": {
           "success": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "data": {
             "$ref": "#/components/schemas/PlatformAccessSuccessResponse"
           }
         },
-        "required": [
-          "success",
-          "data"
-        ]
+        "required": ["success", "data"]
       },
       "PlatformAccessHandoffAckRequest": {
         "type": "object",
@@ -20803,10 +19368,7 @@
             "description": "SHA-256 of the snapshot the customer received via mode.handoff_export. API verifies this matches what the runner exported before flipping bartenderMode."
           }
         },
-        "required": [
-          "handoffId",
-          "snapshotHashHex"
-        ]
+        "required": ["handoffId", "snapshotHashHex"]
       },
       "PlatformAccessPublicError": {
         "type": "object",
@@ -20858,19 +19420,12 @@
                 "nullable": true
               }
             },
-            "required": [
-              "type",
-              "code",
-              "message",
-              "param"
-            ]
+            "required": ["type", "code", "message", "param"]
           },
           "data": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ],
+            "enum": [null],
             "description": "Always null for a failed request."
           },
           "docs": {
@@ -20878,11 +19433,7 @@
             "format": "uri"
           }
         },
-        "required": [
-          "error",
-          "data",
-          "docs"
-        ]
+        "required": ["error", "data", "docs"]
       }
     },
     "responses": {

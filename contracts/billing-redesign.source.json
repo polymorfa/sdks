@@ -1,11 +1,11 @@
 {
-  "repository": "titan-api/titan",
-  "baseCommit": "1e237ecf2ffc0059137f298d91958c2692b38ec0",
-  "state": "unpublished-local-commit",
+  "repository": "polymorfa/polymorfa",
+  "baseCommit": "0d62656002fe7274f4e86c47f334429d5f1d4800",
+  "state": "api-review-branch",
   "sourcePath": "apps/api/docs/openapi.management.json",
-  "sourceSha256": "2c9d6464d10da20036daacc7a0dff969eea73ef6776fa925d69b610d0d940958",
+  "sourceSha256": "bd545a6a5c0b817d7590431323e08384e3f029f41603b44f5a2ce2f544b36656",
   "snapshotPath": "contracts/billing-redesign.openapi.json",
-  "snapshotSha256": "dd80b0c2d2b18ef2e62c523da17bd5aafc98bda7603be201db2e5a395dd66150",
+  "snapshotSha256": "dc261ffde942301afb23ffe38f1064b471682be400deed84c8ca5b3e4e39850e",
   "operationIds": [
     "getBilling",
     "getSessionTierChange",
@@ -17,8 +17,6 @@
     "setSessionTierOverride",
     "startPlatformSession"
   ],
-  "retiredOperationIds": [
-    "updateBillingReminderSettings"
-  ],
-  "releaseGate": "Repin to the merged API commit and reconcile the full SDK contract before publication."
+  "retiredOperationIds": ["updateBillingReminderSettings"],
+  "releaseGate": "Release only with the matching merged API revision and passing hosted CI; this review branch does not establish full SDK parity."
 }

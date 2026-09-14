@@ -1,11 +1,11 @@
 {
-  "repository": "titan-api/titan",
-  "baseCommit": "1e237ecf2ffc0059137f298d91958c2692b38ec0",
-  "state": "unpublished-local-commit",
+  "repository": "polymorfa/polymorfa",
+  "baseCommit": "0d62656002fe7274f4e86c47f334429d5f1d4800",
+  "state": "api-review-branch",
   "sourcePath": "docs/api-reference/openapi.management.json",
-  "sourceSha256": "6b8d60134d0e4114a01a40c269081a89c82944ecf890d138506a7559928e026a",
+  "sourceSha256": "18237c72d36c0cd7db24747d5f7cc6b53d41f24d7c1e175fc5af90e274c05b30",
   "snapshotPath": "contracts/platform-access.openapi.json",
-  "snapshotSha256": "6b8d60134d0e4114a01a40c269081a89c82944ecf890d138506a7559928e026a",
+  "snapshotSha256": "cedbf2cf02ed3e1633d43fb2bb2398347f1a9e1a53230cd74f9f10efc32b3883",
   "operationIds": [
     "createSession",
     "deleteClientRules",
@@ -24,6 +24,6 @@
     "stopSessions",
     "updateSession"
   ],
-  "releaseGate": "Release with the matching Platform API route change; repin to the merged API revision before publication.",
+  "releaseGate": "Release only with the matching merged API revision and passing hosted CI; this review branch does not establish full SDK parity.",
   "scope": "The complete public Platform document is pinned; operationIds identifies the methods reconciled in this checkpoint. This is not a full SDK parity claim."
 }

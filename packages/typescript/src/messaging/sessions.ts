@@ -38,10 +38,11 @@ export class SessionsResource {
     body: CreateSessionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<CreateSessionResponse>> {
+    const { projectId, ...request } = body;
     return this.transport.request({
       method: "POST",
-      path: `/platform/projects/${encodeURIComponent(body.projectId)}/sessions`,
-      body: (({ projectId: _projectId, ...request }) => request)(body),
+      path: `/platform/projects/${encodeURIComponent(projectId)}/sessions`,
+      body: request,
       ...options,
     });
   }
