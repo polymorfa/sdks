@@ -348,7 +348,15 @@ export interface LabelsUpdatePayload {
   readonly starred?: boolean;
 }
 
-export interface HistorySyncPayload {
+export type HistorySyncPayload =
+  LinkedHistorySyncPayload | CloudHistorySyncPayload;
+
+export interface CloudHistorySyncPayload {
+  readonly kind: "history";
+  readonly value: Readonly<Record<string, unknown>>;
+}
+
+export interface LinkedHistorySyncPayload {
   readonly whatsapp_id: string;
   readonly original_whatsapp_id?: string;
   readonly messages: readonly {

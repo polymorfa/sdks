@@ -804,6 +804,11 @@ progress.
 
 ## Channels
 
+`history.sync` payloads distinguish linked-device indexes and their preserved
+WhatsApp archive from Cloud history's `{ kind: "history", value }` envelope.
+Narrow `HistorySyncPayload` with `"kind" in payload` before reading provider-specific
+fields; `LinkedHistorySyncPayload` and `CloudHistorySyncPayload` are exported.
+
 `MessagingClient.channels` exposes the complete 13-operation Channels tag for
 connected Linked Device sessions. Channels are WhatsApp newsletters in the
 protocol layer, but the SDK keeps the public API's `channels` terminology and

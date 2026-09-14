@@ -247,29 +247,34 @@ type ExpectedPayloads = {
     readonly newDescription?: string;
     readonly action?: string;
   };
-  readonly "history.sync": {
-    readonly whatsapp_id: string;
-    readonly original_whatsapp_id?: string;
-    readonly messages: readonly {
-      readonly id: string;
-      readonly whatsapp_id: string;
-      readonly conversation: ExpectedIdentityReference;
-      readonly fromMe?: boolean;
-    }[];
-    readonly mode: "deliver";
-    readonly syncType: string;
-    readonly chunkOrder?: number;
-    readonly progress?: number;
-    readonly fileLength: number;
-    readonly conversationCount: number;
-    readonly messageCount: number;
-    readonly pushNameCount: number;
-    readonly statusMessageCount: number;
-    readonly whatsapp: {
-      readonly encoding: "gzip-base64-protobuf";
-      readonly data: string;
-    };
-  };
+  readonly "history.sync":
+    | {
+        readonly whatsapp_id: string;
+        readonly original_whatsapp_id?: string;
+        readonly messages: readonly {
+          readonly id: string;
+          readonly whatsapp_id: string;
+          readonly conversation: ExpectedIdentityReference;
+          readonly fromMe?: boolean;
+        }[];
+        readonly mode: "deliver";
+        readonly syncType: string;
+        readonly chunkOrder?: number;
+        readonly progress?: number;
+        readonly fileLength: number;
+        readonly conversationCount: number;
+        readonly messageCount: number;
+        readonly pushNameCount: number;
+        readonly statusMessageCount: number;
+        readonly whatsapp: {
+          readonly encoding: "gzip-base64-protobuf";
+          readonly data: string;
+        };
+      }
+    | {
+        readonly kind: "history";
+        readonly value: Readonly<Record<string, unknown>>;
+      };
   readonly "labels.update": {
     readonly action: string;
     readonly labelId?: string;
