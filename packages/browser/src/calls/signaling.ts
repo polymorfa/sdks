@@ -52,7 +52,7 @@ export interface CallsSignaling {
 export class CallsSignalingClient implements CallsSignaling {
   readonly #transport: BrowserTransport;
   readonly #prefix: string;
-  constructor(transport: BrowserTransport, apiPrefix = "/api") {
+  constructor(transport: BrowserTransport, apiPrefix = "/messaging") {
     this.#transport = transport;
     this.#prefix = apiPrefix.replace(/\/$/, "");
   }

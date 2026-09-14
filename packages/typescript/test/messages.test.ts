@@ -37,6 +37,33 @@ import {
 
 const servers: TestServer[] = [];
 
+it("restricts media fields to their documented kind", () => {
+  const conversation = { id: "739182640518203" };
+  const file: SendMediaMessageRequest = {
+    conversation,
+    content: {
+      file: { url: "https://example.test/file", filename: "report.pdf" },
+    },
+  };
+  const voice: SendMediaMessageRequest = {
+    conversation,
+    content: { voice: { base64: "YQ==", ptt: true } },
+  };
+  const image: SendMediaMessageRequest = {
+    conversation,
+    content: {
+      // @ts-expect-error Only files accept filename.
+      image: { url: "https://example.test/image", filename: "image.png" },
+    },
+  };
+  const video: SendMediaMessageRequest = {
+    conversation,
+    // @ts-expect-error Only voice messages accept ptt.
+    content: { video: { url: "https://example.test/video", ptt: true } },
+  };
+  expect([file, voice, image, video]).toHaveLength(4);
+});
+
 afterEach(async () => {
   await Promise.all(servers.splice(0).map((server) => server.close()));
 });

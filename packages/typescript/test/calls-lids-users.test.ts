@@ -49,8 +49,8 @@ async function compactSurfaceServer(): Promise<{
         ? '{"success":true,"data":{"requestId":"cmd_call_42"}}'
         : '{"success":true,"data":{"status":"REJECTED"}}'
       : request.path.includes("/security-code")
-        ? `{"success":true,"data":{"id":"100000011111111@lid","phoneNumber":"+15551234567","username":"support","numericCode":"${"1".repeat(60)}","qrCode":"ZGlzcGxheS1vbmx5"}}`
-        : '{"success":true,"data":{"id":"100000011111111@lid","lid":"100000011111111@lid","phoneNumber":"+15551234567","username":"support","keyRequired":false}}',
+        ? `{"success":true,"data":{"id":"739182640518203","phoneNumber":"+15551234567","username":"support","numericCode":"${"1".repeat(60)}","qrCode":"ZGlzcGxheS1vbmx5"}}`
+        : '{"success":true,"data":{"id":"739182640518203","phoneNumber":"+15551234567","username":"support","keyRequired":false}}',
   }));
   servers.push(server);
   return {
@@ -93,14 +93,14 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
 
     const validInputs: readonly ResolveIdentityParams[] = [
       { phoneNumber: "+15551234567" },
-      { id: "100000011111111@lid" },
+      { id: "739182640518203" },
       { username: "support" },
       { username: "support", usernameKey: "1234" },
     ];
     expect(validInputs).toHaveLength(4);
     // @ts-expect-error Resolution accepts exactly one identity form.
     const competingInputs: ResolveIdentityParams = {
-      id: "100000011111111@lid",
+      id: "739182640518203",
       phoneNumber: "+15551234567",
     };
     void competingInputs;
@@ -159,7 +159,7 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
 
     expectTypeOf(byPhone).toEqualTypeOf<ApiResponse<ResolveIdentityResponse>>();
     await client.identities.resolve("support/eu", {
-      id: "100000011111111@lid",
+      id: "739182640518203",
     });
     await client.identities.resolve("support/eu", {
       username: "support name",
@@ -170,7 +170,7 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
       data: {
         success: true,
         data: {
-          id: "100000011111111@lid",
+          id: "739182640518203",
           phoneNumber: "+15551234567",
         },
       },
@@ -178,7 +178,7 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
     });
     expect(requests.map(({ path }) => path)).toEqual([
       "/messaging/support%2Feu/identities/resolve?phoneNumber=%2B15551234567",
-      "/messaging/support%2Feu/identities/resolve?id=100000011111111%40lid",
+      "/messaging/support%2Feu/identities/resolve?id=739182640518203",
       "/messaging/support%2Feu/identities/resolve?username=support+name&usernameKey=1234",
     ]);
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
@@ -189,7 +189,7 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
     const { client, requests } = await compactSurfaceServer();
     const result = await client.users.getSecurityCode(
       "support/eu",
-      "100000011111111@lid",
+      "739182640518203",
       { timeoutMs: 5_000 },
     );
 
@@ -201,7 +201,7 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
       data: {
         success: true,
         data: {
-          id: "100000011111111@lid",
+          id: "739182640518203",
           numericCode: "1".repeat(60),
           qrCode: "ZGlzcGxheS1vbmx5",
         },
@@ -213,7 +213,7 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
     expect(requests).toHaveLength(1);
     expect(requests[0]).toMatchObject({
       method: "GET",
-      path: "/messaging/support%2Feu/users/100000011111111%40lid/security-code",
+      path: "/messaging/support%2Feu/users/739182640518203/security-code",
       body: "",
     });
   });

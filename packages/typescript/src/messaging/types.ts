@@ -1666,21 +1666,23 @@ export interface SendTextMessageRequest extends MessageSendContext {
 
 export type MediaMessageKind = "image" | "file" | "voice" | "video";
 
-export type MessageMediaContent = (
+export type MessageMediaContent<Kind extends MediaMessageKind = "image"> = (
   | { readonly url: string; readonly base64?: never }
   | { readonly url?: never; readonly base64: string }
 ) & {
   readonly mimeType?: string;
-  readonly filename?: string;
   readonly caption?: string;
-  readonly ptt?: boolean;
-};
+} & (Kind extends "file"
+    ? { readonly filename?: string; readonly ptt?: never }
+    : Kind extends "voice"
+      ? { readonly ptt?: boolean; readonly filename?: never }
+      : { readonly filename?: never; readonly ptt?: never });
 export type SendMediaMessageRequest = MessageSendContext & {
   readonly content:
     | { readonly image: MessageMediaContent }
     | { readonly video: MessageMediaContent }
-    | { readonly file: MessageMediaContent }
-    | { readonly voice: MessageMediaContent };
+    | { readonly file: MessageMediaContent<"file"> }
+    | { readonly voice: MessageMediaContent<"voice"> };
 };
 
 export interface SendPollMessageRequest extends MessageSendContext {

@@ -52,15 +52,19 @@ export type BrowserConversationReference =
       | { readonly phoneNumber: string }
       | { readonly bsuid: string }
     );
-export type BrowserMessageMedia = (
+export type BrowserMessageMedia<
+  Kind extends "image" | "video" | "file" | "voice" = "image",
+> = (
   | { readonly url: string; readonly base64?: never }
   | { readonly url?: never; readonly base64: string }
 ) & {
   readonly mimeType?: string;
-  readonly filename?: string;
   readonly caption?: string;
-  readonly ptt?: boolean;
-};
+} & (Kind extends "file"
+    ? { readonly filename?: string; readonly ptt?: never }
+    : Kind extends "voice"
+      ? { readonly ptt?: boolean; readonly filename?: never }
+      : { readonly filename?: never; readonly ptt?: never });
 type UnionKeys<T> = T extends T ? keyof T : never;
 type ExclusiveUnion<T, All = T> = T extends T
   ? T & { readonly [K in Exclude<UnionKeys<All>, keyof T>]?: never }
@@ -70,8 +74,8 @@ export type BrowserMessageContent = ExclusiveUnion<
   | { readonly text: string }
   | { readonly image: BrowserMessageMedia }
   | { readonly video: BrowserMessageMedia }
-  | { readonly voice: BrowserMessageMedia }
-  | { readonly file: BrowserMessageMedia }
+  | { readonly voice: BrowserMessageMedia<"voice"> }
+  | { readonly file: BrowserMessageMedia<"file"> }
   | {
       readonly poll: {
         readonly title: string;

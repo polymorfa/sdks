@@ -9,6 +9,21 @@ import {
 
 describe("BrowserMessagingClient", () => {
   it("requires one content type", () => {
+    const file: BrowserMessageContent = {
+      file: { url: "https://example.test/file", filename: "report.pdf" },
+    };
+    const voice: BrowserMessageContent = {
+      voice: { base64: "YQ==", ptt: true },
+    };
+    const invalidImage: BrowserMessageContent = {
+      // @ts-expect-error Only files accept filename.
+      image: { url: "https://example.test/image", filename: "image.png" },
+    };
+    const invalidFile: BrowserMessageContent = {
+      // @ts-expect-error Only voice messages accept ptt.
+      file: { url: "https://example.test/file", ptt: true },
+    };
+    expect([file, voice, invalidImage, invalidFile]).toHaveLength(4);
     const text: BrowserMessageContent = { text: "Hello" };
     const image: BrowserMessageContent = {
       image: { url: "https://example.test/image.png" },
@@ -93,20 +108,20 @@ describe("BrowserMessagingClient", () => {
     });
 
     await client.presence.retrieve();
-    await client.presence.retrieveChat("1555@s.whatsapp.net");
-    await client.presence.subscribe("1555@s.whatsapp.net");
+    await client.presence.retrieveChat("739182640518203");
+    await client.presence.subscribe("739182640518203");
     await client.contacts.list();
-    await client.contacts.retrieve("1555@s.whatsapp.net");
-    await client.contacts.picture("1555@s.whatsapp.net");
+    await client.contacts.retrieve("739182640518203");
+    await client.contacts.picture("739182640518203");
     await client.contacts.check(["+15550001", "+15550002"]);
 
     expect(urls.map((url) => new URL(url).pathname)).toEqual([
       "/messaging/support/presence",
-      "/messaging/support/presence/1555%40s.whatsapp.net",
-      "/messaging/support/presence/1555%40s.whatsapp.net/subscribe",
+      "/messaging/support/presence/739182640518203",
+      "/messaging/support/presence/739182640518203/subscribe",
       "/messaging/support/contacts",
-      "/messaging/support/contacts/1555%40s.whatsapp.net",
-      "/messaging/support/contacts/1555%40s.whatsapp.net/picture",
+      "/messaging/support/contacts/739182640518203",
+      "/messaging/support/contacts/739182640518203/picture",
       "/messaging/support/contacts/check",
     ]);
     expect(new URL(urls[6] ?? "").searchParams.get("phone")).toBe(
