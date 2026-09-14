@@ -1,6 +1,6 @@
 {
   "repository": "titan-api/titan",
-  "baseCommit": "e37464cc9bd122151d319d18ce085d4a8949264d",
+  "baseCommit": "561b48d98145778565b62853ef33fd88178326ce",
   "state": "unpublished-local-commit",
   "sourcePath": "docs/api-reference/openapi.management.json",
   "sourceSha256": "f9e0d3d0660023074388cdd87df98ebea5dfff9c1b9909319e18fcab13aec7b3",

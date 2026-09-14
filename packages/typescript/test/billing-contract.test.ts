@@ -36,7 +36,7 @@ it("pins the draft billing contract and keeps confirmation separate from quoting
   expect(spec.components.schemas.PlatformSession.properties.paidUntil).toMatchObject({ type: "number", nullable: true });
   expect(
     spec.paths["/platform/sessions/{sessionId}/start"].post.responses["402"],
-  ).toEqual({ $ref: "#/components/responses/PaymentRequired" });
+  ).toEqual({ $ref: "#/components/responses/BillingCreditRequired" });
   expect(spec.components.schemas.SessionTierOverrideRequest.required).toEqual([
     "quoteId",
   ]);

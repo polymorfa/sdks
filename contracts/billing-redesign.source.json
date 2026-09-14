@@ -1,11 +1,11 @@
 {
   "repository": "titan-api/titan",
-  "baseCommit": "265663a8743f8801367456cd3af5330cbe9f9d0d",
+  "baseCommit": "561b48d98145778565b62853ef33fd88178326ce",
   "state": "unpublished-local-commit",
   "sourcePath": "apps/api/docs/openapi.management.json",
-  "sourceSha256": "5e3bd00c9c7171622c9dcdb6f76bb1aa4f176f46216902ab1c1ba57721a81afb",
+  "sourceSha256": "76768d096e47e3a158a30c39dc1022a38128afeb8b4ebcf2fbe7ceca3221f66a",
   "snapshotPath": "contracts/billing-redesign.openapi.json",
-  "snapshotSha256": "6d1a3c7cc5510b8eef7f61700d9aed0984377f7b8220ab31f461c126089c3807",
+  "snapshotSha256": "dd80b0c2d2b18ef2e62c523da17bd5aafc98bda7603be201db2e5a395dd66150",
   "operationIds": [
     "getBilling",
     "getSessionTierChange",

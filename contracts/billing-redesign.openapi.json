@@ -5,6 +5,99 @@
     "version": "billing-redesign-draft"
   },
   "paths": {
+    "/platform/sessions/{sessionId}": {
+      "patch": {
+        "operationId": "setSessionTierOverride",
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Confirm a number tier change",
+        "description": "Confirms a previously reviewed tier quote. An upgrade purchases a full fresh 24-hour window without refunding remaining time. A downgrade applies at the paid-window end. Poll the tier quote until applied or rejected; accepting the request does not grant the new tier.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "session",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Database session UUID or stable session slug.",
+            "schema": {
+              "$ref": "#/components/schemas/SessionIdentifier"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionTierOverrideRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NumberTierChange"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
     "/platform/sessions": {
       "get": {
         "operationId": "listPlatformSessions",
@@ -12,7 +105,7 @@
           "sessions"
         ],
         "summary": "List sessions",
-        "description": "Lists every session in the authenticated organization or selected project, including disconnected sessions and their latest status reason.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "description": "Lists every session in the authenticated team or selected project, including disconnected sessions and their latest status reason.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -166,7 +259,7 @@
             "$ref": "#/components/responses/Unauthorized"
           },
           "402": {
-            "$ref": "#/components/responses/PaymentRequired"
+            "$ref": "#/components/responses/BillingCreditRequired"
           },
           "403": {
             "$ref": "#/components/responses/Forbidden"
@@ -179,99 +272,6 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
-          }
-        }
-      }
-    },
-    "/platform/sessions/{sessionId}": {
-      "patch": {
-        "operationId": "setSessionTierOverride",
-        "tags": [
-          "sessions"
-        ],
-        "summary": "Confirm a number tier change",
-        "description": "Confirms a previously reviewed tier quote. An upgrade purchases a full fresh 24-hour window without refunding remaining time. A downgrade applies at the paid-window end. Poll the tier quote until applied or rejected; accepting the request does not grant the new tier.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
-        "x-audience": "public",
-        "x-polymorfa-resource-boundary": "session",
-        "x-excluded-from-public": false,
-        "x-required-scope": "sessions:manage",
-        "security": [
-          {
-            "ApiKeyAuth": []
-          },
-          {
-            "ConsoleSession": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "sessionId",
-            "in": "path",
-            "required": true,
-            "description": "Database session UUID or stable session slug.",
-            "schema": {
-              "$ref": "#/components/schemas/SessionIdentifier"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SessionTierOverrideRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "Stable request correlation identifier."
-              },
-              "Polymorfa-Version": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "API version applied to this response."
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/NumberTierChange"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -691,7 +691,7 @@
       "ApiKeyAuth": {
         "type": "http",
         "scheme": "bearer",
-        "description": "Polymorfa server credential: a scoped pmfa_ organization key, or a pmfa_pt_ project token on project- and session-bound operations inside its exact authenticated project. Keys may be personal or service-account owned. Both enforce selected action scopes; organization keys can address team resources and every project in the organization. Listener and browser client credentials are rejected."
+        "description": "Send your team API key or project token as `Authorization: Bearer <token>`. The credential must have the required permissions. Project tokens can access only their own project."
       },
       "ConsoleSession": {
         "type": "http",
@@ -700,6 +700,108 @@
       }
     },
     "schemas": {
+      "SessionIdentifier": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "description": "Database session UUID or stable session slug."
+      },
+      "SessionTierOverrideRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "quoteId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "quoteId"
+        ]
+      },
+      "NumberTierChange": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "quoted",
+              "queued",
+              "applied",
+              "rejected"
+            ]
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAtMs": {
+            "type": "integer"
+          },
+          "quote": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "tier": {
+                "type": "string"
+              },
+              "tierOverride": {
+                "type": "string",
+                "nullable": true
+              },
+              "amountCents": {
+                "type": "number",
+                "minimum": 0,
+                "multipleOf": 1e-06,
+                "description": "Credits charged on application, with up to six decimal places."
+              },
+              "priceVersion": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string",
+                "enum": [
+                  "upgrade",
+                  "downgrade",
+                  "configure"
+                ]
+              },
+              "effectiveAtMs": {
+                "type": "integer"
+              },
+              "replacesWindowId": {
+                "type": "string",
+                "format": "uuid",
+                "nullable": true
+              }
+            },
+            "required": [
+              "tier",
+              "tierOverride",
+              "amountCents",
+              "priceVersion",
+              "action",
+              "effectiveAtMs",
+              "replacesWindowId"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "failureReason",
+          "expiresAtMs",
+          "quote"
+        ]
+      },
       "PlatformSession": {
         "type": "object",
         "additionalProperties": false,
@@ -865,12 +967,6 @@
           "claim"
         ]
       },
-      "SessionIdentifier": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 64,
-        "description": "Database session UUID or stable session slug."
-      },
       "SessionProjectContext": {
         "type": "object",
         "additionalProperties": false,
@@ -898,102 +994,6 @@
         "required": [
           "starting",
           "sessionId"
-        ]
-      },
-      "SessionTierOverrideRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "projectId": {
-            "$ref": "#/components/schemas/ProjectId"
-          },
-          "quoteId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "quoteId"
-        ]
-      },
-      "NumberTierChange": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "quoted",
-              "queued",
-              "applied",
-              "rejected"
-            ]
-          },
-          "failureReason": {
-            "type": "string",
-            "nullable": true
-          },
-          "expiresAtMs": {
-            "type": "integer"
-          },
-          "quote": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "tier": {
-                "type": "string"
-              },
-              "tierOverride": {
-                "type": "string",
-                "nullable": true
-              },
-              "amountCents": {
-                "type": "number",
-                "minimum": 0,
-                "multipleOf": 1e-06,
-                "description": "Credits charged on application, with up to six decimal places."
-              },
-              "priceVersion": {
-                "type": "string"
-              },
-              "action": {
-                "type": "string",
-                "enum": [
-                  "upgrade",
-                  "downgrade",
-                  "configure"
-                ]
-              },
-              "effectiveAtMs": {
-                "type": "integer"
-              },
-              "replacesWindowId": {
-                "type": "string",
-                "format": "uuid",
-                "nullable": true
-              }
-            },
-            "required": [
-              "tier",
-              "tierOverride",
-              "amountCents",
-              "priceVersion",
-              "action",
-              "effectiveAtMs",
-              "replacesWindowId"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "status",
-          "failureReason",
-          "expiresAtMs",
-          "quote"
         ]
       },
       "NumberTierQuoteRequest": {
@@ -1032,7 +1032,7 @@
       "ProjectId": {
         "type": "string",
         "format": "uuid",
-        "description": "Project UUID. Optional where an operation can infer or search organization scope; required where the operation creates a project-owned resource."
+        "description": "Project UUID. Optional where an operation can infer or search team scope; required where the operation creates a project-owned resource."
       },
       "ErrorEnvelope": {
         "type": "object",
@@ -1167,32 +1167,8 @@
           }
         }
       },
-      "PaymentRequired": {
-        "description": "The number's plan does not include this capability.",
-        "headers": {
-          "X-Request-Id": {
-            "schema": {
-              "type": "string"
-            },
-            "description": "Stable request correlation identifier."
-          },
-          "Polymorfa-Version": {
-            "schema": {
-              "type": "string"
-            },
-            "description": "API version applied to this response."
-          }
-        },
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorEnvelope"
-            }
-          }
-        }
-      },
       "NotFound": {
-        "description": "The requested resource was not found inside the authenticated organization or project scope.",
+        "description": "The requested resource was not found inside the authenticated team or project scope.",
         "headers": {
           "X-Request-Id": {
             "schema": {
@@ -1217,6 +1193,30 @@
       },
       "Conflict": {
         "description": "The request conflicts with the resource's current state.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "BillingCreditRequired": {
+        "description": "The paid number could not reserve sufficient available credit. Add credit to your team before starting it.",
         "headers": {
           "X-Request-Id": {
             "schema": {
