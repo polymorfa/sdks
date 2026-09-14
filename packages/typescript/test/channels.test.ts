@@ -87,13 +87,13 @@ describe("MessagingClient channels", () => {
     const viewed = await channels.markMessageViewed(
       session,
       channelId,
-      93,
+      "93",
       mutationOptions,
     );
     const reacted = await channels.reactToMessage(
       session,
       channelId,
-      94,
+      "94",
       { reaction: "🔥" },
       mutationOptions,
     );

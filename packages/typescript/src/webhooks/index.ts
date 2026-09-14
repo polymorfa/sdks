@@ -24,7 +24,7 @@ export {
   type GroupParticipantPayload,
   type GroupUpdatePayload,
   type HistorySyncPayload,
-  type JidReference,
+  type IdentityReference,
   type KnownWebhookEvent,
   type KnownWebhookEventType,
   type LabelsUpdatePayload,

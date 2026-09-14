@@ -118,7 +118,11 @@ describe("MessagingClient business", () => {
     expect(
       requests.map(({ method, path, body }) => ({ method, path, body })),
     ).toEqual([
-      { method: "GET", path: "/messaging/sales%2Feu/business/profile", body: "" },
+      {
+        method: "GET",
+        path: "/messaging/sales%2Feu/business/profile",
+        body: "",
+      },
       {
         method: "PATCH",
         path: "/messaging/sales%2Feu/business/profile",
@@ -161,11 +165,11 @@ describe("MessagingClient business", () => {
     const { client, requests } = await businessServer();
     const business = client.business;
     const session = "sales/eu";
-    const jid = "15551234567@s.whatsapp.net";
+    const id = "15551234567@s.whatsapp.net";
     const productId = "tea/1";
 
     await business.getCatalog(session, {
-      jid,
+      id,
       after: "next page",
       limit: 25,
       width: 640,
@@ -173,7 +177,7 @@ describe("MessagingClient business", () => {
     });
     await business.createCatalog(session, mutationOptions);
     await business.setCartEnabled(session, { enabled: false }, mutationOptions);
-    await business.getProduct(session, productId, { jid });
+    await business.getProduct(session, productId, { id });
     await business.createProduct(
       session,
       {
@@ -216,7 +220,7 @@ describe("MessagingClient business", () => {
     ).toEqual([
       {
         method: "GET",
-        path: "/messaging/sales%2Feu/business/catalog?jid=15551234567%40s.whatsapp.net&after=next+page&limit=25&width=640&height=480",
+        path: "/messaging/sales%2Feu/business/catalog?id=15551234567%40s.whatsapp.net&after=next+page&limit=25&width=640&height=480",
         body: "",
       },
       {
@@ -231,7 +235,7 @@ describe("MessagingClient business", () => {
       },
       {
         method: "GET",
-        path: "/messaging/sales%2Feu/business/products/tea%2F1?jid=15551234567%40s.whatsapp.net",
+        path: "/messaging/sales%2Feu/business/products/tea%2F1?id=15551234567%40s.whatsapp.net",
         body: "",
       },
       {
@@ -266,11 +270,11 @@ describe("MessagingClient business", () => {
     const { client, requests } = await businessServer();
     const business = client.business;
     const session = "sales/eu";
-    const jid = "15551234567@lid";
+    const id = "15551234567@lid";
     const collectionId = "summer/1";
 
     await business.listCollections(session, {
-      jid,
+      id,
       after: "collections next",
       collectionLimit: 10,
       itemLimit: 50,
@@ -278,7 +282,7 @@ describe("MessagingClient business", () => {
       height: 512,
     });
     await business.getCollection(session, collectionId, {
-      jid,
+      id,
       after: "items next",
       limit: 20,
       width: 320,
@@ -325,12 +329,12 @@ describe("MessagingClient business", () => {
     ).toEqual([
       {
         method: "GET",
-        path: "/messaging/sales%2Feu/business/collections?jid=15551234567%40lid&after=collections+next&collectionLimit=10&itemLimit=50&width=512&height=512",
+        path: "/messaging/sales%2Feu/business/collections?id=15551234567%40lid&after=collections+next&collectionLimit=10&itemLimit=50&width=512&height=512",
         body: "",
       },
       {
         method: "GET",
-        path: "/messaging/sales%2Feu/business/collections/summer%2F1?jid=15551234567%40lid&after=items+next&limit=20&width=320&height=240",
+        path: "/messaging/sales%2Feu/business/collections/summer%2F1?id=15551234567%40lid&after=items+next&limit=20&width=320&height=240",
         body: "",
       },
       {

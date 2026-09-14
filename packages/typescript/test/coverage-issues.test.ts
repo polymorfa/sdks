@@ -63,7 +63,12 @@ async function runScript(
 describe("coverage issue synchronizer", () => {
   it("creates the label, reopens and updates matches, creates new gaps, and closes resolved issues", async () => {
     const requests: RecordedRequest[] = [];
-    const existingMarker = marker("dev", "messaging", "GET", "/messaging/sessions");
+    const existingMarker = marker(
+      "dev",
+      "messaging",
+      "GET",
+      "/messaging/sessions",
+    );
     const staleMarker = marker("dev", "platform", "GET", "/platform/old");
     const server = await startTestServer((request) => {
       requests.push(request);

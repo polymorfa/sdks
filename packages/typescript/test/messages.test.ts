@@ -70,8 +70,7 @@ async function messagesServer(): Promise<{
 describe("MessagingClient message types", () => {
   it("exports exact quoted-message and structured-send payloads", () => {
     expectTypeOf<QuotedMessage>().toEqualTypeOf<{
-      readonly messageId: string;
-      readonly participant: string;
+      readonly id: string;
       readonly type?: string;
       readonly text?: string;
     }>();
@@ -102,7 +101,7 @@ describe("MessagingClient message types", () => {
       readonly buttons: readonly MessageButton[];
     }>();
     expectTypeOf<ListMessageContent>().toHaveProperty("sections");
-    expectTypeOf<ProductMessageContent>().toHaveProperty("businessOwnerJid");
+    expectTypeOf<ProductMessageContent>().toHaveProperty("businessOwnerId");
     expectTypeOf<ProductListMessageContent>().toHaveProperty("sections");
     expectTypeOf<OrderMessageContent>().toHaveProperty("totalAmount1000");
     expectTypeOf<AddressMessageContent>().toHaveProperty("body");
@@ -139,69 +138,68 @@ describe("MessagingClient message routes", () => {
 
     const sends: readonly SendMessageRequest[] = [
       {
-        chatId: "15551234567@s.whatsapp.net",
-        type: "text",
-        text: "Hello",
+        conversation: { phoneNumber: "+15551234567" },
+        content: { text: "Hello" },
         quotedMessage: {
-          messageId: "quoted-1",
-          participant: "15551234567@s.whatsapp.net",
+          id: "739182640518204",
           type: "text",
           text: "Earlier",
         },
       },
       {
-        chatId: "15551234567@s.whatsapp.net",
-        type: "image",
-        url: "https://cdn.example.test/photo.jpg",
-        caption: "Photo",
+        conversation: { phoneNumber: "+15551234567" },
+        content: {
+          image: {
+            url: "https://cdn.example.test/photo.jpg",
+            caption: "Photo",
+          },
+        },
         isForwarded: true,
       },
       {
-        chatId: "15551234567@s.whatsapp.net",
-        type: "location",
-        latitude: 33.8938,
-        longitude: 35.5018,
-        address: "Beirut",
-      },
-      {
-        chatId: "15551234567@s.whatsapp.net",
-        type: "contact",
-        vcard: "BEGIN:VCARD\nFN:Ada\nEND:VCARD",
-      },
-      {
-        chatId: "15551234567@s.whatsapp.net",
-        type: "poll",
-        pollTitle: "Choose",
-        pollOptions: ["A", "B"],
-        pollMultiSelect: false,
-      },
-      {
-        chatId: "15551234567@s.whatsapp.net",
-        type: "buttons",
-        buttons: {
-          body: "Choose an action",
-          buttons: [{ type: "reply", text: "Continue", id: "continue" }],
+        conversation: { phoneNumber: "+15551234567" },
+        content: {
+          location: { lat: 33.8938, long: 35.5018, address: "Beirut" },
         },
       },
       {
-        chatId: "15551234567@s.whatsapp.net",
-        type: "list",
-        list: {
-          title: "Topics",
-          buttonText: "Open",
-          sections: [{ rows: [{ id: "billing", title: "Billing" }] }],
+        conversation: { phoneNumber: "+15551234567" },
+        content: { contact: { vcard: "BEGIN:VCARD\nFN:Ada\nEND:VCARD" } },
+      },
+      {
+        conversation: { phoneNumber: "+15551234567" },
+        content: {
+          poll: { title: "Choose", options: ["A", "B"], multiSelect: false },
         },
       },
       {
-        chatId: "15551234567@s.whatsapp.net",
-        type: "text",
-        template: { name: "order_ready", language: "en_US" },
+        conversation: { phoneNumber: "+15551234567" },
+        content: {
+          buttons: {
+            body: "Choose an action",
+            buttons: [{ type: "reply", text: "Continue", id: "continue" }],
+          },
+        },
+      },
+      {
+        conversation: { phoneNumber: "+15551234567" },
+        content: {
+          list: {
+            title: "Topics",
+            buttonText: "Open",
+            sections: [{ rows: [{ id: "billing", title: "Billing" }] }],
+          },
+        },
+      },
+      {
+        conversation: { phoneNumber: "+15551234567" },
+        content: { template: { name: "order_ready", language: "en_US" } },
       },
     ];
 
     for (const body of sends) {
       await client.messages.send(session, body, {
-        idempotencyKey: `send-${body.type}`,
+        idempotencyKey: `send-${Object.keys(body.content)[0]}`,
         apiVersion: "next",
       });
     }
@@ -222,22 +220,30 @@ describe("MessagingClient message routes", () => {
 
     await client.messages.markSeen(
       "support/eu",
-      { chatId: "chat/1", messageId: "message/1" },
+      { conversation: { id: "739182640518203" }, id: "739182640518204" },
       options,
     );
     await client.messages.setTyping(
       "support/eu",
-      { chatId: "chat/1", state: "typing" },
+      { conversation: { id: "739182640518203" }, state: "typing" },
       options,
     );
     await client.messages.react(
       "support/eu",
-      { chatId: "chat/1", messageId: "message/1", reaction: "👍" },
+      {
+        conversation: { id: "739182640518203" },
+        id: "739182640518204",
+        reaction: "👍",
+      },
       options,
     );
     await client.messages.star(
       "support/eu",
-      { chatId: "chat/1", messageId: "message/1", star: true },
+      {
+        conversation: { id: "739182640518203" },
+        id: "739182640518204",
+        star: true,
+      },
       options,
     );
     await client.chats.editMessage(

@@ -3,16 +3,16 @@ import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
   CallsResource,
-  LidsResource,
+  IdentitiesResource,
   MessagingClient,
   UsersResource,
   type ApiResponse,
   type GetUserSecurityCodeResponse,
   type RejectCallRequest,
   type RejectCallResponse,
-  type ResolveLidParams,
-  type ResolveLidResult,
-  type ResolveLidsResponse,
+  type ResolveIdentityParams,
+  type ResolveIdentityResult,
+  type ResolveIdentityResponse,
   type UserSecurityCode,
 } from "../src/index.js";
 import {
@@ -69,14 +69,16 @@ async function compactSurfaceServer(): Promise<{
 describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
   it("exports the exact public resource and data contracts", () => {
     expectTypeOf<MessagingClient["calls"]>().toEqualTypeOf<CallsResource>();
-    expectTypeOf<MessagingClient["lids"]>().toEqualTypeOf<LidsResource>();
+    expectTypeOf<
+      MessagingClient["identities"]
+    >().toEqualTypeOf<IdentitiesResource>();
     expectTypeOf<MessagingClient["users"]>().toEqualTypeOf<UsersResource>();
     expectTypeOf<RejectCallRequest>().toEqualTypeOf<{
       readonly from: string;
     }>();
-    expectTypeOf<ResolveLidResult>().toEqualTypeOf<{
+    expectTypeOf<ResolveIdentityResult>().toEqualTypeOf<{
       readonly id?: string;
-      readonly lid?: string;
+      readonly bsuid?: string;
       readonly phoneNumber?: string;
       readonly username?: string;
       readonly keyRequired?: boolean;
@@ -89,16 +91,15 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
       readonly qrCode: string;
     }>();
 
-    const validInputs: readonly ResolveLidParams[] = [
+    const validInputs: readonly ResolveIdentityParams[] = [
       { phoneNumber: "+15551234567" },
       { id: "100000011111111@lid" },
-      { lid: "100000011111111@lid" },
       { username: "support" },
       { username: "support", usernameKey: "1234" },
     ];
-    expect(validInputs).toHaveLength(5);
+    expect(validInputs).toHaveLength(4);
     // @ts-expect-error Resolution accepts exactly one identity form.
-    const competingInputs: ResolveLidParams = {
+    const competingInputs: ResolveIdentityParams = {
       id: "100000011111111@lid",
       phoneNumber: "+15551234567",
     };
@@ -150,16 +151,17 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
 
   it("resolves each exact stable-identity input without mixing query forms", async () => {
     const { client, requests } = await compactSurfaceServer();
-    const byPhone = await client.lids.resolve(
+    const byPhone = await client.identities.resolve(
       "support/eu",
       { phoneNumber: "+15551234567" },
       { apiVersion: "next", headers: { "x-cli-command": "user resolve" } },
     );
 
-    expectTypeOf(byPhone).toEqualTypeOf<ApiResponse<ResolveLidsResponse>>();
-    await client.lids.resolve("support/eu", { id: "100000011111111@lid" });
-    await client.lids.resolve("support/eu", { lid: "100000011111111@lid" });
-    await client.lids.resolve("support/eu", {
+    expectTypeOf(byPhone).toEqualTypeOf<ApiResponse<ResolveIdentityResponse>>();
+    await client.identities.resolve("support/eu", {
+      id: "100000011111111@lid",
+    });
+    await client.identities.resolve("support/eu", {
       username: "support name",
       usernameKey: "1234",
     });
@@ -177,7 +179,6 @@ describe("MessagingClient compact Calls, LIDs, and Users surfaces", () => {
     expect(requests.map(({ path }) => path)).toEqual([
       "/messaging/support%2Feu/identities/resolve?phoneNumber=%2B15551234567",
       "/messaging/support%2Feu/identities/resolve?id=100000011111111%40lid",
-      "/messaging/support%2Feu/identities/resolve?lid=100000011111111%40lid",
       "/messaging/support%2Feu/identities/resolve?username=support+name&usernameKey=1234",
     ]);
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");

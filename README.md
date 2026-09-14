@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`6918c56135e28ba64557e344cb72889f1f517eb5`. Graph-compatible APIs are outside
+`7540c0cef0d6a9552476a1240c37c072c4781033`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -67,9 +67,8 @@ console.log(sessions.data.data, sessions.metadata.requestId);
 const sent = await messaging.messages.send(
   "support",
   {
-    chatId: "15551234567@s.whatsapp.net",
-    type: "text",
-    text: "Hello",
+    conversation: { phoneNumber: "+15551234567" },
+    content: { text: "Hello" },
   },
   { idempotencyKey: crypto.randomUUID() },
 );
@@ -86,7 +85,6 @@ The handwritten Messaging resources in this milestone are:
 
 - `sessions`: list, create, retrieve, update, delete, start, stop, restart,
   logout, account, and entitlement-gated direct JSON QR or phone pairing
-- `operations`: retrieve durable lifecycle operation status
 - `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility
@@ -110,7 +108,7 @@ The handwritten Messaging resources in this milestone are:
   participants, and update group profile and permission settings
 - `labels`: list, create, update, delete, list a chat's labels, and replace a
   chat's complete label set
-- `lids`: resolve one phone number, stable user ID, or username to known stable
+- `identities`: resolve one phone number, public user ID, BSUID, or username to known
   identity aliases
 - `observationPolicies`: retrieve and update project ceilings and session
   overrides for presence, typing, and label observation
@@ -180,16 +178,12 @@ Both organization and project views expose owner-bound resources:
 - `webhooks`: list, create, retrieve, update, delete, test, and rotate secrets
 - `webhookDeliveries`: list and retrieve deliveries, list and retrieve their
   physical attempts, and retry a delivery
-- `operations`: list, retrieve, list transitions, cancel, and wait for a
-  terminal state
 - `quickLinkSettings`: retrieve and update the saved QuickLink configuration
 
 List methods return `CursorPage<T>`. Mutations return typed receipts with the
 resource, operation, and idempotency identifiers supplied by the API. The
-SDK-only `operations.wait()` helper polls `retrieve`; it does not create a
-second remote operation or cancel the remote operation when local waiting is
-aborted. A larger server `Retry-After` raises the next poll delay without
-extending the caller's total wait deadline.
+Operation inspection is console-only. Machine clients expose no operation
+polling, transition-listing, or cancellation methods.
 
 The organization view also exposes these management resources:
 
@@ -323,14 +317,13 @@ Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 ```ts
 const response = await client.raw.request<{ data: unknown }>({
   method: "GET",
-  path: "/v1/operations/operation_123",
-  query: { projectId: "project_123" },
+  path: "/platform/events/event_123",
 });
 ```
 
 Organization raw paths remain relative API paths. Project raw paths are
 relative to the bound project and receive the encoded
-`/v1/projects/{projectId}` prefix automatically. Project raw requests reject
+`/platform/projects/{projectId}` prefix automatically. Project raw requests reject
 absolute URLs, traversal, explicit project prefixes, backslashes, and
 `Authorization` overrides before transport. Raw requests retain typed errors,
 metadata, cancellation, API versions, retry rules, and idempotency.
@@ -386,7 +379,7 @@ helpers.
 ## QuickLink lifecycle and settings
 
 `MessagingClient.quickLinks.create()`, `retrieve()`, and `cancel()` map the
-authenticated hosted lifecycle at `/api/quicklinks`. They accept organization
+authenticated hosted lifecycle at `/messaging/quicklinks`. They accept organization
 API keys or project tokens with `quicklink:manage`; browser client tokens fail
 before transport. Organization keys can set `projectId` on creation, while a
 project token remains bound by the server.
@@ -395,7 +388,7 @@ These methods expose the short-lived connection URL and status record. They do
 not add list, recovery, or history operations that the API does not provide.
 
 `client.quickLinkSettings.retrieve()` and `update()` map only the management
-`GET /v1/quicklink` and `PUT /v1/quicklink` settings contract. The same methods
+`GET /platform/quicklink` and `PUT /platform/quicklink` settings contract. The same methods
 on `client.project(projectId)` use the immutable project ownership context.
 
 ## Browser controllers and UI
@@ -423,7 +416,10 @@ const messaging = new BrowserMessagingClient({
   getClientToken,
 });
 
-await messaging.messages.setTyping({ chatId: "customer", state: "typing" });
+await messaging.messages.setTyping({
+  conversation: { id: "739182640518203" },
+  state: "typing",
+});
 const quickLink = new QuickLinkController(quickLinkBackend(transport));
 ```
 

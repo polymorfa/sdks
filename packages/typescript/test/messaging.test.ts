@@ -109,16 +109,11 @@ describe("MessagingClient sessions", () => {
 });
 
 describe("MessagingClient operations", () => {
-  it("retrieves a durable lifecycle operation with an encoded identifier", async () => {
+  it("does not expose console-only operation polling", async () => {
     const { client, requests } = await messagingServer();
 
-    await client.operations.retrieve("operation/123", { apiVersion: "next" });
-
-    expect(requests[0]).toMatchObject({
-      method: "GET",
-      path: "/messaging/operations/operation%2F123",
-    });
-    expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
+    expect(client).not.toHaveProperty("operations");
+    expect(requests).toEqual([]);
   });
 });
 
@@ -127,14 +122,17 @@ describe("MessagingClient messages", () => {
     const { client, requests } = await messagingServer();
     const response = await client.messages.send(
       "support/eu",
-      { chatId: "15551234567@s.whatsapp.net", type: "text", text: "Hello" },
+      {
+        conversation: { phoneNumber: "+15551234567" },
+        content: { text: "Hello" },
+      },
       { idempotencyKey: "message-1" },
     );
 
     expect(requests[0]).toMatchObject({
       method: "POST",
       path: "/messaging/support%2Feu/messages/send",
-      body: '{"chatId":"15551234567@s.whatsapp.net","type":"text","text":"Hello"}',
+      body: '{"conversation":{"phoneNumber":"+15551234567"},"content":{"text":"Hello"}}',
     });
     expect(response.data.success).toBe(true);
   });
@@ -142,21 +140,21 @@ describe("MessagingClient messages", () => {
   it("maps seen, typing, reaction, and star actions", async () => {
     const { client, requests } = await messagingServer();
     await client.messages.markSeen("support", {
-      chatId: "chat",
-      messageId: "m1",
+      conversation: { id: "739182640518203" },
+      id: "739182640518204",
     });
     await client.messages.setTyping("support", {
-      chatId: "chat",
+      conversation: { id: "739182640518203" },
       state: "recording",
     });
     await client.messages.react("support", {
-      chatId: "chat",
-      messageId: "m1",
+      conversation: { id: "739182640518203" },
+      id: "739182640518204",
       reaction: "👍",
     });
     await client.messages.star("support", {
-      chatId: "chat",
-      messageId: "m1",
+      conversation: { id: "739182640518203" },
+      id: "739182640518204",
       star: true,
     });
 
@@ -166,7 +164,9 @@ describe("MessagingClient messages", () => {
       "/messaging/support/messages/react",
       "/messaging/support/messages/star",
     ]);
-    expect(requests[1]?.body).toBe('{"chatId":"chat","state":"recording"}');
+    expect(requests[1]?.body).toBe(
+      '{"conversation":{"id":"739182640518203"},"state":"recording"}',
+    );
   });
 });
 

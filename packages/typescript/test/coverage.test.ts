@@ -30,14 +30,20 @@ const repositoryLedger = fileURLToPath(
 const knownFingerprint =
   "43b00b873e450f67c069001200873efdb343ec4a35a3204ff4b70682d9363f73";
 
-function operation(responseType = "object") {
+function operation(responseType = "object", reference = false) {
   return {
     operationId: "listItems",
     summary: "Human documentation does not affect structural coverage",
     responses: {
       "200": {
         description: "OK",
-        content: { "application/json": { schema: { type: responseType } } },
+        content: {
+          "application/json": {
+            schema: reference
+              ? { $ref: "#/components/schemas/Item" }
+              : { type: responseType },
+          },
+        },
       },
     },
   };
@@ -48,6 +54,7 @@ function runChecker(
     readonly extraOperation?: boolean;
     readonly responseType?: string;
     readonly strict?: boolean;
+    readonly componentType?: string;
   } = {},
 ) {
   const directory = mkdtempSync(join(tmpdir(), "polymorfa-coverage-"));
@@ -60,8 +67,16 @@ function runChecker(
     JSON.stringify({
       openapi: "3.0.3",
       info: { title: "Messaging", version: "1" },
+      components: {
+        schemas: { Item: { type: options.componentType ?? "object" } },
+      },
       paths: {
-        "/v1/items": { get: operation(options.responseType) },
+        "/v1/items": {
+          get: operation(
+            options.responseType,
+            options.componentType !== undefined,
+          ),
+        },
         ...(options.extraOperation
           ? { "/v1/items/{id}": { delete: operation() } }
           : {}),
@@ -147,16 +162,24 @@ function runRepositoryChecker() {
 }
 
 describe("coverage checker", () => {
+  it("detects component changes behind references", () => {
+    expect(runChecker({ componentType: "object" }).report).toMatchObject({
+      changed: 0,
+    });
+    expect(runChecker({ componentType: "string" }).report).toMatchObject({
+      changed: 1,
+    });
+  });
   it("reports the reviewed repository ledger totals", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "6918c56135e28ba64557e344cb72889f1f517eb5",
-      total: 402,
-      covered: 274,
+      sourceCommit: "7540c0cef0d6a9552476a1240c37c072c4781033",
+      total: 456,
+      covered: 265,
       partial: 0,
-      missing: 0,
-      excluded: 128,
+      missing: 37,
+      excluded: 154,
       changed: 0,
       resolutions: [],
     });
@@ -477,7 +500,7 @@ describe("coverage checker", () => {
     expect(mappings).toEqual(expectedMappings);
   });
 
-  it("maps the complete Calls, LIDs, and Users tags to their server resources", () => {
+  it("maps the complete Calls, Identities, and Users tags to their server resources", () => {
     const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
       operations: Array<{
         operationId: string;
@@ -487,7 +510,7 @@ describe("coverage checker", () => {
     const mappings = Object.fromEntries(
       ledger.operations
         .filter(({ operationId }) =>
-          ["rejectCall", "resolveLIDs", "getUserSecurityCode"].includes(
+          ["rejectCall", "resolveIdentity", "getUserSecurityCode"].includes(
             operationId,
           ),
         )
@@ -532,7 +555,7 @@ describe("coverage checker", () => {
           };
           return (
             candidate.tags?.some((tag) =>
-              ["Calls", "LIDs", "Users"].includes(tag),
+              ["Calls", "Identities", "Users"].includes(tag),
             ) === true && typeof candidate.operationId === "string"
           );
         },
@@ -543,12 +566,12 @@ describe("coverage checker", () => {
     expect(contractOperationIds).toEqual([
       "getUserSecurityCode",
       "rejectCall",
-      "resolveLIDs",
+      "resolveIdentity",
     ]);
     expect(mappings).toEqual({
       getUserSecurityCode: "MessagingClient.users.getSecurityCode",
       rejectCall: "MessagingClient.calls.reject",
-      resolveLIDs: "MessagingClient.lids.resolve",
+      resolveIdentity: "MessagingClient.identities.resolve",
     });
   });
 
@@ -614,8 +637,7 @@ describe("coverage checker", () => {
         method: "Client.securityIncidents.acknowledge",
       },
       getOrganizationOperation: {
-        status: "covered",
-        method: "Client.operations.retrieve",
+        status: "excluded",
       },
       listPolymorfaTokens: {
         status: "covered",

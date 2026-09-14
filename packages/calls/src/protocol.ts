@@ -3,11 +3,11 @@
  * call:
  *
  * 1. The **lifecycle socket** (`GET /voip/ws?ticket=`, ticket from
- *    `POST /api/voip/ws-ticket`) — one per client, follows one session. It
+ *    `POST /messaging/voip/ws-ticket`) — one per client, follows one session. It
  *    pushes `call.*` events and answers `ping` with `pong`.
  *
  * 2. The **media socket** (pod `/voip/sdk?callId=`, bearer ticket from
- *    `POST /api/voip/calls/{id}/agent-token`) — one per call. Binary frames
+ *    `POST /messaging/voip/calls/{id}/agent-token`) — one per call. Binary frames
  *    carry media, text frames carry JSON control. Every binary frame starts
  *    with a one-byte kind tag so audio and video share the socket.
  *
@@ -189,8 +189,9 @@ export type MediaControlFrame =
 
 export interface Participant {
   readonly id: string;
-  /** Display handle; a phone number, LID, or pseudonym as the platform provides. */
-  readonly handle: string;
+  readonly phoneNumber?: string;
+  readonly bsuid?: string;
+  readonly username?: string;
   readonly audioMuted: boolean;
   readonly video: boolean;
   readonly state: "invited" | "ringing" | "connected" | "left";
@@ -251,7 +252,10 @@ function isParticipant(value: unknown): value is Participant {
   const p = value as Record<string, unknown>;
   return (
     isString(p["id"]) &&
-    isString(p["handle"]) &&
+    !Object.hasOwn(p, "handle") &&
+    ["phoneNumber", "bsuid", "username"].every(
+      (key) => p[key] === undefined || isString(p[key]),
+    ) &&
     typeof p["audioMuted"] === "boolean" &&
     typeof p["video"] === "boolean" &&
     ["invited", "ringing", "connected", "left"].includes(p["state"] as string)

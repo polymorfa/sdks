@@ -35,73 +35,105 @@ export type BrowserMessageKind =
 
 export interface BrowserQuotedMessage {
   readonly id: string;
-  readonly chatId?: string;
-  readonly sender?: string;
+  readonly type?: string;
+  readonly text?: string;
 }
 
-export interface BrowserSendMessageRequest {
-  readonly chatId: string;
-  readonly type?: BrowserMessageKind;
-  readonly text?: string;
-  readonly url?: string;
-  readonly base64?: string;
+export interface BrowserConversationIdentity {
+  readonly id: string;
+  readonly phoneNumber?: string;
+  readonly bsuid?: string;
+  readonly username?: string;
+}
+export type BrowserConversationReference =
+  Partial<BrowserConversationIdentity> &
+    (
+      | { readonly id: string }
+      | { readonly phoneNumber: string }
+      | { readonly bsuid: string }
+    );
+export type BrowserMessageMedia = (
+  | { readonly url: string; readonly base64?: never }
+  | { readonly url?: never; readonly base64: string }
+) & {
   readonly mimeType?: string;
   readonly filename?: string;
   readonly caption?: string;
   readonly ptt?: boolean;
-  readonly pollTitle?: string;
-  readonly pollOptions?: readonly string[];
-  readonly pollMultiSelect?: boolean;
-  readonly latitude?: number;
-  readonly longitude?: number;
-  readonly address?: string;
-  readonly vcard?: string;
+};
+export type BrowserMessageContent =
+  | { readonly text: string }
+  | { readonly image: BrowserMessageMedia }
+  | { readonly video: BrowserMessageMedia }
+  | { readonly voice: BrowserMessageMedia }
+  | { readonly file: BrowserMessageMedia }
+  | {
+      readonly poll: {
+        readonly title: string;
+        readonly options: readonly string[];
+        readonly multiSelect?: boolean;
+      };
+    }
+  | {
+      readonly location: {
+        readonly lat: number;
+        readonly long: number;
+        readonly address?: string;
+      };
+    }
+  | { readonly contact: { readonly vcard: string } }
+  | { readonly requestPhoneNumber: Readonly<Record<string, never>> }
+  | { readonly template: Readonly<Record<string, unknown>> }
+  | { readonly product: Readonly<Record<string, unknown>> }
+  | { readonly productList: Readonly<Record<string, unknown>> }
+  | { readonly order: Readonly<Record<string, unknown>> }
+  | { readonly list: Readonly<Record<string, unknown>> }
+  | { readonly buttons: Readonly<Record<string, unknown>> }
+  | { readonly addressMessage: Readonly<Record<string, unknown>> }
+  | { readonly flow: Readonly<Record<string, unknown>> };
+
+export interface BrowserSendMessageRequest {
+  readonly conversation: BrowserConversationReference;
+  readonly content: BrowserMessageContent;
   readonly isForwarded?: boolean;
   readonly mentions?: readonly string[];
   readonly quotedMessage?: BrowserQuotedMessage;
-  readonly template?: Readonly<Record<string, unknown>>;
-  readonly product?: Readonly<Record<string, unknown>>;
-  readonly productList?: Readonly<Record<string, unknown>>;
-  readonly order?: Readonly<Record<string, unknown>>;
-  readonly list?: Readonly<Record<string, unknown>>;
-  readonly buttons?: Readonly<Record<string, unknown>>;
-  readonly addressMessage?: Readonly<Record<string, unknown>>;
-  readonly flow?: Readonly<Record<string, unknown>>;
 }
 
-export interface BrowserMessageResult {
+export interface BrowserMessageReceipt {
   readonly id: string;
+  readonly whatsapp_id: string;
+  readonly conversation: BrowserConversationIdentity;
   readonly timestamp: string;
   readonly status: string;
+}
+
+export interface BrowserMessageResult extends BrowserMessageReceipt {
+  readonly type: string;
+  readonly content?: BrowserMessageContent;
   readonly mediaId?: string;
-  readonly senderLid: string;
-  readonly senderPhoneNumber?: string;
-  readonly fromLid: string;
-  readonly fromPhoneNumber?: string;
 }
 
 export interface BrowserSeenRequest {
-  readonly chatId: string;
-  readonly messageId: string;
+  readonly conversation: BrowserConversationReference;
+  readonly id: string;
 }
 
 export interface BrowserTypingRequest {
-  readonly chatId: string;
+  readonly conversation: BrowserConversationReference;
   readonly state: "typing" | "recording" | "paused";
 }
 
 export interface BrowserReactionRequest {
-  readonly chatId: string;
-  readonly messageId: string;
+  readonly conversation: BrowserConversationReference;
+  readonly id: string;
   readonly reaction: string;
 }
 
 export interface BrowserStarRequest {
-  readonly chatId: string;
-  readonly messageId: string;
+  readonly conversation: BrowserConversationReference;
+  readonly id: string;
   readonly star: boolean;
-  readonly fromMe?: boolean;
-  readonly sender?: string;
 }
 
 export interface BrowserSuccessResponse {
@@ -150,21 +182,19 @@ export interface BrowserAsyncAcceptedData {
 }
 
 export interface BrowserContact {
-  /** @deprecated Use id and phoneNumber where available. */
-  readonly lid: string;
+  readonly bsuid?: string;
   readonly phoneNumber?: string;
   readonly name: string;
   readonly pushName: string;
   readonly businessName?: string;
   readonly profileUrl?: string;
-  readonly id?: string;
+  readonly id: string;
   readonly username?: string;
 }
 
 export interface BrowserContactCheckResult {
   readonly exists: boolean;
-  /** @deprecated Use id and phoneNumber where available. */
-  readonly lid?: string;
+  readonly bsuid?: string;
   readonly phoneNumber?: string;
   readonly id?: string;
   readonly username?: string;
@@ -206,12 +236,6 @@ export interface BrowserSessionStatus {
   readonly config: Readonly<Record<string, unknown>>;
   readonly createdAt: string;
   readonly updatedAt: string;
-}
-
-export interface BrowserWidgetHandoff {
-  readonly handoffUrl: string;
-  readonly metaQrSvg: string;
-  readonly expiresAt: string;
 }
 
 export type BrowserRequestOptions = Pick<

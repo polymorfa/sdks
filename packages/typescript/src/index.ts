@@ -16,7 +16,6 @@ export {
   type ClientBase,
   type ClientConstructor,
   type EventsResourceFor,
-  type OperationsResourceFor,
   type OrganizationControlPlaneResources,
   type RawResourceFor,
   type WebhookDeliveriesResourceFor,
@@ -149,11 +148,10 @@ export { ClientTokensResource } from "./messaging/client-tokens.js";
 export { ContactsResource } from "./messaging/contacts.js";
 export { GroupsResource } from "./messaging/groups.js";
 export { LabelsResource } from "./messaging/labels.js";
-export { LidsResource } from "./messaging/lids.js";
+export { IdentitiesResource } from "./messaging/identities.js";
 export { MessagingMediaResource } from "./messaging/media.js";
 export { MessagesResource } from "./messaging/messages.js";
 export { ObservationPoliciesResource } from "./messaging/observation-policies.js";
-export { OperationsResource } from "./messaging/operations.js";
 export { ProfileResource } from "./messaging/profile.js";
 export { PrivacyResource } from "./messaging/privacy.js";
 export { PresenceResource } from "./messaging/presence.js";
@@ -317,6 +315,10 @@ export type {
   MessageKind,
   MessagingMediaInfo,
   MessageResponse,
+  MessageReceipt,
+  ConversationIdentity,
+  ConversationReference,
+  MessageMediaContent,
   MessageSendContext,
   MessageTemplateSend,
   MintClientTokenRequest,
@@ -364,9 +366,9 @@ export type {
   RejectCallRequest,
   RejectCallResponse,
   RejectCallResult,
-  ResolveLidParams,
-  ResolveLidResult,
-  ResolveLidsResponse,
+  ResolveIdentityParams,
+  ResolveIdentityResult,
+  ResolveIdentityResponse,
   ReactToChannelMessageResponse,
   RequeueCampaignRequest,
   RevokeGroupInviteCodeResponse,
@@ -596,7 +598,7 @@ export {
   type GroupParticipantPayload,
   type GroupUpdatePayload,
   type HistorySyncPayload,
-  type JidReference,
+  type IdentityReference,
   type KnownWebhookEvent,
   type KnownWebhookEventType,
   type LabelsUpdatePayload,

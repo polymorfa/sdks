@@ -37,9 +37,9 @@ function fixture() {
       ? {
           ticket: "pmfa_wst_test",
           expiresAt: Date.now() + 60_000,
-          url: "/api/voip/ws?ticket=pmfa_wst_test",
+          url: "/messaging/voip/ws?ticket=pmfa_wst_test",
         }
-      : path === "/api/voip/calls"
+      : path === "/messaging/voip/calls"
         ? { callId: "CALL-OUT" }
         : {};
     return new Response(JSON.stringify({ data }), {
@@ -229,7 +229,7 @@ describe("browser widget and shared calls client", () => {
     expect(f.session.setMuted).toHaveBeenCalledWith({ audio: true });
     expect(
       f.fetch.mock.calls.map(([url]) => new URL(String(url)).pathname),
-    ).toEqual(["/api/voip/mode", "/api/voip/ws-ticket"]);
+    ).toEqual(["/messaging/voip/mode", "/messaging/voip/ws-ticket"]);
     expect(
       f.fetch.mock.calls.map(([, init]) => JSON.parse(String(init?.body))),
     ).toEqual([{ mode: "browser" }, {}]);
@@ -256,7 +256,7 @@ describe("browser widget and shared calls client", () => {
     );
     expect(f.session.close).not.toHaveBeenCalled();
     const placed = f.fetch.mock.calls.find(([url]) =>
-      String(url).endsWith("/api/voip/calls"),
+      String(url).endsWith("/messaging/voip/calls"),
     )!;
     expect(JSON.parse(String(placed[1]?.body))).toEqual({
       to: "+15550100",

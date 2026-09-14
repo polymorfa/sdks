@@ -14,7 +14,7 @@ export interface TrickleCandidate {
   readonly sdpMid?: string;
   readonly sdpMLineIndex?: number;
 }
-/** A single-use ticket for the calls WebSocket (`POST /api/voip/ws-ticket`). */
+/** A single-use ticket for the calls WebSocket (`POST /messaging/voip/ws-ticket`). */
 export interface SocketTicket {
   readonly ticket: string;
   /** Unix epoch milliseconds. */

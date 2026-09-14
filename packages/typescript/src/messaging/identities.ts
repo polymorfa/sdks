@@ -1,22 +1,24 @@
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
-import type { ResolveLidParams, ResolveLidsResponse } from "./types.js";
+import type {
+  ResolveIdentityParams,
+  ResolveIdentityResponse,
+} from "./types.js";
 
-export class LidsResource {
+export class IdentitiesResource {
   constructor(private readonly transport: HttpTransport) {}
 
   resolve(
     session: string,
-    params: ResolveLidParams,
+    params: ResolveIdentityParams,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<ResolveLidsResponse>> {
+  ): Promise<ApiResponse<ResolveIdentityResponse>> {
     return this.transport.request({
       method: "GET",
       path: `/messaging/${encodeURIComponent(session)}/identities/resolve`,
       query: {
         phoneNumber: params.phoneNumber,
         id: params.id,
-        lid: params.lid,
         username: params.username,
         usernameKey: params.usernameKey,
       },

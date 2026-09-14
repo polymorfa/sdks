@@ -88,7 +88,7 @@ export class IncomingCallRelay {
 }
 
 export interface SignalingCallsBackendOptions {
-  /** REST signaling client for the `/api/voip/calls/{id}` paths. */
+  /** REST signaling client for the `/messaging/voip/calls/{id}` paths. */
   readonly signaling: CallsSignaling;
   /** Inbound call notifications: a {@link CallsSocket} or an application-fed {@link IncomingCallRelay}. */
   readonly incoming: Pick<IncomingCallRelay, "subscribe">;

@@ -8,7 +8,7 @@ import type {
   SendReactionResponse,
   StarMessageResponse,
   StarRequest,
-  SuccessResponse,
+  SuccessEnvelope,
   TypingRequest,
 } from "./types.js";
 
@@ -27,7 +27,7 @@ export class MessagesResource {
     session: string,
     body: SeenRequest,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<SuccessResponse>> {
+  ): Promise<ApiResponse<SuccessEnvelope<{ readonly status: string }>>> {
     return this.post(session, "seen", body, options);
   }
 
@@ -35,7 +35,7 @@ export class MessagesResource {
     session: string,
     body: TypingRequest,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<SuccessResponse>> {
+  ): Promise<ApiResponse<SuccessEnvelope<{ readonly status: string }>>> {
     return this.post(session, "typing", body, options);
   }
 

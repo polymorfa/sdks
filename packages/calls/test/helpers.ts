@@ -77,7 +77,7 @@ export function fakeApi(): FakeApi {
     hangup: vi.fn(async () => undefined),
     addParticipant: vi.fn(async (_id: string, to: string) => ({
       id: `p-${to}`,
-      handle: to,
+      phoneNumber: to,
       audioMuted: false,
       video: false,
       state: "invited" as const,

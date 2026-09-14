@@ -220,7 +220,7 @@ describe("project raw confinement", () => {
 });
 
 describe("durable developer resources", () => {
-  it("uses exact project routes for events, deliveries, attempts, and operations", async () => {
+  it("uses exact project routes for events, deliveries, and attempts", async () => {
     const { client, requests } = await testClient("project/a");
     await client.events.list({ type: "message.received", limit: 10 });
     await client.events.replay(
@@ -229,19 +229,11 @@ describe("durable developer resources", () => {
       { idempotencyKey: "replay-1" },
     );
     await client.webhookDeliveries.retrieveAttempt("delivery/a", "attempt/a");
-    await client.operations.listTransitions("operation/a", {
-      afterSequence: 4,
-    });
-    await client.operations.cancel("operation/a", {
-      idempotencyKey: "cancel-1",
-    });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "GET /platform/projects/project%2Fa/events?type=message.received&limit=10",
       "POST /platform/projects/project%2Fa/events/event%2Fa/replays",
       "GET /platform/projects/project%2Fa/webhook-deliveries/delivery%2Fa/attempts/attempt%2Fa",
-      "GET /platform/projects/project%2Fa/operations/operation%2Fa/transitions?afterSequence=4",
-      "POST /platform/projects/project%2Fa/operations/operation%2Fa/cancel",
     ]);
     expect(requests[1]?.body).toBe('{"webhookId":"webhook/a"}');
     expect(requests[1]?.headers["idempotency-key"]).toBe("replay-1");

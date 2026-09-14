@@ -40,12 +40,15 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
 
 export type KnownWebhookEventType = (typeof KNOWN_WEBHOOK_EVENT_TYPES)[number];
 
-export interface JidReference {
+export interface IdentityReference {
   readonly id: string;
   readonly phoneNumber?: string;
-  readonly lid?: string;
-  readonly mode?: "pn" | "lid";
+  readonly bsuid?: string;
   readonly username?: string;
+}
+
+export interface ConversationReference extends IdentityReference {
+  readonly sender?: IdentityReference;
 }
 
 export interface NativeFlowResponse {
@@ -77,8 +80,8 @@ export type LinkedDeviceMessageType =
 
 export interface LinkedDeviceMessagePayload {
   readonly id: string;
-  readonly from: JidReference;
-  readonly sender: JidReference;
+  readonly whatsapp_id: string;
+  readonly conversation: ConversationReference;
   readonly fromMe: boolean;
   readonly timestamp: number;
   readonly pushName: string;
@@ -109,8 +112,9 @@ export interface LinkedDeviceMessagePayload {
 export type MessagePayload = LinkedDeviceMessagePayload;
 
 export interface CloudMessagePayload {
-  readonly messageId: string;
-  readonly from: string;
+  readonly id: string;
+  readonly whatsapp_id: string;
+  readonly conversation: ConversationReference;
   readonly timestamp: string;
   readonly type: string;
   readonly senderName?: string;
@@ -124,30 +128,37 @@ export type MessageReceivedPayload =
 
 export interface MessageSentPayload {
   readonly id: string;
-  readonly from: JidReference;
+  readonly whatsapp_id: string;
+  readonly conversation: ConversationReference;
   readonly type: string;
   readonly timestamp: number;
-  readonly sender: JidReference;
 }
 
 export interface MessageAckPayload {
-  readonly messageIds: readonly string[];
-  readonly from: JidReference;
-  readonly sender: JidReference;
+  readonly messages: readonly {
+    readonly id: string;
+    readonly whatsapp_id: string;
+  }[];
+  readonly conversation: ConversationReference;
+  readonly from?: IdentityReference;
+  readonly sender?: IdentityReference;
   readonly type: string;
   readonly timestamp: number;
 }
 
 export interface MessageDeletePayload {
-  readonly from: JidReference;
-  readonly sender: JidReference;
-  readonly messageId: string;
+  readonly from: IdentityReference;
+  readonly sender: IdentityReference;
+  readonly id: string;
+  readonly whatsapp_id: string;
+  readonly conversation: ConversationReference;
   readonly fromMe: boolean;
 }
 
 export interface PollVotePayload {
+  readonly conversation: ConversationReference;
   readonly pollMessageId: string;
-  readonly voter: JidReference;
+  readonly voter: IdentityReference;
   readonly selectedHashes: readonly string[];
   readonly timestamp: number;
 }
@@ -185,16 +196,16 @@ export interface GroupUpdatePayload {
 
 export interface GroupParticipantPayload {
   readonly id: string;
-  readonly joined?: readonly JidReference[];
-  readonly left?: readonly JidReference[];
-  readonly promoted?: readonly JidReference[];
-  readonly demoted?: readonly JidReference[];
+  readonly joined?: readonly IdentityReference[];
+  readonly left?: readonly IdentityReference[];
+  readonly promoted?: readonly IdentityReference[];
+  readonly demoted?: readonly IdentityReference[];
 }
 
 export interface PresenceUpdatePayload {
   readonly observedAt: number;
-  readonly from?: JidReference;
-  readonly sender?: JidReference;
+  readonly from?: IdentityReference;
+  readonly sender?: IdentityReference;
   readonly state?: string;
   readonly media?: string;
   readonly unavailable?: boolean;
@@ -204,7 +215,7 @@ export interface PresenceUpdatePayload {
 export interface ContactUpdatePayload {
   readonly id: string;
   readonly phoneNumber?: string;
-  readonly lid?: string;
+  readonly bsuid?: string;
   readonly fullName?: string;
   readonly firstName?: string;
   readonly pushName?: string;
@@ -217,32 +228,32 @@ export interface ContactUpdatePayload {
 }
 
 export interface ChatArchivePayload {
-  readonly from: JidReference;
+  readonly from: IdentityReference;
   readonly archive?: boolean;
   readonly pinned?: boolean;
 }
 
 export interface ChatMutePayload {
-  readonly from: JidReference;
+  readonly from: IdentityReference;
   readonly muted: boolean;
   readonly muteEndTimestamp?: number;
 }
 
 export interface ChatReadPayload {
-  readonly from: JidReference;
+  readonly from: IdentityReference;
   readonly read: boolean;
 }
 
 export interface ChatClearPayload {
-  readonly from: JidReference;
+  readonly from: IdentityReference;
 }
 
 export interface ChatDeletePayload {
-  readonly from: JidReference;
+  readonly from: IdentityReference;
 }
 
 export interface CallReceivedPayload {
-  readonly from: JidReference;
+  readonly from: IdentityReference;
   readonly callId: string;
 }
 
@@ -255,7 +266,7 @@ export type CallRejectedPayload = CallReceivedPayload;
 
 export interface CallEndedPayload {
   /** Null when the media host disappeared before reporting caller identity. */
-  readonly from: JidReference | null;
+  readonly from: IdentityReference | null;
   readonly callId: string;
   readonly durationSeconds: number;
   /** Includes pod_lost for calls ended after the media host disappears. */
@@ -282,7 +293,9 @@ export interface CallTelemetryPayload {
 
 export interface CallParticipant {
   readonly id: string;
-  readonly handle: string;
+  readonly phoneNumber?: string;
+  readonly bsuid?: string;
+  readonly username?: string;
   readonly audioMuted: false;
   readonly video: false;
   readonly state: "invited" | "ringing" | "connected" | "left";
@@ -308,8 +321,8 @@ export interface NewsletterUpdatePayload {
 export interface BlocklistChange {
   readonly action: string;
   readonly phoneNumber?: string;
-  readonly lid?: string;
-  readonly id?: string;
+  readonly bsuid?: string;
+  readonly id: string;
   readonly username?: string;
 }
 
@@ -319,9 +332,10 @@ export interface BlocklistUpdatePayload {
 }
 
 export interface LabelsUpdatePayload {
+  /** label_edit, label_association_chat, label_association_message, or star. */
   readonly action: string;
   readonly labelId?: string;
-  readonly from?: JidReference;
+  readonly from?: IdentityReference;
   readonly label?: string;
   readonly name?: string;
   readonly color?: number;
@@ -329,13 +343,20 @@ export interface LabelsUpdatePayload {
   readonly deleted?: boolean;
   readonly labeled?: boolean;
   readonly observedAt?: number;
+  /** Polymorfa message ID; an association alone may not supply its routing key. */
   readonly messageId?: string;
   readonly starred?: boolean;
 }
 
 export interface HistorySyncPayload {
-  readonly messageId: string;
-  readonly originalMessageId?: string;
+  readonly whatsapp_id: string;
+  readonly original_whatsapp_id?: string;
+  readonly messages: readonly {
+    readonly id: string;
+    readonly whatsapp_id: string;
+    readonly conversation: IdentityReference;
+    readonly fromMe?: boolean;
+  }[];
   readonly mode: "deliver";
   readonly syncType: string;
   readonly chunkOrder?: number;
@@ -345,7 +366,10 @@ export interface HistorySyncPayload {
   readonly messageCount: number;
   readonly pushNameCount: number;
   readonly statusMessageCount: number;
-  readonly data: string;
+  readonly whatsapp: {
+    readonly encoding: "gzip-base64-protobuf";
+    readonly data: string;
+  };
 }
 
 export interface CommandResultPayload {
@@ -394,7 +418,7 @@ export interface WebhookPayloadMap {
   readonly "message.ack": MessageAckPayload;
   readonly "message.delete": MessageDeletePayload;
   readonly "message.edited": MessagePayload;
-  readonly "message.reaction": MessagePayload;
+  readonly "message.reaction": MessageReceivedPayload;
   readonly "message.received": MessageReceivedPayload;
   readonly "message.revoked": MessagePayload;
   readonly "message.sent": MessageSentPayload;
