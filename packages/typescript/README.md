@@ -165,20 +165,19 @@ session rules can delegate to the browser token.
 
 ## Session connection lifecycle
 
-Start a Linked Device session, then poll the returned durable lifecycle
-operation. The standard pairing flow is QuickLink. Direct JSON QR and phone
+Start a Linked Device session, then retrieve its connection status with
+`sessions.retrieve`. The standard pairing flow is QuickLink. Direct JSON QR and phone
 pairing-code routes require `sessions:manage` plus an explicit organization
 entitlement; without it, the API returns `403` and the application must create
-a QuickLink. Operation retrieval accepts any of `sessions:read`,
-`campaigns:read`, or `webhooks:manage`.
+a QuickLink. Operation inspection is console-only.
 
 ```ts
 const started = await messaging.sessions.start("support", {
   idempotencyKey: "start-support",
 });
 
-const operation = await messaging.operations.retrieve(started.data.operationId);
-console.log(operation.data.data.status);
+console.log(started.data.operationId);
+console.log((await messaging.sessions.retrieve("support")).data);
 ```
 
 `sessions.retrieve` is the typed source of session connection status. The
@@ -245,21 +244,20 @@ available for Cloud API sessions.
 
 ## Calls and stable user identity
 
-The compact `calls`, `lids`, and `users` resources cover all three operations
-in their pinned source tags. Each requires an organization server API key and
-a connected Linked Device session. Project credentials, browser client tokens,
-Cloud API sessions, dashboard sessions, and staff credentials cannot use these
-routes.
+The `calls`, `identities`, and `users` resources use public Polymorfa user IDs.
+Identity resolution accepts an ID, phone number, or BSUID. Calling and security
+code checks require a connected Linked Device Number; identity resolution also
+supports Cloud Numbers when their business portfolio is configured.
 
 ```ts
 await messaging.calls.reject(
   "support",
   incomingCallId,
-  { from: callerJid },
+  { from: callerId },
   { idempotencyKey: incomingCallId },
 );
 
-const identity = await messaging.lids.resolve("support", {
+const identity = await messaging.identities.resolve("support", {
   phoneNumber: "+15551234567",
 });
 
@@ -274,8 +272,8 @@ if (identity.data.data.id) {
 
 `calls.reject` requires `chats:manage`. Its call ID must contain 1 through 128
 characters and the JSON `from` field must contain the incoming caller's
-nonempty JID. Session, call, and caller identifiers are passed without semantic
-rewriting; path identifiers are URL-encoded. The SDK sends an idempotency key
+public Polymorfa user ID or E.164 phone number. Path identifiers are URL-encoded.
+The SDK sends an idempotency key
 when supplied and only permits automatic retries of this POST when that key is
 nonempty. The source exposes no call list, retrieve, accept, history, watch,
 stream, or outgoing-call operation.
@@ -287,24 +285,23 @@ rejection. The live runner returns
 RPC returns HTTP 202 with `{ success: true, data: { requestId } }`.
 `RejectCallResponse` represents all three source-observable shapes.
 
-`lids.resolve` requires `contacts:read`. `ResolveLidParams` is a discriminated
+`identities.resolve` requires `contacts:read`. `ResolveIdentityParams` is a discriminated
 union that permits exactly one of these inputs:
 
 - `phoneNumber`: digits with an optional leading `+`; the runner trims
   surrounding whitespace and returns a normalized leading `+` when known
-- `id`: a stable LID-backed user ID; the runner requires the `@lid` server
-- `lid`: the deprecated input alias for `id`
+- `id`: a decimal Polymorfa user ID
 - `username`: 3 through 35 characters, with an optional four-digit
   `usernameKey`
 
 `usernameKey` is invalid without `username`, and competing identity inputs are
-rejected before runner dispatch. The response can contain the stable `id`, its
-deprecated `lid` alias, a phone number, a username, and `keyRequired` when
+rejected before runner dispatch. The response can contain the stable `id`, a
+phone number, a BSUID, a username, and `keyRequired` when
 WhatsApp needs the username's four-digit key. The source exposes no bulk
 resolution, search, list, pagination, or retained identity history.
 
 `users.getSecurityCode` also requires `contacts:read` and accepts only a stable
-user ID matching digits followed by `@lid`. The result contains that ID,
+decimal Polymorfa user ID. The result contains that ID,
 optional known aliases, a 60-digit `numericCode`, and a base64-encoded display
 `qrCode`. The runner deliberately excludes WhatsApp's private verification QR
 payload, and the API schema rejects an upstream response that does not match
@@ -367,25 +364,25 @@ The source has one send route rather than separate routes for each message
 kind. `SendMessageRequest` is therefore a union of the exact typed payloads for
 text, image/file/voice/video media, polls, locations, contacts, phone-number
 requests, products, product lists, orders, lists, buttons, address messages,
-and flows. Template sends use `SendTemplateMessageRequest`; the API requires a
-`type` value but ignores it when `template` is present.
+and flows. Template sends use `SendTemplateMessageRequest`. Select exactly one
+message kind inside `content`; `conversation` selects its destination.
 
 ```ts
 await messaging.messages.send(
   "support",
   {
-    chatId: "15551234567@s.whatsapp.net",
-    type: "buttons",
-    buttons: {
-      body: "Continue with this request?",
-      buttons: [
-        { type: "reply", text: "Continue", id: "continue" },
-        { type: "reply", text: "Cancel", id: "cancel" },
-      ],
+    conversation: { phoneNumber: "+15551234567" },
+    content: {
+      buttons: {
+        body: "Continue with this request?",
+        buttons: [
+          { type: "reply", text: "Continue", id: "continue" },
+          { type: "reply", text: "Cancel", id: "cancel" },
+        ],
+      },
     },
     quotedMessage: {
-      messageId: "message-id",
-      participant: "15551234567@s.whatsapp.net",
+      id: "739182640518204",
     },
   },
   { idempotencyKey: "reply-to-message-id" },
@@ -756,9 +753,9 @@ Neither read offers history or pagination.
 
 ### Catalogs, products, collections, and orders
 
-`getCatalog` requires a user or LID business JID. It accepts an opaque `after`
+`getCatalog` requires a public business-owner ID. It accepts an opaque `after`
 cursor, `limit` from 1 through 100, and optional image dimensions from 1 through 1024. Its response contains `products`, optional `next`, and optional
-`previous`. `listCollections` uses the same JID and cursor model with
+`previous`. `listCollections` uses the same owner ID and cursor model with
 `collectionLimit` from 1 through 20 and `itemLimit` from 1 through 100; its
 response contains `collections` and optional `next`. These are explicit cursor
 fields, not offset pages, and the SDK does not synthesize `hasMore`.
@@ -766,7 +763,7 @@ fields, not offset pages, and the SDK does not synthesize `hasMore`.
 `getCollection` accepts `after` and a product `limit`, but the pinned response
 contains only the collection and products—no next cursor. The SDK preserves
 that source limitation rather than claiming automatic pagination. Product,
-collection, business JID, order, cover-photo, and session identifiers are
+collection, business-owner, order, cover-photo, and session identifiers are
 encoded by the SDK. Cursors and order tokens remain query/body values rather
 than path data.
 
@@ -802,10 +799,15 @@ visible as a typed validation error.
 `getOrder` requires the exact order ID and opaque lookup token supplied by the
 Business App event. It is not an order list, search, history, checkout, or
 fulfilment API. The source likewise exposes no catalog listing independent of
-a business JID, no product search, no collection search, and no upload
+a business-owner ID, no product search, no collection search, and no upload
 progress.
 
 ## Channels
+
+`history.sync` payloads distinguish linked-device indexes and their preserved
+WhatsApp archive from Cloud history's `{ kind: "history", value }` envelope.
+Narrow `HistorySyncPayload` with `"kind" in payload` before reading provider-specific
+fields; `LinkedHistorySyncPayload` and `CloudHistorySyncPayload` are exported.
 
 `MessagingClient.channels` exposes the complete 13-operation Channels tag for
 connected Linked Device sessions. Channels are WhatsApp newsletters in the
@@ -880,7 +882,7 @@ The pinned source has two request/response discrepancies:
 The public reaction schema permits at most 32 characters. The runner performs
 a second check against 32 UTF-8 bytes, so a multibyte reaction can pass route
 validation and still receive a 400 response. Empty reaction text is preserved
-and removes the caller's reaction upstream. Channel, session, and numeric
+and removes the caller's reaction upstream. Channel, session, and public
 message identifiers are URL-encoded by the SDK.
 
 ## Messaging campaigns
@@ -909,16 +911,13 @@ const launched = await messaging.campaigns.launch(
   { idempotencyKey: "campaign-august-launch" },
 );
 
-const operation = await messaging.operations.retrieve(
-  launched.data.data.operationId,
-);
-console.log(operation.data.data.status, launched.metadata.requestId);
+console.log(launched.data.data.operationId, launched.metadata.requestId);
 ```
 
 Launch, pause, resume, and stop append durable lifecycle commands and return the
 campaign's current persisted state plus an `operationId`. They do not wait for
-the campaign state to change. Poll that identifier with
-`MessagingClient.operations.retrieve`; the API does not expose a campaign
+the campaign state to change. Read the campaign resource to inspect its status;
+operation inspection is console-only. The API does not expose a campaign
 watcher, stream, or command-cancellation route. Launch accepts an optional
 epoch-millisecond schedule. Pause requires a running campaign, resume requires
 a paused campaign, and stop accepts draft, running, or paused campaigns.
@@ -1034,7 +1033,6 @@ organization and project scope:
   `rotateSecret`
 - `webhookDeliveries.list`, `retrieve`, `listAttempts`, `retrieveAttempt`, and
   `retry`
-- `operations.list`, `retrieve`, `listTransitions`, `cancel`, and `wait`
 
 ```ts
 const deliveries = await project.webhookDeliveries.list({
@@ -1059,18 +1057,12 @@ const replay = await project.events.replay(
   { idempotencyKey: crypto.randomUUID() },
 );
 
-await project.operations.wait(replay.data.operationId, {
-  maxWaitMs: 30_000,
-  pollIntervalMs: 1_000,
-});
+console.log(replay.data.operationId);
 ```
 
 List methods return `CursorPage<T>`. Mutations return owner-specific typed
 receipts and preserve response metadata, request IDs, and idempotency receipts.
-`operations.wait` is a local polling helper. Aborting or timing out the wait
-does not cancel the remote operation. A larger server `Retry-After` raises the
-next poll delay without extending `maxWaitMs`. The SDK has no operation watch
-or event listener transport.
+The SDK has no operation inspection, cancellation, or event listener transport.
 
 Console and staff routes remain absent from the server client and its raw
 guidance. The CLI listener protocol is separate from the durable events API;
@@ -1213,7 +1205,7 @@ pending session. Connected links cannot be cancelled. The source exposes no
 list, recover, or history operation.
 
 `Client.quickLinkSettings.retrieve` and `update` map the management
-`GET /v1/quicklink` and `PUT /v1/quicklink` operations. Use them on the root
+`GET /platform/quicklink` and `PUT /platform/quicklink` operations. Use them on the root
 organization client or an immutable project view:
 
 ```ts

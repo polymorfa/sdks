@@ -58,30 +58,28 @@ async function groupsServer(): Promise<{
 describe("MessagingClient groups", () => {
   it("exports the exact group and request shapes from the pinned contract", () => {
     expectTypeOf<GroupParticipant>().toEqualTypeOf<{
-      readonly lid: string;
+      readonly bsuid?: string;
       readonly phoneNumber?: string;
       readonly isAdmin: boolean;
       readonly isSuperAdmin: boolean;
-      readonly id?: string;
+      readonly id: string;
       readonly username?: string;
     }>();
     expectTypeOf<Group>().toEqualTypeOf<{
       readonly id: string;
       readonly name: string;
       readonly description: string;
-      readonly ownerLid: string;
       readonly createdAt: number;
       readonly participants: readonly GroupParticipant[];
-      readonly ownerId?: string;
+      readonly ownerId: string;
     }>();
     expectTypeOf<GroupInviteInfo>().toEqualTypeOf<{
       readonly id: string;
       readonly subject: string;
-      readonly creatorLid: string;
       readonly createdAt: number;
       readonly size: number;
       readonly participants: readonly GroupParticipant[];
-      readonly creatorId?: string;
+      readonly creatorId: string;
     }>();
     expectTypeOf<CreateGroupRequest>().toEqualTypeOf<{
       readonly name: string;

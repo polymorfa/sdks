@@ -20,7 +20,6 @@ import { CampaignsResource } from "./platform/campaigns.js";
 import { CustomersResource } from "./platform/customers.js";
 import {
   EventsResource,
-  OperationsResourceV2,
   WebhookDeliveriesResource,
   WebhooksResource,
 } from "./platform/developer-resources.js";
@@ -40,8 +39,6 @@ export type EventsResourceFor<O extends ClientOwner> = EventsResource<O>;
 export type WebhooksResourceFor<O extends ClientOwner> = WebhooksResource<O>;
 export type WebhookDeliveriesResourceFor<O extends ClientOwner> =
   WebhookDeliveriesResource<O>;
-export type OperationsResourceFor<O extends ClientOwner> =
-  OperationsResourceV2<O>;
 export type RawResourceFor<O extends ClientOwner> = O extends "project"
   ? ProjectScopedRawClient
   : RawClient;
@@ -52,7 +49,6 @@ export interface ClientBase<O extends ClientOwner> {
   readonly events: EventsResourceFor<O>;
   readonly webhooks: WebhooksResourceFor<O>;
   readonly webhookDeliveries: WebhookDeliveriesResourceFor<O>;
-  readonly operations: OperationsResourceFor<O>;
   readonly quickLinkSettings: QuickLinkSettingsResource<O>;
   readonly raw: RawResourceFor<O>;
   project(projectId: string): Client<"project">;
@@ -90,7 +86,6 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   readonly events: EventsResource<ClientOwner>;
   readonly webhooks: WebhooksResource<ClientOwner>;
   readonly webhookDeliveries: WebhookDeliveriesResource<ClientOwner>;
-  readonly operations: OperationsResourceV2<ClientOwner>;
   readonly quickLinkSettings: QuickLinkSettingsResource<ClientOwner>;
   readonly raw: RawClient | ProjectScopedRawClient;
   readonly #transport: HttpTransport;
@@ -134,7 +129,6 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       this.#transport,
       prefix,
     );
-    this.operations = new OperationsResourceV2(this.#transport, prefix);
     this.quickLinkSettings = new QuickLinkSettingsResource(
       this.#transport,
       projectId,

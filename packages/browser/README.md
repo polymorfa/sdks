@@ -16,9 +16,8 @@ const messaging = new BrowserMessagingClient({
 });
 
 await messaging.messages.send({
-  chatId: "15551234567@s.whatsapp.net",
-  type: "text",
-  text: "Hello",
+  conversation: { phoneNumber: "+15551234567" },
+  content: { text: "Hello" },
 });
 ```
 

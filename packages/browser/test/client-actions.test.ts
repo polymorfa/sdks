@@ -4,9 +4,39 @@ import {
   BrowserConfigurationError,
   BrowserMessagingClient,
   createBrowserComposerActions,
+  type BrowserMessageContent,
 } from "../src/index.js";
 
 describe("BrowserMessagingClient", () => {
+  it("requires one content type", () => {
+    const file: BrowserMessageContent = {
+      file: { url: "https://example.test/file", filename: "report.pdf" },
+    };
+    const voice: BrowserMessageContent = {
+      voice: { base64: "YQ==", ptt: true },
+    };
+    const invalidImage: BrowserMessageContent = {
+      // @ts-expect-error Only files accept filename.
+      image: { url: "https://example.test/image", filename: "image.png" },
+    };
+    const invalidFile: BrowserMessageContent = {
+      // @ts-expect-error Only voice messages accept ptt.
+      file: { url: "https://example.test/file", ptt: true },
+    };
+    expect([file, voice, invalidImage, invalidFile]).toHaveLength(4);
+    const text: BrowserMessageContent = { text: "Hello" };
+    const image: BrowserMessageContent = {
+      image: { url: "https://example.test/image.png" },
+    };
+    // @ts-expect-error A message cannot contain two content types.
+    const mixed: BrowserMessageContent = {
+      text: "Hello",
+      image: { url: "https://example.test/image.png" },
+    };
+    expect(text).toHaveProperty("text");
+    expect(image).toHaveProperty("image");
+    expect(mixed).toHaveProperty("text");
+  });
   it("binds message actions to one encoded session", async () => {
     const requests: Array<{
       url: string;
@@ -24,28 +54,41 @@ describe("BrowserMessagingClient", () => {
     });
 
     await client.messages.send(
-      { chatId: "15551234567@s.whatsapp.net", type: "text", text: "Hello" },
+      {
+        conversation: { phoneNumber: "+15551234567" },
+        content: { text: "Hello" },
+      },
       { idempotencyKey: "message-1" },
     );
-    await client.messages.markSeen({ chatId: "chat", messageId: "m1" });
-    await client.messages.setTyping({ chatId: "chat", state: "typing" });
+    await client.messages.markSeen({
+      conversation: { id: "739182640518203" },
+      id: "739182640518204",
+    });
+    await client.messages.setTyping({
+      conversation: { id: "739182640518203" },
+      state: "typing",
+    });
     await client.messages.react({
-      chatId: "chat",
-      messageId: "m1",
+      conversation: { id: "739182640518203" },
+      id: "739182640518204",
       reaction: "👍",
     });
-    await client.messages.star({ chatId: "chat", messageId: "m1", star: true });
+    await client.messages.star({
+      conversation: { id: "739182640518203" },
+      id: "739182640518204",
+      star: true,
+    });
 
     expect(
       requests.map(
         ({ url, init }) => `${init?.method} ${new URL(url).pathname}`,
       ),
     ).toEqual([
-      "POST /api/support%2Feu/messages/send",
-      "POST /api/support%2Feu/messages/seen",
-      "POST /api/support%2Feu/messages/typing",
-      "POST /api/support%2Feu/messages/react",
-      "POST /api/support%2Feu/messages/star",
+      "POST /messaging/support%2Feu/messages/send",
+      "POST /messaging/support%2Feu/messages/seen",
+      "POST /messaging/support%2Feu/messages/typing",
+      "POST /messaging/support%2Feu/messages/react",
+      "POST /messaging/support%2Feu/messages/star",
     ]);
     expect(new Headers(requests[0]?.init?.headers).get("idempotency-key")).toBe(
       "message-1",
@@ -65,21 +108,21 @@ describe("BrowserMessagingClient", () => {
     });
 
     await client.presence.retrieve();
-    await client.presence.retrieveChat("1555@s.whatsapp.net");
-    await client.presence.subscribe("1555@s.whatsapp.net");
+    await client.presence.retrieveChat("739182640518203");
+    await client.presence.subscribe("739182640518203");
     await client.contacts.list();
-    await client.contacts.retrieve("1555@s.whatsapp.net");
-    await client.contacts.picture("1555@s.whatsapp.net");
+    await client.contacts.retrieve("739182640518203");
+    await client.contacts.picture("739182640518203");
     await client.contacts.check(["+15550001", "+15550002"]);
 
     expect(urls.map((url) => new URL(url).pathname)).toEqual([
-      "/api/support/presence",
-      "/api/support/presence/1555%40s.whatsapp.net",
-      "/api/support/presence/1555%40s.whatsapp.net/subscribe",
-      "/api/support/contacts",
-      "/api/support/contacts/1555%40s.whatsapp.net",
-      "/api/support/contacts/1555%40s.whatsapp.net/picture",
-      "/api/support/contacts/check",
+      "/messaging/support/presence",
+      "/messaging/support/presence/739182640518203",
+      "/messaging/support/presence/739182640518203/subscribe",
+      "/messaging/support/contacts",
+      "/messaging/support/contacts/739182640518203",
+      "/messaging/support/contacts/739182640518203/picture",
+      "/messaging/support/contacts/check",
     ]);
     expect(new URL(urls[6] ?? "").searchParams.get("phone")).toBe(
       "+15550001,+15550002",
@@ -105,18 +148,16 @@ describe("BrowserMessagingClient", () => {
     await client.widget.status();
     await client.widget.qr();
     await client.widget.requestPairingCode({ phone: "+15550001" });
-    await client.widget.handoff();
 
     expect(
       requests.map(
         ({ url, init }) => `${init?.method} ${new URL(url).pathname}`,
       ),
     ).toEqual([
-      "POST /api/sessions/widget-1/start",
-      "GET /api/sessions/widget-1",
-      "GET /api/widget-1/pair/qr",
-      "POST /api/widget-1/pair/code",
-      "POST /api/widget/sessions/widget-1/handoff",
+      "POST /messaging/sessions/widget-1/start",
+      "GET /messaging/sessions/widget-1",
+      "GET /messaging/widget-1/pair/qr",
+      "POST /messaging/widget-1/pair/code",
     ]);
     expect(requests[3]?.init?.body).toBe('{"phone":"+15550001"}');
   });
@@ -134,7 +175,7 @@ describe("BrowserMessagingClient", () => {
     });
     const actions = createBrowserComposerActions({
       messages: client.messages,
-      chatId: "1555@s.whatsapp.net",
+      conversation: { phoneNumber: "+1555" },
     });
 
     await actions.send(
@@ -142,7 +183,7 @@ describe("BrowserMessagingClient", () => {
       new AbortController().signal,
     );
     expect(bodies).toEqual([
-      '{"chatId":"1555@s.whatsapp.net","type":"text","text":"Reply","quotedMessage":{"id":"message-1"}}',
+      '{"conversation":{"phoneNumber":"+1555"},"content":{"text":"Reply"},"quotedMessage":{"id":"message-1"}}',
     ]);
 
     await expect(

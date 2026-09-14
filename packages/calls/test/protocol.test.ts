@@ -102,7 +102,7 @@ describe("frame parsers", () => {
           type: "participant_joined",
           participant: {
             id: "p",
-            handle: "+15550100",
+            phoneNumber: "+15550100",
             audioMuted: false,
             video: false,
             state: "connected",

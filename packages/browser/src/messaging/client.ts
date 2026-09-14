@@ -11,6 +11,7 @@ import type {
   BrowserContact,
   BrowserContactCheckResult,
   BrowserMessageResult,
+  BrowserMessageReceipt,
   BrowserOperationAccepted,
   BrowserPairingCode,
   BrowserPairingCodeRequest,
@@ -24,9 +25,7 @@ import type {
   BrowserSessionStatus,
   BrowserStarRequest,
   BrowserSuccessEnvelope,
-  BrowserSuccessResponse,
   BrowserTypingRequest,
-  BrowserWidgetHandoff,
 } from "./types.js";
 
 export interface BrowserMessagingClientOptions extends BrowserTransportOptions {
@@ -73,14 +72,18 @@ export class BrowserMessagesResource {
   markSeen(
     body: BrowserSeenRequest,
     options: BrowserActionOptions = {},
-  ): Promise<BrowserActionResponse<BrowserSuccessResponse>> {
+  ): Promise<
+    BrowserActionResponse<BrowserSuccessEnvelope<{ readonly status: string }>>
+  > {
     return this.post("seen", body, options);
   }
 
   setTyping(
     body: BrowserTypingRequest,
     options: BrowserActionOptions = {},
-  ): Promise<BrowserActionResponse<BrowserSuccessResponse>> {
+  ): Promise<
+    BrowserActionResponse<BrowserSuccessEnvelope<{ readonly status: string }>>
+  > {
     return this.post("typing", body, options);
   }
 
@@ -88,7 +91,7 @@ export class BrowserMessagesResource {
     body: BrowserReactionRequest,
     options: BrowserActionOptions = {},
   ): Promise<
-    BrowserActionResponse<BrowserSuccessEnvelope<BrowserMessageResult>>
+    BrowserActionResponse<BrowserSuccessEnvelope<BrowserMessageReceipt>>
   > {
     return this.post("react", body, options);
   }
@@ -97,7 +100,7 @@ export class BrowserMessagesResource {
     body: BrowserStarRequest,
     options: BrowserActionOptions = {},
   ): Promise<
-    BrowserActionResponse<BrowserSuccessEnvelope<BrowserMessageResult>>
+    BrowserActionResponse<BrowserSuccessEnvelope<{ readonly status: "OK" }>>
   > {
     return this.post("star", body, options);
   }
@@ -241,7 +244,7 @@ export class BrowserWidgetResource {
   ): Promise<BrowserActionResponse<BrowserOperationAccepted>> {
     return this.transport.request({
       method: "POST",
-      path: `/api/sessions/${encodeURIComponent(this.session)}/start`,
+      path: `/messaging/sessions/${encodeURIComponent(this.session)}/start`,
       ...options,
     });
   }
@@ -253,7 +256,7 @@ export class BrowserWidgetResource {
   > {
     return this.transport.request({
       method: "GET",
-      path: `/api/sessions/${encodeURIComponent(this.session)}`,
+      path: `/messaging/sessions/${encodeURIComponent(this.session)}`,
       ...options,
     });
   }
@@ -281,20 +284,8 @@ export class BrowserWidgetResource {
       ...options,
     });
   }
-
-  handoff(
-    options: BrowserActionOptions = {},
-  ): Promise<
-    BrowserActionResponse<BrowserSuccessEnvelope<BrowserWidgetHandoff>>
-  > {
-    return this.transport.request({
-      method: "POST",
-      path: `/api/widget/sessions/${encodeURIComponent(this.session)}/handoff`,
-      ...options,
-    });
-  }
 }
 
 function sessionRoot(session: string): string {
-  return `/api/${encodeURIComponent(session)}`;
+  return `/messaging/${encodeURIComponent(session)}`;
 }

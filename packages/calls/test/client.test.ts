@@ -371,12 +371,12 @@ describe("CallsClient", () => {
     const media = await bridge(h);
     await answering;
     const joined: string[] = [];
-    call!.on("participantJoined", (p) => joined.push(p.handle));
+    call!.on("participantJoined", (p) => joined.push(p.phoneNumber ?? p.id));
     media.text({
       type: "participant_joined",
       participant: {
         id: "p1",
-        handle: "+15550101",
+        phoneNumber: "+15550101",
         audioMuted: false,
         video: false,
         state: "connected",
@@ -409,7 +409,7 @@ describe("CallsClient", () => {
     call!.on("participantLeft", (id) => left.push(id));
     const participant = {
       id: "p1",
-      handle: "+15550101",
+      phoneNumber: "+15550101",
       audioMuted: false,
       video: false,
       state: "ringing",
@@ -439,7 +439,7 @@ describe("CallsClient", () => {
       callId: "CALL-1",
       payload: {
         callId: "CALL-OTHER",
-        participant: { ...participant, handle: "wrong-call" },
+        participant: { ...participant, phoneNumber: "wrong-call" },
       },
       timestamp: "",
     });
@@ -498,7 +498,7 @@ describe("CallsClient", () => {
         callId: "CALL-1",
         participant: {
           id: "p1",
-          handle: "+15550101",
+          phoneNumber: "+15550101",
           audioMuted: false,
           video: false,
           state: "connected",
@@ -552,7 +552,7 @@ describe("CallsClient", () => {
         callId: "CALL-1",
         participant: {
           id: "p-late",
-          handle: "+15550102",
+          phoneNumber: "+15550102",
           audioMuted: false,
           video: false,
           state: "connected",
@@ -562,7 +562,7 @@ describe("CallsClient", () => {
     });
     resolveInvite({
       id: "p-late",
-      handle: "+15550102",
+      phoneNumber: "+15550102",
       audioMuted: false,
       video: false,
       state: "invited",
@@ -592,7 +592,7 @@ describe("CallsClient", () => {
     await flush();
     const departed = {
       id: "p-departed",
-      handle: "+15550103",
+      phoneNumber: "+15550103",
       audioMuted: false,
       video: false,
       state: "connected",
@@ -650,7 +650,7 @@ describe("CallsClient", () => {
     });
     resolveInvite({
       id: "p-ended",
-      handle: "+15550104",
+      phoneNumber: "+15550104",
       audioMuted: false,
       video: false,
       state: "invited",
@@ -680,7 +680,7 @@ describe("CallsClient", () => {
     await flush();
     const connectedParticipant = {
       id: "p-concurrent",
-      handle: "+15550105",
+      phoneNumber: "+15550105",
       audioMuted: false,
       video: false,
       state: "connected",
@@ -1068,7 +1068,7 @@ describe("pending placement roster pressure", () => {
         callId: "CALL-FAST",
         participant: {
           id: "p-1",
-          handle: "+15550101",
+          phoneNumber: "+15550101",
           state: "left",
           audioMuted: false,
           video: false,
@@ -1082,7 +1082,7 @@ describe("pending placement roster pressure", () => {
         callId: "CALL-FAST",
         participant: {
           id: "p-1",
-          handle: "+15550101",
+          phoneNumber: "+15550101",
           state: "left",
           audioMuted: false,
           video: false,
@@ -1165,7 +1165,7 @@ describe("pending placement roster pressure", () => {
           callId: "CALL-FAST",
           participant: {
             id: `p-${i}`,
-            handle: `+1555010${i}`,
+            phoneNumber: `+1555010${i}`,
             state: "connected",
             audioMuted: false,
             video: false,
@@ -1213,7 +1213,7 @@ describe("pending placement roster pressure", () => {
             callId: "CALL-FAST",
             participant: {
               id: `p-${i}`,
-              handle: "+15550101",
+              phoneNumber: "+15550101",
               state: "connected",
               audioMuted: false,
               video: false,
@@ -1257,7 +1257,7 @@ describe("participant departure metadata", () => {
           callId: "CALL-1",
           participant: {
             id: "p1",
-            handle: "+15550101",
+            phoneNumber: "+15550101",
             audioMuted: false,
             video: false,
             state: "connected",

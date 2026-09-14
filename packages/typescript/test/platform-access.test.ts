@@ -14,7 +14,6 @@ import {
   type AuditLog,
   type DataEnvelope,
   type ManagementOperation,
-  type OrganizationOperation,
   type OrganizationMember,
   type ProjectToken,
   type SecurityIncident,
@@ -66,7 +65,7 @@ describe("Client organization access and operations", () => {
     expectTypeOf<
       Client["securityIncidents"]
     >().toEqualTypeOf<SecurityIncidentsResource>();
-    expectTypeOf<Client["operations"]>().toHaveProperty("list");
+    expectTypeOf<Client>().not.toHaveProperty("operations");
     expectTypeOf<
       Client["projectTokens"]
     >().toEqualTypeOf<ProjectTokensResource>();
@@ -180,17 +179,14 @@ describe("Client organization access and operations", () => {
 
   it("retrieves durable operation state and requires a project for token metadata", async () => {
     const { client, requests } = await platformAccessServer();
-    const operation = await client.operations.retrieve("operation/a");
     const tokens = await client.projectTokens.list("project/a", {
       timeoutMs: 5_000,
     });
 
-    expectTypeOf(operation).toEqualTypeOf<ApiResponse<OrganizationOperation>>();
     expectTypeOf(tokens).toEqualTypeOf<
       ApiResponse<DataEnvelope<readonly ProjectToken[]>>
     >();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /platform/operations/operation%2Fa",
       "GET /platform/tokens?projectId=project%2Fa",
     ]);
   });
