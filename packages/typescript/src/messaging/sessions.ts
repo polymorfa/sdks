@@ -6,7 +6,6 @@ import type {
   GetSessionAccountResponse,
   GetSessionResponse,
   GetQRCodeResponse,
-  ListSessionsResponse,
   OperationAccepted,
   PairCodeRequest,
   RequestPairCodeResponse,
@@ -14,15 +13,23 @@ import type {
   UpdateSessionResponse,
 } from "./types.js";
 
+import type {
+  DataEnvelope,
+  PlatformSession,
+  SessionStartResult,
+  SessionStopResult,
+  SessionRemoveResult,
+} from "../platform/types.js";
+
 export class SessionsResource {
   constructor(private readonly transport: HttpTransport) {}
 
   list(
     options: RequestOptions = {},
-  ): Promise<ApiResponse<ListSessionsResponse>> {
+  ): Promise<ApiResponse<DataEnvelope<readonly PlatformSession[]>>> {
     return this.transport.request({
       method: "GET",
-      path: "/messaging/sessions",
+      path: "/platform/sessions",
       ...options,
     });
   }
@@ -33,8 +40,8 @@ export class SessionsResource {
   ): Promise<ApiResponse<CreateSessionResponse>> {
     return this.transport.request({
       method: "POST",
-      path: "/messaging/sessions",
-      body,
+      path: `/platform/projects/${encodeURIComponent(body.projectId)}/sessions`,
+      body: (({ projectId: _projectId, ...request }) => request)(body),
       ...options,
     });
   }
@@ -66,7 +73,7 @@ export class SessionsResource {
   delete(
     session: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<OperationAccepted>> {
+  ): Promise<ApiResponse<DataEnvelope<SessionRemoveResult>>> {
     return this.transport.request({
       method: "DELETE",
       path: sessionPath(session),
@@ -77,15 +84,23 @@ export class SessionsResource {
   start(
     session: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<OperationAccepted>> {
-    return this.action(session, "start", options);
+  ): Promise<ApiResponse<DataEnvelope<SessionStartResult>>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionPath(session)}/start`,
+      ...options,
+    });
   }
 
   stop(
     session: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<OperationAccepted>> {
-    return this.action(session, "stop", options);
+  ): Promise<ApiResponse<DataEnvelope<SessionStopResult>>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionPath(session)}/stop`,
+      ...options,
+    });
   }
 
   restart(
@@ -142,7 +157,7 @@ export class SessionsResource {
 
   private action(
     session: string,
-    action: "start" | "stop" | "restart" | "logout",
+    action: "restart" | "logout",
     options: RequestOptions,
   ): Promise<ApiResponse<OperationAccepted>> {
     return this.transport.request({
@@ -154,5 +169,5 @@ export class SessionsResource {
 }
 
 function sessionPath(session: string): string {
-  return `/messaging/sessions/${encodeURIComponent(session)}`;
+  return `/platform/sessions/${encodeURIComponent(session)}`;
 }

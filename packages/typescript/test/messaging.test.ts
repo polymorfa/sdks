@@ -45,19 +45,19 @@ describe("MessagingClient sessions", () => {
     const { client, requests } = await messagingServer();
     await client.sessions.list();
     const created = await client.sessions.create(
-      { projectId: "project_1", sessionId: "support", start: true },
+      { projectId: "project_1", name: "support", startOnConnect: true },
       { idempotencyKey: "session-support" },
     );
 
     expect(requests[0]).toMatchObject({
       method: "GET",
-      path: "/messaging/sessions",
+      path: "/platform/sessions",
       body: "",
     });
     expect(requests[1]).toMatchObject({
       method: "POST",
-      path: "/messaging/sessions",
-      body: '{"projectId":"project_1","sessionId":"support","start":true}',
+      path: "/platform/projects/project_1/sessions",
+      body: '{"name":"support","startOnConnect":true}',
     });
     expect(requests[1]?.headers["idempotency-key"]).toBe("session-support");
     expect(created.metadata.requestId).toBe("req_messaging");
@@ -76,14 +76,14 @@ describe("MessagingClient sessions", () => {
     await client.sessions.account(id);
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /messaging/sessions/support%2Feu",
-      "PUT /messaging/sessions/support%2Feu",
-      "POST /messaging/sessions/support%2Feu/start",
-      "POST /messaging/sessions/support%2Feu/stop",
-      "POST /messaging/sessions/support%2Feu/restart",
-      "POST /messaging/sessions/support%2Feu/logout",
-      "DELETE /messaging/sessions/support%2Feu",
-      "GET /messaging/sessions/support%2Feu/me",
+      "GET /platform/sessions/support%2Feu",
+      "PUT /platform/sessions/support%2Feu",
+      "POST /platform/sessions/support%2Feu/start",
+      "POST /platform/sessions/support%2Feu/stop",
+      "POST /platform/sessions/support%2Feu/restart",
+      "POST /platform/sessions/support%2Feu/logout",
+      "DELETE /platform/sessions/support%2Feu",
+      "GET /platform/sessions/support%2Feu/me",
     ]);
     expect(requests[1]?.body).toBe('{"config":{"presence":true}}');
   });

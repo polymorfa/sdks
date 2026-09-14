@@ -17,31 +17,27 @@ export interface HistorySyncPolicy {
 }
 
 export interface Session {
-  readonly sessionId?: string;
+  readonly sessionId: string;
   readonly name: string;
+  readonly externalId?: string;
   readonly tenantId: string;
-  readonly connection: MessagingConnection;
+  readonly type: MessagingConnection;
   readonly testMode: boolean;
   readonly status: string;
   readonly statusReason?: string;
-  readonly runnerId?: string;
-  readonly proxy?: string;
-  readonly config: Readonly<Record<string, unknown>>;
+  readonly config: { readonly historySync?: HistorySyncPolicy };
   readonly createdAt: string;
   readonly updatedAt: string;
 }
 
 export interface CreateSessionRequest {
   readonly projectId: string;
-  readonly sessionId?: string;
   readonly name?: string;
-  readonly start?: boolean;
-  readonly connection?: MessagingConnection;
+  readonly startOnConnect?: boolean;
+  readonly type?: MessagingConnection;
   readonly testMode?: boolean;
-  readonly bartenderMode?: BartenderMode;
   readonly cloudApi?: CloudApiCredentials;
-  readonly config?: Readonly<Record<string, unknown>>;
-  readonly historySync?: HistorySyncPolicy;
+  readonly config?: { readonly historySync?: HistorySyncPolicy };
 }
 
 export interface UpdateSessionRequest {

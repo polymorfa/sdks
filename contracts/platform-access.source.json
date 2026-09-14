@@ -1,16 +1,29 @@
 {
   "repository": "titan-api/titan",
-  "baseCommit": "7d3dfc1d3d58dea42153945e27355425f14b35c3",
+  "baseCommit": "e37464cc9bd122151d319d18ce085d4a8949264d",
   "state": "unpublished-local-commit",
-  "sourcePath": "apps/api/docs/openapi.platform-native.json",
-  "sourceSha256": "6be19801ad5de45bfdffce0bfe750630e1c49a43d557de6255f516f6796ded76",
+  "sourcePath": "docs/api-reference/openapi.management.json",
+  "sourceSha256": "f9e0d3d0660023074388cdd87df98ebea5dfff9c1b9909319e18fcab13aec7b3",
   "snapshotPath": "contracts/platform-access.openapi.json",
-  "snapshotSha256": "6be19801ad5de45bfdffce0bfe750630e1c49a43d557de6255f516f6796ded76",
+  "snapshotSha256": "f9e0d3d0660023074388cdd87df98ebea5dfff9c1b9909319e18fcab13aec7b3",
   "operationIds": [
+    "createSession",
     "deleteClientRules",
+    "deletePlatformSession",
+    "deleteSessions",
     "getClientRules",
+    "getSession",
+    "getSessionAccount",
+    "listPlatformSessions",
+    "logoutSession",
     "mintClientToken",
-    "setClientRules"
+    "restartSession",
+    "setClientRules",
+    "startPlatformSession",
+    "stopPlatformSession",
+    "stopSessions",
+    "updateSession"
   ],
-  "releaseGate": "Release with the matching Platform API route change; repin to the merged API revision before publication."
+  "releaseGate": "Release with the matching Platform API route change; repin to the merged API revision before publication.",
+  "scope": "The complete public Platform document is pinned; operationIds identifies the methods reconciled in this checkpoint. This is not a full SDK parity claim."
 }
