@@ -165,8 +165,8 @@ session rules can delegate to the browser token.
 
 ## Session connection lifecycle
 
-Start a Linked Device session, then poll the returned durable lifecycle
-operation. The standard pairing flow is QuickLink. Direct JSON QR and phone
+Start a Linked Device session, then retrieve its connection status with
+`sessions.retrieve`. The standard pairing flow is QuickLink. Direct JSON QR and phone
 pairing-code routes require `sessions:manage` plus an explicit organization
 entitlement; without it, the API returns `403` and the application must create
 a QuickLink. Operation inspection is console-only.
@@ -753,9 +753,9 @@ Neither read offers history or pagination.
 
 ### Catalogs, products, collections, and orders
 
-`getCatalog` requires a user or LID business JID. It accepts an opaque `after`
+`getCatalog` requires a public business-owner ID. It accepts an opaque `after`
 cursor, `limit` from 1 through 100, and optional image dimensions from 1 through 1024. Its response contains `products`, optional `next`, and optional
-`previous`. `listCollections` uses the same JID and cursor model with
+`previous`. `listCollections` uses the same owner ID and cursor model with
 `collectionLimit` from 1 through 20 and `itemLimit` from 1 through 100; its
 response contains `collections` and optional `next`. These are explicit cursor
 fields, not offset pages, and the SDK does not synthesize `hasMore`.
@@ -763,7 +763,7 @@ fields, not offset pages, and the SDK does not synthesize `hasMore`.
 `getCollection` accepts `after` and a product `limit`, but the pinned response
 contains only the collection and products—no next cursor. The SDK preserves
 that source limitation rather than claiming automatic pagination. Product,
-collection, business JID, order, cover-photo, and session identifiers are
+collection, business-owner, order, cover-photo, and session identifiers are
 encoded by the SDK. Cursors and order tokens remain query/body values rather
 than path data.
 
@@ -799,7 +799,7 @@ visible as a typed validation error.
 `getOrder` requires the exact order ID and opaque lookup token supplied by the
 Business App event. It is not an order list, search, history, checkout, or
 fulfilment API. The source likewise exposes no catalog listing independent of
-a business JID, no product search, no collection search, and no upload
+a business-owner ID, no product search, no collection search, and no upload
 progress.
 
 ## Channels
@@ -877,7 +877,7 @@ The pinned source has two request/response discrepancies:
 The public reaction schema permits at most 32 characters. The runner performs
 a second check against 32 UTF-8 bytes, so a multibyte reaction can pass route
 validation and still receive a 400 response. Empty reaction text is preserved
-and removes the caller's reaction upstream. Channel, session, and numeric
+and removes the caller's reaction upstream. Channel, session, and public
 message identifiers are URL-encoded by the SDK.
 
 ## Messaging campaigns

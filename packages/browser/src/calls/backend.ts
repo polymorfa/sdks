@@ -10,7 +10,7 @@ import type { CallsSignaling } from "./signaling.js";
 
 /**
  * The parts of the `call.received` webhook payload the browser needs. The
- * caller is a JID reference; a bare string is accepted for hand-built
+ * caller is a public identity reference; a bare string is accepted for hand-built
  * payloads.
  */
 export interface CallReceivedWebhookPayload {
@@ -20,7 +20,8 @@ export interface CallReceivedWebhookPayload {
     | {
         readonly id?: string;
         readonly phoneNumber?: string;
-        readonly lid?: string;
+        readonly bsuid?: string;
+        readonly username?: string;
       };
   readonly hasVideo?: boolean;
 }
@@ -29,8 +30,7 @@ export interface CallReceivedWebhookPayload {
  * Turn a `call.received` webhook payload into an {@link IncomingCall}. The
  * application receives the webhook on its server, relays it to the browser
  * over its own realtime channel, and hands it to {@link IncomingCallRelay}.
- * The caller is shown by phone number when present, else by LID, else by
- * raw JID.
+ * The caller is shown by phone number when present, otherwise by public ID.
  */
 export function incomingCallFromWebhook(
   payload: CallReceivedWebhookPayload,
@@ -41,11 +41,7 @@ export function incomingCallFromWebhook(
   const from =
     typeof payload.from === "string"
       ? payload.from
-      : (firstNonEmpty(
-          payload.from.phoneNumber,
-          payload.from.lid,
-          payload.from.id,
-        ) ?? "");
+      : (firstNonEmpty(payload.from.phoneNumber, payload.from.id) ?? "");
   return {
     callId: payload.callId,
     from,

@@ -562,10 +562,9 @@ function peerFrom(value: unknown): string {
   if (value === null || typeof value !== "object") return "";
   const ref = value as {
     readonly phoneNumber?: unknown;
-    readonly lid?: unknown;
     readonly id?: unknown;
   };
-  for (const candidate of [ref.phoneNumber, ref.lid, ref.id])
+  for (const candidate of [ref.phoneNumber, ref.id])
     if (typeof candidate === "string" && candidate.length > 0) return candidate;
   return "";
 }

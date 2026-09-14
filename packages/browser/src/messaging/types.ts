@@ -61,7 +61,12 @@ export type BrowserMessageMedia = (
   readonly caption?: string;
   readonly ptt?: boolean;
 };
-export type BrowserMessageContent =
+type UnionKeys<T> = T extends T ? keyof T : never;
+type ExclusiveUnion<T, All = T> = T extends T
+  ? T & { readonly [K in Exclude<UnionKeys<All>, keyof T>]?: never }
+  : never;
+
+export type BrowserMessageContent = ExclusiveUnion<
   | { readonly text: string }
   | { readonly image: BrowserMessageMedia }
   | { readonly video: BrowserMessageMedia }
@@ -90,7 +95,8 @@ export type BrowserMessageContent =
   | { readonly list: Readonly<Record<string, unknown>> }
   | { readonly buttons: Readonly<Record<string, unknown>> }
   | { readonly addressMessage: Readonly<Record<string, unknown>> }
-  | { readonly flow: Readonly<Record<string, unknown>> };
+  | { readonly flow: Readonly<Record<string, unknown>> }
+>;
 
 export interface BrowserSendMessageRequest {
   readonly conversation: BrowserConversationReference;

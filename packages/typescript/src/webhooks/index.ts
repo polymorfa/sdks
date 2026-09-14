@@ -21,6 +21,7 @@ export {
   type CloudMessagePayload,
   type CommandResultPayload,
   type ContactUpdatePayload,
+  type ConversationReference,
   type GroupParticipantPayload,
   type GroupUpdatePayload,
   type HistorySyncPayload,

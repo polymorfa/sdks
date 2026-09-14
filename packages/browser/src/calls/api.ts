@@ -121,6 +121,9 @@ export class BrowserCallsApi implements CallsApi {
       typeof p.id !== "string" ||
       !p.id ||
       Object.hasOwn(p, "handle") ||
+      ![p.phoneNumber, p.bsuid, p.username].every(
+        (value) => value === undefined || typeof value === "string",
+      ) ||
       typeof p.audioMuted !== "boolean" ||
       typeof p.video !== "boolean" ||
       !["invited", "ringing", "connected", "left"].includes(p.state)

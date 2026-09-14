@@ -595,6 +595,7 @@ export {
   type CloudMessagePayload,
   type CommandResultPayload,
   type ContactUpdatePayload,
+  type ConversationReference as WebhookConversationReference,
   type GroupParticipantPayload,
   type GroupUpdatePayload,
   type HistorySyncPayload,

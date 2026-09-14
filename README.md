@@ -181,7 +181,7 @@ Both organization and project views expose owner-bound resources:
 - `quickLinkSettings`: retrieve and update the saved QuickLink configuration
 
 List methods return `CursorPage<T>`. Mutations return typed receipts with the
-resource, operation, and idempotency identifiers supplied by the API. The
+resource, operation, and idempotency identifiers supplied by the API.
 Operation inspection is console-only. Machine clients expose no operation
 polling, transition-listing, or cancellation methods.
 

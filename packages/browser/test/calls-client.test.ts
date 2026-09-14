@@ -302,6 +302,35 @@ describe("browser widget and shared calls client", () => {
 });
 
 describe("BrowserCallsApi", () => {
+  it.each(["phoneNumber", "bsuid", "username"])(
+    "validates optional participant %s",
+    async (field) => {
+      let value: unknown = 42;
+      const api = new BrowserCallsApi(
+        new BrowserTransport({
+          getClientToken: async () => "pmfa_ct_test",
+          baseUrl: "https://api.example.test",
+          fetch: async () =>
+            Response.json({
+              data: {
+                id: "739182640518203",
+                audioMuted: false,
+                video: false,
+                state: "invited",
+                [field]: value,
+              },
+            }),
+        }),
+      );
+      await expect(
+        api.addParticipant("call-1", "739182640518203"),
+      ).rejects.toMatchObject({ code: "malformed_response" });
+      value = "public-alias";
+      await expect(
+        api.addParticipant("call-1", "739182640518203"),
+      ).resolves.toMatchObject({ [field]: value });
+    },
+  );
   it("refuses a server key before sending and never mints agent tickets", async () => {
     const fetch = vi.fn();
     const api = new BrowserCallsApi(

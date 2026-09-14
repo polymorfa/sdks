@@ -24,6 +24,7 @@ import type {
   GroupUpdatePayload,
   HistorySyncPayload,
   IdentityReference,
+  WebhookConversationReference,
   LabelsUpdatePayload,
   LinkedDeviceMessageType,
   MessageDeletePayload,
@@ -361,6 +362,7 @@ type ExportedPayloads = {
 describe("webhook event payload types", () => {
   it("maps every formerly opaque event family to its contract payload", () => {
     expectTypeOf<IdentityReference>().toEqualTypeOf<ExpectedIdentityReference>();
+    expectTypeOf<WebhookConversationReference>().toEqualTypeOf<ExpectedConversationReference>();
     expectTypeOf<NativeFlowResponse>().toEqualTypeOf<ExpectedNativeFlowResponse>();
     expectTypeOf<PollOption>().toEqualTypeOf<ExpectedPollOption>();
     expectTypeOf<LinkedDeviceMessageType>().toEqualTypeOf<ExpectedLinkedDeviceMessageType>();

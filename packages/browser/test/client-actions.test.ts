@@ -4,9 +4,24 @@ import {
   BrowserConfigurationError,
   BrowserMessagingClient,
   createBrowserComposerActions,
+  type BrowserMessageContent,
 } from "../src/index.js";
 
 describe("BrowserMessagingClient", () => {
+  it("requires one content type", () => {
+    const text: BrowserMessageContent = { text: "Hello" };
+    const image: BrowserMessageContent = {
+      image: { url: "https://example.test/image.png" },
+    };
+    // @ts-expect-error A message cannot contain two content types.
+    const mixed: BrowserMessageContent = {
+      text: "Hello",
+      image: { url: "https://example.test/image.png" },
+    };
+    expect(text).toHaveProperty("text");
+    expect(image).toHaveProperty("image");
+    expect(mixed).toHaveProperty("text");
+  });
   it("binds message actions to one encoded session", async () => {
     const requests: Array<{
       url: string;
