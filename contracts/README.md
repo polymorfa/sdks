@@ -2,7 +2,7 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`a12ce6ea9dbd56c6c0c7cf8ec30e1ad5e1a23658`. `source.json` records their original
+`e24863317e9ec39041367adf51a000cfe90bfc36`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
