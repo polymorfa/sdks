@@ -29,6 +29,7 @@ export {
   PolymorfaCancelledError,
   PolymorfaConfigurationError,
   PolymorfaConflictError,
+  PolymorfaPaymentRequiredError,
   PolymorfaConnectionError,
   PolymorfaError,
   PolymorfaNotFoundError,
@@ -483,8 +484,6 @@ export type {
   AuditLog,
   BillingBalance,
   BillingCurrency,
-  BillingReminderChannel,
-  BillingReminderSettings,
   BillingTransaction,
   BillingUsage,
   CreateCustomerPairingLinkRequest,
@@ -540,9 +539,10 @@ export type {
   SessionStopResult,
   SessionTier,
   SessionTierOverrideRequest,
+  NumberTierChange,
+  NumberTierQuoteRequest,
   TierPricing,
   TransferCustomerNumberRequest,
-  UpdateBillingReminderSettingsRequest,
   UpdateCustomerRequest,
 } from "./platform/types.js";
 export { RawClient, type ProjectScopedRawClient } from "./raw.js";

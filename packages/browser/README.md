@@ -27,7 +27,9 @@ Product controllers use immutable snapshots and `subscribe()`/`getSnapshot()` so
 
 `BrowserMessagingClient` binds one session and exposes only the exact
 client-token allowlist: message actions, presence reads/subscriptions, contact
-reads, and widget start/status/pairing/handoff actions. Conversation history,
+reads, and permitted widget pairing actions. Session start and status require a server
+Platform credential; use QuickLink for onboarding. The browser widget start/status
+helpers are removed in this breaking contract revision. Conversation history,
 template management and media upload remain application-owned server adapters.
 `createBrowserCalls` supplies client-token call lifecycle and controls.
 

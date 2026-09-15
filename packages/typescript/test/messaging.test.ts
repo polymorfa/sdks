@@ -52,7 +52,7 @@ describe("MessagingClient sessions", () => {
       },
     });
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /messaging/sessions",
+      "GET /platform/sessions",
       "POST /messaging/quicklinks",
     ]);
     expect(client.sessions).not.toHaveProperty("create");
@@ -74,14 +74,14 @@ describe("MessagingClient sessions", () => {
     await client.sessions.account(id);
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /messaging/sessions/support%2Feu",
-      "PUT /messaging/sessions/support%2Feu",
-      "POST /messaging/sessions/support%2Feu/start",
-      "POST /messaging/sessions/support%2Feu/stop",
-      "POST /messaging/sessions/support%2Feu/restart",
-      "POST /messaging/sessions/support%2Feu/logout",
-      "DELETE /messaging/sessions/support%2Feu",
-      "GET /messaging/sessions/support%2Feu/me",
+      "GET /platform/sessions/support%2Feu",
+      "PUT /platform/sessions/support%2Feu",
+      "POST /platform/sessions/support%2Feu/start",
+      "POST /platform/sessions/support%2Feu/stop",
+      "POST /platform/sessions/support%2Feu/restart",
+      "POST /platform/sessions/support%2Feu/logout",
+      "DELETE /platform/sessions/support%2Feu",
+      "GET /platform/sessions/support%2Feu/me",
     ]);
     expect(requests[1]?.body).toBe(
       '{"revision":0,"configuration":{"set":{"historySync":{"mode":"deliver"}}}}',
@@ -194,10 +194,10 @@ describe("MessagingClient client tokens", () => {
     await client.clientTokens.deleteRules("support/eu");
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "POST /messaging/client-tokens",
-      "GET /messaging/sessions/support%2Feu/client-rules",
-      "PUT /messaging/sessions/support%2Feu/client-rules",
-      "DELETE /messaging/sessions/support%2Feu/client-rules",
+      "POST /platform/client-tokens",
+      "GET /platform/sessions/support%2Feu/client-rules",
+      "PUT /platform/sessions/support%2Feu/client-rules",
+      "DELETE /platform/sessions/support%2Feu/client-rules",
     ]);
     expect(requests[0]?.body).toBe(
       '{"session":"support/eu","ephemeralId":"user-1-tab-2","ttlSeconds":600}',
@@ -436,9 +436,7 @@ describe("MessagingClient webhooks", () => {
       credential: { type: "clientToken", value: "pmfa_ct_widget" },
       baseUrl: server.url,
     });
-    await client.sessions.list();
-    expect(server.requests[0]?.headers.authorization).toBe(
-      "Bearer pmfa_ct_widget",
-    );
+    expect(() => client.sessions.list()).toThrow(/server API key/);
+    expect(server.requests).toHaveLength(0);
   });
 });

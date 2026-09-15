@@ -144,8 +144,8 @@ describe("BrowserMessagingClient", () => {
       },
     });
 
-    await client.widget.start();
-    await client.widget.status();
+    expect(client.widget).not.toHaveProperty("start");
+    expect(client.widget).not.toHaveProperty("status");
     await client.widget.qr();
     await client.widget.requestPairingCode({ phone: "+15550001" });
 
@@ -154,12 +154,10 @@ describe("BrowserMessagingClient", () => {
         ({ url, init }) => `${init?.method} ${new URL(url).pathname}`,
       ),
     ).toEqual([
-      "POST /messaging/sessions/widget-1/start",
-      "GET /messaging/sessions/widget-1",
       "GET /messaging/widget-1/pair/qr",
       "POST /messaging/widget-1/pair/code",
     ]);
-    expect(requests[3]?.init?.body).toBe('{"phone":"+15550001"}');
+    expect(requests[1]?.init?.body).toBe('{"phone":"+15550001"}');
   });
 
   it("adapts text composer sends while keeping uploads application-owned", async () => {

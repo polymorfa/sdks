@@ -76,14 +76,14 @@ export class MessagingClient {
     this.campaigns = new MessagingCampaignsResource(transport);
     this.chats = new ChatsResource(transport);
     this.channels = new ChannelsResource(transport);
-    this.clientTokens = new ClientTokensResource(transport);
+    this.clientTokens = new ClientTokensResource(transport, credential.type);
     this.contacts = new ContactsResource(transport);
     this.groups = new GroupsResource(transport);
     this.labels = new LabelsResource(transport);
     this.identities = new IdentitiesResource(transport);
     this.media = new MessagingMediaResource(transport);
     this.observationPolicies = new ObservationPoliciesResource(transport);
-    this.sessions = new SessionsResource(transport);
+    this.sessions = new SessionsResource(transport, credential.type);
     this.messages = new MessagesResource(transport);
     this.profile = new ProfileResource(transport);
     this.privacy = new PrivacyResource(transport);

@@ -196,10 +196,10 @@ The organization view also exposes these management resources:
 - `securityIncidents`: list and acknowledge leaked-credential incidents
 - `projectTokens`: list token metadata for an explicit project
 - `billing`: retrieve balance and currency, inspect usage meters, list
-  transactions and tier pricing, and update low-balance reminders
+  transactions and tier pricing
 - `projects`: list, create, request production enrollment, approve, and cancel
 - `sessions`: list, start, stop, or delete one session; stop or delete a bounded
-  batch; set tier override; and create a testing session
+  batch; review and confirm a tier change; and create a testing session
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and recipients
 - `customers`: enable Customers for a project; create, list, retrieve, update,

@@ -134,7 +134,7 @@ describe("Client sessions", () => {
     await client.sessions.delete("session/a");
     await client.sessions.setTierOverride("session/a", {
       projectId: "project_1",
-      tierOverride: "pro",
+      quoteId: "quote_1",
     });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
@@ -144,7 +144,22 @@ describe("Client sessions", () => {
     ]);
     expect(requests[0]?.body).toBe('{"projectId":"project_1"}');
     expect(requests[2]?.body).toBe(
-      '{"projectId":"project_1","tierOverride":"pro"}',
+      '{"projectId":"project_1","quoteId":"quote_1"}',
     );
   });
+});
+
+it("reads and updates unified session configuration through Platform", async () => {
+  const { client, requests } = await platformServer();
+  const patch = {
+    revision: 4,
+    configuration: { reset: ["historySync.mode" as const] },
+  };
+  await client.sessions.retrieve("support/eu");
+  await client.sessions.update("support/eu", patch);
+  expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+    "GET /platform/sessions/support%2Feu",
+    "PUT /platform/sessions/support%2Feu",
+  ]);
+  expect(JSON.parse(requests[1]!.body)).toEqual(patch);
 });

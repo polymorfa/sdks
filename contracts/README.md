@@ -2,7 +2,7 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`2f53a9305adcb4ba0bd200f2b9f4071598233be8`. `source.json` records their original
+`d0872d61f93118ec8f4974599136a701b9d86bf3`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
@@ -74,3 +74,11 @@ The cross-repository workflow compares an exact source revision and reports
 missing or changed contracts for follow-up. Its dedicated GitHub App must have
 access to read SDK contents and write coverage issues. A token-creation failure
 occurs before comparison and says nothing about SDK parity.
+
+The merged Platform and billing adjustments reuse reviewed source from SDK commit
+`75146778f7a20257a6c0f0f3139329ab308f40f0` (billing API parity): client-token administration, session lifecycle
+routes, paid-number expiry, tier quotes and confirmation, and payment-required
+errors. They are checked against these same canonical API snapshots. Removed
+dashboard-only billing reminders and client-token session start/status helpers
+are not retained as compatibility aliases. BanSafe methods remain explicitly
+missing where the ledger says so.

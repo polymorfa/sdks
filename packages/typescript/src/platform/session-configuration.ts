@@ -6,7 +6,7 @@ import type {
 } from "../messaging/session-configuration.js";
 import { type DataEnvelope, unwrapResponse } from "./response.js";
 
-/** Saved team or project defaults. Session overrides use Messaging sessions.update. */
+/** Saved team or project defaults. Session overrides use sessions.update. */
 export class SessionConfigurationResource {
   constructor(
     private readonly transport: HttpTransport,

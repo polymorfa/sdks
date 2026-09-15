@@ -1,10 +1,11 @@
+import type { MessagingCredential } from "../credentials.js";
+import { PolymorfaConfigurationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   GetSessionAccountResponse,
   GetSessionResponse,
   GetQRCodeResponse,
-  ListSessionsResponse,
   OperationAccepted,
   PairCodeRequest,
   RequestPairCodeResponse,
@@ -12,15 +13,27 @@ import type {
   UpdateSessionResponse,
 } from "./types.js";
 
+import type {
+  DataEnvelope,
+  PlatformSession,
+  SessionStartResult,
+  SessionStopResult,
+  SessionRemoveResult,
+} from "../platform/types.js";
+
 export class SessionsResource {
-  constructor(private readonly transport: HttpTransport) {}
+  constructor(
+    private readonly transport: HttpTransport,
+    private readonly credentialType: MessagingCredential["type"],
+  ) {}
 
   list(
     options: RequestOptions = {},
-  ): Promise<ApiResponse<ListSessionsResponse>> {
+  ): Promise<ApiResponse<DataEnvelope<readonly PlatformSession[]>>> {
+    this.assertServerCredential();
     return this.transport.request({
       method: "GET",
-      path: "/messaging/sessions",
+      path: "/platform/sessions",
       ...options,
     });
   }
@@ -29,6 +42,7 @@ export class SessionsResource {
     session: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetSessionResponse>> {
+    this.assertServerCredential();
     return this.transport.request({
       method: "GET",
       path: sessionPath(session),
@@ -41,6 +55,7 @@ export class SessionsResource {
     body: UpdateSessionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UpdateSessionResponse>> {
+    this.assertServerCredential();
     return this.transport.request({
       method: "PUT",
       path: sessionPath(session),
@@ -52,7 +67,8 @@ export class SessionsResource {
   delete(
     session: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<OperationAccepted>> {
+  ): Promise<ApiResponse<DataEnvelope<SessionRemoveResult>>> {
+    this.assertServerCredential();
     return this.transport.request({
       method: "DELETE",
       path: sessionPath(session),
@@ -63,15 +79,25 @@ export class SessionsResource {
   start(
     session: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<OperationAccepted>> {
-    return this.action(session, "start", options);
+  ): Promise<ApiResponse<DataEnvelope<SessionStartResult>>> {
+    this.assertServerCredential();
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionPath(session)}/start`,
+      ...options,
+    });
   }
 
   stop(
     session: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<OperationAccepted>> {
-    return this.action(session, "stop", options);
+  ): Promise<ApiResponse<DataEnvelope<SessionStopResult>>> {
+    this.assertServerCredential();
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionPath(session)}/stop`,
+      ...options,
+    });
   }
 
   restart(
@@ -92,6 +118,7 @@ export class SessionsResource {
     session: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetSessionAccountResponse>> {
+    this.assertServerCredential();
     return this.transport.request({
       method: "GET",
       path: `${sessionPath(session)}/me`,
@@ -128,17 +155,26 @@ export class SessionsResource {
 
   private action(
     session: string,
-    action: "start" | "stop" | "restart" | "logout",
+    action: "restart" | "logout",
     options: RequestOptions,
   ): Promise<ApiResponse<OperationAccepted>> {
+    this.assertServerCredential();
     return this.transport.request({
       method: "POST",
       path: `${sessionPath(session)}/${action}`,
       ...options,
     });
   }
+  private assertServerCredential(): void {
+    if (this.credentialType === "clientToken") {
+      throw new PolymorfaConfigurationError(
+        "Platform session administration requires a server API key.",
+        "credential",
+      );
+    }
+  }
 }
 
 function sessionPath(session: string): string {
-  return `/messaging/sessions/${encodeURIComponent(session)}`;
+  return `/platform/sessions/${encodeURIComponent(session)}`;
 }
