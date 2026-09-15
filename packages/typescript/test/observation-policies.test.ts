@@ -134,46 +134,17 @@ describe("MessagingClient observation policies", () => {
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
   });
 
-  it("maps exact policy replacements and preserves idempotency", async () => {
+  it("replaces policy writes with unified configuration", async () => {
     const { client, requests } = await policiesServer();
-    const options = { idempotencyKey: "policy-change" } as const;
-
-    await client.observationPolicies.updateForProject(
-      "00000000-0000-4000-8000-000000000001",
-      {
-        presenceMode: "events",
-        typingMode: "cache",
-        labelMode: "project",
-      },
-      options,
-    );
-    await client.observationPolicies.updateForSession(
-      "support/eu",
-      {
-        presenceMode: "inherit",
-        typingMode: "off",
-        labelMode: "cache",
-      },
-      options,
-    );
-
-    expect(
-      requests.map(({ method, path, body }) => ({ method, path, body })),
-    ).toEqual([
-      {
-        method: "PUT",
-        path: "/messaging/projects/00000000-0000-4000-8000-000000000001/observation-policy",
-        body: '{"presenceMode":"events","typingMode":"cache","labelMode":"project"}',
-      },
-      {
-        method: "PUT",
-        path: "/messaging/support%2Feu/observation-policy",
-        body: '{"presenceMode":"inherit","typingMode":"off","labelMode":"cache"}',
-      },
-    ]);
-    expect(requests.map(({ headers }) => headers["idempotency-key"])).toEqual([
-      "policy-change",
-      "policy-change",
-    ]);
+    expect(client.observationPolicies).not.toHaveProperty("updateForSession");
+    expect(client.observationPolicies).not.toHaveProperty("updateForProject");
+    await client.sessions.update("support", {
+      revision: 2,
+      configuration: { set: { observation: { presenceMode: "events" } } },
+    });
+    expect(JSON.parse(requests[0]!.body)).toEqual({
+      revision: 2,
+      configuration: { set: { observation: { presenceMode: "events" } } },
+    });
   });
 });

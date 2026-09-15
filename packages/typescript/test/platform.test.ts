@@ -136,17 +136,11 @@ describe("Client sessions", () => {
       projectId: "project_1",
       tierOverride: "pro",
     });
-    await client.sessions.createTesting({
-      projectId: "project_1",
-      name: "Demo",
-      country: "US",
-    });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "POST /platform/sessions/session%2Fa/stop",
       "DELETE /platform/sessions/session%2Fa",
       "PATCH /platform/sessions/session%2Fa",
-      "POST /platform/sessions/testing",
     ]);
     expect(requests[0]?.body).toBe('{"projectId":"project_1"}');
     expect(requests[2]?.body).toBe(

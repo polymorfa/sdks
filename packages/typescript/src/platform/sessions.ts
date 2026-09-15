@@ -1,7 +1,6 @@
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
-  CreateTestingSessionRequest,
   DataEnvelope,
   ListPlatformSessionsParams,
   ManagedSession,
@@ -104,18 +103,6 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "PATCH",
       path: sessionPath(sessionId),
-      body,
-      ...options,
-    });
-  }
-
-  createTesting(
-    body: CreateTestingSessionRequest,
-    options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<string>>> {
-    return this.transport.request({
-      method: "POST",
-      path: "/platform/sessions/testing",
       body,
       ...options,
     });

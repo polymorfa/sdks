@@ -233,8 +233,6 @@ export type {
   CreateCampaignResponse,
   CreateChannelRequest,
   CreateChannelResponse,
-  CreateSessionRequest,
-  CreateSessionResponse,
   CreateGroupRequest,
   CreateGroupResponse,
   CreateProjectTemplateRequest,
@@ -509,7 +507,6 @@ export type {
   CustomersEnablement,
   CustomersStatus,
   CreateProjectRequest,
-  CreateTestingSessionRequest,
   DataEnvelope,
   ListAuditLogsParams,
   ListPlatformSessionsParams,
@@ -634,3 +631,16 @@ export {
   type WebhookEventOf,
   type WebhookPayloadMap,
 } from "./webhooks/index.js";
+
+export type * from "./messaging/session-configuration.js";
+
+export { SessionConfigurationResource } from "./platform/session-configuration.js";
+
+export type * from "./messaging/testing-configuration.js";
+
+export {
+  CloudOnboardingResource,
+  TestingResource,
+  type EmbeddedSignupRequest,
+  type EmbeddedSignupResponse,
+} from "./messaging/onboarding.js";

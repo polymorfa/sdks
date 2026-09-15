@@ -1,3 +1,4 @@
+import { CloudOnboardingResource, TestingResource } from "./onboarding.js";
 import {
   assertServerRuntime,
   validateMessagingCredential,
@@ -48,6 +49,8 @@ export class MessagingClient {
   readonly privacy: PrivacyResource;
   readonly presence: PresenceResource;
   readonly quickReplies: QuickRepliesResource;
+  readonly cloudOnboarding: CloudOnboardingResource;
+  readonly testing: TestingResource;
   readonly quickLinks: QuickLinksResource;
   readonly templates: TemplatesResource;
   readonly users: UsersResource;
@@ -86,6 +89,11 @@ export class MessagingClient {
     this.privacy = new PrivacyResource(transport);
     this.presence = new PresenceResource(transport);
     this.quickReplies = new QuickRepliesResource(transport);
+    this.cloudOnboarding = new CloudOnboardingResource(
+      transport,
+      credential.type,
+    );
+    this.testing = new TestingResource(transport, credential.type);
     this.quickLinks = new QuickLinksResource(transport, credential.type);
     this.templates = new TemplatesResource(transport);
     this.users = new UsersResource(transport);

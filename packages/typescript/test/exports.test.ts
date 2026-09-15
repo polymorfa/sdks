@@ -62,7 +62,7 @@ import {
   type CreateProjectRequest,
   type CreateCampaignRequest,
   type CreateChannelRequest,
-  type CreateSessionRequest,
+  type CreateQuickLinkRequest,
   type Contact,
   type ContactUserInfo,
   type DisappearingTimerRequest,
@@ -212,7 +212,7 @@ describe("public exports", () => {
     expectTypeOf<SecurityIncident>().toHaveProperty("resolution");
     expectTypeOf<SessionBan>().toHaveProperty("status");
     expectTypeOf<SessionBatchRequest>().toHaveProperty("sessionIds");
-    expectTypeOf<CreateSessionRequest>().toHaveProperty("projectId");
+    expectTypeOf<CreateQuickLinkRequest>().toHaveProperty("projectId");
     expectTypeOf<CreateChannelRequest>().toHaveProperty("picture");
     expectTypeOf<Channel>().toHaveProperty("id");
     expectTypeOf<ChannelMessage>().toHaveProperty("position");

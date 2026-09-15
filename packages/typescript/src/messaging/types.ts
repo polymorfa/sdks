@@ -20,33 +20,18 @@ export interface Session {
   readonly sessionId?: string;
   readonly name: string;
   readonly tenantId: string;
-  readonly connection: MessagingConnection;
+  readonly type: MessagingConnection;
   readonly testMode: boolean;
   readonly status: string;
   readonly statusReason?: string;
-  readonly runnerId?: string;
-  readonly proxy?: string;
-  readonly config: Readonly<Record<string, unknown>>;
+  readonly configuration?: import("./session-configuration.js").SessionConfigurationView;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
 
-export interface CreateSessionRequest {
-  readonly projectId: string;
-  readonly sessionId?: string;
-  readonly name?: string;
-  readonly start?: boolean;
-  readonly connection?: MessagingConnection;
-  readonly testMode?: boolean;
-  readonly bartenderMode?: BartenderMode;
-  readonly cloudApi?: CloudApiCredentials;
-  readonly config?: Readonly<Record<string, unknown>>;
-  readonly historySync?: HistorySyncPolicy;
-}
-
 export interface UpdateSessionRequest {
-  readonly config?: Readonly<Record<string, unknown>>;
-  readonly historySync?: HistorySyncPolicy;
+  readonly configuration: import("./session-configuration.js").SessionConfigurationPatch;
+  readonly revision: number;
 }
 
 export interface SessionOperation extends Session {
@@ -1460,7 +1445,6 @@ export interface VoipAgentTokenValue {
 export type VoipAgentTokenResponse = SuccessEnvelope<VoipAgentTokenValue>;
 
 export type ListSessionsResponse = SuccessEnvelope<readonly Session[]>;
-export type CreateSessionResponse = SuccessEnvelope<SessionOperation>;
 export type GetSessionResponse = SuccessEnvelope<Session>;
 export type UpdateSessionResponse = SuccessEnvelope<Session>;
 export type GetSessionAccountResponse = SuccessEnvelope<WhatsAppAccount>;

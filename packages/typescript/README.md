@@ -1272,3 +1272,67 @@ provided. The pinned handlers do not persist that header. A repeated stop can
 enqueue another stop command; a repeated delete reports only rows still found.
 QuickLink settings updates are state upserts and can safely converge on the
 same supplied values.
+
+## Session creation and configuration
+
+Create new sessions with `MessagingClient.quickLinks.create`. Direct
+`sessions.create` and Platform `sessions.createTesting` have been removed in this
+breaking contract update. Reconnect and delete still operate on existing sessions.
+
+```ts
+const link = await messaging.quickLinks.create({
+  projectId,
+  configuration: {
+    connectionPreference: "linked",
+    historySync: { consent: "ask" },
+  },
+});
+```
+
+Page text, appearance, legal links, and callbacks belong in saved
+`Client.quickLinkSettings`, not individual invitations. Links report nullable
+`expiresAt`; new invitations remain usable until completion or cancellation.
+Free-tier real-account pairing is available only in the authenticated Console.
+
+Use `Client.sessionConfiguration` for team defaults and
+`client.project(projectId).sessionConfiguration` for project defaults. Session
+updates take `{revision, configuration: {set, reset}}`; resets remove explicit
+overrides so later defaults continue to apply. Reads expose effective values,
+sources, consent restrictions, and pending runtime application.
+
+For simulation, create a QuickLink with `configuration.testing`, including initial
+`configuration` and the explicit `editable` subset delegated to the recipient.
+Test access is checked independently; simulation cannot contact real accounts.
+
+Test history content is uploaded separately from session configuration:
+
+```ts
+const fixture = await messaging.testing.createHistoryFixture(projectId, {
+  messages: [
+    {
+      id: "example-1",
+      senderPhone: testPhone,
+      text: "Demo",
+      timestamp: 1,
+      fromMe: false,
+    },
+  ],
+});
+const invitation = await messaging.quickLinks.create({
+  projectId,
+  configuration: {
+    testing: { configuration: { historyFixtureId: fixture.data.fixtureId } },
+  },
+});
+```
+
+Fixture senders must be existing simulated numbers in that project. Test-number
+entitlements and history consent still apply; uploading a fixture does not enable
+hosted message storage.
+
+Trusted servers continue an issued Meta Cloud API invitation with
+`messaging.cloudOnboarding.advance({ quicklinkId, projectId, result })`.
+`result` contains the Embedded Signup authorization code, selected WABA and phone
+IDs, and Coexistence/history choices. This method does not create a session or
+accept Meta app secrets. Its progress response is not proof that messaging is
+ready; inspect the QuickLink status.

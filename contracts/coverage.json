@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "7540c0cef0d6a9552476a1240c37c072c4781033",
+  "sourceCommit": "36a7f0473145eaa422ae999d4ece9acd44b5b8b6",
   "excludedContracts": [
     {
       "family": "graph",
@@ -767,7 +767,7 @@
       "method": "GET",
       "path": "/messaging/quicklinks/{id}",
       "operationId": "getQuickLink",
-      "fingerprint": "304ed64510b790479c4d88d1a65cf00e575c38586ab6b39497d37ac2b3228193",
+      "fingerprint": "7c74cd57a888556611ab0d8c188ae9064046672391b03eeccca1a51dff1b6e1d",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickLinks.retrieve"
@@ -778,7 +778,7 @@
       "method": "GET",
       "path": "/messaging/sessions",
       "operationId": "listSessions",
-      "fingerprint": "5fb4cb7241a2548710c1d55b2ce1bbaabc1a5b3f3a80371a5cbbfe3fadd6be03",
+      "fingerprint": "23cbc14adf82eff19ceb28bc6d8d2a1fdc0588bcb8855afb0cdeca9efe930d21",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.sessions.list"
@@ -789,7 +789,7 @@
       "method": "GET",
       "path": "/messaging/sessions/{session}",
       "operationId": "getSession",
-      "fingerprint": "146c537453893e59d1564ec2e8ce9e04e7d93c207da9cfe84838ee3e14ceac7a",
+      "fingerprint": "2a4c53da7c84d28620c91da1c518af41d159ba8345a4824edfbab3659bdf1527",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.sessions.retrieve"
@@ -867,7 +867,7 @@
       "method": "GET",
       "path": "/quicklink/{token}",
       "operationId": "getQuickLinkState",
-      "fingerprint": "1c727d050b0f307ffa7bff646ff3f4dcb409700aff27ef168755aff0c7f0e420",
+      "fingerprint": "4e672b39cdd7dc3d5db29b682f2a1b940f2e7349b4664698109cf231fe5e1922",
       "typescript": {
         "status": "excluded",
         "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
@@ -879,7 +879,7 @@
       "method": "GET",
       "path": "/quicklink/{token}/logo",
       "operationId": "getQuickLinkLogo",
-      "fingerprint": "74d33c263ee0752edfa022ef51322636d1dbc2f8fbea64d964f9a9b0a9daf1f0",
+      "fingerprint": "c7306496e68ec5885a449967f205c0aecec7b3d7e2beb22bf5ef807bcb82f6a6",
       "typescript": {
         "status": "excluded",
         "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
@@ -939,6 +939,17 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.templates.update"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/quicklink/{token}/testing",
+      "operationId": "customizeQuickLinkTesting",
+      "fingerprint": "dd599ccea4df40eb422cb17cec705414e8bc5501058348178eb6c912223632c6",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
       }
     },
     {
@@ -1375,10 +1386,10 @@
       "method": "POST",
       "path": "/messaging/cloud-api/embedded-signup",
       "operationId": "embeddedSignup",
-      "fingerprint": "d2eb0b016598f4d832a08b5034b6d86c755813f15b574b1f3b2e573e2fa5e03c",
+      "fingerprint": "810222a6ad0428eb2b7d8d9798204a8898ebeb5ec348f69eaec650489df357f1",
       "typescript": {
-        "status": "excluded",
-        "reason": "Embedded signup is owned by the browser onboarding flow and is not implemented by this SDK."
+        "status": "covered",
+        "method": "MessagingClient.cloudOnboarding.advance"
       }
     },
     {
@@ -1507,21 +1518,10 @@
       "method": "POST",
       "path": "/messaging/quicklinks",
       "operationId": "createQuickLink",
-      "fingerprint": "0b5ba5f3635e38a1f8ef974e46ed843b35c2caf5340c9d9a09ba5f4d0dff07aa",
+      "fingerprint": "ee9f03f069b7618094ff348bb43ce990c543c89ca15f78c4789edbe0c6342126",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickLinks.create"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/sessions/{projectId}/",
-      "operationId": "createSession",
-      "fingerprint": "5a921f8a26c06cd978328ebb7f4917775e2c0aeec60669a68641c68b97b36e30",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.sessions.create"
       }
     },
     {
@@ -1614,6 +1614,17 @@
         "status": "excluded",
         "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
         "milestone": "security-design"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/testing/{projectId}/history-fixtures",
+      "operationId": "createTestingHistoryFixture",
+      "fingerprint": "556e7f6751984568cc8aa09d802336eb74c171a18401804be5ebf00ce4c83e0c",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.testing.createHistoryFixture"
       }
     },
     {
@@ -1755,7 +1766,7 @@
       "method": "POST",
       "path": "/quicklink/{token}/cancel",
       "operationId": "cancelQuickLinkByToken",
-      "fingerprint": "d639fcf73bcb3e297b7cbf09731f5e330574baf5fbbb11556a2d1c72ce6b353d",
+      "fingerprint": "1e8e0e2d3a0f5022722f9a4ce20ab1c42e5e6149a6ec7d3a4d37f7d4e481537d",
       "typescript": {
         "status": "excluded",
         "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
@@ -1767,7 +1778,7 @@
       "method": "POST",
       "path": "/quicklink/{token}/cloud",
       "operationId": "completeQuickLinkCloudSignup",
-      "fingerprint": "2cad92665e56d4718f7a53acea71d5fd32997efd70ab60869a9826e5faaa0d53",
+      "fingerprint": "4737cd1a70237a10a2fd46b339cefde693e064644b61e0d2874f8ae2e7060bb1",
       "typescript": {
         "status": "excluded",
         "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
@@ -1778,7 +1789,7 @@
       "method": "POST",
       "path": "/quicklink/{token}/code",
       "operationId": "requestQuickLinkCode",
-      "fingerprint": "46d9df5f4b283478cf1b5741112d2d876fe04537f864b7fa331cffc30f3fd9fe",
+      "fingerprint": "8609f685a70d150a14ac1ef7e2a79c4230ff6b251d0abf2fc9bcf1137e381d80",
       "typescript": {
         "status": "excluded",
         "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
@@ -1790,7 +1801,7 @@
       "method": "POST",
       "path": "/quicklink/{token}/confirm",
       "operationId": "confirmQuickLink",
-      "fingerprint": "2cd2448d8e536cfff46713cd312307c0f9f38cfe1cbcf5c99b282c97c4c91fa2",
+      "fingerprint": "91be047b4af0855599d1e0c80c57511e6e771fb71a5cb33ca3a5bb86b7f91a2b",
       "typescript": {
         "status": "excluded",
         "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
@@ -1802,7 +1813,7 @@
       "method": "POST",
       "path": "/quicklink/{token}/connection",
       "operationId": "selectQuickLinkConnection",
-      "fingerprint": "42dd82695c10fa09b91243b5e2693b48113fa8a8999d06667affb31384009feb",
+      "fingerprint": "c33269e7e8020f5a24d7edea80025c27c6cbd72a8fae197e6a604a40e9f3c92e",
       "typescript": {
         "status": "excluded",
         "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
@@ -1811,9 +1822,20 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/quicklink/{token}/history",
+      "operationId": "chooseQuickLinkHistory",
+      "fingerprint": "b633d7318a62fb39b55279d0087bb223dfe776a870b5dc0174026a51621a9a69",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/quicklink/{token}/phone",
       "operationId": "confirmQuickLinkPhone",
-      "fingerprint": "88b3d30d790478fb28a5247e957c8b5b94f7d686329e6cea8b2b65f25b2050e5",
+      "fingerprint": "4a28673d52f6b1a93649c08e94e930e4d6d6b57898b2fd8d7e16200c5221208c",
       "typescript": {
         "status": "excluded",
         "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
@@ -1824,10 +1846,21 @@
       "method": "POST",
       "path": "/quicklink/{token}/phone/reset",
       "operationId": "resetQuickLinkPhone",
-      "fingerprint": "f9b305276c769cd7355a448b15531d7822145156d082abd1b9cbd148b877fe21",
+      "fingerprint": "ce13c7b679d3cd62f740ff8231e3f682020d2f86f053a246b489050b22aeecaf",
       "typescript": {
         "status": "excluded",
         "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/testing/start",
+      "operationId": "startQuickLinkTesting",
+      "fingerprint": "88b89e8bb98a55d4af5e12e29e177c6163fafd6798c672f05e2222a5c477f251",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
       }
     },
     {
@@ -1998,17 +2031,6 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/observation-policy",
-      "operationId": "updateSessionObservationPolicy",
-      "fingerprint": "91551ffaebb805f46fee7801dbe647f0eb58088f952bb2efbb236cabceca848c",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.observationPolicies.updateForSession"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "PUT",
       "path": "/messaging/{session}/privacy/{setting}",
       "operationId": "setPrivacySetting",
       "fingerprint": "c799b0ac7d5e956f595eb983296abf28865c1a0e211ad4917ce02a166ce3c43a",
@@ -2100,17 +2122,6 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/projects/{projectId}/observation-policy",
-      "operationId": "updateProjectObservationPolicy",
-      "fingerprint": "9e13d93f2c894114eeaf1baef9c5e205c3e9c52b7815a7351c5b0d92e6d5abb6",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.observationPolicies.updateForProject"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "PUT",
       "path": "/messaging/projects/{projectId}/safe-mode",
       "operationId": "updateProjectSafeMode",
       "fingerprint": "511dd569b2e5aed6c69365608e4bfbfc1a811c920845361ca726f8f11864f7b4",
@@ -2137,7 +2148,7 @@
       "method": "PUT",
       "path": "/messaging/sessions/{session}",
       "operationId": "updateSession",
-      "fingerprint": "9e6f06a678aa417bfbbab3806dc956f7b07661469d20f4019726476892638c2e",
+      "fingerprint": "042ef134c9faf86e84209913d69744801924fc19359ecee2c15ae2d92fe47c46",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.sessions.update"
@@ -2956,6 +2967,17 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/console/session-configuration/{sessionId}",
+      "operationId": "getSessionConfiguration",
+      "fingerprint": "41ef7c74309f396237388dc9ee45e8f39942f768cf99da89906d388fc4878db4",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/console/teams",
       "operationId": "listUserProfileTeams",
       "fingerprint": "aa70e557cdf7d23f620f07952cab024052b8b725efee720546d09d463f946cb1",
@@ -3608,6 +3630,17 @@
       "typescript": {
         "status": "covered",
         "method": "Client.quickLinkSettings.retrieve"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/session-configuration",
+      "operationId": "getSessionConfigurationDefaults",
+      "fingerprint": "1304eb3cf35c0ebdd19c9b2e647f51eb1741681f2012a79b018a1174514ee0a9",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.sessionConfiguration.retrieve"
       }
     },
     {
@@ -4919,17 +4952,6 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/testing",
-      "operationId": "createTestingSession",
-      "fingerprint": "90fc5729b10ba544a24366525b300cd3baa8eda2480baf47c575bf58331edeae",
-      "typescript": {
-        "status": "covered",
-        "method": "Client.sessions.createTesting"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
       "path": "/platform/templates",
       "operationId": "createMessageTemplate",
       "fingerprint": "ee5527c28858fff4b09cfad0ae6cd9c0f6b57fd3cf009ebef50bbb77f39b6532",
@@ -5064,6 +5086,17 @@
     {
       "family": "platform",
       "method": "PUT",
+      "path": "/console/session-configuration/{sessionId}",
+      "operationId": "updateSessionConfiguration",
+      "fingerprint": "ad18136611bc488d39e8d606356f40c6816933d69693d43389af6cfe84cd8be2",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
       "path": "/platform/projects/{projectId}/health-policy",
       "operationId": "updateProjectHealthPolicySettings",
       "fingerprint": "8fd612d4c6ff46acee246ce0d8be984ad3a8051dc7252f32758354bc06c5f28c",
@@ -5118,6 +5151,17 @@
       "typescript": {
         "status": "covered",
         "method": "Client.quickLinkSettings.update"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/session-configuration",
+      "operationId": "updateSessionConfigurationDefaults",
+      "fingerprint": "66124c83e129f5d345df8916ef875912a79ea9ff7d077b0867323ac9065e0e1b",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.sessionConfiguration.update"
       }
     },
     {

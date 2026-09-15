@@ -41,33 +41,31 @@ async function messagingServer(): Promise<{
 }
 
 describe("MessagingClient sessions", () => {
-  it("lists and creates sessions using the current routes", async () => {
+  it("lists sessions and creates new ones through QuickLink", async () => {
     const { client, requests } = await messagingServer();
     await client.sessions.list();
-    const created = await client.sessions.create(
-      { projectId: "project_1", sessionId: "support", start: true },
-      { idempotencyKey: "session-support" },
-    );
-
-    expect(requests[0]).toMatchObject({
-      method: "GET",
-      path: "/messaging/sessions",
-      body: "",
+    await client.quickLinks.create({
+      projectId: "project_1",
+      configuration: {
+        connectionPreference: "linked",
+        historySync: { consent: "ask" },
+      },
     });
-    expect(requests[1]).toMatchObject({
-      method: "POST",
-      path: "/messaging/sessions",
-      body: '{"projectId":"project_1","sessionId":"support","start":true}',
-    });
-    expect(requests[1]?.headers["idempotency-key"]).toBe("session-support");
-    expect(created.metadata.requestId).toBe("req_messaging");
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /messaging/sessions",
+      "POST /messaging/quicklinks",
+    ]);
+    expect(client.sessions).not.toHaveProperty("create");
   });
 
   it("encodes session identifiers for lifecycle and account operations", async () => {
     const { client, requests } = await messagingServer();
     const id = "support/eu";
     await client.sessions.retrieve(id);
-    await client.sessions.update(id, { config: { presence: true } });
+    await client.sessions.update(id, {
+      revision: 0,
+      configuration: { set: { historySync: { mode: "deliver" } } },
+    });
     await client.sessions.start(id);
     await client.sessions.stop(id);
     await client.sessions.restart(id);
@@ -85,7 +83,9 @@ describe("MessagingClient sessions", () => {
       "DELETE /messaging/sessions/support%2Feu",
       "GET /messaging/sessions/support%2Feu/me",
     ]);
-    expect(requests[1]?.body).toBe('{"config":{"presence":true}}');
+    expect(requests[1]?.body).toBe(
+      '{"revision":0,"configuration":{"set":{"historySync":{"mode":"deliver"}}}}',
+    );
   });
 
   it("retrieves JSON pairing data and requests a phone pairing code", async () => {

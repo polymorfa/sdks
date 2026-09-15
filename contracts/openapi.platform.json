@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (138 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (70 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n- `/admin/…` — **staff-only** (54 endpoints): Polymorfa internal staff. EXCLUDED.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (139 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (72 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n- `/admin/…` — **staff-only** (54 endpoints): Polymorfa internal staff. EXCLUDED.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -285,6 +285,332 @@
           },
           "503": {
             "description": "Configuration unavailable"
+          }
+        }
+      }
+    },
+    "/platform/session-configuration": {
+      "get": {
+        "operationId": "getSessionConfigurationDefaults",
+        "tags": [
+          "session-configuration"
+        ],
+        "summary": "Read session configuration defaults",
+        "description": "Returns effective team or project defaults, explicit overrides, and their source.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SessionConfigurationView"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateSessionConfigurationDefaults",
+        "tags": [
+          "session-configuration"
+        ],
+        "summary": "Update session configuration defaults",
+        "description": "Updates explicit defaults using a revision check. Existing sessions inherit fields they have not overridden. Runtime application is asynchronous.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionConfigurationUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SessionConfigurationView"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/console/session-configuration/{sessionId}": {
+      "get": {
+        "operationId": "getSessionConfiguration",
+        "tags": [
+          "session-configuration"
+        ],
+        "summary": "Read session configuration",
+        "description": "Returns effective configuration, overrides, and runtime application status for an owned session.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console session configuration; requires live dashboard membership.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Database session UUID or stable session slug.",
+            "schema": {
+              "$ref": "#/components/schemas/SessionIdentifier"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SessionConfigurationView"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateSessionConfiguration",
+        "tags": [
+          "session-configuration"
+        ],
+        "summary": "Update session configuration",
+        "description": "Sets or resets explicit configuration for an owned session using a revision check.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console session configuration; requires live dashboard membership.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Database session UUID or stable session slug.",
+            "schema": {
+              "$ref": "#/components/schemas/SessionIdentifier"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionConfigurationUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SessionConfigurationView"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -870,88 +1196,6 @@
           },
           "403": {
             "$ref": "#/components/responses/Forbidden"
-          }
-        }
-      }
-    },
-    "/platform/sessions/testing": {
-      "post": {
-        "operationId": "createTestingSession",
-        "tags": [
-          "sessions"
-        ],
-        "summary": "Create a testing number",
-        "description": "Creates a disconnected simulated session with testMode enabled. Team API keys require projectId in the body.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
-        "x-audience": "public",
-        "x-polymorfa-resource-boundary": "project",
-        "x-excluded-from-public": false,
-        "x-required-scope": "sessions:manage",
-        "security": [
-          {
-            "ApiKeyAuth": []
-          },
-          {
-            "ConsoleSession": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTestingNumberRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "Stable request correlation identifier."
-              },
-              "Polymorfa-Version": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "API version applied to this response."
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/TestingSessionId"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
           }
         }
       }
@@ -21814,7 +22058,7 @@
           "expectedPhone": {
             "type": "string",
             "nullable": true,
-            "description": "Optional expected phone, normalized to E.164. Creation checks WhatsApp registration; confirmed nonregistration is rejected and lookup unavailability is retryable."
+            "description": "Optional expected phone, normalized to E.164. Creation attempts WhatsApp registration resolution; confirmed nonregistration is rejected, while an inconclusive result remains unknown."
           },
           "methods": {
             "type": "array",
@@ -22059,6 +22303,604 @@
         "required": [
           "removed"
         ]
+      },
+      "SessionConfigurationView": {
+        "type": "object",
+        "properties": {
+          "requestedHistory": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "metadata_only",
+                  "deliver"
+                ]
+              },
+              "requestFull": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "mode",
+              "requestFull"
+            ],
+            "additionalProperties": false
+          },
+          "historyConsent": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "declined"
+            ]
+          },
+          "effective": {
+            "type": "object",
+            "properties": {
+              "observation": {
+                "type": "object",
+                "properties": {
+                  "presenceMode": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "events",
+                      "cache"
+                    ]
+                  },
+                  "typingMode": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "events",
+                      "cache"
+                    ]
+                  },
+                  "labelMode": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "events",
+                      "cache",
+                      "project"
+                    ]
+                  },
+                  "quickReplyMode": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "events",
+                      "cache"
+                    ]
+                  }
+                },
+                "required": [
+                  "presenceMode",
+                  "typingMode",
+                  "labelMode",
+                  "quickReplyMode"
+                ],
+                "additionalProperties": false
+              },
+              "historySync": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "metadata_only",
+                      "deliver"
+                    ]
+                  },
+                  "requestFull": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "mode",
+                  "requestFull"
+                ],
+                "additionalProperties": false
+              },
+              "hms": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean",
+                        "enum": [
+                          false
+                        ]
+                      }
+                    },
+                    "required": [
+                      "enabled"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean",
+                        "enum": [
+                          true
+                        ]
+                      },
+                      "region": {
+                        "type": "string",
+                        "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"
+                      },
+                      "policy": {
+                        "type": "string",
+                        "enum": [
+                          "short",
+                          "standard",
+                          "extended",
+                          "compliance",
+                          "enterprise_archive"
+                        ]
+                      },
+                      "retentionDays": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 2555
+                      },
+                      "policyVersion": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      },
+                      "legalHold": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "enabled",
+                      "region",
+                      "policy"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "observation",
+              "historySync",
+              "hms"
+            ],
+            "additionalProperties": false
+          },
+          "overrides": {
+            "type": "object",
+            "properties": {
+              "historySync": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "metadata_only",
+                      "deliver"
+                    ]
+                  },
+                  "requestFull": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "hms": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean",
+                        "enum": [
+                          false
+                        ]
+                      }
+                    },
+                    "required": [
+                      "enabled"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean",
+                        "enum": [
+                          true
+                        ]
+                      },
+                      "region": {
+                        "type": "string",
+                        "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"
+                      },
+                      "policy": {
+                        "type": "string",
+                        "enum": [
+                          "short",
+                          "standard",
+                          "extended",
+                          "compliance",
+                          "enterprise_archive"
+                        ]
+                      },
+                      "retentionDays": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 2555
+                      },
+                      "policyVersion": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      },
+                      "legalHold": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "enabled",
+                      "region",
+                      "policy"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "observation": {
+                "type": "object",
+                "properties": {
+                  "presenceMode": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "events",
+                      "cache"
+                    ]
+                  },
+                  "typingMode": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "events",
+                      "cache"
+                    ]
+                  },
+                  "labelMode": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "events",
+                      "cache",
+                      "project"
+                    ]
+                  },
+                  "quickReplyMode": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "events",
+                      "cache"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "sources": {
+            "type": "object",
+            "properties": {
+              "observation.presenceMode": {
+                "type": "string",
+                "enum": [
+                  "platform",
+                  "team",
+                  "project",
+                  "session"
+                ]
+              },
+              "observation.typingMode": {
+                "type": "string",
+                "enum": [
+                  "platform",
+                  "team",
+                  "project",
+                  "session"
+                ]
+              },
+              "observation.labelMode": {
+                "type": "string",
+                "enum": [
+                  "platform",
+                  "team",
+                  "project",
+                  "session"
+                ]
+              },
+              "observation.quickReplyMode": {
+                "type": "string",
+                "enum": [
+                  "platform",
+                  "team",
+                  "project",
+                  "session"
+                ]
+              },
+              "historySync.mode": {
+                "type": "string",
+                "enum": [
+                  "platform",
+                  "team",
+                  "project",
+                  "session",
+                  "consent"
+                ]
+              },
+              "historySync.requestFull": {
+                "type": "string",
+                "enum": [
+                  "platform",
+                  "team",
+                  "project",
+                  "session",
+                  "consent"
+                ]
+              },
+              "hms": {
+                "type": "string",
+                "enum": [
+                  "platform",
+                  "team",
+                  "project",
+                  "session"
+                ]
+              }
+            },
+            "required": [
+              "observation.presenceMode",
+              "observation.typingMode",
+              "observation.labelMode",
+              "observation.quickReplyMode",
+              "historySync.mode",
+              "historySync.requestFull",
+              "hms"
+            ],
+            "additionalProperties": false
+          },
+          "revisions": {
+            "type": "object",
+            "properties": {
+              "team": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "project": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "session": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "team",
+              "project",
+              "session"
+            ],
+            "additionalProperties": false
+          },
+          "application": {
+            "type": "object",
+            "properties": {
+              "desiredGeneration": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "appliedGeneration": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "applied"
+                ]
+              }
+            },
+            "required": [
+              "desiredGeneration",
+              "appliedGeneration",
+              "status"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "requestedHistory",
+          "effective",
+          "overrides",
+          "sources",
+          "revisions"
+        ],
+        "additionalProperties": false
+      },
+      "SessionConfigurationUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "configuration": {
+            "type": "object",
+            "properties": {
+              "set": {
+                "type": "object",
+                "properties": {
+                  "historySync": {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "metadata_only",
+                          "deliver"
+                        ]
+                      },
+                      "requestFull": {
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "hms": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "enabled": {
+                            "type": "boolean",
+                            "enum": [
+                              false
+                            ]
+                          }
+                        },
+                        "required": [
+                          "enabled"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "enabled": {
+                            "type": "boolean",
+                            "enum": [
+                              true
+                            ]
+                          },
+                          "region": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"
+                          },
+                          "policy": {
+                            "type": "string",
+                            "enum": [
+                              "short",
+                              "standard",
+                              "extended",
+                              "compliance",
+                              "enterprise_archive"
+                            ]
+                          },
+                          "retentionDays": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2555
+                          },
+                          "policyVersion": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128
+                          },
+                          "legalHold": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "enabled",
+                          "region",
+                          "policy"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  "observation": {
+                    "type": "object",
+                    "properties": {
+                      "presenceMode": {
+                        "type": "string",
+                        "enum": [
+                          "off",
+                          "events",
+                          "cache"
+                        ]
+                      },
+                      "typingMode": {
+                        "type": "string",
+                        "enum": [
+                          "off",
+                          "events",
+                          "cache"
+                        ]
+                      },
+                      "labelMode": {
+                        "type": "string",
+                        "enum": [
+                          "off",
+                          "events",
+                          "cache",
+                          "project"
+                        ]
+                      },
+                      "quickReplyMode": {
+                        "type": "string",
+                        "enum": [
+                          "off",
+                          "events",
+                          "cache"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              },
+              "reset": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "historySync",
+                    "historySync.mode",
+                    "historySync.requestFull",
+                    "hms",
+                    "observation",
+                    "observation.presenceMode",
+                    "observation.typingMode",
+                    "observation.labelMode",
+                    "observation.quickReplyMode"
+                  ]
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "revision",
+          "configuration"
+        ],
+        "additionalProperties": false
       },
       "QuickLinkSettings": {
         "type": "object",

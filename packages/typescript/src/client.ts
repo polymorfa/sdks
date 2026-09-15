@@ -1,3 +1,4 @@
+import { SessionConfigurationResource } from "./platform/session-configuration.js";
 import {
   assertServerRuntime,
   validateClientCredential,
@@ -49,6 +50,7 @@ export interface ClientBase<O extends ClientOwner> {
   readonly events: EventsResourceFor<O>;
   readonly webhooks: WebhooksResourceFor<O>;
   readonly webhookDeliveries: WebhookDeliveriesResourceFor<O>;
+  readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<O>;
   readonly raw: RawResourceFor<O>;
   project(projectId: string): Client<"project">;
@@ -86,6 +88,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   readonly events: EventsResource<ClientOwner>;
   readonly webhooks: WebhooksResource<ClientOwner>;
   readonly webhookDeliveries: WebhookDeliveriesResource<ClientOwner>;
+  readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<ClientOwner>;
   readonly raw: RawClient | ProjectScopedRawClient;
   readonly #transport: HttpTransport;
@@ -128,6 +131,10 @@ class ClientImplementation implements ClientBase<ClientOwner> {
     this.webhookDeliveries = new WebhookDeliveriesResource(
       this.#transport,
       prefix,
+    );
+    this.sessionConfiguration = new SessionConfigurationResource(
+      this.#transport,
+      projectId,
     );
     this.quickLinkSettings = new QuickLinkSettingsResource(
       this.#transport,

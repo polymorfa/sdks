@@ -1,8 +1,6 @@
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
-  CreateSessionRequest,
-  CreateSessionResponse,
   GetSessionAccountResponse,
   GetSessionResponse,
   GetQRCodeResponse,
@@ -23,18 +21,6 @@ export class SessionsResource {
     return this.transport.request({
       method: "GET",
       path: "/messaging/sessions",
-      ...options,
-    });
-  }
-
-  create(
-    body: CreateSessionRequest,
-    options: RequestOptions = {},
-  ): Promise<ApiResponse<CreateSessionResponse>> {
-    return this.transport.request({
-      method: "POST",
-      path: "/messaging/sessions",
-      body,
       ...options,
     });
   }

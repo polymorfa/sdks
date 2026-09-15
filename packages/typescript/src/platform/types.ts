@@ -483,9 +483,3 @@ export interface SessionTierOverrideRequest {
   readonly projectId?: string;
   readonly tierOverride: SessionTier | null;
 }
-
-export interface CreateTestingSessionRequest {
-  readonly projectId: string;
-  readonly name?: string;
-  readonly country?: "US" | "GB" | "BR" | "IN";
-}

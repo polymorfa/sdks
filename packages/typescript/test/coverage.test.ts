@@ -174,12 +174,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "7540c0cef0d6a9552476a1240c37c072c4781033",
-      total: 456,
+      sourceCommit: "36a7f0473145eaa422ae999d4ece9acd44b5b8b6",
+      total: 460,
       covered: 265,
       partial: 0,
       missing: 37,
-      excluded: 154,
+      excluded: 158,
       changed: 0,
       resolutions: [],
     });
@@ -433,10 +433,6 @@ describe("coverage checker", () => {
       setBusinessCoverPhoto: "MessagingClient.business.setCoverPhoto",
       setBusinessMerchantCompliance:
         "MessagingClient.business.setMerchantCompliance",
-      updateProjectObservationPolicy:
-        "MessagingClient.observationPolicies.updateForProject",
-      updateSessionObservationPolicy:
-        "MessagingClient.observationPolicies.updateForSession",
       setBusinessProductVisibility:
         "MessagingClient.business.setProductVisibility",
       updateBusinessCollection: "MessagingClient.business.updateCollection",

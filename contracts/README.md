@@ -2,17 +2,17 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`7540c0cef0d6a9552476a1240c37c072c4781033`. `source.json` records their original
+`36a7f0473145eaa422ae999d4ece9acd44b5b8b6`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
 | Covered             |        265 |
 | Missing             |         37 |
-| Excluded            |        154 |
+| Excluded            |        158 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        456 |
+| Total               |        460 |
 
 Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
@@ -20,7 +20,9 @@ successful live call.
 
 ## Reconciliation
 
-This refresh adopts public Number, conversation, user and message identifiers.
+This refresh retires direct session creation and observation-policy writes. QuickLinks supply typed configuration and test simulation. The SDK adds project history fixture upload, saved defaults, and trusted-server Meta continuation tied to an existing QuickLink.
+
+Public Number, conversation, user and message identifiers remain supported.
 Message responses retain the exact provider ID in `whatsapp_id`. Channel
 actions use the public message ID; call participants expose public identities;
 history events carry a public message index and a separate provider archive.
