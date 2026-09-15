@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "36a7f0473145eaa422ae999d4ece9acd44b5b8b6",
+  "commit": "e0117760369d4370ea7e1aaf7d6138de52a1e5ca",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
