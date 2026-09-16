@@ -1,27 +1,38 @@
 import {
   definePolymorfaElements,
-  type PolymorfaQuickLinkElement,
+  type PolymorfaMessageListElement,
 } from "@polymorfa/elements";
-import { QuickLinkController } from "@polymorfa/browser";
+import { ConversationController } from "@polymorfa/browser";
 
 definePolymorfaElements();
 
-const controller = new QuickLinkController({
-  create: async () => ({
-    id: "quicklink_1",
-    qrCode: "data:image/png;base64,...",
-    expiresAt: Date.now() + 60_000,
+// Replace this data source with your application's conversation adapter.
+const conversation = new ConversationController({
+  load: async () => ({
+    messages: [
+      {
+        id: "message_1",
+        text: "Hello from Polymorfa",
+        createdAt: Date.now(),
+        direction: "inbound",
+        status: "sent",
+      },
+    ],
   }),
-  recover: async () => ({
-    id: "quicklink_1",
-    qrCode: "data:image/png;base64,...",
-    expiresAt: Date.now() + 60_000,
-  }),
-  cancel: async () => undefined,
   subscribe: () => () => undefined,
+  send: async (message) => ({
+    id: crypto.randomUUID(),
+    clientId: message.clientId,
+    text: message.text,
+    createdAt: Date.now(),
+    direction: "outbound",
+    status: "sent",
+  }),
 });
 
-const element = document.querySelector<PolymorfaQuickLinkElement>(
-  "polymorfa-quicklink",
-);
-if (element) element.controller = controller;
+const element =
+  document.querySelector<PolymorfaMessageListElement>("pmfa-message-list");
+if (element) {
+  element.controller = conversation;
+  void conversation.load();
+}

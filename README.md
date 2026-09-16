@@ -404,22 +404,22 @@ on `client.project(projectId)` use the immutable project ownership context.
 
 Browser code accepts only short-lived `pmfa_ct_` tokens returned by an
 application callback. It rejects server credentials and absolute request URLs.
-The framework-neutral controllers cover QuickLink, conversations, composing,
+The framework-neutral controllers cover conversations, composing,
 template building, and one-to-one calls. They expose immutable snapshots through
 `getSnapshot()` and `subscribe()`; React and Web Components render those same
 objects rather than reimplementing product state.
 
+QuickLink is a hosted Polymorfa page, not a browser SDK surface. Create the link
+on your server with `MessagingClient.quickLinks.create()` and send the person
+to the returned `data.url`.
+
 ```ts
 import {
   BrowserMessagingClient,
-  BrowserTransport,
-  QuickLinkController,
   createClientTokenProvider,
 } from "@polymorfa/browser";
-import { quickLinkBackend } from "./quicklink-backend.js";
 
 const getClientToken = createClientTokenProvider();
-const transport = new BrowserTransport({ getClientToken });
 const messaging = new BrowserMessagingClient({
   session: "support",
   getClientToken,
@@ -429,7 +429,6 @@ await messaging.messages.setTyping({
   conversation: { id: "739182640518203" },
   state: "typing",
 });
-const quickLink = new QuickLinkController(quickLinkBackend(transport));
 ```
 
 The browser Messaging client is session-bound and exposes only the runtime's

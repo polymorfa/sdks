@@ -1,6 +1,10 @@
 # Polymorfa SDK Architecture
 
 **Status:** Approved for implementation review  
+**Amended 2026-09-16:** QuickLink is a closed-source hosted page. The browser,
+Web Component, and React QuickLink surfaces were removed and are no longer
+requirements; the server SDK only creates, retrieves, and cancels links and
+returns the hosted URL.
 **Date:** 2026-08-19  
 **Repository:** `polymorfa/sdks`
 
@@ -220,8 +224,6 @@ requiring privileged access call an application-owned server transport.
 
 `@polymorfa/browser` owns stable state machines and browser-safe transports:
 
-- `QuickLinkController` manages link state, completion, cancellation, expiry,
-  and recovery.
 - `ConversationDataSource` is an application-provided interface for initial
   history, pagination, optimistic sends, delivery updates, and subscriptions.
 - `MessageComposerController` manages text, attachments, reply context,
@@ -240,7 +242,6 @@ their own webhook-backed store. Empty history is a valid state, not an error.
 
 Required product areas are exposed through stable subpaths:
 
-- `/quicklink`
 - `/chat`
 - `/templates`
 - `/calls`
@@ -254,7 +255,6 @@ handler adapters.
 
 The initial component set includes:
 
-- QuickLink launcher, dialog, progress, completion, and recovery states;
 - chat drawer, conversation list, message list, composer, attachment tray,
   reply preview, delivery states, and empty/error states;
 - template builder, variable editor, validation summary, preview, and
@@ -275,7 +275,6 @@ render callbacks without forking the controller.
   appearance={appearance}
   developerTools="auto"
 >
-  <QuickLink />
   <ChatDrawer dataSource={chatDataSource} />
   <TemplateBuilder controller={templateBuilderController} />
   <Calls />
@@ -401,7 +400,7 @@ Browser packages run:
 
 - controller unit and state-transition tests;
 - component tests for all required states;
-- Playwright coverage for QuickLink, chat, template building, and calls;
+- Playwright coverage for chat, template building, and calls;
 - accessibility checks, keyboard flows, reduced-motion checks, and
   localization and right-to-left snapshots;
 - light, dark, high-contrast, and custom-theme visual regression tests;
@@ -483,7 +482,7 @@ The bootstrap is complete when:
   operation has an implemented, tested public method in each claimed SDK;
 - raw webhook verification, typed errors, pagination, retry, timeout, and
   response metadata behavior pass shared fixtures;
-- QuickLink, chat drawer and composer, template builder, and calls work in the
+- chat drawer and composer, template builder, and calls work in the
   vanilla, React, and Next.js reference applications;
 - UI accessibility, localization, theming, responsive, and reduced-motion
   gates pass;

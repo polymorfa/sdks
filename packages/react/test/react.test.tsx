@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import { TemplateBuilderController } from "@polymorfa/browser";
 import {
   PolymorfaProvider,
-  QuickLink,
+  MessageList,
   TemplateBuilder,
   useController,
 } from "../src/index.js";
@@ -15,7 +15,12 @@ import {
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
 function fixtureController() {
-  let snapshot = { status: "idle" as const, revision: 0, updatedAt: 0 };
+  let snapshot = {
+    messages: [],
+    hasMore: false,
+    revision: 0,
+    updatedAt: 0,
+  };
   const listeners = new Set<() => void>();
   return {
     getSnapshot: () => snapshot,
@@ -24,11 +29,9 @@ function fixtureController() {
       return () => listeners.delete(listener);
     },
     dispose: vi.fn(),
-    launch: vi.fn(async () => undefined),
-    retry: vi.fn(async () => undefined),
-    cancel: vi.fn(async () => undefined),
+    loadMore: vi.fn(async () => undefined),
     update: () => {
-      snapshot = { status: "idle", revision: 1, updatedAt: 1 };
+      snapshot = { messages: [], hasMore: false, revision: 1, updatedAt: 1 };
       for (const listener of listeners) listener();
     },
   };
@@ -51,11 +54,11 @@ describe("React bindings", () => {
           locale={{ code: "ar", direction: "rtl", messages: {} as never }}
         >
           <Probe />
-          <QuickLink controller={controller as never} />
+          <MessageList controller={controller as never} />
         </PolymorfaProvider>,
       );
     });
-    expect(host.querySelector("section")?.dir).toBe("rtl");
+    expect(host.querySelector("ol")?.dir).toBe("rtl");
     act(() => controller.update());
     expect(renders).toBeGreaterThan(1);
     act(() => root.unmount());
@@ -66,7 +69,7 @@ describe("React bindings", () => {
     const controller = fixtureController();
     const root = createRoot(document.createElement("div"));
     act(() =>
-      root.render(<QuickLink createController={() => controller as never} />),
+      root.render(<MessageList createController={() => controller as never} />),
     );
     act(() => root.unmount());
     expect(controller.dispose).toHaveBeenCalledTimes(1);

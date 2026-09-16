@@ -1,31 +1,3 @@
-import { QuickLinkController } from "@polymorfa/browser";
-import { PolymorfaProvider, QuickLink } from "@polymorfa/react";
-
-const quickLink = new QuickLinkController({
-  create: async () => ({
-    id: "quicklink_1",
-    link: "https://example.test/connect",
-    expiresAt: Date.now() + 60_000,
-  }),
-  recover: async () => ({
-    id: "quicklink_1",
-    link: "https://example.test/connect",
-    expiresAt: Date.now() + 60_000,
-  }),
-  cancel: async () => undefined,
-  subscribe: () => () => undefined,
-});
-
-export function App() {
-  return (
-    <PolymorfaProvider
-      appearance={{ theme: "system", variables: { colorPrimary: "#5b4bf7" } }}
-    >
-      <QuickLink controller={quickLink} />
-    </PolymorfaProvider>
-  );
-}
-
 // ── Calls ─────────────────────────────────────────────────────────────
 //
 // The browser signs into the signaling surface with a client token minted by
@@ -44,7 +16,7 @@ import {
   type CallEndReason,
   type CallReceivedWebhookPayload,
 } from "@polymorfa/browser";
-import { CallSurface, DialPad } from "@polymorfa/react";
+import { CallSurface, DialPad, PolymorfaProvider } from "@polymorfa/react";
 
 const callTransport = new BrowserTransport({
   getClientToken: createClientTokenProvider(),

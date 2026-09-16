@@ -10,7 +10,7 @@ import {
 import {
   definePolymorfaElements,
   type ElementController,
-  PolymorfaQuickLinkElement,
+  PolymorfaMessageListElement,
   PolymorfaChatDrawerElement,
   PolymorfaTemplateBuilderElement,
 } from "../src/index.js";
@@ -19,18 +19,14 @@ function fixtureController<T extends object>(initial: T) {
   let snapshot = initial;
   const listeners = new Set<() => void>();
   const controller: ElementController<T> & {
-    launch: ReturnType<typeof vi.fn>;
-    retry: ReturnType<typeof vi.fn>;
-    cancel: ReturnType<typeof vi.fn>;
+    loadMore: ReturnType<typeof vi.fn>;
   } = {
     getSnapshot: () => snapshot,
     subscribe: (listener) => {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
-    launch: vi.fn(async () => undefined),
-    retry: vi.fn(async () => undefined),
-    cancel: vi.fn(async () => undefined),
+    loadMore: vi.fn(async () => undefined),
   };
   return {
     controller,
@@ -48,7 +44,6 @@ describe("portable elements", () => {
   it("registers every product surface without React", () => {
     expect(
       [
-        "pmfa-quicklink",
         "pmfa-chat-drawer",
         "pmfa-message-list",
         "pmfa-compose-box",
@@ -57,15 +52,16 @@ describe("portable elements", () => {
       ].every((name) => customElements.get(name) !== undefined),
     ).toBe(true);
   });
-  it("binds QuickLink state, actions, direction, parts, and cleanup", () => {
+  it("binds state, actions, direction, parts, and cleanup", () => {
     const fixture = fixtureController({
-      status: "idle",
+      messages: [] as { id: string; text: string; direction: string }[],
+      hasMore: true,
       revision: 0,
       updatedAt: 0,
     });
     const node = document.createElement(
-      "pmfa-quicklink",
-    ) as PolymorfaQuickLinkElement;
+      "pmfa-message-list",
+    ) as PolymorfaMessageListElement;
     node.configuration = {
       locale: createLocale("ar"),
       appearance: { variables: { colorPrimary: "#123456" } },
@@ -74,10 +70,17 @@ describe("portable elements", () => {
     document.body.append(node);
     expect(node.dir).toBe("rtl");
     expect(node.style.getPropertyValue("--pmfa-color-primary")).toBe("#123456");
-    (node.shadowRoot?.querySelector("button") as HTMLButtonElement).click();
-    expect(fixture.controller.launch).toHaveBeenCalledTimes(1);
-    fixture.update({ status: "complete", revision: 1, updatedAt: 1 });
-    expect(node.shadowRoot?.textContent).toContain("complete");
+    (
+      node.shadowRoot?.querySelector('[part="load-more"]') as HTMLButtonElement
+    ).click();
+    expect(fixture.controller.loadMore).toHaveBeenCalledTimes(1);
+    fixture.update({
+      messages: [{ id: "m1", text: "Hello", direction: "inbound" }],
+      hasMore: false,
+      revision: 1,
+      updatedAt: 1,
+    });
+    expect(node.shadowRoot?.textContent).toContain("Hello");
     node.remove();
     expect(fixture.listeners.size).toBe(0);
   });
