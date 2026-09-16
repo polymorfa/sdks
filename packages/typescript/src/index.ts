@@ -447,6 +447,8 @@ export type {
   WebhookHeader,
   WebhookRetryConfig,
   WhatsAppAccount,
+  PhonePlatform,
+  WhatsAppAccountType,
   CreateLabelRequest,
   CreateLabelResponse,
 } from "./messaging/types.js";

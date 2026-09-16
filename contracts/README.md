@@ -2,7 +2,7 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`1600403db9dcf7996dbbb882375b1165859829d3`. `source.json` records their original
+`aca849cda44ad8582d7ae87489404d2483173a53`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
@@ -19,6 +19,11 @@ It does not claim coverage in other languages, package publication, or a
 successful live call.
 
 ## Reconciliation
+
+This revision replaces raw account platform codes with `phonePlatform` and
+`accountType` on the session account, profile, and `session.connected`
+contracts, and removes the unreturned `verifiedJids` client-rules field. The
+three changed operations keep their existing typed methods.
 
 This refresh retires direct session creation and observation-policy writes. QuickLinks supply typed configuration and test simulation. The SDK adds project history fixture upload, saved defaults, and trusted-server Meta continuation tied to an existing QuickLink.
 

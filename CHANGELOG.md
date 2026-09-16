@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- `WhatsAppAccount`, `ProfileData`, and the `session.connected` webhook payload
+  replace the raw `platform` string with `phonePlatform` (`android`, `ios`, `meta_cloud`, or
+  `unknown`) and `accountType` (`whatsapp_app`, `business_app`, `meta_cloud`,
+  or `meta_coexistence`). `SessionConnectedPayload` now types the account's
+  Polymorfa `id` instead of `lid`. Both new types are exported.
+
 - Export typed terminal Calls webhooks. `call.ended` preserves a nullable caller
   identity for `pod_lost`; `call.telemetry` preserves cumulative traffic values.
 

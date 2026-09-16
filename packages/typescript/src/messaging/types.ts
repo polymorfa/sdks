@@ -45,6 +45,17 @@ export interface OperationAccepted {
   readonly operationId: string;
 }
 
+/** Where the account's primary WhatsApp client runs. `meta_cloud` means Meta hosts the number. */
+export type PhonePlatform = "android" | "ios" | "meta_cloud" | "unknown";
+
+/**
+ * `whatsapp_app` and `business_app` connect as linked devices. `meta_cloud` is
+ * Meta Cloud API. `meta_coexistence` is Cloud API with the WhatsApp Business
+ * app still active on the phone.
+ */
+export type WhatsAppAccountType =
+  "whatsapp_app" | "business_app" | "meta_cloud" | "meta_coexistence";
+
 export interface WhatsAppAccount {
   readonly id?: string;
   readonly bsuid?: string;
@@ -52,7 +63,8 @@ export interface WhatsAppAccount {
   readonly phoneNumber?: string;
   readonly pushName: string;
   readonly businessName?: string;
-  readonly platform?: string;
+  readonly phonePlatform?: PhonePlatform;
+  readonly accountType?: WhatsAppAccountType;
   readonly profilePicUrl?: string;
 }
 
@@ -772,6 +784,8 @@ export interface ProfileData {
   readonly name: string;
   readonly status: string;
   readonly profilePicUrl?: string;
+  readonly phonePlatform?: PhonePlatform;
+  readonly accountType?: WhatsAppAccountType;
 }
 
 export interface SetProfileNameRequest {

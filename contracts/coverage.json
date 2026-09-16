@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "1600403db9dcf7996dbbb882375b1165859829d3",
+  "sourceCommit": "aca849cda44ad8582d7ae87489404d2483173a53",
   "excludedContracts": [
     {
       "family": "graph",
@@ -542,7 +542,7 @@
       "method": "GET",
       "path": "/messaging/{session}/profile",
       "operationId": "getProfile",
-      "fingerprint": "a0d90544a2d7086bba3d843566efcc8412a7c66141f1f3f146cae789b748ab81",
+      "fingerprint": "e7ea76369952a5d481c254a474dd712cc954ce1c62b048a4e763dd8f1f65fb41",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.profile.get"
@@ -3144,7 +3144,7 @@
       "method": "GET",
       "path": "/platform/sessions/{session}/client-rules",
       "operationId": "getClientRules",
-      "fingerprint": "c3fbc3bf67159d7a92c52fe1901028854640fc517f8b4c5ba59cdf72ed2aecca",
+      "fingerprint": "13926991683f81e7ee190075f5859caf0910b47354824c87090338779043a76c",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.clientTokens.retrieveRules"
@@ -3166,7 +3166,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/me",
       "operationId": "getSessionAccount",
-      "fingerprint": "c00aeae61b1a22a3087170a197ca7d1f8fb85eacd5cd1b921babc346745fc283",
+      "fingerprint": "1674fcd2094cf46f97ed71dabec7458ca6a99ef227fb76c2afe28fc27ff816bb",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.sessions.account"

@@ -18773,6 +18773,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
             "schema": {
               "type": "string"
             }
@@ -18856,6 +18857,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
             "schema": {
               "type": "string"
             }
@@ -18964,6 +18966,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
             "schema": {
               "type": "string"
             }
@@ -19044,6 +19047,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
             "schema": {
               "type": "string"
             }
@@ -27906,12 +27910,6 @@
           "recipientMode": {
             "type": "string"
           },
-          "verifiedJids": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
           "rateLimits": {
             "type": "object",
             "properties": {
@@ -28710,7 +28708,7 @@
           "id": {
             "type": "string",
             "pattern": "^[1-9][0-9]{0,18}$",
-            "description": "Account ID when supplied by the connection.",
+            "description": "Polymorfa ID of the connected account.",
             "example": "739182640518203"
           },
           "phoneNumber": {
@@ -28728,8 +28726,37 @@
           "businessName": {
             "type": "string"
           },
-          "platform": {
-            "type": "string"
+          "phonePlatform": {
+            "type": "string",
+            "enum": [
+              "android",
+              "ios",
+              "meta_cloud",
+              "unknown"
+            ],
+            "description": "Where the account's primary WhatsApp client runs.",
+            "x-enumDescriptions": {
+              "android": "WhatsApp or WhatsApp Business on an Android phone.",
+              "ios": "WhatsApp or WhatsApp Business on an iPhone.",
+              "meta_cloud": "Meta hosts the number through Cloud API.",
+              "unknown": "The phone has not reported a recognized platform."
+            }
+          },
+          "accountType": {
+            "type": "string",
+            "enum": [
+              "whatsapp_app",
+              "business_app",
+              "meta_cloud",
+              "meta_coexistence"
+            ],
+            "description": "How the account uses WhatsApp.",
+            "x-enumDescriptions": {
+              "whatsapp_app": "WhatsApp app, connected as a linked device.",
+              "business_app": "WhatsApp Business app, connected as a linked device.",
+              "meta_cloud": "Meta Cloud API.",
+              "meta_coexistence": "Meta Cloud API, with the WhatsApp Business app still active on the phone."
+            }
           },
           "profilePicUrl": {
             "type": "string"

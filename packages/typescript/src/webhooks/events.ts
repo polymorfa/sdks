@@ -1,3 +1,5 @@
+import type { PhonePlatform, WhatsAppAccountType } from "../messaging/types.js";
+
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "blocklist.update",
   "business.quick_reply.update",
@@ -170,9 +172,10 @@ export interface SessionStatusPayload {
 
 export interface SessionConnectedPayload {
   readonly phoneNumber: string;
-  readonly lid?: string;
+  readonly id?: string;
   readonly pushName: string;
-  readonly platform: string;
+  readonly phonePlatform: PhonePlatform;
+  readonly accountType: WhatsAppAccountType;
   readonly businessName?: string;
 }
 

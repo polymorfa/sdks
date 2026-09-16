@@ -875,13 +875,43 @@
             "type": "string"
           },
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "Polymorfa ID of the connected account."
           },
           "pushName": {
             "type": "string"
           },
-          "platform": {
-            "type": "string"
+          "phonePlatform": {
+            "type": "string",
+            "enum": [
+              "android",
+              "ios",
+              "meta_cloud",
+              "unknown"
+            ],
+            "description": "Where the account's primary WhatsApp client runs.",
+            "x-enumDescriptions": {
+              "android": "WhatsApp or WhatsApp Business on an Android phone.",
+              "ios": "WhatsApp or WhatsApp Business on an iPhone.",
+              "meta_cloud": "Meta hosts the number through Cloud API.",
+              "unknown": "The phone has not reported a recognized platform."
+            }
+          },
+          "accountType": {
+            "type": "string",
+            "enum": [
+              "whatsapp_app",
+              "business_app",
+              "meta_cloud",
+              "meta_coexistence"
+            ],
+            "description": "How the account uses WhatsApp.",
+            "x-enumDescriptions": {
+              "whatsapp_app": "WhatsApp app, connected as a linked device.",
+              "business_app": "WhatsApp Business app, connected as a linked device.",
+              "meta_cloud": "Meta Cloud API.",
+              "meta_coexistence": "Meta Cloud API, with the WhatsApp Business app still active on the phone."
+            }
           },
           "businessName": {
             "type": "string"
@@ -890,7 +920,8 @@
         "required": [
           "phoneNumber",
           "pushName",
-          "platform"
+          "phonePlatform",
+          "accountType"
         ]
       },
       "SessionConnectedEvent": {
@@ -12287,6 +12318,38 @@
           },
           "profilePicUrl": {
             "type": "string"
+          },
+          "phonePlatform": {
+            "type": "string",
+            "enum": [
+              "android",
+              "ios",
+              "meta_cloud",
+              "unknown"
+            ],
+            "description": "Where the account's primary WhatsApp client runs.",
+            "x-enumDescriptions": {
+              "android": "WhatsApp or WhatsApp Business on an Android phone.",
+              "ios": "WhatsApp or WhatsApp Business on an iPhone.",
+              "meta_cloud": "Meta hosts the number through Cloud API.",
+              "unknown": "The phone has not reported a recognized platform."
+            }
+          },
+          "accountType": {
+            "type": "string",
+            "enum": [
+              "whatsapp_app",
+              "business_app",
+              "meta_cloud",
+              "meta_coexistence"
+            ],
+            "description": "How the account uses WhatsApp.",
+            "x-enumDescriptions": {
+              "whatsapp_app": "WhatsApp app, connected as a linked device.",
+              "business_app": "WhatsApp Business app, connected as a linked device.",
+              "meta_cloud": "Meta Cloud API.",
+              "meta_coexistence": "Meta Cloud API, with the WhatsApp Business app still active on the phone."
+            }
           }
         },
         "required": [
