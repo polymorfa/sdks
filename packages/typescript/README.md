@@ -344,10 +344,42 @@ own participant, so the SDK rejects `participant` for client tokens. The SDK
 checks `participant` and `connectionId` (`[A-Za-z0-9_-]{8,64}`) before sending.
 
 `voip.retrieveCallSettings(session)` and `voip.updateCallSettings(session,
-{ includeSelfAudio })` read and replace the session's call settings through
-`/platform/sessions/{session}/call-settings`. Merged call audio excludes each
-connection's own audio unless `includeSelfAudio` is `true`. These methods
-require a server credential.
+{ includeSelfAudio, inboundRoute, sipTrunkId, sipClaim })` read and replace the
+session's call settings through `/platform/sessions/{session}/call-settings`.
+Merged call audio excludes each connection's own audio unless
+`includeSelfAudio` is `true`. `inboundRoute` is `clients` (the default) or
+`sip_trunk`, which also sends incoming calls to `sipTrunkId`; `sipClaim`
+(default `true`) makes the trunk's answer claim the call. An update replaces
+every field, so send the current route when you change `includeSelfAudio`.
+These methods require a server credential.
+
+## SIP trunks
+
+`Client.sipTrunks` manages the SIP trunks that connect a PBX to a project's
+calls. SIP trunks are a beta: changes return `403` until your team is enrolled.
+Team clients name the project on `list` and `create`; project clients use their
+own project.
+
+```ts
+const project = platform.project("018f0000-0000-7000-8000-000000000002");
+const { data } = await project.sipTrunks.create({
+  name: "Head office PBX",
+  direction: "both",
+  outbound: { targetUri: "sips:pbx.example.com", transport: "tls" },
+  inbound: { session: "support", allowedAddresses: ["203.0.113.10"] },
+});
+// Store data.inboundCredentials now; the password is not returned again.
+await project.sipTrunks.update(data.trunk.id, {
+  enabled: false,
+  expectedRevision: data.trunk.revision,
+});
+```
+
+`retrieve`, `update`, `delete`, and `rotateCredentials` take a trunk ID. A
+project client built from a team key reads the trunk first and refuses a trunk
+of another project with `PolymorfaNotFoundError`. Conflicts raise
+`PolymorfaConflictError` with `code` `sip_trunk_in_use`,
+`sip_trunk_revision_conflict`, `sip_trunk_limit`, or `state_conflict`.
 
 ## Calls and stable user identity
 

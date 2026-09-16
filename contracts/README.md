@@ -2,27 +2,27 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`fc4996b90e19f0b76afb9037f25a72f84659748c` on branch
+`750ca5636389e31892acaee082852f1b7a6d8f56` on branch
 `t3code/calls-unified-clients`. That commit is local and unpushed; re-pin to the
 merged commit before release. `source.json` records the original paths and
 SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        295 |
+| Covered             |        303 |
 | Missing             |          0 |
-| Excluded            |        107 |
+| Excluded            |        116 |
 | Partial             |          0 |
-| Changed fingerprint |          2 |
-| Total               |        404 |
+| Changed fingerprint |          0 |
+| Total               |        419 |
 
-The two changed fingerprints are `createProject` and
-`requestProductionEnrollment`. Team-limit changes that landed between the
-previous pin and this one altered them: `createProject` now returns
-`CreatedProject` and documents `409 payg_required`, and
-`ProductionEnrollmentResult` requires `billingMode`. They are not part of the
-Calls change and have not been reviewed against `Client.projects`, so the
-ledger keeps their previous fingerprints until someone reviews them.
+This revision adds the SIP trunk operations, covered by `Client.sipTrunks`,
+and the routing fields of session call settings. The five SIP error codes
+added to the shared public error enum changed the fingerprint of every
+operation that references it; those operations were reviewed and only the
+error enum differs. The Console SIP trunk and call operations are excluded.
+`createProject` and `requestProductionEnrollment` match `CreatedProject` and
+the `billingMode` field of the production enrollment result.
 
 Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a

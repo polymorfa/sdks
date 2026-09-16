@@ -9,6 +9,8 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "blocklist.update",
   "business.quick_reply.update",
   "call.accepted",
+  "call.connection_joined",
+  "call.connection_left",
   "call.ended",
   "call.missed",
   "call.participant_joined",
@@ -346,6 +348,41 @@ export interface CallParticipantLeftPayload {
   readonly callId: string;
   readonly participantId: string;
   readonly reason?: string;
+}
+
+/** One media connection to a call: a browser, app, server, or SIP trunk. */
+export interface CallConnection {
+  readonly id: string;
+  /** `client:<id>` for a client token, `server:<id>` for a server credential. */
+  readonly participant: string;
+  readonly transport: "webrtc" | "socket" | "sip";
+}
+
+export interface CallConnectionJoinedPayload {
+  readonly callId: string;
+  readonly connection: CallConnection;
+}
+
+/**
+ * Why a connection left. A SIP trunk that never joined reports a `sip_*`
+ * reason, `claimed`, or `call_ended`, with no joined event before it.
+ */
+export type CallConnectionLeftReason =
+  | "left"
+  | "replaced"
+  | "claimed"
+  | "call_ended"
+  | "sip_busy"
+  | "sip_declined"
+  | "sip_no_answer"
+  | "sip_unavailable"
+  | "sip_auth_failed";
+
+export interface CallConnectionLeftPayload {
+  readonly callId: string;
+  readonly connectionId: string;
+  readonly participant: string;
+  readonly reason: CallConnectionLeftReason;
 }
 
 export interface NewsletterUpdatePayload {
@@ -743,6 +780,8 @@ export interface WebhookPayloadMap {
   readonly "blocklist.update": BlocklistUpdatePayload;
   readonly "business.quick_reply.update": BusinessQuickReplyUpdatePayload;
   readonly "call.accepted": CallAcceptedPayload;
+  readonly "call.connection_joined": CallConnectionJoinedPayload;
+  readonly "call.connection_left": CallConnectionLeftPayload;
   readonly "call.ended": CallEndedPayload;
   readonly "call.missed": CallMissedPayload;
   readonly "call.participant_joined": CallParticipantPayload;

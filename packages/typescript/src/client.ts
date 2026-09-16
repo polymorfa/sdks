@@ -36,6 +36,7 @@ import { QuickLinkSettingsResource } from "./platform/quicklink-settings.js";
 import { SecurityIncidentsResource } from "./platform/security-incidents.js";
 import { SessionBansResource } from "./platform/session-bans.js";
 import { PlatformSessionsResource } from "./platform/sessions.js";
+import { SipTrunksResource } from "./platform/sip-trunks.js";
 
 export type EventsResourceFor<O extends ClientOwner> = EventsResource<O>;
 export type WebhooksResourceFor<O extends ClientOwner> = WebhooksResource<O>;
@@ -53,6 +54,7 @@ export interface ClientBase<O extends ClientOwner> {
   readonly webhookDeliveries: WebhookDeliveriesResourceFor<O>;
   readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<O>;
+  readonly sipTrunks: SipTrunksResource<O>;
   readonly raw: RawResourceFor<O>;
   project(projectId: string): Client<"project">;
 }
@@ -92,6 +94,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   readonly webhookDeliveries: WebhookDeliveriesResource<ClientOwner>;
   readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<ClientOwner>;
+  readonly sipTrunks: SipTrunksResource<ClientOwner>;
   readonly raw: RawClient | ProjectScopedRawClient;
   readonly #transport: HttpTransport;
   readonly #credential: ClientOptions["credential"];
@@ -141,6 +144,11 @@ class ClientImplementation implements ClientBase<ClientOwner> {
     this.quickLinkSettings = new QuickLinkSettingsResource(
       this.#transport,
       projectId,
+    );
+    this.sipTrunks = new SipTrunksResource(
+      this.#transport,
+      projectId,
+      projectId !== null && credential.type !== "projectToken",
     );
     this.raw =
       projectId === null

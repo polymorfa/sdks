@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (153 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (79 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (159 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (85 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -1056,7 +1056,7 @@
         },
         "responses": {
           "200": {
-            "description": "Call settings saved. They apply to a call the next time a participant answers or connects to it, including calls in progress.",
+            "description": "Call settings saved. Audio settings apply to a call the next time a participant answers or connects to it, including calls in progress. Routing settings apply to calls that arrive after the change.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1170,6 +1170,1008 @@
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
         },
         "description": "**Required scope:** `sessions:manage`",
+        "x-audience": "public"
+      }
+    },
+    "/platform/sip-trunks": {
+      "get": {
+        "operationId": "listSipTrunks",
+        "tags": [
+          "SIP Trunks"
+        ],
+        "summary": "List SIP trunks",
+        "description": "**Required scope:** `sessions:read`\n\nLists the SIP trunks of a project. Passwords are never returned.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Project whose trunks are listed. Required for organization keys."
+            },
+            "required": false,
+            "name": "projectId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SIP trunks in creation order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessListSipTrunksResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        },
+        "x-audience": "public"
+      },
+      "post": {
+        "operationId": "createSipTrunk",
+        "tags": [
+          "SIP Trunks"
+        ],
+        "summary": "Create a SIP trunk",
+        "description": "**Required scope:** `sessions:manage`\n\nConnects a PBX or SIP trunk to WhatsApp calls. An `outbound` trunk receives the incoming WhatsApp calls of sessions whose call settings route to it. An `inbound` trunk lets your PBX place WhatsApp calls through a session. For trunks that accept calls from your PBX, the response contains the digest credentials once. SIP trunks are a beta: creating, changing and rotating credentials return `403` unless your team is enrolled. Listing, reading and deleting trunks remain available after withdrawal.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessCreateSipTrunkRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "SIP trunk created. Store `inboundCredentials.password` now; it cannot be retrieved later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessCreateSipTrunkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`sip_trunk_limit`: the project already has 100 trunks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "`sip_unavailable`: SIP trunks are not available right now.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
+        "x-audience": "public"
+      }
+    },
+    "/platform/sip-trunks/{trunkId}": {
+      "get": {
+        "operationId": "getSipTrunk",
+        "tags": [
+          "SIP Trunks"
+        ],
+        "summary": "Get a SIP trunk",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "trunkId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The SIP trunk. Passwords are never returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessGetSipTrunkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        },
+        "description": "**Required scope:** `sessions:read`",
+        "x-audience": "public"
+      },
+      "patch": {
+        "operationId": "updateSipTrunk",
+        "tags": [
+          "SIP Trunks"
+        ],
+        "summary": "Update a SIP trunk",
+        "description": "**Required scope:** `sessions:manage`\n\nChanges the fields you send and keeps the others. Send `expectedRevision` to refuse the change with `409 sip_trunk_revision_conflict` when the trunk changed since you read it. Changes apply to new calls within about a minute; calls in progress continue. Requires enrollment in the SIP trunks beta.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "trunkId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessUpdateSipTrunkRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated SIP trunk.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessUpdateSipTrunkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`sip_trunk_revision_conflict`: the trunk changed after `expectedRevision`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "`sip_unavailable`: SIP trunks are not available right now.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
+        "x-audience": "public"
+      },
+      "delete": {
+        "operationId": "deleteSipTrunk",
+        "tags": [
+          "SIP Trunks"
+        ],
+        "summary": "Delete a SIP trunk",
+        "description": "**Required scope:** `sessions:manage`\n\nDeletes the trunk and its credentials. Returns `409 sip_trunk_in_use` while a session's call settings route incoming calls to it.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "trunkId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SIP trunk deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessDeleteSipTrunkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`sip_trunk_in_use`: a session's call settings route incoming calls to the trunk.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
+        "x-audience": "public"
+      }
+    },
+    "/platform/sip-trunks/{trunkId}/credentials": {
+      "post": {
+        "operationId": "rotateSipTrunkCredentials",
+        "tags": [
+          "SIP Trunks"
+        ],
+        "summary": "Rotate SIP trunk credentials",
+        "description": "**Required scope:** `sessions:manage`\n\nReplaces the password your PBX uses to place calls. The previous password stops working within about a minute. Returns `409 state_conflict` for `outbound` trunks. Requires enrollment in the SIP trunks beta.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "trunkId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "New credentials. The password is shown only in this response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessRotateSipTrunkCredentialsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`state_conflict`: the trunk does not accept calls from a PBX.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "`sip_unavailable`: SIP trunks are not available right now.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
         "x-audience": "public"
       }
     },
@@ -3107,7 +4109,7 @@
           "calls"
         ],
         "summary": "Update session call settings",
-        "description": "Replaces the call settings for an owned session. New calls use the saved settings.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Replaces the call settings for an owned session. Omitted routing fields return to their defaults. New calls use the saved settings. Routing to a SIP trunk requires a trunk in the session's project that can receive calls.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -3183,6 +4185,482 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/console/sip-trunks": {
+      "get": {
+        "operationId": "listConsoleSipTrunks",
+        "tags": [
+          "calls"
+        ],
+        "summary": "List SIP trunks",
+        "description": "Lists the team's SIP trunks, or one project's when `projectId` is given. Passwords are never returned.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console SIP trunks; requires live dashboard membership. The Platform API publishes the same trunks under /platform/sip-trunks.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PlatformAccessSipTrunk"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createConsoleSipTrunk",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Create a SIP trunk",
+        "description": "Creates a SIP trunk in the named project. For trunks that accept calls from a PBX, the response contains the digest password once. Unavailable when SIP trunks are not enabled for the deployment.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console SIP trunks; requires a live owner or admin. The Platform API publishes the same operation under /platform/sip-trunks.",
+        "x-required-organization-role": "owner_or_admin",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessCreateSipTrunkRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PlatformAccessCreateSipTrunkResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/console/sip-trunks/{trunkId}": {
+      "get": {
+        "operationId": "getConsoleSipTrunk",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Get a SIP trunk",
+        "description": "Returns one SIP trunk without secret values.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console SIP trunks; requires live dashboard membership. The Platform API publishes the same trunks under /platform/sip-trunks.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "trunkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PlatformAccessSipTrunk"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateConsoleSipTrunk",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Update a SIP trunk",
+        "description": "Changes the sent fields of a SIP trunk. `expectedRevision` refuses a change to a trunk that changed since it was read.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console SIP trunks; requires a live owner or admin. The Platform API publishes the same operation under /platform/sip-trunks.",
+        "x-required-organization-role": "owner_or_admin",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "trunkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessUpdateSipTrunkRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PlatformAccessSipTrunk"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteConsoleSipTrunk",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Delete a SIP trunk",
+        "description": "Deletes a SIP trunk that no session routes incoming calls to.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console SIP trunks; requires a live owner or admin. The Platform API publishes the same operation under /platform/sip-trunks.",
+        "x-required-organization-role": "owner_or_admin",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "trunkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PlatformAccessDeletedSipTrunk"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/console/sip-trunks/{trunkId}/credentials": {
+      "post": {
+        "operationId": "rotateConsoleSipTrunkCredentials",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Rotate SIP trunk credentials",
+        "description": "Replaces the password a PBX uses to place calls and returns it once.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console SIP trunks; requires a live owner or admin. The Platform API publishes the same operation under /platform/sip-trunks.",
+        "x-required-organization-role": "owner_or_admin",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "trunkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PlatformAccessSipTrunkCredentials"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -22295,6 +23773,24 @@
             "type": "boolean",
             "description": "Whether each participant hears their own audio in the merged call audio they receive. The WhatsApp party never receives its own audio."
           },
+          "inboundRoute": {
+            "type": "string",
+            "enum": [
+              "clients",
+              "sip_trunk"
+            ],
+            "description": "Where incoming WhatsApp calls ring. `sip_trunk` also sends each incoming call to `sipTrunkId`."
+          },
+          "sipTrunkId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "The SIP trunk that receives incoming calls, or null."
+          },
+          "sipClaim": {
+            "type": "boolean",
+            "description": "Whether an answer from the SIP trunk claims the call."
+          },
           "updatedAt": {
             "type": "string",
             "format": "date-time",
@@ -22304,6 +23800,9 @@
         },
         "required": [
           "includeSelfAudio",
+          "inboundRoute",
+          "sipTrunkId",
+          "sipClaim",
           "updatedAt"
         ]
       },
@@ -22640,6 +24139,11 @@
                     "replaced",
                     "claimed",
                     "call_ended",
+                    "sip_busy",
+                    "sip_declined",
+                    "sip_no_answer",
+                    "sip_unavailable",
+                    "sip_auth_failed",
                     null
                   ],
                   "nullable": true
@@ -22952,6 +24456,24 @@
         "properties": {
           "includeSelfAudio": {
             "type": "boolean"
+          },
+          "inboundRoute": {
+            "type": "string",
+            "enum": [
+              "clients",
+              "sip_trunk"
+            ],
+            "description": "Defaults to `clients`."
+          },
+          "sipTrunkId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Required when `inboundRoute` is `sip_trunk`; otherwise omit or send null."
+          },
+          "sipClaim": {
+            "type": "boolean",
+            "description": "Defaults to true."
           },
           "projectId": {
             "type": "string",
@@ -29642,12 +31164,33 @@
           "enabled"
         ]
       },
+      "PlatformAccessCallInboundRoute": {
+        "type": "string",
+        "enum": [
+          "clients",
+          "sip_trunk"
+        ],
+        "description": "Where incoming WhatsApp calls ring. `clients` rings your connected clients only. `sip_trunk` also sends each incoming call to the SIP trunk named by `sipTrunkId`. Defaults to `clients`."
+      },
       "PlatformAccessCallSettings": {
         "type": "object",
         "properties": {
           "includeSelfAudio": {
             "type": "boolean",
             "description": "Whether each participant hears their own audio in the merged call audio they receive. Defaults to false. The WhatsApp party never receives its own audio."
+          },
+          "inboundRoute": {
+            "$ref": "#/components/schemas/PlatformAccessCallInboundRoute"
+          },
+          "sipTrunkId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "The SIP trunk that receives incoming calls when `inboundRoute` is `sip_trunk`; otherwise null."
+          },
+          "sipClaim": {
+            "type": "boolean",
+            "description": "Whether an answer from the SIP trunk claims the call, which ends ringing on your other clients. Defaults to true."
           },
           "updatedAt": {
             "type": "string",
@@ -29658,6 +31201,9 @@
         },
         "required": [
           "includeSelfAudio",
+          "inboundRoute",
+          "sipTrunkId",
+          "sipClaim",
           "updatedAt"
         ]
       },
@@ -29703,12 +31249,624 @@
           "includeSelfAudio": {
             "type": "boolean",
             "description": "Set to true to include each participant's own audio in the merged call audio they receive."
+          },
+          "inboundRoute": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformAccessCallInboundRoute"
+              },
+              {
+                "description": "Where incoming WhatsApp calls ring. Omit to use `clients`. `sip_trunk` requires enrollment in the SIP trunks beta; `clients` is always accepted."
+              }
+            ]
+          },
+          "sipTrunkId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Required when `inboundRoute` is `sip_trunk`: a SIP trunk in the session's project whose direction is `outbound` or `both`. Omit or send null otherwise."
+          },
+          "sipClaim": {
+            "type": "boolean",
+            "description": "Whether an answer from the SIP trunk claims the call. Omit to use true."
           }
         },
         "required": [
           "includeSelfAudio"
         ],
         "additionalProperties": false
+      },
+      "PlatformAccessSipTrunkDirection": {
+        "type": "string",
+        "enum": [
+          "inbound",
+          "outbound",
+          "both"
+        ],
+        "description": "`outbound` sends incoming WhatsApp calls to your PBX. `inbound` lets your PBX place WhatsApp calls. `both` does both."
+      },
+      "PlatformAccessSipTransport": {
+        "type": "string",
+        "enum": [
+          "udp",
+          "tcp",
+          "tls"
+        ],
+        "description": "Transport used to reach `targetUri`."
+      },
+      "PlatformAccessSipTrunkOutbound": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "targetUri": {
+            "type": "string",
+            "description": "SIP URI that receives incoming WhatsApp calls, for example `sip:pbx.example.com:5060`."
+          },
+          "transport": {
+            "$ref": "#/components/schemas/PlatformAccessSipTransport"
+          },
+          "authUsername": {
+            "type": "string",
+            "nullable": true,
+            "description": "Username sent when your PBX challenges a call, or null."
+          },
+          "hasPassword": {
+            "type": "boolean",
+            "description": "Whether a password is stored for `authUsername`. The password is never returned."
+          },
+          "fromUser": {
+            "type": "string",
+            "nullable": true,
+            "description": "User part of the From header on calls sent to your PBX, or null to send `whatsapp`."
+          }
+        },
+        "required": [
+          "targetUri",
+          "transport",
+          "authUsername",
+          "hasPassword",
+          "fromUser"
+        ],
+        "description": "Where incoming WhatsApp calls are sent. Null for `inbound` trunks."
+      },
+      "PlatformAccessSipTrunkInbound": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Digest username your PBX uses to authenticate calls it sends to Polymorfa."
+          },
+          "realm": {
+            "type": "string",
+            "description": "Digest realm for `username`."
+          },
+          "session": {
+            "type": "string",
+            "nullable": true,
+            "description": "Session that places the WhatsApp calls your PBX sends, or null when none is set. Calls from the PBX are refused until a session is set."
+          },
+          "allowedAddresses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "IP addresses or CIDR ranges your PBX sends calls from."
+          },
+          "allowedDestinations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "E.164 prefixes (for example `+1415`) your PBX may call. Empty allows every destination."
+          }
+        },
+        "required": [
+          "username",
+          "realm",
+          "session",
+          "allowedAddresses",
+          "allowedDestinations"
+        ],
+        "description": "How your PBX places WhatsApp calls. Null for `outbound` trunks."
+      },
+      "PlatformAccessSipCodec": {
+        "type": "string",
+        "enum": [
+          "PCMU",
+          "PCMA",
+          "opus"
+        ]
+      },
+      "PlatformAccessSipTrunk": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Disabled trunks receive no calls and cannot place calls."
+          },
+          "direction": {
+            "$ref": "#/components/schemas/PlatformAccessSipTrunkDirection"
+          },
+          "outbound": {
+            "$ref": "#/components/schemas/PlatformAccessSipTrunkOutbound"
+          },
+          "inbound": {
+            "$ref": "#/components/schemas/PlatformAccessSipTrunkInbound"
+          },
+          "codecs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformAccessSipCodec"
+            },
+            "description": "Audio codecs offered to your PBX, in preference order."
+          },
+          "maxConcurrentCalls": {
+            "type": "integer",
+            "description": "Most calls the trunk carries at once."
+          },
+          "revision": {
+            "type": "integer",
+            "description": "Changes on every update. Send it as `expectedRevision` to avoid overwriting another change."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "name",
+          "enabled",
+          "direction",
+          "outbound",
+          "inbound",
+          "codecs",
+          "maxConcurrentCalls",
+          "revision",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "PlatformAccessListSipTrunksResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformAccessSipTrunk"
+            }
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "PlatformAccessSipTrunkCredentials": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "description": "Shown only in this response. Store it in your PBX now; it cannot be retrieved later."
+          },
+          "realm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "password",
+          "realm"
+        ],
+        "description": "Present when the trunk accepts calls from your PBX. The password is shown only once."
+      },
+      "PlatformAccessCreateSipTrunkResult": {
+        "type": "object",
+        "properties": {
+          "trunk": {
+            "$ref": "#/components/schemas/PlatformAccessSipTrunk"
+          },
+          "inboundCredentials": {
+            "$ref": "#/components/schemas/PlatformAccessSipTrunkCredentials"
+          }
+        },
+        "required": [
+          "trunk"
+        ]
+      },
+      "PlatformAccessCreateSipTrunkResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/PlatformAccessCreateSipTrunkResult"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "PlatformAccessSipTrunkOutboundInput": {
+        "type": "object",
+        "properties": {
+          "targetUri": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 512,
+            "description": "`sip:` or `sips:` URI of your PBX: an optional user, a public host name or IP address, and an optional port. Parameters and passwords are not accepted."
+          },
+          "transport": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformAccessSipTransport"
+              },
+              {
+                "description": "`tls` is required for a `sips:` URI."
+              }
+            ]
+          },
+          "authUsername": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Username for digest challenges from your PBX. Send null to remove the username and password."
+          },
+          "authPassword": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Password for `authUsername`. Write-only; omit it on update to keep the stored password.",
+            "writeOnly": true
+          },
+          "fromUser": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^[A-Za-z0-9+._-]{1,64}$",
+            "description": "User part of the From header on calls sent to your PBX. Null sends `whatsapp`, which is also the default for a new trunk."
+          }
+        },
+        "required": [
+          "targetUri",
+          "transport"
+        ],
+        "additionalProperties": false,
+        "description": "Required unless `direction` is `inbound`."
+      },
+      "PlatformAccessSipTrunkInboundInput": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Session in the same project that places calls from your PBX."
+          },
+          "allowedAddresses": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "minItems": 1,
+            "maxItems": 20,
+            "description": "1 to 20 public IP addresses or CIDR ranges your PBX sends calls from. `/0` ranges are rejected."
+          },
+          "allowedDestinations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "description": "Up to 100 E.164 prefixes, such as `+1415`, your PBX may call. Omit or send an empty list to allow every destination."
+          }
+        },
+        "required": [
+          "allowedAddresses"
+        ],
+        "additionalProperties": false,
+        "description": "Required unless `direction` is `outbound`."
+      },
+      "PlatformAccessCreateSipTrunkRequest": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Project that owns the trunk. Required for organization keys; project keys use their own project."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Display name, 1 to 100 characters."
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Defaults to true."
+          },
+          "direction": {
+            "$ref": "#/components/schemas/PlatformAccessSipTrunkDirection"
+          },
+          "outbound": {
+            "$ref": "#/components/schemas/PlatformAccessSipTrunkOutboundInput"
+          },
+          "inbound": {
+            "$ref": "#/components/schemas/PlatformAccessSipTrunkInboundInput"
+          },
+          "codecs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformAccessSipCodec"
+            },
+            "minItems": 1,
+            "maxItems": 3,
+            "description": "Distinct codecs in preference order. Defaults to `PCMU`, `PCMA`, `opus`."
+          },
+          "maxConcurrentCalls": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500,
+            "description": "1 to 500. Defaults to 30."
+          }
+        },
+        "required": [
+          "name",
+          "direction"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformAccessGetSipTrunkResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/PlatformAccessSipTrunk"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "PlatformAccessUpdateSipTrunkResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/PlatformAccessSipTrunk"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "PlatformAccessSipTrunkOutboundPatch": {
+        "type": "object",
+        "properties": {
+          "targetUri": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 512,
+            "description": "`sip:` or `sips:` URI of your PBX: an optional user, a public host name or IP address, and an optional port. Parameters and passwords are not accepted."
+          },
+          "transport": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformAccessSipTransport"
+              },
+              {
+                "description": "`tls` is required for a `sips:` URI."
+              }
+            ]
+          },
+          "authUsername": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Username for digest challenges from your PBX. Send null to remove the username and password."
+          },
+          "authPassword": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Password for `authUsername`. Write-only; omit it on update to keep the stored password.",
+            "writeOnly": true
+          },
+          "fromUser": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^[A-Za-z0-9+._-]{1,64}$",
+            "description": "User part of the From header on calls sent to your PBX. Null sends `whatsapp`, which is also the default for a new trunk."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Fields to change. Omitted fields keep their values."
+      },
+      "PlatformAccessSipTrunkInboundPatch": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Session in the same project that places calls from your PBX."
+          },
+          "allowedAddresses": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "minItems": 1,
+            "maxItems": 20,
+            "description": "1 to 20 public IP addresses or CIDR ranges your PBX sends calls from. `/0` ranges are rejected."
+          },
+          "allowedDestinations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "description": "Up to 100 E.164 prefixes, such as `+1415`, your PBX may call. Omit or send an empty list to allow every destination."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Fields to change. Omitted fields keep their values."
+      },
+      "PlatformAccessUpdateSipTrunkRequest": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Apply the change only if the trunk still has this `revision`."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Display name, 1 to 100 characters."
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "direction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformAccessSipTrunkDirection"
+              },
+              {
+                "description": "Changing to `outbound` removes the trunk's PBX credentials. Changing an `outbound` trunk to `inbound` or `both` creates a new username; rotate its credentials to get a password."
+              }
+            ]
+          },
+          "outbound": {
+            "$ref": "#/components/schemas/PlatformAccessSipTrunkOutboundPatch"
+          },
+          "inbound": {
+            "$ref": "#/components/schemas/PlatformAccessSipTrunkInboundPatch"
+          },
+          "codecs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformAccessSipCodec"
+            },
+            "minItems": 1,
+            "maxItems": 3,
+            "description": "Distinct codecs in preference order. Defaults to `PCMU`, `PCMA`, `opus`."
+          },
+          "maxConcurrentCalls": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500,
+            "description": "1 to 500. Defaults to 30."
+          }
+        },
+        "additionalProperties": false
+      },
+      "PlatformAccessDeletedSipTrunk": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deleted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "deleted"
+        ]
+      },
+      "PlatformAccessDeleteSipTrunkResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/PlatformAccessDeletedSipTrunk"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "PlatformAccessRotateSipTrunkCredentialsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/PlatformAccessSipTrunkCredentials"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
       },
       "PlatformAccessSessionConfigurationView": {
         "type": "object",
@@ -30707,6 +32865,11 @@
                   "connection_limit",
                   "unsupported_for_connection",
                   "call_permission_required",
+                  "invalid_sip_trunk",
+                  "sip_trunk_in_use",
+                  "sip_trunk_revision_conflict",
+                  "sip_trunk_limit",
+                  "sip_unavailable",
                   "rate_limit_exceeded",
                   "internal_error",
                   "operation_not_supported",

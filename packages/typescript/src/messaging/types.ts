@@ -1499,12 +1499,33 @@ export interface SessionCallSettings {
    * `false` by default. WhatsApp never receives its own audio.
    */
   readonly includeSelfAudio: boolean;
+  /**
+   * Where incoming WhatsApp calls ring. `clients` rings your connected
+   * participants; `sip_trunk` also sends each call to `sipTrunkId`.
+   */
+  readonly inboundRoute: CallInboundRoute;
+  /** The SIP trunk that receives incoming calls, or `null` when `inboundRoute` is `clients`. */
+  readonly sipTrunkId: string | null;
+  /** Whether an answer from the SIP trunk claims the call. `true` by default. */
+  readonly sipClaim: boolean;
   /** ISO 8601 timestamp of the last change, or `null` while the session uses the defaults. */
   readonly updatedAt: string | null;
 }
 
+export type CallInboundRoute = "clients" | "sip_trunk";
+
+/**
+ * Replaces every call setting. Omitted routing fields return to their
+ * defaults, so send the current route when you change `includeSelfAudio`.
+ */
 export interface UpdateSessionCallSettingsRequest {
   readonly includeSelfAudio: boolean;
+  /** Defaults to `clients`. `sip_trunk` requires the SIP trunks beta. */
+  readonly inboundRoute?: CallInboundRoute;
+  /** Required with `sip_trunk`: a trunk of the session's project with direction `outbound` or `both`. */
+  readonly sipTrunkId?: string | null;
+  /** Defaults to `true`. */
+  readonly sipClaim?: boolean;
 }
 
 export type SessionCallSettingsResponse = SuccessEnvelope<SessionCallSettings>;

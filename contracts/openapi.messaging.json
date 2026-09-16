@@ -1647,6 +1647,24 @@
             ],
             "description": "Connection of the session that carries the call: a linked device or the WhatsApp Business Cloud API.",
             "example": "linked_device"
+          },
+          "capabilities": {
+            "type": "object",
+            "properties": {
+              "video": {
+                "type": "boolean",
+                "description": "The call can carry video."
+              },
+              "invite": {
+                "type": "boolean",
+                "description": "More participants can be invited into the call."
+              }
+            },
+            "required": [
+              "video",
+              "invite"
+            ],
+            "description": "What the call supports."
           }
         },
         "required": [
@@ -1776,6 +1794,24 @@
             ],
             "description": "Connection of the session that carries the call: a linked device or the WhatsApp Business Cloud API.",
             "example": "linked_device"
+          },
+          "capabilities": {
+            "type": "object",
+            "properties": {
+              "video": {
+                "type": "boolean",
+                "description": "The call can carry video."
+              },
+              "invite": {
+                "type": "boolean",
+                "description": "More participants can be invited into the call."
+              }
+            },
+            "required": [
+              "video",
+              "invite"
+            ],
+            "description": "What the call supports."
           }
         },
         "required": [
@@ -2280,6 +2316,170 @@
           },
           "payload": {
             "$ref": "#/components/schemas/CallParticipantLeftPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CallConnection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "description": "Client-chosen connection identifier.",
+            "example": "conn_0123456789"
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^(?:client|server):[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Participant reference: `client:<id>` for a client token or `server:<id>` for a server credential.",
+            "example": "client:agent-7"
+          },
+          "transport": {
+            "type": "string",
+            "enum": [
+              "webrtc",
+              "socket",
+              "sip"
+            ],
+            "description": "`webrtc` for a browser connection, `socket` for a server or app connection, `sip` for a SIP trunk."
+          }
+        },
+        "required": [
+          "id",
+          "participant",
+          "transport"
+        ]
+      },
+      "CallConnectionJoinedPayload": {
+        "type": "object",
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "connection": {
+            "$ref": "#/components/schemas/CallConnection"
+          }
+        },
+        "required": [
+          "callId",
+          "connection"
+        ]
+      },
+      "CallConnectionJoinedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.connection_joined"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallConnectionJoinedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CallConnectionLeftPayload": {
+        "type": "object",
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "connectionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "description": "Client-chosen connection identifier.",
+            "example": "conn_0123456789"
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^(?:client|server):[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Participant reference: `client:<id>` for a client token or `server:<id>` for a server credential.",
+            "example": "client:agent-7"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "left",
+              "replaced",
+              "claimed",
+              "call_ended",
+              "sip_busy",
+              "sip_declined",
+              "sip_no_answer",
+              "sip_unavailable",
+              "sip_auth_failed"
+            ],
+            "description": "`left`: the connection left. `replaced`: a reconnect reused the connection id. `claimed`: another participant claimed the call. `sip_busy`, `sip_declined`, `sip_no_answer`, `sip_unavailable` and `sip_auth_failed`: a SIP trunk did not join the call. `call_ended`: the call ended while a SIP trunk was still ringing. A SIP trunk that never joined reports only this event, with no `call.connection_joined` before it. Connections still open when the call ends are closed by `call.ended` without a separate event.",
+            "example": "left"
+          }
+        },
+        "required": [
+          "callId",
+          "connectionId",
+          "participant",
+          "reason"
+        ]
+      },
+      "CallConnectionLeftEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.connection_left"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallConnectionLeftPayload"
           }
         },
         "required": [
@@ -6313,6 +6513,11 @@
                   "connection_limit",
                   "unsupported_for_connection",
                   "call_permission_required",
+                  "invalid_sip_trunk",
+                  "sip_trunk_in_use",
+                  "sip_trunk_revision_conflict",
+                  "sip_trunk_limit",
+                  "sip_unavailable",
                   "rate_limit_exceeded",
                   "internal_error",
                   "operation_not_supported",
@@ -17101,6 +17306,7 @@
     "/messaging/voip/calls/{id}/offer": {
       "post": {
         "operationId": "voipOffer",
+        "x-internal": true,
         "tags": [
           "VoIP"
         ],
@@ -17328,13 +17534,13 @@
         },
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
-        },
-        "x-internal": true
+        }
       }
     },
     "/messaging/voip/calls/{id}/renegotiate": {
       "post": {
         "operationId": "voipRenegotiate",
+        "x-internal": true,
         "tags": [
           "VoIP"
         ],
@@ -17542,8 +17748,7 @@
         },
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
-        },
-        "x-internal": true
+        }
       }
     },
     "/messaging/voip/calls": {
@@ -18679,6 +18884,7 @@
     "/messaging/voip/calls/{id}/candidate": {
       "post": {
         "operationId": "voipCandidate",
+        "x-internal": true,
         "tags": [
           "VoIP"
         ],
@@ -18886,13 +19092,13 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
         },
-        "description": "**Required scope:** `sessions:manage`",
-        "x-internal": true
+        "description": "**Required scope:** `sessions:manage`"
       }
     },
     "/messaging/voip/calls/{id}/candidates": {
       "get": {
         "operationId": "voipCandidates",
+        "x-internal": true,
         "tags": [
           "VoIP"
         ],
@@ -19090,8 +19296,7 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
         },
-        "description": "**Required scope:** `sessions:manage`",
-        "x-internal": true
+        "description": "**Required scope:** `sessions:manage`"
       }
     },
     "/messaging/voip/calls/{id}": {
@@ -43010,6 +43215,54 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CallParticipantLeftEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "call.connection_joined": {
+      "post": {
+        "operationId": "onCallConnectionJoined",
+        "summary": "Connection joined a call",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallConnectionJoinedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "call.connection_left": {
+      "post": {
+        "operationId": "onCallConnectionLeft",
+        "summary": "Connection left a call",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallConnectionLeftEvent"
               }
             }
           }
