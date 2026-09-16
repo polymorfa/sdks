@@ -143,17 +143,20 @@ describe("SDK types match the pinned contract snapshots", () => {
       }),
     ).toEqual(properties(platform, "CustomerSummary"));
 
-    const profileRequest = {
-      projectId: true,
-      name: true,
-      externalCustomerId: true,
-    } as const;
-    expect(keys<CreateCustomerRequest>(profileRequest)).toEqual(
-      properties(platform, "CreateCustomerRequest"),
-    );
-    expect(keys<UpdateCustomerRequest>(profileRequest)).toEqual(
-      properties(platform, "UpdateCustomerRequest"),
-    );
+    expect(
+      keys<CreateCustomerRequest>({
+        projectId: true,
+        name: true,
+        externalCustomerId: true,
+      }),
+    ).toEqual(properties(platform, "CreateCustomerRequest"));
+    expect(
+      keys<UpdateCustomerRequest>({
+        projectId: true,
+        name: true,
+        externalCustomerId: true,
+      }),
+    ).toEqual(properties(platform, "UpdateCustomerRequest"));
     expect(
       keys<CreateCustomerPairingLinkRequest>({
         projectId: true,
