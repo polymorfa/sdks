@@ -18,6 +18,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "chat.mute",
   "chat.read",
   "command.result",
+  "contact.sync",
   "contact.update",
   "group.participant",
   "group.update",
@@ -25,6 +26,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "labels.update",
   "message.ack",
   "message.delete",
+  "message.echo",
   "message.edited",
   "message.reaction",
   "message.received",
@@ -383,6 +385,18 @@ export interface LinkedHistorySyncPayload {
   };
 }
 
+/** Meta Cloud API contact synchronization batch. */
+export interface ContactsSyncPayload {
+  readonly kind: "contacts";
+  readonly value: Readonly<Record<string, unknown>>;
+}
+
+/** A message sent from the WhatsApp Business app on a Meta Cloud API number. */
+export interface MessageEchoPayload {
+  readonly source: "whatsapp_business_app";
+  readonly value: Readonly<Record<string, unknown>>;
+}
+
 export interface CommandResultPayload {
   readonly requestId: string;
   readonly command: string;
@@ -421,6 +435,7 @@ export interface WebhookPayloadMap {
   readonly "chat.mute": ChatMutePayload;
   readonly "chat.read": ChatReadPayload;
   readonly "command.result": CommandResultPayload;
+  readonly "contact.sync": ContactsSyncPayload;
   readonly "contact.update": ContactUpdatePayload;
   readonly "group.participant": GroupParticipantPayload;
   readonly "group.update": GroupUpdatePayload;
@@ -428,6 +443,7 @@ export interface WebhookPayloadMap {
   readonly "labels.update": LabelsUpdatePayload;
   readonly "message.ack": MessageAckPayload;
   readonly "message.delete": MessageDeletePayload;
+  readonly "message.echo": MessageEchoPayload;
   readonly "message.edited": MessagePayload;
   readonly "message.reaction": MessageReceivedPayload;
   readonly "message.received": MessageReceivedPayload;
@@ -446,6 +462,8 @@ export interface WebhookPayloadMap {
 export interface WebhookEventOf<TEvent extends string, TPayload> {
   readonly id: string;
   readonly session: string;
+  /** Integrator reference from the QuickLink that created the session, when supplied. */
+  readonly externalId?: string;
   readonly timestamp: string;
   readonly event: TEvent;
   readonly payload: TPayload;
