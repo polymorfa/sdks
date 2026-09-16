@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "575b75f67c28c065db63e389b1843c3d57fa3932",
+  "sourceCommit": "3d0e90fb0bfaf55a71a569e17581209ab68df23c",
   "excludedContracts": [
     {
       "family": "graph",
@@ -4322,7 +4322,7 @@
       "method": "PUT",
       "path": "/console/call-settings/{sessionId}",
       "operationId": "updateSessionCallSettings",
-      "fingerprint": "1f33284d51f1b410ae34525f7f256657c41977ae22e9291d35133530877f08b8",
+      "fingerprint": "f153eaddb59039ba06655af4dde4dc346b3b91f3da48eababa3a4365888db3a7",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -4465,7 +4465,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{session}/call-settings",
       "operationId": "updateCallSettings",
-      "fingerprint": "b3224c0e084a6efa202a199187112e5130e5349974b841eeb7085d00ec2250c2",
+      "fingerprint": "9e284d2ac98890052d18241ec65b1b8ae1f9fb8e5405acca4a810c8f2c86a4c3",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.updateCallSettings"

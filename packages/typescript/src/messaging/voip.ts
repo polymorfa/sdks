@@ -150,15 +150,46 @@ export class VoipResource {
     });
   }
 
-  /** Replaces a session's call settings. Requires a server credential. */
+  /**
+   * Changes a session's call settings; omitted settings keep their values.
+   * Requires a server credential.
+   */
   updateCallSettings(
     session: string,
     body: UpdateSessionCallSettingsRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SessionCallSettingsResponse>> {
     this.assertServerCredential();
-    if (typeof body?.includeSelfAudio !== "boolean") {
-      throw new PolymorfaValidationError("includeSelfAudio must be a boolean.");
+    if (typeof body !== "object" || body === null) {
+      throw new PolymorfaValidationError("Call settings must be an object.");
+    }
+    const { includeSelfAudio, inboundRoute, sipTrunkId, sipClaim } = body;
+    if (
+      includeSelfAudio === undefined &&
+      inboundRoute === undefined &&
+      sipTrunkId === undefined &&
+      sipClaim === undefined
+    ) {
+      throw new PolymorfaValidationError(
+        "Send at least one call setting to change.",
+      );
+    }
+    for (const [name, value] of [
+      ["includeSelfAudio", includeSelfAudio],
+      ["sipClaim", sipClaim],
+    ] as const) {
+      if (value !== undefined && typeof value !== "boolean") {
+        throw new PolymorfaValidationError(`${name} must be a boolean.`);
+      }
+    }
+    if (
+      inboundRoute !== undefined &&
+      inboundRoute !== "clients" &&
+      inboundRoute !== "sip_trunk"
+    ) {
+      throw new PolymorfaValidationError(
+        "inboundRoute must be clients or sip_trunk.",
+      );
     }
     if (
       body.expectedRevision !== undefined &&

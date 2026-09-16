@@ -344,15 +344,15 @@ own participant, so the SDK rejects `participant` for client tokens. The SDK
 checks `participant` and `connectionId` (`[A-Za-z0-9_-]{8,64}`) before sending.
 
 `voip.retrieveCallSettings(session)` and `voip.updateCallSettings(session,
-{ includeSelfAudio, inboundRoute, sipTrunkId, sipClaim })` read and replace the
+{ includeSelfAudio, inboundRoute, sipTrunkId, sipClaim })` read and change the
 session's call settings through `/platform/sessions/{session}/call-settings`.
 Merged call audio excludes each connection's own audio unless
 `includeSelfAudio` is `true`. `inboundRoute` is `clients` (the default) or
 `sip_trunk`, which also sends incoming calls to `sipTrunkId`; `sipClaim`
-(default `true`) makes the trunk's answer claim the call. An update replaces
-every field, so send the current route when you change `includeSelfAudio`.
-Pass the `revision` you read as `expectedRevision`; the update then fails with
-`PolymorfaConflictError` (`state_conflict`) if the settings changed meanwhile.
+(default `true`) makes the trunk's answer claim the call. An update changes
+only the settings you send. Pass the `revision` you read as
+`expectedRevision` to fail with `PolymorfaConflictError` (`state_conflict`) if
+the settings changed meanwhile.
 These methods require a server credential.
 
 ## SIP trunks

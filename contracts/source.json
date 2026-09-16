@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "575b75f67c28c065db63e389b1843c3d57fa3932",
+  "commit": "3d0e90fb0bfaf55a71a569e17581209ab68df23c",
   "branch": "t3code/calls-unified-clients",
   "published": false,
   "note": "Local, unpushed commit on the monorepo branch. Re-pin to the merged commit before release; the repository field names the remote it will land in.",
@@ -8,12 +8,12 @@
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "f22d205dfa264ab1520c6f206e6bfa28dffad41bb1867742e5b1d3c5e989cb17"
+      "sha256": "f66a6c9061416d94b4b543a552ea593f744c3c89298cfb37505b04f3413dbddc"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "397c1ab709426dc1b3a3170a86cdca1d875ddaaa4c6e3cd655942c0ee8cfd3e5"
+      "sha256": "2c0b72b33885c5a4a252a2b448cd171015a33b4553f9d00e2dcdf8e258c68a9d"
     }
   }
 }

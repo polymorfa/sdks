@@ -17441,12 +17441,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "call_claimed",
+                    "message": "Another participant claimed this call.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#call-claimed"
                 }
               }
             }
@@ -17675,12 +17675,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "call_claimed",
+                    "message": "Another participant claimed this call.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#call-claimed"
                 }
               }
             }
@@ -17836,12 +17836,12 @@
                 "example": {
                   "error": {
                     "type": "permission_error",
-                    "code": "permission_denied",
-                    "message": "The credential does not have access to this resource.",
+                    "code": "call_permission_required",
+                    "message": "The recipient has not granted this business permission to call them.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                  "docs": "https://docs.polymorfa.com/api/errors#call-permission-required"
                 }
               }
             }
@@ -17876,12 +17876,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "unsupported_for_connection",
+                    "message": "The session's connection does not support this call operation.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#unsupported-for-connection"
                 }
               }
             }
@@ -18148,12 +18148,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "call_claimed",
+                    "message": "Another participant claimed this call.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#call-claimed"
                 }
               }
             }
@@ -18360,12 +18360,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "call_not_ringing",
+                    "message": "The call is no longer ringing.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#call-not-ringing"
                 }
               }
             }
@@ -18785,12 +18785,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "unsupported_for_connection",
+                    "message": "The session's connection does not support this call operation.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#unsupported-for-connection"
                 }
               }
             }

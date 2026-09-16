@@ -334,13 +334,9 @@ describe("VoipResource", () => {
       ApiResponse<SessionCallSettingsResponse>
     >();
     expect(current.data.data.includeSelfAudio).toBe(false);
-    const { inboundRoute, sipTrunkId, sipClaim, revision } = current.data.data;
     const updated = await sdk.voip.updateCallSettings("support/eu", {
       includeSelfAudio: true,
-      inboundRoute,
-      sipClaim,
-      ...(sipTrunkId === null ? {} : { sipTrunkId }),
-      expectedRevision: revision,
+      expectedRevision: current.data.data.revision,
     });
     expect(updated.data.data).toEqual(settings);
     expect(server.requests.map(({ method, path }) => [method, path])).toEqual([
@@ -349,11 +345,16 @@ describe("VoipResource", () => {
     ]);
     expect(JSON.parse(server.requests[1]?.body ?? "null")).toEqual({
       includeSelfAudio: true,
-      inboundRoute: "sip_trunk",
-      sipClaim: false,
-      sipTrunkId: "018f0000-0000-7000-8000-0000000000aa",
       expectedRevision: 3,
     });
+    expect(() => sdk.voip.updateCallSettings("support/eu", {})).toThrow(
+      PolymorfaValidationError,
+    );
+    expect(() =>
+      sdk.voip.updateCallSettings("support/eu", {
+        inboundRoute: "pbx",
+      } as unknown as { inboundRoute: "clients" }),
+    ).toThrow(PolymorfaValidationError);
     expect(() =>
       sdk.voip.updateCallSettings("support/eu", {
         includeSelfAudio: true,

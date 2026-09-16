@@ -1025,7 +1025,8 @@
         "tags": [
           "Calls"
         ],
-        "summary": "Replace call settings for a session",
+        "summary": "Update call settings for a session",
+        "description": "**Required scope:** `sessions:manage`\n\nChanges the settings you send; omitted settings keep their current values. Send `expectedRevision` to refuse the update when someone else changed the settings after you read them.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -1189,7 +1190,6 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
         },
-        "description": "**Required scope:** `sessions:manage`",
         "x-audience": "public"
       }
     },
@@ -1460,12 +1460,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "sip_trunk_limit",
+                    "message": "The project has reached its SIP trunk limit.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#sip-trunk-limit"
                 }
               }
             }
@@ -1500,12 +1500,12 @@
                 "example": {
                   "error": {
                     "type": "api_error",
-                    "code": "service_unavailable",
-                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "code": "sip_unavailable",
+                    "message": "SIP trunks are not available.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                  "docs": "https://docs.polymorfa.com/api/errors#sip-unavailable"
                 }
               }
             }
@@ -1794,12 +1794,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "sip_trunk_revision_conflict",
+                    "message": "The SIP trunk changed since it was read.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#sip-trunk-revision-conflict"
                 }
               }
             }
@@ -1834,12 +1834,12 @@
                 "example": {
                   "error": {
                     "type": "api_error",
-                    "code": "service_unavailable",
-                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "code": "sip_unavailable",
+                    "message": "SIP trunks are not available.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                  "docs": "https://docs.polymorfa.com/api/errors#sip-unavailable"
                 }
               }
             }
@@ -1975,12 +1975,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "sip_trunk_in_use",
+                    "message": "A session still sends incoming calls to this SIP trunk.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#sip-trunk-in-use"
                 }
               }
             }
@@ -2178,12 +2178,12 @@
                 "example": {
                   "error": {
                     "type": "api_error",
-                    "code": "service_unavailable",
-                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "code": "sip_unavailable",
+                    "message": "SIP trunks are not available.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                  "docs": "https://docs.polymorfa.com/api/errors#sip-unavailable"
                 }
               }
             }
@@ -4129,7 +4129,7 @@
           "calls"
         ],
         "summary": "Update session call settings",
-        "description": "Replaces the call settings for an owned session. Omitted routing fields return to their defaults. New calls use the saved settings. Routing to a SIP trunk requires a trunk in the session's project that can receive calls. `expectedRevision` refuses an update to settings that changed since they were read.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Updates the call settings for an owned session. Omitted fields keep their values. New calls use the saved settings. Routing to a SIP trunk requires a trunk in the session's project that can receive calls. `expectedRevision` refuses an update to settings that changed since they were read.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -24491,18 +24491,16 @@
             "enum": [
               "clients",
               "sip_trunk"
-            ],
-            "description": "Defaults to `clients`."
+            ]
           },
           "sipTrunkId": {
             "type": "string",
             "format": "uuid",
             "nullable": true,
-            "description": "Required when `inboundRoute` is `sip_trunk`; otherwise omit or send null."
+            "description": "Required when switching to `sip_trunk`; omit to keep the stored trunk. Not allowed with `clients`."
           },
           "sipClaim": {
-            "type": "boolean",
-            "description": "Defaults to true."
+            "type": "boolean"
           },
           "expectedRevision": {
             "type": "integer",
@@ -24515,9 +24513,7 @@
             "description": "Project that owns the session."
           }
         },
-        "required": [
-          "includeSelfAudio"
-        ]
+        "minProperties": 1
       },
       "QuickLinkSettings": {
         "type": "object",
@@ -31296,7 +31292,7 @@
                 "$ref": "#/components/schemas/PlatformAccessCallInboundRoute"
               },
               {
-                "description": "Where incoming WhatsApp calls ring. Omit to use `clients`. Routing to a different SIP trunk requires enrollment in the SIP trunks beta; `clients`, and keeping the stored trunk while changing other settings, are always accepted."
+                "description": "Where incoming WhatsApp calls ring. Routing to a different SIP trunk requires enrollment in the SIP trunks beta; `clients`, and keeping the stored trunk while changing other settings, are always accepted."
               }
             ]
           },
@@ -31304,11 +31300,11 @@
             "type": "string",
             "nullable": true,
             "format": "uuid",
-            "description": "Required when `inboundRoute` is `sip_trunk`: a SIP trunk in the session's project whose direction is `outbound` or `both`. Omit or send null otherwise."
+            "description": "The SIP trunk for `sip_trunk`: a trunk in the session's project whose direction is `outbound` or `both`. Required when switching the route to `sip_trunk`; omit it to keep the stored trunk. Not allowed with `clients`, which clears the trunk."
           },
           "sipClaim": {
             "type": "boolean",
-            "description": "Whether an answer from the SIP trunk claims the call. Omit to use true."
+            "description": "Whether an answer from the SIP trunk claims the call."
           },
           "expectedRevision": {
             "type": "integer",
@@ -31316,9 +31312,6 @@
             "description": "Apply the update only if the settings still have this `revision` (0 for a session using the defaults). Otherwise the update fails with `409 state_conflict`."
           }
         },
-        "required": [
-          "includeSelfAudio"
-        ],
         "additionalProperties": false
       },
       "PlatformAccessSipTrunkDirection": {

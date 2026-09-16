@@ -1520,16 +1520,21 @@ export interface SessionCallSettings {
 export type CallInboundRoute = "clients" | "sip_trunk";
 
 /**
- * Replaces every call setting. Omitted routing fields return to their
- * defaults, so send the current route when you change `includeSelfAudio`.
+ * Changes the settings you send; omitted settings keep their values. Send at
+ * least one setting.
  */
 export interface UpdateSessionCallSettingsRequest {
-  readonly includeSelfAudio: boolean;
-  /** Defaults to `clients`. `sip_trunk` requires the SIP trunks beta. */
+  readonly includeSelfAudio?: boolean;
+  /**
+   * Routing to a different trunk requires the SIP trunks beta. `clients`
+   * clears the trunk.
+   */
   readonly inboundRoute?: CallInboundRoute;
-  /** Required with `sip_trunk`: a trunk of the session's project with direction `outbound` or `both`. */
+  /**
+   * A trunk of the session's project with direction `outbound` or `both`.
+   * Required when switching to `sip_trunk`; omit it to keep the stored trunk.
+   */
   readonly sipTrunkId?: string | null;
-  /** Defaults to `true`. */
   readonly sipClaim?: boolean;
   /**
    * Apply the update only if the settings still have this `revision`;
