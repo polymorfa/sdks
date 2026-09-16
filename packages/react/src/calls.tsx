@@ -7,12 +7,10 @@
 // the incoming card once it carries a camera preview — is always dark, like an
 // OS call screen. Widgets are fluid and never resize when a panel opens;
 // device panels overlay them. Every affordance gates on the snapshot's
-// `capabilities`, never on the line name.
+// reported `capabilities`.
 
 import {
-  capabilitiesFor,
   type CallDevice,
-  type CallLine,
   type CallParticipant,
   type CallsController,
   type CallsSnapshot,
@@ -1461,8 +1459,11 @@ const KEYS = [
 export interface DialPadProps extends ControllerProps {
   /** Prefill the number field. */
   readonly defaultValue?: string;
-  /** Calling line the call is placed over. Defaults to `linkedDevice`. */
-  readonly line?: CallLine;
+  /**
+   * Offer a video-call button. Default `true`. Set it to `false` for numbers
+   * whose calls cannot carry video.
+   */
+  readonly allowVideo?: boolean;
   /** Called once the call is actually placed, not when a placement fails. */
   readonly onPlaced?: (to: string) => void;
   readonly className?: string;
@@ -1470,14 +1471,13 @@ export interface DialPadProps extends ControllerProps {
 
 /**
  * A dial pad card: E.164 entry plus place-call buttons — audio always, and a
- * video-call button when the line can carry video (linked device; the
- * Business Calling API line is audio-only, so the button never renders there).
+ * video-call button unless `allowVideo` is false.
  */
 export function DialPad({
   controller,
   createController,
   defaultValue = "",
-  line = "linkedDevice",
+  allowVideo = true,
   onPlaced,
   className,
 }: DialPadProps) {
@@ -1488,7 +1488,7 @@ export function DialPad({
   const [value, setValue] = useState(defaultValue);
   const busy =
     snapshot.status === "incoming" || ACTIVE_STATUSES.has(snapshot.status);
-  const canVideo = capabilitiesFor(line).video;
+  const canVideo = allowVideo;
   const dial = (video: boolean) => {
     const to = value.trim();
     // The buttons are disabled while a call is up, but the input keeps focus
@@ -1499,7 +1499,7 @@ export function DialPad({
     // reports that through the snapshot — so the snapshot is what says
     // whether there is now a call to announce.
     void resolved
-      .place(to, { video, line })
+      .place(to, { video })
       .then(() => {
         if (ACTIVE_STATUSES.has(resolved.getSnapshot().status)) onPlaced?.(to);
       })

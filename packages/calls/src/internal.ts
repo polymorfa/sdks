@@ -18,7 +18,7 @@ export {
   type HttpCallsApiOptions,
   type PlaceCallRequest,
 } from "./api.js";
-export { type CallInit } from "./call.js";
+export { capabilitiesFrom, type CallInit } from "./call.js";
 export {
   createInternalCallsClient,
   type InternalCallsClientOptions,

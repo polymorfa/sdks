@@ -114,8 +114,6 @@ export function createBrowserCalls(
     place: async (input, signal) => {
       if (disposed || !client.connected)
         throw new Error("Connect browser calls before placing a call.");
-      if (input.line !== "linkedDevice")
-        throw new Error("Direct placement supports linked-device calls.");
       if (placing || client.calls.some((call) => call.state !== "incoming"))
         throw new Error("Finish the active call before placing another.");
       placing = true;
@@ -187,6 +185,7 @@ export function createBrowserCalls(
         callId: call.id,
         from: call.peer,
         video: call.hasVideo,
+        capabilities: call.capabilities,
       },
     });
     for (const participant of call.participants)

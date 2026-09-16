@@ -10,6 +10,7 @@ export {
   AudioTrack,
   VideoTrack,
   type AnswerOptions,
+  type CallCapabilities,
   type CallClaim,
   type CallDirection,
   type CallEndReason,

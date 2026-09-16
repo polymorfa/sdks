@@ -27,7 +27,7 @@ describe("@polymorfa/browser public entry point", () => {
     ])
       expect(names, hidden).not.toContain(hidden);
     expect(names).toContain("createBrowserCalls");
-    expect(names).toContain("capabilitiesFor");
+    expect(names).not.toContain("capabilitiesFor");
   });
 });
 

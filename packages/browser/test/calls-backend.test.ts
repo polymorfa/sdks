@@ -3,7 +3,6 @@ import { CallClaimedError } from "@polymorfa/calls";
 import {
   CallsController,
   IncomingCallRelay,
-  capabilitiesFor,
   createSignalingCallsBackend,
   incomingCallFromWebhook,
   type CallMediaFactory,
@@ -88,7 +87,7 @@ describe("incomingCallFromWebhook", () => {
       callId: "CALL-1",
       from: "+12025550123",
       video: true,
-      line: "linkedDevice",
+      capabilities: { video: true, invite: true },
     });
     expect(
       incomingCallFromWebhook({ callId: "c", from: { id: "739182640518203" } })
@@ -103,11 +102,13 @@ describe("incomingCallFromWebhook", () => {
       }).from,
     ).toBe("739182640518203");
     expect(
-      incomingCallFromWebhook(
-        { callId: "c", from: "+12025550123", hasVideo: true },
-        { line: "cloudApi" },
-      ).line,
-    ).toBe("cloudApi");
+      incomingCallFromWebhook({
+        callId: "c",
+        from: "+12025550123",
+        hasVideo: true,
+        capabilities: { video: false },
+      }).capabilities,
+    ).toEqual({ video: false, invite: true });
   });
 });
 
@@ -434,7 +435,6 @@ describe("createSignalingCallsBackend", () => {
       {
         to: "+12025550199",
         video: true,
-        line: "linkedDevice",
         idempotencyKey: expect.any(String),
       },
       expect.any(AbortSignal),
@@ -631,18 +631,15 @@ describe("createSignalingCallsBackend", () => {
     const m = media();
     const controller = new CallsController(backend, m.factory);
     controller.initialize();
-    expect(capabilitiesFor("cloudApi")).toEqual({ video: false, mute: true });
-
     relay.receive({
       callId: "CALL-3",
       from: "+12025550123",
       video: true,
-      line: "cloudApi",
+      capabilities: { video: false, invite: false },
     });
     expect(controller.getSnapshot()).toMatchObject({
-      line: "cloudApi",
       video: false,
-      capabilities: { video: false },
+      capabilities: { video: false, invite: false, mute: true },
     });
     await controller.answer({ video: true });
     expect(m.factory.open).toHaveBeenCalledWith(

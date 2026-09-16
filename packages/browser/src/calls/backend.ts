@@ -1,7 +1,7 @@
+import { capabilitiesFrom } from "@polymorfa/calls/internal";
 import type {
   CallEndReason,
   CallLifecycleEvent,
-  CallLine,
   CallsBackend,
   IncomingCall,
   PlaceCallInput,
@@ -24,6 +24,10 @@ export interface CallReceivedWebhookPayload {
         readonly username?: string;
       };
   readonly hasVideo?: boolean;
+  readonly capabilities?: {
+    readonly video?: boolean;
+    readonly invite?: boolean;
+  };
 }
 
 /**
@@ -34,7 +38,6 @@ export interface CallReceivedWebhookPayload {
  */
 export function incomingCallFromWebhook(
   payload: CallReceivedWebhookPayload,
-  options: { readonly line?: CallLine } = {},
 ): IncomingCall {
   // Empty strings fall through like absent fields, matching `peerFrom` on the
   // socket path — the two inbound routes must agree on the same payload.
@@ -46,7 +49,7 @@ export function incomingCallFromWebhook(
     callId: payload.callId,
     from,
     video: payload.hasVideo === true,
-    line: options.line ?? "linkedDevice",
+    capabilities: capabilitiesFrom(payload.capabilities),
   };
 }
 

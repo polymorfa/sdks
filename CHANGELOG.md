@@ -34,6 +34,11 @@
     `timestampUs`, `data`); `write()` takes `OutgoingVideoFrame`;
     `video.sources` maps `CallVideoSource` (`id`, `label`, `participant` or
     `connectionId` and `connectionParticipant`).
+  - Calls report their own `capabilities` (`video`, `invite`; the browser
+    snapshot adds `mute`). `CallLine`, `capabilitiesFor`, the `line` options
+    and the React `DialPad` `line` prop are removed; use
+    `DialPad allowVideo={false}` for numbers whose calls cannot carry video.
+    `Call.capabilities` is new in `@polymorfa/calls`.
   - `@polymorfa/browser`: incoming calls are never declined for you.
     `CallsController` tracks every invitation (`snapshot.invitations`) and
     adds `join()`, `leave()`, `end()`, `dismiss()`, `select()`,

@@ -1,14 +1,11 @@
 import {
   LifecycleSocket,
+  capabilitiesFrom,
   isParticipant,
   parseLifecycleFrame,
   type LifecycleFrame,
 } from "@polymorfa/calls/internal";
-import type {
-  CallEndReason,
-  CallLifecycleEvent,
-  CallLine,
-} from "./controller.js";
+import type { CallEndReason, CallLifecycleEvent } from "./controller.js";
 import type { CallsSignaling, TrickleCandidate } from "./signaling.js";
 
 /** Server → browser frames on the calls WebSocket. */
@@ -42,11 +39,6 @@ export interface CallsSocketOptions {
   readonly session?: string;
   /** Participant name for a server key (sent as `?participant=`). */
   readonly participant?: string;
-  /**
-   * Calling line the session's inbound calls arrive on. Defaults to
-   * `linkedDevice`; set `cloudApi` for a Business Calling API session.
-   */
-  readonly line?: CallLine;
   /** Reconnect backoff bounds in milliseconds. Defaults 1 000 → 30 000. */
   readonly minBackoffMs?: number;
   readonly maxBackoffMs?: number;
@@ -137,16 +129,13 @@ export class CallsSocket {
         : { refreshBeforeExpiryMs: options.refreshBeforeExpiryMs }),
     });
     this.#socket.on("event", (event) => {
-      const lifecycle = lifecycleEventFrom(
-        {
-          type: "event",
-          event: event.event,
-          callId: event.callId,
-          payload: event.payload,
-          timestamp: event.timestamp,
-        },
-        options.line,
-      );
+      const lifecycle = lifecycleEventFrom({
+        type: "event",
+        event: event.event,
+        callId: event.callId,
+        payload: event.payload,
+        timestamp: event.timestamp,
+      });
       if (lifecycle === undefined) return;
       for (const listener of [...this.#lifecycle]) listener(lifecycle);
     });
@@ -258,7 +247,6 @@ export function parseCallsSocketMessage(
  */
 export function lifecycleEventFrom(
   message: Extract<CallsSocketServerMessage, { type: "event" }>,
-  line: CallLine = "linkedDevice",
 ): CallLifecycleEvent | undefined {
   const payload = (message.payload ?? {}) as Record<string, unknown>;
   switch (message.event) {
@@ -270,7 +258,7 @@ export function lifecycleEventFrom(
           callId: message.callId,
           from: peerFrom(payload.from),
           video: payload.hasVideo === true || payload.has_video === true,
-          line,
+          capabilities: capabilitiesFrom(payload.capabilities),
         },
       };
     }

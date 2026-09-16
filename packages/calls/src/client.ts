@@ -1,5 +1,10 @@
 import { HttpCallsApi, type CallsApi, type FetchLike } from "./api.js";
-import { Call, type CallEndReason } from "./call.js";
+import {
+  Call,
+  capabilitiesFrom,
+  type CallCapabilities,
+  type CallEndReason,
+} from "./call.js";
 import type { CallsError } from "./errors.js";
 import { Emitter } from "./events.js";
 import { LifecycleSocket, type LifecycleEvent } from "./lifecycle.js";
@@ -250,6 +255,7 @@ export class CallsClient extends Emitter<ClientEvents> {
     direction: "inbound" | "outbound",
     peer: string,
     video: boolean,
+    capabilities?: CallCapabilities,
   ): Call {
     return new Call({
       id,
@@ -257,6 +263,7 @@ export class CallsClient extends Emitter<ClientEvents> {
       direction,
       peer,
       video,
+      ...(capabilities === undefined ? {} : { capabilities }),
       api: this.#api,
       media: timerOptions(this.#o),
       self: () => this.participantReference,
@@ -289,6 +296,7 @@ export class CallsClient extends Emitter<ClientEvents> {
             peerFrom(event.payload["from"]),
             event.payload["hasVideo"] === true ||
               event.payload["has_video"] === true,
+            capabilitiesFrom(event.payload["capabilities"]),
           ),
         );
         this.emit("incoming", call);

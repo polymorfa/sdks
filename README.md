@@ -490,13 +490,12 @@ ringing so they can join, and `true` claims the call. A call another
 participant answered without a claim offers Join; a claimed call shows as
 answered elsewhere. Leave closes only this browser's connection; hang-up ends
 the call for everyone. Each remote participant's video arrives as its own
-stream in `controller.remoteVideos`; call audio is merged. Direct placement
-supports linked devices. Signaling, media negotiation and socket transports
-are internal to the SDK; the packages export only these calling operations.
+stream in `controller.remoteVideos`; call audio is merged. Signaling, media
+negotiation and socket transports are internal to the SDK; the packages export
+only these calling operations.
 
-Calls carry a `line`: `linkedDevice` (a paired WhatsApp device session, audio
-and video) or `cloudApi` (the WhatsApp Business Calling API, audio only). Every
-component gates on the snapshot's `capabilities`, never on the line name. The
+Each call reports its `capabilities` (`video`, `invite`, `mute`), and every
+component gates its controls on them. The
 controller also owns capture/playback device choice (`setPreferredDevices`,
 `switchDevice`, `refreshDevices`) so a microphone or camera swap mid-call is a
 track replacement, not a renegotiation. The shared call model supports

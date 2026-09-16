@@ -8,10 +8,10 @@ the addendum at the end). Shipped on `dev` in `@polymorfa/react` (`CallSurface`,
 
 ## Outcome
 
-One call UI for both calling lines — a paired WhatsApp device session
-(`linkedDevice`, audio and video) and the WhatsApp Business Calling API
-(`cloudApi`, audio only) — behind a single capability-gated call model.
-Components read `snapshot.capabilities`; nothing branches on the line name.
+One call UI for every number, behind a single capability-gated call model.
+The platform reports each call's capabilities (video, invitations);
+components read `snapshot.capabilities` and never branch on how a number is
+connected.
 
 ## Design language
 

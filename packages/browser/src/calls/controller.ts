@@ -39,18 +39,27 @@ export type CallEndReason =
   | "pod_lost"
   | (string & {});
 /**
- * Which Polymorfa calling line carries a call: a linked WhatsApp device
- * session (audio + video) or the WhatsApp Business Calling API (audio only).
+ * What the displayed call supports. The platform reports video and invite
+ * support per call; muting is always available.
  */
-export type CallLine = "linkedDevice" | "cloudApi";
-
 export interface CallCapabilities {
   readonly video: boolean;
   readonly mute: boolean;
+  readonly invite: boolean;
 }
 
-export function capabilitiesFor(line: CallLine): CallCapabilities {
-  return { video: line !== "cloudApi", mute: true };
+const DEFAULT_CAPABILITIES: CallCapabilities = Object.freeze({
+  video: true,
+  mute: true,
+  invite: true,
+});
+
+function capabilitiesOf(
+  reported: { readonly video: boolean; readonly invite: boolean } | undefined,
+): CallCapabilities {
+  return reported === undefined
+    ? DEFAULT_CAPABILITIES
+    : { video: reported.video, invite: reported.invite, mute: true };
 }
 
 export type CallDeviceKind = "audioinput" | "videoinput" | "audiooutput";
@@ -72,8 +81,8 @@ export interface IncomingCall {
   readonly callId: string;
   readonly from: string;
   readonly video: boolean;
-  /** Defaults to `linkedDevice`. */
-  readonly line?: CallLine;
+  /** Platform-reported capabilities; defaults allow video and invitations. */
+  readonly capabilities?: { readonly video: boolean; readonly invite: boolean };
 }
 
 /** A call participant as the platform reports it. */
@@ -87,7 +96,7 @@ export interface CallInvitation {
   readonly callId: string;
   readonly from: string;
   readonly video: boolean;
-  readonly line: CallLine;
+  readonly capabilities: CallCapabilities;
   /** Somebody answered the call. */
   readonly answered: boolean;
   /** Participant reference that answered first, when known. */
@@ -159,7 +168,6 @@ export type CallLifecycleEvent =
 export interface PlaceCallInput {
   readonly to: string;
   readonly video: boolean;
-  readonly line: CallLine;
   readonly idempotencyKey: string;
   /** Claim the placed call. Default `false`. */
   readonly exclusive?: boolean;
@@ -215,7 +223,6 @@ export interface CallsSnapshot extends ControllerSnapshot {
   readonly callId?: string;
   readonly peer?: string;
   readonly direction?: "incoming" | "outgoing";
-  readonly line: CallLine;
   readonly capabilities: CallCapabilities;
   readonly video: boolean;
   readonly audioMuted: boolean;
@@ -320,8 +327,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     super(
       {
         status: "idle",
-        line: "linkedDevice",
-        capabilities: capabilitiesFor("linkedDevice"),
+        capabilities: DEFAULT_CAPABILITIES,
         video: false,
         audioMuted: false,
         videoMuted: false,
@@ -364,7 +370,6 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     to: string,
     options: {
       readonly video?: boolean;
-      readonly line?: CallLine;
       /** Claim the placed call. Default `false`. */
       readonly exclusive?: boolean;
     } = {},
@@ -380,9 +385,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     )
       throw new Error("Finish the active call before placing another.");
     const operation = this.#begin();
-    const line = options.line ?? "linkedDevice";
-    const capabilities = capabilitiesFor(line);
-    const video = (options.video ?? false) && capabilities.video;
+    const capabilities = DEFAULT_CAPABILITIES;
+    const video = options.video ?? false;
     // Only a refused offer carries the pod's terminal hints.
     let offering = false;
     this.#placing = true;
@@ -391,7 +395,6 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         {
           to,
           video,
-          line,
           idempotencyKey: this.#createKey(),
           ...(options.exclusive === undefined
             ? {}
@@ -408,7 +411,6 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         callId,
         peer: to,
         direction: "outgoing",
-        line,
         capabilities,
         video,
         audioMuted: false,
@@ -567,7 +569,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     });
   }
   /**
-   * Whether an audio→video upgrade is possible right now: the line carries
+   * Whether an audio→video upgrade is possible right now: the call carries
    * video, the call is not already video, and the media session can
    * renegotiate.
    */
@@ -582,7 +584,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
 
   /**
    * Start sending the camera on an audio call and renegotiate on the same
-   * connection. No-op when the line has no video, when video is already on,
+   * connection. No-op when the call has no video, when video is already on,
    * or when the media session cannot renegotiate.
    */
   async enableVideo(): Promise<void> {
@@ -737,7 +739,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   }
 
   #display(invitation: CallInvitation): void {
-    const capabilities = capabilitiesFor(invitation.line);
+    const capabilities = invitation.capabilities;
     this.#remoteVideos = [];
     this.transition({
       ...this.#baseFields(),
@@ -745,7 +747,6 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       callId: invitation.callId,
       peer: invitation.from,
       direction: "incoming",
-      line: invitation.line,
       capabilities,
       video: invitation.video && capabilities.video,
       audioMuted: false,
@@ -1065,7 +1066,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         callId: event.call.callId,
         from: event.call.from,
         video: event.call.video,
-        line: event.call.line ?? "linkedDevice",
+        capabilities: capabilitiesOf(event.call.capabilities),
         answered: false,
         exclusive: false,
         claimedByOther: false,
@@ -1184,8 +1185,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   #baseFields(): Omit<CallsSnapshot, "revision" | "updatedAt" | "status"> {
     const { devices, selectedDevices } = this.getSnapshot();
     return {
-      line: "linkedDevice",
-      capabilities: capabilitiesFor("linkedDevice"),
+      capabilities: DEFAULT_CAPABILITIES,
       video: false,
       audioMuted: false,
       videoMuted: false,
@@ -1308,7 +1308,6 @@ function callFields(
     ...(snapshot.direction === undefined
       ? {}
       : { direction: snapshot.direction }),
-    line: snapshot.line,
     capabilities: snapshot.capabilities,
     video: snapshot.video,
     audioMuted: snapshot.audioMuted,

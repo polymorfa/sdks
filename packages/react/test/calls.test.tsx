@@ -247,12 +247,16 @@ describe("Calls UI", () => {
     expect(host.querySelector("[data-pmfa='call-surface']")).toBeNull();
   });
 
-  it("dials audio or video on a linked device and audio only on the Business Calling API line", async () => {
+  it("dials audio or video, and audio only when video is not allowed", async () => {
     const f = fixture();
     const host = mount(
       <PolymorfaProvider>
         <DialPad controller={f.controller} defaultValue="+1202555" />
-        <DialPad controller={f.controller} line="cloudApi" className="cloud" />
+        <DialPad
+          controller={f.controller}
+          allowVideo={false}
+          className="cloud"
+        />
       </PolymorfaProvider>,
     );
     expect(
@@ -277,7 +281,6 @@ describe("Calls UI", () => {
       peer: "+12025550",
       direction: "outgoing",
       video: true,
-      line: "linkedDevice",
     });
   });
 

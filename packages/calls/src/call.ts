@@ -245,6 +245,39 @@ type CallEvents = {
   error: [CallsError];
 };
 
+/**
+ * What a call supports, as reported by the platform. Defaults allow video and
+ * invitations when the platform does not report capabilities.
+ */
+export interface CallCapabilities {
+  /** The call can carry video. */
+  readonly video: boolean;
+  /** More participants can be invited into the call. */
+  readonly invite: boolean;
+}
+
+export const DEFAULT_CALL_CAPABILITIES: CallCapabilities = Object.freeze({
+  video: true,
+  invite: true,
+});
+
+/** Read platform-reported capabilities, keeping defaults for absent fields. */
+export function capabilitiesFrom(value: unknown): CallCapabilities {
+  if (value === null || typeof value !== "object")
+    return DEFAULT_CALL_CAPABILITIES;
+  const reported = value as Record<string, unknown>;
+  return {
+    video:
+      typeof reported["video"] === "boolean"
+        ? reported["video"]
+        : DEFAULT_CALL_CAPABILITIES.video,
+    invite:
+      typeof reported["invite"] === "boolean"
+        ? reported["invite"]
+        : DEFAULT_CALL_CAPABILITIES.invite,
+  };
+}
+
 export interface CallInit {
   readonly id: string;
   readonly session: string;
@@ -252,6 +285,8 @@ export interface CallInit {
   /** The other party as the platform presents it: number or public ID. */
   readonly peer: string;
   readonly video: boolean;
+  /** Platform-reported capabilities. */
+  readonly capabilities?: CallCapabilities;
   readonly api: CallsApi;
   readonly media: Omit<
     MediaSocketOptions,
@@ -282,6 +317,8 @@ export class Call extends Emitter<CallEvents> {
   readonly peer: string;
   /** True when the call offered video. */
   readonly hasVideo: boolean;
+  /** What this call supports. */
+  readonly capabilities: CallCapabilities;
   /** This client's media connection id; reused on reconnect. */
   readonly connectionId: string;
   readonly audio: AudioTrack;
@@ -319,7 +356,8 @@ export class Call extends Emitter<CallEvents> {
     this.session = init.session;
     this.direction = init.direction;
     this.peer = init.peer;
-    this.hasVideo = init.video;
+    this.capabilities = init.capabilities ?? DEFAULT_CALL_CAPABILITIES;
+    this.hasVideo = init.video && this.capabilities.video;
     if (init.connectionId !== undefined && !isConnectionId(init.connectionId))
       throw new CallsError(
         "invalid_connection_id",

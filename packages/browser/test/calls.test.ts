@@ -123,7 +123,6 @@ describe("CallsController (voip-v2 contract)", () => {
       {
         to: "+12025550123",
         video: true,
-        line: "linkedDevice",
         idempotencyKey: "idem-1",
       },
       expect.any(AbortSignal),

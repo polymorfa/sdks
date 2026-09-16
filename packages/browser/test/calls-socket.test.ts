@@ -170,8 +170,8 @@ describe("CallsSocket", () => {
     transient.socket.close();
   });
 
-  it("carries the configured line onto socket-delivered incoming calls", async () => {
-    const { socket, ws } = socketWith({ line: "cloudApi" });
+  it("carries platform-reported capabilities onto socket-delivered incoming calls", async () => {
+    const { socket, ws } = socketWith();
     const backend = createSignalingCallsBackend({
       signaling: signaling(),
       incoming: socket,
@@ -198,16 +198,19 @@ describe("CallsSocket", () => {
       type: "event",
       event: "call.received",
       callId: "CALL-9",
-      payload: { callId: "CALL-9", from: "+15550100", hasVideo: true },
+      payload: {
+        callId: "CALL-9",
+        from: "+15550100",
+        hasVideo: true,
+        capabilities: { video: false, invite: false },
+      },
       timestamp: "",
     });
-    // Hardcoding linkedDevice here offered video controls on a line that has
-    // no video at all.
+    // A call that cannot carry video must not offer video controls.
     expect(controller.getSnapshot()).toMatchObject({
       status: "incoming",
-      line: "cloudApi",
       video: false,
-      capabilities: { video: false },
+      capabilities: { video: false, invite: false, mute: true },
     });
     controller.dispose();
     socket.close();
