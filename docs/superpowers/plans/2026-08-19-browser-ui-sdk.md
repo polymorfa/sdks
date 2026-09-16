@@ -2,7 +2,7 @@
 
 > Execute this plan on `dev`. Keep every product surface controller-driven so Web Components, React, and Next.js share behavior instead of implementing parallel state machines.
 
-**Goal:** Ship framework-neutral browser controllers, a shared appearance and localization contract, portable Web Components, React bindings, Next.js server helpers, and a production-safe development assistant for QuickLink, chat/composer, templates, and calls.
+**Goal:** Ship framework-neutral browser controllers, a shared appearance and localization contract, portable Web Components, React bindings, Next.js server helpers, and a production-safe development assistant for chat/composer, templates, and calls. QuickLink is a hosted page and has no browser surface.
 
 **Architecture:** `@polymorfa/browser` owns token-aware transports and state machines. `@polymorfa/ui` owns serializable appearance, localization, and diagnostic types. `@polymorfa/elements` is the portable rendered baseline. `@polymorfa/react` adapts the same controllers and events. `@polymorfa/nextjs` supplies server-only token and webhook adapters. `@polymorfa/devtools` observes public controller/transport diagnostics and never receives raw credentials. No browser package imports `@polymorfa/sdk`.
 
@@ -42,18 +42,10 @@
 5. Add repository tests rejecting server SDK imports and server-key prefixes from browser package source.
 6. Run focused tests and commit `feat: add browser transport and controller core`.
 
-### Task 3: QuickLink controller (withdrawn 2026-09-16)
+### Task 3: Withdrawn
 
-QuickLink is a closed-source hosted page. This task and the QuickLink element,
-React component, subpath, and example work in later tasks are withdrawn.
-
-**Files:** `packages/browser/src/quicklink/*`, tests.
-
-1. Write state-transition tests for launch, QR/link readiness, progress, completion, expiry, cancellation, recoverable failure, retry, and disposal.
-2. Define a `QuickLinkTransport` boundary that exchanges client-token-scoped session data only.
-3. Implement `QuickLinkController` with monotonic operation IDs so stale async completions cannot overwrite newer state.
-4. Test reconnect and expiry timers with fake clocks and prove disposal removes subscriptions/timers.
-5. Commit `feat: add QuickLink controller`.
+This task originally built a browser QuickLink controller. QuickLink is a
+closed-source hosted page, so the controller was removed on 2026-09-16.
 
 ### Task 4: Conversation and composer controllers
 
@@ -87,11 +79,11 @@ React component, subpath, and example work in later tasks are withdrawn.
 
 ### Task 7: Portable Web Components
 
-**Files:** `packages/elements/src/{quicklink,chat,templates,calls}`, common rendering/styles, Happy DOM tests.
+**Files:** `packages/elements/src/{chat,templates,calls}`, common rendering/styles, Happy DOM tests.
 
 1. Write failing DOM tests for registration, attributes/properties, events, slots, CSS parts, keyboard behavior, focus restoration, ARIA labels/live regions, direction, reduced motion, and disconnect cleanup.
-2. Implement controller-bound custom elements for QuickLink, chat drawer/list/message list/composer, template builder/editor/preview, and incoming/outgoing/active call surfaces.
-3. Expose stable product subpaths `/quicklink`, `/chat`, `/templates`, and `/calls`.
+2. Implement controller-bound custom elements for chat drawer/list/message list/composer, template builder/editor/preview, and incoming/outgoing/active call surfaces.
+3. Expose stable product subpaths `/chat`, `/templates`, and `/calls`.
 4. Prove the package works from a vanilla consumer and contains no React dependency.
 5. Commit `feat: add portable web components`.
 
@@ -129,7 +121,7 @@ React component, subpath, and example work in later tasks are withdrawn.
 
 **Files:** `examples/vanilla`, `examples/react`, `examples/nextjs`, package READMEs, root README/changelog, CI.
 
-1. Build tested examples for QuickLink, chat/composer, template builder, and calls using deterministic mock application transports.
+1. Build tested examples for chat/composer, template builder, and calls using deterministic mock application transports.
 2. Add interaction tests covering the complete happy path and one recovery path per product in vanilla and React; compile the Next.js boundary example.
 3. Document install identities, credential boundaries, framework ownership, appearance schema, accessibility, data-source requirements, calls transport contract, and devtools production exclusion.
 4. Extend CI across Node 20/22 with package builds, tests, lint, typecheck, pack inspection, browser/server import boundary scans, and example builds.
