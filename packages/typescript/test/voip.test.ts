@@ -4,6 +4,7 @@ import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 import {
   MessagingClient,
   PolymorfaConfigurationError,
+  PolymorfaAuthorizationError,
   PolymorfaConflictError,
   PolymorfaValidationError,
   VoipResource,
@@ -317,6 +318,7 @@ describe("VoipResource", () => {
 
   it("reads and replaces session call settings with a project token", async () => {
     const settings = {
+      callsEnabled: true,
       includeSelfAudio: true,
       inboundRoute: "sip_trunk",
       sipTrunkId: "018f0000-0000-7000-8000-0000000000aa",
@@ -352,6 +354,11 @@ describe("VoipResource", () => {
     );
     expect(() =>
       sdk.voip.updateCallSettings("support/eu", {
+        callsEnabled: "off",
+      } as unknown as { callsEnabled: boolean }),
+    ).toThrow(PolymorfaValidationError);
+    expect(() =>
+      sdk.voip.updateCallSettings("support/eu", {
         inboundRoute: "pbx",
       } as unknown as { inboundRoute: "clients" }),
     ).toThrow(PolymorfaValidationError);
@@ -362,6 +369,48 @@ describe("VoipResource", () => {
       }),
     ).toThrow(PolymorfaValidationError);
     expect(server.requests).toHaveLength(2);
+  });
+
+  it("turns calling off and reports calls_disabled refusals", async () => {
+    const server = await serve([
+      json({
+        success: true,
+        data: {
+          callsEnabled: false,
+          includeSelfAudio: false,
+          inboundRoute: "clients",
+          sipTrunkId: null,
+          sipClaim: true,
+          revision: 1,
+          updatedAt: "2026-09-17T10:00:00.000Z",
+        },
+      }),
+      json(
+        {
+          success: false,
+          error: {
+            code: "calls_disabled",
+            message: "Calling is turned off for this number.",
+          },
+        },
+        403,
+      ),
+    ]);
+    const sdk = client(server, { type: "projectToken", value: PROJECT_TOKEN });
+    const off = await sdk.voip.updateCallSettings("support", {
+      callsEnabled: false,
+    });
+    expect(off.data.data.callsEnabled).toBe(false);
+    expect(JSON.parse(server.requests[0]?.body ?? "null")).toEqual({
+      callsEnabled: false,
+    });
+    const refused = await sdk.voip
+      .place({ session: "support", to: "+15550100" })
+      .catch((error: unknown) => error);
+    expect(refused).toBeInstanceOf(PolymorfaAuthorizationError);
+    expect((refused as PolymorfaAuthorizationError).code).toBe(
+      "calls_disabled",
+    );
   });
 
   it("no longer exposes session modes or calling tickets", () => {

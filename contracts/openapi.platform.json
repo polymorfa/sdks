@@ -4129,11 +4129,12 @@
           "calls"
         ],
         "summary": "Update session call settings",
-        "description": "Updates the call settings for an owned session. Omitted fields keep their values. New calls use the saved settings. Routing to a SIP trunk requires a trunk in the session's project that can receive calls. `expectedRevision` refuses an update to settings that changed since they were read.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Updates the call settings for an owned session. Omitted fields keep their values. New calls use the saved settings. Routing to a SIP trunk requires a trunk in the session's project that can receive calls. `expectedRevision` refuses an update to settings that changed since they were read.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Private Console call settings; requires live dashboard membership. The Platform API publishes the same settings under /platform/sessions/{session}/call-settings.",
+        "x-required-organization-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -23792,6 +23793,10 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "callsEnabled": {
+            "type": "boolean",
+            "description": "Whether the session can place, answer and receive calls."
+          },
           "includeSelfAudio": {
             "type": "boolean",
             "description": "Whether each participant hears their own audio in the merged call audio they receive. The WhatsApp party never receives its own audio."
@@ -23827,6 +23832,7 @@
           }
         },
         "required": [
+          "callsEnabled",
           "includeSelfAudio",
           "inboundRoute",
           "sipTrunkId",
@@ -24483,6 +24489,10 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "callsEnabled": {
+            "type": "boolean",
+            "description": "False refuses new and incoming calls on the session."
+          },
           "includeSelfAudio": {
             "type": "boolean"
           },
@@ -31205,6 +31215,10 @@
       "PlatformAccessCallSettings": {
         "type": "object",
         "properties": {
+          "callsEnabled": {
+            "type": "boolean",
+            "description": "Whether the session can place, answer and receive calls. When false, placing, answering, joining and attaching media fail with `403 calls_disabled`, incoming calls are declined, and SIP trunks cannot place calls through the session. Calls in progress continue. Defaults to true."
+          },
           "includeSelfAudio": {
             "type": "boolean",
             "description": "Whether each participant hears their own audio in the merged call audio they receive. Defaults to false. The WhatsApp party never receives its own audio."
@@ -31235,6 +31249,7 @@
           }
         },
         "required": [
+          "callsEnabled",
           "includeSelfAudio",
           "inboundRoute",
           "sipTrunkId",
@@ -31282,6 +31297,10 @@
       "PlatformAccessUpdateCallSettingsRequest": {
         "type": "object",
         "properties": {
+          "callsEnabled": {
+            "type": "boolean",
+            "description": "Set to false to refuse new and incoming calls on the session; true allows them again."
+          },
           "includeSelfAudio": {
             "type": "boolean",
             "description": "Set to true to include each participant's own audio in the merged call audio they receive."
@@ -32904,6 +32923,7 @@
                   "unsupported_for_connection",
                   "call_permission_required",
                   "invalid_sip_trunk",
+                  "calls_disabled",
                   "sip_trunk_in_use",
                   "sip_trunk_revision_conflict",
                   "sip_trunk_limit",

@@ -6514,6 +6514,7 @@
                   "unsupported_for_connection",
                   "call_permission_required",
                   "invalid_sip_trunk",
+                  "calls_disabled",
                   "sip_trunk_in_use",
                   "sip_trunk_revision_conflict",
                   "sip_trunk_limit",

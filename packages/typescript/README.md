@@ -346,7 +346,10 @@ checks `participant` and `connectionId` (`[A-Za-z0-9_-]{8,64}`) before sending.
 `voip.retrieveCallSettings(session)` and `voip.updateCallSettings(session,
 { includeSelfAudio, inboundRoute, sipTrunkId, sipClaim })` read and change the
 session's call settings through `/platform/sessions/{session}/call-settings`.
-Merged call audio excludes each connection's own audio unless
+`callsEnabled: false` turns calling off for the session: placing, answering,
+joining, inviting and media fail with `PolymorfaAuthorizationError`
+(`calls_disabled`), incoming calls are declined, and calls in progress
+continue. Merged call audio excludes each connection's own audio unless
 `includeSelfAudio` is `true`. `inboundRoute` is `clients` (the default) or
 `sip_trunk`, which also sends incoming calls to `sipTrunkId`; `sipClaim`
 (default `true`) makes the trunk's answer claim the call. An update changes

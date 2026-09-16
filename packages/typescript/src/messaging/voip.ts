@@ -163,8 +163,15 @@ export class VoipResource {
     if (typeof body !== "object" || body === null) {
       throw new PolymorfaValidationError("Call settings must be an object.");
     }
-    const { includeSelfAudio, inboundRoute, sipTrunkId, sipClaim } = body;
+    const {
+      callsEnabled,
+      includeSelfAudio,
+      inboundRoute,
+      sipTrunkId,
+      sipClaim,
+    } = body;
     if (
+      callsEnabled === undefined &&
       includeSelfAudio === undefined &&
       inboundRoute === undefined &&
       sipTrunkId === undefined &&
@@ -175,6 +182,7 @@ export class VoipResource {
       );
     }
     for (const [name, value] of [
+      ["callsEnabled", callsEnabled],
       ["includeSelfAudio", includeSelfAudio],
       ["sipClaim", sipClaim],
     ] as const) {

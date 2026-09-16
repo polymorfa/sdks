@@ -3,7 +3,8 @@
 ## Unreleased
 
 - `Client.sipTrunks` manages SIP trunks (beta). Session call settings add
-  `inboundRoute`, `sipTrunkId`, `sipClaim`, and `revision`. An update changes
+  `callsEnabled` (turn calling off for a session; refusals use
+  `calls_disabled`), `inboundRoute`, `sipTrunkId`, `sipClaim`, and `revision`. An update changes
   only the settings you send (`includeSelfAudio` is optional) and accepts
   `expectedRevision`. Webhook types add `call.connection_joined` and
   `call.connection_left`, including the SIP trunk departure reasons.

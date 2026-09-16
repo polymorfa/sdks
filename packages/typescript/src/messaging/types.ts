@@ -1495,6 +1495,12 @@ export type VoipAddParticipantResponse = SuccessEnvelope<VoipParticipant>;
 /** Call settings for one session (`/platform/sessions/{session}/call-settings`). */
 export interface SessionCallSettings {
   /**
+   * Whether the session can place, answer and receive calls. While `false`,
+   * those actions fail with `calls_disabled`, incoming calls are declined and
+   * SIP trunks cannot call through the session. Calls in progress continue.
+   */
+  readonly callsEnabled: boolean;
+  /**
    * Include a connection's own audio in the merged call audio it receives.
    * `false` by default. WhatsApp never receives its own audio.
    */
@@ -1524,6 +1530,8 @@ export type CallInboundRoute = "clients" | "sip_trunk";
  * least one setting.
  */
 export interface UpdateSessionCallSettingsRequest {
+  /** `false` turns calling off for the session; `true` turns it back on. */
+  readonly callsEnabled?: boolean;
   readonly includeSelfAudio?: boolean;
   /**
    * Routing to a different trunk requires the SIP trunks beta. `clients`
