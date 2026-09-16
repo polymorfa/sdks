@@ -29,22 +29,31 @@ export interface BrowserCallsOptions extends BrowserTransportOptions {
   /** Supply a media adapter in embedded runtimes or tests. */
   readonly mediaFactory?: CallMediaFactory;
   readonly controller?: CallsControllerOptions;
+  /**
+   * Failures that do not belong to one call. `code: "unauthorized"` means the
+   * platform stopped accepting the client token; the next attempt asks
+   * `getClientToken` for a new one.
+   */
   readonly onError?: (error: { code: string; message: string }) => void;
 }
 
 export interface BrowserCalls {
   readonly controller: CallsController;
   readonly connected: boolean;
-  /** Claim browser mode and connect the lifecycle stream; rejects if the first attempt fails. */
+  /** Connect the authenticated lifecycle stream; rejects if the first attempt fails. */
   connect(): Promise<void>;
-  /** Release the widget, media and lifecycle stream. Create a new instance to reconnect. */
+  /**
+   * Release the widget, media and lifecycle stream. Joined calls are left,
+   * not ended. Create a new instance to reconnect.
+   */
   dispose(): Promise<void>;
 }
 
 /**
- * Calls client, client-token controls and the existing WebRTC widget as one
- * owned component. Browser mode auto-answers remotely; Answer attaches local
- * media. The controller keeps device selection, mute, video and ICE recovery.
+ * Calls client, client-token controls and the WebRTC widget as one owned
+ * component. The client token from `getClientToken` authenticates REST calls
+ * and both sockets directly; no calling ticket is involved. Incoming calls
+ * ring until the application answers, joins, or declines them.
  */
 export function createBrowserCalls(options: BrowserCallsOptions): BrowserCalls {
   const transport = new BrowserTransport(options);
@@ -52,7 +61,6 @@ export function createBrowserCalls(options: BrowserCallsOptions): BrowserCalls {
   const client = new CallsClient({
     session: options.session,
     api,
-    answerMode: "browser",
     mediaMode: "external",
     ...(options.WebSocket === undefined
       ? {}
@@ -77,6 +85,7 @@ export function createBrowserCalls(options: BrowserCallsOptions): BrowserCalls {
       void dispose();
     },
     getCall: (id) => client.getCall(id),
+    connectionId: (id) => client.getCall(id)?.connectionId,
     subscribe: (listener) => {
       listeners.add(listener);
       return () => {
@@ -88,13 +97,16 @@ export function createBrowserCalls(options: BrowserCallsOptions): BrowserCalls {
         throw new Error("Connect browser calls before placing a call.");
       if (input.line !== "linkedDevice")
         throw new Error("Direct placement supports linked-device calls.");
-      if (client.calls.length > 0)
+      if (placing || client.calls.some((call) => call.state !== "incoming"))
         throw new Error("Finish the active call before placing another.");
       placing = true;
       try {
         const call = await client.place(input.to, {
           video: input.video,
           idempotencyKey: input.idempotencyKey,
+          ...(input.exclusive === undefined
+            ? {}
+            : { exclusive: input.exclusive }),
           signal,
         });
         return { callId: call.id };
@@ -102,21 +114,42 @@ export function createBrowserCalls(options: BrowserCallsOptions): BrowserCalls {
         placing = false;
       }
     },
-    answer: async (id, signal) => {
+    answer: async (id, signal, input) => {
       signal.throwIfAborted();
-      await requireCall(id).answer();
+      const call = requireCall(id);
+      await call.answer({
+        exclusive: input?.exclusive === true,
+        ...(input === undefined ? {} : { video: input.video }),
+      });
+      return {
+        answered: true,
+        answeredBy: call.claim.answeredBy ?? "",
+        exclusive: call.claim.exclusive,
+      };
+    },
+    join: async (id, signal, input) => {
+      signal.throwIfAborted();
+      const call = requireCall(id);
+      await call.join({ video: input.video });
+      return {
+        answered: true,
+        answeredBy: call.claim.answeredBy ?? "",
+        exclusive: call.claim.exclusive,
+      };
     },
     reject: async (id, signal) => {
       signal.throwIfAborted();
       await requireCall(id).reject();
     },
+    leave: async (id, _connectionId, signal) => {
+      signal.throwIfAborted();
+      // The call's own connection id is the one the media session used.
+      await requireCall(id).leave();
+    },
     hangup: async (id, signal) => {
       signal.throwIfAborted();
-      const call = requireCall(id);
-      // WebRTC is owned by the controller. Keep the model live if the REST
-      // teardown fails, so the widget can report the failure and retry it.
-      await api.hangup(id, signal);
-      call._remoteEnded("hangup");
+      // Keep the model live if the request fails, so the widget can retry.
+      await requireCall(id).end();
     },
   };
   const media =
@@ -128,42 +161,57 @@ export function createBrowserCalls(options: BrowserCallsOptions): BrowserCalls {
   const controller = new CallsController(backend, media, options.controller);
   client.on("incoming", (call) => {
     if (disposed || call.ended) return;
-    // One widget owns one call. Decline additional calls instead of losing their controls.
-    const activeCall = controller.call;
-    if (
-      placing ||
-      (activeCall !== undefined && !activeCall.ended) ||
-      !["idle", "ready", "ended", "error"].includes(
-        controller.getSnapshot().status,
-      )
-    ) {
-      void call
-        .reject()
-        .catch((cause: unknown) =>
-          options.onError?.({ code: "reject_failed", message: message(cause) }),
-        );
-      return;
-    }
+    // Every invitation is listed; none is declined on the application's behalf.
     emit({
       type: "incomingCall",
       call: {
         callId: call.id,
         from: call.peer,
-        video: call.video !== undefined,
+        video: call.hasVideo,
       },
     });
+    for (const participant of call.participants)
+      emit({ type: "participant", callId: call.id, participant });
   });
   client.on("call", (call) => {
     call.on("connected", () => emit({ type: "connected", callId: call.id }));
     call.on("error", (error) => options.onError?.(error));
+    call.on("claim", (claim) => {
+      if (call.direction === "outbound") return;
+      emit({
+        type: "accepted",
+        callId: call.id,
+        ...(claim.answeredBy === undefined
+          ? {}
+          : { answeredBy: claim.answeredBy }),
+        exclusive: claim.exclusive,
+        claimedByOther: claim.claimedByOther,
+      });
+    });
+    call.on("state", (state, previous) => {
+      if (call.direction === "outbound" && previous === "ringing")
+        if (state === "connecting" || state === "connected")
+          emit({ type: "accepted", callId: call.id });
+    });
+    call.on("participantJoined", (participant) =>
+      emit({ type: "participant", callId: call.id, participant }),
+    );
+    call.on("participantState", (participant) =>
+      emit({ type: "participant", callId: call.id, participant }),
+    );
+    call.on("participantLeft", (participantId) =>
+      emit({ type: "participantLeft", callId: call.id, participantId }),
+    );
   });
   client.on("ended", (call, reason) => {
-    // Early outbound events are replayed before place() returns. The controller
-    // adopts the terminal Call after the HTTP response, without opening media.
-    if (controller.getSnapshot().callId !== call.id) return;
+    const snapshot = controller.getSnapshot();
+    const listed = snapshot.invitations.some((i) => i.callId === call.id);
+    if (snapshot.callId !== call.id && !listed) return;
+    // Early outbound events are replayed before place() returns. The
+    // controller adopts the terminal Call after the HTTP response.
     if (
-      controller.call?.id === call.id &&
-      ["error", "ended"].includes(controller.getSnapshot().status)
+      snapshot.callId === call.id &&
+      ["error", "ended"].includes(snapshot.status)
     )
       return;
     emit({ type: "ended", callId: call.id, reason });
@@ -172,10 +220,11 @@ export function createBrowserCalls(options: BrowserCallsOptions): BrowserCalls {
   // Keep the shared call's terminal state in sync with browser media failures.
   const unsubscribe = controller.subscribe(() => {
     const snapshot = controller.getSnapshot();
-    const call = controller.call;
+    const call = client.getCall(snapshot.callId ?? "");
     if (
       call &&
       !call.ended &&
+      call.state !== "incoming" &&
       snapshot.error?.code !== "call_control_failed" &&
       (snapshot.status === "ended" || snapshot.status === "error")
     ) {
@@ -186,11 +235,11 @@ export function createBrowserCalls(options: BrowserCallsOptions): BrowserCalls {
             ? "pod_lost"
             : "connection_failed";
       call._remoteEnded(reason);
-      // Media acquisition may fail before a session exists to run teardown.
+      // Media failed locally: leave the connection; the call continues for others.
       void api
-        .hangup(call.id)
+        .leave(call.id, call.connectionId)
         .catch((cause: unknown) =>
-          options.onError?.({ code: "hangup_failed", message: message(cause) }),
+          options.onError?.({ code: "leave_failed", message: message(cause) }),
         );
     }
   });

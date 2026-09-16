@@ -33,7 +33,7 @@ function clientWith(
 async function connected(h: ReturnType<typeof clientWith>) {
   const connecting = h.client.connect();
   await flush();
-  h.ws(0).open();
+  h.ws(0).authenticate();
   await connecting;
   return h.ws(0);
 }
@@ -70,10 +70,9 @@ describe("CallsClient", () => {
   it("rings on call.received and answers into a bridged media socket", async () => {
     const h = clientWith();
     const life = await connected(h);
-    expect(h.api.socketTicket).toHaveBeenCalledWith(
-      "support",
-      expect.any(AbortSignal),
-    );
+    expect(life.url).toBe("wss://api.example/voip/ws");
+    // No credential in the URL: the first frame authenticates.
+    expect(life.texts[0]).toEqual({ type: "auth", token: "pmfa_ct_test" });
 
     const incoming: Call[] = [];
     h.client.on("incoming", (call) => incoming.push(call));
@@ -89,13 +88,22 @@ describe("CallsClient", () => {
 
     const answering = call.answer();
     await flush();
-    expect(h.api.accept).toHaveBeenCalledWith("CALL-1", { video: false });
+    expect(h.api.accept).toHaveBeenCalledWith("CALL-1", {
+      exclusive: false,
+      video: false,
+    });
     expect(call.state).toBe("connecting");
     const media = await bridge(h);
     await answering;
     expect(call.state).toBe("connected");
-    // The ticket rides the subprotocol slot; browsers cannot set headers.
-    expect(media.protocols).toEqual(["pmfa.ticket.pmfa_at_CALL-1"]);
+    expect(media.url).toBe("wss://api.example/voip/calls/CALL-1/media");
+    expect(media.protocols).toEqual(["pmfa.calls.v2"]);
+    expect(media.texts[0]).toEqual({
+      type: "auth",
+      token: "pmfa_ct_test",
+      connectionId: call.connectionId,
+    });
+    expect(call.connectionId).toMatch(/^[A-Za-z0-9_-]{8,64}$/);
 
     // WA -> us
     const heard: Int16Array[] = [];
@@ -109,9 +117,8 @@ describe("CallsClient", () => {
 
     const ended: string[] = [];
     call.on("ended", (reason) => ended.push(reason));
-    await call.hangup();
-    expect(h.api.hangup).toHaveBeenCalledWith("CALL-1");
-    expect(media.lastText).toEqual({ type: "hangup" });
+    await call.end();
+    expect(h.api.end).toHaveBeenCalledWith("CALL-1");
     expect(ended).toEqual(["hangup"]);
     expect(call.audio.write(new Int16Array([1]))).toBe(false);
     expect(h.client.calls).toEqual([]);
@@ -124,8 +131,7 @@ describe("CallsClient", () => {
     h.client.on("incoming", (c) => (call = c));
     ring(life);
     await call!.reject();
-    expect(h.api.reject).toHaveBeenCalledWith("CALL-1");
-    expect(h.api.mediaTicket).not.toHaveBeenCalled();
+    expect(h.api.reject).toHaveBeenCalledWith("CALL-1", undefined, undefined);
     expect(call!.endReason).toBe("rejected");
     expect(FakeWebSocket.instances).toHaveLength(1);
   });
@@ -190,7 +196,7 @@ describe("CallsClient", () => {
     });
     await flush();
     expect(call!.state).toBe("ended");
-    expect(h.api.mediaTicket).not.toHaveBeenCalled();
+    expect(FakeWebSocket.instances).toHaveLength(1);
     // Call ids are unique per call, so the same id ringing again is a
     // duplicate of the ended call — it must not ring the application twice.
     let again: Call | undefined;
@@ -217,7 +223,7 @@ describe("CallsClient", () => {
     expect(call!.state).toBe("connected");
   });
 
-  it("drops a lifecycle socket that stops answering pings and reconnects with a fresh ticket", async () => {
+  it("drops a lifecycle socket that stops answering pings and reconnects", async () => {
     const h = clientWith();
     const life = await connected(h);
     const states: boolean[] = [];
@@ -232,102 +238,82 @@ describe("CallsClient", () => {
     expect(states).toEqual([false]);
     h.t.fireTimeouts();
     await flush();
-    expect(h.api.socketTicket).toHaveBeenCalledTimes(2);
     expect(FakeWebSocket.instances).toHaveLength(2);
     h.client.disconnect();
   });
 
-  it("claims the sdk answer mode before opening the lifecycle stream", async () => {
-    const order: string[] = [];
+  it("does not open a socket when disconnect() lands while the token is pending", async () => {
     const api = fakeApi();
-    api.setMode.mockImplementation(async (session: string, mode: string) => {
-      order.push(`mode:${session}:${mode}`);
-    });
-    api.socketTicket.mockImplementation(async (session: string) => {
-      order.push("ticket");
-      return {
-        ticket: "t",
-        expiresAt: 1,
-        url: `wss://api.example/voip/ws?s=${session}`,
-      };
-    });
-    const h = clientWith(api);
-    const connecting = h.client.connect();
-    await flush();
-    h.ws(0).open();
-    await connecting;
-    // Without the claim, inbound calls would be auto-answered elsewhere and
-    // never ring here — so it goes first.
-    expect(order).toEqual(["mode:support:sdk", "ticket"]);
-    await h.client.disconnect();
-  });
-
-  it("opens no socket when the mode claim fails, and can opt out of claiming", async () => {
-    const api = fakeApi();
-    api.setMode.mockRejectedValue(new Error("403 voip_answer required"));
-    const h = clientWith(api);
-    await expect(h.client.connect()).rejects.toThrow("voip_answer required");
-    expect(FakeWebSocket.instances).toHaveLength(0);
-    expect(api.socketTicket).not.toHaveBeenCalled();
-
-    FakeWebSocket.instances = [];
-    const quiet = fakeApi();
-    const t = timers();
-    const client = new CallsClient({
-      session: "support",
-      api: quiet,
-      claimMode: false,
-      WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
-      setInterval: t.setInterval,
-      clearInterval: t.clearInterval,
-      setTimeout: t.setTimeout,
-      clearTimeout: t.clearTimeout,
-    });
-    const connecting = client.connect();
-    await flush();
-    FakeWebSocket.instances[0]!.open();
-    await connecting;
-    expect(quiet.setMode).not.toHaveBeenCalled();
-    await client.disconnect();
-  });
-
-  it("does not open a socket when disconnect() lands while the mode claim is pending", async () => {
-    const api = fakeApi();
-    let resolveClaim: () => void = () => undefined;
-    api.setMode.mockImplementation(
-      () =>
-        new Promise<void>((resolve) => {
-          resolveClaim = resolve;
-        }),
+    let resolveToken: (v: { value: string }) => void = () => undefined;
+    api.token.mockImplementationOnce(
+      () => new Promise((resolve) => (resolveToken = resolve)),
     );
     const h = clientWith(api);
     const connecting = h.client.connect();
     await flush();
     await h.client.disconnect();
-    resolveClaim();
+    resolveToken({ value: "pmfa_ct_test" });
     await connecting;
     await flush();
     expect(FakeWebSocket.instances).toHaveLength(0);
-    expect(api.socketTicket).not.toHaveBeenCalled();
     expect(h.client.connected).toBe(false);
   });
 
-  it("keeps a socket opened by a later connect() while an earlier disconnect() awaits hang-ups", async () => {
-    const api = fakeApi();
-    let releaseHangup: () => void = () => undefined;
-    api.hangup.mockImplementation(
-      () =>
-        new Promise<void>((resolve) => {
-          releaseHangup = resolve;
-        }),
-    );
-    const h = clientWith(api);
+  it("reports connected only after the platform answers the auth frame", async () => {
+    const h = clientWith();
     const connecting = h.client.connect();
     await flush();
-    h.ws(0).open();
+    const life = h.ws(0);
+    life.open();
+    expect(life.texts).toEqual([{ type: "auth", token: "pmfa_ct_test" }]);
+    expect(h.client.connected).toBe(false);
+    // Nothing but ready is processed before authentication.
+    ring(life);
+    expect(h.client.calls).toEqual([]);
+    life.text({ type: "ready", session: "support" });
+    await connecting;
+    expect(h.client.connected).toBe(true);
+    await h.client.disconnect();
+  });
+
+  it("names the session in the query for server credentials only", async () => {
+    const client = clientWith();
+    await connected(client);
+    // Client tokens send no query parameters.
+    expect(client.ws(0).url).toBe("wss://api.example/voip/ws");
+    await client.client.disconnect();
+
+    const api = fakeApi();
+    api.token.mockResolvedValue({ value: "pmfa_live_server" });
+    const h = clientWith(api);
+    await connected(h);
+    expect(h.ws(0).url).toBe("wss://api.example/voip/ws?session=support");
+    // The auth frame is exactly { type, token }.
+    expect(h.ws(0).texts[0]).toEqual({
+      type: "auth",
+      token: "pmfa_live_server",
+    });
+    expect(h.client.participantReference).toBe("server:default");
+    await h.client.disconnect();
+  });
+
+  it("keeps a socket opened by a later connect() while an earlier disconnect() awaits leaves", async () => {
+    const api = fakeApi();
+    let releaseLeave: () => void = () => undefined;
+    api.leave.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseLeave = resolve;
+        }),
+    );
+    const h = clientWith(api, { mediaMode: "external" });
+    const connecting = h.client.connect();
+    await flush();
+    h.ws(0).authenticate();
     await connecting;
     ring(h.ws(0), "C1");
     await flush();
+    await h.client.calls[0]!.answer();
     expect(h.client.calls).toHaveLength(1);
 
     const disconnecting = h.client.disconnect(); // hang-up is deferred
@@ -335,9 +321,9 @@ describe("CallsClient", () => {
     expect(h.client.connected).toBe(false);
     const reconnecting = h.client.connect();
     await flush();
-    h.ws(1).open();
+    h.ws(1).authenticate();
     await reconnecting;
-    releaseHangup();
+    releaseLeave();
     await disconnecting;
     await flush();
     // The later connection survives the earlier disconnect settling.
@@ -346,18 +332,25 @@ describe("CallsClient", () => {
     await h.client.disconnect();
   });
 
-  it("hangs up live calls on disconnect", async () => {
+  it("leaves joined calls on disconnect without ending or declining any call", async () => {
     const h = clientWith();
     const life = await connected(h);
-    let call: Call | undefined;
-    h.client.on("incoming", (c) => (call = c));
-    ring(life);
-    const answering = call!.answer();
-    await bridge(h);
+    const calls: Call[] = [];
+    h.client.on("incoming", (c) => calls.push(c));
+    ring(life, "CALL-1");
+    ring(life, "CALL-2");
+    const answering = calls[0]!.answer();
+    const media = await bridge(h);
     await answering;
     await h.client.disconnect();
-    expect(h.api.hangup).toHaveBeenCalledWith("CALL-1");
-    expect(call!.ended).toBe(true);
+    // The joined call is left over its media connection; nobody else loses it.
+    expect(media.lastText).toEqual({ type: "leave" });
+    expect(calls[0]!.endReason).toBe("left");
+    // The ringing call is not declined on the application's behalf.
+    expect(h.api.reject).not.toHaveBeenCalled();
+    expect(h.api.end).not.toHaveBeenCalled();
+    expect(h.api.leave).not.toHaveBeenCalled();
+    expect(calls[1]!.endReason).toBe("left");
     expect(h.client.connected).toBe(false);
   });
 
@@ -484,7 +477,7 @@ describe("CallsClient", () => {
     expect(left).toEqual(["p1"]);
   });
 
-  it("ignores lifecycle roster events for socket-media calls and ended calls", async () => {
+  it("applies lifecycle roster events to socket-media calls and ignores ended calls", async () => {
     const h = clientWith();
     const life = await connected(h);
     let call: Call | undefined;
@@ -507,7 +500,7 @@ describe("CallsClient", () => {
       timestamp: "",
     };
     life.text(event);
-    expect(call!.participants).toEqual([]);
+    expect(call!.participants.map((p) => p.id)).toEqual(["p1"]);
 
     const external = clientWith(fakeApi(), { mediaMode: "external" });
     const externalLife = await connected(external);
@@ -699,7 +692,7 @@ describe("CallsClient", () => {
   });
 
   it("refuses to construct without a credential or an api seam", () => {
-    expect(() => new CallsClient({ session: "s" })).toThrow(/apiKey/);
+    expect(() => new CallsClient({ session: "s" })).toThrow(/token/);
   });
 });
 
@@ -730,7 +723,6 @@ describe("CallsClient — review round one", () => {
 
   it("ends the call, rather than returning to incoming, when media fails after a successful accept", async () => {
     const api = fakeApi();
-    api.mediaTicket.mockRejectedValueOnce(new Error("no ticket"));
     const h = clientWith(api);
     const life = await connected(h);
     let call: Call | undefined;
@@ -738,12 +730,13 @@ describe("CallsClient — review round one", () => {
     ring(life);
     const errors: string[] = [];
     call!.on("error", (e) => errors.push(e.code));
-    await expect(call!.answer()).rejects.toThrow("no ticket");
+    api.token.mockRejectedValueOnce(new Error("no token"));
+    await expect(call!.answer()).rejects.toThrow("no token");
     // The platform already accepted: a second accept or a reject would be wrong.
     expect(api.accept).toHaveBeenCalledTimes(1);
     expect(call!.state).toBe("ended");
     expect(call!.endReason).toBe("connection_failed");
-    expect(errors).toEqual(["media_failed"]);
+    expect(errors).toEqual(["token_failed"]);
     await expect(call!.reject()).rejects.toThrow(/ended/);
   });
 
@@ -758,12 +751,12 @@ describe("CallsClient — review round one", () => {
     const media = h.ws(1);
     media.open();
     media.text({ type: "error", code: "pod_refused", message: "no" });
-    await expect(answering).rejects.toThrow(/pod_refused/);
+    media.drop(1008, "unauthorized");
+    await expect(answering).rejects.toThrow("no");
     expect(media.readyState).toBe(FakeWebSocket.CLOSED);
-    // The lifecycle heartbeat is still live; the media socket's — the last one
-    // registered — must have been cleared with the socket.
-    expect(h.t.intervals.at(-1)?.cleared).toBe(true);
-    expect(h.t.intervals.at(0)?.cleared).not.toBe(true);
+    // The media heartbeat starts only after `ready`; the lifecycle one stays live.
+    expect(h.t.intervals).toHaveLength(1);
+    expect(h.t.intervals[0]?.cleared).not.toBe(true);
   });
 
   it("applies lifecycle events that arrive before place() resolves", async () => {
@@ -807,7 +800,7 @@ describe("CallsClient — review round one", () => {
     });
     const connecting = client.connect();
     await flush();
-    FakeWebSocket.instances[0]!.open();
+    FakeWebSocket.instances[0]!.authenticate();
     await connecting;
     let call: Call | undefined;
     client.on("incoming", (c) => (call = c));
@@ -823,7 +816,7 @@ describe("CallsClient — review round one", () => {
     await answering;
     now = 25_000;
     expect(call!.duration).toBe(15);
-    await call!.hangup();
+    await call!.end();
     now = 99_000;
     expect(call!.duration).toBe(15);
     expect(call!.endedAt).toBe(25_000);
@@ -911,7 +904,7 @@ describe("CallsClient — review round two", () => {
     const call = await placing;
     await flush(20);
     expect(call.state).toBe("ended");
-    // The ticket was fetched by the accepted replay, but no socket may exist
+    // The token was fetched by the accepted replay, but no socket may exist
     // for a call that ended before the socket was created.
     expect(FakeWebSocket.instances).toHaveLength(1);
     expect(h.t.intervals.filter((i) => !i.cleared)).toHaveLength(1); // lifecycle heartbeat only
@@ -919,18 +912,14 @@ describe("CallsClient — review round two", () => {
 });
 
 describe("CallsClient — review round three", () => {
-  it("rejects answer() when the call ends while the media ticket is in flight", async () => {
+  it("rejects answer() when the call ends while the media token is in flight", async () => {
     const api = fakeApi();
-    let resolveTicket: (v: {
-      token: string;
-      expiresAt: number;
-      url: string;
-    }) => void = () => undefined;
-    api.mediaTicket.mockImplementationOnce(
-      () => new Promise((r) => (resolveTicket = r)),
-    );
+    let resolveToken: (v: { value: string }) => void = () => undefined;
     const h = clientWith(api);
     const life = await connected(h);
+    api.token.mockImplementationOnce(
+      () => new Promise((r) => (resolveToken = r)),
+    );
     let call: Call | undefined;
     h.client.on("incoming", (c) => (call = c));
     ring(life);
@@ -943,13 +932,9 @@ describe("CallsClient — review round three", () => {
       payload: { reason: "user_hangup" },
       timestamp: "",
     });
-    resolveTicket({
-      token: "t",
-      expiresAt: 1,
-      url: "wss://pod.example/voip/sdk?callId=CALL-1",
-    });
+    resolveToken({ value: "pmfa_ct_test" });
     // Resolving here would tell the caller the call connected; it ended.
-    await expect(answering).rejects.toThrow(/ended before media/);
+    await expect(answering).rejects.toThrow(/closed before media/);
     expect(call!.endReason).toBe("remote_hangup"); // not rewritten to connection_failed
     expect(FakeWebSocket.instances).toHaveLength(1); // no media socket was created
   });
@@ -964,12 +949,15 @@ describe("CallsClient — review round three", () => {
     expect(h.t.timeouts.filter((x) => x.cleared !== true)).toHaveLength(0);
   });
 
-  it("does not report ticket_failed for a ticket request that close() aborted", async () => {
+  it("does not report token_failed for a token request that close() aborted", async () => {
     const api = fakeApi();
-    api.socketTicket.mockImplementationOnce(
-      (_s: string, signal?: AbortSignal) =>
+    api.token.mockImplementationOnce(async () => ({ value: "pmfa_ct_test" }));
+    api.token.mockImplementationOnce(
+      (request?: { signal?: AbortSignal }) =>
         new Promise((_r, reject) =>
-          signal?.addEventListener("abort", () => reject(new Error("aborted"))),
+          request?.signal?.addEventListener("abort", () =>
+            reject(new Error("aborted")),
+          ),
         ),
     );
     const h = clientWith(api);
@@ -1008,11 +996,9 @@ describe("CallsClient — review round four", () => {
     FakeWebSocket.instances = [];
     const t = timers();
     const media = new MediaSocket({
-      ticket: {
-        token: "t",
-        expiresAt: 1,
-        url: "wss://pod.example/voip/sdk?callId=X",
-      },
+      api: fakeApi(),
+      callId: "X",
+      connectionId: "conn-0001",
       WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
       setInterval: t.setInterval,
       clearInterval: t.clearInterval,
@@ -1023,6 +1009,7 @@ describe("CallsClient — review round four", () => {
       throw new Error("consumer bug");
     });
     const connecting = media.connect();
+    await flush();
     const ws = FakeWebSocket.instances[0]!;
     ws.open();
     expect(() =>
@@ -1040,7 +1027,8 @@ describe("CallsClient — review round four", () => {
     });
     const connecting = h.client.connect();
     await flush();
-    expect(() => h.ws(0).open()).toThrow("ready handler bug");
+    h.ws(0).open();
+    expect(() => h.ws(0).text({ type: "ready" })).toThrow("ready handler bug");
     await expect(connecting).resolves.toBeUndefined();
     h.client.on("disconnected", () => {
       throw new Error("disconnected handler bug");

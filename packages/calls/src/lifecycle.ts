@@ -1,6 +1,15 @@
-import type { CallsApi, SocketTicket } from "./api.js";
+import type { CallsApi } from "./api.js";
+import { CallsAuthError, CallsError } from "./errors.js";
 import { Emitter } from "./events.js";
-import { parseLifecycleFrame, type LifecycleFrame } from "./protocol.js";
+import {
+  AUTH_FAILED_CLOSE_CODE,
+  LIFECYCLE_SOCKET_PATH,
+  parseLifecycleFrame,
+  type LifecycleClientFrame,
+  type LifecycleFrame,
+  type TrickleCandidate,
+} from "./protocol.js";
+import { isClientToken, type CallsToken } from "./token.js";
 
 /** A `call.*` event as the platform emits it, before the client shapes it. */
 export interface LifecycleEvent {
@@ -10,58 +19,113 @@ export interface LifecycleEvent {
   readonly timestamp: string;
 }
 
+export interface LifecycleCandidate {
+  readonly callId: string;
+  readonly connectionId?: string;
+  readonly candidate: TrickleCandidate;
+}
+
+export interface LifecycleReady {
+  readonly session?: string;
+  /** Participant reference of the authenticated credential, when the platform sends it. */
+  readonly participant?: string;
+}
+
 export interface LifecycleSocketOptions {
-  readonly api: Pick<CallsApi, "socketTicket">;
-  readonly session: string;
+  readonly api: Pick<CallsApi, "token" | "socketUrl">;
+  /**
+   * Session to follow. Sent as `?session=` for server credentials only;
+   * client tokens are bound to one session and send no query parameters.
+   */
+  readonly session?: string;
+  /**
+   * Participant name for server credentials, sent as `?participant=`.
+   * Ignored for client tokens.
+   */
+  readonly participant?: string;
   readonly WebSocket?: typeof globalThis.WebSocket;
   readonly setTimeout?: typeof globalThis.setTimeout;
   readonly clearTimeout?: typeof globalThis.clearTimeout;
   readonly setInterval?: typeof globalThis.setInterval;
   readonly clearInterval?: typeof globalThis.clearInterval;
   readonly random?: () => number;
+  readonly now?: () => number;
   /** Reconnect backoff bounds; defaults 1 000 → 30 000 ms. */
   readonly minBackoffMs?: number;
   readonly maxBackoffMs?: number;
   /** Heartbeat period; 0 disables. Default 15 000 ms. */
   readonly heartbeatMs?: number;
-  /** Bound on one attempt's WebSocket open; 0 disables. Default 10 000 ms. */
+  /**
+   * Bound on one attempt, from construction until the platform's `ready`
+   * frame. 0 disables. Default 10 000 ms.
+   */
   readonly connectTimeoutMs?: number;
   /**
+   * Send a replacement token this long before the current one expires.
+   * Default 60 000 ms. Tokens without an expiry are not replaced.
+   */
+  readonly refreshBeforeExpiryMs?: number;
+  /**
    * Where a listener exception raised at an asynchronous boundary (a `state`
-   * or `error` listener throwing after a ticket request settled) is reported.
-   * Emissions inside WebSocket handlers propagate to the platform's event
-   * dispatch like any listener bug; this covers the emissions that have no
-   * synchronous caller. Defaults to the platform's `reportError`, else a
-   * microtask rethrow — an uncaught error either way, never a swallowed one.
+   * or `error` listener throwing after a token request settled) is reported.
+   * Defaults to the platform's `reportError`, else a microtask rethrow.
    */
   readonly reportError?: (cause: unknown) => void;
 }
 
 type Events = {
   event: [LifecycleEvent];
+  candidate: [LifecycleCandidate];
+  ready: [LifecycleReady];
+  /** True once authenticated (`ready`), false when that socket goes away. */
   state: [connected: boolean];
-  error: [{ code: string; message: string }];
+  error: [CallsError];
 };
 
+/** Close codes the platform uses on the lifecycle and media sockets. */
+export const SocketCloseCode = {
+  /** The credential does not (or no longer) authorize the socket. */
+  Unauthorized: AUTH_FAILED_CLOSE_CODE,
+  /** Call or session state refused the socket (for example a claimed call). */
+  Conflict: 4409,
+  /** Too many attempts. */
+  RateLimited: 4429,
+  /** The request is invalid (for example an unknown session or participant). */
+  InvalidRequest: 4400,
+  /** A policy violation, including no auth frame within 5 seconds. */
+  PolicyViolation: 1008,
+  /** Authorization or the call is temporarily unavailable. */
+  TryAgainLater: 1013,
+} as const;
+
 /**
- * The client's one lifecycle socket. Mints a fresh single-use ticket for every
- * attempt, reconnects with capped backoff until {@link close}, and heartbeats
- * so a half-open connection is dropped rather than silently swallowing events.
+ * The client's one lifecycle socket. Every attempt authenticates with the
+ * first frame, waits for `ready`, replaces the token before it expires,
+ * reconnects with capped backoff until {@link close}, and heartbeats so a
+ * half-open connection is dropped rather than silently swallowing events.
+ * A 4401 close emits {@link CallsAuthError} and the next attempt asks the
+ * token provider for a fresh token.
  */
 export class LifecycleSocket extends Emitter<Events> {
   readonly #o: LifecycleSocketOptions;
   readonly #WS: typeof globalThis.WebSocket;
   #socket: WebSocket | undefined;
+  #authenticated = false;
   #closed = true;
   #attempt = 0;
   #timer: ReturnType<typeof setTimeout> | undefined;
   #beat: ReturnType<typeof setInterval> | undefined;
+  #refreshTimer: ReturnType<typeof setTimeout> | undefined;
   #awaitingPong = false;
   #generation = 0;
   #settle: (() => void) | undefined;
   #abort: AbortController | undefined;
-  /** Bounds the current attempt's WebSocket open; cleared on open, close, or close(). */
   #openTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Set by a 4401 close: the next attempt must not reuse a cached token. */
+  #refreshNext = false;
+  /** Set by a 4400 close: retrying the same request cannot succeed. */
+  #refused = false;
+  #participant: string | undefined;
 
   constructor(options: LifecycleSocketOptions) {
     super();
@@ -74,15 +138,27 @@ export class LifecycleSocket extends Emitter<Events> {
     this.#WS = WS;
   }
 
+  /** True while an authenticated socket is open. */
   get connected(): boolean {
     return (
-      this.#socket !== undefined && this.#socket.readyState === this.#WS.OPEN
+      this.#authenticated &&
+      this.#socket !== undefined &&
+      this.#socket.readyState === this.#WS.OPEN
     );
   }
 
-  /** Resolves once the first attempt settles: open, failed (a retry is scheduled), or closed. */
+  /** Participant reference from the last `ready` frame, when the platform sent one. */
+  get participant(): string | undefined {
+    return this.#participant;
+  }
+
+  /**
+   * Resolves once the first attempt settles: authenticated, failed (a retry
+   * is scheduled), or closed.
+   */
   async connect(): Promise<void> {
     this.#closed = false;
+    this.#refused = false;
     if (this.#timer !== undefined) {
       (this.#o.clearTimeout ?? clearTimeout)(this.#timer);
       this.#timer = undefined;
@@ -90,40 +166,55 @@ export class LifecycleSocket extends Emitter<Events> {
     await this.#open();
   }
 
+  /** Send a local ICE candidate; false while no authenticated socket is open. */
+  sendCandidate(
+    callId: string,
+    connectionId: string,
+    candidate: TrickleCandidate,
+  ): boolean {
+    return this.#send({ type: "candidate", callId, connectionId, candidate });
+  }
+
   close(): void {
     this.#closed = true;
     this.#stopHeartbeat();
-    // An armed open timer keeps a Node process alive for up to connectTimeoutMs.
+    this.#clearRefresh();
     this.#clearOpenTimer();
     if (this.#timer !== undefined) {
       (this.#o.clearTimeout ?? clearTimeout)(this.#timer);
       this.#timer = undefined;
     }
     const socket = this.#socket;
+    const wasAuthenticated = this.#authenticated;
     this.#socket = undefined;
+    this.#authenticated = false;
     try {
       if (socket !== undefined) {
-        socket.onopen =
-          socket.onmessage =
-          socket.onclose =
-          socket.onerror =
-            null;
+        detach(socket);
         try {
           socket.close();
         } catch {
           // already closed
         }
-        this.emit("state", false);
+        if (wasAuthenticated) this.emit("state", false);
       }
     } finally {
       // A throwing state listener must not leave a pending connect() hanging,
-      // the ticket request in flight, or the generation stale (which would let
-      // a late #openOnce install a socket after close()).
+      // the token request in flight, or the generation stale.
       this.#generation += 1;
       this.#abort?.abort();
       this.#abort = undefined;
       this.#settle?.();
     }
+  }
+
+  #send(frame: LifecycleClientFrame): boolean {
+    const socket = this.#socket;
+    if (!this.#authenticated && frame.type !== "auth") return false;
+    if (socket === undefined || socket.readyState !== this.#WS.OPEN)
+      return false;
+    socket.send(JSON.stringify(frame));
+    return true;
   }
 
   #open(): Promise<void> {
@@ -142,10 +233,6 @@ export class LifecycleSocket extends Emitter<Events> {
         resolve();
       };
       this.#settle = settle;
-      // #openOnce settles the attempt itself; what can still reject here is a
-      // listener throwing on an emission with no synchronous caller. Report it
-      // as an uncaught error instead of an unhandled rejection of a voided
-      // promise.
       this.#openOnce(generation, abort.signal, settle).catch((cause: unknown) =>
         this.#report(cause),
       );
@@ -157,8 +244,6 @@ export class LifecycleSocket extends Emitter<Events> {
       this.#o.reportError ??
       (globalThis as { reportError?: (cause: unknown) => void }).reportError;
     if (report !== undefined) {
-      // A reporter that itself throws would reject the .catch() chain in
-      // #open() with nothing left to handle it; fall back to the rethrow.
       try {
         report(cause);
         return;
@@ -176,21 +261,24 @@ export class LifecycleSocket extends Emitter<Events> {
     signal: AbortSignal,
     settle: () => void,
   ): Promise<void> {
-    let ticket: SocketTicket;
+    let token: CallsToken;
+    const refresh = this.#refreshNext;
     try {
-      ticket = await this.#o.api.socketTicket(this.#o.session, signal);
+      token = await this.#o.api.token({ refresh, signal });
+      this.#refreshNext = false;
     } catch (cause) {
-      // close() aborts an in-flight ticket request; that is not a failure the
-      // consumer should hear about after asking for the socket to close.
       try {
         if (!signal.aborted && !this.#closed)
-          this.emit("error", {
-            code: "ticket_failed",
-            message:
+          this.emit(
+            "error",
+            new CallsError(
+              "token_failed",
               cause instanceof Error
                 ? cause.message
-                : "Could not mint a lifecycle ticket.",
-          });
+                : "Could not obtain a token for the lifecycle socket.",
+              { cause },
+            ),
+          );
       } finally {
         settle();
         if (!signal.aborted && !this.#closed) this.#scheduleReconnect();
@@ -203,7 +291,7 @@ export class LifecycleSocket extends Emitter<Events> {
     }
     let socket: WebSocket;
     try {
-      socket = new this.#WS(ticket.url);
+      socket = new this.#WS(this.#o.api.socketUrl(this.#path(token)));
     } catch {
       settle();
       if (!signal.aborted && !this.#closed && generation === this.#generation)
@@ -211,9 +299,9 @@ export class LifecycleSocket extends Emitter<Events> {
       return;
     }
     this.#socket = socket;
-    // A socket stuck CONNECTING fires neither onopen nor onclose, and the
-    // heartbeat only starts after onopen — without this bound the attempt
-    // never settles and no reconnect is ever scheduled.
+    this.#authenticated = false;
+    // A socket stuck CONNECTING, or one that never answers the auth frame,
+    // would otherwise hold the attempt forever.
     const timeoutMs = this.#o.connectTimeoutMs ?? 10_000;
     this.#clearOpenTimer();
     this.#openTimer =
@@ -222,51 +310,78 @@ export class LifecycleSocket extends Emitter<Events> {
             this.#openTimer = undefined;
             if (this.#socket !== socket) return;
             this.#socket = undefined;
-            socket.onopen =
-              socket.onmessage =
-              socket.onclose =
-              socket.onerror =
-                null;
+            detach(socket);
             try {
               socket.close();
             } catch {
               // never opened
             }
             try {
-              this.emit("error", {
-                code: "connect_timeout",
-                message: "The lifecycle socket did not open in time.",
-              });
+              this.emit(
+                "error",
+                new CallsError(
+                  "connect_timeout",
+                  "The lifecycle socket did not authenticate in time.",
+                ),
+              );
             } finally {
               settle();
               this.#scheduleReconnect();
             }
           }, timeoutMs)
         : undefined;
-    const clearOpenTimer = () => this.#clearOpenTimer();
     socket.onopen = () => {
-      clearOpenTimer();
-      this.#attempt = 0;
-      this.#startHeartbeat(socket);
-      // A throwing listener must not leave connect() pending: settle in
-      // finally and let the exception surface to whoever registered it.
-      try {
-        this.emit("state", true);
-      } finally {
-        settle();
-      }
+      const frame: LifecycleClientFrame = { type: "auth", token: token.value };
+      socket.send(JSON.stringify(frame));
     };
     socket.onmessage = (event) => {
+      if (this.#socket !== socket) return;
       const frame = parseLifecycleFrame((event as MessageEvent).data);
-      if (frame !== undefined) this.#receive(frame);
+      if (frame === undefined) return;
+      if (!this.#authenticated) {
+        if (frame.type === "ready") {
+          this.#clearOpenTimer();
+          this.#authenticated = true;
+          this.#attempt = 0;
+          this.#participant = frame.participant ?? this.#participant;
+          this.#startHeartbeat(socket);
+          this.#scheduleRefresh(socket, token);
+          try {
+            this.emit("ready", {
+              ...(frame.session === undefined
+                ? {}
+                : { session: frame.session }),
+              ...(frame.participant === undefined
+                ? {}
+                : { participant: frame.participant }),
+            });
+            this.emit("state", true);
+          } finally {
+            settle();
+          }
+        } else if (frame.type === "error") {
+          this.emit("error", new CallsError(frame.code, frame.message));
+        }
+        return;
+      }
+      this.#receive(frame);
     };
     socket.onerror = () => undefined;
-    socket.onclose = () => {
-      clearOpenTimer();
+    socket.onclose = (event) => {
+      this.#clearOpenTimer();
       this.#stopHeartbeat();
-      if (this.#socket === socket) this.#socket = undefined;
+      this.#clearRefresh();
+      if (this.#socket !== socket) return;
+      const wasAuthenticated = this.#authenticated;
+      this.#socket = undefined;
+      this.#authenticated = false;
+      const code = (event as CloseEvent | undefined)?.code;
       try {
-        this.emit("state", false);
+        const error = closeError(code);
+        if (code === SocketCloseCode.Unauthorized) this.#refreshNext = true;
+        if (code === SocketCloseCode.InvalidRequest) this.#refused = true;
+        if (error !== undefined) this.emit("error", error);
+        if (wasAuthenticated) this.emit("state", false);
       } finally {
         settle();
         this.#scheduleReconnect();
@@ -275,29 +390,115 @@ export class LifecycleSocket extends Emitter<Events> {
   }
 
   #receive(frame: LifecycleFrame): void {
-    if (frame.type === "pong") {
-      this.#awaitingPong = false;
+    switch (frame.type) {
+      case "pong":
+        this.#awaitingPong = false;
+        return;
+      case "error":
+        this.emit("error", new CallsError(frame.code, frame.message));
+        return;
+      case "candidate":
+        this.emit("candidate", {
+          callId: frame.callId,
+          ...(frame.connectionId === undefined
+            ? {}
+            : { connectionId: frame.connectionId }),
+          candidate: frame.candidate,
+        });
+        return;
+      case "event": {
+        const payload =
+          frame.payload !== null && typeof frame.payload === "object"
+            ? (frame.payload as Record<string, unknown>)
+            : {};
+        this.emit("event", {
+          event: frame.event,
+          callId: frame.callId,
+          payload,
+          timestamp: frame.timestamp,
+        });
+        return;
+      }
+      default:
+        return;
+    }
+  }
+
+  /**
+   * Replace the token on the open socket before it expires. The platform
+   * re-validates the latest token on its own schedule and closes with 4401
+   * when it no longer authorizes the session.
+   */
+  #scheduleRefresh(socket: WebSocket, token: CallsToken): void {
+    this.#clearRefresh();
+    if (token.expiresAt === undefined) return;
+    const now = (this.#o.now ?? Date.now)();
+    const lead = this.#o.refreshBeforeExpiryMs ?? 60_000;
+    const remaining = token.expiresAt - now;
+    const delay = Math.max(
+      1_000,
+      remaining > lead * 2 ? remaining - lead : remaining / 2,
+    );
+    this.#refreshTimer = (this.#o.setTimeout ?? setTimeout)(() => {
+      this.#refreshTimer = undefined;
+      void this.#replaceToken(socket);
+    }, delay);
+  }
+
+  async #replaceToken(socket: WebSocket): Promise<void> {
+    let token: CallsToken;
+    try {
+      token = await this.#o.api.token({ refresh: true });
+    } catch (cause) {
+      if (this.#socket !== socket || this.#closed) return;
+      try {
+        this.emit(
+          "error",
+          new CallsError(
+            "token_failed",
+            cause instanceof Error
+              ? cause.message
+              : "Could not refresh the lifecycle token.",
+            { cause },
+          ),
+        );
+      } catch (listenerCause) {
+        this.#report(listenerCause);
+      }
+      // Try again shortly; the platform closes with 4401 if the old token lapses.
+      this.#refreshTimer = (this.#o.setTimeout ?? setTimeout)(() => {
+        this.#refreshTimer = undefined;
+        void this.#replaceToken(socket);
+      }, 5_000);
       return;
     }
-    if (frame.type === "error") {
-      this.emit("error", { code: frame.code, message: frame.message });
-      return;
+    if (this.#socket !== socket || !this.#authenticated) return;
+    this.#send({ type: "auth", token: token.value });
+    this.#scheduleRefresh(socket, token);
+  }
+
+  #clearRefresh(): void {
+    if (this.#refreshTimer !== undefined) {
+      (this.#o.clearTimeout ?? clearTimeout)(this.#refreshTimer);
+      this.#refreshTimer = undefined;
     }
-    if (frame.type !== "event") return;
-    const payload =
-      frame.payload !== null && typeof frame.payload === "object"
-        ? (frame.payload as Record<string, unknown>)
-        : {};
-    this.emit("event", {
-      event: frame.event,
-      callId: frame.callId,
-      payload,
-      timestamp: frame.timestamp,
-    });
+  }
+
+  /** `/voip/ws`, naming the session only for server credentials. */
+  #path(token: CallsToken): string {
+    if (isClientToken(token.value)) return LIFECYCLE_SOCKET_PATH;
+    const query = new URLSearchParams();
+    if (this.#o.session !== undefined) query.set("session", this.#o.session);
+    if (this.#o.participant !== undefined)
+      query.set("participant", this.#o.participant);
+    const search = query.toString();
+    return search === ""
+      ? LIFECYCLE_SOCKET_PATH
+      : `${LIFECYCLE_SOCKET_PATH}?${search}`;
   }
 
   #scheduleReconnect(): void {
-    if (this.#closed || this.#timer !== undefined) return;
+    if (this.#closed || this.#refused || this.#timer !== undefined) return;
     const min = this.#o.minBackoffMs ?? 1_000;
     const max = this.#o.maxBackoffMs ?? 30_000;
     const random = this.#o.random ?? Math.random;
@@ -317,15 +518,13 @@ export class LifecycleSocket extends Emitter<Events> {
     this.#beat = (this.#o.setInterval ?? setInterval)(() => {
       if (this.#socket !== socket) return;
       if (this.#awaitingPong) {
-        // Half-open: still OPEN on paper, never answering. Drop it so the close
-        // path reconnects instead of silently losing every event.
+        // Half-open: still OPEN on paper, never answering. Drop it so the
+        // close path reconnects instead of silently losing every event.
         this.#stopHeartbeat();
+        this.#clearRefresh();
         this.#socket = undefined;
-        socket.onopen =
-          socket.onmessage =
-          socket.onclose =
-          socket.onerror =
-            null;
+        this.#authenticated = false;
+        detach(socket);
         try {
           socket.close();
         } catch {
@@ -338,10 +537,7 @@ export class LifecycleSocket extends Emitter<Events> {
         }
         return;
       }
-      if (socket.readyState === this.#WS.OPEN) {
-        socket.send(JSON.stringify({ type: "ping" }));
-        this.#awaitingPong = true;
-      }
+      this.#awaitingPong = this.#send({ type: "ping" });
     }, every);
   }
 
@@ -358,5 +554,33 @@ export class LifecycleSocket extends Emitter<Events> {
       this.#beat = undefined;
     }
     this.#awaitingPong = false;
+  }
+}
+
+function detach(socket: WebSocket): void {
+  socket.onopen = socket.onmessage = socket.onclose = socket.onerror = null;
+}
+
+function closeError(code: number | undefined): CallsError | undefined {
+  switch (code) {
+    case SocketCloseCode.Unauthorized:
+      return new CallsAuthError();
+    case SocketCloseCode.Conflict:
+      return new CallsError(
+        "socket_conflict",
+        "The platform refused the socket for the current session state.",
+      );
+    case SocketCloseCode.RateLimited:
+      return new CallsError(
+        "rate_limited",
+        "Too many socket attempts; reconnecting with backoff.",
+      );
+    case SocketCloseCode.InvalidRequest:
+      return new CallsError(
+        "invalid_request",
+        "The platform refused the socket request; check the session and participant. Reconnection stopped.",
+      );
+    default:
+      return undefined;
   }
 }

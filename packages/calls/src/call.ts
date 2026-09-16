@@ -1,20 +1,48 @@
-import type { CallsApi } from "./api.js";
+import type { AcceptCallResult, CallsApi } from "./api.js";
+import { CallClaimedError, CallsAuthError, CallsError } from "./errors.js";
 import { Emitter } from "./events.js";
-import { MediaSocket, type MediaSocketOptions } from "./media.js";
-import type { MediaControlFrame, Participant, VideoFrame } from "./protocol.js";
+import {
+  MediaSocket,
+  type MediaClose,
+  type MediaReady,
+  type MediaSocketOptions,
+  type MediaVideoSource,
+} from "./media.js";
+import {
+  createConnectionId,
+  isConnectionId,
+  type MediaControlFrame,
+  type OutboundVideoFrame,
+  type Participant,
+  type VideoFrame,
+} from "./protocol.js";
 
 export type CallDirection = "inbound" | "outbound";
 
 /**
- * `incoming` — ringing us, not yet answered · `ringing` — we placed it, remote
- * not yet answered · `connecting` — accepted, media not yet bridged ·
- * `connected` — media flowing · `ended` — terminal.
+ * `incoming` — ringing, or answered by another participant and open to join ·
+ * `ringing` — we placed it, remote not yet answered · `connecting` — accepted,
+ * media not yet attached · `connected` — media flowing · `reconnecting` —
+ * media dropped and is being reattached with the same connection id ·
+ * `ended` — terminal for this client.
  */
 export type CallState =
-  "incoming" | "ringing" | "connecting" | "connected" | "ended";
+  | "incoming"
+  | "ringing"
+  | "connecting"
+  | "connected"
+  | "reconnecting"
+  | "ended";
 
+/**
+ * `hangup` — this client ended the call for everyone · `left` — this client
+ * left; the call may continue for others · `claimed` — another participant
+ * claimed the call.
+ */
 export type CallEndReason =
   | "hangup"
+  | "left"
+  | "claimed"
   | "remote_hangup"
   | "rejected"
   | "missed"
@@ -25,10 +53,38 @@ export type CallEndReason =
   | "capacity"
   | "unknown";
 
-type AudioEvents = { data: [Int16Array] };
-type VideoEvents = { frame: [VideoFrame]; state: [enabled: boolean] };
+/** Who answered the call, and whether they claimed it. */
+export interface CallClaim {
+  readonly answered: boolean;
+  readonly answeredBy?: string;
+  readonly exclusive: boolean;
+  /** Another participant claimed the call: stop ringing and do not decline it. */
+  readonly claimedByOther: boolean;
+  /** The call is answered without a claim and this client can join it. */
+  readonly canJoin: boolean;
+}
 
-/** The call's audio, both directions: `on("data")` is WhatsApp → you, `write()` is you → WhatsApp. */
+export interface AnswerOptions {
+  /**
+   * Claim the call so nobody else can answer or join it. Default `false`:
+   * other participants keep ringing and can join.
+   */
+  readonly exclusive?: boolean;
+  /** Send video. Defaults to whether the call offered video. */
+  readonly video?: boolean;
+}
+
+type AudioEvents = { data: [Int16Array] };
+type VideoEvents = {
+  /** An inbound access unit; `frame.source` names its {@link MediaVideoSource}. */
+  frame: [VideoFrame];
+  source: [MediaVideoSource];
+  sourceRemoved: [source: number];
+  /** Send a keyframe with decoder configuration on the next write. */
+  keyframeRequest: [];
+};
+
+/** The call's merged audio: `on("data")` is the call → you, `write()` is you → the call. */
 export class AudioTrack extends Emitter<AudioEvents> {
   #socket: MediaSocket | undefined;
   #sampleRate: number;
@@ -40,14 +96,14 @@ export class AudioTrack extends Emitter<AudioEvents> {
   get sampleRate(): number {
     return this.#sampleRate;
   }
-  /** Push s16le mono PCM at {@link sampleRate}. Returns false when no media is bridged. */
+  /** Push s16le mono PCM at {@link sampleRate}. Returns false when no media is attached. */
   write(pcm: Int16Array): boolean {
     return this.#socket?.writeAudio(pcm) ?? false;
   }
   /** @internal */
-  _attach(socket: MediaSocket, sampleRate: number): void {
+  _attach(socket: MediaSocket | undefined, sampleRate?: number): void {
     this.#socket = socket;
-    this.#sampleRate = sampleRate;
+    if (sampleRate !== undefined) this.#sampleRate = sampleRate;
   }
   /** @internal */
   _push(pcm: Int16Array): void {
@@ -60,18 +116,23 @@ export class AudioTrack extends Emitter<AudioEvents> {
   }
 }
 
-/** The call's video, both directions, present when the call carries video. */
+/**
+ * The call's video: one outgoing H.264 stream, and one inbound stream per
+ * remote source. Sources are separate; nothing is composed.
+ */
 export class VideoTrack extends Emitter<VideoEvents> {
   #socket: MediaSocket | undefined;
-  #enabled = false;
-  get enabled(): boolean {
-    return this.#enabled;
+  readonly #sources = new Map<number, MediaVideoSource>();
+  /** Remote video sources by handle. */
+  get sources(): ReadonlyMap<number, MediaVideoSource> {
+    return this.#sources;
   }
-  write(frame: VideoFrame): boolean {
+  /** Push one Annex-B access unit. Returns false when no media is attached. */
+  write(frame: OutboundVideoFrame): boolean {
     return this.#socket?.writeVideo(frame) ?? false;
   }
   /** @internal */
-  _attach(socket: MediaSocket): void {
+  _attach(socket: MediaSocket | undefined): void {
     this.#socket = socket;
   }
   /** @internal */
@@ -79,13 +140,27 @@ export class VideoTrack extends Emitter<VideoEvents> {
     this.emit("frame", frame);
   }
   /** @internal */
-  _state(enabled: boolean): void {
-    this.#enabled = enabled;
-    this.emit("state", enabled);
+  _source(source: MediaVideoSource): void {
+    this.#sources.set(source.source, source);
+    this.emit("source", source);
+  }
+  /** @internal */
+  _sourceRemoved(handle: number): void {
+    if (!this.#sources.delete(handle)) return;
+    this.emit("sourceRemoved", handle);
+  }
+  /** @internal */
+  _clearSources(): void {
+    for (const handle of [...this.#sources.keys()]) this._sourceRemoved(handle);
+  }
+  /** @internal */
+  _keyframeRequest(): void {
+    this.emit("keyframeRequest");
   }
   /** @internal */
   _detach(): void {
     this.#socket = undefined;
+    this.#sources.clear();
     this.removeAllListeners();
   }
 }
@@ -94,41 +169,61 @@ type CallEvents = {
   state: [CallState, previous: CallState];
   connected: [];
   ended: [reason: CallEndReason];
+  /** Answer or claim information changed. */
+  claim: [CallClaim];
   participantJoined: [Participant];
   participantLeft: [participantId: string, reason: string | undefined];
   participantState: [Participant];
-  error: [{ code: string; message: string }];
+  error: [CallsError];
 };
 
 export interface CallInit {
   readonly id: string;
   readonly session: string;
   readonly direction: CallDirection;
-  /** The other party as the platform presents it: number, LID, or pseudonym. */
+  /** The other party as the platform presents it: number or public ID. */
   readonly peer: string;
   readonly video: boolean;
   readonly api: CallsApi;
-  readonly media: Omit<MediaSocketOptions, "ticket">;
+  readonly media: Omit<
+    MediaSocketOptions,
+    "api" | "callId" | "connectionId" | "participant" | "refreshToken"
+  >;
   /** External media is owned by a browser/WebRTC adapter, which calls mediaConnected(). */
   readonly mediaMode?: "socket" | "external";
+  /** Participant name for server credentials. */
+  readonly participant?: string;
+  /** Participant reference of this client, when known. */
+  readonly self?: () => string | undefined;
+  /** Media connection id; generated when omitted. */
+  readonly connectionId?: string;
+  /** Media reattach attempts after an unexpected drop. Default 3. */
+  readonly reconnectAttempts?: number;
   readonly now?: () => number;
 }
 
 /**
  * One call. Created by the client for every inbound `call.received` and every
  * successful `place()`. Lifecycle transitions arrive from the client's socket;
- * media arrives on this call's own socket once accepted.
+ * media arrives on this call's own connection once accepted.
  */
 export class Call extends Emitter<CallEvents> {
   readonly id: string;
   readonly session: string;
   readonly direction: CallDirection;
   readonly peer: string;
+  /** True when the call offered video. */
+  readonly hasVideo: boolean;
+  /** This client's media connection id; reused on reconnect. */
+  readonly connectionId: string;
   readonly audio: AudioTrack;
-  readonly video: VideoTrack | undefined;
+  readonly video: VideoTrack;
   readonly #api: CallsApi;
-  readonly #mediaOptions: Omit<MediaSocketOptions, "ticket">;
+  readonly #mediaOptions: CallInit["media"];
+  readonly #participant: string | undefined;
+  readonly #self: () => string | undefined;
   readonly #now: () => number;
+  readonly #reconnectAttempts: number;
   readonly #participants = new Map<string, Participant>();
   readonly #departedParticipants = new Set<string>();
   readonly #participantRevisions = new Map<string, number>();
@@ -139,7 +234,14 @@ export class Call extends Emitter<CallEvents> {
   #startedAt: number;
   #connectedAt: number | undefined;
   #endedAt: number | undefined;
-  #accepting: Promise<void> | undefined;
+  #accepting: Promise<AcceptCallResult> | undefined;
+  /** This client's accept succeeded. */
+  #accepted = false;
+  #answered = false;
+  #answeredBy: string | undefined;
+  #exclusive = false;
+  #claimedByOther = false;
+  #reconnectTimer: ReturnType<typeof setTimeout> | undefined;
   readonly #externalMedia: boolean;
   #mediaReady = false;
 
@@ -149,14 +251,26 @@ export class Call extends Emitter<CallEvents> {
     this.session = init.session;
     this.direction = init.direction;
     this.peer = init.peer;
+    this.hasVideo = init.video;
+    if (init.connectionId !== undefined && !isConnectionId(init.connectionId))
+      throw new CallsError(
+        "invalid_connection_id",
+        "connectionId must be 8–64 characters of A–Z, a–z, 0–9, _ or -.",
+      );
+    this.connectionId = init.connectionId ?? createConnectionId();
     this.#api = init.api;
     this.#mediaOptions = init.media;
+    this.#participant = init.participant;
+    this.#self = init.self ?? (() => undefined);
     this.#externalMedia = init.mediaMode === "external";
+    this.#reconnectAttempts = init.reconnectAttempts ?? 3;
     this.#now = init.now ?? Date.now;
     this.#state = init.direction === "inbound" ? "incoming" : "ringing";
     this.#startedAt = this.#now();
     this.audio = new AudioTrack(16_000);
-    this.video = init.video ? new VideoTrack() : undefined;
+    this.video = new VideoTrack();
+    // The placing participant owns an outbound call.
+    if (init.direction === "outbound") this.#accepted = true;
   }
 
   get state(): CallState {
@@ -174,7 +288,6 @@ export class Call extends Emitter<CallEvents> {
   get connectedAt(): number | undefined {
     return this.#connectedAt;
   }
-  /** Seconds since media connected; 0 before that. */
   /** Seconds of connected time; frozen at the end so a retained call stops counting. */
   get duration(): number {
     if (this.#connectedAt === undefined) return 0;
@@ -187,79 +300,173 @@ export class Call extends Emitter<CallEvents> {
   get participants(): readonly Participant[] {
     return [...this.#participants.values()];
   }
-
-  /**
-   * Accept an incoming call and bridge media. Resolves once the pod reports
-   * media flowing. With externally managed media, resolves after acceptance;
-   * the adapter calls mediaConnected() when WebRTC connects. Idempotent while
-   * in flight; rejects if the call is not incoming.
-   */
-  answer(options: { readonly video?: boolean } = {}): Promise<void> {
-    if (this.#accepting !== undefined) return this.#accepting;
-    if (this.#state !== "incoming")
-      return Promise.reject(
-        new Error(`Cannot answer a call in state "${this.#state}".`),
-      );
-    const video = options.video ?? this.video !== undefined;
-    let accepted = false;
-    this.#accepting = (async () => {
-      this.#transition("connecting");
-      await this.#api.accept(this.id, { video });
-      accepted = true;
-      await this.#bridge();
-    })().catch((cause: unknown) => {
-      this.#accepting = undefined;
-      if (this.#state === "ended") throw cause;
-      if (!accepted) {
-        // The accept itself was refused: nothing changed on the platform, so
-        // the call is still ringing and can be answered or rejected again.
-        this.#transition("incoming");
-        throw cause;
-      }
-      // The platform has accepted; only our media failed. Going back to
-      // `incoming` would send a second accept and offer reject() for a call
-      // that is no longer ringing. End it and say why.
-      this.emit("error", {
-        code: "media_failed",
-        message:
-          cause instanceof Error
-            ? cause.message
-            : "Media could not be bridged.",
-      });
-      this.#end("connection_failed");
-      throw cause;
-    });
-    return this.#accepting;
+  /** Answer and claim state, as last reported by the platform. */
+  get claim(): CallClaim {
+    return {
+      answered: this.#answered,
+      ...(this.#answeredBy === undefined
+        ? {}
+        : { answeredBy: this.#answeredBy }),
+      exclusive: this.#exclusive,
+      claimedByOther: this.claimedByOther,
+      canJoin: this.canJoin,
+    };
+  }
+  get claimedByOther(): boolean {
+    return this.#claimedByOther && !this.#accepted && !this.ended;
+  }
+  get canJoin(): boolean {
+    return (
+      this.#state === "incoming" &&
+      this.#answered &&
+      !this.#exclusive &&
+      !this.#claimedByOther
+    );
   }
 
-  /** Decline an incoming call. */
+  /**
+   * Answer a ringing call and attach media. With `exclusive: true` the call
+   * is claimed: other participants stop ringing and cannot join. Resolves
+   * once media is connected (after acceptance for external media). Rejects
+   * with {@link CallClaimedError} when another participant claimed the call;
+   * the call then stays visible as `claimedByOther`.
+   */
+  answer(options: AnswerOptions = {}): Promise<void> {
+    return this.#accept({
+      exclusive: options.exclusive === true,
+      video: options.video ?? this.hasVideo,
+    });
+  }
+
+  /**
+   * Join a call another participant answered without claiming it. Never
+   * claims. Rejects with {@link CallClaimedError} when the call is claimed.
+   */
+  join(options: { readonly video?: boolean } = {}): Promise<void> {
+    if (!this.#answered && this.#state === "incoming")
+      return Promise.reject(
+        new CallsError(
+          "call_not_answered",
+          "Nobody has answered this call yet; answer it instead.",
+        ),
+      );
+    return this.#accept({
+      exclusive: false,
+      video: options.video ?? this.hasVideo,
+    });
+  }
+
+  #accept(options: { exclusive: boolean; video: boolean }): Promise<void> {
+    if (this.#accepting !== undefined)
+      return this.#accepting.then(() => undefined);
+    if (this.#state !== "incoming")
+      return Promise.reject(
+        new CallsError(
+          "invalid_state",
+          `Cannot answer a call in state "${this.#state}".`,
+        ),
+      );
+    if (this.claimedByOther) return Promise.reject(new CallClaimedError());
+    let accepted = false;
+    const accepting = (async () => {
+      this.#transition("connecting");
+      const result = await this.#api.accept(this.id, {
+        exclusive: options.exclusive,
+        video: options.video,
+        ...(this.#participant === undefined
+          ? {}
+          : { participant: this.#participant }),
+      });
+      accepted = true;
+      this.#accepted = true;
+      this.#applyClaim({
+        answered: result.answered,
+        answeredBy: result.answeredBy,
+        exclusive: result.exclusive,
+      });
+      return result;
+    })();
+    this.#accepting = accepting;
+    const run = accepting
+      .then(() => this.#bridge())
+      .catch((cause: unknown) => {
+        this.#accepting = undefined;
+        if (this.#state === "ended") throw cause;
+        if (!accepted) {
+          // The accept itself was refused: nothing changed on the platform.
+          if (cause instanceof CallClaimedError) {
+            this.#claimedByOther = true;
+            this.#applyClaim({ answered: true, exclusive: true });
+          }
+          this.#transition("incoming");
+          throw cause;
+        }
+        this.#mediaFailed(cause);
+        throw cause;
+      });
+    return run;
+  }
+
+  /**
+   * Decline a ringing call. This ends the call for every participant, so
+   * applications decide when to call it; the client never declines on its own.
+   */
   async reject(): Promise<void> {
     if (this.#state !== "incoming")
-      throw new Error(`Cannot reject a call in state "${this.#state}".`);
-    await this.#api.reject(this.id);
+      throw new CallsError(
+        "invalid_state",
+        `Cannot reject a call in state "${this.#state}".`,
+      );
+    if (this.#answered)
+      throw new CallsError(
+        "call_not_ringing",
+        "The call is already answered. Join it or leave it; declining is not possible.",
+      );
+    await this.#api.reject(this.id, undefined, this.#participant);
     this.#end("rejected");
   }
 
-  /** End the call from our side, in any live state. Idempotent. */
-  async hangup(): Promise<void> {
+  /**
+   * Leave the call: close this client's media connection. The call continues
+   * for everyone else. On a call this client never joined, only local
+   * tracking stops.
+   */
+  async leave(): Promise<void> {
     if (this.#state === "ended") return;
-    this.#media?.sendControl({ type: "hangup" });
+    const attached = this.#accepted;
+    const media = this.#media;
     try {
-      await this.#api.hangup(this.id);
+      if (attached && !(media?.leave() ?? false))
+        await this.#api.leave(
+          this.id,
+          this.connectionId,
+          undefined,
+          this.#participant,
+        );
     } finally {
-      this.#end("hangup");
+      this.#end("left");
     }
+  }
+
+  /** End the call for every participant. Idempotent. */
+  async end(): Promise<void> {
+    if (this.#state === "ended") return;
+    await this.#api.end(this.id);
+    this.#end("hangup");
   }
 
   /** Invite another party, turning a 1:1 call into a group call. */
   async addParticipant(to: string): Promise<Participant> {
     if (this.#state === "ended")
-      throw new Error("Cannot add a participant to an ended call.");
+      throw new CallsError(
+        "invalid_state",
+        "Cannot add a participant to an ended call.",
+      );
     const requestedAtRevision = this.#rosterRevision;
     const participant = await this.#api.addParticipant(this.id, to);
     // The lifecycle stream may move this participant forward, or report it
-    // left, while the HTTP request is in flight. Its acknowledgement is then
-    // older than the roster and must not overwrite or restore that entry.
+    // left, while the request is in flight. Its acknowledgement is then older
+    // than the roster and must not overwrite or restore that entry.
     if (
       (this.#participantRevisions.get(participant.id) ?? 0) <=
       requestedAtRevision
@@ -268,22 +475,37 @@ export class Call extends Emitter<CallEvents> {
     return participant;
   }
 
-  /** @internal Outbound call: the remote answered; bridge media. */
-  async _remoteAccepted(): Promise<void> {
-    if (this.#state !== "ringing") return;
-    this.#transition("connecting");
-    try {
-      await this.#bridge();
-    } catch (cause) {
-      this.emit("error", {
-        code: "media_failed",
-        message:
-          cause instanceof Error
-            ? cause.message
-            : "Media could not be bridged.",
-      });
-      this.#end("connection_failed");
+  /**
+   * @internal `call.accepted` arrived. For an outbound call the remote party
+   * answered; for an inbound call it names who answered and whether they
+   * claimed it.
+   */
+  async _remoteAccepted(
+    claim: { readonly answeredBy?: string; readonly exclusive?: boolean } = {},
+  ): Promise<void> {
+    if (this.direction === "outbound") {
+      if (this.#state !== "ringing") return;
+      this.#transition("connecting");
+      try {
+        await this.#bridge();
+      } catch (cause) {
+        this.#mediaFailed(cause);
+      }
+      return;
     }
+    if (this.ended) return;
+    const exclusive = claim.exclusive === true;
+    const answeredBy = claim.answeredBy;
+    const self = this.#self();
+    const byUs =
+      answeredBy !== undefined && self !== undefined && answeredBy === self;
+    if (exclusive && !byUs && !this.#accepted && this.#accepting === undefined)
+      this.#claimedByOther = true;
+    this.#applyClaim({
+      answered: true,
+      ...(answeredBy === undefined ? {} : { answeredBy }),
+      exclusive,
+    });
   }
 
   /** @internal The platform reported the call over. */
@@ -301,6 +523,39 @@ export class Call extends Emitter<CallEvents> {
     this.#rosterRevision += 1;
     this.#participantRevisions.set(participantId, this.#rosterRevision);
     this.#applyParticipant(frame);
+  }
+
+  /**
+   * Notify an externally managed call that its media connected. An outbound
+   * call still waits for the remote party to accept. Socket media ignores this.
+   */
+  mediaConnected(): void {
+    if (!this.#externalMedia || this.ended) return;
+    this.#mediaReady = true;
+    if (this.#state !== "connecting") return;
+    this.#connectedAt = this.#now();
+    this.#transition("connected");
+    this.emit("connected");
+  }
+
+  #applyClaim(next: {
+    answered: boolean;
+    answeredBy?: string;
+    exclusive: boolean;
+  }): void {
+    const before = this.claim;
+    this.#answered = this.#answered || next.answered;
+    if (next.answeredBy !== undefined) this.#answeredBy = next.answeredBy;
+    this.#exclusive = next.exclusive;
+    const after = this.claim;
+    if (
+      before.answered !== after.answered ||
+      before.answeredBy !== after.answeredBy ||
+      before.exclusive !== after.exclusive ||
+      before.claimedByOther !== after.claimedByOther ||
+      before.canJoin !== after.canJoin
+    )
+      this.emit("claim", after);
   }
 
   #applyInviteReply(participant: Participant): void {
@@ -328,7 +583,6 @@ export class Call extends Emitter<CallEvents> {
       this.emit("participantLeft", frame.participantId, frame.reason);
       return;
     }
-
     const participant = frame.participant;
     if (participant.state === "left") {
       this.#applyParticipant({
@@ -346,17 +600,23 @@ export class Call extends Emitter<CallEvents> {
     else this.emit("participantState", participant);
   }
 
-  /**
-   * Notify an externally managed call that its media connected. An outbound
-   * call still waits for the remote party to accept. Socket media ignores this.
-   */
-  mediaConnected(): void {
-    if (!this.#externalMedia || this.ended) return;
-    this.#mediaReady = true;
-    if (this.#state !== "connecting") return;
-    this.#connectedAt = this.#now();
-    this.#transition("connected");
-    this.emit("connected");
+  #mediaFailed(cause: unknown): void {
+    if (this.ended) return;
+    // The platform accepted; only our media failed. End this client's view
+    // of the call and say why.
+    this.emit(
+      "error",
+      cause instanceof CallsError
+        ? cause
+        : new CallsError(
+            "media_failed",
+            cause instanceof Error ? cause.message : "Media could not attach.",
+            { cause },
+          ),
+    );
+    this.#end(
+      cause instanceof CallClaimedError ? "claimed" : "connection_failed",
+    );
   }
 
   async #bridge(): Promise<void> {
@@ -364,18 +624,35 @@ export class Call extends Emitter<CallEvents> {
       if (this.#mediaReady) this.mediaConnected();
       return;
     }
-    const ticket = await this.#api.mediaTicket(this.id);
-    // The call can end while the ticket is in flight — a queued `ended` right
-    // behind the `accepted` that started this. Creating the socket now would
-    // leave an ended call holding a live socket and heartbeat.
-    // Read through the getter: TypeScript narrows a private field across the
-    // awaits above and would otherwise consider the later check unreachable.
-    if (this.ended) throw new Error("Call ended before media was bridged.");
-    const media = new MediaSocket({ ...this.#mediaOptions, ticket });
+    const ready = await this.#attach(false);
+    if (ready === undefined) return;
+    this.#connectedAt = this.#now();
+    this.#transition("connected");
+    this.emit("connected");
+  }
+
+  /** Open one media socket with this call's connection id. */
+  async #attach(refreshToken: boolean): Promise<MediaReady | undefined> {
+    if (this.ended)
+      throw new CallsError("call_ended", "Call ended before media attached.");
+    const media = new MediaSocket({
+      ...this.#mediaOptions,
+      api: this.#api,
+      callId: this.id,
+      connectionId: this.connectionId,
+      ...(this.#participant === undefined
+        ? {}
+        : { participant: this.#participant }),
+      refreshToken,
+    });
     this.#media = media;
     media.on("audio", (pcm) => this.audio._push(pcm));
-    media.on("video", (frame) => this.video?._frame(frame));
-    media.on("videoState", (enabled) => this.video?._state(enabled));
+    media.on("video", (frame) => this.video._frame(frame));
+    media.on("videoSource", (source) => this.video._source(source));
+    media.on("videoSourceRemoved", (handle) =>
+      this.video._sourceRemoved(handle),
+    );
+    media.on("keyframeRequest", () => this.video._keyframeRequest());
     media.on("participantJoined", (participant) =>
       this._remoteParticipant({ type: "participant_joined", participant }),
     );
@@ -390,34 +667,117 @@ export class Call extends Emitter<CallEvents> {
       }),
     );
     media.on("error", (error) => this.emit("error", error));
-    media.on("hangup", () => this.#end("remote_hangup"));
-    media.on("close", () => {
-      if (this.#state === "connected") this.#end("connection_failed");
+    let ready: MediaReady | undefined;
+    const readyListener = (value: MediaReady) => {
+      ready = value;
+    };
+    media.once("ready", readyListener);
+    let attached = false;
+    media.on("close", (close) => {
+      if (attached) this.#mediaClosed(media, close);
     });
-    let ready: { sampleRate: number; video: boolean };
     try {
-      ready = await new Promise<{ sampleRate: number; video: boolean }>(
-        (resolve, reject) => {
-          media.once("ready", resolve);
-          media.connect().catch(reject);
-        },
-      );
+      await media.connect();
     } catch (cause) {
-      // Any bridge failure releases the socket and its heartbeat; left open,
-      // a retry would overwrite #media and leak this one.
-      media.close();
       if (this.#media === media) this.#media = undefined;
+      media.close();
       throw cause;
     }
-    if (this.ended) {
+    if (this.ended || this.#media !== media) {
       media.close();
+      return undefined;
+    }
+    if (!media.connected) {
+      // Closed between `ready` and this continuation.
+      this.#media = undefined;
+      throw new CallsError("media_closed", "Media connection closed.");
+    }
+    attached = true;
+    this.audio._attach(media, ready?.sampleRate ?? media.sampleRate);
+    this.video._attach(media);
+    return ready;
+  }
+
+  #mediaClosed(media: MediaSocket, close: MediaClose): void {
+    if (this.#media !== media || this.ended) return;
+    this.#media = undefined;
+    this.audio._attach(undefined);
+    this.video._attach(undefined);
+    this.video._clearSources();
+    switch (close.reason) {
+      case "local":
+        return;
+      case "left":
+        this.#end("left");
+        return;
+      case "ended":
+        this.#end("remote_hangup");
+        return;
+      case "claimed":
+        this.#end("claimed");
+        return;
+      case "refused":
+        this.emit(
+          "error",
+          new CallsError(
+            "media_refused",
+            "The platform refused the media connection.",
+          ),
+        );
+        this.#end("connection_failed");
+        return;
+      case "unauthorized":
+      case "lost":
+        this.#reconnect(close.reason === "unauthorized", 0);
+        return;
+    }
+  }
+
+  #reconnect(refreshToken: boolean, attempt: number): void {
+    if (this.ended) return;
+    if (attempt >= this.#reconnectAttempts) {
+      this.emit(
+        "error",
+        refreshToken
+          ? new CallsAuthError()
+          : new CallsError("media_lost", "Media connection lost."),
+      );
+      this.#end("connection_failed");
       return;
     }
-    this.audio._attach(media, ready.sampleRate);
-    this.video?._attach(media);
-    this.#connectedAt = this.#now();
-    this.#transition("connected");
-    this.emit("connected");
+    this.#transition("reconnecting");
+    const delay = Math.min(8_000, 1_000 * 2 ** attempt);
+    this.#reconnectTimer = (this.#mediaOptions.setTimeout ?? setTimeout)(() => {
+      this.#reconnectTimer = undefined;
+      void this.#attach(refreshToken).then(
+        (ready) => {
+          if (ready === undefined || this.ended) return;
+          this.#transition("connected");
+        },
+        (cause: unknown) => {
+          if (this.ended) return;
+          if (cause instanceof CallClaimedError) {
+            this.#end("claimed");
+            return;
+          }
+          if (!retryable(cause)) {
+            // Refused or no longer available: reattaching cannot help.
+            this.emit(
+              "error",
+              cause instanceof CallsError
+                ? cause
+                : new CallsError("media_failed", "Media could not attach."),
+            );
+            this.#end("connection_failed");
+            return;
+          }
+          this.#reconnect(
+            cause instanceof CallsAuthError || refreshToken,
+            attempt + 1,
+          );
+        },
+      );
+    }, delay);
   }
 
   #transition(next: CallState): void {
@@ -431,12 +791,16 @@ export class Call extends Emitter<CallEvents> {
     if (this.#state === "ended") return;
     this.#endReason = reason;
     this.#endedAt = this.#now();
+    if (this.#reconnectTimer !== undefined) {
+      (this.#mediaOptions.clearTimeout ?? clearTimeout)(this.#reconnectTimer);
+      this.#reconnectTimer = undefined;
+    }
     this.#transition("ended");
     const media = this.#media;
     this.#media = undefined;
     media?.close();
     this.audio._detach();
-    this.video?._detach();
+    this.video._detach();
     this.emit("ended", reason);
     this.removeAllListeners();
   }
@@ -446,6 +810,13 @@ type ParticipantControlFrame = Extract<
   MediaControlFrame,
   { type: "participant_joined" | "participant_state" | "participant_left" }
 >;
+
+/** Whether a failed reattach is worth another attempt. */
+function retryable(cause: unknown): boolean {
+  if (cause instanceof CallsAuthError) return true;
+  if (!(cause instanceof CallsError)) return true;
+  return ["media_closed", "media_timeout", "token_failed"].includes(cause.code);
+}
 
 function participantStateRank(state: Participant["state"]): number {
   switch (state) {

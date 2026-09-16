@@ -1,16 +1,21 @@
 import {
   CallsApiError,
-  type AnswerMode,
+  isParticipant,
+  type AcceptCallOptions,
+  type AcceptCallResult,
   type CallsApi,
-  type MediaTicket,
+  type CallsToken,
+  type CallsTokenRequest,
   type Participant,
   type PlaceCallRequest,
-  type SocketTicket,
 } from "@polymorfa/calls";
 import { BrowserTransport } from "../transport.js";
-import { CallsSignalingClient } from "./signaling.js";
+import { CallsSignalingClient, claimedError } from "./signaling.js";
 
-/** Client-token call controls for WebRTC. The token determines the session. */
+/**
+ * Client-token call controls. The token determines the session and the
+ * participant, so `session` and `participant` are never sent.
+ */
 export class BrowserCallsApi implements CallsApi {
   readonly #transport: BrowserTransport;
   readonly #signaling: CallsSignalingClient;
@@ -20,52 +25,14 @@ export class BrowserCallsApi implements CallsApi {
     this.#signaling = new CallsSignalingClient(transport);
   }
 
-  async socketTicket(
-    _session: string,
-    signal?: AbortSignal,
-  ): Promise<SocketTicket> {
-    const response = await this.#transport.request<{ data?: SocketTicket }>({
-      method: "POST",
-      path: "/messaging/voip/ws-ticket",
-      body: {},
-      ...(signal === undefined ? {} : { signal }),
-    });
-    const ticket = response.data?.data;
-    if (
-      !ticket ||
-      typeof ticket.ticket !== "string" ||
-      !ticket.ticket ||
-      typeof ticket.url !== "string" ||
-      !ticket.url ||
-      !Number.isFinite(ticket.expiresAt)
-    )
-      throw malformed("socket ticket");
-    const url = this.#signaling.socketUrl(ticket);
+  token(request: CallsTokenRequest = {}): Promise<CallsToken> {
+    return this.#signaling.token(request);
+  }
+
+  socketUrl(path: string): string {
+    const url = this.#signaling.socketUrl(path);
     if (!/^wss?:\/\//.test(url)) throw malformed("socket URL");
-    return { ...ticket, url };
-  }
-
-  async setMode(
-    _session: string,
-    mode: AnswerMode,
-    signal?: AbortSignal,
-  ): Promise<void> {
-    if (mode !== "browser")
-      throw new Error("Browser calls require browser answer mode for WebRTC.");
-    await this.#transport.request({
-      method: "POST",
-      path: "/messaging/voip/mode",
-      body: { mode },
-      ...(signal === undefined ? {} : { signal }),
-    });
-  }
-
-  mediaTicket(): Promise<MediaTicket> {
-    return Promise.reject(
-      new Error(
-        "Browser calls use WebRTC; client tokens cannot mint agent tickets.",
-      ),
-    );
+    return url;
   }
 
   async place(
@@ -77,7 +44,13 @@ export class BrowserCallsApi implements CallsApi {
     }>({
       method: "POST",
       path: "/messaging/voip/calls",
-      body: { to: input.to, video: input.video },
+      body: {
+        to: input.to,
+        video: input.video,
+        ...(input.exclusive === undefined
+          ? {}
+          : { exclusive: input.exclusive }),
+      },
       idempotencyKey: input.idempotencyKey,
       ...(signal === undefined ? {} : { signal }),
     });
@@ -86,22 +59,52 @@ export class BrowserCallsApi implements CallsApi {
     return { callId };
   }
 
-  /** Browser mode already answered remotely; the controller now attaches WebRTC. */
   async accept(
-    _callId: string,
-    _options: { readonly video: boolean },
+    callId: string,
+    options: AcceptCallOptions,
+    signal?: AbortSignal,
+  ): Promise<AcceptCallResult> {
+    const response = await this.#transport
+      .request<{ data?: unknown }>({
+        method: "POST",
+        path: `/messaging/voip/calls/${encodeURIComponent(callId)}/accept`,
+        body: {
+          exclusive: options.exclusive === true,
+          ...(options.video === undefined ? {} : { video: options.video }),
+        },
+        ...(signal === undefined ? {} : { signal }),
+      })
+      .catch((cause: unknown) => {
+        throw claimedError(cause);
+      });
+    const data = response.data?.data as Record<string, unknown> | undefined;
+    if (
+      typeof data?.["answered"] !== "boolean" ||
+      typeof data["answeredBy"] !== "string" ||
+      typeof data["exclusive"] !== "boolean"
+    )
+      throw malformed("accept result");
+    return {
+      answered: data["answered"],
+      answeredBy: data["answeredBy"],
+      exclusive: data["exclusive"],
+    };
+  }
+
+  reject(callId: string, signal?: AbortSignal): Promise<void> {
+    return this.#signaling.reject(callId, signal);
+  }
+
+  leave(
+    callId: string,
+    connectionId: string,
     signal?: AbortSignal,
   ): Promise<void> {
-    signal?.throwIfAborted();
+    return this.#signaling.leave(callId, connectionId, signal);
   }
 
-  /** Browser-mode calls are already answered, so declining ends the call. */
-  reject(callId: string, signal?: AbortSignal): Promise<void> {
-    return this.hangup(callId, signal);
-  }
-
-  hangup(callId: string, signal?: AbortSignal): Promise<void> {
-    return this.#signaling.teardown(callId, signal);
+  end(callId: string, signal?: AbortSignal): Promise<void> {
+    return this.#signaling.end(callId, signal);
   }
 
   async addParticipant(
@@ -109,26 +112,14 @@ export class BrowserCallsApi implements CallsApi {
     to: string,
     signal?: AbortSignal,
   ): Promise<Participant> {
-    const response = await this.#transport.request<{ data?: Participant }>({
+    const response = await this.#transport.request<{ data?: unknown }>({
       method: "POST",
       path: `/messaging/voip/calls/${encodeURIComponent(callId)}/participants`,
       body: { to },
       ...(signal === undefined ? {} : { signal }),
     });
     const p = response.data?.data;
-    if (
-      !p ||
-      typeof p.id !== "string" ||
-      !p.id ||
-      Object.hasOwn(p, "handle") ||
-      ![p.phoneNumber, p.bsuid, p.username].every(
-        (value) => value === undefined || typeof value === "string",
-      ) ||
-      typeof p.audioMuted !== "boolean" ||
-      typeof p.video !== "boolean" ||
-      !["invited", "ringing", "connected", "left"].includes(p.state)
-    )
-      throw malformed("participant");
+    if (!isParticipant(p)) throw malformed("participant");
     return p;
   }
 }

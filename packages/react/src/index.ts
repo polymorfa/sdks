@@ -26,6 +26,8 @@ export {
   CallSurface,
   DialPad,
   IncomingCallCard,
+  ParticipantList,
+  ParticipantVideoGrid,
   formatDuration,
   injectCallsStyles,
   useCallDuration,
@@ -37,4 +39,6 @@ export {
   type CallSurfaceProps,
   type DialPadProps,
   type IncomingCallCardProps,
+  type ParticipantListProps,
+  type ParticipantVideoGridProps,
 } from "./calls.js";

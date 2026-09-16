@@ -1,9 +1,10 @@
 // ── Calls ─────────────────────────────────────────────────────────────
 //
-// The browser signs into the signaling surface with a client token minted by
-// your server (`MessagingClient.voip.token`). Inbound calls reach your server
-// as the `call.received` webhook; relay them to the browser and hand them to
-// the relay below.
+// The browser uses a client token minted by your server with
+// `POST /platform/client-tokens` (see the Next.js token route example). The
+// same token authenticates REST calls and call sockets; there is no calling
+// ticket. Inbound calls reach your server as `call.received` webhooks; relay
+// them, with `call.accepted` and `call.ended`, to the relay below.
 import {
   BrowserTransport,
   CallsController,
@@ -62,6 +63,22 @@ export function onCallReceivedWebhook(
   incomingCalls.receive(incomingCallFromWebhook(payload));
 }
 
+/** Wire this to `call.accepted`, so a call claimed elsewhere stops ringing here. */
+export function onCallAcceptedWebhook(payload: {
+  callId: string;
+  answeredBy?: string;
+  exclusive?: boolean;
+}): void {
+  incomingCalls.accepted(payload.callId, {
+    ...(payload.answeredBy === undefined
+      ? {}
+      : { answeredBy: payload.answeredBy }),
+    ...(payload.exclusive === undefined
+      ? {}
+      : { exclusive: payload.exclusive }),
+  });
+}
+
 /** Wire this to the same channel for `call.ended`, so a remote hang-up ends the UI promptly. */
 export function onCallEndedWebhook(payload: {
   callId: string;
@@ -74,8 +91,10 @@ export function CallsApp() {
   return (
     <PolymorfaProvider appearance={{ theme: "system" }}>
       <DialPad controller={calls} />
+      {/* exclusive={false}: other participants keep ringing and can join. */}
       <CallSurface
         controller={calls}
+        exclusive={false}
         resolveName={(peer) =>
           peer === "+12025550123" ? "Casey Rivera" : undefined
         }

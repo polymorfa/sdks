@@ -114,6 +114,13 @@ import {
   type UserSecurityCode,
   type OrganizationQuickLinkSettings,
   type ProjectQuickLinkSettings,
+  type SessionCallSettings,
+  type UpdateSessionCallSettingsRequest,
+  type VoipAcceptCallRequest,
+  type VoipAcceptCallResult,
+  type VoipLeaveCallRequest,
+  type VoipParticipant,
+  type VoipPlaceCallRequest,
 } from "../src/index.js";
 
 describe("public exports", () => {
@@ -253,5 +260,14 @@ describe("public exports", () => {
       ProjectQuickLinkSettings["projectId"]
     >().toEqualTypeOf<string>();
     expectTypeOf<MessageReceivedEvent>().toHaveProperty("payload");
+    expectTypeOf<VoipPlaceCallRequest>().toHaveProperty("exclusive");
+    expectTypeOf<VoipAcceptCallRequest>().toHaveProperty("participant");
+    expectTypeOf<VoipAcceptCallResult>().toHaveProperty("answeredBy");
+    expectTypeOf<VoipLeaveCallRequest>().toHaveProperty("connectionId");
+    expectTypeOf<VoipParticipant>().toHaveProperty("state");
+    expectTypeOf<SessionCallSettings>().toHaveProperty("includeSelfAudio");
+    expectTypeOf<UpdateSessionCallSettingsRequest>().toHaveProperty(
+      "includeSelfAudio",
+    );
   });
 });

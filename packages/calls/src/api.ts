@@ -1,64 +1,92 @@
-import type { Participant } from "./protocol.js";
+import { CallClaimedError, CallsApiError } from "./errors.js";
+import { isParticipant, type Participant } from "./protocol.js";
+import {
+  CallsTokenSource,
+  isClientToken,
+  type CallsToken,
+  type CallsTokenProvider,
+  type CallsTokenRequest,
+} from "./token.js";
+
+export { CallClaimedError, CallsApiError } from "./errors.js";
 
 /** Minimal request seam so tests and other transports can stand in for fetch. */
 export type FetchLike = (input: string, init: RequestInit) => Promise<Response>;
 
-export interface SocketTicket {
-  readonly ticket: string;
-  /** Unix epoch milliseconds. */
-  readonly expiresAt: number;
-  /** Root-relative or absolute URL of the lifecycle socket, ticket included. */
-  readonly url: string;
+export interface AcceptCallOptions {
+  /**
+   * Claim the call. Other participants then receive `call_claimed` for
+   * accept and media, and their open connections close. Default `false`:
+   * others keep ringing and can join.
+   */
+  readonly exclusive?: boolean;
+  readonly video?: boolean;
+  /** Participant name for organization API keys and project tokens. */
+  readonly participant?: string;
 }
 
-export interface MediaTicket {
-  readonly token: string;
-  /** Unix epoch milliseconds. */
-  readonly expiresAt: number;
-  /** Absolute `ws(s)://` URL of the pod's media socket for this call. */
-  readonly url: string;
+export interface AcceptCallResult {
+  /** True once the call is answered (by this or an earlier accept). */
+  readonly answered: boolean;
+  /** Participant reference that answered the call first. */
+  readonly answeredBy: string;
+  /** True when `answeredBy` claimed the call. */
+  readonly exclusive: boolean;
 }
 
 export interface PlaceCallRequest {
+  /** Source session. Sent for server credentials; client tokens are bound to one. */
   readonly session: string;
   readonly to: string;
   readonly video: boolean;
+  /** Claim the call for the placing participant. Default `false`. */
+  readonly exclusive?: boolean;
+  /** Participant name for organization API keys and project tokens. */
+  readonly participant?: string;
   readonly idempotencyKey: string;
 }
 
 /**
- * The server-key operations the client needs. Kept as an interface so the
- * platform calls are one swappable seam — tests fake it, and the browser kit
- * can back it with a client-token transport where the operation is permitted.
+ * The platform operations the client needs, as one swappable seam — tests fake
+ * it and the browser package backs it with its client-token transport.
  */
-/** How a session answers inbound calls; the SDK claims `sdk` on connect. */
-export type AnswerMode = "browser" | "agent" | "sdk";
-
 export interface CallsApi {
-  socketTicket(session: string, signal?: AbortSignal): Promise<SocketTicket>;
-  /**
-   * Record how the session answers inbound calls. `sdk` makes them ring until
-   * this client accepts or rejects; the other modes auto-answer for a browser
-   * or raw-audio leg.
-   */
-  setMode(
-    session: string,
-    mode: AnswerMode,
-    signal?: AbortSignal,
-  ): Promise<void>;
-  mediaTicket(callId: string, signal?: AbortSignal): Promise<MediaTicket>;
-  /** Start an outbound call on a linked-device session; resolves the platform call id. */
+  /** Credential for socket authentication frames. */
+  token(request?: CallsTokenRequest): Promise<CallsToken>;
+  /** Absolute `ws(s)://` URL for a socket path on the API host. */
+  socketUrl(path: string): string;
+  /** Start an outbound call; resolves the platform call id. */
   place(
     input: PlaceCallRequest,
     signal?: AbortSignal,
   ): Promise<{ readonly callId: string }>;
+  /**
+   * Answer a ringing call, or join an answered one that nobody claimed.
+   * Rejects with {@link CallClaimedError} when another participant claimed it.
+   */
   accept(
     callId: string,
-    options: { readonly video: boolean },
+    options: AcceptCallOptions,
     signal?: AbortSignal,
+  ): Promise<AcceptCallResult>;
+  /**
+   * Decline a ringing call. This ends the call for everyone. `participant`
+   * applies to server credentials only.
+   */
+  reject(
+    callId: string,
+    signal?: AbortSignal,
+    participant?: string,
   ): Promise<void>;
-  reject(callId: string, signal?: AbortSignal): Promise<void>;
-  hangup(callId: string, signal?: AbortSignal): Promise<void>;
+  /** Close one media connection. The call continues. */
+  leave(
+    callId: string,
+    connectionId: string,
+    signal?: AbortSignal,
+    participant?: string,
+  ): Promise<void>;
+  /** End the call for every participant. */
+  end(callId: string, signal?: AbortSignal): Promise<void>;
   addParticipant(
     callId: string,
     to: string,
@@ -67,68 +95,83 @@ export interface CallsApi {
 }
 
 export interface HttpCallsApiOptions {
-  readonly apiKey: string;
+  /**
+   * Credential: a server API key or project token string, or a provider that
+   * returns a client token minted by your server.
+   */
+  readonly token?: string | CallsTokenProvider;
+  /** Server credential string; same as passing it as `token`. */
+  readonly apiKey?: string;
   /** Defaults to `https://api.polymorfa.com`. */
   readonly baseUrl?: string;
   readonly fetch?: FetchLike;
-  /** Seam for the socket URL scheme swap; defaults to `ws(s)://` on the API host. */
+  /** Socket host; defaults to `ws(s)://` on the API host. */
   readonly socketBaseUrl?: string;
+  readonly now?: () => number;
 }
 
-/**
- * A 2xx body that does not carry the shape the operation needs is a protocol
- * fault, not a success: fail loudly here rather than let `undefined` reach a
- * socket URL or a call id.
- */
-function expectShape(
-  data: unknown,
-  operation: string,
-  ok: (d: Record<string, unknown>) => boolean,
-): Record<string, unknown> {
+/** Validate an accept response body. @internal */
+export function parseAcceptResult(data: unknown): AcceptCallResult {
   if (
     data !== null &&
     typeof data === "object" &&
-    ok(data as Record<string, unknown>)
-  )
-    return data as Record<string, unknown>;
-  throw new CallsApiError(
+    typeof (data as Record<string, unknown>)["answered"] === "boolean" &&
+    typeof (data as Record<string, unknown>)["answeredBy"] === "string" &&
+    typeof (data as Record<string, unknown>)["exclusive"] === "boolean"
+  ) {
+    const d = data as Record<string, unknown>;
+    return {
+      answered: d["answered"] as boolean,
+      answeredBy: d["answeredBy"] as string,
+      exclusive: d["exclusive"] as boolean,
+    };
+  }
+  throw malformed("accept");
+}
+
+/** Validate an add-participant response body. @internal */
+export function parseParticipant(data: unknown): Participant {
+  if (isParticipant(data)) return data;
+  throw malformed("participant");
+}
+
+/** Map an HTTP failure to the Calls error vocabulary. @internal */
+export function callsHttpError(
+  status: number,
+  code: string | undefined,
+  message: string,
+): CallsApiError {
+  if (status === 409 && code === "call_claimed")
+    return new CallClaimedError(message);
+  return new CallsApiError(status, code ?? `http_${status}`, message);
+}
+
+function malformed(operation: string): CallsApiError {
+  return new CallsApiError(
     200,
     "malformed_response",
     `${operation}: response body did not carry the expected fields`,
   );
 }
-const isString = (v: unknown): v is string => typeof v === "string";
-const isNumber = (v: unknown): v is number =>
-  typeof v === "number" && Number.isFinite(v);
 
-export class CallsApiError extends Error {
-  constructor(
-    readonly status: number,
-    readonly code: string,
-    message: string,
-  ) {
-    super(message);
-    this.name = "CallsApiError";
-  }
-}
-
-/**
- * Server-key implementation over the platform's REST routes.
- *
- * `socketTicket`, `mediaTicket` and `hangup` are the routes that exist today.
- * `place`, `accept`, `reject` and `addParticipant` are the routes the
- * programmatic leg adds on the platform side; they are written here against
- * their agreed paths so the client is complete, and they fail with a clear
- * 404 `CallsApiError` against a platform that does not carry them yet.
- */
+/** Credential-bearing implementation over the platform's REST routes. */
 export class HttpCallsApi implements CallsApi {
-  readonly #apiKey: string;
+  readonly #tokens: CallsTokenSource;
   readonly #baseUrl: string;
   readonly #fetch: FetchLike;
   readonly #socketBaseUrl: string;
 
   constructor(options: HttpCallsApiOptions) {
-    this.#apiKey = options.apiKey;
+    const credential = options.token ?? options.apiKey;
+    if (credential === undefined)
+      throw new CallsApiError(
+        0,
+        "missing_credential",
+        "HttpCallsApi needs a `token`.",
+      );
+    this.#tokens = new CallsTokenSource(credential, {
+      ...(options.now === undefined ? {} : { now: options.now }),
+    });
     this.#baseUrl = (options.baseUrl ?? "https://api.polymorfa.com").replace(
       /\/+$/,
       "",
@@ -141,120 +184,99 @@ export class HttpCallsApi implements CallsApi {
       .replace(/\/+$/, "");
   }
 
-  async socketTicket(
-    session: string,
-    signal?: AbortSignal,
-  ): Promise<SocketTicket> {
-    const data = await this.#request<unknown>(
-      "POST",
-      "/messaging/voip/ws-ticket",
-      { session },
-      signal,
-    );
-    const t = expectShape(
-      data,
-      "ws-ticket",
-      (d) => isString(d.ticket) && isNumber(d.expiresAt) && isString(d.url),
-    );
-    return {
-      ticket: t.ticket as string,
-      expiresAt: t.expiresAt as number,
-      url: this.#absoluteSocketUrl(t.url as string),
-    };
+  token(request: CallsTokenRequest = {}): Promise<CallsToken> {
+    return this.#tokens.get(request);
   }
 
-  async mediaTicket(
-    callId: string,
-    signal?: AbortSignal,
-  ): Promise<MediaTicket> {
-    const data = await this.#request<unknown>(
-      "POST",
-      `/messaging/voip/calls/${encodeURIComponent(callId)}/agent-token`,
-      {},
-      signal,
-    );
-    const t = expectShape(
-      data,
-      "agent-token",
-      (d) =>
-        isString(d.token) &&
-        isNumber(d.expiresAt) &&
-        (d.url === undefined || isString(d.url)),
-    );
-    return {
-      token: t.token as string,
-      expiresAt: t.expiresAt as number,
-      url: this.#absoluteSocketUrl(
-        (t.url as string | undefined) ??
-          `/voip/sdk?callId=${encodeURIComponent(callId)}`,
-      ),
-    };
+  socketUrl(path: string): string {
+    return `${this.#socketBaseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
   }
 
   async place(
     input: PlaceCallRequest,
     signal?: AbortSignal,
   ): Promise<{ readonly callId: string }> {
-    const data = await this.#request<unknown>(
+    const data = await this.#request(
       "POST",
       "/messaging/voip/calls",
-      { session: input.session, to: input.to, video: input.video },
+      async (token) => ({
+        ...(isClientToken(token) ? {} : { session: input.session }),
+        to: input.to,
+        video: input.video,
+        ...(input.exclusive === undefined
+          ? {}
+          : { exclusive: input.exclusive }),
+        ...(input.participant === undefined || isClientToken(token)
+          ? {}
+          : { participant: input.participant }),
+      }),
       signal,
       { "idempotency-key": input.idempotencyKey },
     );
-    const t = expectShape(
-      data,
-      "place",
-      (d) => isString(d.callId) && (d.callId as string).length > 0,
-    );
-    return { callId: t.callId as string };
-  }
-
-  async setMode(
-    session: string,
-    mode: AnswerMode,
-    signal?: AbortSignal,
-  ): Promise<void> {
-    await this.#request(
-      "POST",
-      "/messaging/voip/mode",
-      { session, mode },
-      signal,
-    );
+    const callId = (data as { callId?: unknown } | undefined)?.callId;
+    if (typeof callId !== "string" || callId.length === 0)
+      throw malformed("place");
+    return { callId };
   }
 
   async accept(
     callId: string,
-    options: { readonly video: boolean },
+    options: AcceptCallOptions,
     signal?: AbortSignal,
+  ): Promise<AcceptCallResult> {
+    const data = await this.#request(
+      "POST",
+      callPath(callId, "/accept"),
+      async (token) => ({
+        exclusive: options.exclusive === true,
+        ...(options.video === undefined ? {} : { video: options.video }),
+        ...(options.participant === undefined || isClientToken(token)
+          ? {}
+          : { participant: options.participant }),
+      }),
+      signal,
+    );
+    return parseAcceptResult(data);
+  }
+
+  async reject(
+    callId: string,
+    signal?: AbortSignal,
+    participant?: string,
   ): Promise<void> {
     await this.#request(
       "POST",
-      `/messaging/voip/calls/${encodeURIComponent(callId)}/accept`,
-      options,
+      callPath(callId, "/reject"),
+      participant === undefined
+        ? undefined
+        : async (token) => (isClientToken(token) ? {} : { participant }),
       signal,
     );
   }
 
-  async reject(callId: string, signal?: AbortSignal): Promise<void> {
+  async leave(
+    callId: string,
+    connectionId: string,
+    signal?: AbortSignal,
+    participant?: string,
+  ): Promise<void> {
     await this.#request(
       "POST",
-      `/messaging/voip/calls/${encodeURIComponent(callId)}/reject`,
-      undefined,
+      callPath(callId, "/leave"),
+      async (token) => ({
+        connectionId,
+        ...(participant === undefined || isClientToken(token)
+          ? {}
+          : { participant }),
+      }),
       signal,
     );
   }
 
-  async hangup(callId: string, signal?: AbortSignal): Promise<void> {
-    await this.#request(
-      "DELETE",
-      `/messaging/voip/calls/${encodeURIComponent(callId)}`,
-      undefined,
-      signal,
-      {
-        "idempotency-key": `voip-teardown:${callId}`,
-      },
-    );
+  async end(callId: string, signal?: AbortSignal): Promise<void> {
+    await this.#request("DELETE", callPath(callId), undefined, signal, {
+      "idempotency-key": `voip-end:${callId}`,
+    });
   }
 
   async addParticipant(
@@ -262,50 +284,37 @@ export class HttpCallsApi implements CallsApi {
     to: string,
     signal?: AbortSignal,
   ): Promise<Participant> {
-    const data = await this.#request<unknown>(
+    const data = await this.#request(
       "POST",
-      `/messaging/voip/calls/${encodeURIComponent(callId)}/participants`,
-      { to },
+      callPath(callId, "/participants"),
+      async () => ({ to }),
       signal,
     );
-    const p = expectShape(
-      data,
-      "participant",
-      (d) =>
-        isString(d.id) &&
-        !Object.hasOwn(d, "handle") &&
-        ["phoneNumber", "bsuid", "username"].every(
-          (key) => d[key] === undefined || isString(d[key]),
-        ) &&
-        typeof d.audioMuted === "boolean" &&
-        typeof d.video === "boolean" &&
-        ["invited", "ringing", "connected", "left"].includes(d.state as string),
-    );
-    return p as unknown as Participant;
+    return parseParticipant(data);
   }
 
-  #absoluteSocketUrl(url: string): string {
-    if (/^wss?:\/\//.test(url)) return url;
-    if (/^https?:\/\//.test(url)) return url.replace(/^http/, "ws");
-    return `${this.#socketBaseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
-  }
-
-  async #request<T>(
+  async #request(
     method: string,
     path: string,
-    body: unknown,
+    body: ((token: string) => Promise<unknown>) | undefined,
     signal: AbortSignal | undefined,
     headers: Record<string, string> = {},
-  ): Promise<T> {
+  ): Promise<unknown> {
+    const token = await this.#tokens.get(
+      signal === undefined ? {} : { signal },
+    );
+    const payload = body === undefined ? undefined : await body(token.value);
     const init: RequestInit = {
       method,
       headers: {
-        authorization: `Bearer ${this.#apiKey}`,
+        authorization: `Bearer ${token.value}`,
         accept: "application/json",
-        ...(body === undefined ? {} : { "content-type": "application/json" }),
+        ...(payload === undefined
+          ? {}
+          : { "content-type": "application/json" }),
         ...headers,
       },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
       ...(signal === undefined ? {} : { signal }),
     };
     const response = await this.#fetch(`${this.#baseUrl}${path}`, init);
@@ -319,16 +328,36 @@ export class HttpCallsApi implements CallsApi {
       }
     }
     if (!response.ok) {
-      const err = (
-        parsed as { error?: { code?: string; message?: string } } | undefined
-      )?.error;
-      throw new CallsApiError(
+      if (response.status === 401) this.#tokens.invalidate();
+      const record = (parsed ?? {}) as Record<string, unknown>;
+      const error = record["error"];
+      const code =
+        error !== null && typeof error === "object"
+          ? (error as Record<string, unknown>)["code"]
+          : record["code"];
+      const message =
+        error !== null && typeof error === "object"
+          ? (error as Record<string, unknown>)["message"]
+          : typeof error === "string"
+            ? error
+            : record["message"];
+      throw callsHttpError(
         response.status,
-        err?.code ?? `http_${response.status}`,
-        err?.message ?? `${method} ${path} failed with ${response.status}`,
+        typeof code === "string" ? code : undefined,
+        typeof message === "string"
+          ? message
+          : `${method} ${path} failed with ${response.status}`,
       );
     }
-    const envelope = parsed as { data?: T } | undefined;
-    return (envelope?.data ?? (parsed as T)) as T;
+    const envelope = parsed as { data?: unknown } | undefined;
+    return envelope !== null &&
+      typeof envelope === "object" &&
+      "data" in envelope
+      ? envelope.data
+      : parsed;
   }
+}
+
+function callPath(callId: string, suffix = ""): string {
+  return `/messaging/voip/calls/${encodeURIComponent(callId)}${suffix}`;
 }

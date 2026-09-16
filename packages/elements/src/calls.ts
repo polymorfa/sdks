@@ -38,12 +38,31 @@ const ACTIVE = new Set<CallsSnapshot["status"]>([
 ]);
 
 /**
- * Portable call surface: incoming card (answer/reject) and the active call
- * controls (mute, camera when the line carries video, hang up). The React
- * package carries the full official-window layout; this element keeps the
- * same controller contract for React-free hosts.
+ * Portable call surface: incoming card (answer/reject, join for a shared
+ * call, dismiss for a call claimed elsewhere), the active call controls
+ * (mute, camera when the line carries video, leave, end for everyone), and
+ * the participant list. The React package carries the full official-window
+ * layout and video tiles; this element keeps the same controller contract for
+ * React-free hosts.
+ *
+ * Set the boolean `exclusive` attribute (or property) to claim calls answered
+ * here. Without it, other participants keep ringing and can join.
  */
 export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
+  static readonly observedAttributes = ["exclusive"];
+
+  /** Claim calls answered from this element. Reflects the `exclusive` attribute. */
+  get exclusive(): boolean {
+    return this.hasAttribute("exclusive");
+  }
+  set exclusive(value: boolean) {
+    this.toggleAttribute("exclusive", value);
+  }
+
+  attributeChangedCallback(): void {
+    if (this.isConnected) this.render();
+  }
+
   protected renderContent(
     snapshot: CallsSnapshot | undefined,
     locale: Locale,
@@ -69,23 +88,64 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
     if (snapshot?.peer !== undefined)
       panel.append(textElement("p", snapshot.peer, "peer"));
     const controller = this.configuredController<CallsController>();
-    if (status === "incoming")
-      panel.append(
-        // Both reject when a remote hang-up lands between the render and the
-        // click, because the call is no longer incoming. The snapshot already
-        // says so, so this only keeps the rejection from going unhandled —
-        // the same handling the React card uses.
-        button(
-          messages["calls.answer"],
-          "primary answer",
-          () => void controller?.answer().catch(() => undefined),
-        ),
-        button(
-          messages["calls.reject"],
-          "reject",
-          () => void controller?.reject().catch(() => undefined),
-        ),
+    if (status === "incoming" && snapshot !== undefined) {
+      // These reject when a remote hang-up lands between the render and the
+      // click. The snapshot already says so, so this only keeps the rejection
+      // from going unhandled — the same handling the React card uses.
+      if (snapshot.claimedByOther) {
+        panel.append(
+          textElement("p", messages["calls.answeredElsewhere"], "claimed"),
+          button(messages["calls.dismiss"], "dismiss", () =>
+            ignoreDisposed(() => controller?.dismiss()),
+          ),
+        );
+      } else if (snapshot.canJoin) {
+        panel.append(
+          textElement("p", messages["calls.joinable"], "joinable"),
+          button(
+            messages["calls.join"],
+            "primary join",
+            () => void controller?.join().catch(() => undefined),
+          ),
+          button(messages["calls.dismiss"], "dismiss", () =>
+            ignoreDisposed(() => controller?.dismiss()),
+          ),
+        );
+      } else {
+        const exclusive = this.exclusive;
+        panel.append(
+          button(
+            messages["calls.answer"],
+            "primary answer",
+            () => void controller?.answer({ exclusive }).catch(() => undefined),
+          ),
+          button(
+            messages["calls.reject"],
+            "reject",
+            () => void controller?.reject().catch(() => undefined),
+          ),
+        );
+      }
+      // Snapshots built by hand for custom controllers may omit the list.
+      const others = (snapshot.invitations ?? []).filter(
+        (invitation) => invitation.callId !== snapshot.callId,
       );
+      if (others.length > 0) {
+        const list = element("ul", "invitations");
+        list.setAttribute("aria-label", messages["calls.otherIncoming"]);
+        for (const invitation of others) {
+          const item = element("li", "invitation");
+          item.append(
+            textElement("span", invitation.from, "invitation-peer"),
+            button(messages["calls.show"], "show", () =>
+              ignoreDisposed(() => controller?.select(invitation.callId)),
+            ),
+          );
+          list.append(item);
+        }
+        panel.append(list);
+      }
+    }
     if (snapshot !== undefined && ACTIVE.has(status)) {
       // Gated like the camera: the element takes any controller, and one that
       // reports a line without mute must not be offered the control.
@@ -132,13 +192,39 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
                 void controller?.enableVideo?.().catch(() => undefined);
               }),
         );
+      // Leave closes only this connection; hang-up ends the call for
+      // everyone. Leave is offered where nobody claimed the call.
+      if (!snapshot.exclusive)
+        panel.append(
+          button(
+            messages["calls.leave"],
+            "leave",
+            () => void controller?.leave().catch(() => undefined),
+          ),
+        );
       panel.append(
         button(
-          messages["calls.hangup"],
+          snapshot.exclusive ? messages["calls.hangup"] : messages["calls.end"],
           "hangup",
           () => void controller?.hangup().catch(() => undefined),
         ),
       );
+      const participants = (snapshot.participants ?? []).filter(
+        (participant) => participant.state !== "left",
+      );
+      if (participants.length > 0) {
+        const list = element("ul", "participants");
+        list.setAttribute("aria-label", messages["calls.participants"]);
+        for (const participant of participants)
+          list.append(
+            textElement(
+              "li",
+              participant.phoneNumber ?? participant.id,
+              participant.audioMuted ? "participant muted" : "participant",
+            ),
+          );
+        panel.append(list);
+      }
     }
     return [panel];
   }

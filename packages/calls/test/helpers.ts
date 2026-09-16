@@ -39,13 +39,29 @@ export class FakeWebSocket {
   send(data: string | Uint8Array): void {
     this.sent.push(data);
   }
-  close(): void {
+  closed: { code?: number; reason?: string } | undefined;
+  close(code?: number, reason?: string): void {
     this.readyState = FakeWebSocket.CLOSED;
+    this.closed = {
+      ...(code === undefined ? {} : { code }),
+      ...(reason === undefined ? {} : { reason }),
+    };
   }
   /** Server-side close: fires onclose like a real socket would. */
-  drop(): void {
+  drop(code = 1006, reason = ""): void {
     this.readyState = FakeWebSocket.CLOSED;
-    this.onclose?.({});
+    this.onclose?.({ code, reason });
+  }
+  /** Open and answer the auth frame with `ready`, as the platform does. */
+  authenticate(ready: Record<string, unknown> = { session: "support" }): void {
+    this.open();
+    this.text({ type: "ready", ...ready });
+  }
+  /** Text frames sent so far, parsed. */
+  get texts(): unknown[] {
+    return this.sent
+      .filter((x): x is string => typeof x === "string")
+      .map((x) => JSON.parse(x) as unknown);
   }
   get lastText(): unknown {
     const s = [...this.sent].reverse().find((x) => typeof x === "string");
@@ -60,21 +76,17 @@ type FakeApi = {
 /** Typed against CallsApi field by field, so a signature drift fails here first. */
 export function fakeApi(): FakeApi {
   const api: FakeApi = {
-    socketTicket: vi.fn(async (session: string) => ({
-      ticket: "pmfa_wst_a",
-      expiresAt: Date.now() + 60_000,
-      url: `wss://api.example/voip/ws?ticket=pmfa_wst_a&s=${session}`,
-    })),
-    setMode: vi.fn(async () => undefined),
-    mediaTicket: vi.fn(async (callId: string) => ({
-      token: `pmfa_at_${callId}`,
-      expiresAt: Date.now() + 300_000,
-      url: `wss://pod.example/voip/sdk?callId=${callId}`,
-    })),
+    token: vi.fn(async () => ({ value: "pmfa_ct_test" })),
+    socketUrl: vi.fn((path: string) => `wss://api.example${path}`),
     place: vi.fn(async () => ({ callId: "CALL-OUT" })),
-    accept: vi.fn(async () => undefined),
+    accept: vi.fn(async () => ({
+      answered: true,
+      answeredBy: "client:self",
+      exclusive: false,
+    })),
     reject: vi.fn(async () => undefined),
-    hangup: vi.fn(async () => undefined),
+    leave: vi.fn(async () => undefined),
+    end: vi.fn(async () => undefined),
     addParticipant: vi.fn(async (_id: string, to: string) => ({
       id: `p-${to}`,
       phoneNumber: to,

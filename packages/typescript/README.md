@@ -75,8 +75,8 @@ a project token is exactly `pmfa_pt_` plus 94. The SDK checks only this public
 v1 grammar and never decodes or decrypts the credential.
 
 The SDK rejects `pmfa_ct_` browser tokens and CLI-only `pmfa_ls_` listener
-credentials before a management request. It also rejects call-agent
-`pmfa_at_` tickets, socket `pmfa_wst_` tickets, and simulated-device `pmfa_sd_`
+credentials before a management request. It also rejects retired call-agent
+`pmfa_at_` and socket `pmfa_wst_` tickets and simulated-device `pmfa_sd_`
 capabilities as server API keys. It does not expose a listener,
 `AsyncIterable`, event emitter, or forwarding API. Live forwarding belongs to
 `polymorfa listen`.
@@ -216,9 +216,10 @@ Next.js-compatible route adapter lives in `@polymorfa/nextjs`.
 
 Minting a client token and updating its session rules require all six client
 delegation scopes: `sessions:manage`, `messages:write`, `contacts:read`,
-`presence:read`, `presence:observe`, and `mcp`. The same requirement applies to
-`MessagingClient.voip.token`; the issuing key must cover every action that the
-session rules can delegate to the browser token.
+`presence:read`, `presence:observe`, and `mcp`. The issuing key must cover
+every action that the session rules can delegate to the browser token.
+`clientTokens.mint` (`POST /platform/client-tokens`) is the only token issuer,
+including for Calls; there are no call-specific tokens or tickets.
 
 ## Session connection lifecycle
 
@@ -301,6 +302,53 @@ The resource also provides `retrieve`, `picture`, `info`, `devices`,
 `businessProfile`, `blocklist`, and `unblock`. Contact operations are not
 available for Cloud API sessions.
 
+## Polymorfa Calls
+
+`MessagingClient.voip` controls calls from a server. Every incoming call rings
+until a participant accepts or rejects it; nothing answers automatically.
+
+```ts
+const placed = await messaging.voip.place(
+  { session: "support", to: "+15551234567", participant: "agent-7" },
+  { idempotencyKey: "place-order-1042" },
+);
+
+const accepted = await messaging.voip.accept(incomingCallId, {
+  exclusive: true,
+  participant: "agent-7",
+});
+console.log(accepted.data.data.answeredBy); // "server:agent-7"
+
+await messaging.voip.addParticipant(placed.data.data.callId, {
+  to: "+15557654321",
+});
+await messaging.voip.leave(incomingCallId, { connectionId: "conn_desk_1" });
+await messaging.voip.end(placed.data.data.callId);
+```
+
+- `place` requires `session` with a server credential and accepts `video`,
+  `exclusive`, and `participant`. Send an idempotency key to retry safely.
+- `accept` answers a ringing call. Later accepts from other participants join
+  the call unless a participant claimed it with `exclusive: true`; those
+  requests fail with `409 call_claimed` (`PolymorfaConflictError`). Repeating
+  an accept as the same participant has no further effect.
+- `reject` declines a ringing call and fails with `409 call_not_ringing`
+  otherwise.
+- `leave` closes one media connection. `end` ends the call for everyone.
+- `addParticipant` invites another WhatsApp user and returns a
+  `VoipParticipant`.
+
+A server credential acts as `server:<participant>`; `participant` matches
+`[A-Za-z0-9._:@-]{1,128}` and defaults to `default`. A client token acts as its
+own participant, so the SDK rejects `participant` for client tokens. The SDK
+checks `participant` and `connectionId` (`[A-Za-z0-9_-]{8,64}`) before sending.
+
+`voip.retrieveCallSettings(session)` and `voip.updateCallSettings(session,
+{ includeSelfAudio })` read and replace the session's call settings through
+`/platform/sessions/{session}/call-settings`. Merged call audio excludes each
+connection's own audio unless `includeSelfAudio` is `true`. These methods
+require a server credential.
+
 ## Calls and stable user identity
 
 The `calls`, `identities`, and `users` resources use public Polymorfa user IDs.
@@ -334,8 +382,8 @@ characters and the JSON `from` field must contain the incoming caller's
 public Polymorfa user ID or E.164 phone number. Path identifiers are URL-encoded.
 The SDK sends an idempotency key
 when supplied and only permits automatic retries of this POST when that key is
-nonempty. The source exposes no call list, retrieve, accept, history, watch,
-stream, or outgoing-call operation.
+nonempty. This session-scoped route is separate from the Polymorfa Calls
+routes on `MessagingClient.voip`.
 
 The pinned OpenAPI declares a generic synchronous `SuccessResponse` for call
 rejection. The live runner returns

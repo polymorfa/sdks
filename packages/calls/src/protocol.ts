@@ -1,25 +1,83 @@
 /**
- * The wire contract between this client and the platform. Two sockets carry a
- * call:
+ * The wire contract between this client and the platform (Calls contract
+ * revision 1). Two sockets carry a call:
  *
- * 1. The **lifecycle socket** (`GET /voip/ws?ticket=`, ticket from
- *    `POST /messaging/voip/ws-ticket`) — one per client, follows one session. It
- *    pushes `call.*` events and answers `ping` with `pong`.
+ * 1. The **lifecycle socket** (`GET /voip/ws`) — one per client. No credential
+ *    travels in the URL: the first frame is `{ type: "auth", token }` and the
+ *    platform answers `ready`. Server credentials name the session with
+ *    `?session=` (and optionally `&participant=`); client tokens send no query
+ *    parameters. A later `auth` frame replaces an expiring token and must
+ *    resolve to the same organization, project, session and participant. The
+ *    platform closes the socket with 4401 once the token stops authorizing
+ *    the session.
  *
- * 2. The **media socket** (pod `/voip/sdk?callId=`, bearer ticket from
- *    `POST /messaging/voip/calls/{id}/agent-token`) — one per call. Binary frames
+ * 2. The **media socket** (`GET /voip/calls/{callId}/media`, subprotocol
+ *    `pmfa.calls.v2`) — one per media connection. The first frame is
+ *    `{ type: "auth", token, connectionId, participant? }`; the URL carries no
+ *    query parameters. Replacement auth frames cannot change the connection
+ *    or participant. Binary frames
  *    carry media, text frames carry JSON control. Every binary frame starts
  *    with a one-byte kind tag so audio and video share the socket.
- *
- * The voip pod implements the same contract from this file's definitions; the
- * constants here are the single place the framing is written down on the
- * client side.
  */
+
+// ── Identifiers ──────────────────────────────────────────────────────────
+
+/** Lifecycle socket path on the API host. */
+export const LIFECYCLE_SOCKET_PATH = "/voip/ws";
+/** Close code for a token that no longer authorizes the socket. */
+export const AUTH_FAILED_CLOSE_CODE = 4401;
+/** Media socket subprotocol. */
+export const MEDIA_SUBPROTOCOL = "pmfa.calls.v2";
+
+export function mediaSocketPath(callId: string): string {
+  return `/voip/calls/${encodeURIComponent(callId)}/media`;
+}
+
+const CONNECTION_ID = /^[A-Za-z0-9_-]{8,64}$/;
+const PARTICIPANT = /^[A-Za-z0-9._:@-]{1,128}$/;
+
+/** A media connection id: 8–64 characters of `[A-Za-z0-9_-]`. */
+export function isConnectionId(value: unknown): value is string {
+  return typeof value === "string" && CONNECTION_ID.test(value);
+}
+
+/** A server-credential participant name: 1–128 characters of `[A-Za-z0-9._:@-]`. */
+export function isParticipantName(value: unknown): value is string {
+  return typeof value === "string" && PARTICIPANT.test(value);
+}
+
+/**
+ * A new connection id: 18 crypto-random bytes as base64url (24 characters).
+ * Reuse the same id to reconnect the same connection.
+ */
+export function createConnectionId(
+  random: (bytes: Uint8Array<ArrayBuffer>) => Uint8Array = (bytes) =>
+    globalThis.crypto.getRandomValues(bytes),
+): string {
+  const bytes = random(new Uint8Array(new ArrayBuffer(18)));
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
 
 // ── Lifecycle socket ──────────────────────────────────────────────────────
 
+export interface TrickleCandidate {
+  readonly candidate: string;
+  readonly sdpMid?: string;
+  readonly sdpMLineIndex?: number;
+}
+
 export type LifecycleFrame =
-  | { readonly type: "ready"; readonly session: string }
+  | {
+      readonly type: "ready";
+      readonly session?: string;
+      /** Participant reference of the authenticated credential, when sent. */
+      readonly participant?: string;
+    }
   | {
       readonly type: "event";
       readonly event: string;
@@ -27,40 +85,54 @@ export type LifecycleFrame =
       readonly payload: unknown;
       readonly timestamp: string;
     }
+  | {
+      readonly type: "candidate";
+      readonly callId: string;
+      readonly connectionId?: string;
+      readonly candidate: TrickleCandidate;
+    }
   | { readonly type: "error"; readonly code: string; readonly message: string }
   | { readonly type: "pong" };
 
 export type LifecycleClientFrame =
+  | { readonly type: "auth"; readonly token: string }
   | { readonly type: "ping" }
-  | { readonly type: "teardown"; readonly callId: string };
+  | {
+      readonly type: "candidate";
+      readonly callId: string;
+      readonly connectionId: string;
+      readonly candidate: TrickleCandidate;
+    };
 
 /** Parse one lifecycle frame; unknown or malformed frames yield `undefined`. */
 export function parseLifecycleFrame(data: unknown): LifecycleFrame | undefined {
-  if (typeof data !== "string") return undefined;
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(data);
-  } catch {
-    return undefined;
-  }
-  if (parsed === null || typeof parsed !== "object") return undefined;
-  const f = parsed as Record<string, unknown>;
+  const f = parseObject(data);
+  if (f === undefined) return undefined;
   switch (f["type"]) {
     case "ready":
-      return isString(f["session"]) ? (parsed as LifecycleFrame) : undefined;
+      return optionalString(f["session"]) && optionalString(f["participant"])
+        ? (f as LifecycleFrame)
+        : undefined;
     case "event":
       return isString(f["event"]) &&
         isString(f["callId"]) &&
         isString(f["timestamp"]) &&
         "payload" in f
-        ? (parsed as LifecycleFrame)
+        ? (f as LifecycleFrame)
+        : undefined;
+    case "candidate":
+      return isString(f["callId"]) &&
+        (f["connectionId"] === undefined ||
+          isConnectionId(f["connectionId"])) &&
+        isCandidate(f["candidate"])
+        ? (f as LifecycleFrame)
         : undefined;
     case "error":
       return isString(f["code"]) && isString(f["message"])
-        ? (parsed as LifecycleFrame)
+        ? (f as LifecycleFrame)
         : undefined;
     case "pong":
-      return parsed as LifecycleFrame;
+      return f as LifecycleFrame;
     default:
       return undefined;
   }
@@ -70,32 +142,35 @@ export function parseLifecycleFrame(data: unknown): LifecycleFrame | undefined {
 
 /** First byte of every binary media frame. */
 export const MediaFrameKind = {
-  /** s16le mono PCM at the negotiated sample rate; payload is the samples. */
+  /** s16le mono PCM at the `ready` frame's sample rate. */
   Audio: 0x01,
-  /** One encoded video frame; payload is {@link VideoFrameHeader} then the bytes. */
+  /** One encoded access unit; payload is {@link VIDEO_HEADER_BYTES} of header then the bytes. */
   Video: 0x02,
 } as const;
 export type MediaFrameKind =
   (typeof MediaFrameKind)[keyof typeof MediaFrameKind];
 
-/** Default PCM rate both directions of the media socket use. */
+/** Default PCM rate until the `ready` frame names one. */
 export const DEFAULT_SAMPLE_RATE = 16_000;
 
 /**
  * Header that follows the {@link MediaFrameKind.Video} tag. Fixed 14 bytes,
- * big-endian: codec (1) · flags (1) · width (2) · height (2) · timestamp µs (8).
- * Written out as a constant so the pod and the client cannot drift apart.
+ * big-endian: codec (1) · flags (1) · source (4) · timestamp µs (8), then one
+ * Annex-B access unit.
  */
 export const VIDEO_HEADER_BYTES = 14;
-export const VideoCodec = { H264: 0x01, VP8: 0x02 } as const;
+export const VideoCodec = { H264: 0x01 } as const;
 export type VideoCodec = (typeof VideoCodec)[keyof typeof VideoCodec];
 export const VideoFlags = { Keyframe: 0x01 } as const;
 
 export interface VideoFrameHeader {
   readonly codec: VideoCodec;
   readonly keyframe: boolean;
-  readonly width: number;
-  readonly height: number;
+  /**
+   * Source handle. Inbound frames carry the producing source announced by a
+   * `video_source` frame. Clients send 0; the platform assigns the handle.
+   */
+  readonly source: number;
   /** Capture timestamp in microseconds. */
   readonly timestampUs: number;
 }
@@ -103,6 +178,12 @@ export interface VideoFrameHeader {
 export interface VideoFrame extends VideoFrameHeader {
   readonly data: Uint8Array;
 }
+
+/** An outbound frame; `source` defaults to 0 and `codec` to H.264. */
+export type OutboundVideoFrame = Omit<VideoFrame, "source" | "codec"> & {
+  readonly source?: number;
+  readonly codec?: VideoCodec;
+};
 
 export function encodeAudioFrame(pcm: Int16Array): Uint8Array<ArrayBuffer> {
   const out = new Uint8Array(new ArrayBuffer(1 + pcm.length * 2));
@@ -113,16 +194,17 @@ export function encodeAudioFrame(pcm: Int16Array): Uint8Array<ArrayBuffer> {
   return out;
 }
 
-export function encodeVideoFrame(frame: VideoFrame): Uint8Array<ArrayBuffer> {
+export function encodeVideoFrame(
+  frame: OutboundVideoFrame,
+): Uint8Array<ArrayBuffer> {
   const out = new Uint8Array(
     new ArrayBuffer(1 + VIDEO_HEADER_BYTES + frame.data.byteLength),
   );
   out[0] = MediaFrameKind.Video;
   const view = new DataView(out.buffer, out.byteOffset + 1, VIDEO_HEADER_BYTES);
-  view.setUint8(0, frame.codec);
+  view.setUint8(0, frame.codec ?? VideoCodec.H264);
   view.setUint8(1, frame.keyframe ? VideoFlags.Keyframe : 0);
-  view.setUint16(2, frame.width);
-  view.setUint16(4, frame.height);
+  view.setUint32(2, (frame.source ?? 0) >>> 0);
   view.setBigUint64(6, BigInt(Math.max(0, Math.floor(frame.timestampUs))));
   out.set(frame.data, 1 + VIDEO_HEADER_BYTES);
   return out;
@@ -147,17 +229,16 @@ export function decodeMediaFrame(
     return { kind: "audio", pcm };
   }
   if (kind === MediaFrameKind.Video) {
-    if (body.byteLength < VIDEO_HEADER_BYTES) return undefined;
+    if (body.byteLength <= VIDEO_HEADER_BYTES) return undefined;
     const view = new DataView(body.buffer, body.byteOffset, VIDEO_HEADER_BYTES);
     const codec = view.getUint8(0);
-    if (codec !== VideoCodec.H264 && codec !== VideoCodec.VP8) return undefined;
+    if (codec !== VideoCodec.H264) return undefined;
     return {
       kind: "video",
       frame: {
         codec,
         keyframe: (view.getUint8(1) & VideoFlags.Keyframe) !== 0,
-        width: view.getUint16(2),
-        height: view.getUint16(4),
+        source: view.getUint32(2),
         timestampUs: Number(view.getBigUint64(6)),
         data: body.subarray(VIDEO_HEADER_BYTES),
       },
@@ -165,27 +246,6 @@ export function decodeMediaFrame(
   }
   return undefined;
 }
-
-/** Text frames on the media socket, both directions. */
-export type MediaControlFrame =
-  | { readonly type: "hangup" }
-  | { readonly type: "ping" }
-  | { readonly type: "pong" }
-  /** Sent by the pod once media is bridged; carries the PCM rate in force. */
-  | {
-      readonly type: "ready";
-      readonly sampleRate: number;
-      readonly video: boolean;
-    }
-  | { readonly type: "video_state"; readonly enabled: boolean }
-  | { readonly type: "participant_joined"; readonly participant: Participant }
-  | {
-      readonly type: "participant_left";
-      readonly participantId: string;
-      readonly reason?: string;
-    }
-  | { readonly type: "participant_state"; readonly participant: Participant }
-  | { readonly type: "error"; readonly code: string; readonly message: string };
 
 export interface Participant {
   readonly id: string;
@@ -197,15 +257,76 @@ export interface Participant {
   readonly state: "invited" | "ringing" | "connected" | "left";
 }
 
+/**
+ * Who sends a video source: another media connection of this call, or a
+ * WhatsApp participant.
+ */
+export type VideoSourceOwner =
+  | {
+      readonly connectionId: string;
+      /** Participant reference (`client:<id>` or `server:<name>`) of that connection, when known. */
+      readonly connectionParticipant?: string;
+      readonly participant?: undefined;
+    }
+  | {
+      readonly participant: Participant;
+      readonly connectionId?: undefined;
+      readonly connectionParticipant?: undefined;
+    };
+
+export type VideoSourceFrame = {
+  readonly type: "video_source";
+  readonly source: number;
+} & VideoSourceOwner;
+
+/** Text frames the platform sends on the media socket. */
+export type MediaControlFrame =
+  | {
+      readonly type: "ready";
+      readonly callId?: string;
+      readonly connectionId?: string;
+      /** PCM rate both directions use. */
+      readonly sampleRate: number;
+      readonly video: boolean;
+    }
+  | { readonly type: "pong" }
+  | { readonly type: "participant_joined"; readonly participant: Participant }
+  | {
+      readonly type: "participant_left";
+      readonly participantId: string;
+      readonly reason?: string;
+    }
+  | { readonly type: "participant_state"; readonly participant: Participant }
+  | VideoSourceFrame
+  | { readonly type: "video_source_removed"; readonly source: number }
+  /** Send a keyframe (with decoder configuration) on the next video frame. */
+  | { readonly type: "keyframe_request" }
+  /** `message` is absent on authentication refusals. */
+  | {
+      readonly type: "error";
+      readonly code: string;
+      readonly message?: string;
+    };
+
+/** Text frames the client sends on the media socket. */
+export type MediaClientFrame =
+  | {
+      readonly type: "auth";
+      readonly token: string;
+      readonly connectionId: string;
+      readonly participant?: string;
+    }
+  | { readonly type: "ping" }
+  /** Close this connection only. */
+  | { readonly type: "leave" }
+  /** End the call for every participant. */
+  | { readonly type: "end_call" };
+
 export function parseMediaControl(
   data: unknown,
 ): MediaControlFrame | undefined {
-  if (typeof data !== "string") return undefined;
-  try {
-    return parseMediaControlValue(JSON.parse(data));
-  } catch {
-    return undefined;
-  }
+  const parsed = parseObject(data);
+  return parsed === undefined ? undefined : parseMediaControlValue(parsed);
 }
 
 /** Validate an already-decoded media control value. @internal */
@@ -215,17 +336,16 @@ export function parseMediaControlValue(
   if (parsed === null || typeof parsed !== "object") return undefined;
   const f = parsed as Record<string, unknown>;
   switch (f["type"]) {
-    case "hangup":
-    case "ping":
     case "pong":
+    case "keyframe_request":
       return parsed as MediaControlFrame;
     case "ready":
       return typeof f["sampleRate"] === "number" &&
-        typeof f["video"] === "boolean"
-        ? (parsed as MediaControlFrame)
-        : undefined;
-    case "video_state":
-      return typeof f["enabled"] === "boolean"
+        Number.isFinite(f["sampleRate"]) &&
+        f["sampleRate"] > 0 &&
+        typeof f["video"] === "boolean" &&
+        optionalString(f["callId"]) &&
+        optionalString(f["connectionId"])
         ? (parsed as MediaControlFrame)
         : undefined;
     case "participant_joined":
@@ -234,12 +354,29 @@ export function parseMediaControlValue(
         ? (parsed as MediaControlFrame)
         : undefined;
     case "participant_left":
-      return isString(f["participantId"]) &&
-        (f["reason"] === undefined || isString(f["reason"]))
+      return isString(f["participantId"]) && optionalString(f["reason"])
+        ? (parsed as MediaControlFrame)
+        : undefined;
+    case "video_source": {
+      if (!isSourceHandle(f["source"])) return undefined;
+      const byConnection =
+        isConnectionId(f["connectionId"]) &&
+        optionalString(f["connectionParticipant"]) &&
+        f["participant"] === undefined;
+      const byParticipant =
+        isParticipant(f["participant"]) &&
+        f["connectionId"] === undefined &&
+        f["connectionParticipant"] === undefined;
+      return byConnection || byParticipant
+        ? (parsed as MediaControlFrame)
+        : undefined;
+    }
+    case "video_source_removed":
+      return isSourceHandle(f["source"])
         ? (parsed as MediaControlFrame)
         : undefined;
     case "error":
-      return isString(f["code"]) && isString(f["message"])
+      return isString(f["code"]) && optionalString(f["message"])
         ? (parsed as MediaControlFrame)
         : undefined;
     default:
@@ -247,14 +384,25 @@ export function parseMediaControlValue(
   }
 }
 
-function isParticipant(value: unknown): value is Participant {
+/** A positive uint32 source handle. */
+export function isSourceHandle(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    value > 0 &&
+    value <= 0xffff_ffff
+  );
+}
+
+export function isParticipant(value: unknown): value is Participant {
   if (value === null || typeof value !== "object") return false;
   const p = value as Record<string, unknown>;
   return (
     isString(p["id"]) &&
+    p["id"].length > 0 &&
     !Object.hasOwn(p, "handle") &&
-    ["phoneNumber", "bsuid", "username"].every(
-      (key) => p[key] === undefined || isString(p[key]),
+    ["phoneNumber", "bsuid", "username"].every((key) =>
+      optionalString(p[key]),
     ) &&
     typeof p["audioMuted"] === "boolean" &&
     typeof p["video"] === "boolean" &&
@@ -262,6 +410,36 @@ function isParticipant(value: unknown): value is Participant {
   );
 }
 
+function isCandidate(value: unknown): value is TrickleCandidate {
+  if (value === null || typeof value !== "object") return false;
+  const candidate = value as Record<string, unknown>;
+  // `null` is what a serialized `RTCIceCandidate` carries for an absent
+  // `sdpMid` / `sdpMLineIndex`, so it is tolerated.
+  return (
+    isString(candidate["candidate"]) &&
+    (candidate["sdpMid"] == null || isString(candidate["sdpMid"])) &&
+    (candidate["sdpMLineIndex"] == null ||
+      typeof candidate["sdpMLineIndex"] === "number")
+  );
+}
+
+function parseObject(data: unknown): Record<string, unknown> | undefined {
+  if (typeof data !== "string") return undefined;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    return undefined;
+  }
+  return parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)
+    ? (parsed as Record<string, unknown>)
+    : undefined;
+}
+
 function isString(value: unknown): value is string {
   return typeof value === "string";
+}
+
+function optionalString(value: unknown): boolean {
+  return value === undefined || typeof value === "string";
 }

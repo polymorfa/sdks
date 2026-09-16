@@ -52,9 +52,24 @@ export const ENGLISH_MESSAGES = {
   "calls.defaultDevice": "Default",
   "calls.popoutTitle": "Call",
   "calls.dismiss": "Dismiss",
+  "calls.join": "Join",
+  "calls.leave": "Leave call",
+  "calls.end": "End call for everyone",
+  "calls.answeredElsewhere": "Answered by another participant",
+  "calls.joinable": "Call in progress. You can join.",
+  "calls.otherIncoming": "Other incoming calls",
+  "calls.show": "Show",
+  "calls.participants": "Participants",
+  "calls.participantVideos": "Participant video",
+  "calls.participant": "Participant",
+  "calls.participantInvited": "Invited",
+  "calls.participantRinging": "Ringing",
+  "calls.participantConnected": "In call",
+  "calls.participantMuted": "Muted",
   "calls.incomingFrom": "Incoming call from {peer}",
   /** Outgoing call still ringing; the peer's position and the ellipsis belong to the locale. */
   "calls.ringingTo": "Ringing {peer}…",
+  "calls.videoFrom": "Video from {name}",
 } as const;
 
 export type MessageKey = keyof typeof ENGLISH_MESSAGES;

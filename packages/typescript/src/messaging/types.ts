@@ -1349,8 +1349,9 @@ export type ClientRecipientMode = "conversation" | "any" | "none";
 
 /**
  * Client-token actions (comma-separated in `allowedActions`). The `voip_*`
- * actions gate the browser call signaling routes: `voip_place` and
- * `voip_answer` establish media, `voip_signal` covers trickle ICE and teardown.
+ * actions gate the Calls routes for client tokens: `voip_place` places calls
+ * and adds participants, `voip_answer` accepts or declines, and `voip_signal`
+ * covers ICE candidates, renegotiation, ending a call, and the lifecycle socket.
  */
 export type ClientAction =
   | "mcp"
@@ -1409,55 +1410,104 @@ export interface SetClientRulesRequest {
 }
 
 /**
- * Body for `POST /messaging/voip/token`: the same claims as
- * {@link MintClientTokenRequest}, minting the browser token that
- * `@polymorfa/browser` call signaling runs on.
+ * Who acts in a call when a server credential calls a Calls route. Matches
+ * `[A-Za-z0-9._:@-]{1,128}`; the API uses `default` when omitted. Client
+ * tokens act as their own participant and cannot set this field.
  */
-export interface VoipTokenRequest {
+export type VoipParticipantReference = string;
+
+/** Body for `POST /messaging/voip/calls`. */
+export interface VoipPlaceCallRequest {
+  /** Phone number in E.164 form or a WhatsApp user ID. */
+  readonly to: string;
+  /** Session that places the call. Required with a server credential. */
+  readonly session?: string;
+  readonly video?: boolean;
+  /** Claim the call for the placing participant. */
+  readonly exclusive?: boolean;
+  readonly participant?: VoipParticipantReference;
+}
+
+export interface VoipPlaceCallResult {
+  readonly callId: string;
   readonly session: string;
-  readonly ephemeralId: string;
-  readonly ttlSeconds?: number;
+  readonly video: boolean;
 }
 
-export interface VoipTokenValue {
-  readonly token: string;
-  /** Unix epoch milliseconds. */
-  readonly expiresAt: number;
+export type VoipPlaceCallResponse = SuccessEnvelope<VoipPlaceCallResult>;
+
+/** Body for `POST /messaging/voip/calls/{callId}/accept`. */
+export interface VoipAcceptCallRequest {
+  /**
+   * Claim the call. Other participants then receive `409 call_claimed` and
+   * their connections close. Without a claim, later accepts join the call.
+   */
+  readonly exclusive?: boolean;
+  readonly video?: boolean;
+  readonly participant?: VoipParticipantReference;
 }
 
-export type VoipTokenResponse = SuccessEnvelope<VoipTokenValue>;
+export interface VoipAcceptCallResult {
+  /** `true` once the call is answered, including when this accept joined it. */
+  readonly answered: boolean;
+  /** Participant reference that answered the call. */
+  readonly answeredBy: string;
+  /** Whether a participant holds an exclusive claim on the call. */
+  readonly exclusive: boolean;
+}
 
-/**
- * Body for `POST /messaging/voip/ws-ticket`. Required here because this client
- * authenticates with a server key, and the route answers 400 when one of
- * those does not name a session. (The wire contract leaves it optional for
- * client tokens, which are already bound to theirs.)
- */
-export interface VoipSocketTicketRequest {
-  readonly session: string;
-}
-/** A single-use, 60-second ticket that opens the calls WebSocket. */
-export interface VoipSocketTicketValue {
-  readonly ticket: string;
-  /** Unix epoch milliseconds. */
-  readonly expiresAt: number;
-  /** Root-relative WebSocket URL, ticket included. */
-  readonly url: string;
-}
-export type VoipSocketTicketResponse = SuccessEnvelope<VoipSocketTicketValue>;
+export type VoipAcceptCallResponse = SuccessEnvelope<VoipAcceptCallResult>;
 
-/** Body for `POST /messaging/voip/calls/{id}/agent-token`. */
-export interface VoipAgentTokenRequest {
-  /** Ticket lifetime in seconds (default 300, max 3600). */
-  readonly ttlSeconds?: number;
+/** Body for `POST /messaging/voip/calls/{callId}/leave`. */
+export interface VoipLeaveCallRequest {
+  /** Media connection to close. Matches `[A-Za-z0-9_-]{8,64}`. */
+  readonly connectionId: string;
+  /** Server credentials only: the participant that owns the connection. */
+  readonly participant?: VoipParticipantReference;
 }
-/** A per-call ticket a voice agent presents to the voip pod's PCM WebSocket. */
-export interface VoipAgentTokenValue {
-  readonly token: string;
-  /** Unix epoch milliseconds. */
-  readonly expiresAt: number;
+
+/** Body for `POST /messaging/voip/calls/{callId}/reject`. */
+export interface VoipRejectCallRequest {
+  /** Server credentials only: the participant declining the call. */
+  readonly participant?: VoipParticipantReference;
 }
-export type VoipAgentTokenResponse = SuccessEnvelope<VoipAgentTokenValue>;
+
+/** Body for `POST /messaging/voip/calls/{callId}/participants`. */
+export interface VoipAddParticipantRequest {
+  /** Phone number in E.164 form or a WhatsApp user ID. */
+  readonly to: string;
+}
+
+export type VoipParticipantState = "invited" | "ringing" | "connected" | "left";
+
+export interface VoipParticipant {
+  readonly id: string;
+  readonly phoneNumber?: string;
+  readonly bsuid?: string;
+  readonly username?: string;
+  readonly audioMuted: boolean;
+  readonly video: boolean;
+  readonly state: VoipParticipantState;
+}
+
+export type VoipAddParticipantResponse = SuccessEnvelope<VoipParticipant>;
+
+/** Call settings for one session (`/platform/sessions/{session}/call-settings`). */
+export interface SessionCallSettings {
+  /**
+   * Include a connection's own audio in the merged call audio it receives.
+   * `false` by default. WhatsApp never receives its own audio.
+   */
+  readonly includeSelfAudio: boolean;
+  /** ISO 8601 timestamp of the last change, or `null` while the session uses the defaults. */
+  readonly updatedAt: string | null;
+}
+
+export interface UpdateSessionCallSettingsRequest {
+  readonly includeSelfAudio: boolean;
+}
+
+export type SessionCallSettingsResponse = SuccessEnvelope<SessionCallSettings>;
 
 export type ListSessionsResponse = SuccessEnvelope<readonly Session[]>;
 export type GetSessionResponse = SuccessEnvelope<Session>;

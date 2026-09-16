@@ -122,6 +122,21 @@ export class ClientTokenManager {
     return this.#pending;
   }
 
+  /**
+   * The current token with its expiry when the provider supplied one.
+   * `refresh: true` discards the cached token first.
+   */
+  async token(
+    options: { readonly refresh?: boolean } = {},
+  ): Promise<{ readonly value: string; readonly expiresAt?: number }> {
+    if (options.refresh === true) this.invalidate();
+    const value = await this.get();
+    const cached = this.#cached;
+    return cached !== undefined && cached.value === value
+      ? { value, expiresAt: cached.expiresAt }
+      : { value };
+  }
+
   invalidate(): void {
     this.#cached = undefined;
   }

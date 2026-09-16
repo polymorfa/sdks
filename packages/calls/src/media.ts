@@ -1,51 +1,100 @@
-import type { MediaTicket } from "./api.js";
+import type { CallsApi } from "./api.js";
+import { CallClaimedError, CallsAuthError, CallsError } from "./errors.js";
 import { Emitter } from "./events.js";
 import {
+  AUTH_FAILED_CLOSE_CODE,
   DEFAULT_SAMPLE_RATE,
+  MEDIA_SUBPROTOCOL,
   decodeMediaFrame,
   encodeAudioFrame,
   encodeVideoFrame,
+  mediaSocketPath,
   parseMediaControl,
+  type MediaClientFrame,
   type MediaControlFrame,
+  type OutboundVideoFrame,
   type Participant,
   type VideoFrame,
+  type VideoSourceOwner,
 } from "./protocol.js";
+import { isClientToken } from "./token.js";
+
+/**
+ * Close code for a call-state refusal. With the reason "call claimed" (or a
+ * preceding `call_claimed` error frame) another participant claimed the call;
+ * otherwise the call is not available (ended or not ready).
+ */
+export const CALL_CLAIMED_CLOSE_CODE = 4409;
+/** Close codes after which reattaching can succeed. */
+const RETRYABLE_CLOSE_CODES = new Set([1001, 1006, 1011, 1012, 1013, 4429]);
 
 export interface MediaSocketOptions {
-  readonly ticket: MediaTicket;
+  readonly api: Pick<CallsApi, "token" | "socketUrl">;
+  readonly callId: string;
+  /** Reuse the same id to reconnect this connection. */
+  readonly connectionId: string;
+  /** Participant name for server credentials; ignored for client tokens. */
+  readonly participant?: string;
+  /** Ask the token provider for a fresh token (after a 4401 close). */
+  readonly refreshToken?: boolean;
   readonly WebSocket?: typeof globalThis.WebSocket;
   readonly setInterval?: typeof globalThis.setInterval;
   readonly clearInterval?: typeof globalThis.clearInterval;
   /** Heartbeat period; 0 disables. Default 5 000 ms — media is latency-sensitive. */
   readonly heartbeatMs?: number;
   /**
-   * Bound on connect(): from the attempt until the pod's `ready` frame. 0
-   * disables. Default 10 000 ms. Without it a socket stuck CONNECTING, or one
-   * that answers pings but never bridges, leaves answer() pending forever.
+   * Bound on connect(): from the attempt until the platform's `ready` frame.
+   * 0 disables. Default 10 000 ms.
    */
   readonly readyTimeoutMs?: number;
   readonly setTimeout?: typeof globalThis.setTimeout;
   readonly clearTimeout?: typeof globalThis.clearTimeout;
 }
 
+export interface MediaReady {
+  readonly sampleRate: number;
+  readonly video: boolean;
+  readonly callId?: string;
+  readonly connectionId?: string;
+}
+
+/** A remote video source announced on the media socket. */
+export type MediaVideoSource = { readonly source: number } & VideoSourceOwner;
+
+/**
+ * Why the socket closed: `local` (this client closed it), `left` (after
+ * {@link MediaSocket.leave}), `ended` (the platform closed the connection
+ * normally or the call is no longer available), `claimed` (another
+ * participant claimed the call), `unauthorized` (4401), `refused` (4400 or a
+ * policy violation; retrying cannot help), or `lost` (retryable).
+ */
+export type MediaCloseReason =
+  "local" | "left" | "ended" | "claimed" | "unauthorized" | "refused" | "lost";
+
+export interface MediaClose {
+  readonly reason: MediaCloseReason;
+  readonly code?: number;
+}
+
 type Events = {
-  ready: [{ sampleRate: number; video: boolean }];
+  ready: [MediaReady];
   audio: [Int16Array];
   video: [VideoFrame];
-  videoState: [enabled: boolean];
+  videoSource: [MediaVideoSource];
+  videoSourceRemoved: [source: number];
+  keyframeRequest: [];
   participantJoined: [Participant];
   participantLeft: [participantId: string, reason: string | undefined];
   participantState: [Participant];
-  hangup: [];
-  error: [{ code: string; message: string }];
-  close: [];
+  error: [CallsError];
+  close: [MediaClose];
 };
 
 /**
- * One call's media socket to the pod: tagged binary frames for audio and
- * video, JSON text frames for control. Unlike the lifecycle socket this does
- * not reconnect — a dropped media socket means the call is gone, and the pod
- * reports that through the lifecycle stream.
+ * One media connection to a call: tagged binary frames for audio and video,
+ * JSON text frames for control. The first frame authenticates the
+ * connection. A socket does not reconnect by itself; the call opens a new one
+ * with the same connection id.
  */
 export class MediaSocket extends Emitter<Events> {
   readonly #o: MediaSocketOptions;
@@ -55,13 +104,12 @@ export class MediaSocket extends Emitter<Events> {
   #awaitingPong = false;
   #sampleRate = DEFAULT_SAMPLE_RATE;
   #closed = false;
-  /** Settles the in-flight `connect()`; a local `close()` rejects it. */
+  #ready = false;
+  #intent: "left" | "ended" | undefined;
+  #claimed = false;
+  /** The last error frame before `ready`; the close that follows explains it. */
+  #refusal: CallsError | undefined;
   #pending: ((err?: Error) => void) | undefined;
-  /**
-   * The promise of the attempt in flight. `#socket` is set before `ready`
-   * arrives, so a second `connect()` during the handshake must wait on this
-   * rather than resolve against a socket that has not bridged yet.
-   */
   #connecting: Promise<void> | undefined;
 
   constructor(options: MediaSocketOptions) {
@@ -75,30 +123,37 @@ export class MediaSocket extends Emitter<Events> {
     this.#WS = WS;
   }
 
-  /** The PCM rate in force; updated from the pod's `ready` frame. */
+  get connectionId(): string {
+    return this.#o.connectionId;
+  }
+
+  /** The PCM rate in force; updated from the platform's `ready` frame. */
   get sampleRate(): number {
     return this.#sampleRate;
   }
 
   get connected(): boolean {
     return (
-      this.#socket !== undefined && this.#socket.readyState === this.#WS.OPEN
+      this.#ready &&
+      this.#socket !== undefined &&
+      this.#socket.readyState === this.#WS.OPEN
     );
   }
 
-  /** Opens the socket; resolves when the pod reports media bridged, rejects on failure or hang-up first. */
+  /**
+   * Authenticate and attach; resolves when the platform reports `ready`.
+   * Rejects with {@link CallClaimedError} or {@link CallsAuthError} when the
+   * platform refuses the connection for those reasons.
+   */
   connect(): Promise<void> {
     if (this.#closed)
       return Promise.reject(new Error("Media socket is closed."));
     if (this.#connecting !== undefined) return this.#connecting;
     if (this.#socket !== undefined) return Promise.resolve();
-    let inflight = true;
     const attempt = new Promise<void>((resolve, reject) => {
       const readyMs = this.#o.readyTimeoutMs ?? 10_000;
       let readyTimer: ReturnType<typeof setTimeout> | undefined;
       let settled = false;
-      // Every settlement clears the ready bound, so the timer can only fire
-      // for an attempt that is still genuinely pending.
       const done = (err?: Error) => {
         if (settled) return;
         settled = true;
@@ -107,7 +162,6 @@ export class MediaSocket extends Emitter<Events> {
           readyTimer = undefined;
         }
         if (this.#pending === done) this.#pending = undefined;
-        inflight = false;
         this.#connecting = undefined;
         if (err) reject(err);
         else resolve();
@@ -116,128 +170,221 @@ export class MediaSocket extends Emitter<Events> {
       if (readyMs > 0)
         readyTimer = (this.#o.setTimeout ?? setTimeout)(() => {
           readyTimer = undefined;
-          // A socket stuck CONNECTING, or one that answers pings but never
-          // bridges, would otherwise hold answer() open forever.
-          done(new Error("The pod did not report media ready in time."));
+          done(
+            new CallsError(
+              "media_timeout",
+              "The platform did not report media ready in time.",
+            ),
+          );
           this.close();
         }, readyMs);
-      let socket: WebSocket;
-      try {
-        // The ticket is a bearer credential; browsers cannot set headers on a
-        // WebSocket, so it rides the subprotocol slot, which the pod also reads.
-        socket = new this.#WS(this.#o.ticket.url, [
-          `pmfa.ticket.${this.#o.ticket.token}`,
-        ]);
-      } catch (cause) {
-        done(
-          cause instanceof Error
-            ? cause
-            : new Error("WebSocket construction failed."),
-        );
-        return;
-      }
-      socket.binaryType = "arraybuffer";
-      this.#socket = socket;
-      socket.onopen = () => this.#startHeartbeat(socket);
-      socket.onmessage = (event) => {
-        const data = (event as MessageEvent).data;
-        if (typeof data === "string") {
-          const control = parseMediaControl(data);
-          if (control === undefined) return;
-          if (control.type === "ready") {
-            this.#sampleRate = control.sampleRate;
-            // done() in finally: a throwing `ready` listener must not leave
-            // answer() pending, and the exception still reaches its owner.
-            try {
-              this.emit("ready", {
-                sampleRate: control.sampleRate,
-                video: control.video,
-              });
-            } finally {
-              done();
-            }
-            return;
-          }
-          if (control.type === "error")
-            done(new Error(`${control.code}: ${control.message}`));
-          if (control.type === "hangup")
-            done(new Error("Call ended before media was bridged."));
-          this.#control(control);
-          return;
-        }
-        const bytes =
-          data instanceof ArrayBuffer
-            ? new Uint8Array(data)
-            : ArrayBuffer.isView(data)
-              ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
-              : undefined;
-        if (bytes === undefined) return;
-        const frame = decodeMediaFrame(bytes);
-        if (frame === undefined) return;
-        if (frame.kind === "audio") this.emit("audio", frame.pcm);
-        else this.emit("video", frame.frame);
-      };
-      socket.onerror = () => undefined;
-      socket.onclose = () => {
-        this.#stopHeartbeat();
-        if (this.#socket === socket) this.#socket = undefined;
-        done(new Error("Media socket closed before media was bridged."));
-        this.emit("close");
-      };
+      void this.#open(done);
     });
-    // The executor may have settled synchronously (a constructor throw):
-    // only a still-pending attempt is shared with later callers.
-    if (inflight) this.#connecting = attempt;
+    this.#connecting = attempt;
     return attempt;
   }
 
-  /** Push s16le mono PCM at {@link sampleRate} toward WhatsApp. Returns false when not connected. */
+  async #open(done: (err?: Error) => void): Promise<void> {
+    let token: string;
+    try {
+      token = (
+        await this.#o.api.token(
+          this.#o.refreshToken === true ? { refresh: true } : {},
+        )
+      ).value;
+    } catch (cause) {
+      done(
+        new CallsError(
+          "token_failed",
+          cause instanceof Error
+            ? cause.message
+            : "Could not obtain a token for the media socket.",
+          { cause },
+        ),
+      );
+      return;
+    }
+    if (this.#closed) return;
+    let socket: WebSocket;
+    try {
+      socket = new this.#WS(
+        this.#o.api.socketUrl(mediaSocketPath(this.#o.callId)),
+        [MEDIA_SUBPROTOCOL],
+      );
+    } catch (cause) {
+      done(
+        cause instanceof Error
+          ? cause
+          : new Error("WebSocket construction failed."),
+      );
+      return;
+    }
+    socket.binaryType = "arraybuffer";
+    this.#socket = socket;
+    socket.onopen = () => {
+      const auth: MediaClientFrame = {
+        type: "auth",
+        token,
+        connectionId: this.#o.connectionId,
+        ...(this.#o.participant === undefined || isClientToken(token)
+          ? {}
+          : { participant: this.#o.participant }),
+      };
+      socket.send(JSON.stringify(auth));
+    };
+    socket.onmessage = (event) => {
+      const data = (event as MessageEvent).data;
+      if (typeof data === "string") {
+        const control = parseMediaControl(data);
+        if (control === undefined) return;
+        if (control.type === "ready") {
+          this.#sampleRate = control.sampleRate;
+          this.#ready = true;
+          this.#startHeartbeat(socket);
+          try {
+            this.emit("ready", {
+              sampleRate: control.sampleRate,
+              video: control.video,
+              ...(control.callId === undefined
+                ? {}
+                : { callId: control.callId }),
+              ...(control.connectionId === undefined
+                ? {}
+                : { connectionId: control.connectionId }),
+            });
+          } finally {
+            done();
+          }
+          return;
+        }
+        if (control.type === "error" && control.code === "call_claimed")
+          this.#claimed = true;
+        if (!this.#ready) {
+          // The platform sends an error frame and then closes; settle on the
+          // close so the close code decides the error type.
+          if (control.type === "error") this.#refusal = errorFrom(control);
+          return;
+        }
+        this.#control(control);
+        return;
+      }
+      if (!this.#ready) return;
+      const bytes =
+        data instanceof ArrayBuffer
+          ? new Uint8Array(data)
+          : ArrayBuffer.isView(data)
+            ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
+            : undefined;
+      if (bytes === undefined) return;
+      const frame = decodeMediaFrame(bytes);
+      if (frame === undefined) return;
+      if (frame.kind === "audio") this.emit("audio", frame.pcm);
+      else this.emit("video", frame.frame);
+    };
+    socket.onerror = () => undefined;
+    socket.onclose = (event) => {
+      this.#stopHeartbeat();
+      if (this.#socket === socket) this.#socket = undefined;
+      this.#closed = true;
+      this.#ready = false;
+      const close = this.#classify(event as CloseEvent | undefined);
+      done(closeError(close, this.#refusal));
+      this.emit("close", close);
+    };
+  }
+
+  /** Push s16le mono PCM at {@link sampleRate}. Returns false when not connected. */
   writeAudio(pcm: Int16Array): boolean {
     if (!this.connected) return false;
     this.#socket!.send(encodeAudioFrame(pcm));
     return true;
   }
 
-  writeVideo(frame: VideoFrame): boolean {
+  /** Push one H.264 Annex-B access unit. Send decoder configuration with keyframes. */
+  writeVideo(frame: OutboundVideoFrame): boolean {
     if (!this.connected) return false;
-    this.#socket!.send(encodeVideoFrame(frame));
+    this.#socket!.send(encodeVideoFrame({ ...frame, source: 0 }));
     return true;
   }
 
-  sendControl(frame: MediaControlFrame): boolean {
+  send(frame: MediaClientFrame): boolean {
     if (!this.connected) return false;
     this.#socket!.send(JSON.stringify(frame));
     return true;
   }
 
+  /** Close this connection only; the call continues. False when not connected. */
+  leave(): boolean {
+    if (!this.send({ type: "leave" })) return false;
+    this.#intent = "left";
+    this.#finish("left");
+    return true;
+  }
+
+  /** End the call for every participant. False when not connected. */
+  endCall(): boolean {
+    if (!this.send({ type: "end_call" })) return false;
+    this.#intent = "ended";
+    this.#finish("ended");
+    return true;
+  }
+
   close(): void {
+    this.#finish("local");
+  }
+
+  #finish(reason: MediaCloseReason): void {
+    if (this.#closed) return;
     this.#closed = true;
     this.#stopHeartbeat();
-    // A call that ends while media is still connecting must not leave the
-    // caller's answer() pending forever: reject the in-flight connect first.
     this.#pending?.(new Error("Media socket closed before media was bridged."));
     const socket = this.#socket;
     this.#socket = undefined;
+    this.#ready = false;
     if (socket === undefined) return;
     socket.onopen = socket.onmessage = socket.onclose = socket.onerror = null;
     try {
-      socket.close();
+      socket.close(1000, reason === "local" ? "closed" : reason);
     } catch {
       // already closed
     }
-    this.emit("close");
+    this.emit("close", { reason });
+  }
+
+  #classify(event: CloseEvent | undefined): MediaClose {
+    const code = event?.code;
+    const text = (event?.reason ?? "").toLowerCase();
+    const withCode = code === undefined ? {} : { code };
+    if (this.#intent !== undefined)
+      return { reason: this.#intent, ...withCode };
+    if (code === AUTH_FAILED_CLOSE_CODE)
+      return { reason: "unauthorized", ...withCode };
+    if (
+      this.#claimed ||
+      text === "call claimed" ||
+      (code === CALL_CLAIMED_CLOSE_CODE && this.#refusal === undefined)
+    )
+      return {
+        reason: this.#claimed || text === "call claimed" ? "claimed" : "ended",
+        ...withCode,
+      };
+    // 4409 for another reason: the call is ended or not available.
+    if (code === CALL_CLAIMED_CLOSE_CODE)
+      return { reason: "ended", ...withCode };
+    // The platform closes a connection normally when it leaves or the call
+    // ends; the lifecycle stream reports which.
+    if (code === 1000) return { reason: "ended", ...withCode };
+    if (code === 4400 || code === 1008 || code === 1009)
+      return { reason: "refused", ...withCode };
+    if (code === undefined || RETRYABLE_CLOSE_CODES.has(code))
+      return { reason: "lost", ...withCode };
+    return { reason: "lost", ...withCode };
   }
 
   #control(frame: MediaControlFrame): void {
     switch (frame.type) {
       case "pong":
         this.#awaitingPong = false;
-        return;
-      case "hangup":
-        this.emit("hangup");
-        return;
-      case "video_state":
-        this.emit("videoState", frame.enabled);
         return;
       case "participant_joined":
         this.emit("participantJoined", frame.participant);
@@ -248,8 +395,28 @@ export class MediaSocket extends Emitter<Events> {
       case "participant_state":
         this.emit("participantState", frame.participant);
         return;
+      case "video_source":
+        this.emit(
+          "videoSource",
+          frame.connectionId !== undefined
+            ? {
+                source: frame.source,
+                connectionId: frame.connectionId,
+                ...(frame.connectionParticipant === undefined
+                  ? {}
+                  : { connectionParticipant: frame.connectionParticipant }),
+              }
+            : { source: frame.source, participant: frame.participant },
+        );
+        return;
+      case "video_source_removed":
+        this.emit("videoSourceRemoved", frame.source);
+        return;
+      case "keyframe_request":
+        this.emit("keyframeRequest");
+        return;
       case "error":
-        this.emit("error", { code: frame.code, message: frame.message });
+        this.emit("error", errorFrom(frame));
         return;
       default:
         return;
@@ -263,20 +430,25 @@ export class MediaSocket extends Emitter<Events> {
     this.#beat = (this.#o.setInterval ?? setInterval)(() => {
       if (this.#socket !== socket) return;
       if (this.#awaitingPong) {
+        // Treat a silent socket as lost so the call can reconnect it.
+        this.#stopHeartbeat();
+        this.#closed = true;
+        this.#socket = undefined;
+        this.#ready = false;
+        socket.onopen =
+          socket.onmessage =
+          socket.onclose =
+          socket.onerror =
+            null;
         try {
-          this.emit("error", {
-            code: "heartbeat_timeout",
-            message: "The pod stopped answering.",
-          });
-        } finally {
-          this.close();
+          socket.close();
+        } catch {
+          // already gone
         }
+        this.emit("close", { reason: "lost" });
         return;
       }
-      if (socket.readyState === this.#WS.OPEN) {
-        socket.send(JSON.stringify({ type: "ping" }));
-        this.#awaitingPong = true;
-      }
+      this.#awaitingPong = this.send({ type: "ping" });
     }, every);
   }
 
@@ -286,5 +458,44 @@ export class MediaSocket extends Emitter<Events> {
       this.#beat = undefined;
     }
     this.#awaitingPong = false;
+  }
+}
+
+function errorFrom(frame: { code: string; message?: string }): CallsError {
+  if (frame.code === "call_claimed") return new CallClaimedError(frame.message);
+  if (frame.code === "unauthorized") return new CallsAuthError(frame.message);
+  return new CallsError(
+    frame.code,
+    frame.message ??
+      `The platform refused the media connection (${frame.code}).`,
+  );
+}
+
+function closeError(close: MediaClose, refusal: CallsError | undefined): Error {
+  switch (close.reason) {
+    case "claimed":
+      return new CallClaimedError();
+    case "unauthorized":
+      return new CallsAuthError(refusal?.message);
+    case "ended":
+      return (
+        refusal ?? new CallsError("call_ended", "The call is not available.")
+      );
+    case "refused":
+      return (
+        refusal ??
+        new CallsError(
+          "media_refused",
+          "The platform refused the media connection.",
+        )
+      );
+    default:
+      return (
+        refusal ??
+        new CallsError(
+          "media_closed",
+          "Media socket closed before media was bridged.",
+        )
+      );
   }
 }

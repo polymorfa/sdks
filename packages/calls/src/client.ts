@@ -1,34 +1,39 @@
-import {
-  HttpCallsApi,
-  type AnswerMode,
-  type CallsApi,
-  type FetchLike,
-} from "./api.js";
+import { HttpCallsApi, type CallsApi, type FetchLike } from "./api.js";
 import { Call, type CallEndReason } from "./call.js";
+import type { CallsError } from "./errors.js";
 import { Emitter } from "./events.js";
 import { LifecycleSocket, type LifecycleEvent } from "./lifecycle.js";
-import { parseMediaControlValue, type MediaControlFrame } from "./protocol.js";
+import {
+  isParticipantName,
+  parseMediaControlValue,
+  type MediaControlFrame,
+} from "./protocol.js";
+import { isClientToken, type CallsTokenProvider } from "./token.js";
 
 export interface CallsClientOptions {
-  /** Server API key (`pmfa_…`). Never ship this to a browser. */
+  /**
+   * Credential. A client token (or a provider of client tokens minted by your
+   * server with `POST /platform/client-tokens`), or a server API key or
+   * project token. Never ship a server credential to a browser.
+   */
+  readonly token?: string | CallsTokenProvider;
+  /** Server API key or project token; same as passing it as `token`. */
   readonly apiKey?: string;
   /** The session whose calls this client follows and places from. */
   readonly session: string;
+  /**
+   * Participant name for server credentials (`[A-Za-z0-9._:@-]{1,128}`,
+   * default `default`). Client tokens always act as their own participant.
+   */
+  readonly participant?: string;
   /** Defaults to `https://api.polymorfa.com`. */
   readonly baseUrl?: string;
   /** Swap the platform seam entirely — tests, or a client-token transport. */
   readonly api?: CallsApi;
-  /**
-   * Claim the session's `sdk` answer mode on `connect()` so inbound calls ring
-   * for this client instead of being auto-answered. Default `true`; set
-   * `false` when another consumer owns the mode (a browser widget on the same
-   * session, say).
-   */
-  readonly claimMode?: boolean;
-  /** Answer mode to claim; defaults to sdk. WebRTC adapters use browser. */
-  readonly answerMode?: AnswerMode;
-  /** External media is connected by the browser adapter instead of an agent ticket. */
+  /** External media is connected by a WebRTC adapter instead of the media socket. */
   readonly mediaMode?: "socket" | "external";
+  /** Media reattach attempts after an unexpected drop. Default 3. */
+  readonly reconnectAttempts?: number;
   readonly fetch?: FetchLike;
   readonly WebSocket?: typeof globalThis.WebSocket;
   readonly setTimeout?: typeof globalThis.setTimeout;
@@ -40,27 +45,39 @@ export interface CallsClientOptions {
   readonly createIdempotencyKey?: () => string;
 }
 
+export interface PlaceOptions {
+  readonly video?: boolean;
+  /** Claim the call for this participant. Default `false`. */
+  readonly exclusive?: boolean;
+  readonly idempotencyKey?: string;
+  readonly signal?: AbortSignal;
+}
+
 type ClientEvents = {
-  /** A call is ringing this session. Answer or reject it. */
+  /**
+   * A call is ringing this session. Answer, join, reject, or ignore it; the
+   * client never declines on its own.
+   */
   incoming: [Call];
   /** Any call became known to the client — inbound or placed. */
   call: [Call];
   ended: [Call, CallEndReason];
-  /** Lifecycle socket connectivity. */
+  /** Lifecycle socket authenticated. */
   ready: [];
   disconnected: [];
-  error: [{ code: string; message: string }];
+  /** Includes `CallsAuthError` when the platform closes the socket with 4401. */
+  error: [CallsError];
 };
 
 /**
- * The programmatic Calls client: a discord.js-style bot that follows one
- * session, rings on inbound calls, places outbound ones, and hands each call
- * back as a {@link Call} with media you read and write from code.
+ * The programmatic Calls client: follows one session, rings on inbound calls,
+ * places outbound ones, and hands each call back as a {@link Call} with media
+ * you read and write from code.
  *
  * ```ts
- * const client = new CallsClient({ apiKey, session: "support" });
+ * const client = new CallsClient({ token: getToken, session: "support" });
  * client.on("incoming", async (call) => {
- *   await call.answer();
+ *   await call.answer({ exclusive: true });
  *   call.audio.on("data", (pcm) => transcribe(pcm));
  *   call.audio.write(synthesize("Hello"));
  * });
@@ -69,8 +86,7 @@ type ClientEvents = {
  */
 export class CallsClient extends Emitter<ClientEvents> {
   readonly session: string;
-  readonly #claimMode: boolean;
-  /** Bumped by disconnect(); a connect() still claiming its mode then stops short of the socket. */
+  /** Bumped by disconnect(); a placement that resolves later is ended. */
   #connectGeneration = 0;
   readonly #api: CallsApi;
   readonly #socket: LifecycleSocket;
@@ -86,27 +102,40 @@ export class CallsClient extends Emitter<ClientEvents> {
   readonly #pendingEvents = new Map<string, LifecycleEvent[]>();
   readonly #o: CallsClientOptions;
   readonly #createKey: () => string;
+  #credentialReference: string | undefined;
 
   constructor(options: CallsClientOptions) {
     super();
     this.#o = options;
     this.session = options.session;
-    this.#claimMode = options.claimMode ?? true;
-    if (options.api === undefined && options.apiKey === undefined)
-      throw new Error("CallsClient needs an `apiKey` or a custom `api`.");
+    if (
+      options.participant !== undefined &&
+      !isParticipantName(options.participant)
+    )
+      throw new Error(
+        "participant must be 1–128 characters of A–Z, a–z, 0–9, and . _ : @ -",
+      );
+    const credential = options.token ?? options.apiKey;
+    if (options.api === undefined && credential === undefined)
+      throw new Error("CallsClient needs a `token` or a custom `api`.");
     this.#api =
       options.api ??
       new HttpCallsApi({
-        apiKey: options.apiKey!,
+        token: credential!,
         ...(options.baseUrl === undefined ? {} : { baseUrl: options.baseUrl }),
         ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
+        ...(options.now === undefined ? {} : { now: options.now }),
       });
     this.#createKey =
       options.createIdempotencyKey ?? (() => crypto.randomUUID());
     this.#socket = new LifecycleSocket({
       api: this.#api,
       session: options.session,
+      ...(options.participant === undefined
+        ? {}
+        : { participant: options.participant }),
       ...timerOptions(options),
+      ...(options.now === undefined ? {} : { now: options.now }),
     });
     this.#socket.on("event", (event) => this.#receive(event));
     this.#socket.on("state", (connected) =>
@@ -115,12 +144,20 @@ export class CallsClient extends Emitter<ClientEvents> {
     this.#socket.on("error", (error) => this.emit("error", error));
   }
 
+  /** True while the lifecycle socket is authenticated. */
   get connected(): boolean {
     return this.#socket.connected;
   }
   /** Calls the client currently knows about that have not ended. */
   get calls(): readonly Call[] {
     return [...this.#calls.values()].filter((call) => !call.ended);
+  }
+  /**
+   * This client's participant reference (`client:<id>` or `server:<name>`),
+   * when known from the credential or the platform.
+   */
+  get participantReference(): string | undefined {
+    return this.#socket.participant ?? this.#credentialReference;
   }
 
   /** Look up a known call, including the bounded recent history of ended calls. */
@@ -129,45 +166,44 @@ export class CallsClient extends Emitter<ClientEvents> {
   }
 
   /**
-   * Claim the session's answer mode, then open the lifecycle stream. Resolves
-   * after the first attempt settles; reconnects until `disconnect()`. A claim
-   * that fails rejects before any socket opens: following a session whose
-   * calls are being auto-answered elsewhere would ring nothing here.
+   * Open the lifecycle stream. Resolves after the first attempt settles;
+   * reconnects until `disconnect()`.
    */
   async connect(): Promise<void> {
     const generation = this.#connectGeneration;
-    if (this.#claimMode)
-      await this.#api.setMode(this.session, this.#o.answerMode ?? "sdk");
-    // disconnect() ran while the claim was in flight: opening the socket now
-    // would reconnect a client the caller has already stopped.
+    try {
+      const token = await this.#api.token();
+      if (!isClientToken(token.value))
+        this.#credentialReference = `server:${this.#o.participant ?? "default"}`;
+    } catch {
+      // The socket attempt reports token failures itself.
+    }
     if (generation !== this.#connectGeneration) return;
     return this.#socket.connect();
   }
 
   /**
-   * Stop following the session and hang up its live calls. The stream closes
-   * first: a `connect()` issued while a slow hang-up is still in flight must
-   * not have its fresh socket closed by this earlier disconnect. Each call
-   * ends locally when its hang-up settles, so nothing is lost by closing early.
+   * Stop following the session. Calls this client joined are left, not
+   * ended; outbound calls still ringing are ended; ringing inbound calls
+   * are only forgotten locally.
    */
   async disconnect(): Promise<void> {
     this.#connectGeneration += 1;
     this.#socket.close();
-    await Promise.allSettled(this.calls.map((call) => call.hangup()));
+    await Promise.allSettled(
+      this.calls.map((call) =>
+        call.direction === "outbound" && call.state === "ringing"
+          ? call.end()
+          : call.leave(),
+      ),
+    );
   }
 
   /**
    * Place an outbound call. Resolves once the platform has accepted the
    * request; listen for `connected` (or `ended`) on the returned call.
    */
-  async place(
-    to: string,
-    options: {
-      readonly video?: boolean;
-      readonly idempotencyKey?: string;
-      readonly signal?: AbortSignal;
-    } = {},
-  ): Promise<Call> {
+  async place(to: string, options: PlaceOptions = {}): Promise<Call> {
     const generation = this.#connectGeneration;
     options.signal?.throwIfAborted();
     const video = options.video ?? false;
@@ -175,30 +211,52 @@ export class CallsClient extends Emitter<ClientEvents> {
       session: this.session,
       to,
       video,
+      ...(options.exclusive === undefined
+        ? {}
+        : { exclusive: options.exclusive }),
+      ...(this.#o.participant === undefined
+        ? {}
+        : { participant: this.#o.participant }),
       idempotencyKey: options.idempotencyKey ?? this.#createKey(),
     };
     const { callId } =
       options.signal === undefined
         ? await this.#api.place(input)
         : await this.#api.place(input, options.signal);
-    const call = new Call({
-      id: callId,
-      session: this.session,
-      direction: "outbound",
-      peer: to,
-      video,
-      api: this.#api,
-      media: timerOptions(this.#o),
-      ...(this.#o.mediaMode === undefined
-        ? {}
-        : { mediaMode: this.#o.mediaMode }),
-      ...(this.#o.now === undefined ? {} : { now: this.#o.now }),
-    });
+    const call = this.#newCall(callId, "outbound", to, video);
     if (generation !== this.#connectGeneration || options.signal?.aborted) {
-      await call.hangup();
+      await call.end();
       throw new Error("Call placement was cancelled.");
     }
     return this.#track(call);
+  }
+
+  #newCall(
+    id: string,
+    direction: "inbound" | "outbound",
+    peer: string,
+    video: boolean,
+  ): Call {
+    return new Call({
+      id,
+      session: this.session,
+      direction,
+      peer,
+      video,
+      api: this.#api,
+      media: timerOptions(this.#o),
+      self: () => this.participantReference,
+      ...(this.#o.participant === undefined
+        ? {}
+        : { participant: this.#o.participant }),
+      ...(this.#o.mediaMode === undefined
+        ? {}
+        : { mediaMode: this.#o.mediaMode }),
+      ...(this.#o.reconnectAttempts === undefined
+        ? {}
+        : { reconnectAttempts: this.#o.reconnectAttempts }),
+      ...(this.#o.now === undefined ? {} : { now: this.#o.now }),
+    });
   }
 
   #receive(event: LifecycleEvent): void {
@@ -211,21 +269,13 @@ export class CallsClient extends Emitter<ClientEvents> {
         // a new call. Reviving an ended one would ring the application twice.
         if (existing !== undefined) return;
         const call = this.#track(
-          new Call({
-            id: event.callId,
-            session: this.session,
-            direction: "inbound",
-            peer: peerFrom(event.payload["from"]),
-            video:
-              event.payload["hasVideo"] === true ||
+          this.#newCall(
+            event.callId,
+            "inbound",
+            peerFrom(event.payload["from"]),
+            event.payload["hasVideo"] === true ||
               event.payload["has_video"] === true,
-            api: this.#api,
-            media: timerOptions(this.#o),
-            ...(this.#o.mediaMode === undefined
-              ? {}
-              : { mediaMode: this.#o.mediaMode }),
-            ...(this.#o.now === undefined ? {} : { now: this.#o.now }),
-          }),
+          ),
         );
         this.emit("incoming", call);
         return;
@@ -243,7 +293,6 @@ export class CallsClient extends Emitter<ClientEvents> {
       case "call.participant_joined":
       case "call.participant_state":
       case "call.participant_left":
-        if (this.#o.mediaMode !== "external") return;
         if (participantControlFrom(event) === undefined) return;
         if (existing === undefined) {
           this.#buffer(event);
@@ -282,9 +331,16 @@ export class CallsClient extends Emitter<ClientEvents> {
 
   #apply(call: Call, event: LifecycleEvent): void {
     switch (event.event) {
-      case "call.accepted":
-        void call._remoteAccepted();
+      case "call.accepted": {
+        const answeredBy = event.payload["answeredBy"];
+        void call._remoteAccepted({
+          ...(typeof answeredBy === "string" && answeredBy.length > 0
+            ? { answeredBy }
+            : {}),
+          exclusive: event.payload["exclusive"] === true,
+        });
         return;
+      }
       case "call.ended":
         call._remoteEnded(endReasonFrom(event.payload["reason"]));
         return;
@@ -297,7 +353,6 @@ export class CallsClient extends Emitter<ClientEvents> {
       case "call.participant_joined":
       case "call.participant_state":
       case "call.participant_left": {
-        if (this.#o.mediaMode !== "external") return;
         const frame = participantControlFrom(event);
         if (frame !== undefined) call._remoteParticipant(frame);
         return;

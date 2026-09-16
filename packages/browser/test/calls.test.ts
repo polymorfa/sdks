@@ -1,3 +1,4 @@
+import { CallClaimedError } from "@polymorfa/calls";
 import { describe, expect, it, vi } from "vitest";
 import {
   BrowserTransport,
@@ -100,9 +101,11 @@ describe("CallsController (voip-v2 contract)", () => {
       video: true,
     });
     await controller.answer();
+    // The default answer leaves the call open for other participants.
     expect(f.backend.answer).toHaveBeenCalledWith(
       "call-1",
       expect.any(AbortSignal),
+      { exclusive: false, video: true },
     );
     expect(controller.getSnapshot().status).toBe("connecting");
     f.connect("connected");
@@ -189,64 +192,140 @@ describe("CallsController (voip-v2 contract)", () => {
 });
 
 describe("CallsSignalingClient", () => {
-  it("uses the voip-v2 REST offer, ICE, polling, and teardown paths", async () => {
+  function client(responses: Record<string, unknown> = {}) {
     const fetch = vi.fn(async (input: string | URL | Request) => {
       const url = String(input);
-      const body = url.endsWith("/offer")
-        ? { data: { sdp: "answer", iceServers: [] } }
-        : url.endsWith("/candidates")
-          ? { data: { candidates: [] } }
-          : { success: true };
+      const suffix = Object.keys(responses).find((key) => url.includes(key));
+      const body =
+        suffix !== undefined
+          ? responses[suffix]
+          : url.includes("/offer") || url.includes("/renegotiate")
+            ? { data: { sdp: "answer", iceServers: [] } }
+            : url.includes("/candidates")
+              ? { data: { candidates: [] } }
+              : url.endsWith("/accept")
+                ? {
+                    success: true,
+                    data: {
+                      answered: true,
+                      answeredBy: "client:e1",
+                      exclusive: false,
+                    },
+                  }
+                : { success: true };
+      const status =
+        (body as { status?: number } | undefined)?.status ??
+        (url.endsWith("/candidate") ? 202 : 200);
       return new Response(JSON.stringify(body), {
-        status: url.endsWith("/candidate") ? 202 : 200,
+        status,
         headers: { "content-type": "application/json" },
       });
     });
     const transport = new BrowserTransport({
       baseUrl: "https://api.polymorfa.test",
-      getClientToken: async () => "pmfa_ct_test",
+      getClientToken: async () => ({
+        value: "pmfa_ct_test",
+        audience: "browser",
+        expiresAt: Date.now() + 600_000,
+      }),
       fetch,
       maxNetworkRetries: 0,
     });
-    const signaling = new CallsSignalingClient(transport);
-    await signaling.offer("call/1", "offer");
-    await signaling.candidate("call/1", { candidate: "ice" });
+    return { fetch, signaling: new CallsSignalingClient(transport) };
+  }
+  const bodies = (fetch: ReturnType<typeof vi.fn>) =>
+    (fetch.mock.calls as unknown as [string, RequestInit][]).map(
+      ([input, init]) => [
+        init.method,
+        String(input),
+        init.body === undefined ? undefined : JSON.parse(String(init.body)),
+      ],
+    );
+
+  it("sends the connection id with offers, candidates and leave", async () => {
+    const { fetch, signaling } = client();
+    await signaling.offer("call/1", {
+      sdp: "offer",
+      connectionId: "conn-0001",
+    });
+    await signaling.renegotiate("call/1", {
+      sdp: "offer2",
+      connectionId: "conn-0001",
+    });
+    await signaling.candidate(
+      "call/1",
+      { candidate: "ice", sdpMid: "0" },
+      "conn-0001",
+    );
     await signaling.candidates("call/1");
-    await signaling.teardown("call/1");
-    expect(fetch.mock.calls.map(([input]) => String(input))).toEqual([
-      "https://api.polymorfa.test/messaging/voip/calls/call%2F1/offer",
-      "https://api.polymorfa.test/messaging/voip/calls/call%2F1/candidate",
-      "https://api.polymorfa.test/messaging/voip/calls/call%2F1/candidates",
-      "https://api.polymorfa.test/messaging/voip/calls/call%2F1",
+    await signaling.leave("call/1", "conn-0001");
+    await signaling.end("call/1");
+    const base = "https://api.polymorfa.test/messaging/voip/calls/call%2F1";
+    expect(bodies(fetch)).toEqual([
+      ["POST", `${base}/offer`, { sdp: "offer", connectionId: "conn-0001" }],
+      [
+        "POST",
+        `${base}/renegotiate`,
+        { sdp: "offer2", connectionId: "conn-0001" },
+      ],
+      [
+        "POST",
+        `${base}/candidate`,
+        { candidate: "ice", sdpMid: "0", connectionId: "conn-0001" },
+      ],
+      ["GET", `${base}/candidates`, undefined],
+      ["POST", `${base}/leave`, { connectionId: "conn-0001" }],
+      ["DELETE", base, undefined],
     ]);
   });
-});
 
-describe("CallsSignalingClient socket tickets", () => {
-  it("never names a session: the client token is already bound to one", async () => {
-    const fetch = vi.fn(
-      async () =>
-        new Response(
-          JSON.stringify({
-            data: { ticket: "pmfa_wst_a", expiresAt: 1, url: "/voip/ws?t=a" },
-          }),
-          { status: 200, headers: { "content-type": "application/json" } },
-        ),
+  it("accepts with an explicit claim choice and declines with an empty body", async () => {
+    const { fetch, signaling } = client();
+    await expect(
+      signaling.accept("c1", { exclusive: true, video: false }),
+    ).resolves.toEqual({
+      answered: true,
+      answeredBy: "client:e1",
+      exclusive: false,
+    });
+    await signaling.accept("c1", {});
+    await signaling.reject("c1");
+    const base = "https://api.polymorfa.test/messaging/voip/calls/c1";
+    expect(bodies(fetch)).toEqual([
+      ["POST", `${base}/accept`, { exclusive: true, video: false }],
+      ["POST", `${base}/accept`, { exclusive: false }],
+      ["POST", `${base}/reject`, undefined],
+    ]);
+  });
+
+  it("turns 409 call_claimed into CallClaimedError", async () => {
+    const { signaling } = client({
+      "/accept": {
+        status: 409,
+        success: false,
+        error: { code: "call_claimed", message: "Claimed." },
+        code: "call_claimed",
+      },
+    });
+    await expect(signaling.accept("c1", {})).rejects.toBeInstanceOf(
+      CallClaimedError,
     );
-    const client = new CallsSignalingClient(
-      new BrowserTransport({
-        baseUrl: "https://api.example",
-        getClientToken: async () => "pmfa_ct_x",
-        fetch: fetch as unknown as typeof globalThis.fetch,
-      }),
+  });
+
+  it("authenticates sockets with the client token and never puts it in the URL", async () => {
+    const { fetch, signaling } = client();
+    await expect(signaling.token()).resolves.toMatchObject({
+      value: "pmfa_ct_test",
+      expiresAt: expect.any(Number),
+    });
+    expect(signaling.socketUrl("/voip/ws")).toBe(
+      "wss://api.polymorfa.test/voip/ws",
     );
-    await client.socketTicket("support");
-    // The API answers 403 "client token cannot follow another session" when a
-    // client token names one, so the bound session must be left implicit.
-    const [, init] = (
-      fetch.mock.calls as unknown as [string, RequestInit][]
-    )[0] ?? ["", {}];
-    expect(JSON.parse(String(init.body))).toEqual({});
+    expect(signaling.socketUrl("/voip/calls/c1/media")).toBe(
+      "wss://api.polymorfa.test/voip/calls/c1/media",
+    );
+    // No ticket or mode request is made.
+    expect(fetch).not.toHaveBeenCalled();
   });
 });
 

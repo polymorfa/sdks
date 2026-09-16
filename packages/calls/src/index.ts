@@ -1,38 +1,90 @@
-export { CallsClient, type CallsClientOptions } from "./client.js";
+export {
+  CallsClient,
+  type CallsClientOptions,
+  type PlaceOptions,
+} from "./client.js";
 export {
   Call,
   AudioTrack,
   VideoTrack,
+  type AnswerOptions,
+  type CallClaim,
   type CallDirection,
   type CallEndReason,
+  type CallInit,
   type CallState,
 } from "./call.js";
 export {
   HttpCallsApi,
-  CallsApiError,
+  type AcceptCallOptions,
+  type AcceptCallResult,
   type CallsApi,
-  type AnswerMode,
   type FetchLike,
-  type MediaTicket,
+  type HttpCallsApiOptions,
   type PlaceCallRequest,
-  type SocketTicket,
 } from "./api.js";
-export { LifecycleSocket, type LifecycleEvent } from "./lifecycle.js";
-export { MediaSocket } from "./media.js";
 export {
+  CallClaimedError,
+  CallsApiError,
+  CallsAuthError,
+  CallsError,
+} from "./errors.js";
+export {
+  CallsTokenSource,
+  isClientToken,
+  normalizeToken,
+  type CallsToken,
+  type CallsTokenProvider,
+  type CallsTokenRequest,
+  type CallsTokenSourceOptions,
+} from "./token.js";
+export {
+  LifecycleSocket,
+  type LifecycleCandidate,
+  type LifecycleEvent,
+  type LifecycleReady,
+  type LifecycleSocketOptions,
+} from "./lifecycle.js";
+export {
+  CALL_CLAIMED_CLOSE_CODE,
+  MediaSocket,
+  type MediaClose,
+  type MediaCloseReason,
+  type MediaReady,
+  type MediaSocketOptions,
+  type MediaVideoSource,
+} from "./media.js";
+export {
+  AUTH_FAILED_CLOSE_CODE,
   DEFAULT_SAMPLE_RATE,
+  LIFECYCLE_SOCKET_PATH,
+  MEDIA_SUBPROTOCOL,
   MediaFrameKind,
   VideoCodec,
+  VideoFlags,
   VIDEO_HEADER_BYTES,
+  createConnectionId,
   decodeMediaFrame,
   encodeAudioFrame,
   encodeVideoFrame,
+  isConnectionId,
+  isParticipant,
+  isParticipantName,
+  isSourceHandle,
+  mediaSocketPath,
   parseLifecycleFrame,
   parseMediaControl,
+  type DecodedMediaFrame,
+  type LifecycleClientFrame,
   type LifecycleFrame,
+  type MediaClientFrame,
   type MediaControlFrame,
+  type OutboundVideoFrame,
   type Participant,
+  type TrickleCandidate,
   type VideoFrame,
   type VideoFrameHeader,
+  type VideoSourceFrame,
+  type VideoSourceOwner,
 } from "./protocol.js";
 export { Emitter } from "./events.js";

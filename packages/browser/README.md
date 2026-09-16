@@ -41,8 +41,12 @@ routes directly.
 ## Calls
 
 `createBrowserCalls` connects the shared Calls client to `CallsController` and
-WebRTC. Supply a short-lived client token with `voip_place`, `voip_answer`, and
-`voip_signal` actions and the permitted destination/concurrency rules.
+WebRTC. Your server mints a short-lived client token with
+`POST /platform/client-tokens`, granting `voip_place`, `voip_answer`, and
+`voip_signal` and the destination and concurrency rules you need. The browser
+uses that token directly: as the bearer for REST calls and as the first frame
+of the lifecycle socket (`/voip/ws`). The token never appears in a URL, and no
+calling ticket or answer mode is involved.
 
 ```ts
 import {
@@ -53,40 +57,89 @@ import {
 const calls = createBrowserCalls({
   session: "support",
   getClientToken: createClientTokenProvider(),
+  onError: (error) => {
+    // "unauthorized": the platform stopped accepting the token (4401).
+  },
 });
 await calls.connect();
 await calls.controller.place("+15550100");
-// On application teardown:
+// When the application releases the widget:
 await calls.dispose();
 ```
 
 Pass `calls.controller` to React's `CallSurface` or the `pmfa-call` element.
 `controller.call` exposes the shared `Call`, including its state, duration,
-end reason and `addParticipant()` method. Direct placement supports linked
-WhatsApp devices. Existing custom backends retain their `cloudApi` line support.
+end reason, claim state and `addParticipant()` method. Direct placement
+supports linked WhatsApp devices. Custom backends retain `cloudApi` line
+support.
 
-Connecting claims `browser` answer mode for the token's bound session. That
-mode auto-answers the remote caller; the widget's Answer action attaches local
-WebRTC media, and Reject ends the call. It does not send `/accept` or `/reject`,
-which apply to calls parked in `sdk` mode. The mode claim persists after disposal.
-A connected call requires both remote acceptance and a connected media path.
+### Tokens
 
-The lifecycle socket reconnects with backoff. ICE candidates use REST signaling
-and polling. The controller retains device switching, mute, audio-to-video
-upgrade, and its bounded ICE resumption window. Disposal releases tracks and
-closes the lifecycle socket. A second call cannot replace an active call in
-one widget; additional inbound calls are declined.
+Return `{ value, audience: "browser", expiresAt }` from `getClientToken` so
+the SDK can replace the token before it expires: it asks for a new token and
+sends it on the open socket as another `auth` frame. When a token expires or
+is revoked, the platform closes the socket with code 4401; `onError` receives
+`code: "unauthorized"` and the next reconnect asks `getClientToken` for a new
+token. REST requests refresh a cached token before it expires; a provider
+that returns an expired token fails with `expired_client_token`.
 
-The shared call's PCM/video-frame streams belong to programmatic socket media.
-Use `controller.localStream` and `controller.remoteStream` for browser media.
-Participant invitations return the invited participant. The lifecycle stream
-keeps `call.participants` and participant `state` in sync for browser WebRTC
-calls. `audioMuted` and `video` remain reserved as `false`.
+### Answering, joining, and leaving
+
+Incoming calls ring until a participant answers or declines them.
+`snapshot.invitations` lists every ringing call; several can ring at once and
+the controller never declines one for you. The first invitation is displayed;
+`controller.select(callId)` shows another while no call is active, and
+`controller.dismiss(callId?)` hides one locally without declining it.
+
+- `controller.answer({ exclusive, video, callId })` accepts the call and
+  attaches WebRTC. `exclusive` defaults to `false`, which leaves other
+  participants ringing so they can join. `exclusive: true` claims the call.
+- `controller.join({ video, callId })` joins a call another participant
+  answered without a claim (`snapshot.canJoin`).
+- `snapshot.claimedByOther` is `true` when another participant claimed the
+  call. `answer()` and `join()` then reject with `CallClaimedError`, and
+  `reject()` is refused: declining would end the claimer's call.
+- `controller.reject()` declines a ringing call and ends it for everyone.
+- `controller.leave()` closes this browser's connection; the call continues.
+- `controller.end()` (and `hangup()`) ends the call for every participant.
+- Disposing the controller leaves the call; it never ends it.
+
+After a call ends, the next waiting invitation is displayed.
+
+### Media
+
+`WebRtcMediaFactory` offers, in order: one audio transceiver, a data channel
+negotiated out of band (`pmfa.calls`, id 0), one sendrecv camera transceiver
+(present on audio calls too, so the camera can start later), and
+`videoSlots` receive-only video transceivers (default 3). Offers, re-offers,
+ICE candidates, candidate polling and leave all carry the connection's
+`connectionId`. `createBrowserCalls` uses the `Call`'s id.
+
+The platform assigns remote video sources to transceivers and announces them
+on the data channel. Each source becomes an entry in `controller.remoteVideos`
+with its own `MediaStream`, a stable `key` (`participant:<id>` or
+`connection:<id>`), and the owning `participant`, or `connectionId` plus its
+`connectionParticipant` reference;
+`snapshot.remoteVideos` carries the same entries without streams. When the
+platform reports more sources than slots, the factory adds receive-only
+transceivers and renegotiates, up to `maxVideoSlots` (default 32, camera
+included). `controller.remoteStream` carries the merged call audio only.
+
+The controller keeps device switching, mute, audio-to-video upgrade, and its
+bounded ICE resumption window. `snapshot.participants` follows the call's
+WhatsApp participants. Disposal releases tracks and closes the lifecycle
+socket.
 
 `createSignalingCallsBackend`, `CallsSocket` and `IncomingCallRelay` remain
 available for applications that supply their own placement or event channel.
-The signaling backend still requires its `place` hook. Use `createBrowserCalls`
-for direct client-token placement through `POST /api/voip/calls`.
+`CallsSocket` authenticates the same way; with a server key, pass `session`
+and `participant`, which travel as query parameters. The signaling backend still requires
+its `place` hook. Use `createBrowserCalls` for direct client-token placement.
+
+If a reject or hangup request fails, the call stays active and its controls remain
+available for retry. The UI shows a localized failure message and keeps existing
+media connected until the call ends. `snapshot.error` clears when ending succeeds
+or when an incoming call is successfully answered after a failed reject.
 
 ## Template builder
 
@@ -126,8 +179,3 @@ await templates.refreshPreview();
 The same-origin transport sends application actions with browser cookies. It
 does not accept a server credential, project slug, or Cloud API session. The
 application route resolves those values after authorizing the request.
-
-If a reject or hangup request fails, the call stays active and its controls remain
-available for retry. The UI shows a localized failure message and keeps existing
-media connected until the call ends. `snapshot.error` clears when ending succeeds
-or when an incoming call is successfully answered after a failed reject.

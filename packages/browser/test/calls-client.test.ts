@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { CallClaimedError } from "@polymorfa/calls";
 import { createBrowserCalls } from "../src/calls/client.js";
 import { BrowserCallsApi } from "../src/calls/api.js";
 import { BrowserTransport } from "../src/transport.js";
@@ -31,13 +32,17 @@ function fixture() {
       return session;
     }),
   };
-  const fetch = vi.fn<typeof globalThis.fetch>(async (input) => {
+  const fetch = vi.fn<typeof globalThis.fetch>(async (input, init) => {
     const path = new URL(String(input)).pathname;
-    const data = path.endsWith("ws-ticket")
+    const body =
+      typeof init?.body === "string"
+        ? (JSON.parse(init.body) as Record<string, unknown>)
+        : {};
+    const data = path.endsWith("/accept")
       ? {
-          ticket: "pmfa_wst_test",
-          expiresAt: Date.now() + 60_000,
-          url: "/messaging/voip/ws?ticket=pmfa_wst_test",
+          answered: true,
+          answeredBy: "client:self",
+          exclusive: body["exclusive"] === true,
         }
       : path === "/messaging/voip/calls"
         ? { callId: "CALL-OUT" }
@@ -66,7 +71,7 @@ function fixture() {
       const pending = calls.connect();
       await vi.waitFor(() => expect(FakeWebSocket.instances).toHaveLength(1));
       const socket = FakeWebSocket.instances[0]!;
-      socket.open();
+      socket.authenticate();
       await pending;
       return socket;
     },
@@ -116,7 +121,7 @@ describe("browser widget and shared calls client", () => {
     expect(f.calls.controller.call?.ended).toBe(true);
     expect(f.media.open).not.toHaveBeenCalled();
   });
-  it("hangs up a remote call when microphone acquisition fails", async () => {
+  it("leaves, and never ends, a call when microphone acquisition fails", async () => {
     const f = fixture();
     const socket = await f.connect();
     f.media.open.mockRejectedValueOnce(
@@ -126,12 +131,20 @@ describe("browser widget and shared calls client", () => {
     await f.calls.controller.answer();
     await vi.waitFor(() =>
       expect(
-        f.fetch.mock.calls.some(
-          ([url, init]) =>
-            String(url).endsWith("/CALL-IN") && init?.method === "DELETE",
+        f.fetch.mock.calls.some(([url]) =>
+          String(url).endsWith("/CALL-IN/leave"),
         ),
       ).toBe(true),
     );
+    const leave = f.fetch.mock.calls.find(([url]) =>
+      String(url).endsWith("/CALL-IN/leave"),
+    )!;
+    expect(JSON.parse(String(leave[1]?.body))).toEqual({
+      connectionId: f.calls.controller.call?.connectionId,
+    });
+    expect(
+      f.fetch.mock.calls.some(([, init]) => init?.method === "DELETE"),
+    ).toBe(false);
     expect(f.calls.controller.getSnapshot()).toMatchObject({
       status: "error",
       error: { code: "answer_failed" },
@@ -155,7 +168,7 @@ describe("browser widget and shared calls client", () => {
   });
 
   it.each(["reject", "hangup"] as const)(
-    "surfaces a refused %s without ending the call and allows hangup retry",
+    "surfaces a refused %s without ending the call, keeps new invitations ringing, and allows retry",
     async (action) => {
       const f = fixture();
       const socket = await f.connect();
@@ -180,21 +193,30 @@ describe("browser widget and shared calls client", () => {
         error: { code: "call_control_failed" },
       });
       expect(f.calls.controller.call?.ended).toBe(false);
-      const deletes = () =>
-        f.fetch.mock.calls.filter(([, init]) => init?.method === "DELETE");
-      expect(deletes()).toHaveLength(1);
+      const controls = () =>
+        f.fetch.mock.calls.filter(
+          ([url, init]) =>
+            init?.method === "DELETE" || String(url).endsWith("/reject"),
+        );
+      expect(controls()).toHaveLength(1);
+      // A second call rings alongside; nothing declines it.
       event(socket, "call.received", "CALL-SECOND", { from: "+15550101" });
       await flush();
       expect(f.calls.controller.getSnapshot().callId).toBe("CALL-IN");
-      expect(deletes()).toHaveLength(2);
-      expect(String(deletes()[1]![0])).toContain("/CALL-SECOND");
+      expect(
+        f.calls.controller.getSnapshot().invitations.map((i) => i.callId),
+      ).toContain("CALL-SECOND");
+      expect(controls()).toHaveLength(1);
+      const first = f.calls.controller.call!;
       await f.calls.controller.hangup();
-      expect(deletes()).toHaveLength(3);
+      expect(controls()).toHaveLength(2);
+      expect(String(controls()[1]![0])).toMatch(/\/CALL-IN$/);
+      expect(first.endReason).toBe("hangup");
+      // The waiting invitation is shown next.
       expect(f.calls.controller.getSnapshot()).toMatchObject({
-        status: "ended",
-        endReason: "hangup",
+        status: "incoming",
+        callId: "CALL-SECOND",
       });
-      expect(f.calls.controller.call?.ended).toBe(true);
       expect(f.calls.controller.getSnapshot().error).toBeUndefined();
     },
   );
@@ -212,7 +234,7 @@ describe("browser widget and shared calls client", () => {
     });
     expect(f.calls.controller.call?.endReason).toBe("capacity");
   });
-  it("uses client tokens, claims browser mode, and answers through WebRTC without agent tickets", async () => {
+  it("authenticates with the client token and answers through WebRTC without tickets or modes", async () => {
     const f = fixture();
     const socket = await f.connect();
     event(socket, "call.received", "CALL-IN", {
@@ -227,12 +249,23 @@ describe("browser widget and shared calls client", () => {
     expect(f.calls.controller.getSnapshot().status).toBe("connected");
     f.calls.controller.setMuted({ audio: true });
     expect(f.session.setMuted).toHaveBeenCalledWith({ audio: true });
+    expect(socket.url).toBe("wss://api.polymorfa.test/voip/ws");
+    expect(socket.texts[0]).toEqual({ type: "auth", token: "pmfa_ct_test" });
     expect(
       f.fetch.mock.calls.map(([url]) => new URL(String(url)).pathname),
-    ).toEqual(["/messaging/voip/mode", "/messaging/voip/ws-ticket"]);
+    ).toEqual(["/messaging/voip/calls/CALL-IN/accept"]);
     expect(
       f.fetch.mock.calls.map(([, init]) => JSON.parse(String(init?.body))),
-    ).toEqual([{ mode: "browser" }, {}]);
+    ).toEqual([{ exclusive: false, video: true }]);
+    expect(f.media.open).toHaveBeenCalledWith(
+      "CALL-IN",
+      true,
+      expect.any(Object),
+      expect.any(AbortSignal),
+      expect.objectContaining({
+        connectionId: f.calls.controller.call?.connectionId,
+      }),
+    );
     for (const [, init] of f.fetch.mock.calls)
       expect(new Headers(init?.headers).get("authorization")).toBe(
         "Bearer pmfa_ct_test",
@@ -277,7 +310,7 @@ describe("browser widget and shared calls client", () => {
     );
     event(socket, "call.received", "CALL-IN", { from: "+15550100" });
     const answering = f.calls.controller.answer();
-    await flush();
+    await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
     event(socket, "call.ended", "CALL-IN", { reason: "remote_hangup" });
     finish(f.session);
     await answering;
@@ -288,6 +321,107 @@ describe("browser widget and shared calls client", () => {
     expect(f.calls.controller.call?.state).toBe("ended");
     expect(f.session.close).toHaveBeenCalledOnce();
     expect(f.calls.controller.localStream).toBeUndefined();
+  });
+
+  it("answers exclusively only when the application asks", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    event(socket, "call.received", "CALL-IN", { from: "+15550100" });
+    await f.calls.controller.answer({ exclusive: true });
+    const accept = f.fetch.mock.calls.find(([url]) =>
+      String(url).endsWith("/accept"),
+    )!;
+    expect(JSON.parse(String(accept[1]?.body))).toEqual({
+      exclusive: true,
+      video: false,
+    });
+    expect(f.calls.controller.getSnapshot()).toMatchObject({
+      exclusive: true,
+      answeredBy: "client:self",
+    });
+  });
+
+  it("stops ringing when another participant claims the call, without declining", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    event(socket, "call.received", "CALL-IN", { from: "+15550100" });
+    event(socket, "call.accepted", "CALL-IN", {
+      answeredBy: "client:other-tab",
+      exclusive: true,
+    });
+    await flush();
+    expect(f.calls.controller.getSnapshot()).toMatchObject({
+      status: "incoming",
+      claimedByOther: true,
+      canJoin: false,
+    });
+    await expect(f.calls.controller.answer()).rejects.toMatchObject({
+      code: "call_claimed",
+    });
+    expect(f.fetch).not.toHaveBeenCalled();
+    // The claimer's call ends later; the invitation goes away.
+    event(socket, "call.ended", "CALL-IN", { reason: "remote_hangup" });
+    expect(f.calls.controller.getSnapshot().invitations).toEqual([]);
+  });
+
+  it("joins a shared call and leaves only its own connection", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    event(socket, "call.received", "CALL-IN", { from: "+15550100" });
+    event(socket, "call.accepted", "CALL-IN", { answeredBy: "client:first" });
+    await flush();
+    expect(f.calls.controller.getSnapshot()).toMatchObject({
+      canJoin: true,
+      claimedByOther: false,
+    });
+    await f.calls.controller.join();
+    f.callbacks().onConnectionState("connected");
+    expect(f.calls.controller.getSnapshot().status).toBe("connected");
+    const connectionId = f.calls.controller.call!.connectionId;
+    await f.calls.controller.leave();
+    const paths = f.fetch.mock.calls.map(([url, init]) => [
+      init?.method,
+      new URL(String(url)).pathname,
+      init?.body === undefined ? undefined : JSON.parse(String(init.body)),
+    ]);
+    expect(paths).toEqual([
+      [
+        "POST",
+        "/messaging/voip/calls/CALL-IN/accept",
+        { exclusive: false, video: false },
+      ],
+      ["POST", "/messaging/voip/calls/CALL-IN/leave", { connectionId }],
+    ]);
+    // The session does not send a second leave.
+    expect(f.session.close).toHaveBeenCalledWith({ leave: false });
+    expect(f.calls.controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      endReason: "left",
+    });
+  });
+
+  it("surfaces a 4401 close as an unauthorized error", async () => {
+    const errors: string[] = [];
+    const f = fixture();
+    const socket = await f.connect();
+    const calls = createBrowserCalls({
+      session: "support",
+      getClientToken: async () => "pmfa_ct_test",
+      baseUrl: "https://api.polymorfa.test",
+      fetch: f.fetch,
+      WebSocket: FakeWebSocket as unknown as typeof WebSocket,
+      mediaFactory: f.media,
+      onError: (error) => errors.push(error.code),
+    });
+    owned.push(calls);
+    const pending = calls.connect();
+    await vi.waitFor(() => expect(FakeWebSocket.instances).toHaveLength(2));
+    FakeWebSocket.instances[1]!.authenticate();
+    await pending;
+    FakeWebSocket.instances[1]!.drop(4401, "unauthorized");
+    expect(errors).toEqual(["unauthorized"]);
+    expect(calls.connected).toBe(false);
+    void socket;
   });
 
   it("ignores unrelated terminal events and disposes the lifecycle socket", async () => {
@@ -331,16 +465,31 @@ describe("BrowserCallsApi", () => {
       ).resolves.toMatchObject({ [field]: value });
     },
   );
-  it("refuses a server key before sending and never mints agent tickets", async () => {
+  it("refuses a server key before sending and sends no mode or ticket requests", async () => {
     const fetch = vi.fn();
     const api = new BrowserCallsApi(
       new BrowserTransport({ getClientToken: async () => "pmfa_test", fetch }),
     );
-    await expect(api.setMode("support", "browser")).rejects.toThrow("pmfa_ct_");
-    await expect(api.mediaTicket()).rejects.toThrow(
-      "cannot mint agent tickets",
-    );
+    await expect(api.token()).rejects.toThrow("pmfa_ct_");
+    await expect(api.accept("c1", {})).rejects.toThrow("pmfa_ct_");
     expect(fetch).not.toHaveBeenCalled();
+    expect("setMode" in api).toBe(false);
+    expect("mediaTicket" in api).toBe(false);
+    expect("socketTicket" in api).toBe(false);
+  });
+  it("maps a claimed accept to CallClaimedError", async () => {
+    const api = new BrowserCallsApi(
+      new BrowserTransport({
+        getClientToken: async () => "pmfa_ct_test",
+        maxNetworkRetries: 0,
+        fetch: async () =>
+          Response.json(
+            { error: { code: "call_claimed", message: "Claimed" } },
+            { status: 409 },
+          ),
+      }),
+    );
+    await expect(api.accept("c1", {})).rejects.toBeInstanceOf(CallClaimedError);
   });
   it("rejects malformed successful placement responses", async () => {
     const api = new BrowserCallsApi(

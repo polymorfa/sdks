@@ -47,10 +47,31 @@ if (element) element.controller = calls.controller;
 // Call await calls.dispose() when the application releases this widget.
 ```
 
-The token needs `voip_place`, `voip_answer` and `voip_signal`. See the
-[browser package](../browser/README.md#calls) for answer-mode behavior,
-media ownership and participant limits. The element keeps its existing layout,
-controls, appearance and accessibility behavior.
+Your server mints the client token with `POST /platform/client-tokens`; it
+needs `voip_place`, `voip_answer` and `voip_signal`. See the
+[browser package](../browser/README.md#calls) for token replacement, media
+ownership and participant limits.
+
+```html
+<pmfa-call exclusive></pmfa-call>
+```
+
+The boolean `exclusive` attribute (or `element.exclusive` property) makes
+Answer claim the call so other participants stop ringing. Without it, Answer
+leaves the call open for others to join. The element never declines a call on
+its own:
+
+- A call another participant answered without a claim shows Join (`join`
+  part) and Dismiss (`dismiss` part).
+- A call another participant claimed shows "Answered by another participant"
+  (`claimed` part) and Dismiss only.
+- Other waiting calls are listed in the `invitations` part with Show buttons.
+- During a call nobody claimed, Leave (`leave` part) closes only this
+  connection, and the `hangup` button reads "End call for everyone".
+- The `participants` part lists the call's WhatsApp participants.
+
+Participant video tiles are part of the React package; this element renders
+controls and state.
 
 If a reject or hangup request fails, the call stays active and its controls remain
 available for retry. The UI shows a localized failure message and keeps existing

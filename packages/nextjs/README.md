@@ -32,20 +32,16 @@ export const POST = createClientTokenRoute({
 });
 ```
 
-For browser calls, this same application route can mint through
-`MessagingClient.voip` instead, which returns the same token shape. Only the
-upstream platform call changes (the server SDK posts `/api/voip/token`); the
-path the browser posts to is still your own route, which
-`createClientTokenProvider` defaults to `/api/polymorfa/token`:
+Browser calls use this same route. `POST /platform/client-tokens` is the only
+way to mint a client token, so `@polymorfa/calls` and `@polymorfa/browser`
+receive the token from `messaging.clientTokens.mint`. The path the browser
+posts to is your own route; `createClientTokenProvider` defaults to
+`/api/polymorfa/token`. Grant the session's client rules the Calls actions
+the browser needs: `voip_place` to place calls and add participants,
+`voip_answer` to accept or decline, and `voip_signal` for signaling, ending a
+call, and the call lifecycle socket.
 
-```ts
-mint: createMessagingClientTokenMint({
-  clientTokens: { mint: (input, options) => messaging.voip.token(input, options) },
-  resolve: async (subject) => ({ session: "support", ephemeralId: subject.userId }),
-}),
-```
-
-The server key used by either mint path needs all client delegation scopes:
+The server key that mints tokens needs all client delegation scopes:
 `sessions:manage`, `messages:write`, `contacts:read`, `presence:read`,
 `presence:observe`, and `mcp`.
 
