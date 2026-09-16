@@ -42,7 +42,10 @@
 5. Add repository tests rejecting server SDK imports and server-key prefixes from browser package source.
 6. Run focused tests and commit `feat: add browser transport and controller core`.
 
-### Task 3: QuickLink controller
+### Task 3: QuickLink controller (withdrawn 2026-09-16)
+
+QuickLink is a closed-source hosted page. This task and the QuickLink element,
+React component, subpath, and example work in later tasks are withdrawn.
 
 **Files:** `packages/browser/src/quicklink/*`, tests.
 

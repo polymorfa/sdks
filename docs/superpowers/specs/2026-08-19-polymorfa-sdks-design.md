@@ -1,6 +1,9 @@
 # Polymorfa SDK Architecture
 
 **Status:** Approved for implementation review  
+**Amended 2026-09-16:** QuickLink is a closed-source hosted page. The browser,
+Web Component, and React QuickLink surfaces described below were removed; the
+server SDK only creates, retrieves, and cancels links and returns the hosted URL.
 **Date:** 2026-08-19  
 **Repository:** `polymorfa/sdks`
 

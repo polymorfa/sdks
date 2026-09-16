@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
+  exports `QuickLinkController` or its transport types, `@polymorfa/elements`
+  no longer registers `pmfa-quicklink` or exports the `./quicklink` subpath, and
+  `@polymorfa/react` no longer exports `QuickLink`. QuickLink is a hosted page:
+  create a link with `MessagingClient.quickLinks.create()` on the server and
+  send the person to its `url`.
+
 - `WhatsAppAccount`, `ProfileData`, and the `session.connected` webhook payload
   replace the raw `platform` string with `phonePlatform` (`android`, `ios`, `meta_cloud`, or
   `unknown`) and `accountType` (`whatsapp_app`, `business_app`, `meta_cloud`,

@@ -804,7 +804,7 @@
       "fingerprint": "4e672b39cdd7dc3d5db29b682f2a1b940f2e7349b4664698109cf231fe5e1922",
       "typescript": {
         "status": "excluded",
-        "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
+        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
         "milestone": "not-server-sdk"
       }
     },
@@ -816,7 +816,7 @@
       "fingerprint": "c7306496e68ec5885a449967f205c0aecec7b3d7e2beb22bf5ef807bcb82f6a6",
       "typescript": {
         "status": "excluded",
-        "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
+        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
         "milestone": "not-server-sdk"
       }
     },
@@ -1600,7 +1600,7 @@
       "fingerprint": "1e8e0e2d3a0f5022722f9a4ce20ab1c42e5e6149a6ec7d3a4d37f7d4e481537d",
       "typescript": {
         "status": "excluded",
-        "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
+        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
         "milestone": "not-server-sdk"
       }
     },
@@ -1623,7 +1623,7 @@
       "fingerprint": "4760de4a52464d5f9b6c524694dd57798fef13fed80e4be28810021573cbedb9",
       "typescript": {
         "status": "excluded",
-        "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
+        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
         "milestone": "not-server-sdk"
       }
     },
@@ -1635,7 +1635,7 @@
       "fingerprint": "91be047b4af0855599d1e0c80c57511e6e771fb71a5cb33ca3a5bb86b7f91a2b",
       "typescript": {
         "status": "excluded",
-        "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
+        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
         "milestone": "not-server-sdk"
       }
     },

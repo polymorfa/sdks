@@ -12,10 +12,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./quicklink": {
-      "types": "./dist/quicklink.d.ts",
-      "import": "./dist/quicklink.js"
-    },
     "./chat": {
       "types": "./dist/chat.d.ts",
       "import": "./dist/chat.js"

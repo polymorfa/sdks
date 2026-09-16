@@ -1,6 +1,6 @@
 # @polymorfa/elements
 
-Framework-neutral Web Components for QuickLink, chat and composing, template
+Framework-neutral Web Components for chat and composing, template
 building, and calls. Applications own controllers and data transports; elements
 render their immutable snapshots.
 
@@ -10,7 +10,7 @@ import { definePolymorfaElements } from "@polymorfa/elements";
 definePolymorfaElements();
 ```
 
-The registered elements are `pmfa-quicklink`, `pmfa-message-list`,
+The registered elements are `pmfa-message-list`,
 `pmfa-compose-box`, `pmfa-chat-drawer`, `pmfa-template-builder`, and
 `pmfa-call`. Assign a matching `@polymorfa/browser` controller through the
 element's `controller` property. Appearance and locale configuration uses the
