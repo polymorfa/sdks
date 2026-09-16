@@ -8,7 +8,7 @@ import {
   type CallMediaFactory,
   type CallMediaSession,
   type CallsBackend,
-} from "../src/index.js";
+} from "../src/internal.js";
 
 function fixture() {
   let emit: ((event: CallLifecycleEvent) => void) | undefined;

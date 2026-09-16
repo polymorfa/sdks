@@ -3,11 +3,20 @@ import { fileURLToPath } from "node:url";
 
 export default defineConfig({
   resolve: {
-    alias: {
-      "@polymorfa/calls": fileURLToPath(
-        new URL("./packages/calls/src/index.ts", import.meta.url),
-      ),
-    },
+    alias: [
+      {
+        find: /^@polymorfa\/calls$/,
+        replacement: fileURLToPath(
+          new URL("./packages/calls/src/index.ts", import.meta.url),
+        ),
+      },
+      {
+        find: /^@polymorfa\/calls\/internal$/,
+        replacement: fileURLToPath(
+          new URL("./packages/calls/src/internal.ts", import.meta.url),
+        ),
+      },
+    ],
   },
   test: {
     include: ["packages/*/test/**/*.test.{ts,tsx}"],

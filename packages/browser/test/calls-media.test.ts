@@ -6,7 +6,7 @@ import {
   type CallsSignaling,
   type CandidateTransport,
   type TrickleCandidate,
-} from "../src/index.js";
+} from "../src/internal.js";
 
 // The factory builds its own remote `MediaStream`; everything else is injected.
 class FakeStream {

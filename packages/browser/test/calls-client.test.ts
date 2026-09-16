@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CallClaimedError } from "@polymorfa/calls";
-import { createBrowserCalls } from "../src/calls/client.js";
+import { createInternalBrowserCalls as createBrowserCalls } from "../src/calls/client.js";
 import { BrowserCallsApi } from "../src/calls/api.js";
 import { BrowserTransport } from "../src/transport.js";
 import type {

@@ -1,3 +1,5 @@
+// Public entry point: neutral calling operations only. Transport, signaling
+// and media framing live in internal modules (see `./internal`).
 export {
   CallsClient,
   type CallsClientOptions,
@@ -11,80 +13,20 @@ export {
   type CallClaim,
   type CallDirection,
   type CallEndReason,
-  type CallInit,
   type CallState,
+  type CallVideoFrame,
+  type CallVideoSource,
+  type OutgoingVideoFrame,
 } from "./call.js";
-export {
-  HttpCallsApi,
-  type AcceptCallOptions,
-  type AcceptCallResult,
-  type CallsApi,
-  type FetchLike,
-  type HttpCallsApiOptions,
-  type PlaceCallRequest,
-} from "./api.js";
 export {
   CallClaimedError,
   CallsApiError,
   CallsAuthError,
   CallsError,
 } from "./errors.js";
-export {
-  CallsTokenSource,
-  isClientToken,
-  normalizeToken,
-  type CallsToken,
-  type CallsTokenProvider,
-  type CallsTokenRequest,
-  type CallsTokenSourceOptions,
+export type {
+  CallsToken,
+  CallsTokenProvider,
+  CallsTokenRequest,
 } from "./token.js";
-export {
-  LifecycleSocket,
-  type LifecycleCandidate,
-  type LifecycleEvent,
-  type LifecycleReady,
-  type LifecycleSocketOptions,
-} from "./lifecycle.js";
-export {
-  CALL_CLAIMED_CLOSE_CODE,
-  MediaSocket,
-  type MediaClose,
-  type MediaCloseReason,
-  type MediaReady,
-  type MediaSocketOptions,
-  type MediaVideoSource,
-} from "./media.js";
-export {
-  AUTH_FAILED_CLOSE_CODE,
-  DEFAULT_SAMPLE_RATE,
-  LIFECYCLE_SOCKET_PATH,
-  MEDIA_SUBPROTOCOL,
-  MediaFrameKind,
-  VideoCodec,
-  VideoFlags,
-  VIDEO_HEADER_BYTES,
-  createConnectionId,
-  decodeMediaFrame,
-  encodeAudioFrame,
-  encodeVideoFrame,
-  isConnectionId,
-  isParticipant,
-  isParticipantName,
-  isSourceHandle,
-  mediaSocketPath,
-  parseLifecycleFrame,
-  parseMediaControl,
-  type DecodedMediaFrame,
-  type LifecycleClientFrame,
-  type LifecycleFrame,
-  type MediaClientFrame,
-  type MediaControlFrame,
-  type OutboundVideoFrame,
-  type Participant,
-  type TrickleCandidate,
-  type VideoFrame,
-  type VideoFrameHeader,
-  type VideoSourceFrame,
-  type VideoSourceOwner,
-} from "./protocol.js";
-export { Emitter } from "./events.js";
+export { DEFAULT_SAMPLE_RATE, type Participant } from "./protocol.js";

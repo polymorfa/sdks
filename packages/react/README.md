@@ -103,7 +103,7 @@ and a red end-call pill. Video is
 per direction; on an audio call the camera button upgrades to video
 (`controller.enableVideo()`, a re-offer on the same connection) and
 `disableVideo` hides it. A dropped connection shows "Reconnecting…" while the
-controller restarts ICE, and gives up as `connection_failed` after the
+controller reconnects media, and gives up as `connection_failed` after the
 resumption window. Avatars come from
 `resolveAvatar` (a URL or a promise of one; `BrowserMessagingClient.contacts
 .picture` works when the token carries `read_contact`); without one a stable

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Call } from "../src/call.js";
-import { CallsClient } from "../src/client.js";
+import { createInternalCallsClient } from "../src/client.js";
 import { CallClaimedError, CallsError } from "../src/errors.js";
 import { fakeApi, FakeWebSocket, flush, timers } from "./helpers.js";
 
@@ -66,7 +66,7 @@ describe("externally managed call media", () => {
           finish = resolve;
         }),
     );
-    const client = new CallsClient({
+    const client = createInternalCallsClient({
       session: "support",
       api,
       mediaMode: "external",

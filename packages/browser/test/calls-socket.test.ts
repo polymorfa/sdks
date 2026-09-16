@@ -9,7 +9,7 @@ import {
   type CallMediaFactory,
   type CallMediaSession,
   type CallsSignaling,
-} from "../src/index.js";
+} from "../src/internal.js";
 
 class FakeWebSocket {
   static readonly OPEN = 1;

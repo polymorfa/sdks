@@ -10,7 +10,7 @@ import {
   isConnectionId,
   parseLifecycleFrame,
   parseMediaControl,
-} from "../src/index.js";
+} from "../src/internal.js";
 
 describe("media framing", () => {
   it("round-trips audio as little-endian s16 behind a kind tag", () => {

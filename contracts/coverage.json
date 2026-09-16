@@ -753,8 +753,7 @@
       "fingerprint": "dc981aefba94216866e019e18b8da9705fe4aec38680f1a12861e9427ac56da8",
       "typescript": {
         "status": "excluded",
-        "reason": "Browser WebRTC signaling route served by @polymorfa/browser (CallsSignalingClient over BrowserTransport); the TypeScript server SDK does not negotiate WebRTC media.",
-        "milestone": "not-server-sdk"
+        "reason": "used internally by the Calls SDK; not part of the public API"
       }
     },
     {
@@ -1482,8 +1481,7 @@
       "fingerprint": "8a7592ad7e6c497e8782883238f29f0844e45a423b3a1336d630461d65f78acc",
       "typescript": {
         "status": "excluded",
-        "reason": "Browser WebRTC signaling route served by @polymorfa/browser (CallsSignalingClient over BrowserTransport); the TypeScript server SDK does not negotiate WebRTC media.",
-        "milestone": "not-server-sdk"
+        "reason": "used internally by the Calls SDK; not part of the public API"
       }
     },
     {
@@ -1505,8 +1503,7 @@
       "fingerprint": "fecfc1606be8f5fa74b381d0ca31c752a096350dac678f9764fe9dfaa4f9eb63",
       "typescript": {
         "status": "excluded",
-        "reason": "Browser WebRTC signaling route served by @polymorfa/browser (CallsSignalingClient over BrowserTransport); the TypeScript server SDK does not negotiate WebRTC media.",
-        "milestone": "not-server-sdk"
+        "reason": "used internally by the Calls SDK; not part of the public API"
       }
     },
     {
@@ -1539,8 +1536,7 @@
       "fingerprint": "1a8738bcfdff016a9d1a5782de3a4b8bdbacec66b5cbef497cbd1c08369ae2af",
       "typescript": {
         "status": "excluded",
-        "reason": "Browser WebRTC signaling route served by @polymorfa/browser (CallsSignalingClient.renegotiate over BrowserTransport); the TypeScript server SDK does not negotiate WebRTC media.",
-        "milestone": "not-server-sdk"
+        "reason": "used internally by the Calls SDK; not part of the public API"
       }
     },
     {

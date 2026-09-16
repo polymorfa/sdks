@@ -43,3 +43,7 @@ public implementations rather than copying their visual design or API names.
   answer whether to claim a call; components default to not claiming and never
   decline a call on their own. Audio is merged per participant; video stays
   one stream per participant.
+- Calls packages export neutral calling operations only. Signaling, WebRTC
+  negotiation, sockets and media framing are internal modules; sibling
+  packages reach them through a package-private `./internal` subpath that
+  applications must not import.

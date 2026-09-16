@@ -2,54 +2,52 @@
 
 ## Unreleased
 
-- Breaking: Calls follow contract revision 1. Session answer modes and calling
-  tickets are gone; the existing token authenticates everything, and group
-  audio and per-participant video are supported. Upgrade steps:
+- Breaking: Calls use one neutral calling API. Session answer modes and
+  calling tickets are gone; the token your server issues authenticates
+  everything, and group audio and per-participant video are supported.
+  Upgrade steps:
   - Mint browser tokens on your server with `POST /platform/client-tokens`
     (`clientTokens.mint`, or `@polymorfa/nextjs` helpers). `MessagingClient.voip`
-    no longer has `token()`, `socketTicket()` or `agentToken()`; it now has
+    no longer has `token()`, `socketTicket()` or `agentToken()`; it has
     `place`, `accept`, `reject`, `leave`, `end`, `addParticipant`,
-    `retrieveCallSettings` and `updateCallSettings` (`includeSelfAudio`).
-  - `@polymorfa/calls`: remove `claimMode`, `answerMode`, `setMode`,
-    `socketTicket`, `mediaTicket`, `AnswerMode`, `MediaTicket` and
-    `SocketTicket` uses. Pass `token` (string or provider) instead of relying on
-    tickets; server credentials may set `participant`. `CallsApi` now needs
-    `token`, `socketUrl`, `accept` (returns `answered`, `answeredBy` and
-    `exclusive`), `reject`, `leave` and `end`; `hangup` is removed.
-  - `Call.hangup()` is now `Call.end()` (ends the call for everyone). New:
-    `answer({ exclusive })`, `join()`, `leave()`, `claim`, `claimedByOther`,
-    `canJoin`, `connectionId`, the `claim` event, the `reconnecting` state, and
-    `CallClaimedError` for `409 call_claimed`. `call.video` is always present;
-    use `call.hasVideo` for the offer. Video frames carry `source` instead of
-    `width`/`height`; `video.sources` and the `source`, `sourceRemoved` and
-    `keyframeRequest` events describe remote sources.
-  - The lifecycle socket authenticates with a first `{ type: "auth", token }`
-    frame, replaces the token before expiry, and reports a 4401 close as
-    `CallsAuthError` (`code: "unauthorized"`), then reconnects with a fresh
-    token. Server credentials name the session and participant with
-    `?session=` and `&participant=`; a 4400 refusal stops reconnection. The
-    media socket uses `/voip/calls/{id}/media` with `pmfa.calls.v2` and no
-    query parameters. Connection video sources carry
-    `connectionParticipant`. `MessagingClient.voip.reject` and `leave` accept
-    `participant` for server credentials, and call settings report
-    `updatedAt: null` until changed.
-  - `@polymorfa/browser`: `createBrowserCalls` no longer claims a mode and no
-    longer declines extra incoming calls. `CallsController` tracks every
-    invitation (`snapshot.invitations`), adds `join()`, `leave()`, `end()`,
-    `dismiss()`, `select()`, `answer({ exclusive, callId })`, and snapshot
-    fields `claimedByOther`, `canJoin`, `answeredBy`, `exclusive`,
-    `participants` and `remoteVideos`; `controller.remoteVideos` holds one
-    `MediaStream` per remote participant and `remoteStream` carries merged
-    audio. `CallsSignaling` takes `{ sdp, connectionId }` offers, candidates
-    and polling with a connection id, and `leave`/`end` replace `teardown`;
-    `socketTicket` is replaced by `token`. `CallsSocket.sendTeardown` is
-    removed and `sendCandidate` needs a connection id. `CallMediaSession.close`
-    leaves the connection unless called with `{ leave: false }`.
-    `IncomingCallRelay.accepted()` relays `call.accepted` claims.
+    `retrieveCallSettings` and `updateCallSettings` (`includeSelfAudio`,
+    `updatedAt` is `null` until changed). `reject` and `leave` accept
+    `participant` for server credentials.
+  - Signaling, media negotiation, sockets and media framing are internal. The
+    package entry points no longer export `HttpCallsApi`, `LifecycleSocket`,
+    `MediaSocket`, frame encoders and parsers, `VideoCodec`,
+    `CallsSignalingClient`, `BrowserCallsApi`, `createSignalingCallsBackend`,
+    `CallsSocket`, `IncomingCallRelay`, `incomingCallFromWebhook`,
+    `WebRtcMediaFactory`, or SDP, candidate and ticket types. Use
+    `CallsClient` on servers and `createBrowserCalls` in browsers.
+    `CallsController` is exported as a type; create it with
+    `createBrowserCalls`. `BrowserCallsOptions` no longer takes `media` or
+    `mediaFactory`, and `CallsClientOptions` no longer takes `api` or
+    `mediaMode`.
+  - `@polymorfa/calls`: pass `token` (string or provider) and, for server
+    credentials, `participant`. `Call.hangup()` is now `Call.end()` (ends the
+    call for everyone). New: `answer({ exclusive })`, `join()`, `leave()`,
+    `claim`, `claimedByOther`, `canJoin`, `connectionId`, the `claim` event,
+    the `reconnecting` state, `CallsAuthError`, and `CallClaimedError`.
+    `call.video` is always present; use `call.hasVideo` for the offer.
+    Received frames are `CallVideoFrame` (`source`, `keyframe`,
+    `timestampUs`, `data`); `write()` takes `OutgoingVideoFrame`;
+    `video.sources` maps `CallVideoSource` (`id`, `label`, `participant` or
+    `connectionId` and `connectionParticipant`).
+  - `@polymorfa/browser`: incoming calls are never declined for you.
+    `CallsController` tracks every invitation (`snapshot.invitations`) and
+    adds `join()`, `leave()`, `end()`, `dismiss()`, `select()`,
+    `answer({ exclusive, callId })`, and snapshot fields `claimedByOther`,
+    `canJoin`, `answeredBy`, `exclusive`, `participants` and `remoteVideos`.
+    `controller.remoteVideos` holds a `ParticipantVideo` (`key`, `label`,
+    owner, `MediaStream`) per remote participant, and `remoteStream` carries
+    the merged call audio. An expired or revoked token reaches `onError` as
+    `unauthorized` and is replaced on reconnect.
   - `@polymorfa/react`: new `ParticipantVideoGrid` and `ParticipantList`;
     `CallSurface` and `IncomingCallCard` take `exclusive` (default `false`);
     the card shows Join or Dismiss for calls answered elsewhere; `CallControls`
-    adds Leave (`showLeave`). `renderMedia` also receives `videos`.
+    adds Leave (`showLeave`). `renderMedia` also receives `videos`, and
+    `labelVideo` receives `RemoteVideoInfo` with a `label`.
   - `@polymorfa/elements`: `pmfa-call` accepts the `exclusive` attribute and
     renders Join, Dismiss, Leave, waiting calls and participants.
 

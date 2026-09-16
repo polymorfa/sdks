@@ -7,7 +7,7 @@ import {
   createSignalingCallsBackend,
   TemplateBuilderController,
   type CallLifecycleEvent,
-} from "@polymorfa/browser";
+} from "@polymorfa/browser/internal";
 import {
   definePolymorfaElements,
   type ElementController,

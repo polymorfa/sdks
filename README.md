@@ -491,8 +491,8 @@ participant answered without a claim offers Join; a claimed call shows as
 answered elsewhere. Leave closes only this browser's connection; hang-up ends
 the call for everyone. Each remote participant's video arrives as its own
 stream in `controller.remoteVideos`; call audio is merged. Direct placement
-supports linked devices. Custom signaling backends and application-fed
-lifecycle channels remain available.
+supports linked devices. Signaling, media negotiation and socket transports
+are internal to the SDK; the packages export only these calling operations.
 
 Calls carry a `line`: `linkedDevice` (a paired WhatsApp device session, audio
 and video) or `cloudApi` (the WhatsApp Business Calling API, audio only). Every

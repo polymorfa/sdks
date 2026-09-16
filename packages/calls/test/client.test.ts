@@ -1,21 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   Call,
-  CallsClient,
   MediaSocket,
   encodeAudioFrame,
-  type CallsClientOptions,
+  createInternalCallsClient,
+  type InternalCallsClientOptions,
   type Participant,
-} from "../src/index.js";
+} from "../src/internal.js";
 import { FakeWebSocket, fakeApi, flush, timers } from "./helpers.js";
 
 function clientWith(
   api = fakeApi(),
-  options: Pick<CallsClientOptions, "mediaMode"> = {},
+  options: Pick<InternalCallsClientOptions, "mediaMode"> = {},
 ) {
   FakeWebSocket.instances = [];
   const t = timers();
-  const client = new CallsClient({
+  const client = createInternalCallsClient({
     session: "support",
     api,
     WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
@@ -692,7 +692,7 @@ describe("CallsClient", () => {
   });
 
   it("refuses to construct without a credential or an api seam", () => {
-    expect(() => new CallsClient({ session: "s" })).toThrow(/token/);
+    expect(() => createInternalCallsClient({ session: "s" })).toThrow(/token/);
   });
 });
 
@@ -788,7 +788,7 @@ describe("CallsClient — review round one", () => {
     const api = fakeApi();
     FakeWebSocket.instances = [];
     const t = timers();
-    const client = new CallsClient({
+    const client = createInternalCallsClient({
       session: "support",
       api,
       WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
@@ -847,7 +847,7 @@ describe("CallsClient — review round one", () => {
     const api = fakeApi();
     FakeWebSocket.instances = [];
     const t = timers();
-    const client = new CallsClient({
+    const client = createInternalCallsClient({
       session: "support",
       api,
       WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,

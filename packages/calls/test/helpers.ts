@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import type { CallsApi } from "../src/index.js";
+import type { CallsApi } from "../src/internal.js";
 
 /** A WebSocket double that records sends and lets tests drive the server side. */
 export class FakeWebSocket {

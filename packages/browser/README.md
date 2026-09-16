@@ -40,13 +40,13 @@ routes directly.
 
 ## Calls
 
-`createBrowserCalls` connects the shared Calls client to `CallsController` and
-WebRTC. Your server mints a short-lived client token with
-`POST /platform/client-tokens`, granting `voip_place`, `voip_answer`, and
-`voip_signal` and the destination and concurrency rules you need. The browser
-uses that token directly: as the bearer for REST calls and as the first frame
-of the lifecycle socket (`/voip/ws`). The token never appears in a URL, and no
-calling ticket or answer mode is involved.
+`createBrowserCalls` is the browser calling component: incoming calls,
+placement, answer, join, leave and end, microphone, camera and device
+control, and per-participant video. Your server mints a short-lived client
+token with `POST /platform/client-tokens`, granting `voip_place`,
+`voip_answer`, and `voip_signal` and the destination and concurrency rules you
+need. That token is the only credential the component uses; it never appears
+in a URL.
 
 ```ts
 import {
@@ -58,7 +58,7 @@ const calls = createBrowserCalls({
   session: "support",
   getClientToken: createClientTokenProvider(),
   onError: (error) => {
-    // "unauthorized": the platform stopped accepting the token (4401).
+    // "unauthorized": the platform stopped accepting the token.
   },
 });
 await calls.connect();
@@ -70,15 +70,13 @@ await calls.dispose();
 Pass `calls.controller` to React's `CallSurface` or the `pmfa-call` element.
 `controller.call` exposes the shared `Call`, including its state, duration,
 end reason, claim state and `addParticipant()` method. Direct placement
-supports linked WhatsApp devices. Custom backends retain `cloudApi` line
-support.
+supports linked WhatsApp devices.
 
 ### Tokens
 
 Return `{ value, audience: "browser", expiresAt }` from `getClientToken` so
-the SDK can replace the token before it expires: it asks for a new token and
-sends it on the open socket as another `auth` frame. When a token expires or
-is revoked, the platform closes the socket with code 4401; `onError` receives
+the SDK can replace the token before it expires without interrupting calls.
+When a token expires or is revoked, `onError` receives
 `code: "unauthorized"` and the next reconnect asks `getClientToken` for a new
 token. REST requests refresh a cached token before it expires; a provider
 that returns an expired token fails with `expired_client_token`.
@@ -92,7 +90,7 @@ the controller never declines one for you. The first invitation is displayed;
 `controller.dismiss(callId?)` hides one locally without declining it.
 
 - `controller.answer({ exclusive, video, callId })` accepts the call and
-  attaches WebRTC. `exclusive` defaults to `false`, which leaves other
+  connects microphone, camera and speaker. `exclusive` defaults to `false`, which leaves other
   participants ringing so they can join. `exclusive: true` claims the call.
 - `controller.join({ video, callId })` joins a call another participant
   answered without a claim (`snapshot.canJoin`).
@@ -108,33 +106,22 @@ After a call ends, the next waiting invitation is displayed.
 
 ### Media
 
-`WebRtcMediaFactory` offers, in order: one audio transceiver, a data channel
-negotiated out of band (`pmfa.calls`, id 0), one sendrecv camera transceiver
-(present on audio calls too, so the camera can start later), and
-`videoSlots` receive-only video transceivers (default 3). Offers, re-offers,
-ICE candidates, candidate polling and leave all carry the connection's
-`connectionId`. `createBrowserCalls` uses the `Call`'s id.
+- `controller.localStream` is your microphone and camera.
+- `controller.remoteStream` is the merged call audio; play it through one
+  element.
+- `controller.remoteVideos` holds one entry per remote participant who sends
+  video: a `MediaStream`, a stable `key`, a display `label`, and the
+  `participant` or the other connection's `connectionId` and
+  `connectionParticipant`. `snapshot.remoteVideos` carries the same entries
+  without streams, so a render can react to changes. Videos are separate
+  streams; nothing is composed.
+- `controller.setMuted()`, `enableVideo()`, `switchDevice()`,
+  `setPreferredDevices()` and `refreshDevices()` control capture and playback.
+- `snapshot.participants` lists the call's WhatsApp participants.
+- A dropped connection shows `reconnecting` and recovers or ends as
+  `connection_failed` after a bounded window.
 
-The platform assigns remote video sources to transceivers and announces them
-on the data channel. Each source becomes an entry in `controller.remoteVideos`
-with its own `MediaStream`, a stable `key` (`participant:<id>` or
-`connection:<id>`), and the owning `participant`, or `connectionId` plus its
-`connectionParticipant` reference;
-`snapshot.remoteVideos` carries the same entries without streams. When the
-platform reports more sources than slots, the factory adds receive-only
-transceivers and renegotiates, up to `maxVideoSlots` (default 32, camera
-included). `controller.remoteStream` carries the merged call audio only.
-
-The controller keeps device switching, mute, audio-to-video upgrade, and its
-bounded ICE resumption window. `snapshot.participants` follows the call's
-WhatsApp participants. Disposal releases tracks and closes the lifecycle
-socket.
-
-`createSignalingCallsBackend`, `CallsSocket` and `IncomingCallRelay` remain
-available for applications that supply their own placement or event channel.
-`CallsSocket` authenticates the same way; with a server key, pass `session`
-and `participant`, which travel as query parameters. The signaling backend still requires
-its `place` hook. Use `createBrowserCalls` for direct client-token placement.
+Disposal releases tracks and connections.
 
 If a reject or hangup request fails, the call stays active and its controls remain
 available for retry. The UI shows a localized failure message and keeps existing

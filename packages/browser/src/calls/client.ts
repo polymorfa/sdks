@@ -2,7 +2,8 @@ import {
   CallsClient,
   type Call,
   type CallsClientOptions,
-} from "@polymorfa/calls";
+  type InternalCallsClientOptions,
+} from "@polymorfa/calls/internal";
 import {
   BrowserTransport,
   type BrowserTransportOptions,
@@ -25,9 +26,6 @@ export interface BrowserCallsOptions extends BrowserTransportOptions {
   /** Local call identity. Requests use the client token's bound session. */
   readonly session: string;
   readonly WebSocket?: CallsClientOptions["WebSocket"];
-  readonly media?: Omit<WebRtcMediaFactoryOptions, "signaling">;
-  /** Supply a media adapter in embedded runtimes or tests. */
-  readonly mediaFactory?: CallMediaFactory;
   readonly controller?: CallsControllerOptions;
   /**
    * Failures that do not belong to one call. `code: "unauthorized"` means the
@@ -35,6 +33,22 @@ export interface BrowserCallsOptions extends BrowserTransportOptions {
    * `getClientToken` for a new one.
    */
   readonly onError?: (error: { code: string; message: string }) => void;
+}
+
+/**
+ * Media overrides used by Polymorfa's own tests and embedded runtimes.
+ * @internal
+ */
+export interface InternalBrowserCallsOptions extends BrowserCallsOptions {
+  readonly media?: Omit<WebRtcMediaFactoryOptions, "signaling">;
+  readonly mediaFactory?: CallMediaFactory;
+}
+
+/** @internal */
+export function createInternalBrowserCalls(
+  options: InternalBrowserCallsOptions,
+): BrowserCalls {
+  return createBrowserCalls(options);
 }
 
 export interface BrowserCalls {
@@ -50,15 +64,19 @@ export interface BrowserCalls {
 }
 
 /**
- * Calls client, client-token controls and the WebRTC widget as one owned
- * component. The client token from `getClientToken` authenticates REST calls
- * and both sockets directly; no calling ticket is involved. Incoming calls
- * ring until the application answers, joins, or declines them.
+ * The browser calling component: incoming calls, placement, answer, join,
+ * leave and end, microphone, camera and device control, with a
+ * `CallsController` for the UI packages. The client token from
+ * `getClientToken` is the only credential. Incoming calls ring until the
+ * application answers, joins, or declines them.
  */
-export function createBrowserCalls(options: BrowserCallsOptions): BrowserCalls {
+export function createBrowserCalls(
+  publicOptions: BrowserCallsOptions,
+): BrowserCalls {
+  const options = publicOptions as InternalBrowserCallsOptions;
   const transport = new BrowserTransport(options);
   const api = new BrowserCallsApi(transport);
-  const client = new CallsClient({
+  const clientOptions: InternalCallsClientOptions = {
     session: options.session,
     api,
     mediaMode: "external",
@@ -66,7 +84,8 @@ export function createBrowserCalls(options: BrowserCallsOptions): BrowserCalls {
       ? {}
       : { WebSocket: options.WebSocket }),
     ...(options.now === undefined ? {} : { now: options.now }),
-  });
+  };
+  const client = new CallsClient(clientOptions);
   const listeners = new Set<(event: CallLifecycleEvent) => void>();
   const emit = (event: CallLifecycleEvent) => {
     for (const listener of [...listeners]) listener(event);

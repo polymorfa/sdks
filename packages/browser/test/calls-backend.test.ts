@@ -10,7 +10,7 @@ import {
   type CallMediaSession,
   type CallLifecycleEvent,
   type CallsSignaling,
-} from "../src/index.js";
+} from "../src/internal.js";
 
 type Fn = ReturnType<typeof vi.fn>;
 function signaling(): CallsSignaling & {

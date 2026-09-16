@@ -3,7 +3,7 @@ import {
   isParticipant,
   parseLifecycleFrame,
   type LifecycleFrame,
-} from "@polymorfa/calls";
+} from "@polymorfa/calls/internal";
 import type {
   CallEndReason,
   CallLifecycleEvent,

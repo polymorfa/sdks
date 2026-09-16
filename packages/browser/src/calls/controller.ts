@@ -3,7 +3,7 @@ import {
   type AcceptCallResult,
   type Call,
   type Participant,
-} from "@polymorfa/calls";
+} from "@polymorfa/calls/internal";
 import {
   ObservableController,
   type ControllerSnapshot,
@@ -100,10 +100,17 @@ export interface CallInvitation {
   readonly canJoin: boolean;
 }
 
+/** One remote participant's video with its stream. */
+export interface ParticipantVideo extends RemoteVideoInfo {
+  readonly stream: MediaStream;
+}
+
 /** A remote video tile, without its media stream (see `controller.remoteVideos`). */
 export interface RemoteVideoInfo {
+  /** Stable key for rendering one participant's video. */
   readonly key: string;
-  readonly source: number;
+  /** Display label: the participant's number or ID, or the other connection's participant reference. */
+  readonly label: string;
   readonly connectionId?: string;
   /** Participant reference behind `connectionId`, when known. */
   readonly connectionParticipant?: string;
@@ -300,6 +307,10 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   readonly #answered = new Set<string>();
   #answering: string | undefined;
   #remoteVideos: readonly RemoteVideo[] = [];
+  #publicVideos: {
+    source: readonly RemoteVideo[];
+    videos: readonly ParticipantVideo[];
+  } = { source: [], videos: [] };
 
   constructor(
     backend: CallsBackend,
@@ -678,8 +689,16 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     return this.#media?.remoteStream;
   }
   /** One video per remote source, keyed like `snapshot.remoteVideos`. */
-  get remoteVideos(): readonly RemoteVideo[] {
-    return this.#remoteVideos;
+  get remoteVideos(): readonly ParticipantVideo[] {
+    if (this.#publicVideos.source !== this.#remoteVideos)
+      this.#publicVideos = {
+        source: this.#remoteVideos,
+        videos: this.#remoteVideos.map((video) => ({
+          ...videoInfo(video),
+          stream: video.stream,
+        })),
+      };
+    return this.#publicVideos.videos;
   }
 
   protected override onDispose(): void {
@@ -1261,7 +1280,12 @@ function invitationFields(
 function videoInfo(video: RemoteVideo): RemoteVideoInfo {
   return {
     key: video.key,
-    source: video.source,
+    label:
+      video.participant?.phoneNumber ??
+      video.participant?.id ??
+      video.connectionParticipant ??
+      video.connectionId ??
+      video.key,
     ...(video.connectionId === undefined
       ? {}
       : { connectionId: video.connectionId }),

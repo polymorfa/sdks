@@ -137,5 +137,10 @@ the visual design.
   `video_slots_exhausted` up to 32 video transceivers). Remote participants
   render as separate tiles in `ParticipantVideoGrid`; audio is one merged
   stream played through a hidden element. `ParticipantList` shows the roster.
+- Public surface (2026-09-17): applications use only `createBrowserCalls`,
+  the controller, `CallsClient`/`Call` and the components. Signaling, the data
+  channel, transceiver slots, sockets and media framing described here and
+  above are SDK internals, reachable only through the package-private
+  `./internal` subpaths.
 - The visual language above is unchanged; new controls reuse the existing
   pills, chips and dark card styles and respect reduced motion.

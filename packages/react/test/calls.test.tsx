@@ -12,7 +12,7 @@ import {
   type CallsSignaling,
   type RemoteVideo,
   type CallsSnapshot,
-} from "@polymorfa/browser";
+} from "@polymorfa/browser/internal";
 import { createLocale } from "@polymorfa/ui";
 import {
   CallControls,

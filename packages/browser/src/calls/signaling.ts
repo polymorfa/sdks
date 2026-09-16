@@ -4,7 +4,7 @@ import {
   type AcceptCallResult,
   type CallsToken,
   type CallsTokenRequest,
-} from "@polymorfa/calls";
+} from "@polymorfa/calls/internal";
 import { BrowserTransport } from "../transport.js";
 
 export interface IceServer {

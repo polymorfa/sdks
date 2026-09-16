@@ -64,61 +64,51 @@ answered. `answer()` and `join()` reject with `CallClaimedError` in that case.
 
 ## Model
 
-- **`CallsClient`** — one per session. Opens `wss://<api host>/voip/ws`,
-  authenticates with `{ type: "auth", token }` as its first frame, and waits
-  for `ready` (which names the session and your participant reference). Server
-  credentials name the session and participant in the URL
-  (`?session=support&participant=voice-agent`); client tokens send no query
-  parameters. A replacement token must resolve to the same organization,
-  project, session and participant. It sends a replacement token before the current one expires,
-  reconnects with backoff, and heartbeats. A 4401 close emits a
-  `CallsAuthError` (`code: "unauthorized"`); the next attempt asks the provider
-  for a fresh token. A 4400 close (invalid session or participant) stops
-  reconnection with `invalid_request`; 4409, 4429 and 1013 closes report
-  `socket_conflict`, `rate_limited` or nothing and keep retrying with backoff.
-  Events: `incoming`, `call`, `ended`, `ready`,
+- **`CallsClient`** — one per session. `connect()` starts receiving the
+  session's calls and resolves once the first attempt settles.
+  `participantReference` names this client once known. A replacement token
+  must belong to the same organization, project, session and participant.
+  The client replaces the token before it expires, reconnects with backoff, and detects dead connections. When the token stops
+  working it emits a `CallsAuthError` (`code: "unauthorized"`) and asks the
+  provider for a fresh token. An invalid session or participant stops
+  reconnection with `invalid_request`; `rate_limited` keeps retrying with
+  backoff. Events: `incoming`, `call`, `ended`, `ready`,
   `disconnected`, `error`. `disconnect()` leaves joined calls and ends
   outbound calls that are still ringing; it never declines a ringing call.
 - **`Call`** — states `incoming`, `ringing`, `connecting`, `connected`,
   `reconnecting`, and `ended`, with the methods above, `participants`,
   `connectionId`, and `startedAt` / `connectedAt` / `duration`.
-- **`call.audio`** — merged call audio as s16le mono PCM at `sampleRate`
+- **`call.audio`** — merged call audio as signed 16-bit mono PCM at `sampleRate`
   (16 kHz unless the platform names another rate), both directions. By
   default the merged stream excludes your own audio; the session's
   `includeSelfAudio` call setting changes that.
-- **`call.video`** — one outgoing H.264 stream (`write()`, Annex-B access
-  units, source 0) and one inbound stream per remote source. `sources` maps
-  each handle to its owner: `connectionId` (with its `connectionParticipant`
-  reference) for another app connection, or `participant` for a WhatsApp
-  participant. Events: `frame` (with
-  `frame.source`), `source`, `sourceRemoved`, and `keyframeRequest` — send a
-  keyframe with decoder configuration when it fires.
+- **`call.video`** — one outgoing H.264 stream and one received stream per
+  remote participant. `sources` maps each `CallVideoSource.id` to its `label`
+  and owner: `participant` for a WhatsApp participant, or `connectionId` and
+  `connectionParticipant` for another application connection.
 
-## Media socket
+## Media
 
-Each attached call opens `wss://<api host>/voip/calls/{callId}/media` with the
-`pmfa.calls.v2` subprotocol and no query parameters. The first frame is
-`{ type: "auth", token, connectionId, participant? }` (`participant` only for
-server credentials); a replacement auth frame cannot change either field. `connectionId` is
-generated from 18 crypto-random bytes (base64url) per call, or supplied, and
-matches `[A-Za-z0-9_-]{8,64}`. The client reuses it to reconnect after a
-dropped socket (up to `reconnectAttempts`, default 3; state `reconnecting`).
+`call.audio` and `call.video` carry the call's media once it is connected:
 
-The call reattaches after 4401 (with a fresh token), 4429, 1013 and other
-transient closes. It does not reattach after a normal 1000 close (the
-connection left or the call ended), a 4409 close (claimed or no longer
-available; `CallClaimedError` when claimed), or a 4400/1008 refusal. An
-authentication refusal arrives as `{ type: "error", code }` followed by the
-close.
+```ts
+call.audio.on("data", (pcm) => {
+  // Int16Array of mono samples at call.audio.sampleRate
+});
+call.audio.write(samples);
 
-Binary frames start with a kind byte: `0x01` audio (s16le PCM), `0x02` video
-with a 14-byte big-endian header — codec (`0x01` H.264), flags (bit 0
-keyframe), source (u32), timestamp in microseconds (u64) — then one Annex-B
-access unit. Text frames are JSON: the platform sends `ready`,
-`participant_joined`, `participant_state`, `participant_left`,
-`video_source`, `video_source_removed`, `keyframe_request`, and `pong`; the
-client sends `auth`, `ping`, `leave`, and `end_call`. The framing is
-implemented once in `protocol.ts`.
+call.video.on("source", (source) => console.log(source.id, source.label));
+call.video.on("frame", (frame) => decoder.decode(frame.source, frame.data));
+call.video.on("keyframeRequest", () => encoder.forceKeyframe());
+call.video.write({ keyframe, timestampUs, data }); // H.264 Annex-B
+```
+
+Each call has a `connectionId`. When the media connection drops, the client
+reconnects it automatically (up to `reconnectAttempts`, default 3; state
+`reconnecting`) and asks the token provider for a new token when the old one
+stopped working. It does not reconnect after it leaves, after the call ends,
+when another participant claimed the call (`CallClaimedError`), or when the
+platform refuses the connection; the call then ends with a reason.
 
 ## Runtime
 
@@ -126,17 +116,21 @@ Node 22+ for the global `WebSocket`, or pass `WebSocket` from `ws` on Node 20.
 `fetch`, timers and `WebSocket` are injectable, which is how the tests run
 without a network.
 
-## Browser media adapters
+## Browser calls
 
-Use `createBrowserCalls` from `@polymorfa/browser` for the built-in WebRTC
-widget. Its controller exposes this package's `Call` as `controller.call` and
-uses `mediaMode: "external"`: the widget owns media streams and device
-controls, PCM writes and encoded frame events are unavailable on that path,
-and `call.connectionId` names the WebRTC connection.
+Use `createBrowserCalls` from `@polymorfa/browser` in browsers. Its controller
+exposes this package's `Call` as `controller.call`; the browser component owns
+microphone, camera and playback, so `call.audio` and `call.video` do not carry
+media there.
 
-For an external adapter, `answer()` resolves after acceptance and
-`call.mediaConnected()` reports media readiness. Outbound calls remain ringing
-until remote acceptance. `client.getCall(id)` includes bounded recent ended
-calls. `place()` accepts `video`, `exclusive`, `signal` and `idempotencyKey`;
-a placement that returns after cancellation or disconnect is ended instead of
-tracked.
+`client.getCall(id)` includes bounded recent ended calls. `place()` accepts
+`video`, `exclusive`, `signal` and `idempotencyKey`; a placement that returns
+after cancellation or disconnect is ended instead of tracked.
+
+## Public API
+
+The package entry point exports `CallsClient`, `Call`, `AudioTrack`,
+`VideoTrack`, `CallsError`, `CallsApiError`, `CallsAuthError`,
+`CallClaimedError`, `DEFAULT_SAMPLE_RATE`, and their option, event, token and
+media types. Everything else is internal to the Polymorfa packages and has no
+stability guarantee.

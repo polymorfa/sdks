@@ -12,7 +12,6 @@ import {
   createConnectionId,
   isConnectionId,
   type MediaControlFrame,
-  type OutboundVideoFrame,
   type Participant,
   type VideoFrame,
 } from "./protocol.js";
@@ -74,17 +73,74 @@ export interface AnswerOptions {
   readonly video?: boolean;
 }
 
+/**
+ * One remote participant's video in a call. `id` identifies the video within
+ * the call; frames carry it as `source`.
+ */
+export interface CallVideoSource {
+  readonly id: number;
+  /** Display label: the participant's number or ID, or the other connection's participant reference. */
+  readonly label: string;
+  /** The WhatsApp participant sending this video. */
+  readonly participant?: Participant;
+  /** Another application connection sending this video. */
+  readonly connectionId?: string;
+  /** Participant reference (`client:<id>` or `server:<name>`) of that connection, when known. */
+  readonly connectionParticipant?: string;
+}
+
+/** One received encoded video frame (H.264, Annex-B access unit). */
+export interface CallVideoFrame {
+  /** `id` of the {@link CallVideoSource} that sent it. */
+  readonly source: number;
+  readonly keyframe: boolean;
+  /** Capture timestamp in microseconds. */
+  readonly timestampUs: number;
+  readonly data: Uint8Array;
+}
+
+/**
+ * One encoded video frame to send (H.264, Annex-B access unit). Include the
+ * decoder configuration (SPS/PPS) with every keyframe.
+ */
+export interface OutgoingVideoFrame {
+  readonly keyframe: boolean;
+  /** Capture timestamp in microseconds. */
+  readonly timestampUs: number;
+  readonly data: Uint8Array;
+}
+
 type AudioEvents = { data: [Int16Array] };
 type VideoEvents = {
-  /** An inbound access unit; `frame.source` names its {@link MediaVideoSource}. */
-  frame: [VideoFrame];
-  source: [MediaVideoSource];
-  sourceRemoved: [source: number];
+  /** A received frame; `frame.source` names its {@link CallVideoSource}. */
+  frame: [CallVideoFrame];
+  source: [CallVideoSource];
+  sourceRemoved: [id: number];
   /** Send a keyframe with decoder configuration on the next write. */
   keyframeRequest: [];
 };
 
-/** The call's merged audio: `on("data")` is the call → you, `write()` is you → the call. */
+function videoSource(source: MediaVideoSource): CallVideoSource {
+  if (source.participant !== undefined)
+    return {
+      id: source.source,
+      label: source.participant.phoneNumber ?? source.participant.id,
+      participant: source.participant,
+    };
+  return {
+    id: source.source,
+    label: source.connectionParticipant ?? source.connectionId,
+    connectionId: source.connectionId,
+    ...(source.connectionParticipant === undefined
+      ? {}
+      : { connectionParticipant: source.connectionParticipant }),
+  };
+}
+
+/**
+ * The call's merged audio as signed 16-bit mono PCM samples at
+ * {@link sampleRate}: `on("data")` is the call → you, `write()` is you → the call.
+ */
 export class AudioTrack extends Emitter<AudioEvents> {
   #socket: MediaSocket | undefined;
   #sampleRate: number;
@@ -117,19 +173,25 @@ export class AudioTrack extends Emitter<AudioEvents> {
 }
 
 /**
- * The call's video: one outgoing H.264 stream, and one inbound stream per
- * remote source. Sources are separate; nothing is composed.
+ * The call's video: one outgoing H.264 stream, and one received stream per
+ * remote participant. Streams are separate; nothing is composed.
  */
 export class VideoTrack extends Emitter<VideoEvents> {
   #socket: MediaSocket | undefined;
-  readonly #sources = new Map<number, MediaVideoSource>();
-  /** Remote video sources by handle. */
-  get sources(): ReadonlyMap<number, MediaVideoSource> {
+  readonly #sources = new Map<number, CallVideoSource>();
+  /** Remote participant videos by `id`. */
+  get sources(): ReadonlyMap<number, CallVideoSource> {
     return this.#sources;
   }
-  /** Push one Annex-B access unit. Returns false when no media is attached. */
-  write(frame: OutboundVideoFrame): boolean {
-    return this.#socket?.writeVideo(frame) ?? false;
+  /** Send one encoded frame. Returns false when no media is attached. */
+  write(frame: OutgoingVideoFrame): boolean {
+    return (
+      this.#socket?.writeVideo({
+        keyframe: frame.keyframe,
+        timestampUs: frame.timestampUs,
+        data: frame.data,
+      }) ?? false
+    );
   }
   /** @internal */
   _attach(socket: MediaSocket | undefined): void {
@@ -137,12 +199,18 @@ export class VideoTrack extends Emitter<VideoEvents> {
   }
   /** @internal */
   _frame(frame: VideoFrame): void {
-    this.emit("frame", frame);
+    this.emit("frame", {
+      source: frame.source,
+      keyframe: frame.keyframe,
+      timestampUs: frame.timestampUs,
+      data: frame.data,
+    });
   }
   /** @internal */
   _source(source: MediaVideoSource): void {
-    this.#sources.set(source.source, source);
-    this.emit("source", source);
+    const neutral = videoSource(source);
+    this.#sources.set(neutral.id, neutral);
+    this.emit("source", neutral);
   }
   /** @internal */
   _sourceRemoved(handle: number): void {
@@ -526,7 +594,7 @@ export class Call extends Emitter<CallEvents> {
   }
 
   /**
-   * Notify an externally managed call that its media connected. An outbound
+   * @internal Media owned by another Polymorfa package connected. An outbound
    * call still waits for the remote party to accept. Socket media ignores this.
    */
   mediaConnected(): void {

@@ -28,10 +28,6 @@ export interface CallsClientOptions {
   readonly participant?: string;
   /** Defaults to `https://api.polymorfa.com`. */
   readonly baseUrl?: string;
-  /** Swap the platform seam entirely — tests, or a client-token transport. */
-  readonly api?: CallsApi;
-  /** External media is connected by a WebRTC adapter instead of the media socket. */
-  readonly mediaMode?: "socket" | "external";
   /** Media reattach attempts after an unexpected drop. Default 3. */
   readonly reconnectAttempts?: number;
   readonly fetch?: FetchLike;
@@ -43,6 +39,23 @@ export interface CallsClientOptions {
   readonly random?: () => number;
   readonly now?: () => number;
   readonly createIdempotencyKey?: () => string;
+}
+
+/**
+ * Options only sibling Polymorfa packages pass: a replacement platform seam
+ * and externally managed (WebRTC) media. Not part of the public API.
+ * @internal
+ */
+export interface InternalCallsClientOptions extends CallsClientOptions {
+  readonly api?: CallsApi;
+  readonly mediaMode?: "socket" | "external";
+}
+
+/** Build a client with internal options. @internal */
+export function createInternalCallsClient(
+  options: InternalCallsClientOptions,
+): CallsClient {
+  return new CallsClient(options);
 }
 
 export interface PlaceOptions {
@@ -100,12 +113,13 @@ export class CallsClient extends Emitter<ClientEvents> {
    * call ringing forever.
    */
   readonly #pendingEvents = new Map<string, LifecycleEvent[]>();
-  readonly #o: CallsClientOptions;
+  readonly #o: InternalCallsClientOptions;
   readonly #createKey: () => string;
   #credentialReference: string | undefined;
 
-  constructor(options: CallsClientOptions) {
+  constructor(publicOptions: CallsClientOptions) {
     super();
+    const options = publicOptions as InternalCallsClientOptions;
     this.#o = options;
     this.session = options.session;
     if (
@@ -434,7 +448,7 @@ const ENDED_RETENTION = 200;
 const PENDING_IDS = 64;
 const PENDING_EVENTS_PER_ID = 8;
 
-function timerOptions(o: CallsClientOptions) {
+function timerOptions(o: InternalCallsClientOptions) {
   return {
     ...(o.WebSocket === undefined ? {} : { WebSocket: o.WebSocket }),
     ...(o.setTimeout === undefined ? {} : { setTimeout: o.setTimeout }),
