@@ -12,7 +12,10 @@ export type QuickLinkMethod = "qr" | "pairing";
 interface QuickLinkSettingsBase {
   readonly id: string;
   readonly enabled: boolean;
-  readonly allowedRedirectUris: readonly string[];
+  /** Project-owned HTTPS destination after connection confirmation. */
+  readonly successCallbackUrl: string | null;
+  /** Project-owned HTTPS destination after cancellation. */
+  readonly failureCallbackUrl: string | null;
   readonly businessName: string | null;
   readonly headline: string | null;
   readonly description: string | null;
@@ -22,7 +25,10 @@ interface QuickLinkSettingsBase {
   readonly termsUrl: string | null;
   readonly accent: string | null;
   readonly theme: QuickLinkTheme;
+  /** Hiding the Polymorfa footer requires Premium team access. */
   readonly hideWatermark: boolean;
+  /** Whether recipients can change a prefilled phone number. */
+  readonly allowPhoneChange: boolean;
   readonly shape: QuickLinkShape | null;
   readonly radiusPx: number | null;
   readonly logoMode: QuickLinkLogoMode;
@@ -46,7 +52,10 @@ export interface ProjectQuickLinkSettings extends QuickLinkSettingsBase {
 
 export interface UpdateQuickLinkSettingsInput {
   readonly enabled?: boolean;
-  readonly allowedRedirectUris?: readonly string[];
+  /** Project-only HTTPS destination, snapshotted when a link is issued. */
+  readonly successCallbackUrl?: string | null;
+  /** Project-only HTTPS destination, snapshotted when a link is issued. */
+  readonly failureCallbackUrl?: string | null;
   readonly businessName?: string | null;
   readonly headline?: string | null;
   readonly description?: string | null;
@@ -56,7 +65,10 @@ export interface UpdateQuickLinkSettingsInput {
   readonly termsUrl?: string | null;
   readonly accent?: string | null;
   readonly theme?: QuickLinkTheme;
+  /** Hiding the Polymorfa footer requires Premium team access. */
   readonly hideWatermark?: boolean;
+  /** Allow recipients to change a prefilled phone number. Defaults to false. */
+  readonly allowPhoneChange?: boolean;
   readonly shape?: QuickLinkShape | null;
   readonly radiusPx?: number | null;
   readonly logoMode?: QuickLinkLogoMode;
