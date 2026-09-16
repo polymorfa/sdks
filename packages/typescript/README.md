@@ -1074,8 +1074,24 @@ if (isEvent(event, "history.sync")) {
   console.log(event.payload.source, event.externalId);
 } else if (isEvent(event, "call.received")) {
   console.log(event.payload.callId, event.payload.from.id);
+} else if (isEvent(event, "message.failed")) {
+  if (event.payload.error === "blocked_by_safety") {
+    console.log(event.payload.code, event.payload.retryAfter);
+  }
+} else if (isEvent(event, "bansafe.action")) {
+  console.log(event.payload.rung, event.payload.requires);
+} else if (isEvent(event, "customer.pairing_link.connected")) {
+  console.log(event.payload.customerId, event.payload.sessionId);
 }
 ```
+
+The catalog also types Customer lifecycle events (`customer.*`), BanSafe events
+(`bansafe.health_threshold`, `bansafe.enforcement`, `bansafe.action`,
+`bansafe.incident`, and `bansafe.claim`), campaign progress events
+(`campaign.*`), `message.failed`, and `template.status`. `message.failed`
+reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
+and `retryAfter` in seconds. Unknown event names still parse as
+`UnknownWebhookEvent`.
 
 `contact.sync` delivers a Meta Cloud API contact batch as
 `{ kind: "contacts", value }`. `message.echo` reports a message sent from the
@@ -1117,10 +1133,12 @@ const delivery = deliveries.items[0];
 if (delivery) {
   const attempts = await project.webhookDeliveries.listAttempts(delivery.id);
   if (attempts.items[0]) {
-    await project.webhookDeliveries.retrieveAttempt(
+    const attempt = await project.webhookDeliveries.retrieveAttempt(
       delivery.id,
       attempts.items[0].id,
     );
+    // Failed HTTP responses carry a redacted excerpt of at most 8192 UTF-8 bytes.
+    console.log(attempt.data.response?.excerpt);
   }
 }
 

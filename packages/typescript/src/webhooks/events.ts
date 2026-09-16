@@ -1,6 +1,11 @@
 import type { PhonePlatform, WhatsAppAccountType } from "../messaging/types.js";
 
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
+  "bansafe.action",
+  "bansafe.claim",
+  "bansafe.enforcement",
+  "bansafe.health_threshold",
+  "bansafe.incident",
   "blocklist.update",
   "business.quick_reply.update",
   "call.accepted",
@@ -12,6 +17,15 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "call.received",
   "call.rejected",
   "call.telemetry",
+  "campaign.cap_reached",
+  "campaign.cold_blocked",
+  "campaign.completed",
+  "campaign.failed",
+  "campaign.paused",
+  "campaign.recipient_failed",
+  "campaign.recipient_sent",
+  "campaign.recipient_skipped",
+  "campaign.throttled",
   "chat.archive",
   "chat.clear",
   "chat.delete",
@@ -20,6 +34,21 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "command.result",
   "contact.sync",
   "contact.update",
+  "customer.archived",
+  "customer.archiving",
+  "customer.created",
+  "customer.enabled",
+  "customer.number.attached",
+  "customer.number.disconnected",
+  "customer.number.transferred",
+  "customer.pairing_link.connected",
+  "customer.pairing_link.created",
+  "customer.pairing_link.expired",
+  "customer.pairing_link.failed",
+  "customer.pairing_link.opened",
+  "customer.pairing_link.revoked",
+  "customer.restored",
+  "customer.updated",
   "group.participant",
   "group.update",
   "history.sync",
@@ -28,6 +57,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "message.delete",
   "message.echo",
   "message.edited",
+  "message.failed",
   "message.reaction",
   "message.received",
   "message.revoked",
@@ -40,6 +70,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "session.logged_out",
   "session.phone_offline",
   "session.status",
+  "template.status",
 ] as const;
 
 export type KnownWebhookEventType = (typeof KNOWN_WEBHOOK_EVENT_TYPES)[number];
@@ -417,7 +448,298 @@ export interface BusinessQuickReplyUpdatePayload {
   readonly fromFullSync: boolean;
 }
 
+/** Principal that caused a Customer lifecycle change. */
+export type CustomerEventActorKind =
+  "better_auth" | "org_key" | "project_token" | "cli_grant" | "system";
+
+/** Fields shared by every Customer lifecycle webhook payload. */
+export interface CustomerEventPayload {
+  readonly eventId: string;
+  readonly occurredAt: string;
+  readonly organizationId: string;
+  readonly projectId: string;
+  readonly customerId: string;
+  readonly actorKind: CustomerEventActorKind;
+}
+
+export type CustomerCreatedPayload = CustomerEventPayload;
+export type CustomerArchivedPayload = CustomerEventPayload;
+export type CustomerRestoredPayload = CustomerEventPayload;
+
+export interface CustomerUpdatedPayload extends CustomerEventPayload {
+  readonly fields: readonly ("name" | "phone" | "externalCustomerId")[];
+}
+
+export interface CustomerEnabledPayload extends CustomerEventPayload {
+  readonly migratedNumberCount: number;
+}
+
+export interface CustomerArchivingPayload extends CustomerEventPayload {
+  readonly blockingNumberCount: number;
+  readonly revokedPairingLinkCount: number;
+}
+
+export interface CustomerPairingLinkPayload extends CustomerEventPayload {
+  readonly pairingLinkId: string;
+}
+
+export type CustomerPairingLinkCreatedPayload = CustomerPairingLinkPayload;
+export type CustomerPairingLinkOpenedPayload = CustomerPairingLinkPayload;
+export type CustomerPairingLinkExpiredPayload = CustomerPairingLinkPayload;
+
+export interface CustomerPairingLinkConnectedPayload extends CustomerPairingLinkPayload {
+  readonly sessionId: string;
+}
+
+export interface CustomerPairingLinkFailedPayload extends CustomerPairingLinkPayload {
+  readonly errorCode: string;
+}
+
+export interface CustomerPairingLinkRevokedPayload extends CustomerPairingLinkPayload {
+  readonly reason?:
+    | "customer_archived"
+    | "phone_mismatch_limit"
+    | "exchange_failure_limit"
+    | "terminal_failure";
+}
+
+export interface CustomerNumberAttachedPayload extends CustomerEventPayload {
+  readonly sessionId: string;
+  readonly pairingLinkId?: string;
+}
+
+export interface CustomerNumberTransferredPayload extends CustomerEventPayload {
+  readonly sessionId: string;
+  readonly sourceCustomerId: string;
+}
+
+export interface CustomerNumberDisconnectedPayload extends CustomerEventPayload {
+  readonly sessionId: string;
+  readonly reason: string;
+}
+
+export type BanSafeIncidentEventKind =
+  | "cap_warning"
+  | "cap_reached"
+  | "timelock"
+  | "temporary_ban"
+  | "permanent_ban"
+  | "connect_blocked"
+  | "customer_report";
+
+export type BanSafeEventRung =
+  "none" | "notify" | "throttle" | "block_cold" | "suspend";
+
+export interface BanSafeHealthThresholdPayload {
+  readonly sessionId: string;
+  readonly projectId: string;
+  /** Health from 0 to 100. */
+  readonly health: number;
+  readonly threshold: number;
+  readonly healthSource: "rules_v1" | "ml_model";
+  readonly estimatorVersion: string;
+  readonly modelVersion: string | null;
+  readonly evaluatedAt: string;
+  readonly policyVersion: number;
+  readonly episodeId: string;
+  readonly actionId: string;
+}
+
+export interface BanSafeEnforcementPayload {
+  readonly phoneNumber: string;
+  readonly kind: BanSafeIncidentEventKind;
+  readonly source: "runtime" | "customer";
+  readonly code?: number;
+  readonly subCode?: number;
+  readonly reason?: string;
+  readonly enforcementType?: string;
+  readonly startedAt: string;
+  readonly endsAt?: string;
+}
+
+/** A finding that must be resolved before a BanSafe action can lift. */
+export interface BanSafeRequiredFinding {
+  readonly findingKey: string;
+  readonly title: string;
+  readonly severity: "info" | "warning" | "critical";
+}
+
+export interface BanSafeActionPayload {
+  readonly phoneNumber: string;
+  readonly action: "applied" | "changed" | "lifted" | "daily_allowance_reached";
+  readonly scope: "number" | "organization";
+  readonly rung: BanSafeEventRung;
+  readonly previousRung: BanSafeEventRung | null;
+  readonly reason:
+    | "health"
+    | "finding"
+    | "org_pattern"
+    | "repeat"
+    | "restriction"
+    | "operator"
+    | "health_model_cutover"
+    | "warmup";
+  readonly health: number | null;
+  readonly healthBand: "good" | "fair" | "poor" | "failing" | "unknown";
+  readonly requires: readonly BanSafeRequiredFinding[];
+  readonly throughputPerMinute: number | null;
+  readonly eligibleLiftAt: string | null;
+  readonly liftRequires: string;
+  readonly appealUrl: string;
+  readonly startedAt: string;
+  readonly docs: string;
+}
+
+export interface BanSafeIncidentPayload {
+  readonly id: string;
+  readonly phoneNumber: string;
+  readonly kind: BanSafeIncidentEventKind;
+  readonly source: "runtime" | "customer";
+  readonly startedAt: string;
+  readonly endsAt: string | null;
+  /** Probability from 0 to 1 that the incident was a real enforcement. */
+  readonly belief: number;
+  readonly resolution:
+    "open" | "corroborated" | "contradicted" | "phone_switch" | "final";
+  readonly claimId: string | null;
+  readonly closedAt: string | null;
+}
+
+export interface BanSafeClaimPayload {
+  readonly id: string;
+  readonly incidentId: string;
+  readonly phoneNumber: string;
+  readonly status:
+    "filed" | "under_review" | "approved" | "denied" | "paid" | "reversed";
+  readonly verdict:
+    | "other_device"
+    | "customer_conduct"
+    | "shared_network"
+    | "ours"
+    | "inconclusive";
+  readonly windowStart: string;
+  readonly windowEnd: string;
+  /** Decimal cent amounts with up to six fractional digits. */
+  readonly measuredCents: number;
+  readonly capCents: number;
+  readonly amountCents: number;
+  readonly summary: string;
+  readonly reason: string;
+  readonly decidedAt: string | null;
+  readonly paidAt: string | null;
+}
+
+export type MessageFailedReason =
+  | "invalid_recipient"
+  | "session_not_connected"
+  | "ack_timeout"
+  | "send_failed"
+  | "blocked_by_safety";
+
+export interface MessageFailedPayload {
+  readonly to: IdentityReference;
+  readonly type: string;
+  readonly error: MessageFailedReason;
+  readonly code?: string;
+  /** Seconds to wait before retrying, when the failure is retryable. */
+  readonly retryAfter?: number;
+  readonly timestamp: number;
+}
+
+export interface TemplateStatusPayload {
+  readonly templateName: string;
+  readonly templateId: string;
+  readonly status: string;
+  readonly category: string;
+  readonly reason: string;
+  readonly qualityRating: string;
+}
+
+export interface CampaignPausedPayload {
+  readonly campaignId: string;
+  readonly sentCount: number;
+  readonly remainingCount: number;
+  readonly pausedAt: number;
+}
+
+export interface CampaignCompletedPayload {
+  readonly campaignId: string;
+  readonly sentCount: number;
+  readonly deliveredCount: number;
+  readonly readCount: number;
+  readonly failedCount: number;
+  readonly skippedCount: number;
+  readonly responseCount: number;
+  readonly completedAt: number;
+  readonly durationMs: number;
+}
+
+export interface CampaignFailedPayload {
+  readonly campaignId: string;
+  readonly reason: string;
+  readonly failedAt: number;
+}
+
+export interface CampaignRecipientSentPayload {
+  readonly campaignId: string;
+  readonly recipientId: string;
+  readonly phone: string;
+  readonly sessionKey: string;
+  readonly externalMessageId: string;
+  readonly variantKey: string;
+  readonly attempt: number;
+}
+
+export interface CampaignRecipientFailedPayload {
+  readonly campaignId: string;
+  readonly recipientId: string;
+  readonly phone: string;
+  readonly attempts: number;
+  readonly error: string;
+  readonly failedAt: number;
+}
+
+export interface CampaignRecipientSkippedPayload {
+  readonly campaignId: string;
+  readonly recipientId: string;
+  readonly phone: string;
+  readonly reason: string;
+  readonly skippedAt: number;
+}
+
+export interface CampaignThrottledPayload {
+  readonly campaignId: string;
+  readonly sessionKey: string;
+  readonly reason: string;
+  readonly deferredCount: number;
+  readonly at: number;
+}
+
+export interface CampaignCapReachedPayload {
+  readonly campaignId: string;
+  readonly sessionKey: string;
+  readonly phone: string;
+  readonly capType: string;
+  readonly capLimit: number;
+  readonly windowResetsAt: number;
+  readonly at: number;
+}
+
+export interface CampaignColdBlockedPayload {
+  readonly campaignId: string;
+  readonly recipientId: string;
+  readonly phone: string;
+  readonly surface: string;
+  readonly reason: string;
+  readonly at: number;
+}
+
 export interface WebhookPayloadMap {
+  readonly "bansafe.action": BanSafeActionPayload;
+  readonly "bansafe.claim": BanSafeClaimPayload;
+  readonly "bansafe.enforcement": BanSafeEnforcementPayload;
+  readonly "bansafe.health_threshold": BanSafeHealthThresholdPayload;
+  readonly "bansafe.incident": BanSafeIncidentPayload;
   readonly "blocklist.update": BlocklistUpdatePayload;
   readonly "business.quick_reply.update": BusinessQuickReplyUpdatePayload;
   readonly "call.accepted": CallAcceptedPayload;
@@ -429,6 +751,15 @@ export interface WebhookPayloadMap {
   readonly "call.received": CallReceivedPayload;
   readonly "call.rejected": CallRejectedPayload;
   readonly "call.telemetry": CallTelemetryPayload;
+  readonly "campaign.cap_reached": CampaignCapReachedPayload;
+  readonly "campaign.cold_blocked": CampaignColdBlockedPayload;
+  readonly "campaign.completed": CampaignCompletedPayload;
+  readonly "campaign.failed": CampaignFailedPayload;
+  readonly "campaign.paused": CampaignPausedPayload;
+  readonly "campaign.recipient_failed": CampaignRecipientFailedPayload;
+  readonly "campaign.recipient_sent": CampaignRecipientSentPayload;
+  readonly "campaign.recipient_skipped": CampaignRecipientSkippedPayload;
+  readonly "campaign.throttled": CampaignThrottledPayload;
   readonly "chat.archive": ChatArchivePayload;
   readonly "chat.clear": ChatClearPayload;
   readonly "chat.delete": ChatDeletePayload;
@@ -437,6 +768,21 @@ export interface WebhookPayloadMap {
   readonly "command.result": CommandResultPayload;
   readonly "contact.sync": ContactsSyncPayload;
   readonly "contact.update": ContactUpdatePayload;
+  readonly "customer.archived": CustomerArchivedPayload;
+  readonly "customer.archiving": CustomerArchivingPayload;
+  readonly "customer.created": CustomerCreatedPayload;
+  readonly "customer.enabled": CustomerEnabledPayload;
+  readonly "customer.number.attached": CustomerNumberAttachedPayload;
+  readonly "customer.number.disconnected": CustomerNumberDisconnectedPayload;
+  readonly "customer.number.transferred": CustomerNumberTransferredPayload;
+  readonly "customer.pairing_link.connected": CustomerPairingLinkConnectedPayload;
+  readonly "customer.pairing_link.created": CustomerPairingLinkCreatedPayload;
+  readonly "customer.pairing_link.expired": CustomerPairingLinkExpiredPayload;
+  readonly "customer.pairing_link.failed": CustomerPairingLinkFailedPayload;
+  readonly "customer.pairing_link.opened": CustomerPairingLinkOpenedPayload;
+  readonly "customer.pairing_link.revoked": CustomerPairingLinkRevokedPayload;
+  readonly "customer.restored": CustomerRestoredPayload;
+  readonly "customer.updated": CustomerUpdatedPayload;
   readonly "group.participant": GroupParticipantPayload;
   readonly "group.update": GroupUpdatePayload;
   readonly "history.sync": HistorySyncPayload;
@@ -445,6 +791,7 @@ export interface WebhookPayloadMap {
   readonly "message.delete": MessageDeletePayload;
   readonly "message.echo": MessageEchoPayload;
   readonly "message.edited": MessagePayload;
+  readonly "message.failed": MessageFailedPayload;
   readonly "message.reaction": MessageReceivedPayload;
   readonly "message.received": MessageReceivedPayload;
   readonly "message.revoked": MessagePayload;
@@ -457,6 +804,7 @@ export interface WebhookPayloadMap {
   readonly "session.logged_out": SessionLoggedOutPayload;
   readonly "session.phone_offline": SessionPhoneOfflinePayload;
   readonly "session.status": SessionStatusPayload;
+  readonly "template.status": TemplateStatusPayload;
 }
 
 export interface WebhookEventOf<TEvent extends string, TPayload> {

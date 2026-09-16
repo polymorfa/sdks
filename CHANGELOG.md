@@ -23,6 +23,11 @@
   `expectedPhone` on the pairing link to restrict a number.
 - Export typed `contact.sync` and `message.echo` webhooks and the optional
   QuickLink `externalId` on every webhook envelope.
+- Type the Customer lifecycle, BanSafe, campaign, `message.failed`, and
+  `template.status` webhook events. `message.failed` includes the
+  `blocked_by_safety` reason with optional `code` and `retryAfter`.
+- Webhook delivery attempts now include `response`, a redacted excerpt of a
+  failed HTTP response, or `null`.
 
 - Export typed terminal Calls webhooks. `call.ended` preserves a nullable caller
   identity for `pod_lost`; `call.telemetry` preserves cumulative traffic values.
