@@ -1,31 +1,44 @@
+import type { SessionConfigurationOverrides } from "./session-configuration.js";
 import { PolymorfaConfigurationError } from "../errors.js";
 import type {
   QuickLinkHistorySync,
   QuickLinkMethod,
-  QuickLinkTheme,
 } from "../platform/quicklink-settings.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type { MessagingCredential } from "../credentials.js";
 
+export interface QuickLinkConfiguration extends SessionConfigurationOverrides {
+  readonly testing?: {
+    readonly country?: string;
+    readonly configuration?: import("./testing-configuration.js").TestingConfiguration;
+    readonly editable?: readonly import("./testing-configuration.js").TestingConfigurationField[];
+  };
+  readonly connectionPreference?: "cloud" | "linked" | "both";
+  readonly connectionEnforcement?: "prefer" | "force";
+  readonly methods?: readonly QuickLinkMethod[];
+  readonly defaultMethod?: QuickLinkMethod | null;
+  readonly prefillPhone?: string;
+  readonly allowPhoneChange?: boolean;
+  readonly historySync?: {
+    readonly consent?: QuickLinkHistorySync;
+    readonly mode?: "metadata_only" | "deliver";
+    readonly requestFull?: boolean;
+  };
+}
+
 export interface CreateQuickLinkRequest {
   readonly projectId?: string;
   readonly customerId?: string;
-  readonly methods?: readonly QuickLinkMethod[];
-  readonly businessName?: string;
-  readonly historySync?: QuickLinkHistorySync;
-  readonly callbackUrl?: string;
-  readonly theme?: QuickLinkTheme;
-  readonly accent?: string;
-  readonly prefillPhone?: string;
-  readonly expiresInSeconds?: number;
+  readonly externalId?: string;
+  readonly configuration?: QuickLinkConfiguration;
 }
 
 export interface QuickLink {
   readonly id: string;
   readonly url: string;
   readonly session: string;
-  readonly expiresAt: string;
+  readonly expiresAt: string | null;
 }
 
 export type QuickLinkStatusValue =
@@ -35,7 +48,7 @@ export interface QuickLinkStatus {
   readonly id: string;
   readonly status: QuickLinkStatusValue;
   readonly session: string;
-  readonly expiresAt: string;
+  readonly expiresAt: string | null;
   readonly openedAt: string | null;
   readonly connectedAt: string | null;
   readonly phone: string | null;

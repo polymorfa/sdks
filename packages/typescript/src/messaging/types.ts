@@ -17,36 +17,22 @@ export interface HistorySyncPolicy {
 }
 
 export interface Session {
-  readonly sessionId?: string;
+  readonly sessionId: string;
   readonly name: string;
+  readonly externalId?: string;
   readonly tenantId: string;
-  readonly connection: MessagingConnection;
+  readonly type: MessagingConnection;
   readonly testMode: boolean;
   readonly status: string;
   readonly statusReason?: string;
-  readonly runnerId?: string;
-  readonly proxy?: string;
-  readonly config: Readonly<Record<string, unknown>>;
+  readonly configuration?: import("./session-configuration.js").SessionConfigurationView;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
 
-export interface CreateSessionRequest {
-  readonly projectId: string;
-  readonly sessionId?: string;
-  readonly name?: string;
-  readonly start?: boolean;
-  readonly connection?: MessagingConnection;
-  readonly testMode?: boolean;
-  readonly bartenderMode?: BartenderMode;
-  readonly cloudApi?: CloudApiCredentials;
-  readonly config?: Readonly<Record<string, unknown>>;
-  readonly historySync?: HistorySyncPolicy;
-}
-
 export interface UpdateSessionRequest {
-  readonly config?: Readonly<Record<string, unknown>>;
-  readonly historySync?: HistorySyncPolicy;
+  readonly configuration: import("./session-configuration.js").SessionConfigurationPatch;
+  readonly revision: number;
 }
 
 export interface SessionOperation extends Session {
@@ -59,12 +45,26 @@ export interface OperationAccepted {
   readonly operationId: string;
 }
 
+/** Where the account's primary WhatsApp client runs. `meta_cloud` means Meta hosts the number. */
+export type PhonePlatform = "android" | "ios" | "meta_cloud" | "unknown";
+
+/**
+ * `whatsapp_app` and `business_app` connect as linked devices. `meta_cloud` is
+ * Meta Cloud API. `meta_coexistence` is Cloud API with the WhatsApp Business
+ * app still active on the phone.
+ */
+export type WhatsAppAccountType =
+  "whatsapp_app" | "business_app" | "meta_cloud" | "meta_coexistence";
+
 export interface WhatsAppAccount {
-  readonly lid: string;
+  readonly id?: string;
+  readonly bsuid?: string;
+  readonly username?: string;
   readonly phoneNumber?: string;
   readonly pushName: string;
   readonly businessName?: string;
-  readonly platform?: string;
+  readonly phonePlatform?: PhonePlatform;
+  readonly accountType?: WhatsAppAccountType;
   readonly profilePicUrl?: string;
 }
 
@@ -172,28 +172,18 @@ export type RejectCallResponse =
   | SuccessEnvelope<RejectCallResult>
   | SuccessEnvelope<AsyncAcceptedData>;
 
-export type ResolveLidParams =
+export type ResolveIdentityParams =
   | {
       /** Phone number containing digits with an optional leading plus sign. */
       readonly phoneNumber: string;
       readonly id?: never;
-      readonly lid?: never;
       readonly username?: never;
       readonly usernameKey?: never;
     }
   | {
-      /** Stable user ID in the form digits@lid. */
+      /** Opaque Polymorfa user ID. */
       readonly id: string;
       readonly phoneNumber?: never;
-      readonly lid?: never;
-      readonly username?: never;
-      readonly usernameKey?: never;
-    }
-  | {
-      /** @deprecated Use id. */
-      readonly lid: string;
-      readonly phoneNumber?: never;
-      readonly id?: never;
       readonly username?: never;
       readonly usernameKey?: never;
     }
@@ -204,22 +194,20 @@ export type ResolveLidParams =
       readonly usernameKey?: string;
       readonly phoneNumber?: never;
       readonly id?: never;
-      readonly lid?: never;
     };
 
-export interface ResolveLidResult {
+export interface ResolveIdentityResult {
   readonly id?: string;
-  /** @deprecated Use id. */
-  readonly lid?: string;
+  readonly bsuid?: string;
   readonly phoneNumber?: string;
   readonly username?: string;
   readonly keyRequired?: boolean;
 }
 
-export type ResolveLidsResponse = SuccessEnvelope<ResolveLidResult>;
+export type ResolveIdentityResponse = SuccessEnvelope<ResolveIdentityResult>;
 
 export interface UserSecurityCode {
-  /** Stable user ID in the form digits@lid. */
+  /** Opaque Polymorfa user ID. */
   readonly id: string;
   readonly phoneNumber?: string;
   readonly username?: string;
@@ -232,19 +220,19 @@ export interface UserSecurityCode {
 export type GetUserSecurityCodeResponse = SuccessEnvelope<UserSecurityCode>;
 
 export interface Contact {
-  readonly lid: string;
+  readonly bsuid?: string;
   readonly phoneNumber?: string;
   readonly name: string;
   readonly pushName: string;
   readonly businessName?: string;
   readonly profileUrl?: string;
-  readonly id?: string;
+  readonly id: string;
   readonly username?: string;
 }
 
 export interface CheckContactResult {
   readonly exists: boolean;
-  readonly lid?: string;
+  readonly bsuid?: string;
   readonly phoneNumber?: string;
   readonly id?: string;
   readonly username?: string;
@@ -252,7 +240,7 @@ export interface CheckContactResult {
 
 export interface ContactBlocklist {
   readonly hash: string;
-  readonly jids: readonly string[];
+  readonly contacts: readonly ConversationIdentity[];
 }
 
 export interface BusinessProfileCategory {
@@ -267,8 +255,7 @@ export interface BusinessProfileHours {
   readonly closeTime: string;
 }
 
-export interface BusinessProfile {
-  readonly jid: string;
+export interface BusinessProfile extends ConversationIdentity {
   readonly address: string;
   readonly email: string;
   readonly description: string;
@@ -326,8 +313,8 @@ export interface BusinessActionSuccess {
 }
 
 export interface BusinessCatalogParams {
-  /** Business account user or LID JID. */
-  readonly jid: string;
+  /** Polymorfa business user ID. */
+  readonly id: string;
   /** Opaque cursor returned as `next` by the preceding page. */
   readonly after?: string;
   /** Product limit from 1 through 100. */
@@ -339,13 +326,13 @@ export interface BusinessCatalogParams {
 }
 
 export interface BusinessProductParams {
-  /** Business account user or LID JID. */
-  readonly jid: string;
+  /** Polymorfa business user ID. */
+  readonly id: string;
 }
 
 export interface BusinessCollectionsParams {
-  /** Business account user or LID JID. */
-  readonly jid: string;
+  /** Polymorfa business user ID. */
+  readonly id: string;
   /** Opaque cursor returned as `next` by the preceding page. */
   readonly after?: string;
   /** Collection limit from 1 through 20. */
@@ -359,8 +346,8 @@ export interface BusinessCollectionsParams {
 }
 
 export interface BusinessCollectionParams {
-  /** Business account user or LID JID. */
-  readonly jid: string;
+  /** Polymorfa business user ID. */
+  readonly id: string;
   /** Opaque product cursor returned by the upstream collection page. */
   readonly after?: string;
   /** Product limit from 1 through 100. */
@@ -777,13 +764,14 @@ export type GetBusinessEligibilityResponse =
   SuccessEnvelope<BusinessEligibility>;
 
 export interface ContactUserInfo {
-  readonly jid: string;
-  readonly lid: string;
+  readonly bsuid?: string;
   readonly status: string;
   readonly pictureId: string;
   readonly verifiedName: string;
-  readonly devices: readonly string[];
-  readonly id?: string;
+  readonly devices: readonly (ConversationIdentity & {
+    readonly device: number;
+  })[];
+  readonly id: string;
   readonly phoneNumber?: string;
   readonly username?: string;
 }
@@ -796,6 +784,8 @@ export interface ProfileData {
   readonly name: string;
   readonly status: string;
   readonly profilePicUrl?: string;
+  readonly phonePlatform?: PhonePlatform;
+  readonly accountType?: WhatsAppAccountType;
 }
 
 export interface SetProfileNameRequest {
@@ -982,7 +972,7 @@ export type SubscribePresenceResponse =
 
 /** Public channel/newsletter metadata. Fields are optional in the pinned contract. */
 export interface Channel {
-  readonly lid?: string;
+  readonly id?: string;
   readonly name?: string;
   readonly description?: string;
   readonly profileUrl?: string;
@@ -999,8 +989,11 @@ export interface CreateChannelRequest {
 }
 
 export interface ChannelMessage {
-  readonly serverId: number;
+  /** Ordering position for before/after pagination, not a message ID. */
+  readonly position: number;
   readonly id: string;
+  readonly whatsapp_id: string;
+  readonly conversation: ConversationIdentity;
   readonly type: string;
   readonly timestamp: string;
   readonly views: number;
@@ -1212,11 +1205,11 @@ export type ListBusinessQuickRepliesResponse =
   SuccessEnvelope<BusinessQuickReplyCollection>;
 
 export interface GroupParticipant {
-  readonly lid: string;
+  readonly bsuid?: string;
   readonly phoneNumber?: string;
   readonly isAdmin: boolean;
   readonly isSuperAdmin: boolean;
-  readonly id?: string;
+  readonly id: string;
   readonly username?: string;
 }
 
@@ -1224,20 +1217,18 @@ export interface Group {
   readonly id: string;
   readonly name: string;
   readonly description: string;
-  readonly ownerLid: string;
   readonly createdAt: number;
   readonly participants: readonly GroupParticipant[];
-  readonly ownerId?: string;
+  readonly ownerId: string;
 }
 
 export interface GroupInviteInfo {
   readonly id: string;
   readonly subject: string;
-  readonly creatorLid: string;
   readonly createdAt: number;
   readonly size: number;
   readonly participants: readonly GroupParticipant[];
-  readonly creatorId?: string;
+  readonly creatorId: string;
 }
 
 export interface GroupInviteCode {
@@ -1379,7 +1370,7 @@ export type ClientAction =
   | "voip_answer"
   | "voip_signal";
 
-/** Rules as returned by `GET /messaging/sessions/{session}/client-rules`. */
+/** Rules as returned by `GET /platform/sessions/{session}/client-rules`. */
 export interface ClientRules {
   readonly recipientMode: ClientRecipientMode | "";
   /** Comma-separated {@link ClientAction} list. */
@@ -1469,7 +1460,6 @@ export interface VoipAgentTokenValue {
 export type VoipAgentTokenResponse = SuccessEnvelope<VoipAgentTokenValue>;
 
 export type ListSessionsResponse = SuccessEnvelope<readonly Session[]>;
-export type CreateSessionResponse = SuccessEnvelope<SessionOperation>;
 export type GetSessionResponse = SuccessEnvelope<Session>;
 export type UpdateSessionResponse = SuccessEnvelope<Session>;
 export type GetSessionAccountResponse = SuccessEnvelope<WhatsAppAccount>;
@@ -1493,8 +1483,7 @@ export type MessageKind =
   | "flow";
 
 export interface QuotedMessage {
-  readonly messageId: string;
-  readonly participant: string;
+  readonly id: string;
   readonly type?: string;
   readonly text?: string;
 }
@@ -1518,7 +1507,7 @@ export type ProductMessageMedia =
     };
 
 export interface ProductMessageContent {
-  readonly businessOwnerJid: string;
+  readonly businessOwnerId: string;
   readonly id: string;
   readonly title: string;
   readonly description?: string;
@@ -1539,7 +1528,7 @@ export interface ProductListMessageSection {
 }
 
 export interface ProductListMessageContent {
-  readonly businessOwnerJid: string;
+  readonly businessOwnerId: string;
   readonly title: string;
   readonly description?: string;
   readonly buttonText: string;
@@ -1556,7 +1545,7 @@ export interface OrderMessageContent {
   readonly status: OrderMessageStatus;
   readonly message?: string;
   readonly title?: string;
-  readonly sellerJid: string;
+  readonly sellerId: string;
   readonly token?: string;
   readonly totalAmount1000: number;
   readonly totalCurrencyCode: string;
@@ -1649,91 +1638,112 @@ export interface FlowDataExchangeMessageContent {
 export type FlowMessageContent =
   FlowNavigateMessageContent | FlowDataExchangeMessageContent;
 
+export interface ConversationIdentity {
+  readonly id: string;
+  readonly phoneNumber?: string;
+  readonly bsuid?: string;
+  readonly username?: string;
+}
+
+export type ConversationReference = Partial<ConversationIdentity> &
+  (
+    | { readonly id: string }
+    | { readonly phoneNumber: string }
+    | { readonly bsuid: string }
+  );
+
 export interface MessageSendContext {
-  readonly chatId: string;
+  readonly conversation: ConversationReference;
   readonly isForwarded?: boolean;
   readonly mentions?: readonly string[];
   readonly quotedMessage?: QuotedMessage;
 }
 
 export interface SendTextMessageRequest extends MessageSendContext {
-  readonly type: "text";
-  readonly text?: string;
+  readonly content: { readonly text: string };
 }
 
 export type MediaMessageKind = "image" | "file" | "voice" | "video";
 
-export interface SendMediaMessageRequest extends MessageSendContext {
-  readonly type: MediaMessageKind;
-  readonly url?: string;
-  readonly base64?: string;
+export type MessageMediaContent<Kind extends MediaMessageKind = "image"> = (
+  | { readonly url: string; readonly base64?: never }
+  | { readonly url?: never; readonly base64: string }
+) & {
   readonly mimeType?: string;
-  readonly filename?: string;
   readonly caption?: string;
-  readonly ptt?: boolean;
-}
+} & (Kind extends "file"
+    ? { readonly filename?: string; readonly ptt?: never }
+    : Kind extends "voice"
+      ? { readonly ptt?: boolean; readonly filename?: never }
+      : { readonly filename?: never; readonly ptt?: never });
+export type SendMediaMessageRequest = MessageSendContext & {
+  readonly content:
+    | { readonly image: MessageMediaContent }
+    | { readonly video: MessageMediaContent }
+    | { readonly file: MessageMediaContent<"file"> }
+    | { readonly voice: MessageMediaContent<"voice"> };
+};
 
 export interface SendPollMessageRequest extends MessageSendContext {
-  readonly type: "poll";
-  readonly pollTitle?: string;
-  readonly pollOptions?: readonly string[];
-  readonly pollMultiSelect?: boolean;
+  readonly content: {
+    readonly poll: {
+      readonly title: string;
+      readonly options: readonly string[];
+      readonly multiSelect?: boolean;
+    };
+  };
 }
 
 export interface SendLocationMessageRequest extends MessageSendContext {
-  readonly type: "location";
-  readonly latitude?: number;
-  readonly longitude?: number;
-  readonly address?: string;
+  readonly content: {
+    readonly location: {
+      readonly lat: number;
+      readonly long: number;
+      readonly address?: string;
+    };
+  };
 }
 
 export interface SendContactMessageRequest extends MessageSendContext {
-  readonly type: "contact";
-  readonly vcard?: string;
+  readonly content: { readonly contact: { readonly vcard: string } };
 }
 
 export interface SendPhoneNumberRequest extends MessageSendContext {
-  readonly type: "request_phone_number";
+  readonly content: {
+    readonly requestPhoneNumber: Readonly<Record<string, never>>;
+  };
 }
 
 export interface SendProductMessageRequest extends MessageSendContext {
-  readonly type: "product";
-  readonly product: ProductMessageContent;
+  readonly content: { readonly product: ProductMessageContent };
 }
 
 export interface SendProductListMessageRequest extends MessageSendContext {
-  readonly type: "product_list";
-  readonly productList: ProductListMessageContent;
+  readonly content: { readonly productList: ProductListMessageContent };
 }
 
 export interface SendOrderMessageRequest extends MessageSendContext {
-  readonly type: "order";
-  readonly order: OrderMessageContent;
+  readonly content: { readonly order: OrderMessageContent };
 }
 
 export interface SendListMessageRequest extends MessageSendContext {
-  readonly type: "list";
-  readonly list: ListMessageContent;
+  readonly content: { readonly list: ListMessageContent };
 }
 
 export interface SendButtonsMessageRequest extends MessageSendContext {
-  readonly type: "buttons";
-  readonly buttons: ButtonsMessageContent;
+  readonly content: { readonly buttons: ButtonsMessageContent };
 }
 
 export interface SendAddressMessageRequest extends MessageSendContext {
-  readonly type: "address_message";
-  readonly addressMessage: AddressMessageContent;
+  readonly content: { readonly addressMessage: AddressMessageContent };
 }
 
 export interface SendFlowMessageRequest extends MessageSendContext {
-  readonly type: "flow";
-  readonly flow: FlowMessageContent;
+  readonly content: { readonly flow: FlowMessageContent };
 }
 
 export interface SendTemplateMessageRequest extends MessageSendContext {
-  readonly type: MessageKind;
-  readonly template: MessageTemplateSend;
+  readonly content: { readonly template: MessageTemplateSend };
 }
 
 export type SendMessageRequest =
@@ -1752,43 +1762,44 @@ export type SendMessageRequest =
   | SendFlowMessageRequest
   | SendTemplateMessageRequest;
 
-export interface MessageResponse {
+export interface MessageReceipt {
   readonly id: string;
+  readonly whatsapp_id: string;
+  readonly conversation: ConversationIdentity;
   readonly timestamp: string;
   readonly status: string;
+}
+
+export interface MessageResponse extends MessageReceipt {
+  readonly type: string;
+  readonly content?: SendMessageRequest["content"];
   readonly mediaId?: string;
-  readonly senderLid: string;
-  readonly senderPhoneNumber?: string;
-  readonly fromLid: string;
-  readonly fromPhoneNumber?: string;
 }
 
 export type SendMessageResponse = SuccessEnvelope<MessageResponse>;
-export type SendReactionResponse = SuccessEnvelope<MessageResponse>;
-export type StarMessageResponse = SuccessEnvelope<MessageResponse>;
+export type SendReactionResponse = SuccessEnvelope<MessageReceipt>;
+export type StarMessageResponse = SuccessEnvelope<{ readonly status: "OK" }>;
 
 export interface SeenRequest {
-  readonly chatId: string;
-  readonly messageId: string;
+  readonly conversation: ConversationReference;
+  readonly id: string;
 }
 
 export interface TypingRequest {
-  readonly chatId: string;
+  readonly conversation: ConversationReference;
   readonly state: "typing" | "recording" | "paused";
 }
 
 export interface ReactRequest {
-  readonly chatId: string;
-  readonly messageId: string;
+  readonly conversation: ConversationReference;
+  readonly id: string;
   readonly reaction: string;
 }
 
 export interface StarRequest {
-  readonly chatId: string;
-  readonly messageId: string;
+  readonly conversation: ConversationReference;
+  readonly id: string;
   readonly star: boolean;
-  readonly fromMe?: boolean;
-  readonly sender?: string;
 }
 
 export interface WebhookRetryConfig {

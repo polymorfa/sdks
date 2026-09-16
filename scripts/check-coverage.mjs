@@ -126,7 +126,7 @@ function extractOperations(family, document) {
         method: normalizedMethod,
         path,
         operationId,
-        fingerprint: fingerprint(shape),
+        fingerprint: fingerprint(resolveReferences(shape, document)),
       });
     }
   }
@@ -302,6 +302,37 @@ function validateLedgerEntry(entry) {
       `Non-covered operation ${displayKey(entry)} requires a reason.`,
     );
   }
+}
+
+function resolveReferences(value, document, ancestors = new Set()) {
+  if (Array.isArray(value))
+    return value.map((item) => resolveReferences(item, document, ancestors));
+  if (value === null || typeof value !== "object") return value;
+  if (typeof value.$ref === "string" && value.$ref.startsWith("#/")) {
+    if (ancestors.has(value.$ref)) return value;
+    const target = value.$ref
+      .slice(2)
+      .split("/")
+      .reduce(
+        (node, key) => node?.[key.replace(/~1/g, "/").replace(/~0/g, "~")],
+        document,
+      );
+    if (target === undefined)
+      throw new Error(`Unresolved contract reference ${value.$ref}`);
+    const next = new Set(ancestors);
+    next.add(value.$ref);
+    const { $ref, ...siblings } = value;
+    return {
+      ...resolveReferences(target, document, next),
+      ...resolveReferences(siblings, document, next),
+    };
+  }
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [
+      key,
+      resolveReferences(item, document, ancestors),
+    ]),
+  );
 }
 
 function fingerprint(value) {

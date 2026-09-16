@@ -1,4 +1,4 @@
-import { describe, expectTypeOf, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type {
   BlocklistUpdatePayload,
@@ -17,32 +17,42 @@ import type {
   ChatDeletePayload,
   ChatMutePayload,
   ChatReadPayload,
+  CloudMessagePayload,
   CommandResultPayload,
+  ContactsSyncPayload,
   ContactUpdatePayload,
   GroupParticipantPayload,
   GroupUpdatePayload,
   HistorySyncPayload,
-  JidReference,
+  IdentityReference,
+  WebhookConversationReference,
   LabelsUpdatePayload,
   LinkedDeviceMessageType,
   MessageDeletePayload,
+  MessageEchoPayload,
   MessagePayload,
+  MessageReceivedPayload,
   NativeFlowResponse,
   NewsletterUpdatePayload,
   PollOption,
   PollVotePayload,
   PresenceUpdatePayload,
   SessionPhoneOfflinePayload,
+  KnownWebhookEvent,
   WebhookPayloadMap,
 } from "../src/index.js";
+import { KNOWN_WEBHOOK_EVENT_TYPES } from "../src/index.js";
 
-type ExpectedJidReference = {
+type ExpectedIdentityReference = {
   readonly id: string;
   readonly phoneNumber?: string;
-  readonly lid?: string;
-  readonly mode?: "pn" | "lid";
+  readonly bsuid?: string;
   readonly username?: string;
 };
+
+interface ExpectedConversationReference extends ExpectedIdentityReference {
+  readonly sender?: ExpectedIdentityReference;
+}
 
 type ExpectedNativeFlowResponse = {
   readonly name: string;
@@ -73,8 +83,8 @@ type ExpectedLinkedDeviceMessageType =
 
 type ExpectedMessagePayload = {
   readonly id: string;
-  readonly from: ExpectedJidReference;
-  readonly sender: ExpectedJidReference;
+  readonly whatsapp_id: string;
+  readonly conversation: ExpectedConversationReference;
   readonly fromMe: boolean;
   readonly timestamp: number;
   readonly pushName: string;
@@ -108,8 +118,8 @@ type ExpectedPayloads = {
     readonly changes: readonly {
       readonly action: string;
       readonly phoneNumber?: string;
-      readonly lid?: string;
-      readonly id?: string;
+      readonly bsuid?: string;
+      readonly id: string;
       readonly username?: string;
     }[];
   };
@@ -125,11 +135,11 @@ type ExpectedPayloads = {
     readonly fromFullSync: boolean;
   };
   readonly "call.accepted": {
-    readonly from: ExpectedJidReference;
+    readonly from: ExpectedIdentityReference;
     readonly callId: string;
   };
   readonly "call.ended": {
-    readonly from: ExpectedJidReference | null;
+    readonly from: ExpectedIdentityReference | null;
     readonly callId: string;
     readonly durationSeconds: number;
     readonly reason: string;
@@ -137,7 +147,7 @@ type ExpectedPayloads = {
     readonly hadVideo: boolean;
   };
   readonly "call.missed": {
-    readonly from: ExpectedJidReference;
+    readonly from: ExpectedIdentityReference;
     readonly callId: string;
     readonly reason: string;
   };
@@ -145,7 +155,9 @@ type ExpectedPayloads = {
     readonly callId: string;
     readonly participant: {
       readonly id: string;
-      readonly handle: string;
+      readonly phoneNumber?: string;
+      readonly bsuid?: string;
+      readonly username?: string;
       readonly audioMuted: false;
       readonly video: false;
       readonly state: "invited" | "ringing" | "connected" | "left";
@@ -160,18 +172,20 @@ type ExpectedPayloads = {
     readonly callId: string;
     readonly participant: {
       readonly id: string;
-      readonly handle: string;
+      readonly phoneNumber?: string;
+      readonly bsuid?: string;
+      readonly username?: string;
       readonly audioMuted: false;
       readonly video: false;
       readonly state: "invited" | "ringing" | "connected" | "left";
     };
   };
   readonly "call.received": {
-    readonly from: ExpectedJidReference;
+    readonly from: ExpectedIdentityReference;
     readonly callId: string;
   };
   readonly "call.rejected": {
-    readonly from: ExpectedJidReference;
+    readonly from: ExpectedIdentityReference;
     readonly callId: string;
   };
   readonly "call.telemetry": {
@@ -188,19 +202,19 @@ type ExpectedPayloads = {
     readonly sendKbps: number;
   };
   readonly "chat.archive": {
-    readonly from: ExpectedJidReference;
+    readonly from: ExpectedIdentityReference;
     readonly archive?: boolean;
     readonly pinned?: boolean;
   };
-  readonly "chat.clear": { readonly from: ExpectedJidReference };
-  readonly "chat.delete": { readonly from: ExpectedJidReference };
+  readonly "chat.clear": { readonly from: ExpectedIdentityReference };
+  readonly "chat.delete": { readonly from: ExpectedIdentityReference };
   readonly "chat.mute": {
-    readonly from: ExpectedJidReference;
+    readonly from: ExpectedIdentityReference;
     readonly muted: boolean;
     readonly muteEndTimestamp?: number;
   };
   readonly "chat.read": {
-    readonly from: ExpectedJidReference;
+    readonly from: ExpectedIdentityReference;
     readonly read: boolean;
   };
   readonly "command.result": {
@@ -213,7 +227,7 @@ type ExpectedPayloads = {
   readonly "contact.update": {
     readonly id: string;
     readonly phoneNumber?: string;
-    readonly lid?: string;
+    readonly bsuid?: string;
     readonly fullName?: string;
     readonly firstName?: string;
     readonly pushName?: string;
@@ -224,12 +238,16 @@ type ExpectedPayloads = {
     readonly pictureRemoved?: boolean;
     readonly username?: string;
   };
+  readonly "contact.sync": {
+    readonly kind: "contacts";
+    readonly value: Readonly<Record<string, unknown>>;
+  };
   readonly "group.participant": {
     readonly id: string;
-    readonly joined?: readonly ExpectedJidReference[];
-    readonly left?: readonly ExpectedJidReference[];
-    readonly promoted?: readonly ExpectedJidReference[];
-    readonly demoted?: readonly ExpectedJidReference[];
+    readonly joined?: readonly ExpectedIdentityReference[];
+    readonly left?: readonly ExpectedIdentityReference[];
+    readonly promoted?: readonly ExpectedIdentityReference[];
+    readonly demoted?: readonly ExpectedIdentityReference[];
   };
   readonly "group.update": {
     readonly id: string;
@@ -237,24 +255,38 @@ type ExpectedPayloads = {
     readonly newDescription?: string;
     readonly action?: string;
   };
-  readonly "history.sync": {
-    readonly messageId: string;
-    readonly originalMessageId?: string;
-    readonly mode: "deliver";
-    readonly syncType: string;
-    readonly chunkOrder?: number;
-    readonly progress?: number;
-    readonly fileLength: number;
-    readonly conversationCount: number;
-    readonly messageCount: number;
-    readonly pushNameCount: number;
-    readonly statusMessageCount: number;
-    readonly data: string;
-  };
+  readonly "history.sync":
+    | {
+        readonly whatsapp_id: string;
+        readonly original_whatsapp_id?: string;
+        readonly messages: readonly {
+          readonly id: string;
+          readonly whatsapp_id: string;
+          readonly conversation: ExpectedIdentityReference;
+          readonly fromMe?: boolean;
+        }[];
+        readonly mode: "deliver";
+        readonly syncType: string;
+        readonly chunkOrder?: number;
+        readonly progress?: number;
+        readonly fileLength: number;
+        readonly conversationCount: number;
+        readonly messageCount: number;
+        readonly pushNameCount: number;
+        readonly statusMessageCount: number;
+        readonly whatsapp: {
+          readonly encoding: "gzip-base64-protobuf";
+          readonly data: string;
+        };
+      }
+    | {
+        readonly kind: "history";
+        readonly value: Readonly<Record<string, unknown>>;
+      };
   readonly "labels.update": {
     readonly action: string;
     readonly labelId?: string;
-    readonly from?: ExpectedJidReference;
+    readonly from?: ExpectedIdentityReference;
     readonly label?: string;
     readonly name?: string;
     readonly color?: number;
@@ -266,18 +298,25 @@ type ExpectedPayloads = {
     readonly starred?: boolean;
   };
   readonly "message.delete": {
-    readonly from: ExpectedJidReference;
-    readonly sender: ExpectedJidReference;
-    readonly messageId: string;
+    readonly from: ExpectedIdentityReference;
+    readonly sender: ExpectedIdentityReference;
+    readonly id: string;
+    readonly whatsapp_id: string;
+    readonly conversation: ExpectedConversationReference;
     readonly fromMe: boolean;
   };
+  readonly "message.echo": {
+    readonly source: "whatsapp_business_app";
+    readonly value: Readonly<Record<string, unknown>>;
+  };
   readonly "message.edited": ExpectedMessagePayload;
-  readonly "message.reaction": ExpectedMessagePayload;
+  readonly "message.reaction": ExpectedMessagePayload | CloudMessagePayload;
   readonly "message.revoked": ExpectedMessagePayload;
   readonly "message.update": ExpectedMessagePayload;
   readonly "message.vote": {
+    readonly conversation: ExpectedConversationReference;
     readonly pollMessageId: string;
-    readonly voter: ExpectedJidReference;
+    readonly voter: ExpectedIdentityReference;
     readonly selectedHashes: readonly string[];
     readonly timestamp: number;
   };
@@ -288,8 +327,8 @@ type ExpectedPayloads = {
   };
   readonly "presence.update": {
     readonly observedAt: number;
-    readonly from?: ExpectedJidReference;
-    readonly sender?: ExpectedJidReference;
+    readonly from?: ExpectedIdentityReference;
+    readonly sender?: ExpectedIdentityReference;
     readonly state?: string;
     readonly media?: string;
     readonly unavailable?: boolean;
@@ -321,14 +360,16 @@ type ExportedPayloads = {
   readonly "chat.mute": ChatMutePayload;
   readonly "chat.read": ChatReadPayload;
   readonly "command.result": CommandResultPayload;
+  readonly "contact.sync": ContactsSyncPayload;
   readonly "contact.update": ContactUpdatePayload;
   readonly "group.participant": GroupParticipantPayload;
   readonly "group.update": GroupUpdatePayload;
   readonly "history.sync": HistorySyncPayload;
   readonly "labels.update": LabelsUpdatePayload;
   readonly "message.delete": MessageDeletePayload;
+  readonly "message.echo": MessageEchoPayload;
   readonly "message.edited": MessagePayload;
-  readonly "message.reaction": MessagePayload;
+  readonly "message.reaction": MessageReceivedPayload;
   readonly "message.revoked": MessagePayload;
   readonly "message.update": MessagePayload;
   readonly "message.vote": PollVotePayload;
@@ -339,7 +380,8 @@ type ExportedPayloads = {
 
 describe("webhook event payload types", () => {
   it("maps every formerly opaque event family to its contract payload", () => {
-    expectTypeOf<JidReference>().toEqualTypeOf<ExpectedJidReference>();
+    expectTypeOf<IdentityReference>().toEqualTypeOf<ExpectedIdentityReference>();
+    expectTypeOf<WebhookConversationReference>().toEqualTypeOf<ExpectedConversationReference>();
     expectTypeOf<NativeFlowResponse>().toEqualTypeOf<ExpectedNativeFlowResponse>();
     expectTypeOf<PollOption>().toEqualTypeOf<ExpectedPollOption>();
     expectTypeOf<LinkedDeviceMessageType>().toEqualTypeOf<ExpectedLinkedDeviceMessageType>();
@@ -350,5 +392,32 @@ describe("webhook event payload types", () => {
     expectTypeOf<
       Pick<WebhookPayloadMap, keyof ExpectedPayloads>
     >().toEqualTypeOf<ExpectedPayloads>();
+  });
+
+  it("distinguishes Meta Cloud API synchronization events", () => {
+    expect(KNOWN_WEBHOOK_EVENT_TYPES).toContain("contact.sync");
+    expect(KNOWN_WEBHOOK_EVENT_TYPES).toContain("message.echo");
+    expectTypeOf<
+      Extract<KnownWebhookEvent, { event: "contact.sync" }>["payload"]
+    >().toEqualTypeOf<ContactsSyncPayload>();
+    expectTypeOf<
+      Extract<KnownWebhookEvent, { event: "message.echo" }>["payload"]
+    >().toEqualTypeOf<MessageEchoPayload>();
+    expectTypeOf<KnownWebhookEvent["externalId"]>().toEqualTypeOf<
+      string | undefined
+    >();
+
+    const payload = {
+      kind: "history",
+      value: { messages: [] },
+    } as HistorySyncPayload;
+    if ("kind" in payload) {
+      expectTypeOf(payload.value).toEqualTypeOf<
+        Readonly<Record<string, unknown>>
+      >();
+    } else {
+      expectTypeOf(payload.whatsapp.data).toEqualTypeOf<string>();
+    }
+    expect("kind" in payload).toBe(true);
   });
 });

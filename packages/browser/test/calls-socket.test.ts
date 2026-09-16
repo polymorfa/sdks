@@ -577,9 +577,12 @@ describe("socket frame mapping", () => {
     expect(
       ev("call.received", { from: "+15550100", direction: "outgoing" }),
     ).toBeUndefined();
-    expect(ev("call.received", { from: { lid: "5550100@lid" } })).toMatchObject(
-      { type: "incomingCall", call: { from: "5550100@lid", video: false } },
-    );
+    expect(
+      ev("call.received", { from: { id: "739182640518203" } }),
+    ).toMatchObject({
+      type: "incomingCall",
+      call: { from: "739182640518203", video: false },
+    });
     expect(ev("call.telemetry", {})).toBeUndefined();
   });
 });

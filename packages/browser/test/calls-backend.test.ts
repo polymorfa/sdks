@@ -50,9 +50,8 @@ describe("incomingCallFromWebhook", () => {
       incomingCallFromWebhook({
         callId: "CALL-1",
         from: {
-          id: "12025550123@s.whatsapp.net",
+          id: "739182640518203",
           phoneNumber: "+12025550123",
-          lid: "5550123@lid",
         },
         hasVideo: true,
       }),
@@ -63,17 +62,17 @@ describe("incomingCallFromWebhook", () => {
       line: "linkedDevice",
     });
     expect(
-      incomingCallFromWebhook({ callId: "c", from: { lid: "5550123@lid" } })
+      incomingCallFromWebhook({ callId: "c", from: { id: "739182640518203" } })
         .from,
-    ).toBe("5550123@lid");
+    ).toBe("739182640518203");
     // An empty field falls through like an absent one, as it does on the
     // socket path — both routes feed the same IncomingCall.from.
     expect(
       incomingCallFromWebhook({
         callId: "c",
-        from: { phoneNumber: "", lid: "5550123@lid" },
+        from: { phoneNumber: "", id: "739182640518203" },
       }).from,
-    ).toBe("5550123@lid");
+    ).toBe("739182640518203");
     expect(
       incomingCallFromWebhook(
         { callId: "c", from: "+12025550123", hasVideo: true },

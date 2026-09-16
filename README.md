@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`6918c56135e28ba64557e344cb72889f1f517eb5`. Graph-compatible APIs are outside
+`aca849cda44ad8582d7ae87489404d2483173a53`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -67,9 +67,8 @@ console.log(sessions.data.data, sessions.metadata.requestId);
 const sent = await messaging.messages.send(
   "support",
   {
-    chatId: "15551234567@s.whatsapp.net",
-    type: "text",
-    text: "Hello",
+    conversation: { phoneNumber: "+15551234567" },
+    content: { text: "Hello" },
   },
   { idempotencyKey: crypto.randomUUID() },
 );
@@ -84,10 +83,14 @@ any network request. Server credentials are rejected in browser runtimes.
 
 The handwritten Messaging resources in this milestone are:
 
-- `sessions`: list, create, retrieve, update, delete, start, stop, restart,
+- `banSafe`: retrieve and update project Safe Mode, warm-up, Ban Insurance
+  evidence, and Health policy settings, and one number's Safe Mode override,
+  with an organization API key or project token
+- `sessions`: list, retrieve, update, delete, start, stop, restart,
   logout, account, and entitlement-gated direct JSON QR or phone pairing
-- `operations`: retrieve durable lifecycle operation status
 - `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions
+- `cloudOnboarding`: continue an issued Meta Cloud API QuickLink from a trusted
+  server
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call
@@ -110,7 +113,7 @@ The handwritten Messaging resources in this milestone are:
   participants, and update group profile and permission settings
 - `labels`: list, create, update, delete, list a chat's labels, and replace a
   chat's complete label set
-- `lids`: resolve one phone number, stable user ID, or username to known stable
+- `identities`: resolve one phone number, public user ID, BSUID, or username to known
   identity aliases
 - `observationPolicies`: retrieve and update project ceilings and session
   overrides for presence, typing, and label observation
@@ -180,16 +183,12 @@ Both organization and project views expose owner-bound resources:
 - `webhooks`: list, create, retrieve, update, delete, test, and rotate secrets
 - `webhookDeliveries`: list and retrieve deliveries, list and retrieve their
   physical attempts, and retry a delivery
-- `operations`: list, retrieve, list transitions, cancel, and wait for a
-  terminal state
 - `quickLinkSettings`: retrieve and update the saved QuickLink configuration
 
 List methods return `CursorPage<T>`. Mutations return typed receipts with the
-resource, operation, and idempotency identifiers supplied by the API. The
-SDK-only `operations.wait()` helper polls `retrieve`; it does not create a
-second remote operation or cancel the remote operation when local waiting is
-aborted. A larger server `Retry-After` raises the next poll delay without
-extending the caller's total wait deadline.
+resource, operation, and idempotency identifiers supplied by the API.
+Operation inspection is console-only. Machine clients expose no operation
+polling, transition-listing, or cancellation methods.
 
 The organization view also exposes these management resources:
 
@@ -202,10 +201,16 @@ The organization view also exposes these management resources:
 - `securityIncidents`: list and acknowledge leaked-credential incidents
 - `projectTokens`: list token metadata for an explicit project
 - `billing`: retrieve balance and currency, inspect usage meters, list
-  transactions and tier pricing, and update low-balance reminders
-- `projects`: list, create, request production enrollment, approve, and cancel
+  transactions and tier pricing
+- `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
+  restrictions, incidents, claims, and Health action history; report and retract
+  customer incidents
+- `projects`: list, create, request production enrollment, approve, and cancel;
+  retrieve and update Safe Mode, warm-up, Ban Insurance evidence, and Health
+  policy settings
 - `sessions`: list, start, stop, or delete one session; stop or delete a bounded
-  batch; set tier override; and create a testing session
+  batch; review and confirm a tier change; create a testing session; and
+  retrieve or update the session Safe Mode override
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and recipients
 - `customers`: enable Customers for a project; create, list, retrieve, update,
@@ -323,14 +328,13 @@ Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 ```ts
 const response = await client.raw.request<{ data: unknown }>({
   method: "GET",
-  path: "/v1/operations/operation_123",
-  query: { projectId: "project_123" },
+  path: "/platform/events/event_123",
 });
 ```
 
 Organization raw paths remain relative API paths. Project raw paths are
 relative to the bound project and receive the encoded
-`/v1/projects/{projectId}` prefix automatically. Project raw requests reject
+`/platform/projects/{projectId}` prefix automatically. Project raw requests reject
 absolute URLs, traversal, explicit project prefixes, backslashes, and
 `Authorization` overrides before transport. Raw requests retain typed errors,
 metadata, cancellation, API versions, retry rules, and idempotency.
@@ -362,8 +366,8 @@ Native deliveries use the hexadecimal `X-Webhook-Signature` value. The helper
 also accepts the `sha256=<hex>` compatibility form. Verification uses
 HMAC-SHA256 and constant-time comparison over the unmodified bytes. Recognized
 events narrow to exported payload types, including messages, sessions, groups,
-presence, contacts, chats, calls, labels, history sync, command results, and
-business quick replies. Unknown event names and payloads are preserved for
+presence, contacts, chats, calls, labels, history sync, Meta Cloud API contact
+sync and Business app echoes, command results, and business quick replies. Unknown event names and payloads are preserved for
 forward compatibility.
 `webhooks.verifySignature()` returns a boolean without parsing.
 `webhooks.createFixture()` creates exact-byte local fixtures, and
@@ -386,7 +390,7 @@ helpers.
 ## QuickLink lifecycle and settings
 
 `MessagingClient.quickLinks.create()`, `retrieve()`, and `cancel()` map the
-authenticated hosted lifecycle at `/api/quicklinks`. They accept organization
+authenticated hosted lifecycle at `/messaging/quicklinks`. They accept organization
 API keys or project tokens with `quicklink:manage`; browser client tokens fail
 before transport. Organization keys can set `projectId` on creation, while a
 project token remains bound by the server.
@@ -395,36 +399,44 @@ These methods expose the short-lived connection URL and status record. They do
 not add list, recovery, or history operations that the API does not provide.
 
 `client.quickLinkSettings.retrieve()` and `update()` map only the management
-`GET /v1/quicklink` and `PUT /v1/quicklink` settings contract. The same methods
+`GET /platform/quicklink` and `PUT /platform/quicklink` settings contract. The same methods
 on `client.project(projectId)` use the immutable project ownership context.
+
+Saved settings hold the project's `successCallbackUrl` and `failureCallbackUrl`
+HTTPS destinations and `allowPhoneChange`, which controls whether recipients can
+replace a prefilled number (default `false`). The API copies callback
+destinations into each link when it is issued. Settings have no redirect-URI
+allowlist. `hideWatermark: true` requires Premium team access.
 
 ## Browser controllers and UI
 
 Browser code accepts only short-lived `pmfa_ct_` tokens returned by an
 application callback. It rejects server credentials and absolute request URLs.
-The framework-neutral controllers cover QuickLink, conversations, composing,
+The framework-neutral controllers cover conversations, composing,
 template building, and one-to-one calls. They expose immutable snapshots through
 `getSnapshot()` and `subscribe()`; React and Web Components render those same
 objects rather than reimplementing product state.
 
+QuickLink is a hosted Polymorfa page, not a browser SDK surface. Create the link
+on your server with `MessagingClient.quickLinks.create()` and send the person
+to the returned `data.url`.
+
 ```ts
 import {
   BrowserMessagingClient,
-  BrowserTransport,
-  QuickLinkController,
   createClientTokenProvider,
 } from "@polymorfa/browser";
-import { quickLinkBackend } from "./quicklink-backend.js";
 
 const getClientToken = createClientTokenProvider();
-const transport = new BrowserTransport({ getClientToken });
 const messaging = new BrowserMessagingClient({
   session: "support",
   getClientToken,
 });
 
-await messaging.messages.setTyping({ chatId: "customer", state: "typing" });
-const quickLink = new QuickLinkController(quickLinkBackend(transport));
+await messaging.messages.setTyping({
+  conversation: { id: "739182640518203" },
+  state: "typing",
+});
 ```
 
 The browser Messaging client is session-bound and exposes only the runtime's

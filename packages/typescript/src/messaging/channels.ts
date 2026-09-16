@@ -108,13 +108,13 @@ export class ChannelsResource {
   markMessageViewed(
     session: string,
     channelId: string,
-    serverId: number,
+    messageId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<MarkChannelMessageViewedResponse>> {
     return this.messageAction(
       session,
       channelId,
-      serverId,
+      messageId,
       "viewed",
       undefined,
       options,
@@ -124,14 +124,14 @@ export class ChannelsResource {
   reactToMessage(
     session: string,
     channelId: string,
-    serverId: number,
+    messageId: string,
     body: ChannelReactionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<ReactToChannelMessageResponse>> {
     return this.messageAction(
       session,
       channelId,
-      serverId,
+      messageId,
       "reaction",
       body,
       options,
@@ -198,14 +198,14 @@ export class ChannelsResource {
   private messageAction<Status extends ChannelActionStatus>(
     session: string,
     channelId: string,
-    serverId: number,
+    messageId: string,
     action: "viewed" | "reaction",
     body: ChannelReactionRequest | undefined,
     options: RequestOptions,
   ): Promise<ApiResponse<ChannelActionResponse<Status>>> {
     return this.transport.request({
       method: "POST",
-      path: `${channelPath(session, channelId)}/messages/${encodeURIComponent(String(serverId))}/${action}`,
+      path: `${channelPath(session, channelId)}/messages/${encodeURIComponent(messageId)}/${action}`,
       ...(body === undefined ? {} : { body }),
       ...options,
     });

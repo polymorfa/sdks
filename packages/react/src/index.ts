@@ -13,12 +13,10 @@ export {
   ChatDrawer,
   ComposeBox,
   MessageList,
-  QuickLink,
   TemplateBuilder,
   type ChatDrawerProps,
   type ComposeBoxProps,
   type MessageListProps,
-  type QuickLinkProps,
   type TemplateBuilderProps,
 } from "./components.js";
 export {

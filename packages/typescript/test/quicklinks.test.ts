@@ -73,14 +73,11 @@ describe("MessagingClient.quickLinks", () => {
       {
         projectId: "11111111-2222-4333-8444-555555555555",
         customerId: "66666666-7777-4888-8999-000000000000",
-        methods: ["qr", "pairing"],
-        businessName: "Acme",
-        historySync: "ask",
-        callbackUrl: "https://acme.example/callback",
-        theme: "system",
-        accent: "#6633ff",
-        prefillPhone: "+15551234567",
-        expiresInSeconds: 900,
+        configuration: {
+          methods: ["qr", "pairing"],
+          historySync: { consent: "ask" },
+          prefillPhone: "+15551234567",
+        },
       },
       { idempotencyKey: "quicklink-123" },
     );
@@ -104,7 +101,9 @@ describe("MessagingClient.quickLinks", () => {
       "GET /messaging/quicklinks/ql%2F123",
       "DELETE /messaging/quicklinks/ql%2F123",
     ]);
-    expect(server.requests[0]?.body).toContain('"expiresInSeconds":900');
+    expect(JSON.parse(server.requests[0]!.body)).toMatchObject({
+      configuration: { historySync: { consent: "ask" } },
+    });
     expect(server.requests[0]?.headers["idempotency-key"]).toBe(
       "quicklink-123",
     );

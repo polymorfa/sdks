@@ -128,7 +128,6 @@ const customer = await platform.customers.create(
   {
     projectId: "project_123",
     name: "Ada",
-    phone: "+15551234567",
     externalCustomerId: "crm_456",
   },
   { idempotencyKey: crypto.randomUUID() },
@@ -150,6 +149,64 @@ The pairing URL is returned once. An idempotent replay returns the same link
 record with `url: null`. `customers.list()` preserves both the Customer array
 and the cursor metadata from the API response.
 
+## BanSafe Health and telemetry
+
+`Client.banSafe` reads Health, telemetry collection status, the fixed
+signal catalogue, findings, restrictions, incidents, claims, and Health action
+history. Paged methods preserve the API's `data` array and `page` metadata.
+
+```ts
+const health = await platform.banSafe.getHealth("support");
+const telemetry = await platform.banSafe.getTelemetry("support");
+const actions = await platform.banSafe.listHealthActions({
+  projectId: "project_123",
+  session: "support",
+  status: "succeeded",
+});
+
+console.log(
+  health.data.data.health,
+  telemetry.data.data.collection.state,
+  actions.data.page.hasMore,
+);
+```
+
+Use `platform.projects` for project Safe Mode, warm-up, Ban Insurance evidence,
+and Health policy settings. Use `platform.sessions` for one number's Safe Mode
+override. `MessagingClient.banSafe` exposes the same settings on the Messaging
+API for organization API keys and project tokens; its responses carry
+`success: true` beside `data`. Browser client tokens fail before any request.
+
+Claim `measuredCents`, `capCents`, and `amountCents` are credit quantities with
+up to six decimal places, not integer cents. Finding acknowledgement and
+enforcement appeals require a signed-in dashboard session and are not SDK
+methods.
+
+```ts
+const policy = await platform.projects.getHealthPolicy("project_123");
+await platform.projects.updateHealthPolicy("project_123", {
+  version: policy.data.data.version,
+  enabled: true,
+  threshold: 50,
+  sessionAction: "slow_down",
+  slowDownMps: 0.5,
+  emailNotification: true,
+  webhookNotification: true,
+});
+
+const messaging = new MessagingClient({
+  credential: {
+    type: "projectToken",
+    value: process.env.POLYMORFA_PROJECT_TOKEN!,
+  },
+});
+const safeMode = await messaging.banSafe.getSessionSafeMode("support");
+console.log(safeMode.data.data.effective.presence);
+```
+
+Finding acknowledgement and restriction appeals require a signed-in dashboard
+user. The organization-key SDK does not expose those two mutations.
+
 ## Browser client tokens
 
 `MessagingClient.clientTokens` mints short-lived tokens and manages the live
@@ -165,20 +222,21 @@ session rules can delegate to the browser token.
 
 ## Session connection lifecycle
 
-Start a Linked Device session, then poll the returned durable lifecycle
-operation. The standard pairing flow is QuickLink. Direct JSON QR and phone
+Session administration uses Platform routes and requires a server credential.
+The existing `MessagingClient.sessions` method names remain available.
+Start an existing Linked Device session, then retrieve its connection status with
+`sessions.retrieve`. The standard pairing flow is QuickLink. Direct JSON QR and phone
 pairing-code routes require `sessions:manage` plus an explicit organization
 entitlement; without it, the API returns `403` and the application must create
-a QuickLink. Operation retrieval accepts any of `sessions:read`,
-`campaigns:read`, or `webhooks:manage`.
+a QuickLink. Operation inspection is console-only.
 
 ```ts
 const started = await messaging.sessions.start("support", {
   idempotencyKey: "start-support",
 });
 
-const operation = await messaging.operations.retrieve(started.data.operationId);
-console.log(operation.data.data.status);
+console.log(started.data.data.started);
+console.log((await messaging.sessions.retrieve("support")).data);
 ```
 
 `sessions.retrieve` is the typed source of session connection status. The
@@ -245,21 +303,20 @@ available for Cloud API sessions.
 
 ## Calls and stable user identity
 
-The compact `calls`, `lids`, and `users` resources cover all three operations
-in their pinned source tags. Each requires an organization server API key and
-a connected Linked Device session. Project credentials, browser client tokens,
-Cloud API sessions, dashboard sessions, and staff credentials cannot use these
-routes.
+The `calls`, `identities`, and `users` resources use public Polymorfa user IDs.
+Identity resolution accepts an ID, phone number, or BSUID. Calling and security
+code checks require a connected Linked Device Number; identity resolution also
+supports Cloud Numbers when their business portfolio is configured.
 
 ```ts
 await messaging.calls.reject(
   "support",
   incomingCallId,
-  { from: callerJid },
+  { from: callerId },
   { idempotencyKey: incomingCallId },
 );
 
-const identity = await messaging.lids.resolve("support", {
+const identity = await messaging.identities.resolve("support", {
   phoneNumber: "+15551234567",
 });
 
@@ -274,8 +331,8 @@ if (identity.data.data.id) {
 
 `calls.reject` requires `chats:manage`. Its call ID must contain 1 through 128
 characters and the JSON `from` field must contain the incoming caller's
-nonempty JID. Session, call, and caller identifiers are passed without semantic
-rewriting; path identifiers are URL-encoded. The SDK sends an idempotency key
+public Polymorfa user ID or E.164 phone number. Path identifiers are URL-encoded.
+The SDK sends an idempotency key
 when supplied and only permits automatic retries of this POST when that key is
 nonempty. The source exposes no call list, retrieve, accept, history, watch,
 stream, or outgoing-call operation.
@@ -287,24 +344,23 @@ rejection. The live runner returns
 RPC returns HTTP 202 with `{ success: true, data: { requestId } }`.
 `RejectCallResponse` represents all three source-observable shapes.
 
-`lids.resolve` requires `contacts:read`. `ResolveLidParams` is a discriminated
+`identities.resolve` requires `contacts:read`. `ResolveIdentityParams` is a discriminated
 union that permits exactly one of these inputs:
 
 - `phoneNumber`: digits with an optional leading `+`; the runner trims
   surrounding whitespace and returns a normalized leading `+` when known
-- `id`: a stable LID-backed user ID; the runner requires the `@lid` server
-- `lid`: the deprecated input alias for `id`
+- `id`: a decimal Polymorfa user ID
 - `username`: 3 through 35 characters, with an optional four-digit
   `usernameKey`
 
 `usernameKey` is invalid without `username`, and competing identity inputs are
-rejected before runner dispatch. The response can contain the stable `id`, its
-deprecated `lid` alias, a phone number, a username, and `keyRequired` when
+rejected before runner dispatch. The response can contain the stable `id`, a
+phone number, a BSUID, a username, and `keyRequired` when
 WhatsApp needs the username's four-digit key. The source exposes no bulk
 resolution, search, list, pagination, or retained identity history.
 
 `users.getSecurityCode` also requires `contacts:read` and accepts only a stable
-user ID matching digits followed by `@lid`. The result contains that ID,
+decimal Polymorfa user ID. The result contains that ID,
 optional known aliases, a 60-digit `numericCode`, and a base64-encoded display
 `qrCode`. The runner deliberately excludes WhatsApp's private verification QR
 payload, and the API schema rejects an upstream response that does not match
@@ -367,25 +423,25 @@ The source has one send route rather than separate routes for each message
 kind. `SendMessageRequest` is therefore a union of the exact typed payloads for
 text, image/file/voice/video media, polls, locations, contacts, phone-number
 requests, products, product lists, orders, lists, buttons, address messages,
-and flows. Template sends use `SendTemplateMessageRequest`; the API requires a
-`type` value but ignores it when `template` is present.
+and flows. Template sends use `SendTemplateMessageRequest`. Select exactly one
+message kind inside `content`; `conversation` selects its destination.
 
 ```ts
 await messaging.messages.send(
   "support",
   {
-    chatId: "15551234567@s.whatsapp.net",
-    type: "buttons",
-    buttons: {
-      body: "Continue with this request?",
-      buttons: [
-        { type: "reply", text: "Continue", id: "continue" },
-        { type: "reply", text: "Cancel", id: "cancel" },
-      ],
+    conversation: { phoneNumber: "+15551234567" },
+    content: {
+      buttons: {
+        body: "Continue with this request?",
+        buttons: [
+          { type: "reply", text: "Continue", id: "continue" },
+          { type: "reply", text: "Cancel", id: "cancel" },
+        ],
+      },
     },
     quotedMessage: {
-      messageId: "message-id",
-      participant: "15551234567@s.whatsapp.net",
+      id: "739182640518204",
     },
   },
   { idempotencyKey: "reply-to-message-id" },
@@ -756,9 +812,9 @@ Neither read offers history or pagination.
 
 ### Catalogs, products, collections, and orders
 
-`getCatalog` requires a user or LID business JID. It accepts an opaque `after`
+`getCatalog` requires a public business-owner ID. It accepts an opaque `after`
 cursor, `limit` from 1 through 100, and optional image dimensions from 1 through 1024. Its response contains `products`, optional `next`, and optional
-`previous`. `listCollections` uses the same JID and cursor model with
+`previous`. `listCollections` uses the same owner ID and cursor model with
 `collectionLimit` from 1 through 20 and `itemLimit` from 1 through 100; its
 response contains `collections` and optional `next`. These are explicit cursor
 fields, not offset pages, and the SDK does not synthesize `hasMore`.
@@ -766,7 +822,7 @@ fields, not offset pages, and the SDK does not synthesize `hasMore`.
 `getCollection` accepts `after` and a product `limit`, but the pinned response
 contains only the collection and products—no next cursor. The SDK preserves
 that source limitation rather than claiming automatic pagination. Product,
-collection, business JID, order, cover-photo, and session identifiers are
+collection, business-owner, order, cover-photo, and session identifiers are
 encoded by the SDK. Cursors and order tokens remain query/body values rather
 than path data.
 
@@ -802,10 +858,15 @@ visible as a typed validation error.
 `getOrder` requires the exact order ID and opaque lookup token supplied by the
 Business App event. It is not an order list, search, history, checkout, or
 fulfilment API. The source likewise exposes no catalog listing independent of
-a business JID, no product search, no collection search, and no upload
+a business-owner ID, no product search, no collection search, and no upload
 progress.
 
 ## Channels
+
+`history.sync` payloads distinguish linked-device indexes and their preserved
+WhatsApp archive from Cloud history's `{ kind: "history", value }` envelope.
+Narrow `HistorySyncPayload` with `"kind" in payload` before reading provider-specific
+fields; `LinkedHistorySyncPayload` and `CloudHistorySyncPayload` are exported.
 
 `MessagingClient.channels` exposes the complete 13-operation Channels tag for
 connected Linked Device sessions. Channels are WhatsApp newsletters in the
@@ -880,7 +941,7 @@ The pinned source has two request/response discrepancies:
 The public reaction schema permits at most 32 characters. The runner performs
 a second check against 32 UTF-8 bytes, so a multibyte reaction can pass route
 validation and still receive a 400 response. Empty reaction text is preserved
-and removes the caller's reaction upstream. Channel, session, and numeric
+and removes the caller's reaction upstream. Channel, session, and public
 message identifiers are URL-encoded by the SDK.
 
 ## Messaging campaigns
@@ -909,16 +970,13 @@ const launched = await messaging.campaigns.launch(
   { idempotencyKey: "campaign-august-launch" },
 );
 
-const operation = await messaging.operations.retrieve(
-  launched.data.data.operationId,
-);
-console.log(operation.data.data.status, launched.metadata.requestId);
+console.log(launched.data.data.operationId, launched.metadata.requestId);
 ```
 
 Launch, pause, resume, and stop append durable lifecycle commands and return the
 campaign's current persisted state plus an `operationId`. They do not wait for
-the campaign state to change. Poll that identifier with
-`MessagingClient.operations.retrieve`; the API does not expose a campaign
+the campaign state to change. Read the campaign resource to inspect its status;
+operation inspection is console-only. The API does not expose a campaign
 watcher, stream, or command-cancellation route. Launch accepts an optional
 epoch-millisecond schedule. Pause requires a running campaign, resume requires
 a paused campaign, and stop accepts draft, running, or paused campaigns.
@@ -1005,11 +1063,41 @@ const event = await webhooks.verify({
 });
 
 if (isEvent(event, "history.sync")) {
-  console.log(event.payload.syncType, event.payload.progress);
+  if ("kind" in event.payload) {
+    console.log("Meta Cloud API history batch", event.payload.value);
+  } else {
+    console.log(event.payload.syncType, event.payload.progress);
+  }
+} else if (isEvent(event, "contact.sync")) {
+  console.log(event.payload.kind, event.payload.value);
+} else if (isEvent(event, "message.echo")) {
+  console.log(event.payload.source, event.externalId);
 } else if (isEvent(event, "call.received")) {
   console.log(event.payload.callId, event.payload.from.id);
+} else if (isEvent(event, "message.failed")) {
+  if (event.payload.error === "blocked_by_safety") {
+    console.log(event.payload.code, event.payload.retryAfter);
+  }
+} else if (isEvent(event, "bansafe.action")) {
+  console.log(event.payload.rung, event.payload.requires);
+} else if (isEvent(event, "customer.pairing_link.connected")) {
+  console.log(event.payload.customerId, event.payload.sessionId);
 }
 ```
+
+The catalog also types Customer lifecycle events (`customer.*`), BanSafe events
+(`bansafe.health_threshold`, `bansafe.enforcement`, `bansafe.action`,
+`bansafe.incident`, and `bansafe.claim`), campaign progress events
+(`campaign.*`), `message.failed`, and `template.status`. `message.failed`
+reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
+and `retryAfter` in seconds. Unknown event names still parse as
+`UnknownWebhookEvent`.
+
+`contact.sync` delivers a Meta Cloud API contact batch as
+`{ kind: "contacts", value }`. `message.echo` reports a message sent from the
+WhatsApp Business app on a connected Meta Cloud API number as
+`{ source: "whatsapp_business_app", value }`. Events for a session created by a
+QuickLink include its optional `externalId`.
 
 Development builds also export `CallEndedPayload` and `CallTelemetryPayload`.
 For `call.ended`, check `from` before reading its identity: it is `null` when
@@ -1034,7 +1122,6 @@ organization and project scope:
   `rotateSecret`
 - `webhookDeliveries.list`, `retrieve`, `listAttempts`, `retrieveAttempt`, and
   `retry`
-- `operations.list`, `retrieve`, `listTransitions`, `cancel`, and `wait`
 
 ```ts
 const deliveries = await project.webhookDeliveries.list({
@@ -1046,10 +1133,12 @@ const delivery = deliveries.items[0];
 if (delivery) {
   const attempts = await project.webhookDeliveries.listAttempts(delivery.id);
   if (attempts.items[0]) {
-    await project.webhookDeliveries.retrieveAttempt(
+    const attempt = await project.webhookDeliveries.retrieveAttempt(
       delivery.id,
       attempts.items[0].id,
     );
+    // Failed HTTP responses carry a redacted excerpt of at most 8192 UTF-8 bytes.
+    console.log(attempt.data.response?.excerpt);
   }
 }
 
@@ -1059,18 +1148,12 @@ const replay = await project.events.replay(
   { idempotencyKey: crypto.randomUUID() },
 );
 
-await project.operations.wait(replay.data.operationId, {
-  maxWaitMs: 30_000,
-  pollIntervalMs: 1_000,
-});
+console.log(replay.data.operationId);
 ```
 
 List methods return `CursorPage<T>`. Mutations return owner-specific typed
 receipts and preserve response metadata, request IDs, and idempotency receipts.
-`operations.wait` is a local polling helper. Aborting or timing out the wait
-does not cancel the remote operation. A larger server `Retry-After` raises the
-next poll delay without extending `maxWaitMs`. The SDK has no operation watch
-or event listener transport.
+The SDK has no operation inspection, cancellation, or event listener transport.
 
 Console and staff routes remain absent from the server client and its raw
 guidance. The CLI listener protocol is separate from the durable events API;
@@ -1104,8 +1187,10 @@ used by the server client.
 ## Billing and usage
 
 `Client.billing` exposes the complete organization-key billing family.
-Reads require `sessions:read`; updating reminder settings requires
-`sessions:manage`.
+Reads require `sessions:read`. Credit quantities, including fields ending in
+`Cents`, support up to six decimal places. They are not cash minor units.
+Team warnings follow the fixed one-day and two-hour insufficiency forecast;
+notification preferences are managed in the Console.
 
 ```ts
 const [balance, usage, transactions, pricing] = await Promise.all([
@@ -1115,14 +1200,6 @@ const [balance, usage, transactions, pricing] = await Promise.all([
   platform.billing.listPricing(),
 ]);
 
-await platform.billing.updateReminderSettings(
-  {
-    lowBalanceThresholdCents: 2_500,
-    reminderChannels: ["email", "inApp"],
-  },
-  { idempotencyKey: "billing-reminders-august" },
-);
-
 console.log({
   balance: balance.data.data,
   usage: usage.data.data,
@@ -1131,6 +1208,32 @@ console.log({
   requestId: usage.metadata.requestId,
 });
 ```
+
+### Change a number tier
+
+Create a quote, show its credit charge and effective time, then confirm its ID
+only after the customer accepts. Upgrades buy a fresh 24-hour window and replace
+the remaining paid time. Downgrades apply when the paid window ends.
+
+```ts
+const reviewed = await platform.sessions.quoteTierChange(sessionId, {
+  tierOverride: "pro",
+});
+const quote = reviewed.data.data;
+console.log(quote.quote.amountCents, quote.quote.effectiveAtMs);
+
+// After the customer confirms this exact quote:
+await platform.sessions.setTierOverride(sessionId, { quoteId: quote.id });
+const result = await platform.sessions.retrieveTierChange(sessionId, quote.id);
+console.log(result.data.data.status);
+```
+
+A queued result has not granted the tier. Poll until it is applied or rejected.
+A quote expires after ten minutes and can become invalid if the number or price
+changes. Show a new quote for confirmation after a conflict; never silently
+purchase a replacement. Set `tierOverride: null` when quoting to restore project
+inheritance. The old `setTierOverride({tierOverride})` request and
+`billing.updateReminderSettings` method are removed.
 
 ## Organization access and security
 
@@ -1195,8 +1298,8 @@ organization-only resources are absent from that view's public type.
 const quickLink = await messaging.quickLinks.create(
   {
     projectId: "11111111-2222-4333-8444-555555555555",
-    methods: ["qr", "pairing"],
-    expiresInSeconds: 900,
+    externalId: "crm-account-42",
+    configuration: { methods: ["qr", "pairing"] },
   },
   { idempotencyKey: crypto.randomUUID() },
 );
@@ -1213,7 +1316,7 @@ pending session. Connected links cannot be cancelled. The source exposes no
 list, recover, or history operation.
 
 `Client.quickLinkSettings.retrieve` and `update` map the management
-`GET /v1/quicklink` and `PUT /v1/quicklink` operations. Use them on the root
+`GET /platform/quicklink` and `PUT /platform/quicklink` operations. Use them on the root
 organization client or an immutable project view:
 
 ```ts
@@ -1221,15 +1324,29 @@ const organizationSettings = await platform.quickLinkSettings.retrieve();
 const projectSettings = await platform
   .project("project_123")
   .quickLinkSettings.update(
-    { theme: "dark", enabled: true },
+    {
+      theme: "dark",
+      enabled: true,
+      successCallbackUrl: "https://app.example.com/whatsapp/connected",
+      failureCallbackUrl: "https://app.example.com/whatsapp/cancelled",
+      allowPhoneChange: false,
+    },
     { idempotencyKey: "quicklink-project-123-dark" },
   );
 ```
 
 These methods manage saved settings only. Hosted lifecycle methods stay on
 `MessagingClient.quickLinks`, not `Client` or `client.project(...)`, because
-the `/api/quicklinks/{id}` routes do not carry an immutable project path for an
+the `/messaging/quicklinks/{id}` routes do not carry an immutable project path for an
 organization-key project view. Console-only logo routes are outside the SDK.
+
+`successCallbackUrl` and `failureCallbackUrl` are project-only HTTPS
+destinations; the API copies them into each link when it is issued, and link
+creation has no callback override. `allowPhoneChange` lets recipients replace a
+prefilled number and defaults to `false`. `hideWatermark: true` requires Premium
+team access. Saved settings have no redirect-URI allowlist. `externalId` on
+creation is an integrator correlation value copied to the resulting session; it
+can repeat across invitations and does not grant access.
 
 ## Management session lifecycle
 
@@ -1246,7 +1363,11 @@ const start = await platform.sessions.start(
 ```
 
 The returned `SessionStartResult` confirms that the start request was accepted;
-it does not claim that the session has connected. `sessions.stopMany` and
+it does not claim that the session has connected. A paid start first reserves
+credit. An HTTP 402 response throws `PolymorfaPaymentRequiredError`, preserving
+the API's error code, message, and request ID. It is not automatically retried;
+resolve the funding or entitlement problem before submitting another start.
+The charge is committed on successful connection. `sessions.stopMany` and
 `deleteMany` cover the two bounded batch operations. All three require
 `sessions:manage`. Batch methods accept `sessionIds` plus an optional
 `projectId`:
@@ -1280,3 +1401,67 @@ provided. The pinned handlers do not persist that header. A repeated stop can
 enqueue another stop command; a repeated delete reports only rows still found.
 QuickLink settings updates are state upserts and can safely converge on the
 same supplied values.
+
+## Session creation and configuration
+
+Create new sessions with `MessagingClient.quickLinks.create`. Direct
+`sessions.create` and Platform `sessions.createTesting` have been removed in this
+breaking contract update. Reconnect and delete still operate on existing sessions.
+
+```ts
+const link = await messaging.quickLinks.create({
+  projectId,
+  configuration: {
+    connectionPreference: "linked",
+    historySync: { consent: "ask" },
+  },
+});
+```
+
+Page text, appearance, legal links, and callbacks belong in saved
+`Client.quickLinkSettings`, not individual invitations. Links report nullable
+`expiresAt`; new invitations remain usable until completion or cancellation.
+Free-tier real-account pairing is available only in the authenticated Console.
+
+Use `Client.sessionConfiguration` for team defaults and
+`client.project(projectId).sessionConfiguration` for project defaults. Session
+updates take `{revision, configuration: {set, reset}}`; resets remove explicit
+overrides so later defaults continue to apply. Reads expose effective values,
+sources, consent restrictions, and pending runtime application.
+
+For simulation, create a QuickLink with `configuration.testing`, including initial
+`configuration` and the explicit `editable` subset delegated to the recipient.
+Test access is checked independently; simulation cannot contact real accounts.
+
+Test history content is uploaded separately from session configuration:
+
+```ts
+const fixture = await messaging.testing.createHistoryFixture(projectId, {
+  messages: [
+    {
+      id: "example-1",
+      senderPhone: testPhone,
+      text: "Demo",
+      timestamp: 1,
+      fromMe: false,
+    },
+  ],
+});
+const invitation = await messaging.quickLinks.create({
+  projectId,
+  configuration: {
+    testing: { configuration: { historyFixtureId: fixture.data.fixtureId } },
+  },
+});
+```
+
+Fixture senders must be existing simulated numbers in that project. Test-number
+entitlements and history consent still apply; uploading a fixture does not enable
+hosted message storage.
+
+Trusted servers continue an issued Meta Cloud API invitation with
+`messaging.cloudOnboarding.advance({ quicklinkId, projectId, result })`.
+`result` contains the Embedded Signup authorization code, selected WABA and phone
+IDs, and Coexistence/history choices. This method does not create a session or
+accept Meta app secrets. Its progress response is not proof that messaging is
+ready; inspect the QuickLink status.

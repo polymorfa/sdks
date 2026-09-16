@@ -30,7 +30,7 @@ const entry = (operationId: string) => {
 const callId = "call/555";
 const participant = {
   id: "participant-555",
-  handle: "+15550100",
+  phoneNumber: "+15550100",
   audioMuted: false,
   video: false,
   state: "invited",
@@ -104,7 +104,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("6918c56135e28ba64557e344cb72889f1f517eb5");
+    expect(source.commit).toBe("aca849cda44ad8582d7ae87489404d2483173a53");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -194,12 +194,12 @@ describe("reconciled coverage evidence", () => {
     const operations = ledger.operations.filter(
       ({ family, path, operationId }) =>
         family === "platform" &&
-        /^\/v1\/(?:projects\/\{projectId\}\/)?(?:events|operations|webhooks|webhook-deliveries)(?:\/|$)/.test(
+        /^\/platform\/(?:projects\/\{projectId\}\/)?(?:events|webhooks|webhook-deliveries)(?:\/|$)/.test(
           path,
         ) &&
         operationId.length > 0,
     );
-    expect(operations).toHaveLength(38);
+    expect(operations).toHaveLength(30);
     for (const operation of operations) {
       expect(operation.typescript.status, operation.operationId).toBe(
         "covered",

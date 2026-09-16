@@ -1,8 +1,3 @@
-import {
-  PolymorfaCancelledError,
-  PolymorfaTimeoutError,
-  PolymorfaValidationError,
-} from "../errors.js";
 import { CursorPage } from "../pagination.js";
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
@@ -13,15 +8,10 @@ import type {
   CreateProjectWebhookInput,
   ListDeliveryAttemptsParams,
   ListEventsParams,
-  ListOperationTransitionsParams,
-  ListOperationsParams,
   ListWebhookDeliveriesParams,
   ListWebhooksParams,
   OrganizationEvent,
   OrganizationEventReplayReceipt,
-  OrganizationOperation,
-  OrganizationOperationCancellationReceipt,
-  OrganizationOperationTransition,
   OrganizationWebhook,
   OrganizationWebhookCreationReceipt,
   OrganizationWebhookDeletionReceipt,
@@ -33,9 +23,6 @@ import type {
   OrganizationWebhookTestReceipt,
   ProjectEvent,
   ProjectEventReplayReceipt,
-  ProjectOperation,
-  ProjectOperationCancellationReceipt,
-  ProjectOperationTransition,
   ProjectWebhook,
   ProjectWebhookCreationReceipt,
   ProjectWebhookDeletionReceipt,
@@ -52,7 +39,6 @@ import type {
   TestWebhookInput,
   UpdateOrganizationWebhookInput,
   UpdateProjectWebhookInput,
-  WaitForOperationOptions,
 } from "./developer-types.js";
 import {
   decodeCursorPage,
@@ -99,15 +85,6 @@ type AttemptFor<O extends ClientOwner> = O extends "project"
 type DeliveryRetryFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookDeliveryRetryReceipt
   : OrganizationWebhookDeliveryRetryReceipt;
-type OperationFor<O extends ClientOwner> = O extends "project"
-  ? ProjectOperation
-  : OrganizationOperation;
-type OperationTransitionFor<O extends ClientOwner> = O extends "project"
-  ? ProjectOperationTransition
-  : OrganizationOperationTransition;
-type OperationCancellationFor<O extends ClientOwner> = O extends "project"
-  ? ProjectOperationCancellationReceipt
-  : OrganizationOperationCancellationReceipt;
 
 class ResourceBase {
   protected readonly raw: RawClient;
@@ -324,197 +301,4 @@ export class WebhookDeliveriesResource<
       options,
     );
   }
-}
-
-const TERMINAL = new Set([
-  "action_required",
-  "succeeded",
-  "failed",
-  "cancelled",
-]);
-
-export class OperationsResourceV2<O extends ClientOwner> extends ResourceBase {
-  list(
-    params: ListOperationsParams = {},
-    options: RequestOptions = {},
-  ): Promise<CursorPage<OperationFor<O>>> {
-    if (
-      (params.resourceType === undefined) !==
-      (params.resourceId === undefined)
-    ) {
-      throw new PolymorfaValidationError(
-        "resourceType and resourceId must be supplied together.",
-        { code: "invalid_operation_filter" },
-      );
-    }
-    return this.page(this.path("/operations"), { ...params }, options);
-  }
-  retrieve(
-    operationId: string,
-    options: RequestOptions = {},
-  ): Promise<ApiResponse<OperationFor<O>>> {
-    return this.fetchResource(
-      this.path(`/operations/${encodeURIComponent(operationId)}`),
-      options,
-    );
-  }
-  listTransitions(
-    operationId: string,
-    params: ListOperationTransitionsParams = {},
-    options: RequestOptions = {},
-  ): Promise<CursorPage<OperationTransitionFor<O>>> {
-    return this.page(
-      this.path(`/operations/${encodeURIComponent(operationId)}/transitions`),
-      { ...params },
-      options,
-    );
-  }
-  cancel(
-    operationId: string,
-    options: RequestOptions = {},
-  ): Promise<ApiResponse<OperationCancellationFor<O>>> {
-    return this.mutate(
-      "POST",
-      this.path(`/operations/${encodeURIComponent(operationId)}/cancel`),
-      undefined,
-      options,
-    );
-  }
-  async wait(
-    operationId: string,
-    options: WaitForOperationOptions = {},
-  ): Promise<ApiResponse<OperationFor<O>>> {
-    const maxWaitMs = integer(
-      options.maxWaitMs ?? 300_000,
-      "maxWaitMs",
-      1,
-      Number.MAX_SAFE_INTEGER,
-    );
-    const pollIntervalMs = integer(
-      options.pollIntervalMs ?? 1_000,
-      "pollIntervalMs",
-      250,
-      30_000,
-    );
-    const deadline = Date.now() + maxWaitMs;
-    const deadlineController = new AbortController();
-    let deadlineReached = false;
-    const abortForCaller = () =>
-      deadlineController.abort(options.signal?.reason);
-    options.signal?.addEventListener("abort", abortForCaller, { once: true });
-    const deadlineTimer = setTimeout(() => {
-      deadlineReached = true;
-      deadlineController.abort();
-    }, maxWaitMs);
-    try {
-      while (true) {
-        if (options.signal?.aborted === true)
-          throw new PolymorfaCancelledError(
-            "The operation wait was cancelled.",
-            { code: "operation_wait_cancelled" },
-          );
-        const remaining = deadline - Date.now();
-        if (remaining <= 0) throw operationWaitTimeout(maxWaitMs);
-        let response: ApiResponse<OperationFor<O>>;
-        try {
-          response = await this.retrieve(operationId, {
-            ...options.requestOptions,
-            timeoutMs: Math.min(
-              options.requestOptions?.timeoutMs ?? remaining,
-              remaining,
-            ),
-            signal: deadlineController.signal,
-          });
-        } catch (error) {
-          if (deadlineReached && !isAborted(options.signal)) {
-            throw operationWaitTimeout(maxWaitMs);
-          }
-          throw error;
-        }
-        if (Date.now() >= deadline) throw operationWaitTimeout(maxWaitMs);
-        if (TERMINAL.has(response.data.status)) return response;
-        const retryAfter = retryAfterMilliseconds(
-          response.metadata.headers["retry-after"],
-        );
-        try {
-          await wait(
-            Math.min(Math.max(pollIntervalMs, retryAfter ?? 0), remaining),
-            deadlineController.signal,
-          );
-        } catch (error) {
-          if (deadlineReached && !isAborted(options.signal)) {
-            throw operationWaitTimeout(maxWaitMs);
-          }
-          throw error;
-        }
-      }
-    } finally {
-      clearTimeout(deadlineTimer);
-      options.signal?.removeEventListener("abort", abortForCaller);
-    }
-  }
-}
-
-function operationWaitTimeout(maxWaitMs: number): PolymorfaTimeoutError {
-  return new PolymorfaTimeoutError(
-    `The operation did not reach a terminal state within ${maxWaitMs}ms.`,
-    { code: "operation_wait_timeout" },
-  );
-}
-
-function isAborted(signal: AbortSignal | undefined): boolean {
-  return signal?.aborted === true;
-}
-
-function retryAfterMilliseconds(
-  value: string | undefined,
-  now = Date.now(),
-): number | undefined {
-  if (value === undefined) return undefined;
-  if (/^\d+$/.test(value)) {
-    const seconds = Number(value);
-    return Number.isSafeInteger(seconds) ? seconds * 1_000 : undefined;
-  }
-  const retryAt = Date.parse(value);
-  return Number.isNaN(retryAt) ? undefined : Math.max(0, retryAt - now);
-}
-
-function integer(
-  value: number,
-  name: string,
-  min: number,
-  max: number,
-): number {
-  if (!Number.isSafeInteger(value) || value < min || value > max)
-    throw new PolymorfaValidationError(
-      `${name} must be an integer from ${min} through ${max}.`,
-      { code: `invalid_${name}` },
-    );
-  return value;
-}
-
-function wait(milliseconds: number, signal?: AbortSignal): Promise<void> {
-  if (signal?.aborted === true) {
-    return Promise.reject(
-      new PolymorfaCancelledError("The operation wait was cancelled.", {
-        code: "operation_wait_cancelled",
-      }),
-    );
-  }
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      signal?.removeEventListener("abort", abort);
-      resolve();
-    }, milliseconds);
-    const abort = () => {
-      clearTimeout(timer);
-      signal?.removeEventListener("abort", abort);
-      reject(
-        new PolymorfaCancelledError("The operation wait was cancelled.", {
-          code: "operation_wait_cancelled",
-        }),
-      );
-    };
-    signal?.addEventListener("abort", abort, { once: true });
-  });
 }

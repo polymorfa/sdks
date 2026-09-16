@@ -62,6 +62,9 @@ describe("MessagingClient profile", () => {
       readonly name: string;
       readonly status: string;
       readonly profilePicUrl?: string;
+      readonly phonePlatform?: "android" | "ios" | "meta_cloud" | "unknown";
+      readonly accountType?:
+        "whatsapp_app" | "business_app" | "meta_cloud" | "meta_coexistence";
     }>();
     expectTypeOf<SetProfileNameRequest>().toEqualTypeOf<{
       readonly name: string;

@@ -42,6 +42,7 @@ export class PolymorfaConfigurationError extends PolymorfaError {
 export class PolymorfaValidationError extends PolymorfaError {}
 export class PolymorfaAuthenticationError extends PolymorfaError {}
 export class PolymorfaAuthorizationError extends PolymorfaError {}
+export class PolymorfaPaymentRequiredError extends PolymorfaError {}
 export class PolymorfaNotFoundError extends PolymorfaError {}
 export class PolymorfaConflictError extends PolymorfaError {}
 export class PolymorfaRateLimitError extends PolymorfaError {}

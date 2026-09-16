@@ -2,6 +2,40 @@
 
 ## Unreleased
 
+- Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
+  exports `QuickLinkController` or its transport types, `@polymorfa/elements`
+  no longer registers `pmfa-quicklink` or exports the `./quicklink` subpath, and
+  `@polymorfa/react` no longer exports `QuickLink`. QuickLink is a hosted page:
+  create a link with `MessagingClient.quickLinks.create()` on the server and
+  send the person to its `url`.
+
+- `WhatsAppAccount`, `ProfileData`, and the `session.connected` webhook payload
+  replace the raw `platform` string with `phonePlatform` (`android`, `ios`, `meta_cloud`, or
+  `unknown`) and `accountType` (`whatsapp_app`, `business_app`, `meta_cloud`,
+  or `meta_coexistence`). `SessionConnectedPayload` now types the account's
+  Polymorfa `id` instead of `lid`. Both new types are exported.
+
+- Added typed BanSafe Health, telemetry, collection, findings, enforcement,
+  incidents, claims, and Health action reads to `Client.banSafe`.
+  Project and session resources now cover Safe Mode, warm-up, Ban Insurance
+  evidence, and Health policy settings, and `MessagingClient.banSafe` covers
+  the same settings on the Messaging API for organization API keys and project
+  tokens. Claim credit amounts are decimal quantities. Dashboard-only finding
+  acknowledgement and appeals remain outside the server SDK.
+- Breaking: saved QuickLink settings drop `allowedRedirectUris` and add
+  `successCallbackUrl`, `failureCallbackUrl`, and `allowPhoneChange`, matching
+  the management contract. Customer profiles and create/update requests no
+  longer carry `phone`, `CustomerSummary` no longer carries `phoneMasked`, and
+  Customer pairing-link creation no longer accepts `locale` or `theme`. Use
+  `expectedPhone` on the pairing link to restrict a number.
+- Export typed `contact.sync` and `message.echo` webhooks and the optional
+  QuickLink `externalId` on every webhook envelope.
+- Type the Customer lifecycle, BanSafe, campaign, `message.failed`, and
+  `template.status` webhook events. `message.failed` includes the
+  `blocked_by_safety` reason with optional `code` and `retryAfter`.
+- Webhook delivery attempts now include `response`, a redacted excerpt of a
+  failed HTTP response, or `null`.
+
 - Export typed terminal Calls webhooks. `call.ended` preserves a nullable caller
   identity for `pod_lost`; `call.telemetry` preserves cumulative traffic values.
 

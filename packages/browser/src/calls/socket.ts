@@ -78,7 +78,7 @@ export interface CallsSocketOptions {
 
 /**
  * The calls WebSocket: one socket per client, opened with a single-use ticket
- * from `POST /api/voip/ws-ticket`. It pushes the session's `call.*` lifecycle
+ * from `POST /messaging/voip/ws-ticket`. It pushes the session's `call.*` lifecycle
  * events (so an incoming call rings without any webhook plumbing), delivers
  * the pod's ICE candidates, and carries the browser's candidates and
  * teardown. It reconnects with capped exponential backoff — a fresh ticket
@@ -562,10 +562,9 @@ function peerFrom(value: unknown): string {
   if (value === null || typeof value !== "object") return "";
   const ref = value as {
     readonly phoneNumber?: unknown;
-    readonly lid?: unknown;
     readonly id?: unknown;
   };
-  for (const candidate of [ref.phoneNumber, ref.lid, ref.id])
+  for (const candidate of [ref.phoneNumber, ref.id])
     if (typeof candidate === "string" && candidate.length > 0) return candidate;
   return "";
 }

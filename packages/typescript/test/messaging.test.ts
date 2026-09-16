@@ -41,33 +41,31 @@ async function messagingServer(): Promise<{
 }
 
 describe("MessagingClient sessions", () => {
-  it("lists and creates sessions using the current routes", async () => {
+  it("lists sessions and creates new ones through QuickLink", async () => {
     const { client, requests } = await messagingServer();
     await client.sessions.list();
-    const created = await client.sessions.create(
-      { projectId: "project_1", sessionId: "support", start: true },
-      { idempotencyKey: "session-support" },
-    );
-
-    expect(requests[0]).toMatchObject({
-      method: "GET",
-      path: "/messaging/sessions",
-      body: "",
+    await client.quickLinks.create({
+      projectId: "project_1",
+      configuration: {
+        connectionPreference: "linked",
+        historySync: { consent: "ask" },
+      },
     });
-    expect(requests[1]).toMatchObject({
-      method: "POST",
-      path: "/messaging/sessions",
-      body: '{"projectId":"project_1","sessionId":"support","start":true}',
-    });
-    expect(requests[1]?.headers["idempotency-key"]).toBe("session-support");
-    expect(created.metadata.requestId).toBe("req_messaging");
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /platform/sessions",
+      "POST /messaging/quicklinks",
+    ]);
+    expect(client.sessions).not.toHaveProperty("create");
   });
 
   it("encodes session identifiers for lifecycle and account operations", async () => {
     const { client, requests } = await messagingServer();
     const id = "support/eu";
     await client.sessions.retrieve(id);
-    await client.sessions.update(id, { config: { presence: true } });
+    await client.sessions.update(id, {
+      revision: 0,
+      configuration: { set: { historySync: { mode: "deliver" } } },
+    });
     await client.sessions.start(id);
     await client.sessions.stop(id);
     await client.sessions.restart(id);
@@ -76,16 +74,18 @@ describe("MessagingClient sessions", () => {
     await client.sessions.account(id);
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /messaging/sessions/support%2Feu",
-      "PUT /messaging/sessions/support%2Feu",
-      "POST /messaging/sessions/support%2Feu/start",
-      "POST /messaging/sessions/support%2Feu/stop",
-      "POST /messaging/sessions/support%2Feu/restart",
-      "POST /messaging/sessions/support%2Feu/logout",
-      "DELETE /messaging/sessions/support%2Feu",
-      "GET /messaging/sessions/support%2Feu/me",
+      "GET /platform/sessions/support%2Feu",
+      "PUT /platform/sessions/support%2Feu",
+      "POST /platform/sessions/support%2Feu/start",
+      "POST /platform/sessions/support%2Feu/stop",
+      "POST /platform/sessions/support%2Feu/restart",
+      "POST /platform/sessions/support%2Feu/logout",
+      "DELETE /platform/sessions/support%2Feu",
+      "GET /platform/sessions/support%2Feu/me",
     ]);
-    expect(requests[1]?.body).toBe('{"config":{"presence":true}}');
+    expect(requests[1]?.body).toBe(
+      '{"revision":0,"configuration":{"set":{"historySync":{"mode":"deliver"}}}}',
+    );
   });
 
   it("retrieves JSON pairing data and requests a phone pairing code", async () => {
@@ -109,16 +109,11 @@ describe("MessagingClient sessions", () => {
 });
 
 describe("MessagingClient operations", () => {
-  it("retrieves a durable lifecycle operation with an encoded identifier", async () => {
+  it("does not expose console-only operation polling", async () => {
     const { client, requests } = await messagingServer();
 
-    await client.operations.retrieve("operation/123", { apiVersion: "next" });
-
-    expect(requests[0]).toMatchObject({
-      method: "GET",
-      path: "/messaging/operations/operation%2F123",
-    });
-    expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
+    expect(client).not.toHaveProperty("operations");
+    expect(requests).toEqual([]);
   });
 });
 
@@ -127,14 +122,17 @@ describe("MessagingClient messages", () => {
     const { client, requests } = await messagingServer();
     const response = await client.messages.send(
       "support/eu",
-      { chatId: "15551234567@s.whatsapp.net", type: "text", text: "Hello" },
+      {
+        conversation: { phoneNumber: "+15551234567" },
+        content: { text: "Hello" },
+      },
       { idempotencyKey: "message-1" },
     );
 
     expect(requests[0]).toMatchObject({
       method: "POST",
       path: "/messaging/support%2Feu/messages/send",
-      body: '{"chatId":"15551234567@s.whatsapp.net","type":"text","text":"Hello"}',
+      body: '{"conversation":{"phoneNumber":"+15551234567"},"content":{"text":"Hello"}}',
     });
     expect(response.data.success).toBe(true);
   });
@@ -142,21 +140,21 @@ describe("MessagingClient messages", () => {
   it("maps seen, typing, reaction, and star actions", async () => {
     const { client, requests } = await messagingServer();
     await client.messages.markSeen("support", {
-      chatId: "chat",
-      messageId: "m1",
+      conversation: { id: "739182640518203" },
+      id: "739182640518204",
     });
     await client.messages.setTyping("support", {
-      chatId: "chat",
+      conversation: { id: "739182640518203" },
       state: "recording",
     });
     await client.messages.react("support", {
-      chatId: "chat",
-      messageId: "m1",
+      conversation: { id: "739182640518203" },
+      id: "739182640518204",
       reaction: "👍",
     });
     await client.messages.star("support", {
-      chatId: "chat",
-      messageId: "m1",
+      conversation: { id: "739182640518203" },
+      id: "739182640518204",
       star: true,
     });
 
@@ -166,7 +164,9 @@ describe("MessagingClient messages", () => {
       "/messaging/support/messages/react",
       "/messaging/support/messages/star",
     ]);
-    expect(requests[1]?.body).toBe('{"chatId":"chat","state":"recording"}');
+    expect(requests[1]?.body).toBe(
+      '{"conversation":{"id":"739182640518203"},"state":"recording"}',
+    );
   });
 });
 
@@ -194,10 +194,10 @@ describe("MessagingClient client tokens", () => {
     await client.clientTokens.deleteRules("support/eu");
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "POST /messaging/client-tokens",
-      "GET /messaging/sessions/support%2Feu/client-rules",
-      "PUT /messaging/sessions/support%2Feu/client-rules",
-      "DELETE /messaging/sessions/support%2Feu/client-rules",
+      "POST /platform/client-tokens",
+      "GET /platform/sessions/support%2Feu/client-rules",
+      "PUT /platform/sessions/support%2Feu/client-rules",
+      "DELETE /platform/sessions/support%2Feu/client-rules",
     ]);
     expect(requests[0]?.body).toBe(
       '{"session":"support/eu","ephemeralId":"user-1-tab-2","ttlSeconds":600}',
@@ -436,9 +436,7 @@ describe("MessagingClient webhooks", () => {
       credential: { type: "clientToken", value: "pmfa_ct_widget" },
       baseUrl: server.url,
     });
-    await client.sessions.list();
-    expect(server.requests[0]?.headers.authorization).toBe(
-      "Bearer pmfa_ct_widget",
-    );
+    expect(() => client.sessions.list()).toThrow(/server API key/);
+    expect(server.requests).toHaveLength(0);
   });
 });

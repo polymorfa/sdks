@@ -214,10 +214,10 @@ describe("CallsSignalingClient", () => {
     await signaling.candidates("call/1");
     await signaling.teardown("call/1");
     expect(fetch.mock.calls.map(([input]) => String(input))).toEqual([
-      "https://api.polymorfa.test/api/voip/calls/call%2F1/offer",
-      "https://api.polymorfa.test/api/voip/calls/call%2F1/candidate",
-      "https://api.polymorfa.test/api/voip/calls/call%2F1/candidates",
-      "https://api.polymorfa.test/api/voip/calls/call%2F1",
+      "https://api.polymorfa.test/messaging/voip/calls/call%2F1/offer",
+      "https://api.polymorfa.test/messaging/voip/calls/call%2F1/candidate",
+      "https://api.polymorfa.test/messaging/voip/calls/call%2F1/candidates",
+      "https://api.polymorfa.test/messaging/voip/calls/call%2F1",
     ]);
   });
 });

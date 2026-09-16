@@ -1,3 +1,4 @@
+import { SessionConfigurationResource } from "./platform/session-configuration.js";
 import {
   assertServerRuntime,
   validateClientCredential,
@@ -16,11 +17,11 @@ import { ApiKeysResource } from "./platform/api-keys.js";
 import { AudiencesResource } from "./platform/audiences.js";
 import { AuditLogsResource } from "./platform/audit-logs.js";
 import { BillingResource } from "./platform/billing.js";
+import { BanSafeResource } from "./platform/bansafe.js";
 import { CampaignsResource } from "./platform/campaigns.js";
 import { CustomersResource } from "./platform/customers.js";
 import {
   EventsResource,
-  OperationsResourceV2,
   WebhookDeliveriesResource,
   WebhooksResource,
 } from "./platform/developer-resources.js";
@@ -40,8 +41,6 @@ export type EventsResourceFor<O extends ClientOwner> = EventsResource<O>;
 export type WebhooksResourceFor<O extends ClientOwner> = WebhooksResource<O>;
 export type WebhookDeliveriesResourceFor<O extends ClientOwner> =
   WebhookDeliveriesResource<O>;
-export type OperationsResourceFor<O extends ClientOwner> =
-  OperationsResourceV2<O>;
 export type RawResourceFor<O extends ClientOwner> = O extends "project"
   ? ProjectScopedRawClient
   : RawClient;
@@ -52,7 +51,7 @@ export interface ClientBase<O extends ClientOwner> {
   readonly events: EventsResourceFor<O>;
   readonly webhooks: WebhooksResourceFor<O>;
   readonly webhookDeliveries: WebhookDeliveriesResourceFor<O>;
-  readonly operations: OperationsResourceFor<O>;
+  readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<O>;
   readonly raw: RawResourceFor<O>;
   project(projectId: string): Client<"project">;
@@ -63,6 +62,7 @@ export interface OrganizationControlPlaneResources {
   readonly audiences: AudiencesResource;
   readonly auditLogs: AuditLogsResource;
   readonly billing: BillingResource;
+  readonly banSafe: BanSafeResource;
   readonly campaigns: CampaignsResource;
   readonly customers: CustomersResource;
   readonly members: MembersResource;
@@ -90,7 +90,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   readonly events: EventsResource<ClientOwner>;
   readonly webhooks: WebhooksResource<ClientOwner>;
   readonly webhookDeliveries: WebhookDeliveriesResource<ClientOwner>;
-  readonly operations: OperationsResourceV2<ClientOwner>;
+  readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<ClientOwner>;
   readonly raw: RawClient | ProjectScopedRawClient;
   readonly #transport: HttpTransport;
@@ -134,7 +134,10 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       this.#transport,
       prefix,
     );
-    this.operations = new OperationsResourceV2(this.#transport, prefix);
+    this.sessionConfiguration = new SessionConfigurationResource(
+      this.#transport,
+      projectId,
+    );
     this.quickLinkSettings = new QuickLinkSettingsResource(
       this.#transport,
       projectId,
@@ -150,6 +153,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
         audiences: new AudiencesResource(this.#transport),
         auditLogs: new AuditLogsResource(this.#transport),
         billing: new BillingResource(this.#transport),
+        banSafe: new BanSafeResource(this.#transport),
         campaigns: new CampaignsResource(this.#transport),
         customers: new CustomersResource(this.#transport),
         members: new MembersResource(this.#transport),

@@ -1,10 +1,16 @@
 import { HttpTransport } from "../transport/http.js";
+import { PolymorfaValidationError } from "../errors.js";
+import type {
+  GetSessionResponse,
+  UpdateSessionRequest,
+  UpdateSessionResponse,
+} from "../messaging/types.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
-  CreateTestingSessionRequest,
   DataEnvelope,
   ListPlatformSessionsParams,
-  ManagedSession,
+  NumberTierChange,
+  NumberTierQuoteRequest,
   PlatformSession,
   SessionBatchRemoveResult,
   SessionBatchRequest,
@@ -14,6 +20,8 @@ import type {
   SessionStartResult,
   SessionStopResult,
   SessionTierOverrideRequest,
+  SessionSafeMode,
+  UpdateSessionSafeModeRequest,
 } from "./types.js";
 
 export class PlatformSessionsResource {
@@ -29,6 +37,30 @@ export class PlatformSessionsResource {
       ...(params.projectId === undefined
         ? {}
         : { query: { projectId: params.projectId } }),
+      ...options,
+    });
+  }
+
+  retrieve(
+    sessionId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<GetSessionResponse>> {
+    return this.transport.request({
+      method: "GET",
+      path: sessionPath(sessionId),
+      ...options,
+    });
+  }
+
+  update(
+    sessionId: string,
+    body: UpdateSessionRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<UpdateSessionResponse>> {
+    return this.transport.request({
+      method: "PUT",
+      path: sessionPath(sessionId),
+      body,
       ...options,
     });
   }
@@ -96,11 +128,43 @@ export class PlatformSessionsResource {
     });
   }
 
+  /** Review the returned charge and effective time before confirming this quote. */
+  quoteTierChange(
+    sessionId: string,
+    body: NumberTierQuoteRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionPath(sessionId)}/tier-quotes`,
+      body,
+      ...options,
+    });
+  }
+
+  retrieveTierChange(
+    sessionId: string,
+    quoteId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionPath(sessionId)}/tier-quotes/${encodeURIComponent(quoteId)}`,
+      ...options,
+    });
+  }
+
+  /** Confirms a reviewed quote. Poll retrieveTierChange until applied or rejected. */
   setTierOverride(
     sessionId: string,
     body: SessionTierOverrideRequest,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<ManagedSession>>> {
+  ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
+    if (typeof body?.quoteId !== "string" || !body.quoteId.trim()) {
+      throw new PolymorfaValidationError(
+        "Review a tier quote and supply its quoteId before confirming a number tier change.",
+      );
+    }
     return this.transport.request({
       method: "PATCH",
       path: sessionPath(sessionId),
@@ -109,13 +173,25 @@ export class PlatformSessionsResource {
     });
   }
 
-  createTesting(
-    body: CreateTestingSessionRequest,
+  getSafeMode(
+    sessionId: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<string>>> {
+  ): Promise<ApiResponse<DataEnvelope<SessionSafeMode>>> {
     return this.transport.request({
-      method: "POST",
-      path: "/platform/sessions/testing",
+      method: "GET",
+      path: `${sessionPath(sessionId)}/safe-mode`,
+      ...options,
+    });
+  }
+
+  updateSafeMode(
+    sessionId: string,
+    body: UpdateSessionSafeModeRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SessionSafeMode>>> {
+    return this.transport.request({
+      method: "PUT",
+      path: `${sessionPath(sessionId)}/safe-mode`,
       body,
       ...options,
     });

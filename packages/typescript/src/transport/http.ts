@@ -3,6 +3,7 @@ import {
   PolymorfaAuthorizationError,
   PolymorfaCancelledError,
   PolymorfaConflictError,
+  PolymorfaPaymentRequiredError,
   PolymorfaConfigurationError,
   PolymorfaConnectionError,
   PolymorfaError,
@@ -357,6 +358,8 @@ function apiError(
     return new PolymorfaAuthenticationError(message, options);
   if (response.status === 403)
     return new PolymorfaAuthorizationError(message, options);
+  if (response.status === 402)
+    return new PolymorfaPaymentRequiredError(message, options);
   if (response.status === 404)
     return new PolymorfaNotFoundError(message, options);
   if (response.status === 409)
@@ -370,6 +373,10 @@ function apiError(
 function errorMessage(body: unknown, status: number): string {
   if (typeof body === "object" && body !== null) {
     const record = body as Record<string, unknown>;
+    if (typeof record.error === "object" && record.error !== null) {
+      const message = (record.error as Record<string, unknown>).message;
+      if (typeof message === "string") return message;
+    }
     if (typeof record.error === "string") return record.error;
     if (typeof record.message === "string") return record.message;
   }
@@ -379,7 +386,11 @@ function errorMessage(body: unknown, status: number): string {
 
 function errorCode(body: unknown): Pick<PolymorfaErrorOptions, "code"> {
   if (typeof body === "object" && body !== null) {
-    const code = (body as Record<string, unknown>).code;
+    const record = body as Record<string, unknown>;
+    const code =
+      typeof record.error === "object" && record.error !== null
+        ? (record.error as Record<string, unknown>).code
+        : record.code;
     if (typeof code === "string") return { code };
   }
   return {};

@@ -2,7 +2,6 @@ import type {
   ConversationController,
   ConversationMessage,
   MessageComposerController,
-  QuickLinkController,
   RenderedTemplate,
   TemplateBuilderController,
 } from "@polymorfa/browser";
@@ -23,39 +22,6 @@ function shell(configuration: ReturnType<typeof usePolymorfa>): {
     dir: configuration.locale.direction,
     style: appearanceToCssVariables(configuration.appearance) as CSSProperties,
   };
-}
-
-export interface QuickLinkProps extends ControllerProps<QuickLinkController> {
-  readonly renderStatus?: (status: string) => ReactNode;
-}
-export function QuickLink({
-  controller,
-  createController,
-  renderStatus,
-}: QuickLinkProps) {
-  const resolved = useResolvedController(controller, createController);
-  const snapshot = useController(resolved);
-  const configuration = usePolymorfa();
-  const action =
-    snapshot.status === "expired" || snapshot.status === "error"
-      ? () => resolved.retry()
-      : snapshot.status === "idle" || snapshot.status === "cancelled"
-        ? () => resolved.launch()
-        : () => resolved.cancel();
-  return (
-    <section {...shell(configuration)} data-pmfa="quicklink" aria-live="polite">
-      {renderStatus?.(snapshot.status) ?? <p>{snapshot.status}</p>}
-      {snapshot.qrCode && <pre>{snapshot.qrCode}</pre>}
-      {snapshot.link && <a href={snapshot.link}>{snapshot.link}</a>}
-      <button type="button" onClick={() => void action()}>
-        {snapshot.status === "error" || snapshot.status === "expired"
-          ? "Retry"
-          : snapshot.status === "idle"
-            ? "Connect"
-            : "Cancel"}
-      </button>
-    </section>
-  );
 }
 
 export interface MessageListProps extends ControllerProps<ConversationController> {

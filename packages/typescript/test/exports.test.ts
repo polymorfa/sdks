@@ -14,7 +14,7 @@ import {
   ContactsResource,
   GroupsResource,
   LabelsResource,
-  LidsResource,
+  IdentitiesResource,
   CursorPage,
   MessagingClient,
   MessagingCampaignsResource,
@@ -22,7 +22,6 @@ import {
   MediaResource,
   MembersResource,
   OptOutsResource,
-  OperationsResource,
   ObservationPoliciesResource,
   ProfileResource,
   PresenceResource,
@@ -63,7 +62,7 @@ import {
   type CreateProjectRequest,
   type CreateCampaignRequest,
   type CreateChannelRequest,
-  type CreateSessionRequest,
+  type CreateQuickLinkRequest,
   type Contact,
   type ContactUserInfo,
   type DisappearingTimerRequest,
@@ -100,7 +99,7 @@ import {
   type ProjectToken,
   type RawRequest,
   type RequestOptions,
-  type ResolveLidParams,
+  type ResolveIdentityParams,
   type ResponseMetadata,
   type SecurityIncident,
   type SessionBan,
@@ -108,7 +107,9 @@ import {
   type SendMessageRequest,
   type TemplateDefinition,
   type TierPricing,
-  type UpdateBillingReminderSettingsRequest,
+  type NumberTierChange,
+  type NumberTierQuoteRequest,
+  type SessionTierOverrideRequest,
   type WebhookEvent,
   type UserSecurityCode,
   type OrganizationQuickLinkSettings,
@@ -143,11 +144,10 @@ describe("public exports", () => {
       ContactsResource,
       GroupsResource,
       LabelsResource,
-      LidsResource,
+      IdentitiesResource,
       MediaResource,
       MembersResource,
       OptOutsResource,
-      OperationsResource,
       ObservationPoliciesResource,
       ProfileResource,
       PrivacyResource,
@@ -170,7 +170,7 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(44);
+    ]).toHaveLength(43);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
@@ -184,12 +184,12 @@ describe("public exports", () => {
     expectTypeOf<CampaignAnalytics>().toHaveProperty("responseRate");
     expectTypeOf<CreateCampaignRequest>().toHaveProperty("name");
     expectTypeOf<TierPricing>().toHaveProperty("dailyRateCents");
-    expectTypeOf<UpdateBillingReminderSettingsRequest>().toHaveProperty(
-      "lowBalanceThresholdCents",
-    );
+    expectTypeOf<NumberTierChange>().toHaveProperty("quote");
+    expectTypeOf<NumberTierQuoteRequest>().toHaveProperty("tierOverride");
+    expectTypeOf<SessionTierOverrideRequest>().toHaveProperty("quoteId");
     expectTypeOf<ResponseMetadata>().toHaveProperty("requestId");
     expectTypeOf<RequestOptions>().toHaveProperty("signal");
-    expectTypeOf<ResolveLidParams>().toMatchTypeOf<
+    expectTypeOf<ResolveIdentityParams>().toMatchTypeOf<
       Readonly<Record<string, string | undefined>>
     >();
     expectTypeOf<RawRequest>().toHaveProperty("path");
@@ -214,11 +214,12 @@ describe("public exports", () => {
     expectTypeOf<SecurityIncident>().toHaveProperty("resolution");
     expectTypeOf<SessionBan>().toHaveProperty("status");
     expectTypeOf<SessionBatchRequest>().toHaveProperty("sessionIds");
-    expectTypeOf<CreateSessionRequest>().toHaveProperty("projectId");
+    expectTypeOf<CreateQuickLinkRequest>().toHaveProperty("projectId");
     expectTypeOf<CreateChannelRequest>().toHaveProperty("picture");
-    expectTypeOf<Channel>().toHaveProperty("lid");
-    expectTypeOf<ChannelMessage>().toHaveProperty("serverId");
-    expectTypeOf<Contact>().toHaveProperty("lid");
+    expectTypeOf<Channel>().toHaveProperty("id");
+    expectTypeOf<ChannelMessage>().toHaveProperty("position");
+    expectTypeOf<ChannelMessage>().toHaveProperty("whatsapp_id");
+    expectTypeOf<Contact>().toHaveProperty("id");
     expectTypeOf<ContactUserInfo>().toHaveProperty("devices");
     expectTypeOf<EditMessageRequest>().toHaveProperty("text");
     expectTypeOf<Group>().toHaveProperty("participants");
@@ -240,7 +241,7 @@ describe("public exports", () => {
     expectTypeOf<QRCodeData>().toHaveProperty("qr");
     expectTypeOf<Operation>().toHaveProperty("status");
     expectTypeOf<CreateProjectRequest>().toHaveProperty("name");
-    expectTypeOf<SendMessageRequest>().toHaveProperty("chatId");
+    expectTypeOf<SendMessageRequest>().toHaveProperty("conversation");
     expectTypeOf<TemplateDefinition>().toHaveProperty("variables");
     expectTypeOf<WebhookEvent>().toHaveProperty("event");
     expectTypeOf<UserSecurityCode>().toHaveProperty("numericCode");

@@ -2,17 +2,17 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`6918c56135e28ba64557e344cb72889f1f517eb5`. `source.json` records their original
+`aca849cda44ad8582d7ae87489404d2483173a53`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        274 |
+| Covered             |        297 |
 | Missing             |          0 |
-| Excluded            |        128 |
+| Excluded            |        106 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        402 |
+| Total               |        403 |
 
 Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
@@ -20,22 +20,37 @@ successful live call.
 
 ## Reconciliation
 
-This contract refresh adds and removes no operations and changes no operation
-fingerprints. It retires the `session.qr` webhook schema and callback, and it
-documents that direct QR and pairing-code session routes require an
-organization entitlement while hosted QuickLinks are the standard pairing
-flow.
+This revision replaces raw account platform codes with `phonePlatform` and
+`accountType` on the session account, profile, and `session.connected`
+contracts, and removes the unreturned `verifiedJids` client-rules field. The
+three changed operations keep their existing typed methods.
 
-The SDK now covers the three existing QuickLink operations through
-`MessagingClient.quickLinks.create`, `retrieve`, and `cancel`. Those rows moved
-from excluded to covered, increasing covered operations from 271 to 274 and
-reducing excluded operations from 131 to 128. The missing-operation inventory
-remains empty.
+This refresh retires direct session creation and observation-policy writes. QuickLinks supply typed configuration and test simulation. The SDK adds project history fixture upload, saved defaults, and trusted-server Meta continuation tied to an existing QuickLink.
 
-This snapshot records complete handwritten TypeScript coverage for every
-customer-credential-compatible operation in the pinned contracts. Routes that
-require console, staff, browser, or ephemeral QuickLink credentials are
-excluded with an operation-specific reason.
+Public Number, conversation, user and message identifiers remain supported.
+Message responses retain the exact provider ID in `whatsapp_id`. Channel
+actions use the public message ID; call participants expose public identities;
+history events carry a public message index and a separate provider archive.
+The raw LID resolver is replaced by `MessagingClient.identities.resolve`.
+
+The ledger reconciles moved Messaging and Platform paths against the exact
+source revision. Component references are resolved before fingerprinting, so a
+referenced request or response change cannot pass unnoticed. Removed console-only
+operation polling and unsupported browser handoff methods are not SDK APIs.
+
+BanSafe is reconciled against these same snapshots. `Client.banSafe`,
+`Client.projects`, and `Client.sessions` cover the 25 Platform Health,
+telemetry, findings, enforcement, incident, claim, and settings operations.
+`MessagingClient.banSafe` covers the 10 Messaging Safe Mode, warm-up, Ban
+Insurance evidence, and Health policy operations. Finding acknowledgement and
+enforcement appeals are Console-only and stay excluded. No BanSafe gap remains.
+
+The Platform `BanSafeNumberDetail` schema at this revision lists `sessionId`,
+`session`, `phoneNumber`, `projectId`, and `enforcement` as required but omits
+them from `properties` while setting `additionalProperties: false`. The API
+handler returns those fields, so `BanSafeNumberDetail` keeps them. Console,
+staff, browser-owned onboarding, and capability-token routes have explicit
+exclusion reasons. No whole-contract parity or package release is claimed.
 
 `HttpCallsApi.place`, `accept`, `reject`, `addParticipant`, and `setMode` cover
 the five Calls operations. Request tests invoke these methods and check the
@@ -49,7 +64,8 @@ discovery uses `BridgeClient`, and listener transport remains CLI-only.
 
 ## Updating the ledger
 
-1. Select one exact merged source commit on the matching branch. Copy both
+1. Select one exact source commit on the matching branch. Record whether it is
+   merged or a coordinated PR dependency. Copy both
    authoritative OpenAPI files without editing or formatting them.
 2. Run `scripts/check-coverage.mjs` against the new files and the existing
    ledger without `--strict` to inspect gaps and removed operations. Determine
@@ -71,3 +87,10 @@ The cross-repository workflow compares an exact source revision and reports
 missing or changed contracts for follow-up. Its dedicated GitHub App must have
 access to read SDK contents and write coverage issues. A token-creation failure
 occurs before comparison and says nothing about SDK parity.
+
+The merged Platform and billing adjustments reuse reviewed source from SDK commit
+`75146778f7a20257a6c0f0f3139329ab308f40f0` (billing API parity): client-token administration, session lifecycle
+routes, paid-number expiry, tier quotes and confirmation, and payment-required
+errors. They are checked against these same canonical API snapshots. Removed
+dashboard-only billing reminders and client-token session start/status helpers
+are not retained as compatibility aliases.

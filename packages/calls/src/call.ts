@@ -463,7 +463,9 @@ function participantStateRank(state: Participant["state"]): number {
 function sameParticipant(a: Participant, b: Participant): boolean {
   return (
     a.id === b.id &&
-    a.handle === b.handle &&
+    a.phoneNumber === b.phoneNumber &&
+    a.bsuid === b.bsuid &&
+    a.username === b.username &&
     a.audioMuted === b.audioMuted &&
     a.video === b.video &&
     a.state === b.state

@@ -97,7 +97,7 @@ export class BusinessResource {
       method: "GET",
       path: `${businessPath(session)}/catalog`,
       query: {
-        jid: params.jid,
+        id: params.id,
         after: params.after,
         limit: params.limit,
         width: params.width,
@@ -141,7 +141,7 @@ export class BusinessResource {
     return this.transport.request({
       method: "GET",
       path: productPath(session, productId),
-      query: { jid: params.jid },
+      query: { id: params.id },
       ...options,
     });
   }
@@ -218,7 +218,7 @@ export class BusinessResource {
       method: "GET",
       path: `${businessPath(session)}/collections`,
       query: {
-        jid: params.jid,
+        id: params.id,
         after: params.after,
         collectionLimit: params.collectionLimit,
         itemLimit: params.itemLimit,
@@ -239,7 +239,7 @@ export class BusinessResource {
       method: "GET",
       path: collectionPath(session, collectionId),
       query: {
-        jid: params.jid,
+        id: params.id,
         after: params.after,
         limit: params.limit,
         width: params.width,
