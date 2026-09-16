@@ -174,7 +174,14 @@ console.log(
 
 Use `platform.projects` for project Safe Mode, warm-up, Ban Insurance evidence,
 and Health policy settings. Use `platform.sessions` for one number's Safe Mode
-override.
+override. `MessagingClient.banSafe` exposes the same settings on the Messaging
+API for organization API keys and project tokens; its responses carry
+`success: true` beside `data`. Browser client tokens fail before any request.
+
+Claim `measuredCents`, `capCents`, and `amountCents` are credit quantities with
+up to six decimal places, not integer cents. Finding acknowledgement and
+enforcement appeals require a signed-in dashboard session and are not SDK
+methods.
 
 ```ts
 const policy = await platform.projects.getHealthPolicy("project_123");
@@ -187,6 +194,15 @@ await platform.projects.updateHealthPolicy("project_123", {
   emailNotification: true,
   webhookNotification: true,
 });
+
+const messaging = new MessagingClient({
+  credential: {
+    type: "projectToken",
+    value: process.env.POLYMORFA_PROJECT_TOKEN!,
+  },
+});
+const safeMode = await messaging.banSafe.getSessionSafeMode("support");
+console.log(safeMode.data.data.effective.presence);
 ```
 
 Finding acknowledgement and restriction appeals require a signed-in dashboard

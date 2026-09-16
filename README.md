@@ -83,6 +83,9 @@ any network request. Server credentials are rejected in browser runtimes.
 
 The handwritten Messaging resources in this milestone are:
 
+- `banSafe`: retrieve and update project Safe Mode, warm-up, Ban Insurance
+  evidence, and Health policy settings, and one number's Safe Mode override,
+  with an organization API key or project token
 - `sessions`: list, create, retrieve, update, delete, start, stop, restart,
   logout, account, and entitlement-gated direct JSON QR or phone pairing
 - `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions

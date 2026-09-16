@@ -676,6 +676,8 @@ export interface BanSafeEnforcementSummary extends BanSafeHealthProjection {
   readonly throughputPerMinute: number | null;
   readonly blocksUnsolicited: boolean;
   readonly suspended: boolean;
+  /** Present when the API also returns the nested enforcement projection. */
+  readonly enforcement?: BanSafeNumberEnforcement | null;
   readonly blockingFindings: readonly string[];
   readonly startedAt: string;
   readonly eligibleLiftAt: string | null;
@@ -759,8 +761,11 @@ export interface BanSafeClaim {
   readonly verdict: BanSafeClaimVerdict;
   readonly windowStart: string;
   readonly windowEnd: string;
+  /** Credit quantity consumed inside the window; up to six decimal places. */
   readonly measuredCents: number;
+  /** Maximum credit quantity this claim can return; up to six decimal places. */
   readonly capCents: number;
+  /** Credit quantity this claim returns; up to six decimal places. */
   readonly amountCents: number;
   readonly evidence: BanSafeClaimEvidence;
   readonly summary: string;

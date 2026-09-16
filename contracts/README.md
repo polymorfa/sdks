@@ -7,12 +7,12 @@ paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        265 |
-| Missing             |         37 |
-| Excluded            |        158 |
+| Covered             |        297 |
+| Missing             |          0 |
+| Excluded            |        106 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        460 |
+| Total               |        403 |
 
 Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
@@ -38,9 +38,17 @@ source revision. Component references are resolved before fingerprinting, so a
 referenced request or response change cannot pass unnoticed. Removed console-only
 operation polling and unsupported browser handoff methods are not SDK APIs.
 
-The 37 missing operations belong to the separately introduced BanSafe health
-and policy APIs. This identifier change does not implement that feature. They
-remain explicit gaps, not covered methods or credential exclusions. Console,
+BanSafe is reconciled against these same snapshots. `Client.banSafe`,
+`Client.projects`, and `Client.sessions` cover the 25 Platform Health,
+telemetry, findings, enforcement, incident, claim, and settings operations.
+`MessagingClient.banSafe` covers the 10 Messaging Safe Mode, warm-up, Ban
+Insurance evidence, and Health policy operations. Finding acknowledgement and
+enforcement appeals are Console-only and stay excluded. No BanSafe gap remains.
+
+The Platform `BanSafeNumberDetail` schema at this revision lists `sessionId`,
+`session`, `phoneNumber`, `projectId`, and `enforcement` as required but omits
+them from `properties` while setting `additionalProperties: false`. The API
+handler returns those fields, so `BanSafeNumberDetail` keeps them. Console,
 staff, browser-owned onboarding, and capability-token routes have explicit
 exclusion reasons. No whole-contract parity or package release is claimed.
 
@@ -85,5 +93,4 @@ The merged Platform and billing adjustments reuse reviewed source from SDK commi
 routes, paid-number expiry, tier quotes and confirmation, and payment-required
 errors. They are checked against these same canonical API snapshots. Removed
 dashboard-only billing reminders and client-token session start/status helpers
-are not retained as compatibility aliases. BanSafe methods remain explicitly
-missing where the ledger says so.
+are not retained as compatibility aliases.

@@ -15,8 +15,13 @@ import {
   type BanSafeTelemetryHistoryEnvelope,
   type DataEnvelope,
   type ProjectHealthPolicy,
+  type SessionSafeMode,
+  type SuccessEnvelope,
+  MessagingBanSafeResource,
+  MessagingClient,
+  PolymorfaConfigurationError,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -218,6 +223,108 @@ describe("Client BanSafe resources", () => {
       "PUT /platform/projects/project%2Fa/health-policy",
       "GET /platform/sessions/session%2Fa/safe-mode",
       "PUT /platform/sessions/session%2Fa/safe-mode",
+    ]);
+  });
+});
+
+describe("MessagingClient BanSafe settings", () => {
+  async function messagingClient(
+    type: "apiKey" | "projectToken" | "clientToken",
+    value: string,
+  ): Promise<{ client: MessagingClient; requests: RecordedRequest[] }> {
+    const server = await startTestServer(() => ({
+      headers: { "content-type": "application/json" },
+      body: '{"success":true,"data":{}}',
+    }));
+    servers.push(server);
+    return {
+      client: new MessagingClient({
+        credential: { type, value } as never,
+        baseUrl: server.url,
+        maxNetworkRetries: 0,
+      }),
+      requests: server.requests,
+    };
+  }
+
+  it("maps project settings and number Safe Mode to Messaging routes", async () => {
+    const { client, requests } = await messagingClient(
+      "apiKey",
+      ORGANIZATION_API_KEY,
+    );
+    expectTypeOf(client.banSafe).toEqualTypeOf<MessagingBanSafeResource>();
+    await client.banSafe.getProjectSafeMode("project/a");
+    await client.banSafe.updateProjectSafeMode("project/a", {
+      presence: "dark",
+      onlineStart: 8,
+      onlineEnd: 18,
+    });
+    await client.banSafe.getProjectWarmupPlan("project/a");
+    await client.banSafe.updateProjectWarmupPlan("project/a", {
+      warmupDays: 14,
+    });
+    await client.banSafe.getProjectInsuranceEvidence("project/a");
+    await client.banSafe.updateProjectInsuranceEvidence("project/a", {
+      enabled: false,
+    });
+    await client.banSafe.getProjectHealthPolicy("project/a");
+    await client.banSafe.updateProjectHealthPolicy("project/a", {
+      version: 2,
+      enabled: true,
+      threshold: 40,
+      sessionAction: "stop",
+      slowDownMps: null,
+      emailNotification: false,
+      webhookNotification: true,
+    });
+    const session = await client.banSafe.getSessionSafeMode("support/eu");
+    await client.banSafe.updateSessionSafeMode("support/eu", {
+      reads: "off",
+    });
+
+    expectTypeOf(session).toEqualTypeOf<
+      ApiResponse<SuccessEnvelope<SessionSafeMode>>
+    >();
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /messaging/projects/project%2Fa/safe-mode",
+      "PUT /messaging/projects/project%2Fa/safe-mode",
+      "GET /messaging/projects/project%2Fa/warmup-plan",
+      "PUT /messaging/projects/project%2Fa/warmup-plan",
+      "GET /messaging/projects/project%2Fa/insurance-evidence",
+      "PUT /messaging/projects/project%2Fa/insurance-evidence",
+      "GET /messaging/projects/project%2Fa/health-policy",
+      "PUT /messaging/projects/project%2Fa/health-policy",
+      "GET /messaging/support%2Feu/safe-mode",
+      "PUT /messaging/support%2Feu/safe-mode",
+    ]);
+    expect(JSON.parse(requests[1]!.body)).toEqual({
+      presence: "dark",
+      onlineStart: 8,
+      onlineEnd: 18,
+    });
+    expect(JSON.parse(requests[9]!.body)).toEqual({ reads: "off" });
+    expect(requests[0]?.headers.authorization).toBe(
+      `Bearer ${ORGANIZATION_API_KEY}`,
+    );
+  });
+
+  it("rejects browser client tokens before transport", async () => {
+    const { client, requests } = await messagingClient(
+      "clientToken",
+      "pmfa_ct_bansafe",
+    );
+    expect(() => client.banSafe.getProjectSafeMode("project_a")).toThrow(
+      PolymorfaConfigurationError,
+    );
+    expect(() =>
+      client.banSafe.updateSessionSafeMode("support", { pacing: "off" }),
+    ).toThrow(PolymorfaConfigurationError);
+    expect(requests).toEqual([]);
+
+    const project = await messagingClient("projectToken", PROJECT_TOKEN);
+    await project.client.banSafe.getProjectWarmupPlan("project_a");
+    expect(project.requests.map(({ path }) => path)).toEqual([
+      "/messaging/projects/project_a/warmup-plan",
     ]);
   });
 });

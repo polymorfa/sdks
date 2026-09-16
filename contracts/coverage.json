@@ -555,9 +555,8 @@
       "operationId": "getSessionSafeMode",
       "fingerprint": "0729ab2413111610a982a9201118ca37ec85abc82517d893c1ee90c94e12e41e",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "MessagingClient.banSafe.getSessionSafeMode"
       }
     },
     {
@@ -633,9 +632,8 @@
       "operationId": "getProjectHealthPolicy",
       "fingerprint": "427f5ee00124900ab278934e6778868e81e3f3bf653fca75c4982cb0e9bda85f",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "MessagingClient.banSafe.getProjectHealthPolicy"
       }
     },
     {
@@ -645,9 +643,8 @@
       "operationId": "getProjectInsuranceEvidence",
       "fingerprint": "f839f786d11d28c7c4bb168b197aa18f9f576b9ad9e05f43a350f5e55dddfe67",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "MessagingClient.banSafe.getProjectInsuranceEvidence"
       }
     },
     {
@@ -668,9 +665,8 @@
       "operationId": "getProjectSafeMode",
       "fingerprint": "edcae6987ebf54572d9ad5708c109541e110ef7fdcb99bce33877d0ec5529fdb",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "MessagingClient.banSafe.getProjectSafeMode"
       }
     },
     {
@@ -680,9 +676,8 @@
       "operationId": "getProjectWarmupPlan",
       "fingerprint": "18e5b2f30da9ea2023f492e5ff2e598980b3dbc83dbfff22c476c4185e92f721",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "MessagingClient.banSafe.getProjectWarmupPlan"
       }
     },
     {
@@ -1921,9 +1916,8 @@
       "operationId": "updateSessionSafeMode",
       "fingerprint": "ef202b206437bc4864832ddbe5a8d27564b89b722b614bffb680a4da59a9c1bb",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "MessagingClient.banSafe.updateSessionSafeMode"
       }
     },
     {
@@ -1933,9 +1927,8 @@
       "operationId": "updateProjectHealthPolicy",
       "fingerprint": "de62acdc38ab7e1f6f3e06b846f72e073478732084cd0ff61a5136ed630569c8",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "MessagingClient.banSafe.updateProjectHealthPolicy"
       }
     },
     {
@@ -1945,9 +1938,8 @@
       "operationId": "updateProjectInsuranceEvidence",
       "fingerprint": "afe0e40191efea62978dcef70f7fdea35e702f255ee5a6b6da2bc64c2823ec1d",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "MessagingClient.banSafe.updateProjectInsuranceEvidence"
       }
     },
     {
@@ -1957,9 +1949,8 @@
       "operationId": "updateProjectSafeMode",
       "fingerprint": "511dd569b2e5aed6c69365608e4bfbfc1a811c920845361ca726f8f11864f7b4",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "MessagingClient.banSafe.updateProjectSafeMode"
       }
     },
     {
@@ -1969,9 +1960,8 @@
       "operationId": "updateProjectWarmupPlan",
       "fingerprint": "00be6c45419221cfc117426e380b7b11c17eb2ab76f86009152d80c50b3dfc3e",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "MessagingClient.banSafe.updateProjectWarmupPlan"
       }
     },
     {
@@ -2544,9 +2534,8 @@
       "operationId": "listBanSafeClaims",
       "fingerprint": "63f132c3b7528d56b2f4bc2dd113521adb1c67799f5354ff3e40aef173f4b8e6",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.listClaims"
       }
     },
     {
@@ -2556,9 +2545,8 @@
       "operationId": "getBanSafeClaim",
       "fingerprint": "b3bc0389bf050e435c065d25c2e31500ea838f2422324d29ac2381d6305512df",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.getClaim"
       }
     },
     {
@@ -2568,9 +2556,8 @@
       "operationId": "listBanSafeCollection",
       "fingerprint": "b48941d6f61327935882b446d7dc2cacfaa4202ce652c383fff06b6d67169eeb",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.listCollection"
       }
     },
     {
@@ -2580,9 +2567,8 @@
       "operationId": "listBanSafeEnforcement",
       "fingerprint": "884fd48c4b0b8c280328c90549508524f152b5b0332020465cca34d2c020899a",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.listEnforcement"
       }
     },
     {
@@ -2592,9 +2578,8 @@
       "operationId": "listBanSafeFindings",
       "fingerprint": "3348b81acff620a7c0464133a96192aa1d7ff292fe13119b717556db718a3574",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.listFindings"
       }
     },
     {
@@ -2604,9 +2589,8 @@
       "operationId": "listBanSafeHealth",
       "fingerprint": "3b7bbaa9789a731eec355c0ae56f8551baf038e87a436347b5f877851e8b30b4",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.listHealth"
       }
     },
     {
@@ -2616,9 +2600,8 @@
       "operationId": "listBanSafeHealthActions",
       "fingerprint": "811cc103c1fa3787d8bcfda397c0923b3b75b83063e7024e60361b559d7881f4",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.listHealthActions"
       }
     },
     {
@@ -2628,9 +2611,8 @@
       "operationId": "getBanSafeHealth",
       "fingerprint": "e48457ee70d19fe802a77759eb591d90b4a402a751073ba78c50ce97600c1ddf",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.getHealth"
       }
     },
     {
@@ -2640,9 +2622,8 @@
       "operationId": "listBanSafeHealthHistory",
       "fingerprint": "b1bb83fe4e95e6d2b57616656646e88d6200d16fe5b90f4125c19afabc801c99",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.listHealthHistory"
       }
     },
     {
@@ -2652,9 +2633,8 @@
       "operationId": "listBanSafeIncidents",
       "fingerprint": "7230d0b94184f84e9d86414f95c57e996296555265622b5d1d960c1678abcd1a",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.listIncidents"
       }
     },
     {
@@ -2664,9 +2644,8 @@
       "operationId": "listBanSafeSignals",
       "fingerprint": "f7a61be8e3c0d290188f44a6ae5743fe8ab6cd4e6f6e701035f11588dbd99872",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.listSignals"
       }
     },
     {
@@ -2676,9 +2655,8 @@
       "operationId": "getBanSafeTelemetry",
       "fingerprint": "dcfa7941818bc14a0ebb2e02b69319846d1ddef7c2eab446d0acc3088884d714",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.getTelemetry"
       }
     },
     {
@@ -2688,9 +2666,8 @@
       "operationId": "listBanSafeTelemetryHistory",
       "fingerprint": "4bb1afc63fdac585aedf9eb7d01691e40a5693b6d3d2786647f039347d420f99",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.listTelemetryHistory"
       }
     },
     {
@@ -2999,9 +2976,8 @@
       "operationId": "getProjectHealthPolicySettings",
       "fingerprint": "c808d63660218e5b5739e7227446d3c865ed4dc0672012e5603cc846007bcc45",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.projects.getHealthPolicy"
       }
     },
     {
@@ -3011,9 +2987,8 @@
       "operationId": "getInsuranceEvidenceSettings",
       "fingerprint": "16355927f578b6806afd3610ab4b54e1498812a7430b333a0d0aad17ba3bd37e",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.projects.getInsuranceEvidence"
       }
     },
     {
@@ -3023,9 +2998,8 @@
       "operationId": "getProjectSafeModeCeiling",
       "fingerprint": "82e7ebf34285d4d2255085f1ae54e73c16862c3c993aa7046ccc0fa91313a84f",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.projects.getSafeMode"
       }
     },
     {
@@ -3035,9 +3009,8 @@
       "operationId": "getProjectWarmupPlanSettings",
       "fingerprint": "d15728439c68519789499d5c04acf928adea4cf25e843e635da06d406bbf5f26",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.projects.getWarmupPlan"
       }
     },
     {
@@ -3179,9 +3152,8 @@
       "operationId": "getNumberSafeMode",
       "fingerprint": "097f20ad6f8e2f40c0db8e93ba6b2c64aaa1e3713ebdc1764ba018dcf07f8ebb",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.sessions.getSafeMode"
       }
     },
     {
@@ -3789,9 +3761,8 @@
       "operationId": "createBanSafeIncident",
       "fingerprint": "ed0506b30a37fe1f260f90162aeaeab88cdfc556df34ee8c9c23cefacc6771e5",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.createIncident"
       }
     },
     {
@@ -3801,9 +3772,8 @@
       "operationId": "retractBanSafeIncident",
       "fingerprint": "9f50e265811495337339b414c8e4658f9f19594bdf5802d171b8c1e3502238df",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.banSafe.retractIncident"
       }
     },
     {
@@ -4402,9 +4372,8 @@
       "operationId": "updateProjectHealthPolicySettings",
       "fingerprint": "8fd612d4c6ff46acee246ce0d8be984ad3a8051dc7252f32758354bc06c5f28c",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.projects.updateHealthPolicy"
       }
     },
     {
@@ -4414,9 +4383,8 @@
       "operationId": "updateInsuranceEvidenceSettings",
       "fingerprint": "0669992dd58f4591ca27b131ec018769425aee50d3bb490b57534309890ead14",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.projects.updateInsuranceEvidence"
       }
     },
     {
@@ -4426,9 +4394,8 @@
       "operationId": "updateProjectSafeModeCeiling",
       "fingerprint": "96913c5bc8745fb5f51e2010ad62e3f47454d3010dc3e6fa22c4ae9de5465099",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.projects.updateSafeMode"
       }
     },
     {
@@ -4438,9 +4405,8 @@
       "operationId": "updateProjectWarmupPlanSettings",
       "fingerprint": "beb956a376dccc3186b2b0840c359ab1f62760dd1ca97665a9f58853419db079",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.projects.updateWarmupPlan"
       }
     },
     {
@@ -4494,9 +4460,8 @@
       "operationId": "updateNumberSafeMode",
       "fingerprint": "da3f3ab35e26248aa46d31b07fbb43c75dc9dc065daf59bd4857d9ee61d02ed8",
       "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
+        "status": "covered",
+        "method": "Client.sessions.updateSafeMode"
       }
     }
   ]

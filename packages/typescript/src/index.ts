@@ -152,6 +152,7 @@ export { LabelsResource } from "./messaging/labels.js";
 export { IdentitiesResource } from "./messaging/identities.js";
 export { MessagingMediaResource } from "./messaging/media.js";
 export { MessagesResource } from "./messaging/messages.js";
+export { MessagingBanSafeResource } from "./messaging/bansafe.js";
 export { ObservationPoliciesResource } from "./messaging/observation-policies.js";
 export { ProfileResource } from "./messaging/profile.js";
 export { PrivacyResource } from "./messaging/privacy.js";

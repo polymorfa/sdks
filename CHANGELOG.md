@@ -11,8 +11,10 @@
 - Added typed BanSafe Health, telemetry, collection, findings, enforcement,
   incidents, claims, and Health action reads to `Client.banSafe`.
   Project and session resources now cover Safe Mode, warm-up, Ban Insurance
-  evidence, and Health policy settings. Dashboard-only finding acknowledgement
-  and appeals remain outside the server-key client.
+  evidence, and Health policy settings, and `MessagingClient.banSafe` covers
+  the same settings on the Messaging API for organization API keys and project
+  tokens. Claim credit amounts are decimal quantities. Dashboard-only finding
+  acknowledgement and appeals remain outside the server SDK.
 
 - Export typed terminal Calls webhooks. `call.ended` preserves a nullable caller
   identity for `pod_lost`; `call.telemetry` preserves cumulative traffic values.
