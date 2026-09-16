@@ -3,8 +3,8 @@
 ## Unreleased
 
 - `Client.sipTrunks` manages SIP trunks (beta). Session call settings add
-  `inboundRoute`, `sipTrunkId`, and `sipClaim`; an update replaces every
-  field. Webhook types add `call.connection_joined` and
+  `inboundRoute`, `sipTrunkId`, `sipClaim`, and `revision`; an update
+  replaces every field and accepts `expectedRevision`. Webhook types add `call.connection_joined` and
   `call.connection_left`, including the SIP trunk departure reasons.
 - Breaking: Calls use one neutral calling API. Session answer modes and
   calling tickets are gone; the token your server issues authenticates

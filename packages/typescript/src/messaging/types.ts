@@ -1508,6 +1508,11 @@ export interface SessionCallSettings {
   readonly sipTrunkId: string | null;
   /** Whether an answer from the SIP trunk claims the call. `true` by default. */
   readonly sipClaim: boolean;
+  /**
+   * Increases on every change; `0` while the session uses the defaults. Send
+   * it as `expectedRevision` so an update cannot overwrite another change.
+   */
+  readonly revision: number;
   /** ISO 8601 timestamp of the last change, or `null` while the session uses the defaults. */
   readonly updatedAt: string | null;
 }
@@ -1526,6 +1531,11 @@ export interface UpdateSessionCallSettingsRequest {
   readonly sipTrunkId?: string | null;
   /** Defaults to `true`. */
   readonly sipClaim?: boolean;
+  /**
+   * Apply the update only if the settings still have this `revision`;
+   * otherwise it fails with `PolymorfaConflictError` (`state_conflict`).
+   */
+  readonly expectedRevision?: number;
 }
 
 export type SessionCallSettingsResponse = SuccessEnvelope<SessionCallSettings>;

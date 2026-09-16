@@ -351,6 +351,8 @@ Merged call audio excludes each connection's own audio unless
 `sip_trunk`, which also sends incoming calls to `sipTrunkId`; `sipClaim`
 (default `true`) makes the trunk's answer claim the call. An update replaces
 every field, so send the current route when you change `includeSelfAudio`.
+Pass the `revision` you read as `expectedRevision`; the update then fails with
+`PolymorfaConflictError` (`state_conflict`) if the settings changed meanwhile.
 These methods require a server credential.
 
 ## SIP trunks

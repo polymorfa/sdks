@@ -318,6 +318,10 @@ describe("VoipResource", () => {
   it("reads and replaces session call settings with a project token", async () => {
     const settings = {
       includeSelfAudio: true,
+      inboundRoute: "sip_trunk",
+      sipTrunkId: "018f0000-0000-7000-8000-0000000000aa",
+      sipClaim: false,
+      revision: 3,
       updatedAt: "2026-09-16T10:00:00.000Z",
     };
     const server = await serve([
@@ -330,8 +334,13 @@ describe("VoipResource", () => {
       ApiResponse<SessionCallSettingsResponse>
     >();
     expect(current.data.data.includeSelfAudio).toBe(false);
+    const { inboundRoute, sipTrunkId, sipClaim, revision } = current.data.data;
     const updated = await sdk.voip.updateCallSettings("support/eu", {
       includeSelfAudio: true,
+      inboundRoute,
+      sipClaim,
+      ...(sipTrunkId === null ? {} : { sipTrunkId }),
+      expectedRevision: revision,
     });
     expect(updated.data.data).toEqual(settings);
     expect(server.requests.map(({ method, path }) => [method, path])).toEqual([
@@ -340,7 +349,18 @@ describe("VoipResource", () => {
     ]);
     expect(JSON.parse(server.requests[1]?.body ?? "null")).toEqual({
       includeSelfAudio: true,
+      inboundRoute: "sip_trunk",
+      sipClaim: false,
+      sipTrunkId: "018f0000-0000-7000-8000-0000000000aa",
+      expectedRevision: 3,
     });
+    expect(() =>
+      sdk.voip.updateCallSettings("support/eu", {
+        includeSelfAudio: true,
+        expectedRevision: -1,
+      }),
+    ).toThrow(PolymorfaValidationError);
+    expect(server.requests).toHaveLength(2);
   });
 
   it("no longer exposes session modes or calling tickets", () => {

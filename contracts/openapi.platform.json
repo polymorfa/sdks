@@ -1145,6 +1145,26 @@
               }
             }
           },
+          "409": {
+            "description": "`state_conflict`: the settings changed after `expectedRevision`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
             "content": {
@@ -4109,7 +4129,7 @@
           "calls"
         ],
         "summary": "Update session call settings",
-        "description": "Replaces the call settings for an owned session. Omitted routing fields return to their defaults. New calls use the saved settings. Routing to a SIP trunk requires a trunk in the session's project that can receive calls.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Replaces the call settings for an owned session. Omitted routing fields return to their defaults. New calls use the saved settings. Routing to a SIP trunk requires a trunk in the session's project that can receive calls. `expectedRevision` refuses an update to settings that changed since they were read.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -4185,6 +4205,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -23791,6 +23814,11 @@
             "type": "boolean",
             "description": "Whether an answer from the SIP trunk claims the call."
           },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Increases on every change; 0 while the session uses the defaults."
+          },
           "updatedAt": {
             "type": "string",
             "format": "date-time",
@@ -23803,6 +23831,7 @@
           "inboundRoute",
           "sipTrunkId",
           "sipClaim",
+          "revision",
           "updatedAt"
         ]
       },
@@ -24474,6 +24503,11 @@
           "sipClaim": {
             "type": "boolean",
             "description": "Defaults to true."
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Refuse the update with 409 unless the settings still have this revision."
           },
           "projectId": {
             "type": "string",
@@ -31192,6 +31226,11 @@
             "type": "boolean",
             "description": "Whether an answer from the SIP trunk claims the call, which ends ringing on your other clients. Defaults to true."
           },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Increases on every change; 0 while the session uses the defaults. Send it as `expectedRevision` to refuse an update that would overwrite someone else's change."
+          },
           "updatedAt": {
             "type": "string",
             "nullable": true,
@@ -31204,6 +31243,7 @@
           "inboundRoute",
           "sipTrunkId",
           "sipClaim",
+          "revision",
           "updatedAt"
         ]
       },
@@ -31269,6 +31309,11 @@
           "sipClaim": {
             "type": "boolean",
             "description": "Whether an answer from the SIP trunk claims the call. Omit to use true."
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Apply the update only if the settings still have this `revision` (0 for a session using the defaults). Otherwise the update fails with `409 state_conflict`."
           }
         },
         "required": [

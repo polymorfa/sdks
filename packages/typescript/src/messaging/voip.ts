@@ -160,6 +160,15 @@ export class VoipResource {
     if (typeof body?.includeSelfAudio !== "boolean") {
       throw new PolymorfaValidationError("includeSelfAudio must be a boolean.");
     }
+    if (
+      body.expectedRevision !== undefined &&
+      (!Number.isSafeInteger(body.expectedRevision) ||
+        body.expectedRevision < 0)
+    ) {
+      throw new PolymorfaValidationError(
+        "expectedRevision must be a non-negative integer.",
+      );
+    }
     return this.transport.request({
       method: "PUT",
       path: callSettingsPath(session),
