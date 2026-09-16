@@ -12,7 +12,6 @@ import type {
   BrowserContactCheckResult,
   BrowserMessageResult,
   BrowserMessageReceipt,
-  BrowserOperationAccepted,
   BrowserPairingCode,
   BrowserPairingCodeRequest,
   BrowserPresenceData,
@@ -22,7 +21,6 @@ import type {
   BrowserReactionRequest,
   BrowserSeenRequest,
   BrowserSendMessageRequest,
-  BrowserSessionStatus,
   BrowserStarRequest,
   BrowserSuccessEnvelope,
   BrowserTypingRequest,
@@ -238,28 +236,6 @@ export class BrowserWidgetResource {
     private readonly transport: BrowserTransport,
     private readonly session: string,
   ) {}
-
-  start(
-    options: BrowserActionOptions = {},
-  ): Promise<BrowserActionResponse<BrowserOperationAccepted>> {
-    return this.transport.request({
-      method: "POST",
-      path: `/messaging/sessions/${encodeURIComponent(this.session)}/start`,
-      ...options,
-    });
-  }
-
-  status(
-    options: BrowserActionOptions = {},
-  ): Promise<
-    BrowserActionResponse<BrowserSuccessEnvelope<BrowserSessionStatus>>
-  > {
-    return this.transport.request({
-      method: "GET",
-      path: `/messaging/sessions/${encodeURIComponent(this.session)}`,
-      ...options,
-    });
-  }
 
   qr(
     options: BrowserActionOptions = {},

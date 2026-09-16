@@ -57,23 +57,10 @@ describe("Client billing", () => {
     expect(billing.metadata.requestId).toBe("req_platform_automation");
   });
 
-  it("updates reminder settings with an idempotency key", async () => {
+  it("does not expose the retired reminder mutation", async () => {
     const { client, requests } = await platformServer();
-
-    await client.billing.updateReminderSettings(
-      {
-        lowBalanceThresholdCents: 2_500,
-        reminderChannels: ["email", "inApp"],
-      },
-      { idempotencyKey: "billing-reminders-1" },
-    );
-
-    expect(requests[0]).toMatchObject({
-      method: "PATCH",
-      path: "/platform/billing/reminders",
-      body: '{"lowBalanceThresholdCents":2500,"reminderChannels":["email","inApp"]}',
-    });
-    expect(requests[0]?.headers["idempotency-key"]).toBe("billing-reminders-1");
+    expect(client.billing).not.toHaveProperty("updateReminderSettings");
+    expect(requests).toHaveLength(0);
   });
 });
 

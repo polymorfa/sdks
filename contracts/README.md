@@ -2,17 +2,17 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`7540c0cef0d6a9552476a1240c37c072c4781033`. `source.json` records their original
+`1600403db9dcf7996dbbb882375b1165859829d3`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
 | Covered             |        265 |
 | Missing             |         37 |
-| Excluded            |        154 |
+| Excluded            |        158 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        456 |
+| Total               |        460 |
 
 Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
@@ -20,7 +20,9 @@ successful live call.
 
 ## Reconciliation
 
-This refresh adopts public Number, conversation, user and message identifiers.
+This refresh retires direct session creation and observation-policy writes. QuickLinks supply typed configuration and test simulation. The SDK adds project history fixture upload, saved defaults, and trusted-server Meta continuation tied to an existing QuickLink.
+
+Public Number, conversation, user and message identifiers remain supported.
 Message responses retain the exact provider ID in `whatsapp_id`. Channel
 actions use the public message ID; call participants expose public identities;
 history events carry a public message index and a separate provider archive.
@@ -72,3 +74,11 @@ The cross-repository workflow compares an exact source revision and reports
 missing or changed contracts for follow-up. Its dedicated GitHub App must have
 access to read SDK contents and write coverage issues. A token-creation failure
 occurs before comparison and says nothing about SDK parity.
+
+The merged Platform and billing adjustments reuse reviewed source from SDK commit
+`75146778f7a20257a6c0f0f3139329ab308f40f0` (billing API parity): client-token administration, session lifecycle
+routes, paid-number expiry, tier quotes and confirmation, and payment-required
+errors. They are checked against these same canonical API snapshots. Removed
+dashboard-only billing reminders and client-token session start/status helpers
+are not retained as compatibility aliases. BanSafe methods remain explicitly
+missing where the ledger says so.

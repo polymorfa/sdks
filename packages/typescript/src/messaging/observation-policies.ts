@@ -1,11 +1,7 @@
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
-  GetProjectObservationPolicyResponse,
-  GetSessionObservationPolicyResponse,
-  UpdateProjectObservationPolicyRequest,
   UpdateProjectObservationPolicyResponse,
-  UpdateSessionObservationPolicyRequest,
   UpdateSessionObservationPolicyResponse,
 } from "./types.js";
 
@@ -23,19 +19,6 @@ export class ObservationPoliciesResource {
     });
   }
 
-  updateForProject(
-    projectId: string,
-    body: UpdateProjectObservationPolicyRequest,
-    options: RequestOptions = {},
-  ): Promise<ApiResponse<GetProjectObservationPolicyResponse>> {
-    return this.transport.request({
-      method: "PUT",
-      path: projectPolicyPath(projectId),
-      body,
-      ...options,
-    });
-  }
-
   retrieveForSession(
     session: string,
     options: RequestOptions = {},
@@ -43,19 +26,6 @@ export class ObservationPoliciesResource {
     return this.transport.request({
       method: "GET",
       path: sessionPolicyPath(session),
-      ...options,
-    });
-  }
-
-  updateForSession(
-    session: string,
-    body: UpdateSessionObservationPolicyRequest,
-    options: RequestOptions = {},
-  ): Promise<ApiResponse<GetSessionObservationPolicyResponse>> {
-    return this.transport.request({
-      method: "PUT",
-      path: sessionPolicyPath(session),
-      body,
       ...options,
     });
   }

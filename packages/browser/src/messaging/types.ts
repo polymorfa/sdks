@@ -227,27 +227,6 @@ export interface BrowserQrCode {
   readonly event?: string;
 }
 
-export interface BrowserOperationAccepted {
-  readonly success: true;
-  readonly message: string;
-  readonly operationId: string;
-}
-
-export interface BrowserSessionStatus {
-  readonly sessionId?: string;
-  readonly name: string;
-  readonly tenantId: string;
-  readonly connection: "linked_device" | "cloud_api";
-  readonly testMode: boolean;
-  readonly status: string;
-  readonly statusReason?: string;
-  readonly runnerId?: string;
-  readonly proxy?: string;
-  readonly config: Readonly<Record<string, unknown>>;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-}
-
 export type BrowserRequestOptions = Pick<
   BrowserRequest,
   "signal" | "timeoutMs" | "maxNetworkRetries" | "idempotencyKey" | "headers"

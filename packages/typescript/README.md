@@ -165,7 +165,9 @@ session rules can delegate to the browser token.
 
 ## Session connection lifecycle
 
-Start a Linked Device session, then retrieve its connection status with
+Session administration uses Platform routes and requires a server credential.
+The existing `MessagingClient.sessions` method names remain available.
+Start an existing Linked Device session, then retrieve its connection status with
 `sessions.retrieve`. The standard pairing flow is QuickLink. Direct JSON QR and phone
 pairing-code routes require `sessions:manage` plus an explicit organization
 entitlement; without it, the API returns `403` and the application must create
@@ -176,7 +178,7 @@ const started = await messaging.sessions.start("support", {
   idempotencyKey: "start-support",
 });
 
-console.log(started.data.operationId);
+console.log(started.data.data.started);
 console.log((await messaging.sessions.retrieve("support")).data);
 ```
 
@@ -1096,8 +1098,10 @@ used by the server client.
 ## Billing and usage
 
 `Client.billing` exposes the complete organization-key billing family.
-Reads require `sessions:read`; updating reminder settings requires
-`sessions:manage`.
+Reads require `sessions:read`. Credit quantities, including fields ending in
+`Cents`, support up to six decimal places. They are not cash minor units.
+Team warnings follow the fixed one-day and two-hour insufficiency forecast;
+notification preferences are managed in the Console.
 
 ```ts
 const [balance, usage, transactions, pricing] = await Promise.all([
@@ -1107,14 +1111,6 @@ const [balance, usage, transactions, pricing] = await Promise.all([
   platform.billing.listPricing(),
 ]);
 
-await platform.billing.updateReminderSettings(
-  {
-    lowBalanceThresholdCents: 2_500,
-    reminderChannels: ["email", "inApp"],
-  },
-  { idempotencyKey: "billing-reminders-august" },
-);
-
 console.log({
   balance: balance.data.data,
   usage: usage.data.data,
@@ -1123,6 +1119,32 @@ console.log({
   requestId: usage.metadata.requestId,
 });
 ```
+
+### Change a number tier
+
+Create a quote, show its credit charge and effective time, then confirm its ID
+only after the customer accepts. Upgrades buy a fresh 24-hour window and replace
+the remaining paid time. Downgrades apply when the paid window ends.
+
+```ts
+const reviewed = await platform.sessions.quoteTierChange(sessionId, {
+  tierOverride: "pro",
+});
+const quote = reviewed.data.data;
+console.log(quote.quote.amountCents, quote.quote.effectiveAtMs);
+
+// After the customer confirms this exact quote:
+await platform.sessions.setTierOverride(sessionId, { quoteId: quote.id });
+const result = await platform.sessions.retrieveTierChange(sessionId, quote.id);
+console.log(result.data.data.status);
+```
+
+A queued result has not granted the tier. Poll until it is applied or rejected.
+A quote expires after ten minutes and can become invalid if the number or price
+changes. Show a new quote for confirmation after a conflict; never silently
+purchase a replacement. Set `tierOverride: null` when quoting to restore project
+inheritance. The old `setTierOverride({tierOverride})` request and
+`billing.updateReminderSettings` method are removed.
 
 ## Organization access and security
 
@@ -1238,7 +1260,11 @@ const start = await platform.sessions.start(
 ```
 
 The returned `SessionStartResult` confirms that the start request was accepted;
-it does not claim that the session has connected. `sessions.stopMany` and
+it does not claim that the session has connected. A paid start first reserves
+credit. An HTTP 402 response throws `PolymorfaPaymentRequiredError`, preserving
+the API's error code, message, and request ID. It is not automatically retried;
+resolve the funding or entitlement problem before submitting another start.
+The charge is committed on successful connection. `sessions.stopMany` and
 `deleteMany` cover the two bounded batch operations. All three require
 `sessions:manage`. Batch methods accept `sessionIds` plus an optional
 `projectId`:
@@ -1272,3 +1298,67 @@ provided. The pinned handlers do not persist that header. A repeated stop can
 enqueue another stop command; a repeated delete reports only rows still found.
 QuickLink settings updates are state upserts and can safely converge on the
 same supplied values.
+
+## Session creation and configuration
+
+Create new sessions with `MessagingClient.quickLinks.create`. Direct
+`sessions.create` and Platform `sessions.createTesting` have been removed in this
+breaking contract update. Reconnect and delete still operate on existing sessions.
+
+```ts
+const link = await messaging.quickLinks.create({
+  projectId,
+  configuration: {
+    connectionPreference: "linked",
+    historySync: { consent: "ask" },
+  },
+});
+```
+
+Page text, appearance, legal links, and callbacks belong in saved
+`Client.quickLinkSettings`, not individual invitations. Links report nullable
+`expiresAt`; new invitations remain usable until completion or cancellation.
+Free-tier real-account pairing is available only in the authenticated Console.
+
+Use `Client.sessionConfiguration` for team defaults and
+`client.project(projectId).sessionConfiguration` for project defaults. Session
+updates take `{revision, configuration: {set, reset}}`; resets remove explicit
+overrides so later defaults continue to apply. Reads expose effective values,
+sources, consent restrictions, and pending runtime application.
+
+For simulation, create a QuickLink with `configuration.testing`, including initial
+`configuration` and the explicit `editable` subset delegated to the recipient.
+Test access is checked independently; simulation cannot contact real accounts.
+
+Test history content is uploaded separately from session configuration:
+
+```ts
+const fixture = await messaging.testing.createHistoryFixture(projectId, {
+  messages: [
+    {
+      id: "example-1",
+      senderPhone: testPhone,
+      text: "Demo",
+      timestamp: 1,
+      fromMe: false,
+    },
+  ],
+});
+const invitation = await messaging.quickLinks.create({
+  projectId,
+  configuration: {
+    testing: { configuration: { historyFixtureId: fixture.data.fixtureId } },
+  },
+});
+```
+
+Fixture senders must be existing simulated numbers in that project. Test-number
+entitlements and history consent still apply; uploading a fixture does not enable
+hosted message storage.
+
+Trusted servers continue an issued Meta Cloud API invitation with
+`messaging.cloudOnboarding.advance({ quicklinkId, projectId, result })`.
+`result` contains the Embedded Signup authorization code, selected WABA and phone
+IDs, and Coexistence/history choices. This method does not create a session or
+accept Meta app secrets. Its progress response is not proof that messaging is
+ready; inspect the QuickLink status.

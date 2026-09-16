@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "7540c0cef0d6a9552476a1240c37c072c4781033",
+  "sourceCommit": "1600403db9dcf7996dbbb882375b1165859829d3",
   "excludedContracts": [
     {
       "family": "graph",
@@ -127,28 +127,6 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickLinks.cancel"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "DELETE",
-      "path": "/messaging/sessions/{session}",
-      "operationId": "deleteSession",
-      "fingerprint": "1218595e97caff424c92c5357b46608f5897b27f7f228cfd338e2d8df925a312",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.sessions.delete"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "DELETE",
-      "path": "/messaging/sessions/{session}/client-rules",
-      "operationId": "deleteClientRules",
-      "fingerprint": "0685c4d6876265a4e8f1972b110e1a6adffccb50be275fe4f22eac3ac0b1ae33",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.clientTokens.deleteRules"
       }
     },
     {
@@ -767,54 +745,10 @@
       "method": "GET",
       "path": "/messaging/quicklinks/{id}",
       "operationId": "getQuickLink",
-      "fingerprint": "304ed64510b790479c4d88d1a65cf00e575c38586ab6b39497d37ac2b3228193",
+      "fingerprint": "7c74cd57a888556611ab0d8c188ae9064046672391b03eeccca1a51dff1b6e1d",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickLinks.retrieve"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/sessions",
-      "operationId": "listSessions",
-      "fingerprint": "5fb4cb7241a2548710c1d55b2ce1bbaabc1a5b3f3a80371a5cbbfe3fadd6be03",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.sessions.list"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/sessions/{session}",
-      "operationId": "getSession",
-      "fingerprint": "146c537453893e59d1564ec2e8ce9e04e7d93c207da9cfe84838ee3e14ceac7a",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.sessions.retrieve"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/sessions/{session}/client-rules",
-      "operationId": "getClientRules",
-      "fingerprint": "3030b34a9434b7cb01d866fec7427d0c89e8445253693daac533dc465ba12285",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.clientTokens.retrieveRules"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/sessions/{session}/me",
-      "operationId": "getSessionAccount",
-      "fingerprint": "75ca98789eca025fcd87b8cae49c5a7e1fb8b624c608fe3c4fea737779873744",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.sessions.account"
       }
     },
     {
@@ -867,7 +801,7 @@
       "method": "GET",
       "path": "/quicklink/{token}",
       "operationId": "getQuickLinkState",
-      "fingerprint": "1c727d050b0f307ffa7bff646ff3f4dcb409700aff27ef168755aff0c7f0e420",
+      "fingerprint": "4e672b39cdd7dc3d5db29b682f2a1b940f2e7349b4664698109cf231fe5e1922",
       "typescript": {
         "status": "excluded",
         "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
@@ -879,7 +813,7 @@
       "method": "GET",
       "path": "/quicklink/{token}/logo",
       "operationId": "getQuickLinkLogo",
-      "fingerprint": "74d33c263ee0752edfa022ef51322636d1dbc2f8fbea64d964f9a9b0a9daf1f0",
+      "fingerprint": "c7306496e68ec5885a449967f205c0aecec7b3d7e2beb22bf5ef807bcb82f6a6",
       "typescript": {
         "status": "excluded",
         "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
@@ -939,6 +873,17 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.templates.update"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/quicklink/{token}/testing",
+      "operationId": "customizeQuickLinkTesting",
+      "fingerprint": "dd599ccea4df40eb422cb17cec705414e8bc5501058348178eb6c912223632c6",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
       }
     },
     {
@@ -1276,7 +1221,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/react",
       "operationId": "sendReaction",
-      "fingerprint": "fc7c301c07fedcc756f1b7379497b805f25fc5572f1a451511e29f378c4ddf03",
+      "fingerprint": "f2970b40e43188ada7321ae1956fbae7dcccd9d64ef885e544e8e9198962b31a",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.react"
@@ -1287,7 +1232,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/seen",
       "operationId": "sendSeen",
-      "fingerprint": "d15d788c469db361b4ec6c39a96d63870620af71ca8ff9f8d01cfbba1123dca8",
+      "fingerprint": "efffa3d47d2a85f02bf167a5fdb9d1e916d4a1cfea5fa798bbd64681e405253b",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.markSeen"
@@ -1298,7 +1243,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/send",
       "operationId": "sendMessage",
-      "fingerprint": "849df52df9a850a645b3e89b169ab75e49bea3f8275e6c0d1f6a1fe1776853b8",
+      "fingerprint": "65fe8e665bc990931d2a5a7cc99108642ef49dae083749bbf679d2b1dbc38f11",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.send"
@@ -1309,7 +1254,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/star",
       "operationId": "starMessage",
-      "fingerprint": "c984d1a84c60acae4bbd4feb66b32b84def90c6fbb289a3d5603b44f106faacb",
+      "fingerprint": "9ef762c488d5d7bc690fb4b0980c3ad14fff089f677b4c54d838b0c4dd6609e6",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.star"
@@ -1320,7 +1265,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/typing",
       "operationId": "setTyping",
-      "fingerprint": "b72161d2c5d53621f7538e619e78e58849ae50ce4a1aa0cdb24d51d9f693f0d9",
+      "fingerprint": "a06ed5cfa18c62a5d9f069affce9389900d0cd5a166432da510c6d726f5d6627",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.setTyping"
@@ -1362,23 +1307,12 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/client-tokens",
-      "operationId": "mintClientToken",
-      "fingerprint": "58b4cce6f4686a4374cd5697f2c4750ee0957b55c22658a793733894726eb7a8",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.clientTokens.mint"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
       "path": "/messaging/cloud-api/embedded-signup",
       "operationId": "embeddedSignup",
-      "fingerprint": "d2eb0b016598f4d832a08b5034b6d86c755813f15b574b1f3b2e573e2fa5e03c",
+      "fingerprint": "810222a6ad0428eb2b7d8d9798204a8898ebeb5ec348f69eaec650489df357f1",
       "typescript": {
-        "status": "excluded",
-        "reason": "Embedded signup is owned by the browser onboarding flow and is not implemented by this SDK."
+        "status": "covered",
+        "method": "MessagingClient.cloudOnboarding.advance"
       }
     },
     {
@@ -1507,7 +1441,7 @@
       "method": "POST",
       "path": "/messaging/quicklinks",
       "operationId": "createQuickLink",
-      "fingerprint": "0b5ba5f3635e38a1f8ef974e46ed843b35c2caf5340c9d9a09ba5f4d0dff07aa",
+      "fingerprint": "ee9f03f069b7618094ff348bb43ce990c543c89ca15f78c4789edbe0c6342126",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickLinks.create"
@@ -1516,104 +1450,12 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/sessions/{projectId}/",
-      "operationId": "createSession",
-      "fingerprint": "5a921f8a26c06cd978328ebb7f4917775e2c0aeec60669a68641c68b97b36e30",
+      "path": "/messaging/testing/{projectId}/history-fixtures",
+      "operationId": "createTestingHistoryFixture",
+      "fingerprint": "556e7f6751984568cc8aa09d802336eb74c171a18401804be5ebf00ce4c83e0c",
       "typescript": {
         "status": "covered",
-        "method": "MessagingClient.sessions.create"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/sessions/{session}/handoff-ack",
-      "operationId": "sessionHandoffAck",
-      "fingerprint": "91e2aa83d95f46e7a0c409b931c25b5f1dce3f42364c51add577fdb074f89f77",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
-        "milestone": "security-design"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/sessions/{session}/handoff-import",
-      "operationId": "sessionHandoffImport",
-      "fingerprint": "022f5a23225a52c6a830f1ec3abb238207367bc18d095a770e070c00903a83c4",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
-        "milestone": "security-design"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/sessions/{session}/handoff-keys",
-      "operationId": "sessionHandoffKeys",
-      "fingerprint": "066830e00efdbc6dc2d366b9f8a690bf642cb0e7a9a215bd28aef8dda5d70b60",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
-        "milestone": "security-design"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/sessions/{session}/logout",
-      "operationId": "logoutSession",
-      "fingerprint": "3289ea279b276dba235309af4bd1478568eb44cbc2ce5ca490bbf06ccf6966bf",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.sessions.logout"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/sessions/{session}/restart",
-      "operationId": "restartSession",
-      "fingerprint": "7c518ddabdc96089477062e67defbb7dbea0b80db79bb3cdba7333e164fef27f",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.sessions.restart"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/sessions/{session}/start",
-      "operationId": "startSession",
-      "fingerprint": "350d745f2b04c842e01652c4a79fbe0637e4bdededde26a29d6d00d5a81a25f7",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.sessions.start"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/sessions/{session}/stop",
-      "operationId": "stopSession",
-      "fingerprint": "de08ab4048a3a64984cd117692924e081f4746d9d05d69b611bda558ed4850db",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.sessions.stop"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/sessions/{session}/upload-appstate-keys",
-      "operationId": "sessionUploadAppStateKeys",
-      "fingerprint": "33f3739ac905d0d9f1a9cfee9325b1f4fc15c6fcbbafe7c29386c6dcca7ca880",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
-        "milestone": "security-design"
+        "method": "MessagingClient.testing.createHistoryFixture"
       }
     },
     {
@@ -1755,7 +1597,7 @@
       "method": "POST",
       "path": "/quicklink/{token}/cancel",
       "operationId": "cancelQuickLinkByToken",
-      "fingerprint": "d639fcf73bcb3e297b7cbf09731f5e330574baf5fbbb11556a2d1c72ce6b353d",
+      "fingerprint": "1e8e0e2d3a0f5022722f9a4ce20ab1c42e5e6149a6ec7d3a4d37f7d4e481537d",
       "typescript": {
         "status": "excluded",
         "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
@@ -1767,7 +1609,7 @@
       "method": "POST",
       "path": "/quicklink/{token}/cloud",
       "operationId": "completeQuickLinkCloudSignup",
-      "fingerprint": "2cad92665e56d4718f7a53acea71d5fd32997efd70ab60869a9826e5faaa0d53",
+      "fingerprint": "4737cd1a70237a10a2fd46b339cefde693e064644b61e0d2874f8ae2e7060bb1",
       "typescript": {
         "status": "excluded",
         "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
@@ -1778,7 +1620,7 @@
       "method": "POST",
       "path": "/quicklink/{token}/code",
       "operationId": "requestQuickLinkCode",
-      "fingerprint": "46d9df5f4b283478cf1b5741112d2d876fe04537f864b7fa331cffc30f3fd9fe",
+      "fingerprint": "4760de4a52464d5f9b6c524694dd57798fef13fed80e4be28810021573cbedb9",
       "typescript": {
         "status": "excluded",
         "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
@@ -1790,7 +1632,7 @@
       "method": "POST",
       "path": "/quicklink/{token}/confirm",
       "operationId": "confirmQuickLink",
-      "fingerprint": "2cd2448d8e536cfff46713cd312307c0f9f38cfe1cbcf5c99b282c97c4c91fa2",
+      "fingerprint": "91be047b4af0855599d1e0c80c57511e6e771fb71a5cb33ca3a5bb86b7f91a2b",
       "typescript": {
         "status": "excluded",
         "reason": "Credential-free public QuickLink participant route owned by browser UI transport, not the server SDK.",
@@ -1802,7 +1644,7 @@
       "method": "POST",
       "path": "/quicklink/{token}/connection",
       "operationId": "selectQuickLinkConnection",
-      "fingerprint": "42dd82695c10fa09b91243b5e2693b48113fa8a8999d06667affb31384009feb",
+      "fingerprint": "c33269e7e8020f5a24d7edea80025c27c6cbd72a8fae197e6a604a40e9f3c92e",
       "typescript": {
         "status": "excluded",
         "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
@@ -1811,9 +1653,20 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/quicklink/{token}/history",
+      "operationId": "chooseQuickLinkHistory",
+      "fingerprint": "b633d7318a62fb39b55279d0087bb223dfe776a870b5dc0174026a51621a9a69",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/quicklink/{token}/phone",
       "operationId": "confirmQuickLinkPhone",
-      "fingerprint": "88b3d30d790478fb28a5247e957c8b5b94f7d686329e6cea8b2b65f25b2050e5",
+      "fingerprint": "4a28673d52f6b1a93649c08e94e930e4d6d6b57898b2fd8d7e16200c5221208c",
       "typescript": {
         "status": "excluded",
         "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
@@ -1824,10 +1677,21 @@
       "method": "POST",
       "path": "/quicklink/{token}/phone/reset",
       "operationId": "resetQuickLinkPhone",
-      "fingerprint": "f9b305276c769cd7355a448b15531d7822145156d082abd1b9cbd148b877fe21",
+      "fingerprint": "ce13c7b679d3cd62f740ff8231e3f682020d2f86f053a246b489050b22aeecaf",
       "typescript": {
         "status": "excluded",
         "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/testing/start",
+      "operationId": "startQuickLinkTesting",
+      "fingerprint": "88b89e8bb98a55d4af5e12e29e177c6163fafd6798c672f05e2222a5c477f251",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
       }
     },
     {
@@ -1998,17 +1862,6 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/observation-policy",
-      "operationId": "updateSessionObservationPolicy",
-      "fingerprint": "91551ffaebb805f46fee7801dbe647f0eb58088f952bb2efbb236cabceca848c",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.observationPolicies.updateForSession"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "PUT",
       "path": "/messaging/{session}/privacy/{setting}",
       "operationId": "setPrivacySetting",
       "fingerprint": "c799b0ac7d5e956f595eb983296abf28865c1a0e211ad4917ce02a166ce3c43a",
@@ -2100,17 +1953,6 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/projects/{projectId}/observation-policy",
-      "operationId": "updateProjectObservationPolicy",
-      "fingerprint": "9e13d93f2c894114eeaf1baef9c5e205c3e9c52b7815a7351c5b0d92e6d5abb6",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.observationPolicies.updateForProject"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "PUT",
       "path": "/messaging/projects/{projectId}/safe-mode",
       "operationId": "updateProjectSafeMode",
       "fingerprint": "511dd569b2e5aed6c69365608e4bfbfc1a811c920845361ca726f8f11864f7b4",
@@ -2135,106 +1977,12 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/sessions/{session}",
-      "operationId": "updateSession",
-      "fingerprint": "9e6f06a678aa417bfbbab3806dc956f7b07661469d20f4019726476892638c2e",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.sessions.update"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "PUT",
-      "path": "/messaging/sessions/{session}/client-rules",
-      "operationId": "setClientRules",
-      "fingerprint": "aeed3b849cd466c2de629adaa5b8db2ab0e256757d056b9cc7c577b77131b138",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.clientTokens.updateRules"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "PUT",
       "path": "/messaging/webhooks/{id}",
       "operationId": "updateWebhook",
       "fingerprint": "d21daf8b2f99633dbd18ae7652328df55c8b9b7d8941386ee716ce9d3686fd18",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.webhooks.update"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
-      "path": "/admin/keys/{keyId}",
-      "operationId": "adminRevokeApiKeyApiKey",
-      "fingerprint": "ad3fb98e6b38fb8ec6768cf46bceeefdb3c7a388b1e1191bb6ffa5838ef250df",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
-      "path": "/admin/members/{memberId}",
-      "operationId": "adminRemoveMember",
-      "fingerprint": "75e97f3ec515dc4517c18b292c4519e0d2cae3d11407d81774aaf9595cc1438f",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
-      "path": "/admin/organization-invitations/{invitationId}",
-      "operationId": "adminRevokeOrganizationInvitation",
-      "fingerprint": "b701384882940998fdddfa78fcb5dfe02b5b382d698b4c2489c1c037ec9c071c",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
-      "path": "/admin/orgs/{orgId}",
-      "operationId": "adminCascadeDeleteOrganization",
-      "fingerprint": "f6eda7cd690044a374318154763ad041b2a3e0bda1ce7d8b3f796c2d766374b9",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
-      "path": "/admin/sessions/{sessionId}",
-      "operationId": "adminForceDeleteSession",
-      "fingerprint": "2eb87a5ec83007ba6d913a3fa177755f49d0b1039bb0c3735d0fd0256c4f90db",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
-      "path": "/admin/users/{userId}/onboarding",
-      "operationId": "adminResetOnboardingUser",
-      "fingerprint": "b23836e078c69c93e6746d3623b1a2fa5ad1777d609e76a2b7094d0452bcbe75",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
       }
     },
     {
@@ -2417,6 +2165,17 @@
     {
       "family": "platform",
       "method": "DELETE",
+      "path": "/platform/sessions/{session}/client-rules",
+      "operationId": "deleteClientRules",
+      "fingerprint": "5fffea2a4d46c0f9389dd2d3549d2b052f2d7315652acebc952af8d8c294b04b",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.clientTokens.deleteRules"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
       "path": "/platform/sessions/{sessionId}",
       "operationId": "deletePlatformSession",
       "fingerprint": "608dce45a25adddc3192bfb34bedfcb8a25d7bcb0cda23a01b74fb1b0a1cbe7f",
@@ -2446,269 +2205,6 @@
       "typescript": {
         "status": "covered",
         "method": "Client.webhooks.delete"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/audit",
-      "operationId": "adminListAuditLogGlobal",
-      "fingerprint": "e5477965b7cc7cd4f4337cca70a1915ed9cbbe5ee68c086ef0215f11f5e45de6",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/audit/actions",
-      "operationId": "adminListAuditLogAdminActions",
-      "fingerprint": "df191f47422bf978cce0748865472244b5ace165374c63147cc2a1af57fdd0d7",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/bans",
-      "operationId": "adminListRecentSessionBans",
-      "fingerprint": "cfd539cbdc66d1a9c8b85056c385a05545467bd261902328b896dce3da8092c5",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/bansafe/claims",
-      "operationId": "adminListBanSafeClaims",
-      "fingerprint": "a34081546c2402d8ea40df7f32edf843c081767b8daecb9630dfb00953645b47",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff-only operation; not available to SDK credentials."
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/billing/leaderboard",
-      "operationId": "adminTopOrgsByRevenueBilling",
-      "fingerprint": "d31daed2c1c0da08088703dc983c9fb53df90f20bf753730f2f4c912d8a8ff79",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/billing/lowbalance",
-      "operationId": "adminLowBalanceOrgsBilling",
-      "fingerprint": "5d924793098ac39f47510faef2ddab0fa7638be559e93ebcf457414108ece6ec",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/billing/revenue",
-      "operationId": "adminPlatformRevenueBilling",
-      "fingerprint": "0ad1bd44e376246a4b2dc97cb244ade316350327867643109265632419ae4048",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/campaigns",
-      "operationId": "adminListCampaigns",
-      "fingerprint": "fd8f3883ede44e0e6c213bc701f03df9d48e54388ff8cce8f09ee8a77df08e82",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/campaigns/optouts",
-      "operationId": "adminOptOutLeaderboardCampaign",
-      "fingerprint": "01d722c58eec761a06d1336587417ccb6963316dd47770bd654b9beb76260677",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/keys",
-      "operationId": "adminListApiKeys",
-      "fingerprint": "2d293fe8b9939d3256e612f8f19f91a56a893ed97465d90409748d1df6dc94af",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/kpis",
-      "operationId": "adminPlatformKpisPlatform",
-      "fingerprint": "dccaafd0658b8b9a13cb325616b9a7598b43c76918e69db056690e05d8eaa4be",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/organization-invitations",
-      "operationId": "adminListOrganizationInvitations",
-      "fingerprint": "8d4b607f062803467aa446e102951bd0370c3c404f0f33c6d2e861b8978ec688",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/orgs",
-      "operationId": "adminListOrganizations",
-      "fingerprint": "ffaebb8eac23863e4e802c511625a3a58d3f002526e4cb52cc842526d4288251",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/orgs/{orgId}",
-      "operationId": "adminGetOrganization",
-      "fingerprint": "bec7994abe925f71a1bdf7a667cee0c2b891e9f72eca47e049ddfadaedbd4692",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/orgs/features",
-      "operationId": "adminListOrganizationFeatureGroups",
-      "fingerprint": "2ce372b2a7f04b05d4b7164e3862638eb89d9d0943635082bad47ca9d12dfd36",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/pricing",
-      "operationId": "adminListPricing",
-      "fingerprint": "d02ecd212b73dc8858b3bb5489da8e0150e5643b353a8b814730ceaaea74da9a",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/sessions",
-      "operationId": "adminListSessions",
-      "fingerprint": "50c1e733bee6c7d90f9b52a5d67e4bde3eb55b0bbc0cf40c31e25b2387af58f6",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/signups",
-      "operationId": "adminRecentSignupsPlatform",
-      "fingerprint": "cfdba3ad7a7ebcd3af8f567190597dc4aec9976286c81b5f5df43ecb7b7affa2",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/tenants",
-      "operationId": "adminListTenants",
-      "fingerprint": "fdbde8f64e54cb69ddcc3e8ae7ce079c2e7c1f011d09a1d0bee56096c0ec2874",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/users",
-      "operationId": "adminSearchUser",
-      "fingerprint": "2ab1f78c94e4be651a08f5eb03efa029650905095170d6860e95975f35b5e95c",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/users/{userId}",
-      "operationId": "adminGetUser",
-      "fingerprint": "f3292d0669a786237e1fc3cd53f59217a0b869d0905666b00e2d694e1d973939",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/admin/webhooks",
-      "operationId": "adminListWebhooks",
-      "fingerprint": "a34600666cb5c7936c521619f6b2222ffea886fb657f5e7939addbdf66d395ac",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
       }
     },
     {
@@ -2956,6 +2452,17 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/console/session-configuration/{sessionId}",
+      "operationId": "getSessionConfiguration",
+      "fingerprint": "41ef7c74309f396237388dc9ee45e8f39942f768cf99da89906d388fc4878db4",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/console/teams",
       "operationId": "listUserProfileTeams",
       "fingerprint": "aa70e557cdf7d23f620f07952cab024052b8b725efee720546d09d463f946cb1",
@@ -3035,7 +2542,7 @@
       "method": "GET",
       "path": "/platform/bansafe/claims",
       "operationId": "listBanSafeClaims",
-      "fingerprint": "a7ccdc2dc6d79435e97b265ae9e25aa708a6503b8faa2091604d3654122485b8",
+      "fingerprint": "63f132c3b7528d56b2f4bc2dd113521adb1c67799f5354ff3e40aef173f4b8e6",
       "typescript": {
         "status": "missing",
         "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
@@ -3047,7 +2554,7 @@
       "method": "GET",
       "path": "/platform/bansafe/claims/{claimId}",
       "operationId": "getBanSafeClaim",
-      "fingerprint": "3afc562fb6ab7525239320d8c5062c65bfb810f33b4cd86a3c4169c328417204",
+      "fingerprint": "b3bc0389bf050e435c065d25c2e31500ea838f2422324d29ac2381d6305512df",
       "typescript": {
         "status": "missing",
         "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
@@ -3613,12 +3120,56 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/platform/session-configuration",
+      "operationId": "getSessionConfigurationDefaults",
+      "fingerprint": "1304eb3cf35c0ebdd19c9b2e647f51eb1741681f2012a79b018a1174514ee0a9",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.sessionConfiguration.retrieve"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/platform/sessions",
       "operationId": "listPlatformSessions",
-      "fingerprint": "e9ff8f65460952f3324c354dfd285c107a075f50a6c074e98483c5d2d034ce56",
+      "fingerprint": "3f970eec5bff102fc4929ee2061c3bef4cb5f553bce5452d0abfc95ab552ea0b",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.list"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{session}/client-rules",
+      "operationId": "getClientRules",
+      "fingerprint": "c3fbc3bf67159d7a92c52fe1901028854640fc517f8b4c5ba59cdf72ed2aecca",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.clientTokens.retrieveRules"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}",
+      "operationId": "getSession",
+      "fingerprint": "55b25c2f9bc8e73807255f202b2b75adebacfb7f62b9232c136b96ca6ea83e53",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.sessions.retrieve"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/me",
+      "operationId": "getSessionAccount",
+      "fingerprint": "c00aeae61b1a22a3087170a197ca7d1f8fb85eacd5cd1b921babc346745fc283",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.sessions.account"
       }
     },
     {
@@ -3631,6 +3182,17 @@
         "status": "missing",
         "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
         "milestone": "bansafe-sdk"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/tier-quotes/{quoteId}",
+      "operationId": "getSessionTierChange",
+      "fingerprint": "79ce1d14ddd4b51c9ba59980026804bd4a89e0ea8c6cea1bf9faa12a449db4f4",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.sessions.retrieveTierChange"
       }
     },
     {
@@ -3748,66 +3310,6 @@
     {
       "family": "platform",
       "method": "PATCH",
-      "path": "/admin/members/{memberId}",
-      "operationId": "adminSetMemberRole",
-      "fingerprint": "127f1cd224c3e52a457570acf91592e6a5daa224802bbaa8ce5c7fd5c0bc4ecf",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "PATCH",
-      "path": "/admin/orgs/{orgId}",
-      "operationId": "adminRenameOrganization",
-      "fingerprint": "e5d51c28a9b0f245e9addf4b1303ac8e976b235cb4e858579ebf891ac1ebf1c0",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "PATCH",
-      "path": "/admin/orgs/{orgId}/features",
-      "operationId": "adminSetOrganizationFeatureGroups",
-      "fingerprint": "b72fd41063a093f063ecbeda25da0e3156f4f67a80055075f7bcb6fed4f45e87",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "PATCH",
-      "path": "/admin/pricing/{tier}",
-      "operationId": "adminSetPricingActive",
-      "fingerprint": "66790bad7d680548c5a6cd1ca51b1820540acc9217841680e76e3c0fff79b15f",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "PATCH",
-      "path": "/admin/tenants/{tenantId}",
-      "operationId": "adminSetTenantActive",
-      "fingerprint": "82b8991488c9b616cb75c8280b91879e41e4936a0925a17227bef737ce3a9651",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "PATCH",
       "path": "/console/members/{memberId}",
       "operationId": "updateMemberRole",
       "fingerprint": "e2aea14bd2f072744ef866550eae42431b1fb3a317fd4fa0d2ee7af3b665ca91",
@@ -3863,17 +3365,6 @@
     {
       "family": "platform",
       "method": "PATCH",
-      "path": "/platform/billing/reminders",
-      "operationId": "updateBillingReminderSettings",
-      "fingerprint": "0a543d6338478d78b5ba06ab17f8b14ed5ed658fc099b6780ff99829d17fedab",
-      "typescript": {
-        "status": "covered",
-        "method": "Client.billing.updateReminderSettings"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "PATCH",
       "path": "/platform/campaigns/{campaignId}",
       "operationId": "updateCampaign",
       "fingerprint": "af3eb9310441ed1eb0f705f322b4ddcf03af5945f4a3db3351c387e998394ebc",
@@ -3921,7 +3412,7 @@
       "method": "PATCH",
       "path": "/platform/sessions/{sessionId}",
       "operationId": "setSessionTierOverride",
-      "fingerprint": "07b7c8cebbe44acca79ba8e4ee40c4016a0ac0f31f482c864aeda45556fe5c53",
+      "fingerprint": "e33c0b4fee8ed6018f8103e82603e5fa15ce18fa05801435912050aaf0f30df2",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.setTierOverride"
@@ -3948,230 +3439,6 @@
       "typescript": {
         "status": "covered",
         "method": "Client.webhooks.update"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/bansafe/claims/{claimId}/approve",
-      "operationId": "adminApproveBanSafeClaim",
-      "fingerprint": "afb58500d98361121e2c82d5e875feb6b904fd66562ae68890b03adf2af25ec9",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff-only operation; not available to SDK credentials."
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/bansafe/claims/{claimId}/deny",
-      "operationId": "adminDenyBanSafeClaim",
-      "fingerprint": "f0034a2b5e150ef9c1d7b1a12cf6b8581d1e28c94f5e3386bab09ed539030fee",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff-only operation; not available to SDK credentials."
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/bansafe/claims/{claimId}/reverse",
-      "operationId": "adminReverseBanSafeClaim",
-      "fingerprint": "5a1adcb22e84b1866e08345d2d13a839ac296f8ecdafbb3492170db26377cd83",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff-only operation; not available to SDK credentials."
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/bansafe/enforcement/{orgId}/{sessionId}/lift",
-      "operationId": "adminLiftBanSafeEnforcement",
-      "fingerprint": "d0161a4a2815db2a5c6ad3487b6554ed680af89da8a02b0c924ad819bd6a2300",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff-only operation; not available to SDK credentials."
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/billing/credits",
-      "operationId": "adminCompCreditsBilling",
-      "fingerprint": "d192bf12f1e89727ab17eb33def248a5e19960cd167d11fcd1401a7356bfa138",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/billing/refunds",
-      "operationId": "adminRefundBilling",
-      "fingerprint": "4a287e42a26d0f0ca1b294b8c83d144fc8d8e3f4987077957b0cb4fc4a6ddf06",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/campaigns/{campaignId}/pause",
-      "operationId": "adminForcePauseCampaign",
-      "fingerprint": "8b7199bbdec1b72680bb0910fe782b44f510a91fb063fc6a6291848ea6f2ca65",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/campaigns/{campaignId}/stop",
-      "operationId": "adminForceStopCampaign",
-      "fingerprint": "5ed62146a21b408c1410ea6a2e0b2da1c9ceb23ae36c5b5f87a900e313ec4c04",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/members/invites",
-      "operationId": "adminInviteMember",
-      "fingerprint": "f811d6820060d3e775f95c48467ee49cbc35825a48a5f3e43aee10b49ffb0fc3",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/organization-invitations",
-      "operationId": "adminCreateOrganizationInvitation",
-      "fingerprint": "d4f01d177f165f9f8cfcc236bc91e04e535eab599e246fff2100a63b07a3e968",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/orgs/{orgId}/freeze",
-      "operationId": "adminFreezeOrganization",
-      "fingerprint": "0a6fd21fccc917e71c23c755c19a930f9f13f0b24ea263f0b194c618c0243e14",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/orgs/{orgId}/unfreeze",
-      "operationId": "adminUnfreezeOrganization",
-      "fingerprint": "b17365d46734682f186d9ad50098b89a656c7b65056f2c841ded8ec1392361ae",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/sessions/{sessionId}/comp",
-      "operationId": "adminCompSessionDaySession",
-      "fingerprint": "50bead5c3e70d64cdee76f39d0c994c043fa5ef6273ac9aa21c71600991f62fc",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/sessions/{sessionId}/stop",
-      "operationId": "adminForceStopSession",
-      "fingerprint": "d274e8b0da00a9304d24a35b2f476cf24717aaeedbb96cb53f1b76726a338f2e",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/sync",
-      "operationId": "adminEnsureCurrentUserStaffSyncStaffSync",
-      "fingerprint": "d679be6a9d2c68f86958d4397c7da4dc403d6e92118bbbc46556ac34e22c2da6",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/users/{userId}/signout",
-      "operationId": "adminForceSignOutUser",
-      "fingerprint": "39e7206b997cce91d02f71db8e048514302cadd2ac34b5e9f8642428336d81c0",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/users/{userId}/suspend",
-      "operationId": "adminSuspendUser",
-      "fingerprint": "eecb797b37f6e2d36fad2f99ef525ba74699e08af6e6452a9e3f55f801f762d2",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/users/{userId}/unsuspend",
-      "operationId": "adminUnsuspendUser",
-      "fingerprint": "9669e2f1f4ccbd4b4b4061482d9fce7201b465bf4d06ae121a835c11ffc22551",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/admin/webhooks/{webhookId}/disable",
-      "operationId": "adminForceDisableWebhook",
-      "fingerprint": "1213dfc05c2fa87078704b2e27606a2d5ecb7a4c80d0b74af5eb5e75c435f296",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
       }
     },
     {
@@ -4210,17 +3477,6 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/api/admin/features/control",
-      "operationId": "setFeatureControl",
-      "fingerprint": "f93edce20a263a411345668c9ada68ab9d2ab423dd0ecababc3b370c3b94322b",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff-only operation; not available to SDK credentials."
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
       "path": "/console/auth/totp",
       "operationId": "enrollTotpUserProfile",
       "fingerprint": "ed41939c43994d7af2ac9b3634806a832dd4f22e7257aa1eb799e8a27363292b",
@@ -4235,6 +3491,28 @@
       "path": "/console/auth/totp/verify",
       "operationId": "verifyTotpUserProfile",
       "fingerprint": "4ae5afc998a3b81666c0e3dd4a9e47fd3a95ff0e230d9536fd15e1a3cc1b25bb",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/bansafe/enforcement/{session}/appeal",
+      "operationId": "appealBanSafeEnforcement",
+      "fingerprint": "c7ba6128a484f1549270e0d3462dbd275d03f18d9523852b40b45ae0b91e0e70",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/bansafe/findings/{findingId}/acknowledge",
+      "operationId": "acknowledgeBanSafeFinding",
+      "fingerprint": "c783f82822c624258d75082e59c1dba38a8517866832b07d749624300dbaa20d",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -4507,30 +3785,6 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/bansafe/enforcement/{session}/appeal",
-      "operationId": "appealBanSafeEnforcement",
-      "fingerprint": "867fe3af738efe95669cc08e2782e794cda47960730aec7e28717b10eaba7555",
-      "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/bansafe/findings/{findingId}/acknowledge",
-      "operationId": "acknowledgeBanSafeFinding",
-      "fingerprint": "2400d9c5b8144328e2f76a86464105ce031f778d6570b3aa77ac8f4f4dc0d670",
-      "typescript": {
-        "status": "missing",
-        "reason": "BanSafe policy and health resources have no handwritten SDK implementation in this revision.",
-        "milestone": "bansafe-sdk"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
       "path": "/platform/bansafe/incidents",
       "operationId": "createBanSafeIncident",
       "fingerprint": "ed0506b30a37fe1f260f90162aeaeab88cdfc556df34ee8c9c23cefacc6771e5",
@@ -4638,6 +3892,17 @@
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.stop"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/client-tokens",
+      "operationId": "mintClientToken",
+      "fingerprint": "f5118aefb6a929d473b36cc711ffa7460120b88766bf283e7a696a2215b237e4",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.clientTokens.mint"
       }
     },
     {
@@ -4875,9 +4140,67 @@
     {
       "family": "platform",
       "method": "POST",
+      "path": "/platform/sessions/{sessionId}/handoff-ack",
+      "operationId": "sessionHandoffAck",
+      "fingerprint": "c06814ef2f4f1f6c18dac3e05a8fca165c3e4fed06ee3a2591545b4a9814b328",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+        "milestone": "security-design"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/handoff-import",
+      "operationId": "sessionHandoffImport",
+      "fingerprint": "d456d3a1f97abf9e68aa52fdccdb3ad37a9f28bcabf81030ba722fe5538bae86",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+        "milestone": "security-design"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/handoff-keys",
+      "operationId": "sessionHandoffKeys",
+      "fingerprint": "c2cebd98d925e3c4aeb9502718ac98ccbca44ce2916fb80b8419849af0f7344e",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+        "milestone": "security-design"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/logout",
+      "operationId": "logoutSession",
+      "fingerprint": "b8b071fea00af83ff6aa490cfde76b6c02f1cffdae51b5216eb64c3e9341be3e",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.sessions.logout"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/restart",
+      "operationId": "restartSession",
+      "fingerprint": "5358b91281263bdc168bad36a54c9d9555899e40fe20e919f952ce4d621c0975",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.sessions.restart"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
       "path": "/platform/sessions/{sessionId}/start",
       "operationId": "startPlatformSession",
-      "fingerprint": "3aaffac72ee663399124f68c26b6b8aec93fdfa74e5f5a437ed40e5946e3f0f4",
+      "fingerprint": "4c542237b33d3c6a86ccf3f8f938e46ce021f90827ea52c12205da7e231b8df4",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.start"
@@ -4897,9 +4220,32 @@
     {
       "family": "platform",
       "method": "POST",
+      "path": "/platform/sessions/{sessionId}/tier-quotes",
+      "operationId": "quoteSessionTierChange",
+      "fingerprint": "fe210e4bcf1111b76f0be6eff3a2f9d3723b281df313ef0801981acba7f307b4",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.sessions.quoteTierChange"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/upload-appstate-keys",
+      "operationId": "sessionUploadAppStateKeys",
+      "fingerprint": "924282b08bb78e9236b191865a4c069f17ae64653fe0ac7699c48c6bc69691e0",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+        "milestone": "security-design"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
       "path": "/platform/sessions/delete",
       "operationId": "deleteSessions",
-      "fingerprint": "6d12a65fc14b96c4fad4656544fb036a8839c86dcc66457086c03407284ce987",
+      "fingerprint": "802829ea55ee5a1a82319541c7eebce7e504aaba78c89cc59889a431e89a4e97",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.deleteMany"
@@ -4910,21 +4256,10 @@
       "method": "POST",
       "path": "/platform/sessions/stop",
       "operationId": "stopSessions",
-      "fingerprint": "acbdb5bf30110c5984cb8e8cda57e99ce7e05e4221b35b7be9c53f31541e2fc3",
+      "fingerprint": "74e62980b1175423073e824243c0c5b7c9c585d1f12954d045e6e4e55f72502e",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.stopMany"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/sessions/testing",
-      "operationId": "createTestingSession",
-      "fingerprint": "90fc5729b10ba544a24366525b300cd3baa8eda2480baf47c575bf58331edeae",
-      "typescript": {
-        "status": "covered",
-        "method": "Client.sessions.createTesting"
       }
     },
     {
@@ -4981,18 +4316,6 @@
       "typescript": {
         "status": "covered",
         "method": "Client.webhooks.test"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/admin/pricing/{tier}",
-      "operationId": "adminUpdatePricing",
-      "fingerprint": "186c89615d21dd90e3a7e22e7a532af8a0ff64a89dfcca47d59fb082801a9136",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Staff administration route authenticated with ConsoleSession; it is outside the public server SDK credential boundary.",
-        "milestone": "credential-boundary"
       }
     },
     {
@@ -5064,6 +4387,17 @@
     {
       "family": "platform",
       "method": "PUT",
+      "path": "/console/session-configuration/{sessionId}",
+      "operationId": "updateSessionConfiguration",
+      "fingerprint": "ad18136611bc488d39e8d606356f40c6816933d69693d43389af6cfe84cd8be2",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
       "path": "/platform/projects/{projectId}/health-policy",
       "operationId": "updateProjectHealthPolicySettings",
       "fingerprint": "8fd612d4c6ff46acee246ce0d8be984ad3a8051dc7252f32758354bc06c5f28c",
@@ -5118,6 +4452,39 @@
       "typescript": {
         "status": "covered",
         "method": "Client.quickLinkSettings.update"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/session-configuration",
+      "operationId": "updateSessionConfigurationDefaults",
+      "fingerprint": "66124c83e129f5d345df8916ef875912a79ea9ff7d077b0867323ac9065e0e1b",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.sessionConfiguration.update"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{session}/client-rules",
+      "operationId": "setClientRules",
+      "fingerprint": "dbe0bbd3a9044ad290f4029ae627a5b1cae80bbaca22dd64ec6dad6bc494483e",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.clientTokens.updateRules"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{sessionId}",
+      "operationId": "updateSession",
+      "fingerprint": "6c2e8c579273379404cb68ae6d4a0e9586eeed7d9fa295cb7c728e32a6d04d23",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.sessions.update"
       }
     },
     {

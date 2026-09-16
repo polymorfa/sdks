@@ -1,3 +1,4 @@
+import { CloudOnboardingResource, TestingResource } from "./onboarding.js";
 import {
   assertServerRuntime,
   validateMessagingCredential,
@@ -48,6 +49,8 @@ export class MessagingClient {
   readonly privacy: PrivacyResource;
   readonly presence: PresenceResource;
   readonly quickReplies: QuickRepliesResource;
+  readonly cloudOnboarding: CloudOnboardingResource;
+  readonly testing: TestingResource;
   readonly quickLinks: QuickLinksResource;
   readonly templates: TemplatesResource;
   readonly users: UsersResource;
@@ -73,19 +76,24 @@ export class MessagingClient {
     this.campaigns = new MessagingCampaignsResource(transport);
     this.chats = new ChatsResource(transport);
     this.channels = new ChannelsResource(transport);
-    this.clientTokens = new ClientTokensResource(transport);
+    this.clientTokens = new ClientTokensResource(transport, credential.type);
     this.contacts = new ContactsResource(transport);
     this.groups = new GroupsResource(transport);
     this.labels = new LabelsResource(transport);
     this.identities = new IdentitiesResource(transport);
     this.media = new MessagingMediaResource(transport);
     this.observationPolicies = new ObservationPoliciesResource(transport);
-    this.sessions = new SessionsResource(transport);
+    this.sessions = new SessionsResource(transport, credential.type);
     this.messages = new MessagesResource(transport);
     this.profile = new ProfileResource(transport);
     this.privacy = new PrivacyResource(transport);
     this.presence = new PresenceResource(transport);
     this.quickReplies = new QuickRepliesResource(transport);
+    this.cloudOnboarding = new CloudOnboardingResource(
+      transport,
+      credential.type,
+    );
+    this.testing = new TestingResource(transport, credential.type);
     this.quickLinks = new QuickLinksResource(transport, credential.type);
     this.templates = new TemplatesResource(transport);
     this.users = new UsersResource(transport);

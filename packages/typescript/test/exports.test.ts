@@ -62,7 +62,7 @@ import {
   type CreateProjectRequest,
   type CreateCampaignRequest,
   type CreateChannelRequest,
-  type CreateSessionRequest,
+  type CreateQuickLinkRequest,
   type Contact,
   type ContactUserInfo,
   type DisappearingTimerRequest,
@@ -107,7 +107,9 @@ import {
   type SendMessageRequest,
   type TemplateDefinition,
   type TierPricing,
-  type UpdateBillingReminderSettingsRequest,
+  type NumberTierChange,
+  type NumberTierQuoteRequest,
+  type SessionTierOverrideRequest,
   type WebhookEvent,
   type UserSecurityCode,
   type OrganizationQuickLinkSettings,
@@ -182,9 +184,9 @@ describe("public exports", () => {
     expectTypeOf<CampaignAnalytics>().toHaveProperty("responseRate");
     expectTypeOf<CreateCampaignRequest>().toHaveProperty("name");
     expectTypeOf<TierPricing>().toHaveProperty("dailyRateCents");
-    expectTypeOf<UpdateBillingReminderSettingsRequest>().toHaveProperty(
-      "lowBalanceThresholdCents",
-    );
+    expectTypeOf<NumberTierChange>().toHaveProperty("quote");
+    expectTypeOf<NumberTierQuoteRequest>().toHaveProperty("tierOverride");
+    expectTypeOf<SessionTierOverrideRequest>().toHaveProperty("quoteId");
     expectTypeOf<ResponseMetadata>().toHaveProperty("requestId");
     expectTypeOf<RequestOptions>().toHaveProperty("signal");
     expectTypeOf<ResolveIdentityParams>().toMatchTypeOf<
@@ -212,7 +214,7 @@ describe("public exports", () => {
     expectTypeOf<SecurityIncident>().toHaveProperty("resolution");
     expectTypeOf<SessionBan>().toHaveProperty("status");
     expectTypeOf<SessionBatchRequest>().toHaveProperty("sessionIds");
-    expectTypeOf<CreateSessionRequest>().toHaveProperty("projectId");
+    expectTypeOf<CreateQuickLinkRequest>().toHaveProperty("projectId");
     expectTypeOf<CreateChannelRequest>().toHaveProperty("picture");
     expectTypeOf<Channel>().toHaveProperty("id");
     expectTypeOf<ChannelMessage>().toHaveProperty("position");
