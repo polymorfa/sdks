@@ -12,6 +12,7 @@ describe("@polymorfa/calls public entry point", () => {
       "CallsApiError",
       "CallsAuthError",
       "CallsClient",
+      "CallsDisabledError",
       "CallsError",
       "DEFAULT_SAMPLE_RATE",
       "VideoTrack",

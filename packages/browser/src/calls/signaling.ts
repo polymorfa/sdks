@@ -1,5 +1,6 @@
 import {
   CallClaimedError,
+  CallsDisabledError,
   type AcceptCallOptions,
   type AcceptCallResult,
   type CallsToken,
@@ -88,15 +89,19 @@ export class CallsSignalingClient implements CallsSignaling {
     request: OfferRequest,
     signal?: AbortSignal,
   ): Promise<SdpAnswer> {
-    const response = await this.#transport.request<{
-      readonly data: SdpAnswer;
-    }>({
-      method: "POST",
-      path: this.#path(callId, "/offer"),
-      body: { sdp: request.sdp, connectionId: request.connectionId },
-      ...(signal === undefined ? {} : { signal }),
-      idempotencyKey: `voip-offer:${callId}:${request.connectionId}:${nonce()}`,
-    });
+    const response = await this.#transport
+      .request<{
+        readonly data: SdpAnswer;
+      }>({
+        method: "POST",
+        path: this.#path(callId, "/offer"),
+        body: { sdp: request.sdp, connectionId: request.connectionId },
+        ...(signal === undefined ? {} : { signal }),
+        idempotencyKey: `voip-offer:${callId}:${request.connectionId}:${nonce()}`,
+      })
+      .catch((cause: unknown) => {
+        throw claimedError(cause);
+      });
     return response.data.data;
   }
   async renegotiate(
@@ -213,11 +218,32 @@ export class CallsSignalingClient implements CallsSignaling {
   }
 }
 
-/** Turn a `409 call_claimed` HTTP failure into {@link CallClaimedError}. */
+/**
+ * Turn a `409 call_claimed` HTTP failure into {@link CallClaimedError} and a
+ * `403 calls_disabled` one into {@link CallsDisabledError}.
+ */
 export function claimedError(cause: unknown): unknown {
-  return isCallClaimed(cause)
-    ? new CallClaimedError(cause instanceof Error ? cause.message : undefined)
-    : cause;
+  const message = cause instanceof Error ? cause.message : undefined;
+  if (isCallClaimed(cause)) return new CallClaimedError(message);
+  if (hasFailureCode(cause, 403, "calls_disabled")) {
+    return cause instanceof CallsDisabledError
+      ? cause
+      : new CallsDisabledError(message);
+  }
+  return cause;
+}
+
+function hasFailureCode(cause: unknown, status: number, code: string): boolean {
+  const failure = cause as {
+    status?: unknown;
+    code?: unknown;
+    details?: unknown;
+  } | null;
+  if (failure?.status !== status) return false;
+  if (failure.code === code) return true;
+  const details = failure.details as Record<string, unknown> | undefined;
+  const error = details?.["error"] as Record<string, unknown> | undefined;
+  return error?.["code"] === code || details?.["code"] === code;
 }
 
 /** True for a `409` failure whose code (or response body code) is `call_claimed`. */

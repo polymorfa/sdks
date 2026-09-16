@@ -110,6 +110,10 @@ stopped working. It does not reconnect after it leaves, after the call ends,
 when another participant claimed the call (`CallClaimedError`), or when the
 platform refuses the connection; the call then ends with a reason.
 
+While calling is turned off for the session in its call settings, placing,
+answering, joining, inviting and connecting media reject with
+`CallsDisabledError` (`code: "calls_disabled"`). Calls in progress continue.
+
 ## Runtime
 
 Node 22+ for the global `WebSocket`, or pass `WebSocket` from `ws` on Node 20.
@@ -131,6 +135,6 @@ after cancellation or disconnect is ended instead of tracked.
 
 The package entry point exports `CallsClient`, `Call`, `AudioTrack`,
 `VideoTrack`, `CallsError`, `CallsApiError`, `CallsAuthError`,
-`CallClaimedError`, `DEFAULT_SAMPLE_RATE`, and their option, event, token and
+`CallClaimedError`, `CallsDisabledError`, `DEFAULT_SAMPLE_RATE`, and their option, event, token and
 media types. Everything else is internal to the Polymorfa packages and has no
 stability guarantee.

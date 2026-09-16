@@ -39,21 +39,25 @@ export class BrowserCallsApi implements CallsApi {
     input: PlaceCallRequest,
     signal?: AbortSignal,
   ): Promise<{ readonly callId: string }> {
-    const response = await this.#transport.request<{
-      data?: { callId?: unknown };
-    }>({
-      method: "POST",
-      path: "/messaging/voip/calls",
-      body: {
-        to: input.to,
-        video: input.video,
-        ...(input.exclusive === undefined
-          ? {}
-          : { exclusive: input.exclusive }),
-      },
-      idempotencyKey: input.idempotencyKey,
-      ...(signal === undefined ? {} : { signal }),
-    });
+    const response = await this.#transport
+      .request<{
+        data?: { callId?: unknown };
+      }>({
+        method: "POST",
+        path: "/messaging/voip/calls",
+        body: {
+          to: input.to,
+          video: input.video,
+          ...(input.exclusive === undefined
+            ? {}
+            : { exclusive: input.exclusive }),
+        },
+        idempotencyKey: input.idempotencyKey,
+        ...(signal === undefined ? {} : { signal }),
+      })
+      .catch((cause: unknown) => {
+        throw claimedError(cause);
+      });
     const callId = response.data?.data?.callId;
     if (typeof callId !== "string" || !callId) throw malformed("call id");
     return { callId };
@@ -112,12 +116,16 @@ export class BrowserCallsApi implements CallsApi {
     to: string,
     signal?: AbortSignal,
   ): Promise<Participant> {
-    const response = await this.#transport.request<{ data?: unknown }>({
-      method: "POST",
-      path: `/messaging/voip/calls/${encodeURIComponent(callId)}/participants`,
-      body: { to },
-      ...(signal === undefined ? {} : { signal }),
-    });
+    const response = await this.#transport
+      .request<{ data?: unknown }>({
+        method: "POST",
+        path: `/messaging/voip/calls/${encodeURIComponent(callId)}/participants`,
+        body: { to },
+        ...(signal === undefined ? {} : { signal }),
+      })
+      .catch((cause: unknown) => {
+        throw claimedError(cause);
+      });
     const p = response.data?.data;
     if (!isParticipant(p)) throw malformed("participant");
     return p;

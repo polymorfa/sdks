@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CallClaimedError } from "@polymorfa/calls";
+import { CallClaimedError, CallsDisabledError } from "@polymorfa/calls";
 import { createInternalBrowserCalls as createBrowserCalls } from "../src/calls/client.js";
 import { BrowserCallsApi } from "../src/calls/api.js";
 import { BrowserTransport } from "../src/transport.js";
@@ -490,6 +490,38 @@ describe("BrowserCallsApi", () => {
       }),
     );
     await expect(api.accept("c1", {})).rejects.toBeInstanceOf(CallClaimedError);
+  });
+  it("maps calls_disabled refusals to CallsDisabledError", async () => {
+    const api = new BrowserCallsApi(
+      new BrowserTransport({
+        getClientToken: async () => "pmfa_ct_test",
+        maxNetworkRetries: 0,
+        fetch: async () =>
+          Response.json(
+            {
+              error: {
+                code: "calls_disabled",
+                message: "Calling is turned off for this number.",
+              },
+            },
+            { status: 403 },
+          ),
+      }),
+    );
+    const input = {
+      session: "support",
+      to: "+15550100",
+      video: false,
+      idempotencyKey: "test",
+    };
+    await expect(api.place(input)).rejects.toBeInstanceOf(CallsDisabledError);
+    await expect(api.accept("c1", {})).rejects.toBeInstanceOf(
+      CallsDisabledError,
+    );
+    await expect(api.addParticipant("c1", "+15550101")).rejects.toMatchObject({
+      code: "calls_disabled",
+      status: 403,
+    });
   });
   it("rejects malformed successful placement responses", async () => {
     const api = new BrowserCallsApi(

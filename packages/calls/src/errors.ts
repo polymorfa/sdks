@@ -31,6 +31,18 @@ export class CallClaimedError extends CallsApiError {
 }
 
 /**
+ * Calling is turned off for the session in its call settings. Placing,
+ * answering, joining, inviting and attaching media are refused until it is
+ * turned back on; calls in progress continue.
+ */
+export class CallsDisabledError extends CallsApiError {
+  constructor(message = "Calling is turned off for this number.") {
+    super(403, "calls_disabled", message);
+    this.name = "CallsDisabledError";
+  }
+}
+
+/**
  * The credential no longer authorizes the socket: it expired, was revoked, or
  * its client rules changed. The platform closes the socket with code 4401.
  * The client asks the token provider for a fresh token before reconnecting.

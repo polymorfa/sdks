@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { CallClaimedError, CallsAuthError } from "../src/errors.js";
+import {
+  CallClaimedError,
+  CallsAuthError,
+  CallsDisabledError,
+} from "../src/errors.js";
 import { MediaSocket, type MediaClose } from "../src/media.js";
 import { encodeVideoFrame, type VideoFrame } from "../src/protocol.js";
 import { FakeWebSocket, fakeApi, flush, timers } from "./helpers.js";
@@ -114,12 +118,26 @@ describe("MediaSocket authentication", () => {
     await expect(connecting).rejects.toBeInstanceOf(CallClaimedError);
   });
 
+  it("maps a calls_disabled refusal to CallsDisabledError without retrying", async () => {
+    const { media } = mediaWith();
+    const closes: MediaClose[] = [];
+    media.on("close", (c) => closes.push(c));
+    const connecting = media.connect();
+    await flush();
+    FakeWebSocket.instances[0]!.open();
+    FakeWebSocket.instances[0]!.text({ type: "error", code: "calls_disabled" });
+    FakeWebSocket.instances[0]!.drop(4403, "calls disabled");
+    await expect(connecting).rejects.toBeInstanceOf(CallsDisabledError);
+    expect(closes.at(-1)).toMatchObject({ reason: "refused", code: 4403 });
+  });
+
   it("classifies the platform's close codes", async () => {
     const cases: [number, string, string | undefined, string][] = [
       [4409, "call claimed", undefined, "claimed"],
       [4409, "unauthorized", "state_conflict", "ended"],
       [1000, "media connection closed", undefined, "ended"],
       [4400, "unauthorized", "invalid_parameter", "refused"],
+      [4403, "calls disabled", "calls_disabled", "refused"],
       [1008, "authentication timeout", undefined, "refused"],
       [4429, "unauthorized", "rate_limit_exceeded", "lost"],
       [1013, "authorization unavailable", undefined, "lost"],

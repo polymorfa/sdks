@@ -23,6 +23,7 @@ export {
   CallClaimedError,
   CallsApiError,
   CallsAuthError,
+  CallsDisabledError,
   CallsError,
 } from "./errors.js";
 export type {

@@ -1,4 +1,8 @@
-import { CallClaimedError, CallsApiError } from "./errors.js";
+import {
+  CallClaimedError,
+  CallsApiError,
+  CallsDisabledError,
+} from "./errors.js";
 import { isParticipant, type Participant } from "./protocol.js";
 import {
   CallsTokenSource,
@@ -8,7 +12,11 @@ import {
   type CallsTokenRequest,
 } from "./token.js";
 
-export { CallClaimedError, CallsApiError } from "./errors.js";
+export {
+  CallClaimedError,
+  CallsApiError,
+  CallsDisabledError,
+} from "./errors.js";
 
 /** Minimal request seam so tests and other transports can stand in for fetch. */
 export type FetchLike = (input: string, init: RequestInit) => Promise<Response>;
@@ -143,6 +151,8 @@ export function callsHttpError(
 ): CallsApiError {
   if (status === 409 && code === "call_claimed")
     return new CallClaimedError(message);
+  if (status === 403 && code === "calls_disabled")
+    return new CallsDisabledError(message);
   return new CallsApiError(status, code ?? `http_${status}`, message);
 }
 

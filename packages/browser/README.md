@@ -97,6 +97,8 @@ the controller never declines one for you. The first invitation is displayed;
 - `snapshot.claimedByOther` is `true` when another participant claimed the
   call. `answer()` and `join()` then reject with `CallClaimedError`, and
   `reject()` is refused: declining would end the claimer's call.
+- While calling is turned off for the number, `place()`, `answer()` and
+  `join()` reject with `CallsDisabledError` from `@polymorfa/calls`.
 - `controller.reject()` declines a ringing call and ends it for everyone.
 - `controller.leave()` closes this browser's connection; the call continues.
 - `controller.end()` (and `hangup()`) ends the call for every participant.

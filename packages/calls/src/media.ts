@@ -1,5 +1,10 @@
 import type { CallsApi } from "./api.js";
-import { CallClaimedError, CallsAuthError, CallsError } from "./errors.js";
+import {
+  CallClaimedError,
+  CallsAuthError,
+  CallsDisabledError,
+  CallsError,
+} from "./errors.js";
 import { Emitter } from "./events.js";
 import {
   AUTH_FAILED_CLOSE_CODE,
@@ -25,6 +30,8 @@ import { isClientToken } from "./token.js";
  * otherwise the call is not available (ended or not ready).
  */
 export const CALL_CLAIMED_CLOSE_CODE = 4409;
+/** Close code for a connection refused because calling is turned off. */
+export const CALLS_DISABLED_CLOSE_CODE = 4403;
 /** Close codes after which reattaching can succeed. */
 const RETRYABLE_CLOSE_CODES = new Set([1001, 1006, 1011, 1012, 1013, 4429]);
 
@@ -65,8 +72,9 @@ export type MediaVideoSource = { readonly source: number } & VideoSourceOwner;
  * Why the socket closed: `local` (this client closed it), `left` (after
  * {@link MediaSocket.leave}), `ended` (the platform closed the connection
  * normally or the call is no longer available), `claimed` (another
- * participant claimed the call), `unauthorized` (4401), `refused` (4400 or a
- * policy violation; retrying cannot help), or `lost` (retryable).
+ * participant claimed the call), `unauthorized` (4401), `refused` (4400, 4403
+ * while calling is turned off, or a policy violation; retrying cannot help),
+ * or `lost` (retryable).
  */
 export type MediaCloseReason =
   "local" | "left" | "ended" | "claimed" | "unauthorized" | "refused" | "lost";
@@ -374,7 +382,12 @@ export class MediaSocket extends Emitter<Events> {
     // The platform closes a connection normally when it leaves or the call
     // ends; the lifecycle stream reports which.
     if (code === 1000) return { reason: "ended", ...withCode };
-    if (code === 4400 || code === 1008 || code === 1009)
+    if (
+      code === 4400 ||
+      code === CALLS_DISABLED_CLOSE_CODE ||
+      code === 1008 ||
+      code === 1009
+    )
       return { reason: "refused", ...withCode };
     if (code === undefined || RETRYABLE_CLOSE_CODES.has(code))
       return { reason: "lost", ...withCode };
@@ -464,6 +477,8 @@ export class MediaSocket extends Emitter<Events> {
 function errorFrom(frame: { code: string; message?: string }): CallsError {
   if (frame.code === "call_claimed") return new CallClaimedError(frame.message);
   if (frame.code === "unauthorized") return new CallsAuthError(frame.message);
+  if (frame.code === "calls_disabled")
+    return new CallsDisabledError(frame.message);
   return new CallsError(
     frame.code,
     frame.message ??
