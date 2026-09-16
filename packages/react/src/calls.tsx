@@ -1252,7 +1252,7 @@ export function ParticipantList({
 
 export interface CallControlsProps extends ControllerProps {
   readonly className?: string;
-  /** Force-hide the camera control even when the line could carry video. */
+  /** Hide the camera control even when the call can carry video. */
   readonly disableVideo?: boolean;
   /**
    * Show a Leave button that closes only this connection. Defaults to
@@ -1656,7 +1656,7 @@ export interface CallSurfaceProps extends ControllerProps {
   readonly resolveName?: (peer: string) => string | undefined;
   /** Resolve an avatar URL for a number (sync or async). */
   readonly resolveAvatar?: AvatarResolver;
-  /** Force-hide the camera control even when the line could carry video. */
+  /** Hide the camera control even when the call can carry video. */
   readonly disableVideo?: boolean;
   /** Offer the ↗ pop-out window button. Defaults to true. */
   readonly popout?: boolean;

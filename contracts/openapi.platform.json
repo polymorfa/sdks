@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (153 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (76 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (153 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (79 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -19286,7 +19286,7 @@
           "calls"
         ],
         "summary": "List calls",
-        "description": "**EXCLUDED from the public API** (`console`). Customer console view of the organization's own call records.",
+        "description": "Lists the team's calls, newest first. Filter by project, session, state, direction, start time, or live calls only. `live=true` returns offered and answered calls; `live=false` returns declined, missed, and ended calls. Pass `nextCursor` as `cursor` to read the next page with the same filters.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -19311,7 +19311,63 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Session name."
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "offered",
+                "accepted",
+                "rejected",
+                "missed",
+                "ended"
+              ]
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "inbound",
+                "outbound"
+              ]
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "live",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -19323,6 +19379,16 @@
               "minimum": 1,
               "maximum": 100,
               "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
             }
           }
         ],
@@ -19346,10 +19412,107 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsoleCallList"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/console/calls/{callId}": {
+      "get": {
+        "operationId": "getCall",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Get call detail",
+        "description": "Returns one call with its participants, connections, media measurements, webhook delivery outcomes, and correlation identifiers. Measurements that were not reported are null. Webhook delivery records are kept for 30 days.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Customer console call diagnostics; requires live dashboard membership.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "callId",
+            "in": "path",
+            "required": true,
+            "description": "Call identifier.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[\\x21-\\x7e]+$"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsoleCallDetail"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -19357,8 +19520,208 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "terminateCall",
+        "tags": [
+          "calls"
+        ],
+        "summary": "End a call",
+        "description": "Ends a live call for every participant. Returns 409 when the call is not live. Every attempt is recorded in the audit log.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Console call control; requires a live organization owner or admin. Server integrations end calls with DELETE /messaging/voip/calls/{callId}.",
+        "x-required-organization-role": "owner_or_admin",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "callId",
+            "in": "path",
+            "required": true,
+            "description": "Call identifier.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[\\x21-\\x7e]+$"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsoleCallTerminateResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/CallControlUnavailable"
+          }
+        }
+      }
+    },
+    "/console/calls/{callId}/connections/{connectionId}/remove": {
+      "post": {
+        "operationId": "removeCallConnection",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Remove a call connection",
+        "description": "Closes one client connection of a live call. The call continues for everyone else. Returns 409 when the call is not live or the connection now belongs to another participant. Every attempt is recorded in the audit log.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Console call control; requires a live organization owner or admin. Server integrations close their own connections with POST /messaging/voip/calls/{callId}/leave.",
+        "x-required-organization-role": "owner_or_admin",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "callId",
+            "in": "path",
+            "required": true,
+            "description": "Call identifier.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[\\x21-\\x7e]+$"
+            }
+          },
+          {
+            "name": "connectionId",
+            "in": "path",
+            "required": true,
+            "description": "Client-chosen connection identifier.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{8,64}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveConsoleCallConnectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsoleCallConnectionRemoveResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/CallControlUnavailable"
           }
         }
       }
@@ -21942,6 +22305,645 @@
         "required": [
           "includeSelfAudio",
           "updatedAt"
+        ]
+      },
+      "ConsoleCallEndReason": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Why the call ended or was not answered. `code` is `other` for an unrecognized reason.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$",
+            "example": "user_hangup"
+          },
+          "label": {
+            "type": "string",
+            "example": "Hung up"
+          }
+        },
+        "required": [
+          "code",
+          "label"
+        ]
+      },
+      "ConsoleCallListItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Session name."
+          },
+          "callId": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "inbound",
+              "outbound"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "offered",
+              "accepted",
+              "rejected",
+              "missed",
+              "ended"
+            ]
+          },
+          "live": {
+            "type": "boolean",
+            "description": "The call is offered or answered and may still have live media."
+          },
+          "backend": {
+            "type": "string"
+          },
+          "hasVideo": {
+            "type": "boolean"
+          },
+          "peerRef": {
+            "type": "string",
+            "nullable": true,
+            "description": "Team-scoped pseudonym of the remote party."
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "connectedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "durationSeconds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "terminateReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "endReason": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsoleCallEndReason"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "sessionId",
+          "callId",
+          "projectId",
+          "direction",
+          "state",
+          "live",
+          "backend",
+          "hasVideo",
+          "peerRef",
+          "startedAt",
+          "connectedAt",
+          "endedAt",
+          "durationSeconds",
+          "terminateReason",
+          "endReason"
+        ]
+      },
+      "ConsoleCallList": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "calls": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/ConsoleCallListItem"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Pass as `cursor` for the next page; null on the last page."
+          }
+        },
+        "required": [
+          "calls",
+          "nextCursor"
+        ]
+      },
+      "ConsoleCallDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "call": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "callId": {
+                "type": "string"
+              },
+              "sessionId": {
+                "type": "string",
+                "description": "Session name."
+              },
+              "projectId": {
+                "type": "string",
+                "format": "uuid",
+                "nullable": true
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "inbound",
+                  "outbound"
+                ]
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "offered",
+                  "accepted",
+                  "rejected",
+                  "missed",
+                  "ended"
+                ]
+              },
+              "live": {
+                "type": "boolean"
+              },
+              "backend": {
+                "type": "string",
+                "description": "How the number reaches WhatsApp for this call."
+              },
+              "hasVideo": {
+                "type": "boolean"
+              },
+              "peerRef": {
+                "type": "string",
+                "nullable": true,
+                "description": "Team-scoped pseudonym of the remote party."
+              },
+              "startedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "connectedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "endedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "durationSeconds": {
+                "type": "integer",
+                "nullable": true
+              },
+              "endReason": {
+                "nullable": true,
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ConsoleCallEndReason"
+                  }
+                ]
+              },
+              "answeredBy": {
+                "type": "string",
+                "nullable": true,
+                "description": "Participant reference that answered: `client:<id>` or `server:<id>`."
+              },
+              "exclusive": {
+                "type": "boolean",
+                "nullable": true,
+                "description": "Whether the answering participant claimed the call. Null when unknown."
+              }
+            },
+            "required": [
+              "callId",
+              "sessionId",
+              "projectId",
+              "direction",
+              "state",
+              "live",
+              "backend",
+              "hasVideo",
+              "peerRef",
+              "startedAt",
+              "connectedAt",
+              "endedAt",
+              "durationSeconds",
+              "endReason",
+              "answeredBy",
+              "exclusive"
+            ]
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]{0,18}$",
+                  "description": "Public participant id, as call.participant_* webhooks report it."
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "invited",
+                    "ringing",
+                    "connected",
+                    "left"
+                  ]
+                },
+                "firstSeenAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "leftReason": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "state",
+                "firstSeenAt",
+                "updatedAt",
+                "leftReason"
+              ]
+            }
+          },
+          "connections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{8,64}$"
+                },
+                "participant": {
+                  "type": "string",
+                  "pattern": "^(client|server):[A-Za-z0-9._:@-]{1,128}$"
+                },
+                "transport": {
+                  "type": "string",
+                  "enum": [
+                    "webrtc",
+                    "socket",
+                    "unknown"
+                  ]
+                },
+                "joinedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true
+                },
+                "leftAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true
+                },
+                "reason": {
+                  "type": "string",
+                  "enum": [
+                    "left",
+                    "replaced",
+                    "claimed",
+                    "call_ended",
+                    null
+                  ],
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "participant",
+                "transport",
+                "joinedAt",
+                "leftAt",
+                "reason"
+              ]
+            }
+          },
+          "telemetry": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Media measurements reported by the call service. Measurements that were not taken are null.",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "reported",
+                  "unknown"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "media_server"
+                ]
+              },
+              "setupMs": {
+                "type": "number",
+                "nullable": true
+              },
+              "ringMs": {
+                "type": "number",
+                "nullable": true
+              },
+              "codec": {
+                "type": "string",
+                "nullable": true
+              },
+              "jitterMs": {
+                "type": "number",
+                "nullable": true
+              },
+              "packetsLost": {
+                "type": "number",
+                "nullable": true
+              },
+              "rttMs": {
+                "type": "number",
+                "nullable": true
+              },
+              "receivedKbps": {
+                "type": "number",
+                "nullable": true
+              },
+              "sentKbps": {
+                "type": "number",
+                "nullable": true
+              },
+              "clientReports": {
+                "type": "object",
+                "nullable": true,
+                "description": "Always null: client-side reports are not collected."
+              }
+            },
+            "required": [
+              "status",
+              "source",
+              "setupMs",
+              "ringMs",
+              "codec",
+              "jitterMs",
+              "packetsLost",
+              "rttMs",
+              "receivedKbps",
+              "sentKbps",
+              "clientReports"
+            ]
+          },
+          "webhookDeliveries": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "items": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "deliveryId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "webhookId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "eventId": {
+                      "type": "string"
+                    },
+                    "eventType": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "delivering",
+                        "retrying",
+                        "succeeded",
+                        "failed"
+                      ]
+                    },
+                    "attemptCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "lastAttemptAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true
+                    },
+                    "nextAttemptAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true
+                    },
+                    "completedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true
+                    },
+                    "lastOutcome": {
+                      "type": "object",
+                      "nullable": true,
+                      "additionalProperties": false,
+                      "properties": {
+                        "statusCode": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "errorCode": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "statusCode",
+                        "errorCode"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "deliveryId",
+                    "webhookId",
+                    "eventId",
+                    "eventType",
+                    "status",
+                    "attemptCount",
+                    "createdAt",
+                    "lastAttemptAt",
+                    "nextAttemptAt",
+                    "completedAt",
+                    "lastOutcome"
+                  ]
+                }
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "items",
+              "truncated"
+            ]
+          },
+          "history": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "events": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "eventId": {
+                      "type": "string",
+                      "description": "Event id, as the `id` of the matching webhook delivery."
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "eventId",
+                    "type",
+                    "occurredAt"
+                  ]
+                }
+              },
+              "truncated": {
+                "type": "boolean",
+                "description": "True when the call exceeded the recorded history limit."
+              }
+            },
+            "required": [
+              "events",
+              "truncated"
+            ]
+          },
+          "correlation": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "callId": {
+                "type": "string"
+              },
+              "sessionId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "callId",
+              "sessionId"
+            ]
+          }
+        },
+        "required": [
+          "call",
+          "participants",
+          "connections",
+          "telemetry",
+          "webhookDeliveries",
+          "history",
+          "correlation"
+        ]
+      },
+      "ConsoleCallTerminateResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "terminated": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "callId",
+          "terminated"
+        ]
+      },
+      "RemoveConsoleCallConnectionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Project that owns the call's session."
+          }
+        }
+      },
+      "ConsoleCallConnectionRemoveResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "connectionId": {
+            "type": "string"
+          },
+          "removed": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "callId",
+          "connectionId",
+          "removed"
         ]
       },
       "UpdateSessionCallSettingsRequest": {
@@ -29700,6 +30702,11 @@
                   "media_fetch_failed",
                   "resource_gone",
                   "state_conflict",
+                  "call_claimed",
+                  "call_not_ringing",
+                  "connection_limit",
+                  "unsupported_for_connection",
+                  "call_permission_required",
                   "rate_limit_exceeded",
                   "internal_error",
                   "operation_not_supported",
@@ -29893,6 +30900,30 @@
       },
       "BillingCreditRequired": {
         "description": "The paid number could not reserve sufficient available credit. Add credit to your team before starting it.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "CallControlUnavailable": {
+        "description": "The call service could not be reached. Nothing was changed; retry the request.",
         "headers": {
           "X-Request-Id": {
             "schema": {

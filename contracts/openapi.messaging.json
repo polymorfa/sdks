@@ -1638,6 +1638,15 @@
             "type": "boolean",
             "description": "Whether the offered call advertised video.",
             "example": false
+          },
+          "sessionConnection": {
+            "type": "string",
+            "enum": [
+              "linked_device",
+              "cloud_api"
+            ],
+            "description": "Connection of the session that carries the call: a linked device or the WhatsApp Business Cloud API.",
+            "example": "linked_device"
           }
         },
         "required": [
@@ -1758,6 +1767,15 @@
           "exclusive": {
             "type": "boolean",
             "description": "Present and `true` when the answering participant claimed the call."
+          },
+          "sessionConnection": {
+            "type": "string",
+            "enum": [
+              "linked_device",
+              "cloud_api"
+            ],
+            "description": "Connection of the session that carries the call: a linked device or the WhatsApp Business Cloud API.",
+            "example": "linked_device"
           }
         },
         "required": [
@@ -1893,7 +1911,7 @@
           },
           "reason": {
             "type": "string",
-            "description": "Termination reason: user_hangup | timeout | lost_connection | rejected | capacity | pod_lost.",
+            "description": "Termination reason: user_hangup | timeout | lost_connection | rejected | capacity | pod_lost | connection_failed | upstream_failed.",
             "example": "user_hangup"
           },
           "direction": {
@@ -1909,6 +1927,15 @@
             "type": "boolean",
             "description": "Whether the call carried video.",
             "example": false
+          },
+          "sessionConnection": {
+            "type": "string",
+            "enum": [
+              "linked_device",
+              "cloud_api"
+            ],
+            "description": "Connection of the session that carries the call: a linked device or the WhatsApp Business Cloud API.",
+            "example": "linked_device"
           }
         },
         "required": [
@@ -6284,6 +6311,8 @@
                   "call_claimed",
                   "call_not_ringing",
                   "connection_limit",
+                  "unsupported_for_connection",
+                  "call_permission_required",
                   "rate_limit_exceeded",
                   "internal_error",
                   "operation_not_supported",
@@ -17299,7 +17328,8 @@
         },
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
-        }
+        },
+        "x-internal": true
       }
     },
     "/messaging/voip/calls/{id}/renegotiate": {
@@ -17512,7 +17542,8 @@
         },
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
-        }
+        },
+        "x-internal": true
       }
     },
     "/messaging/voip/calls": {
@@ -17591,7 +17622,7 @@
             }
           },
           "403": {
-            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "description": "`call_permission_required` when the recipient has not granted this business permission to call them, or the credential is not permitted",
             "content": {
               "application/json": {
                 "schema": {
@@ -17631,7 +17662,7 @@
             }
           },
           "409": {
-            "description": "Session not ready — the named session cannot place an outbound call yet",
+            "description": "`unsupported_for_connection` when the session's connection cannot place this call (Cloud API calls are audio only), or `state_conflict` when the named session cannot place an outbound call yet",
             "content": {
               "application/json": {
                 "schema": {
@@ -17726,6 +17757,26 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#operation-not-supported"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "`upstream_failure` when the Cloud API refused or failed the call action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
                 }
               }
             }
@@ -18520,7 +18571,7 @@
             }
           },
           "409": {
-            "description": "Call not ready — no media session on the owning pod yet",
+            "description": "`unsupported_for_connection` when the session connects through the Cloud API, which has no group calls, or `state_conflict` when the call has no live leg yet",
             "content": {
               "application/json": {
                 "schema": {
@@ -18835,7 +18886,8 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
         },
-        "description": "**Required scope:** `sessions:manage`"
+        "description": "**Required scope:** `sessions:manage`",
+        "x-internal": true
       }
     },
     "/messaging/voip/calls/{id}/candidates": {
@@ -19038,7 +19090,8 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
         },
-        "description": "**Required scope:** `sessions:manage`"
+        "description": "**Required scope:** `sessions:manage`",
+        "x-internal": true
       }
     },
     "/messaging/voip/calls/{id}": {
