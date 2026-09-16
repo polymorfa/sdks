@@ -86,9 +86,11 @@ The handwritten Messaging resources in this milestone are:
 - `banSafe`: retrieve and update project Safe Mode, warm-up, Ban Insurance
   evidence, and Health policy settings, and one number's Safe Mode override,
   with an organization API key or project token
-- `sessions`: list, create, retrieve, update, delete, start, stop, restart,
+- `sessions`: list, retrieve, update, delete, start, stop, restart,
   logout, account, and entitlement-gated direct JSON QR or phone pairing
 - `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions
+- `cloudOnboarding`: continue an issued Meta Cloud API QuickLink from a trusted
+  server
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call
@@ -364,8 +366,8 @@ Native deliveries use the hexadecimal `X-Webhook-Signature` value. The helper
 also accepts the `sha256=<hex>` compatibility form. Verification uses
 HMAC-SHA256 and constant-time comparison over the unmodified bytes. Recognized
 events narrow to exported payload types, including messages, sessions, groups,
-presence, contacts, chats, calls, labels, history sync, command results, and
-business quick replies. Unknown event names and payloads are preserved for
+presence, contacts, chats, calls, labels, history sync, Meta Cloud API contact
+sync and Business app echoes, command results, and business quick replies. Unknown event names and payloads are preserved for
 forward compatibility.
 `webhooks.verifySignature()` returns a boolean without parsing.
 `webhooks.createFixture()` creates exact-byte local fixtures, and
@@ -399,6 +401,12 @@ not add list, recovery, or history operations that the API does not provide.
 `client.quickLinkSettings.retrieve()` and `update()` map only the management
 `GET /platform/quicklink` and `PUT /platform/quicklink` settings contract. The same methods
 on `client.project(projectId)` use the immutable project ownership context.
+
+Saved settings hold the project's `successCallbackUrl` and `failureCallbackUrl`
+HTTPS destinations and `allowPhoneChange`, which controls whether recipients can
+replace a prefilled number (default `false`). The API copies callback
+destinations into each link when it is issued. Settings have no redirect-URI
+allowlist. `hideWatermark: true` requires Premium team access.
 
 ## Browser controllers and UI
 

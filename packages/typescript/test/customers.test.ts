@@ -72,7 +72,6 @@ describe("Client customers", () => {
       {
         projectId: "project/a",
         name: "Ada",
-        phone: "+15551234567",
         externalCustomerId: "crm/a",
       },
       { idempotencyKey: "create-1" },
@@ -94,7 +93,7 @@ describe("Client customers", () => {
     expect(requests[1]?.headers["idempotency-key"]).toBe("enable-1");
     expect(requests[3]?.headers["idempotency-key"]).toBe("create-1");
     expect(requests[3]?.body).toBe(
-      '{"projectId":"project/a","name":"Ada","phone":"+15551234567","externalCustomerId":"crm/a"}',
+      '{"projectId":"project/a","name":"Ada","externalCustomerId":"crm/a"}',
     );
     expect(requests[5]?.body).toBe('{"projectId":"project/a","name":null}');
     expect(listed.data.page).toEqual({
@@ -128,8 +127,6 @@ describe("Client customers", () => {
         expectedPhone: "+15551234567",
         methods: ["qr", "phone"],
         expiresInSeconds: 3600,
-        locale: "en",
-        theme: "system",
       },
       { idempotencyKey: "link-1" },
     );
@@ -162,6 +159,9 @@ describe("Client customers", () => {
     ]);
     expect(requests[0]?.headers["idempotency-key"]).toBe("archive-1");
     expect(requests[1]?.headers["idempotency-key"]).toBe("restore-1");
+    expect(requests[4]?.body).toBe(
+      '{"projectId":"project/a","expectedPhone":"+15551234567","methods":["qr","phone"],"expiresInSeconds":3600}',
+    );
     expect(requests[4]?.headers["idempotency-key"]).toBe("link-1");
     expect(requests[7]?.headers["idempotency-key"]).toBe("transfer-1");
   });

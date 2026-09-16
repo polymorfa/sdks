@@ -260,7 +260,13 @@ describe("QuickLink settings", () => {
       { idempotencyKey: "quicklink-org-1" },
     );
     await project.quickLinkSettings.update(
-      { headline: "Connect your number", defaultMethod: "qr" },
+      {
+        headline: "Connect your number",
+        defaultMethod: "qr",
+        successCallbackUrl: "https://app.example.com/connected",
+        failureCallbackUrl: null,
+        allowPhoneChange: true,
+      },
       { idempotencyKey: "quicklink-project-1" },
     );
 
@@ -275,7 +281,7 @@ describe("QuickLink settings", () => {
       '{"enabled":true,"methods":["qr","pairing"]}',
     );
     expect(requests[3]?.body).toBe(
-      '{"headline":"Connect your number","defaultMethod":"qr","projectId":"project/a"}',
+      '{"headline":"Connect your number","defaultMethod":"qr","successCallbackUrl":"https://app.example.com/connected","failureCallbackUrl":null,"allowPhoneChange":true,"projectId":"project/a"}',
     );
     expect(requests[2]?.headers["idempotency-key"]).toBe("quicklink-org-1");
     expect(requests[3]?.headers["idempotency-key"]).toBe("quicklink-project-1");

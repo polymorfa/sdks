@@ -1,4 +1,4 @@
-import { describe, expectTypeOf, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type {
   BlocklistUpdatePayload,
@@ -19,6 +19,7 @@ import type {
   ChatReadPayload,
   CloudMessagePayload,
   CommandResultPayload,
+  ContactsSyncPayload,
   ContactUpdatePayload,
   GroupParticipantPayload,
   GroupUpdatePayload,
@@ -28,6 +29,7 @@ import type {
   LabelsUpdatePayload,
   LinkedDeviceMessageType,
   MessageDeletePayload,
+  MessageEchoPayload,
   MessagePayload,
   MessageReceivedPayload,
   NativeFlowResponse,
@@ -36,8 +38,10 @@ import type {
   PollVotePayload,
   PresenceUpdatePayload,
   SessionPhoneOfflinePayload,
+  KnownWebhookEvent,
   WebhookPayloadMap,
 } from "../src/index.js";
+import { KNOWN_WEBHOOK_EVENT_TYPES } from "../src/index.js";
 
 type ExpectedIdentityReference = {
   readonly id: string;
@@ -234,6 +238,10 @@ type ExpectedPayloads = {
     readonly pictureRemoved?: boolean;
     readonly username?: string;
   };
+  readonly "contact.sync": {
+    readonly kind: "contacts";
+    readonly value: Readonly<Record<string, unknown>>;
+  };
   readonly "group.participant": {
     readonly id: string;
     readonly joined?: readonly ExpectedIdentityReference[];
@@ -297,6 +305,10 @@ type ExpectedPayloads = {
     readonly conversation: ExpectedConversationReference;
     readonly fromMe: boolean;
   };
+  readonly "message.echo": {
+    readonly source: "whatsapp_business_app";
+    readonly value: Readonly<Record<string, unknown>>;
+  };
   readonly "message.edited": ExpectedMessagePayload;
   readonly "message.reaction": ExpectedMessagePayload | CloudMessagePayload;
   readonly "message.revoked": ExpectedMessagePayload;
@@ -348,12 +360,14 @@ type ExportedPayloads = {
   readonly "chat.mute": ChatMutePayload;
   readonly "chat.read": ChatReadPayload;
   readonly "command.result": CommandResultPayload;
+  readonly "contact.sync": ContactsSyncPayload;
   readonly "contact.update": ContactUpdatePayload;
   readonly "group.participant": GroupParticipantPayload;
   readonly "group.update": GroupUpdatePayload;
   readonly "history.sync": HistorySyncPayload;
   readonly "labels.update": LabelsUpdatePayload;
   readonly "message.delete": MessageDeletePayload;
+  readonly "message.echo": MessageEchoPayload;
   readonly "message.edited": MessagePayload;
   readonly "message.reaction": MessageReceivedPayload;
   readonly "message.revoked": MessagePayload;
@@ -378,5 +392,32 @@ describe("webhook event payload types", () => {
     expectTypeOf<
       Pick<WebhookPayloadMap, keyof ExpectedPayloads>
     >().toEqualTypeOf<ExpectedPayloads>();
+  });
+
+  it("distinguishes Meta Cloud API synchronization events", () => {
+    expect(KNOWN_WEBHOOK_EVENT_TYPES).toContain("contact.sync");
+    expect(KNOWN_WEBHOOK_EVENT_TYPES).toContain("message.echo");
+    expectTypeOf<
+      Extract<KnownWebhookEvent, { event: "contact.sync" }>["payload"]
+    >().toEqualTypeOf<ContactsSyncPayload>();
+    expectTypeOf<
+      Extract<KnownWebhookEvent, { event: "message.echo" }>["payload"]
+    >().toEqualTypeOf<MessageEchoPayload>();
+    expectTypeOf<KnownWebhookEvent["externalId"]>().toEqualTypeOf<
+      string | undefined
+    >();
+
+    const payload = {
+      kind: "history",
+      value: { messages: [] },
+    } as HistorySyncPayload;
+    if ("kind" in payload) {
+      expectTypeOf(payload.value).toEqualTypeOf<
+        Readonly<Record<string, unknown>>
+      >();
+    } else {
+      expectTypeOf(payload.whatsapp.data).toEqualTypeOf<string>();
+    }
+    expect("kind" in payload).toBe(true);
   });
 });

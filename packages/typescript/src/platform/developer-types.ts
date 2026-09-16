@@ -249,7 +249,15 @@ interface WebhookDeliveryAttemptBase {
   readonly durationMs: number | null;
   readonly statusCode: number | null;
   readonly errorCode: string | null;
+  /** Redacted excerpt from a failed HTTP response; null for successes and network errors. */
+  readonly response: WebhookDeliveryAttemptResponse | null;
   readonly metadataExpiresAt: string;
+}
+export interface WebhookDeliveryAttemptResponse {
+  readonly contentType: string;
+  /** Redacted response text, limited to 8192 UTF-8 bytes. */
+  readonly excerpt: string;
+  readonly truncated: boolean;
 }
 export interface OrganizationWebhookDeliveryAttempt extends WebhookDeliveryAttemptBase {
   readonly projectId: null;
