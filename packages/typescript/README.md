@@ -128,7 +128,6 @@ const customer = await platform.customers.create(
   {
     projectId: "project_123",
     name: "Ada",
-    phone: "+15551234567",
     externalCustomerId: "crm_456",
   },
   { idempotencyKey: crypto.randomUUID() },
@@ -1064,11 +1063,25 @@ const event = await webhooks.verify({
 });
 
 if (isEvent(event, "history.sync")) {
-  console.log(event.payload.syncType, event.payload.progress);
+  if ("kind" in event.payload) {
+    console.log("Meta Cloud API history batch", event.payload.value);
+  } else {
+    console.log(event.payload.syncType, event.payload.progress);
+  }
+} else if (isEvent(event, "contact.sync")) {
+  console.log(event.payload.kind, event.payload.value);
+} else if (isEvent(event, "message.echo")) {
+  console.log(event.payload.source, event.externalId);
 } else if (isEvent(event, "call.received")) {
   console.log(event.payload.callId, event.payload.from.id);
 }
 ```
+
+`contact.sync` delivers a Meta Cloud API contact batch as
+`{ kind: "contacts", value }`. `message.echo` reports a message sent from the
+WhatsApp Business app on a connected Meta Cloud API number as
+`{ source: "whatsapp_business_app", value }`. Events for a session created by a
+QuickLink include its optional `externalId`.
 
 Development builds also export `CallEndedPayload` and `CallTelemetryPayload`.
 For `call.ended`, check `from` before reading its identity: it is `null` when
@@ -1267,8 +1280,8 @@ organization-only resources are absent from that view's public type.
 const quickLink = await messaging.quickLinks.create(
   {
     projectId: "11111111-2222-4333-8444-555555555555",
-    methods: ["qr", "pairing"],
-    expiresInSeconds: 900,
+    externalId: "crm-account-42",
+    configuration: { methods: ["qr", "pairing"] },
   },
   { idempotencyKey: crypto.randomUUID() },
 );
@@ -1293,7 +1306,13 @@ const organizationSettings = await platform.quickLinkSettings.retrieve();
 const projectSettings = await platform
   .project("project_123")
   .quickLinkSettings.update(
-    { theme: "dark", enabled: true },
+    {
+      theme: "dark",
+      enabled: true,
+      successCallbackUrl: "https://app.example.com/whatsapp/connected",
+      failureCallbackUrl: "https://app.example.com/whatsapp/cancelled",
+      allowPhoneChange: false,
+    },
     { idempotencyKey: "quicklink-project-123-dark" },
   );
 ```
@@ -1302,6 +1321,14 @@ These methods manage saved settings only. Hosted lifecycle methods stay on
 `MessagingClient.quickLinks`, not `Client` or `client.project(...)`, because
 the `/messaging/quicklinks/{id}` routes do not carry an immutable project path for an
 organization-key project view. Console-only logo routes are outside the SDK.
+
+`successCallbackUrl` and `failureCallbackUrl` are project-only HTTPS
+destinations; the API copies them into each link when it is issued, and link
+creation has no callback override. `allowPhoneChange` lets recipients replace a
+prefilled number and defaults to `false`. `hideWatermark: true` requires Premium
+team access. Saved settings have no redirect-URI allowlist. `externalId` on
+creation is an integrator correlation value copied to the resulting session; it
+can repeat across invitations and does not grant access.
 
 ## Management session lifecycle
 

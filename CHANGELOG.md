@@ -15,6 +15,14 @@
   the same settings on the Messaging API for organization API keys and project
   tokens. Claim credit amounts are decimal quantities. Dashboard-only finding
   acknowledgement and appeals remain outside the server SDK.
+- Breaking: saved QuickLink settings drop `allowedRedirectUris` and add
+  `successCallbackUrl`, `failureCallbackUrl`, and `allowPhoneChange`, matching
+  the management contract. Customer profiles and create/update requests no
+  longer carry `phone`, `CustomerSummary` no longer carries `phoneMasked`, and
+  Customer pairing-link creation no longer accepts `locale` or `theme`. Use
+  `expectedPhone` on the pairing link to restrict a number.
+- Export typed `contact.sync` and `message.echo` webhooks and the optional
+  QuickLink `externalId` on every webhook envelope.
 
 - Export typed terminal Calls webhooks. `call.ended` preserves a nullable caller
   identity for `pod_lost`; `call.telemetry` preserves cumulative traffic values.
