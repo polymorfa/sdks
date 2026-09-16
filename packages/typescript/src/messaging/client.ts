@@ -7,6 +7,7 @@ import {
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
 import { ChatsResource } from "./chats.js";
+import { MessagingBanSafeResource } from "./bansafe.js";
 import { BusinessResource } from "./business.js";
 import { CallsResource } from "./calls.js";
 import { MessagingCampaignsResource } from "./campaigns.js";
@@ -31,6 +32,7 @@ import { VoipResource } from "./voip.js";
 import { WebhooksResource } from "./webhooks.js";
 
 export class MessagingClient {
+  readonly banSafe: MessagingBanSafeResource;
   readonly business: BusinessResource;
   readonly calls: CallsResource;
   readonly campaigns: MessagingCampaignsResource;
@@ -71,6 +73,7 @@ export class MessagingClient {
         : { apiVersion: options.apiVersion }),
       ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
     });
+    this.banSafe = new MessagingBanSafeResource(transport, credential.type);
     this.business = new BusinessResource(transport);
     this.calls = new CallsResource(transport);
     this.campaigns = new MessagingCampaignsResource(transport);

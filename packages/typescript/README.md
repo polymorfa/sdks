@@ -150,6 +150,64 @@ The pairing URL is returned once. An idempotent replay returns the same link
 record with `url: null`. `customers.list()` preserves both the Customer array
 and the cursor metadata from the API response.
 
+## BanSafe Health and telemetry
+
+`Client.banSafe` reads Health, telemetry collection status, the fixed
+signal catalogue, findings, restrictions, incidents, claims, and Health action
+history. Paged methods preserve the API's `data` array and `page` metadata.
+
+```ts
+const health = await platform.banSafe.getHealth("support");
+const telemetry = await platform.banSafe.getTelemetry("support");
+const actions = await platform.banSafe.listHealthActions({
+  projectId: "project_123",
+  session: "support",
+  status: "succeeded",
+});
+
+console.log(
+  health.data.data.health,
+  telemetry.data.data.collection.state,
+  actions.data.page.hasMore,
+);
+```
+
+Use `platform.projects` for project Safe Mode, warm-up, Ban Insurance evidence,
+and Health policy settings. Use `platform.sessions` for one number's Safe Mode
+override. `MessagingClient.banSafe` exposes the same settings on the Messaging
+API for organization API keys and project tokens; its responses carry
+`success: true` beside `data`. Browser client tokens fail before any request.
+
+Claim `measuredCents`, `capCents`, and `amountCents` are credit quantities with
+up to six decimal places, not integer cents. Finding acknowledgement and
+enforcement appeals require a signed-in dashboard session and are not SDK
+methods.
+
+```ts
+const policy = await platform.projects.getHealthPolicy("project_123");
+await platform.projects.updateHealthPolicy("project_123", {
+  version: policy.data.data.version,
+  enabled: true,
+  threshold: 50,
+  sessionAction: "slow_down",
+  slowDownMps: 0.5,
+  emailNotification: true,
+  webhookNotification: true,
+});
+
+const messaging = new MessagingClient({
+  credential: {
+    type: "projectToken",
+    value: process.env.POLYMORFA_PROJECT_TOKEN!,
+  },
+});
+const safeMode = await messaging.banSafe.getSessionSafeMode("support");
+console.log(safeMode.data.data.effective.presence);
+```
+
+Finding acknowledgement and restriction appeals require a signed-in dashboard
+user. The organization-key SDK does not expose those two mutations.
+
 ## Browser client tokens
 
 `MessagingClient.clientTokens` mints short-lived tokens and manages the live
@@ -1242,7 +1300,7 @@ const projectSettings = await platform
 
 These methods manage saved settings only. Hosted lifecycle methods stay on
 `MessagingClient.quickLinks`, not `Client` or `client.project(...)`, because
-the `/api/quicklinks/{id}` routes do not carry an immutable project path for an
+the `/messaging/quicklinks/{id}` routes do not carry an immutable project path for an
 organization-key project view. Console-only logo routes are outside the SDK.
 
 ## Management session lifecycle

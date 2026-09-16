@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`7540c0cef0d6a9552476a1240c37c072c4781033`. Graph-compatible APIs are outside
+`aca849cda44ad8582d7ae87489404d2483173a53`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -83,6 +83,9 @@ any network request. Server credentials are rejected in browser runtimes.
 
 The handwritten Messaging resources in this milestone are:
 
+- `banSafe`: retrieve and update project Safe Mode, warm-up, Ban Insurance
+  evidence, and Health policy settings, and one number's Safe Mode override,
+  with an organization API key or project token
 - `sessions`: list, create, retrieve, update, delete, start, stop, restart,
   logout, account, and entitlement-gated direct JSON QR or phone pairing
 - `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions
@@ -197,9 +200,15 @@ The organization view also exposes these management resources:
 - `projectTokens`: list token metadata for an explicit project
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
-- `projects`: list, create, request production enrollment, approve, and cancel
+- `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
+  restrictions, incidents, claims, and Health action history; report and retract
+  customer incidents
+- `projects`: list, create, request production enrollment, approve, and cancel;
+  retrieve and update Safe Mode, warm-up, Ban Insurance evidence, and Health
+  policy settings
 - `sessions`: list, start, stop, or delete one session; stop or delete a bounded
-  batch; review and confirm a tier change; and create a testing session
+  batch; review and confirm a tier change; create a testing session; and
+  retrieve or update the session Safe Mode override
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and recipients
 - `customers`: enable Customers for a project; create, list, retrieve, update,
