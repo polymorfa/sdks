@@ -197,9 +197,15 @@ The organization view also exposes these management resources:
 - `projectTokens`: list token metadata for an explicit project
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
-- `projects`: list, create, request production enrollment, approve, and cancel
+- `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
+  restrictions, incidents, claims, and Health action history; report and retract
+  customer incidents
+- `projects`: list, create, request production enrollment, approve, and cancel;
+  retrieve and update Safe Mode, warm-up, Ban Insurance evidence, and Health
+  policy settings
 - `sessions`: list, start, stop, or delete one session; stop or delete a bounded
-  batch; review and confirm a tier change; and create a testing session
+  batch; review and confirm a tier change; create a testing session; and
+  retrieve or update the session Safe Mode override
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and recipients
 - `customers`: enable Customers for a project; create, list, retrieve, update,

@@ -8,6 +8,12 @@
   or `meta_coexistence`). `SessionConnectedPayload` now types the account's
   Polymorfa `id` instead of `lid`. Both new types are exported.
 
+- Added typed BanSafe Health, telemetry, collection, findings, enforcement,
+  incidents, claims, and Health action reads to `Client.banSafe`.
+  Project and session resources now cover Safe Mode, warm-up, Ban Insurance
+  evidence, and Health policy settings. Dashboard-only finding acknowledgement
+  and appeals remain outside the server-key client.
+
 - Export typed terminal Calls webhooks. `call.ended` preserves a nullable caller
   identity for `pod_lost`; `call.telemetry` preserves cumulative traffic values.
 

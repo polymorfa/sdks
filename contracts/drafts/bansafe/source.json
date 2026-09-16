@@ -1,0 +1,17 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "sourceCommit": "579a53488d6af339ef358857ad0de2a45e8a5d30",
+  "sourceState": "pull-request-head",
+  "contracts": {
+    "messaging": {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "snapshotPath": "contracts/drafts/bansafe/openapi.messaging.json",
+      "sha256": "6220a15d9f14ce177c526047612dd46bd1c8c69e1aaf3b56733b0490e3c3e0c8"
+    },
+    "platform": {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "snapshotPath": "contracts/drafts/bansafe/openapi.platform.json",
+      "sha256": "a7f9d3b449aa93ebdf1e52c5c04519dd405d963a2da59db85d43748f671c95bf"
+    }
+  }
+}
