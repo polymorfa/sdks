@@ -246,7 +246,10 @@ export class SipTrunksResource<O extends ClientOwner> {
   }
 
   #assertProject(trunkId: string, trunk: SipTrunk): void {
-    if (this.projectId !== null && trunk.projectId !== this.projectId) {
+    if (
+      this.projectId !== null &&
+      trunk.projectId.toLowerCase() !== this.projectId.toLowerCase()
+    ) {
       throw new PolymorfaNotFoundError("SIP trunk not found.", {
         code: "resource_not_found",
         status: 404,

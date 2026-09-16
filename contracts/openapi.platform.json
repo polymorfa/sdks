@@ -31256,7 +31256,7 @@
                 "$ref": "#/components/schemas/PlatformAccessCallInboundRoute"
               },
               {
-                "description": "Where incoming WhatsApp calls ring. Omit to use `clients`. `sip_trunk` requires enrollment in the SIP trunks beta; `clients` is always accepted."
+                "description": "Where incoming WhatsApp calls ring. Omit to use `clients`. Routing to a different SIP trunk requires enrollment in the SIP trunks beta; `clients`, and keeping the stored trunk while changing other settings, are always accepted."
               }
             ]
           },

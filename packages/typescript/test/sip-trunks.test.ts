@@ -165,6 +165,15 @@ describe("SIP trunks", () => {
     );
   });
 
+  it("matches the project regardless of letter case", async () => {
+    const projectId = "018F0000-0000-7000-8000-00000000000A";
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ success: true, data: trunk(projectId.toLowerCase()) }),
+    );
+    const scoped = organizationClient(fetch).project(projectId);
+    await expect(scoped.sipTrunks.retrieve(TRUNK_ID)).resolves.toBeDefined();
+  });
+
   it("surfaces conflicts with their stable code", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json(
