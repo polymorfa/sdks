@@ -1442,3 +1442,40 @@ describe("CallsClient — releasing a call whose media failed", () => {
     expect(call!.endReason).toBe("connection_failed");
   });
 });
+
+describe("CallsClient — terminal events that arrive before call.received", () => {
+  it.each([
+    ["call.ended", "remote_hangup"],
+    ["call.missed", "missed"],
+    ["call.rejected", "rejected"],
+  ] as const)(
+    "does not ring for a call whose %s was buffered first",
+    async (event, reason) => {
+      const h = clientWith();
+      const life = await connected(h);
+      const incoming: Call[] = [];
+      const ended: [Call, string][] = [];
+      h.client.on("incoming", (call) => incoming.push(call));
+      h.client.on("ended", (call, why) => ended.push([call, why]));
+      life.text({
+        type: "event",
+        event,
+        callId: "CALL-1",
+        payload: { reason: "user_hangup" },
+        timestamp: "",
+      });
+      ring(life);
+      expect(incoming).toEqual([]);
+      const call = h.client.getCall("CALL-1");
+      expect(call?.ended).toBe(true);
+      expect(call?.endReason).toBe(reason);
+      expect(ended.map(([c, why]) => [c.id, why])).toEqual([
+        ["CALL-1", reason],
+      ]);
+      expect(h.client.calls).not.toContain(call);
+      // A duplicate call.received for the retained ended id is still ignored.
+      ring(life);
+      expect(incoming).toEqual([]);
+    },
+  );
+});

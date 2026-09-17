@@ -21,6 +21,10 @@
   ends locally: ended when this client claimed it (exclusive answer or
   placement), otherwise left. `answer()` and `join()` reject after the
   release, which waits at most 5 seconds.
+- `CallsClient` no longer emits `incoming` for a call whose `call.ended`,
+  `call.missed` or `call.rejected` event arrived before `call.received`; the
+  call is reported through `ended` only. The browser `CallsController` also
+  ignores an invitation that arrives after its call was reported ended.
 - `ClientTokenManager` (browser) and `CallsTokenSource` (`@polymorfa/calls`)
   never reuse or cache a provider call that started before a forced refresh
   or `invalidate()`, so a reconnect after a revoked token asks for a new one.

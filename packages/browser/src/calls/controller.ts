@@ -324,9 +324,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   /** Rosters of listed invitations, kept current while another call shows. */
   readonly #rosters = new Map<string, readonly CallParticipant[]>();
   /**
-   * Recent calls this controller placed, answered or joined, oldest first, so
-   * a replayed invitation for one is not listed again. Bounded like the
-   * Calls client's ended-call history.
+   * Recent calls this controller placed, answered or joined, or that were
+   * reported ended, oldest first, so a replayed or late invitation for one is
+   * not listed. Bounded like the Calls client's ended-call history.
    */
   readonly #answered = new Set<string>();
   #answering: string | undefined;
@@ -1230,6 +1230,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       return;
     }
 
+    // An end can arrive before the invitation it ends (relayed webhooks are
+    // not ordered): remember it so the late invitation is not listed.
+    if (event.type === "ended") this.#remember(event.callId);
     const displayed = current.callId === event.callId;
     const invitation = this.#invitations.get(event.callId);
     // Track a listed call's roster whether or not it is displayed, so

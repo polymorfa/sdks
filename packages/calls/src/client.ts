@@ -308,7 +308,9 @@ export class CallsClient extends Emitter<ClientEvents> {
             capabilitiesFrom(event.payload["capabilities"]),
           ),
         );
-        this.emit("incoming", call);
+        // A terminal event buffered before `call.received` has already ended
+        // the call during tracking: it is reported as `ended`, never rung.
+        if (!call.ended) this.emit("incoming", call);
         return;
       }
       case "call.accepted":

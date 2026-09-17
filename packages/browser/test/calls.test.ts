@@ -1192,3 +1192,38 @@ describe("a failed answer while other calls wait", () => {
     h.controller.dispose();
   });
 });
+
+describe("an end that arrives before its invitation", () => {
+  it.each([undefined, "missed", "rejected"] as const)(
+    "does not list the late invitation (reason: %s)",
+    async (reason) => {
+      const f = fixture();
+      const controller = new CallsController(f.backend, f.media);
+      controller.initialize();
+      f.emit(
+        reason === undefined
+          ? { type: "ended", callId: "LATE" }
+          : { type: "ended", callId: "LATE", reason },
+      );
+      f.emit({
+        type: "incomingCall",
+        call: { callId: "LATE", from: "+15550100", video: false },
+      });
+      expect(controller.getSnapshot()).toMatchObject({
+        status: "ready",
+        invitations: [],
+      });
+      expect(controller.getSnapshot().callId).toBeUndefined();
+      // Other calls still ring.
+      f.emit({
+        type: "incomingCall",
+        call: { callId: "NEXT", from: "+15550101", video: false },
+      });
+      expect(controller.getSnapshot()).toMatchObject({
+        status: "incoming",
+        callId: "NEXT",
+      });
+      controller.dispose();
+    },
+  );
+});
