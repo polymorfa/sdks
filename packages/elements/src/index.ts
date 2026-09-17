@@ -11,6 +11,7 @@ export {
   defineChatElements,
   type ReplyHandler,
 } from "./chat.js";
+export type { QuickReplyOption } from "@polymorfa/ui";
 export {
   PolymorfaTemplateBuilderElement,
   defineTemplateElements,

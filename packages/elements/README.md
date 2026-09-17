@@ -67,6 +67,25 @@ drawer.addEventListener("pmfa-close", () => drawer.remove());
   reply banner. Set its `conversation` or `messages` property so the banner
   can quote the message. The `accept` and `multiple` attributes apply to the
   file picker (`multiple="false"` allows one file at a time).
+- The composer toolbar matches the React `ComposeBox`: emoji picker,
+  attach button, message field, and a microphone that turns into the send
+  button once there is something to send. `emoji="false"` hides the emoji
+  button, `voice-notes="false"` hides the microphone (it only shows where
+  `MediaRecorder` and `getUserMedia` exist), `voice-note-auto-send="false"`
+  keeps a finished recording in the composer, `placeholder` replaces the
+  placeholder, and `max-rows` (default 8) limits how tall the field grows.
+- Put your own buttons in the toolbar with `slot="start-actions"` and
+  `slot="end-actions"`.
+- Set the `quickReplies` property to offer `/` quick replies. Choosing one
+  replaces the `/word` and dispatches a composed `pmfa-quick-reply` event
+  whose `detail` is the option. `pmfa-chat-drawer` accepts the same
+  attributes and `quickReplies` for its built-in composer.
+
+```html
+<pmfa-compose-box placeholder="Reply to Casey" voice-notes="false">
+  <button slot="end-actions" type="button">Templates</button>
+</pmfa-compose-box>
+```
 
 Messages whose object is unchanged keep their DOM nodes across updates, and
 the composer keeps its textarea, so focus, scroll position, and the live
