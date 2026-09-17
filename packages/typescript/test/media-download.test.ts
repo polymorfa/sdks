@@ -131,6 +131,7 @@ describe("MessagingMediaResource streaming downloads", () => {
       redirected: true,
       contentType: "video/mp4",
       requestId: "req_redirect",
+      metadata: { status: 302, attempts: 1, requestId: "req_redirect" },
     });
     expect(
       Array.from(

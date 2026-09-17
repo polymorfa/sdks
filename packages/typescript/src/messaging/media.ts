@@ -5,7 +5,11 @@ import {
   type WhatsAppMediaInput,
 } from "../media/whatsapp.js";
 import { HttpTransport } from "../transport/http.js";
-import type { ApiResponse, RequestOptions } from "../transport/types.js";
+import type {
+  ApiResponse,
+  RequestOptions,
+  ResponseMetadata,
+} from "../transport/types.js";
 import type {
   GetMessagingMediaInfoResponse,
   SuccessResponse,
@@ -20,6 +24,8 @@ export interface MediaDownloadStream {
   readonly requestId?: string;
   /** True when the API redirected to object storage and the SDK followed it. */
   readonly redirected: boolean;
+  /** Metadata of the Polymorfa API response (the redirect, when followed). */
+  readonly metadata: ResponseMetadata;
 }
 
 export interface MediaDownloadBlob {
@@ -95,6 +101,7 @@ export class MessagingMediaResource {
         ? {}
         : { requestId: response.metadata.requestId }),
       redirected: response.redirected,
+      metadata: response.metadata,
     });
   }
 

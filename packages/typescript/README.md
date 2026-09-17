@@ -466,14 +466,14 @@ client-token allowlist.
 Messaging Media tag for Linked Device sessions. Every download method requires
 a server credential with `media:read`; client tokens cannot call media routes.
 
-| Method                             | Result                                                                                                  |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `downloadStream(mediaId, options)` | `{ body: ReadableStream<Uint8Array>, contentType?, contentLength?, filename?, requestId?, redirected }` |
-| `downloadBlob(mediaId, options)`   | `{ blob, filename?, requestId? }`, with `blob.type` set from `Content-Type`                             |
-| `downloadUrl(mediaId, options)`    | `{ streamed: false, url, expiresAt? }` or `{ streamed: true, url: undefined }`                          |
-| `download(mediaId, options)`       | `ApiResponse<ArrayBuffer>` (buffers the whole file)                                                     |
-| `retrieve(mediaId)`                | `MessagingMediaInfo`                                                                                    |
-| `persist(mediaId)`                 | Saves the object to the tenant's object storage; requires `media:manage`                                |
+| Method                             | Result                                                                                                            |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `downloadStream(mediaId, options)` | `{ body: ReadableStream<Uint8Array>, contentType?, contentLength?, filename?, requestId?, redirected, metadata }` |
+| `downloadBlob(mediaId, options)`   | `{ blob, filename?, requestId? }`, with `blob.type` set from `Content-Type`                                       |
+| `downloadUrl(mediaId, options)`    | `{ streamed: false, url, expiresAt? }` or `{ streamed: true, url: undefined }`                                    |
+| `download(mediaId, options)`       | `ApiResponse<ArrayBuffer>` (buffers the whole file)                                                               |
+| `retrieve(mediaId)`                | `MessagingMediaInfo`                                                                                              |
+| `persist(mediaId)`                 | Saves the object to the tenant's object storage; requires `media:manage`                                          |
 
 The API either streams the file or answers `302` with a fresh signed storage
 URL. `downloadStream`, `downloadBlob` and `downloadUrl` send requests with
