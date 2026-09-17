@@ -5,6 +5,7 @@ export {
   mergeAppearance,
   resolveMotionPreference,
   type Appearance,
+  type AppearanceColorVariable,
   type AppearanceInput,
   type AppearanceLayout,
   type AppearanceVariables,
@@ -26,3 +27,24 @@ export {
   injectComponentStyles,
   themeClassName,
 } from "./styles.js";
+export {
+  COMPONENT_SLOTS,
+  slotClassName,
+  slotPartName,
+  slotStyleEntries,
+  type ComponentSlot,
+  type SlotClassNames,
+} from "./slots.js";
+export {
+  CHAT_ICONS,
+  compareMessageTime,
+  formatDayLabel,
+  formatFileSize,
+  formatMessageTime,
+  isImageAttachment,
+  layoutMessages,
+  messageDayKey,
+  type ChatIconName,
+  type ChatLayoutEntry,
+  type ChatLayoutMessage,
+} from "./chat.js";
