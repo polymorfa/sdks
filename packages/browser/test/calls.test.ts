@@ -821,3 +821,78 @@ describe("leaving an outgoing call before it connects", () => {
     controller.dispose();
   });
 });
+
+describe("waiting invitations and call history", () => {
+  it("keeps a waiting call's roster current and shows it when selected", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    const participant = (id: string) => ({
+      id,
+      phoneNumber: `+1555010${id.slice(-1)}`,
+      audioMuted: false,
+      video: false,
+      state: "connected" as const,
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    expect(controller.getSnapshot().callId).toBe("A");
+    f.emit({
+      type: "participant",
+      callId: "B",
+      participant: participant("p1"),
+    });
+    f.emit({
+      type: "participant",
+      callId: "B",
+      participant: participant("p2"),
+    });
+    f.emit({ type: "participantLeft", callId: "B", participantId: "p1" });
+    // The displayed call's roster is untouched by B's events.
+    expect(controller.getSnapshot().participants).toEqual([]);
+    controller.select("B");
+    expect(controller.getSnapshot()).toMatchObject({
+      callId: "B",
+      participants: [participant("p2")],
+    });
+    // A keeps its own (empty) roster when it is shown again.
+    controller.select("A");
+    expect(controller.getSnapshot().participants).toEqual([]);
+    controller.dispose();
+  });
+
+  it("remembers only a bounded number of placed calls", async () => {
+    const f = fixture();
+    let next = 0;
+    vi.mocked(f.backend.place).mockImplementation(async () => ({
+      callId: `call-${next++}`,
+    }));
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    for (let i = 0; i < 201; i += 1) {
+      await controller.place("+15550100");
+      f.emit({ type: "ended", callId: `call-${i}`, reason: "remote_hangup" });
+    }
+    // A replayed invitation for a recent placed call is still ignored...
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "call-200", from: "+15550100", video: false },
+    });
+    expect(controller.getSnapshot().invitations).toEqual([]);
+    // ...while the oldest id has been dropped from the history.
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "call-0", from: "+15550100", video: false },
+    });
+    expect(controller.getSnapshot().invitations.map((i) => i.callId)).toEqual([
+      "call-0",
+    ]);
+    controller.dispose();
+  });
+});

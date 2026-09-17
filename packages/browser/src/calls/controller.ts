@@ -310,7 +310,13 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   readonly #deviceSwitches = new Map<string, number>();
   /** Incoming calls by id, oldest first. */
   readonly #invitations = new Map<string, CallInvitation>();
-  /** Calls this controller answered or joined (their accepted echo is ours). */
+  /** Rosters of listed invitations, kept current while another call shows. */
+  readonly #rosters = new Map<string, readonly CallParticipant[]>();
+  /**
+   * Recent calls this controller placed, answered or joined, oldest first, so
+   * a replayed invitation for one is not listed again. Bounded like the
+   * Calls client's ended-call history.
+   */
   readonly #answered = new Set<string>();
   #answering: string | undefined;
   #remoteVideos: readonly RemoteVideo[] = [];
@@ -403,7 +409,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         this.#abort.signal,
       );
       if (operation !== this.#operation) return;
-      this.#answered.add(callId);
+      this.#remember(callId);
       this.#remoteVideos = [];
       this.transition({
         ...this.#baseFields(),
@@ -499,7 +505,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     const current = this.getSnapshot();
     const id = callId ?? current.callId;
     if (id === undefined) return;
-    const known = this.#invitations.delete(id);
+    const known = this.#forget(id);
     if (current.callId === id && current.status === "incoming") {
       this.#advance({ ...this.#baseFields(), status: "ready" });
       return;
@@ -758,7 +764,23 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       audioMuted: false,
       videoMuted: false,
       ...invitationFields(invitation),
+      participants: this.#rosters.get(invitation.callId) ?? [],
     });
+  }
+
+  /** Stop listing an invitation, with its roster. */
+  #forget(callId: string): boolean {
+    this.#rosters.delete(callId);
+    return this.#invitations.delete(callId);
+  }
+
+  #remember(callId: string): void {
+    this.#answered.delete(callId);
+    this.#answered.add(callId);
+    for (const oldest of this.#answered) {
+      if (this.#answered.size <= ANSWERED_RETENTION) break;
+      this.#answered.delete(oldest);
+    }
   }
 
   async #accept(
@@ -782,8 +804,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
               video: options.video,
             });
       if (operation !== this.#operation) return;
-      this.#answered.add(callId);
-      this.#invitations.delete(callId);
+      this.#remember(callId);
+      this.#forget(callId);
       const accepted = result ?? undefined;
       this.transition({
         ...callFields(this.getSnapshot(), false),
@@ -1030,7 +1052,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     }
     if (operation !== this.#operation) return;
     const finishedOperation = ++this.#operation;
-    this.#invitations.delete(callId);
+    this.#forget(callId);
     try {
       await this.#closeMedia(close);
     } finally {
@@ -1050,7 +1072,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   #advance(next: Omit<CallsSnapshot, "revision" | "updatedAt">): void {
     this.#remoteVideos = [];
     const closedId = next.callId;
-    if (closedId !== undefined) this.#invitations.delete(closedId);
+    if (closedId !== undefined) this.#forget(closedId);
     const waiting = [...this.#invitations.values()][0];
     if (waiting !== undefined) {
       this.#display(waiting);
@@ -1090,10 +1112,20 @@ export class CallsController extends ObservableController<CallsSnapshot> {
 
     const displayed = current.callId === event.callId;
     const invitation = this.#invitations.get(event.callId);
+    // Track a listed call's roster whether or not it is displayed, so
+    // selecting it later shows who is already on it.
+    if (
+      invitation !== undefined &&
+      (event.type === "participant" || event.type === "participantLeft")
+    )
+      this.#rosters.set(
+        event.callId,
+        applyRoster(this.#rosters.get(event.callId) ?? [], event),
+      );
     if (!displayed) {
       if (invitation === undefined) return;
       if (event.type === "ended") {
-        this.#invitations.delete(event.callId);
+        this.#forget(event.callId);
         this.transition({ ...callFields(current), status: current.status });
       } else if (event.type === "accepted") {
         this.#invitations.set(
@@ -1149,26 +1181,14 @@ export class CallsController extends ObservableController<CallsSnapshot> {
           video: event.video,
         });
         return;
-      case "participant": {
-        const others = current.participants.filter(
-          (p) => p.id !== event.participant.id,
-        );
-        this.transition({
-          ...callFields(current),
-          status: current.status,
-          participants: [...others, event.participant],
-        });
-        return;
-      }
+      case "participant":
       case "participantLeft": {
-        if (!current.participants.some((p) => p.id === event.participantId))
-          return;
+        const participants = applyRoster(current.participants, event);
+        if (participants === current.participants) return;
         this.transition({
           ...callFields(current),
           status: current.status,
-          participants: current.participants.filter(
-            (p) => p.id !== event.participantId,
-          ),
+          participants,
         });
         return;
       }
@@ -1302,6 +1322,26 @@ function videoInfo(video: RemoteVideo): RemoteVideoInfo {
       ? {}
       : { participant: video.participant }),
   };
+}
+
+/** How many placed, answered or joined call ids the controller remembers. */
+const ANSWERED_RETENTION = 200;
+
+/** Apply one roster event; returns `roster` itself when nothing changed. */
+function applyRoster(
+  roster: readonly CallParticipant[],
+  event:
+    | { readonly type: "participant"; readonly participant: CallParticipant }
+    | { readonly type: "participantLeft"; readonly participantId: string },
+): readonly CallParticipant[] {
+  if (event.type === "participant")
+    return [
+      ...roster.filter((p) => p.id !== event.participant.id),
+      event.participant,
+    ];
+  return roster.some((p) => p.id === event.participantId)
+    ? roster.filter((p) => p.id !== event.participantId)
+    : roster;
 }
 
 /** A call this client placed that never connected: nobody else is on it. */
