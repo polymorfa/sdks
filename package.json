@@ -24,6 +24,7 @@
     "packages/ui",
     "packages/elements",
     "packages/react",
+    "packages/store",
     "packages/nextjs",
     "packages/devtools"
   ],
@@ -66,6 +67,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "eslint": "^9.39.5",
+    "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.11.2",
     "prettier": "^3.9.6",
     "react": "^19.2.8",
