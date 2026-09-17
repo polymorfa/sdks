@@ -64,9 +64,17 @@ export function ElementsDemo() {
   }, []);
 
   return (
-    <>
-      {createElement("pmfa-message-list", { ref: list })}
-      {createElement("pmfa-template-builder", { ref: builder })}
-    </>
+    <div className="elements-grid">
+      <section className="card">
+        <h2 className="card-title">pmfa-message-list</h2>
+        <div className="elements-chat">
+          {createElement("pmfa-message-list", { ref: list })}
+        </div>
+      </section>
+      <section className="card">
+        <h2 className="card-title">pmfa-template-builder</h2>
+        {createElement("pmfa-template-builder", { ref: builder })}
+      </section>
+    </div>
   );
 }

@@ -1,25 +1,32 @@
 import type { ReactNode } from "react";
 
-import { Providers } from "./providers.js";
+import { THEME_BOOTSTRAP_SCRIPT } from "../ui/context.js";
 
 export const metadata = {
   title: "Acme Support",
-  description: "Polymorfa full-platform example",
+  description: "A WhatsApp help desk built on the Polymorfa SDKs",
+  icons: { icon: "/favicon.svg" },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#111b21" },
+  ],
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        <nav aria-label="Main">
-          <a href="/">Acme Support</a> · <a href="/inbox">Inbox</a> ·{" "}
-          <a href="/templates">Templates</a> · <a href="/calls">Calls</a> ·{" "}
-          <a href="/elements">Web Components</a> · <a href="/admin">Admin</a>
-        </nav>
-        <Providers>
-          <main>{children}</main>
-        </Providers>
-      </body>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Applies the saved theme before first paint. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
+        <link rel="stylesheet" href="/desk.css" />
+      </head>
+      <body>{children}</body>
     </html>
   );
 }
