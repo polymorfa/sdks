@@ -13,6 +13,34 @@
   set, and closes on Escape. `@polymorfa/ui` exports `COMPONENT_STYLES`,
   `injectComponentStyles()` and `themeClassName()`, plus new locale keys for
   the labels.
+- Chat components in `@polymorfa/react` and `@polymorfa/elements` gain
+  attachments, replies, and retry. Messages show image thumbnails and file
+  cards, a quote of the message they reply to, date separators, grouping by
+  side, and pending, sent, or failed icons; failed outbound messages offer
+  Retry. The composer attaches files from a button, a paste, or a drop, shows
+  upload progress with a remove button, reports rejected files, and shows a
+  reply banner. `ChatDrawer` and `pmfa-chat-drawer` accept
+  `composerController` to render the composer and wire Reply to it, move
+  focus into the drawer on open, and restore it on close. The message list is
+  now a `role="log"` region. See the [React](packages/react/README.md#chat)
+  and [Web Component](packages/elements/README.md#chat) guides.
+- `@polymorfa/browser` adds `LocalAttachment.file`,
+  `MessageAttachment.url` and `previewUrl`, `localAttachmentFromFile()`, and
+  `createConversationComposerActions()`, which sends composer drafts through
+  a `ConversationController`.
+- Styling: bundled rules sit in `@layer polymorfa`, so unlayered app CSS
+  overrides them. Appearance adds `darkVariables` (emitted as
+  `--pmfa-dark-color-*`) and `unstyled`. Every chat and template node has a
+  slot name: React applies `appearance.elements[slot]`, a new `classNames`
+  prop, and `data-slot`; Web Components add kebab-case `part` names next to
+  the existing ones and accept `configuration.stylesheet`. `MessageList`
+  adds `renderAttachment` and `onReply`. See the
+  [styling reference](packages/ui/README.md#styling).
+- Breaking: the React `MessageList` root is now a `div` with `role="log"`
+  that wraps the `ol`; select it with `[data-pmfa="message-list"]`. The Web
+  Component list part `message-list` moved to the same wrapper. Web
+  Components now share one adopted stylesheet instead of a `<style>` element
+  per render, and default dark-theme danger buttons use dark text.
 
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`
