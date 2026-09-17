@@ -21,6 +21,9 @@
   ends locally: ended when this client claimed it (exclusive answer or
   placement), otherwise left. `answer()` and `join()` reject after the
   release, which waits at most 5 seconds.
+- Browser calls: when a microphone or camera switch fails,
+  `snapshot.selectedDevices` goes back to the device the capture is using,
+  also after several quick switches.
 - Browser calls: when media fails on a call this browser claimed (an
   exclusive answer or placement), the call is ended rather than left, so the
   other party is not left on an answered call. The React incoming card

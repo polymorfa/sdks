@@ -319,6 +319,15 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   #resumedFrom: "connected" | "connecting" | undefined;
   /** Per-kind switch counter, so a stale failure cannot undo a newer switch. */
   readonly #deviceSwitches = new Map<string, number>();
+  /**
+   * Per kind, the device the live capture uses and the switch generation that
+   * applied it. Seeded when media opens; only successful switches move it, so
+   * a failed switch restores a device that is actually in use.
+   */
+  readonly #appliedDevices = new Map<
+    "audioInput" | "videoInput",
+    { readonly deviceId: string | undefined; readonly generation: number }
+  >();
   /** Incoming calls by id, oldest first. */
   readonly #invitations = new Map<string, CallInvitation>();
   /** Rosters of listed invitations, kept current while another call shows. */
@@ -684,11 +693,15 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     deviceId: string,
   ): Promise<void> {
     if (this.#abort.signal.aborted) return;
-    const previous = this.getSnapshot().selectedDevices[kind];
+    const media = this.#media;
+    if (media !== undefined && !this.#appliedDevices.has(kind))
+      this.#appliedDevices.set(kind, {
+        deviceId: this.getSnapshot().selectedDevices[kind],
+        generation: 0,
+      });
     const generation = (this.#deviceSwitches.get(kind) ?? 0) + 1;
     this.#deviceSwitches.set(kind, generation);
     this.setPreferredDevices({ [kind]: deviceId });
-    const media = this.#media;
     if (media?.switchInput === undefined) return;
     try {
       await media.switchInput(
@@ -696,17 +709,26 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         deviceId,
         this.#abort.signal,
       );
+      // Switches of one kind run in order, so a success, even a superseded
+      // one, is the device in use until a later switch succeeds.
+      if (
+        this.#media === media &&
+        generation > (this.#appliedDevices.get(kind)?.generation ?? 0)
+      )
+        this.#appliedDevices.set(kind, { deviceId, generation });
     } catch {
-      // Device unavailable: the capture kept the old track, so the stored
-      // preference goes back with it, unless a newer switch has landed.
+      // Device unavailable: the capture kept its track, so the stored
+      // preference goes back to the device in use, unless a newer switch has
+      // been requested (it restores for itself when it fails).
       if (this.#deviceSwitches.get(kind) !== generation) return;
-      if (this.#abort.signal.aborted) return;
+      if (this.#abort.signal.aborted || this.#media !== media) return;
+      const applied = this.#appliedDevices.get(kind)?.deviceId;
       const current = this.getSnapshot();
       const restored: Record<string, string | undefined> = {
         ...current.selectedDevices,
       };
-      if (previous === undefined) delete restored[kind];
-      else restored[kind] = previous;
+      if (applied === undefined) delete restored[kind];
+      else restored[kind] = applied;
       this.transition({
         ...callFields(current),
         status: current.status,
@@ -1033,6 +1055,23 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       return;
     }
     this.#media = media;
+    // The capture opened with the preferred devices, or the track's own
+    // device when the browser reports it.
+    this.#appliedDevices.clear();
+    const opened = this.getSnapshot().selectedDevices;
+    for (const [kind, track] of [
+      ["audioInput", media.localStream.getAudioTracks?.()[0]],
+      ["videoInput", media.localStream.getVideoTracks?.()[0]],
+    ] as const) {
+      const reported = track?.getSettings?.().deviceId;
+      this.#appliedDevices.set(kind, {
+        deviceId:
+          typeof reported === "string" && reported !== ""
+            ? reported
+            : opened[kind],
+        generation: this.#deviceSwitches.get(kind) ?? 0,
+      });
+    }
     const initial = media.remoteVideos ?? [];
     if (initial.length > 0) {
       this.#remoteVideos = initial;

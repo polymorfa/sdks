@@ -572,6 +572,61 @@ describe("createSignalingCallsBackend", () => {
     controller.dispose();
   });
 
+  describe("restoring the device in use after overlapping switches fail", () => {
+    async function live() {
+      const m = media();
+      const controller = new CallsController(
+        createSignalingCallsBackend({
+          signaling: signaling(),
+          incoming: new IncomingCallRelay(),
+          place: async () => "call-dev",
+        }),
+        m.factory,
+      );
+      controller.initialize();
+      controller.setPreferredDevices({ audioInput: "mic-1" });
+      await controller.place("+12025550123");
+      // Media sessions run switches of one kind in order.
+      const settle: ((error?: Error) => void)[] = [];
+      m.session.switchInput.mockImplementation(
+        () =>
+          new Promise<void>((resolve, reject) => {
+            settle.push((error) => (error ? reject(error) : resolve()));
+          }),
+      );
+      return { m, controller, settle };
+    }
+
+    it("goes back to the live device when two switches fail", async () => {
+      const { controller, settle } = await live();
+      const first = controller.switchDevice("audioInput", "mic-2");
+      const second = controller.switchDevice("audioInput", "mic-3");
+      settle[0]!(new Error("device in use"));
+      await first;
+      settle[1]!(new Error("device in use"));
+      await second;
+      // Neither mic-2 nor mic-3 was ever applied.
+      expect(controller.getSnapshot().selectedDevices).toEqual({
+        audioInput: "mic-1",
+      });
+      controller.dispose();
+    });
+
+    it("goes back to the device a superseded switch applied", async () => {
+      const { controller, settle } = await live();
+      const first = controller.switchDevice("audioInput", "mic-2");
+      const second = controller.switchDevice("audioInput", "mic-3");
+      settle[0]!();
+      await first;
+      settle[1]!(new Error("device in use"));
+      await second;
+      expect(controller.getSnapshot().selectedDevices).toEqual({
+        audioInput: "mic-2",
+      });
+      controller.dispose();
+    });
+  });
+
   it("ignores a device selection made after disposal", async () => {
     const m = media();
     const controller = new CallsController(
