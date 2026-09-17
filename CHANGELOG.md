@@ -2,12 +2,18 @@
 
 ## Unreleased
 
-- Added `examples/full-platform`, a Next.js App Router support desk that uses
-  the Messaging and management clients, signed webhooks, the browser
-  controllers, React components, Web Components, Next.js route helpers, and
-  the development assistant. QuickLink appears only as a created hosted `url`.
-  The example checks the request origin on state-changing routes, rejects
-  replayed webhooks, and serves received media with download-safe headers.
+- Added `examples/full-platform`, Acme Support: a multi-agent WhatsApp help
+  desk built with Next.js on every Polymorfa SDK surface. It has a ticket inbox
+  with queues, assignment, transfer, tags, private notes, quick replies,
+  templates, interactive messages, voice notes, calls, contacts, campaigns,
+  connections, a dashboard, admin pages, and light and dark themes from 360px
+  wide up. Without credentials it runs on built-in demo data. History comes
+  from the app's own webhook-fed store, live changes arrive as
+  webhook-shaped server-sent events, and an opt-in IndexedDB cache opens chats
+  instantly. QuickLink appears only as a created hosted `url`. The example
+  checks the request origin on state-changing routes, rejects replayed
+  webhooks, and serves media with download-safe headers. It needs the
+  `ComposeBox` and `mountDevAssistant` options added in this release.
 
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`
