@@ -94,9 +94,15 @@ export class CallsTokenSource {
     return pending;
   }
 
-  /** Drop the cached token so the next `get()` asks the provider. */
+  /**
+   * Drop the cached token so the next `get()` asks the provider. A provider
+   * call already in flight may return the refused token: it neither answers
+   * later requests nor replaces the cache.
+   */
   invalidate(): void {
     this.#cached = undefined;
+    this.#pending = undefined;
+    this.#fetchGeneration += 1;
   }
 
   async #fetch(

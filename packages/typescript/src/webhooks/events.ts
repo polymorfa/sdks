@@ -1,4 +1,8 @@
-import type { PhonePlatform, WhatsAppAccountType } from "../messaging/types.js";
+import type {
+  MessagingConnection,
+  PhonePlatform,
+  WhatsAppAccountType,
+} from "../messaging/types.js";
 
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
@@ -290,17 +294,43 @@ export interface ChatDeletePayload {
   readonly from: IdentityReference;
 }
 
+/** What a call supports, as reported by the session that carries it. */
+export interface WebhookCallCapabilities {
+  readonly video: boolean;
+  /** Other parties can be invited, turning the call into a group call. */
+  readonly invite: boolean;
+}
+
 export interface CallReceivedPayload {
   readonly from: IdentityReference;
   readonly callId: string;
+  readonly hasVideo: boolean;
+  /** How the session is connected to WhatsApp. */
+  readonly sessionConnection?: MessagingConnection;
+  readonly capabilities?: WebhookCallCapabilities;
 }
 
-export interface CallMissedPayload extends CallReceivedPayload {
+export interface CallMissedPayload {
+  readonly from: IdentityReference;
+  readonly callId: string;
   readonly reason: string;
 }
 
-export type CallAcceptedPayload = CallReceivedPayload;
-export type CallRejectedPayload = CallReceivedPayload;
+export interface CallAcceptedPayload {
+  readonly from: IdentityReference;
+  readonly callId: string;
+  /** Participant reference that answered first, when known. */
+  readonly answeredBy?: string;
+  /** The answer claimed the call: other participants stopped ringing. */
+  readonly exclusive?: boolean;
+  readonly sessionConnection?: MessagingConnection;
+  readonly capabilities?: WebhookCallCapabilities;
+}
+
+export interface CallRejectedPayload {
+  readonly from: IdentityReference;
+  readonly callId: string;
+}
 
 export interface CallEndedPayload {
   /** Null when the media host disappeared before reporting caller identity. */
@@ -311,6 +341,7 @@ export interface CallEndedPayload {
   readonly reason: string;
   readonly direction: "inbound" | "outbound";
   readonly hadVideo: boolean;
+  readonly sessionConnection?: MessagingConnection;
 }
 
 export interface CallTelemetryPayload {

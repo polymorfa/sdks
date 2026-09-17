@@ -1160,7 +1160,14 @@ if (isEvent(event, "history.sync")) {
 } else if (isEvent(event, "message.echo")) {
   console.log(event.payload.source, event.externalId);
 } else if (isEvent(event, "call.received")) {
-  console.log(event.payload.callId, event.payload.from.id);
+  console.log(
+    event.payload.callId,
+    event.payload.from.id,
+    event.payload.hasVideo,
+  );
+} else if (isEvent(event, "call.accepted")) {
+  // answeredBy and exclusive say who answered and whether they claimed it.
+  console.log(event.payload.answeredBy, event.payload.exclusive === true);
 } else if (isEvent(event, "message.failed")) {
   if (event.payload.error === "blocked_by_safety") {
     console.log(event.payload.code, event.payload.retryAfter);

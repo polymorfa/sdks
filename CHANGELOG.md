@@ -10,6 +10,15 @@
   only the settings you send (`includeSelfAudio` is optional) and accepts
   `expectedRevision`. Webhook types add `call.connection_joined` and
   `call.connection_left`, including the SIP trunk departure reasons.
+- Call webhook payload types match the contract. `CallReceivedPayload` adds
+  `hasVideo`, and optional `sessionConnection` and `capabilities`
+  (`WebhookCallCapabilities`). `CallAcceptedPayload` is its own type with
+  optional `answeredBy`, `exclusive`, `sessionConnection` and `capabilities`.
+  `CallEndedPayload` adds optional `sessionConnection`. `CallMissedPayload` and
+  `CallRejectedPayload` no longer extend or alias `CallReceivedPayload`.
+- `ClientTokenManager` (browser) and `CallsTokenSource` (`@polymorfa/calls`)
+  never reuse or cache a provider call that started before a forced refresh
+  or `invalidate()`, so a reconnect after a revoked token asks for a new one.
 - Breaking: Calls use one neutral calling API. Session answer modes and
   calling tickets are gone; the token your server issues authenticates
   everything, and group audio and per-participant video are supported.

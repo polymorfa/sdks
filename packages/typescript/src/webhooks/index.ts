@@ -25,6 +25,7 @@ export {
   type CallReceivedPayload,
   type CallRejectedPayload,
   type CallTelemetryPayload,
+  type WebhookCallCapabilities,
   type CampaignCapReachedPayload,
   type CampaignColdBlockedPayload,
   type CampaignCompletedPayload,

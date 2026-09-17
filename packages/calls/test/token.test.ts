@@ -41,6 +41,24 @@ describe("CallsTokenSource", () => {
     expect((await source.get()).value).toBe("pmfa_ct_fresh");
   });
 
+  it("does not let a call pending across invalidate() answer or repopulate later requests", async () => {
+    const stale = deferred<string>();
+    let calls = 0;
+    const source = new CallsTokenSource(async () => {
+      calls += 1;
+      return calls === 1 ? stale.promise : "pmfa_ct_fresh";
+    });
+    const before = source.get();
+    source.invalidate(); // e.g. a 401 on a REST call
+    const after = source.get();
+    expect(calls).toBe(2);
+    stale.resolve("pmfa_ct_refused");
+    expect((await before).value).toBe("pmfa_ct_refused");
+    expect((await after).value).toBe("pmfa_ct_fresh");
+    expect((await source.get()).value).toBe("pmfa_ct_fresh");
+    expect(calls).toBe(2);
+  });
+
   it("lets a plain request share an in-flight refresh", async () => {
     const calls: boolean[] = [];
     const source = new CallsTokenSource(async ({ refresh }) => {

@@ -91,6 +91,8 @@ export class ClientTokenManager {
   readonly #expirySkewMs: number;
   #cached: ClientToken | undefined;
   #pending: Promise<string> | undefined;
+  // Only the latest provider call may replace the cached token.
+  #fetchGeneration = 0;
 
   constructor(
     provider: ClientTokenProvider,
@@ -109,17 +111,7 @@ export class ClientTokenManager {
   }
 
   get(): Promise<string> {
-    if (
-      this.#cached !== undefined &&
-      this.#cached.expiresAt - this.#expirySkewMs > this.#now()
-    ) {
-      return Promise.resolve(this.#cached.value);
-    }
-    if (this.#pending !== undefined) return this.#pending;
-    this.#pending = this.#refresh().finally(() => {
-      this.#pending = undefined;
-    });
-    return this.#pending;
+    return this.#get(false);
   }
 
   /**
@@ -129,19 +121,44 @@ export class ClientTokenManager {
   async token(
     options: { readonly refresh?: boolean } = {},
   ): Promise<{ readonly value: string; readonly expiresAt?: number }> {
-    if (options.refresh === true) this.invalidate();
-    const value = await this.get();
+    const value = await this.#get(options.refresh === true);
     const cached = this.#cached;
     return cached !== undefined && cached.value === value
       ? { value, expiresAt: cached.expiresAt }
       : { value };
   }
 
+  /**
+   * Drop the cached token. A provider call already in flight may return the
+   * refused token: it neither answers later requests nor replaces the cache.
+   */
   invalidate(): void {
     this.#cached = undefined;
+    this.#pending = undefined;
+    this.#fetchGeneration += 1;
   }
 
-  async #refresh(): Promise<string> {
+  #get(refresh: boolean): Promise<string> {
+    if (
+      !refresh &&
+      this.#cached !== undefined &&
+      this.#cached.expiresAt - this.#expirySkewMs > this.#now()
+    ) {
+      return Promise.resolve(this.#cached.value);
+    }
+    // A forced refresh never takes the result of a provider call that started
+    // before it was requested: that call may return the refused token.
+    if (refresh) this.invalidate();
+    if (this.#pending !== undefined) return this.#pending;
+    const generation = ++this.#fetchGeneration;
+    const promise = this.#refresh(generation).finally(() => {
+      if (this.#pending === promise) this.#pending = undefined;
+    });
+    this.#pending = promise;
+    return promise;
+  }
+
+  async #refresh(generation: number): Promise<string> {
     const supplied = await this.#provider();
     if (typeof supplied === "string") {
       validatePrefix(supplied);
@@ -163,6 +180,7 @@ export class ClientTokenManager {
         "expired_client_token",
       );
     }
+    if (generation !== this.#fetchGeneration) return supplied.value;
     this.#cached = Object.freeze({
       ...supplied,
       ...(supplied.scopes === undefined

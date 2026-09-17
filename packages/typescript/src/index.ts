@@ -704,6 +704,7 @@ export {
   type CallReceivedPayload,
   type CallRejectedPayload,
   type CallTelemetryPayload,
+  type WebhookCallCapabilities,
   type ChatArchivePayload,
   type ChatClearPayload,
   type ChatDeletePayload,
