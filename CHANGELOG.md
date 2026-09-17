@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+- `ComposeBox` and `pmfa-compose-box` gain a WhatsApp-style toolbar: an emoji
+  picker with search, recent emoji, and categories; voice notes with a
+  recording bar, timer, and level meter; and "/" quick replies with
+  keyboard selection. New props are `placeholder`, `startActions`,
+  `endActions`, `emoji`, `voiceNotes`, `voiceNoteAutoSend`, `quickReplies`,
+  `onQuickReply`, and `maxRows`; the element takes the matching attributes,
+  a `quickReplies` property, `start-actions` and `end-actions` slots, and a
+  `pmfa-quick-reply` event. New slots are `composerToolbar`, `emojiButton`,
+  `emojiPicker`, `voiceButton`, `recordingBar`, and `quickReplyMenu`. See the
+  [React](packages/react/README.md#chat) and
+  [Web Component](packages/elements/README.md#chat) guides.
+- `@polymorfa/browser` adds `VoiceNoteRecorder`, and `@polymorfa/ui` adds
+  `QuickReplyOption`, the built-in emoji set, and composer helpers. See
+  [voice notes](packages/browser/README.md#voice-notes).
+- The `@polymorfa/devtools` panel now starts collapsed behind a small
+  launcher in the bottom-left corner, so it no longer covers the composer.
+  `mountDevAssistant()` accepts `position`, `defaultOpen`, and `offset`, and
+  the panel closes on Escape and follows the system color scheme. See the
+  [devtools guide](packages/devtools/README.md).
+
 - The chat and template components in `@polymorfa/react` and
   `@polymorfa/elements` now ship a stylesheet: message bubbles by direction
   with time and delivery status, a drawer that is full width on small
