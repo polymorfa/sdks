@@ -10,7 +10,7 @@ import {
   timingSafeEqual,
 } from "node:crypto";
 import { createWriteStream } from "node:fs";
-import { rename, unlink } from "node:fs/promises";
+import { access, link, rename, unlink } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
@@ -19,6 +19,7 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import { assertServerRuntime } from "./credentials.js";
 import {
   PolymorfaCancelledError,
+  PolymorfaConflictError,
   PolymorfaMediaIntegrityError,
 } from "./errors.js";
 import {
@@ -167,12 +168,35 @@ export const nodeMediaCrypto: WhatsAppMediaCrypto = Object.freeze({
 
 export interface WriteToFileOptions {
   readonly signal?: AbortSignal;
+  /**
+   * Replace an existing file at `path` (default `true`). With `false` the
+   * final link fails atomically with `PolymorfaConflictError` when the path
+   * exists.
+   */
+  readonly overwrite?: boolean;
+  /** Abort with `media_too_large` once more than this many bytes arrive. */
+  readonly maxBytes?: number;
+}
+
+function fileOptions(options: {
+  readonly signal?: AbortSignal;
+  readonly overwrite?: boolean;
+  readonly maxBytes?: number;
+}): WriteToFileOptions {
+  return {
+    ...(options.signal === undefined ? {} : { signal: options.signal }),
+    ...(options.overwrite === undefined
+      ? {}
+      : { overwrite: options.overwrite }),
+    ...(options.maxBytes === undefined ? {} : { maxBytes: options.maxBytes }),
+  };
 }
 
 /**
  * Writes a web stream to `path` through a sibling temporary file, then
- * renames it into place. The temporary file is removed on error or abort, and
- * an existing file at `path` is replaced only on success.
+ * moves it into place. The temporary file is removed on error or abort, and
+ * an existing file at `path` is replaced only on success (and only when
+ * `overwrite` is not `false`).
  */
 export async function writeStreamToFile(
   body: ReadableStream<Uint8Array>,
@@ -185,9 +209,19 @@ export async function writeStreamToFile(
     `.${basename(path)}.${randomUUID()}.partial`,
   );
   let bytes = 0;
+  const limit = options.maxBytes ?? Number.POSITIVE_INFINITY;
   const counter = new Transform({
     transform(chunk: Buffer, _encoding, callback) {
       bytes += chunk.length;
+      if (bytes > limit) {
+        callback(
+          new PolymorfaMediaIntegrityError(
+            `The media exceeds the ${limit} byte limit.`,
+            "media_too_large",
+          ),
+        );
+        return;
+      }
       callback(null, chunk);
     },
   });
@@ -198,7 +232,21 @@ export async function writeStreamToFile(
       createWriteStream(temporary, { flags: "wx", mode: 0o600 }),
       ...(options.signal === undefined ? [] : [{ signal: options.signal }]),
     );
-    await rename(temporary, path);
+    if (options.overwrite === false) {
+      try {
+        await link(temporary, path);
+      } catch (error) {
+        if ((error as { code?: unknown }).code === "EEXIST") {
+          throw new PolymorfaConflictError(`${path} already exists.`, {
+            code: "file_exists",
+          });
+        }
+        throw error;
+      }
+      await unlink(temporary);
+    } else {
+      await rename(temporary, path);
+    }
     return { path, bytes };
   } catch (error) {
     await unlink(temporary).catch(() => undefined);
@@ -218,7 +266,10 @@ export async function downloadMediaToFile(
   media: Pick<MessagingMediaResource, "downloadStream">,
   mediaId: string,
   path: string,
-  options: RequestOptions = {},
+  options: RequestOptions & {
+    readonly overwrite?: boolean;
+    readonly maxBytes?: number;
+  } = {},
 ): Promise<{
   readonly path: string;
   readonly bytes: number;
@@ -226,11 +277,28 @@ export async function downloadMediaToFile(
   readonly filename?: string;
   readonly requestId?: string;
 }> {
-  const download = await media.downloadStream(mediaId, options);
+  const { overwrite, maxBytes, ...request } = options;
+  if (overwrite === false && (await exists(path))) {
+    throw new PolymorfaConflictError(`${path} already exists.`, {
+      code: "file_exists",
+    });
+  }
+  const download = await media.downloadStream(mediaId, request);
+  if (
+    maxBytes !== undefined &&
+    download.contentLength !== undefined &&
+    download.contentLength > maxBytes
+  ) {
+    await download.body.cancel().catch(() => undefined);
+    throw new PolymorfaMediaIntegrityError(
+      `The media is ${download.contentLength} bytes and exceeds the ${maxBytes} byte limit.`,
+      "media_too_large",
+    );
+  }
   const written = await writeStreamToFile(
     download.body,
     path,
-    options.signal === undefined ? {} : { signal: options.signal },
+    fileOptions(options),
   );
   return {
     ...written,
@@ -252,22 +320,28 @@ export async function downloadMediaToFile(
 export async function downloadWhatsAppMediaToFile(
   input: WhatsAppMediaInput,
   path: string,
-  options: WhatsAppMediaDownloadOptions = {},
+  options: WhatsAppMediaDownloadOptions & {
+    readonly overwrite?: boolean;
+  } = {},
 ): Promise<
   Omit<WhatsAppMediaDownload, "body" | "arrayBuffer" | "blob"> & {
     readonly path: string;
     readonly bytes: number;
   }
 > {
+  const { overwrite, ...downloadOptions } = options;
   const download = await downloadWhatsAppMedia(input, {
     crypto: nodeMediaCrypto,
     verify: "streaming",
-    ...options,
+    ...downloadOptions,
   });
   const written = await writeStreamToFile(
     download.body,
     path,
-    options.signal === undefined ? {} : { signal: options.signal },
+    fileOptions({
+      ...(options.signal === undefined ? {} : { signal: options.signal }),
+      ...(overwrite === undefined ? {} : { overwrite }),
+    }),
   );
   return {
     ...written,
@@ -278,4 +352,13 @@ export async function downloadWhatsAppMediaToFile(
       ? {}
       : { fileLength: download.fileLength }),
   };
+}
+
+async function exists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
 }

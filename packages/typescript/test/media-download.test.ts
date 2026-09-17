@@ -436,3 +436,55 @@ describe("module boundaries", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("writeStreamToFile options", () => {
+  it("refuses to replace a file when overwrite is false and enforces maxBytes", async () => {
+    const { mkdtempSync, readdirSync, readFileSync, writeFileSync } =
+      await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const { downloadMediaToFile, writeStreamToFile } =
+      await import("../src/node.js");
+    const { PolymorfaConflictError, PolymorfaMediaIntegrityError } =
+      await import("../src/index.js");
+    const directory = mkdtempSync(join(tmpdir(), "pmfa-write-"));
+    const path = join(directory, "keep.txt");
+    writeFileSync(path, "original");
+
+    await expect(
+      writeStreamToFile(new Response("new").body!, path, { overwrite: false }),
+    ).rejects.toBeInstanceOf(PolymorfaConflictError);
+    expect(readFileSync(path, "utf8")).toBe("original");
+    expect(readdirSync(directory)).toEqual(["keep.txt"]);
+
+    const { fetch, calls } = mockFetch(() => new Response("x"));
+    await expect(
+      downloadMediaToFile(client(fetch).media, "m", path, { overwrite: false }),
+    ).rejects.toMatchObject({ code: "file_exists" });
+    expect(calls).toHaveLength(0);
+
+    await expect(
+      writeStreamToFile(new Response("123456").body!, join(directory, "big"), {
+        maxBytes: 5,
+      }),
+    ).rejects.toBeInstanceOf(PolymorfaMediaIntegrityError);
+
+    const declared = mockFetch(
+      () => new Response("123456", { headers: { "content-length": "6" } }),
+    );
+    await expect(
+      downloadMediaToFile(
+        client(declared.fetch).media,
+        "m",
+        join(directory, "d"),
+        {
+          maxBytes: 5,
+        },
+      ),
+    ).rejects.toMatchObject({ code: "media_too_large" });
+    expect(readdirSync(directory)).toEqual(["keep.txt"]);
+
+    await writeStreamToFile(new Response("new").body!, path);
+    expect(readFileSync(path, "utf8")).toBe("new");
+  });
+});

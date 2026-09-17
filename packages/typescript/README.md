@@ -534,8 +534,12 @@ await downloadMediaToFile(messaging.media, "media-id", "./attachment.bin", {
 The helper writes to a sibling temporary file (`.<name>.<uuid>.partial`,
 mode `0600`) and renames it into place when the download finishes. If the
 download fails or is aborted, the helper deletes the temporary file and leaves
-any existing file at the destination unchanged. `writeStreamToFile(body, path)`
-applies the same steps to any web stream.
+any existing file at the destination unchanged. With `overwrite: false`, the
+final step is an atomic link that fails with `PolymorfaConflictError` (code
+`file_exists`) when the destination exists. `maxBytes` stops the download with
+`media_too_large`, either from `Content-Length` before any bytes are read or
+once too many bytes arrive. `writeStreamToFile(body, path, options)` applies
+the same steps to any web stream.
 
 ### Download media directly from WhatsApp
 
