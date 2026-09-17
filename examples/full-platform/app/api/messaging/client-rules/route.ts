@@ -1,17 +1,12 @@
 import { messaging } from "../../../../lib/polymorfa.js";
 import { env } from "../../../../lib/env.js";
-import {
-  action,
-  route,
-  sessionOf,
-  unknownAction,
-} from "../../../../lib/route.js";
+import { action, route, unknownAction } from "../../../../lib/route.js";
 
 export const GET = route("admin", () =>
   messaging().clientTokens.retrieveRules(env.session()),
 );
 
-export const POST = route("admin", async ({ body, request }) => {
+export const POST = route("admin", async ({ body, sessionOf }) => {
   const clientTokens = messaging().clientTokens;
   const session = sessionOf(body);
   switch (action(body)) {
@@ -31,7 +26,7 @@ export const POST = route("admin", async ({ body, request }) => {
           "voip_answer",
           "voip_signal",
         ].join(","),
-        allowedOrigins: new URL(request.url).origin,
+        allowedOrigins: env.appOrigin(),
         rateLimit: 60,
         maxDaily: 1000,
         maxConcurrency: 1,

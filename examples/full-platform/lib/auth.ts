@@ -9,8 +9,9 @@ export const DEMO_USER_COOKIE = "acme_demo_user";
 export const DEMO_ROLE_COOKIE = "acme_demo_role";
 
 /**
- * Demo-only authentication backed by unsigned cookies from /api/demo-login.
- * Replace it with your real session lookup; these cookies prove nothing.
+ * DEMO ONLY. Anyone can set these unsigned cookies from /api/demo-login (or by
+ * hand) and claim any user or the admin role. Replace this function with your
+ * real session lookup before deploying this app anywhere.
  */
 export async function authenticate(request: Request): Promise<Operator | null> {
   const cookies = parseCookies(request.headers.get("cookie"));

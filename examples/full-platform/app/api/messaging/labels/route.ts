@@ -5,7 +5,6 @@ import {
   optionalInteger,
   optionalText,
   route,
-  sessionOf,
   text,
   texts,
   unknownAction,
@@ -18,7 +17,7 @@ export const GET = route("agent", ({ url }) =>
   }),
 );
 
-export const POST = route("agent", async ({ body }) => {
+export const POST = route("agent", async ({ body, sessionOf }) => {
   const labels = messaging().labels;
   const session = sessionOf(body);
   switch (action(body)) {

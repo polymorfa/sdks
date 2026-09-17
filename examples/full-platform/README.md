@@ -7,7 +7,8 @@ route helpers, and the development assistant.
 
 The Polymorfa packages have not been published to npm yet. Inside this
 repository, the root `npm run typecheck` checks this example against the
-package sources.
+packages' built `dist` output, so run `npm run build` (and
+`npm run build:workspaces`) first.
 
 ## Setup
 
@@ -25,39 +26,68 @@ package sources.
 
 3. Copy `.env.example` to `.env.local` and fill it in:
 
-   | Variable                         | Used for                                                                            |
-   | -------------------------------- | ----------------------------------------------------------------------------------- |
-   | `POLYMORFA_PROJECT_TOKEN`        | `MessagingClient`, `BridgeClient`, and the project view of `Client` (`pmfa_pt_...`) |
-   | `POLYMORFA_ORGANIZATION_API_KEY` | The organization `Client` in the admin area (`pmfa_...`)                            |
-   | `POLYMORFA_PROJECT_ID`           | The project the project token is bound to                                           |
-   | `POLYMORFA_PROJECT_SLUG`         | Template and Messaging campaign routes                                              |
-   | `POLYMORFA_SESSION`              | The session (number) the support team uses                                          |
-   | `POLYMORFA_TEMPLATE_SESSION`     | The Cloud API session that submits templates to Meta                                |
-   | `POLYMORFA_WEBHOOK_SECRET`       | Signing secret of the webhook that targets `/api/polymorfa/webhooks`                |
-   | `POLYMORFA_API_BASE_URL`         | Optional API origin; defaults to `https://api.polymorfa.com`                        |
+   | Variable                             | Used for                                                                            |
+   | ------------------------------------ | ----------------------------------------------------------------------------------- |
+   | `POLYMORFA_PROJECT_TOKEN`            | `MessagingClient`, `BridgeClient`, and the project view of `Client` (`pmfa_pt_...`) |
+   | `POLYMORFA_ORGANIZATION_API_KEY`     | The organization `Client` in the admin area (`pmfa_...`)                            |
+   | `POLYMORFA_PROJECT_ID`               | The project the project token is bound to                                           |
+   | `POLYMORFA_PROJECT_SLUG`             | Template and Messaging campaign routes                                              |
+   | `POLYMORFA_SESSION`                  | The session (number) the support team uses                                          |
+   | `POLYMORFA_TEMPLATE_SESSION`         | The Cloud API session that submits templates to Meta                                |
+   | `POLYMORFA_AGENT_SESSIONS`           | Optional comma-separated extra sessions agents may use                              |
+   | `POLYMORFA_WEBHOOK_SECRET`           | Signing secret of the management webhook at `/api/polymorfa/webhooks`               |
+   | `POLYMORFA_MESSAGING_WEBHOOK_SECRET` | Secret you choose for the Messaging webhook at `/api/polymorfa/messaging-webhooks`  |
+   | `APP_ORIGIN`                         | Public origin of this app, for webhook URLs, client rules and CSRF checks           |
+   | `POLYMORFA_API_BASE_URL`             | Optional API origin; defaults to `https://api.polymorfa.com`                        |
 
    These values are server-only. Never prefix them with `NEXT_PUBLIC_`.
 
 4. Run `npm run dev` and open `http://localhost:3000`. Use the demo sign-in
-   form on the home page. It sets unsigned cookies and exists only outside
-   production; replace `lib/auth.ts` with your own session lookup.
+   form on the home page. The sign-in is for this demo only: it sets
+   unsigned cookies that anyone can forge to claim any user or the admin
+   role. Replace `lib/auth.ts` and `app/api/demo-login` with your own
+   authentication before deploying this app anywhere.
+
+   Route handlers that change state accept only JSON requests
+   (`content-type: application/json`) whose `Origin` equals `APP_ORIGIN`,
+   and answer 415 or 403 otherwise.
 
 5. In the admin area, apply the session's client rules
    (`POST /api/messaging/client-rules` with `{"action":"apply"}`) and register
-   a webhook (`POST /api/admin/webhooks` with `{"action":"create"}`). Store the
-   returned signing secret as `POLYMORFA_WEBHOOK_SECRET`.
+   one management webhook (`POST /api/admin/webhooks` with
+   `{"action":"create"}`). It targets `/api/polymorfa/webhooks` and subscribes
+   to every event the handler uses (`WEBHOOK_EVENTS` in `lib/webhooks.ts`,
+   including `session.status`, `template.status` and `call.missed`).
+
+   The response contains the signing `secret` once, with
+   `Cache-Control: no-store`. Store it as `POLYMORFA_WEBHOOK_SECRET`; it cannot
+   be retrieved again. To rotate, send `{"action":"rotateSecret","webhookId":"..."}`.
+   The response returns the new secret once, and the previous secret stays
+   valid for the one-hour overlap (`overlapSeconds: 3600`). Deploy the new
+   value before the overlap ends.
+
+   Alternatively, `POST /api/messaging/webhooks` with `{"action":"register"}`
+   creates a Messaging webhook at `/api/polymorfa/messaging-webhooks`, signed
+   with `POLYMORFA_MESSAGING_WEBHOOK_SECRET`. Each endpoint verifies with its
+   own secret. Register only one of the two to avoid receiving each event
+   twice.
+
+   The handler rejects events whose `timestamp` is more than five minutes
+   from the server clock and ignores repeated event `id`s. The seen-id set is
+   in memory and bounded; use a durable store in production.
 
 ## Credentials by area
 
-| Area                                    | Credential                                                |
-| --------------------------------------- | --------------------------------------------------------- |
-| `app/api/messaging/*`                   | Project token through `MessagingClient`                   |
-| `app/api/messaging/media` upload action | Organization API key (`Client.media`)                     |
-| `app/api/admin/*` except the rows below | Organization API key through `Client`                     |
-| `app/api/admin/events`, `webhooks`      | Project token through `Client<"project">`                 |
-| `app/api/admin/settings`                | Organization API key and project token views              |
-| `app/api/admin/bridge`                  | Project token (`BridgeClient`), no key for `SystemClient` |
-| Browser pages                           | Short-lived `pmfa_ct_` client tokens minted by the server |
+| Area                                               | Credential                                                |
+| -------------------------------------------------- | --------------------------------------------------------- |
+| `app/api/messaging/*`                              | Project token through `MessagingClient`                   |
+| `app/api/messaging/media` upload action            | Organization API key (`Client.media`), admin role only    |
+| `app/api/admin/*` except the rows below            | Organization API key through `Client`                     |
+| `app/api/admin/events`, `webhooks`                 | Project token through `Client<"project">`                 |
+| `app/api/admin/webhooks` `GET ?owner=organization` | Organization API key through `Client`                     |
+| `app/api/admin/settings`                           | Organization API key and project token views              |
+| `app/api/admin/bridge`                             | Project token (`BridgeClient`), no key for `SystemClient` |
+| Browser pages                                      | Short-lived `pmfa_ct_` client tokens minted by the server |
 
 Browsers never receive a server credential. `lib/polymorfa.ts` calls
 `assertServerRuntime()` before constructing a credentialed client, and `lib/route.ts`
@@ -118,7 +148,7 @@ sessions are created through QuickLink, so there is no session "create" call.
 | Webhooks, deliveries, attempts, retries, secret rotation                                                                                                                         | `app/api/admin/webhooks/route.ts`                 |
 | Session configuration and QuickLink settings                                                                                                                                     | `app/api/admin/settings/route.ts`                 |
 | `SystemClient` and `BridgeClient`                                                                                                                                                | `app/api/admin/bridge/route.ts`                   |
-| Signed webhooks (`readVerifiedWebhook`, `isEvent`)                                                                                                                               | `app/api/polymorfa/webhooks/route.ts`             |
+| Signed webhooks (`readVerifiedWebhook`, `isEvent`), replay protection                                                                                                            | `lib/webhooks.ts`, `app/api/polymorfa/*webhooks`  |
 | Server-sent events relay                                                                                                                                                         | `app/api/events/route.ts`, `lib/realtime.ts`      |
 | `PolymorfaProvider`, appearance, locale, dev assistant                                                                                                                           | `app/providers.tsx`                               |
 | Inbox: `ChatDrawer`, `MessageList`, `ComposeBox`                                                                                                                                 | `app/inbox/inbox.tsx`                             |
@@ -132,6 +162,7 @@ Route handlers take a JSON body with an `action` field, for example:
 ```bash
 curl -X POST http://localhost:3000/api/messaging/messages \
   -H 'content-type: application/json' \
+  -H 'origin: http://localhost:3000' \
   -H 'idempotency-key: 8a4f1c52-0d7e-4f4e-9d0c-2b8c3c4f0e11' \
   --cookie 'acme_demo_user=casey' \
   -d '{"action":"send","kind":"text","chat":{"phoneNumber":"+15550100"},"text":"Hello"}'
@@ -150,4 +181,10 @@ curl -X POST http://localhost:3000/api/messaging/messages \
 - The server SDK has no call placement method. The calls page places calls
   with the browser client token through `BrowserCallsApi`.
 - Management campaign, audience, opt-out, and media payloads are open objects
-  in the API contract. Those routes forward the caller's `payload` unchanged.
+  in the API contract. Those admin-only routes forward the caller's `payload`
+  unchanged. The `app/api/messaging/media` upload action instead builds its
+  payload from a validated `contentType` and the configured project.
+- Received media is served inline only for common image, audio and video
+  types, always with `X-Content-Type-Options: nosniff` and
+  `Content-Security-Policy: sandbox`; other types download as
+  `application/octet-stream`.

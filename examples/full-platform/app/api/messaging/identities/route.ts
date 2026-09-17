@@ -6,13 +6,12 @@ import {
   action,
   optionalText,
   route,
-  sessionOf,
   text,
   unknownAction,
   type Body,
 } from "../../../../lib/route.js";
 
-export const POST = route("agent", async ({ body }) => {
+export const POST = route("agent", async ({ body, sessionOf }) => {
   const session = sessionOf(body);
   switch (action(body)) {
     case "resolve":

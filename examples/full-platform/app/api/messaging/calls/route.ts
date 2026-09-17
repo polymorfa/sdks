@@ -3,14 +3,13 @@ import {
   action,
   optionalInteger,
   route,
-  sessionOf,
   text,
   unknownAction,
 } from "../../../../lib/route.js";
 
 // Browser calls use /api/messaging/calls/token. The browser places outbound
 // calls with that client token; the server SDK has no placement method.
-export const POST = route("agent", async ({ body }) => {
+export const POST = route("agent", async ({ body, sessionOf }) => {
   const session = sessionOf(body);
   switch (action(body)) {
     case "reject":

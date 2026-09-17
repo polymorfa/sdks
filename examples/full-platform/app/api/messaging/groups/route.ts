@@ -4,7 +4,6 @@ import {
   flag,
   oneOf,
   route,
-  sessionOf,
   text,
   texts,
   unknownAction,
@@ -13,7 +12,7 @@ import { env } from "../../../../lib/env.js";
 
 export const GET = route("agent", () => messaging().groups.list(env.session()));
 
-export const POST = route("agent", async ({ body }) => {
+export const POST = route("agent", async ({ body, sessionOf }) => {
   const groups = messaging().groups;
   const session = sessionOf(body);
   const name = action(body);

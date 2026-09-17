@@ -6,6 +6,8 @@
   the Messaging and management clients, signed webhooks, the browser
   controllers, React components, Web Components, Next.js route helpers, and
   the development assistant. QuickLink appears only as a created hosted `url`.
+  The example checks the request origin on state-changing routes, rejects
+  replayed webhooks, and serves received media with download-safe headers.
 
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`

@@ -3,7 +3,6 @@ import {
   action,
   oneOf,
   route,
-  sessionOf,
   text,
   unknownAction,
 } from "../../../../lib/route.js";
@@ -13,7 +12,7 @@ export const GET = route("agent", () =>
   messaging().presence.get(env.session()),
 );
 
-export const POST = route("agent", async ({ body }) => {
+export const POST = route("agent", async ({ body, sessionOf }) => {
   const presence = messaging().presence;
   const session = sessionOf(body);
   switch (action(body)) {

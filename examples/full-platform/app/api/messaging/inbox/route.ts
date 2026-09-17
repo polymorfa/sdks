@@ -18,13 +18,16 @@ export const GET = route("agent", async ({ url }) => {
 });
 
 export const POST = route("agent", async ({ body, request }) => {
+  // Validate every field before sending anything.
   const chat = text(body, "chat");
+  const content = text(body, "text");
+  const clientId = text(body, "clientId");
   const replyTo = optionalText(body, "replyTo");
   const response = await messaging().messages.send(
     env.session(),
     {
       conversation: { phoneNumber: chat },
-      content: { text: text(body, "text") },
+      content: { text: content },
       ...(replyTo === undefined ? {} : { quotedMessage: { id: replyTo } }),
     },
     { idempotencyKey: idempotencyKey(request) },
@@ -32,8 +35,8 @@ export const POST = route("agent", async ({ body, request }) => {
   const sent = response.data.data;
   const message = {
     id: sent.id,
-    clientId: text(body, "clientId"),
-    text: text(body, "text"),
+    clientId,
+    text: content,
     createdAt: Date.parse(sent.timestamp) || Date.now(),
     direction: "outbound" as const,
     status: "sent" as const,

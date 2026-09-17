@@ -21,5 +21,15 @@ export const env = {
   session: () => requiredEnv("POLYMORFA_SESSION"),
   templateSession: () => requiredEnv("POLYMORFA_TEMPLATE_SESSION"),
   webhookSecret: () => requiredEnv("POLYMORFA_WEBHOOK_SECRET"),
+  messagingWebhookSecret: () =>
+    requiredEnv("POLYMORFA_MESSAGING_WEBHOOK_SECRET"),
+  /** Extra sessions agents may address; the default session is always allowed. */
+  agentSessions: () =>
+    (optionalEnv("POLYMORFA_AGENT_SESSIONS") ?? "")
+      .split(",")
+      .map((name) => name.trim())
+      .filter((name) => name.length > 0),
+  /** Public origin of this app, e.g. https://support.example.com. */
+  appOrigin: () => new URL(requiredEnv("APP_ORIGIN")).origin,
   baseUrl: () => optionalEnv("POLYMORFA_API_BASE_URL"),
 };

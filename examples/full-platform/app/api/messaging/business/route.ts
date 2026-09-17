@@ -5,7 +5,6 @@ import {
   optionalInteger,
   optionalText,
   route,
-  sessionOf,
   text,
   texts,
   unknownAction,
@@ -13,7 +12,7 @@ import {
 } from "../../../../lib/route.js";
 
 // Business App profile and commerce. Most reads take the business user id.
-export const POST = route("admin", async ({ body }) => {
+export const POST = route("admin", async ({ body, sessionOf }) => {
   const business = messaging().business;
   const session = sessionOf(body);
   const name = action(body);

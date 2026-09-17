@@ -4,7 +4,6 @@ import {
   optionalInteger,
   optionalText,
   route,
-  sessionOf,
   text,
   unknownAction,
 } from "../../../../lib/route.js";
@@ -14,7 +13,7 @@ export const GET = route("agent", () =>
   messaging().channels.list(env.session()),
 );
 
-export const POST = route("admin", async ({ body }) => {
+export const POST = route("admin", async ({ body, sessionOf }) => {
   const channels = messaging().channels;
   const session = sessionOf(body);
   const name = action(body);

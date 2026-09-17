@@ -1,4 +1,6 @@
+import { env } from "../../../../lib/env.js";
 import { organization, project } from "../../../../lib/polymorfa.js";
+import { WEBHOOK_EVENTS } from "../../../../lib/webhooks.js";
 import {
   action,
   flag,
@@ -27,6 +29,9 @@ export const GET = route("admin", async ({ url }) => {
   };
 });
 
+// Signing secrets are shown once, so the response must never be cached.
+const secretHeaders = { "Cache-Control": "no-store" };
+
 export const POST = route("admin", async ({ body, request }) => {
   const { webhooks, webhookDeliveries } = project();
   const key = { idempotencyKey: idempotencyKey(request) };
@@ -35,8 +40,8 @@ export const POST = route("admin", async ({ body, request }) => {
       // The signing secret is returned once; store it as POLYMORFA_WEBHOOK_SECRET.
       const response = await webhooks.create(
         {
-          url: new URL("/api/polymorfa/webhooks", request.url).toString(),
-          eventTypes: ["message.received", "call.received", "call.ended"],
+          url: new URL("/api/polymorfa/webhooks", env.appOrigin()).toString(),
+          eventTypes: WEBHOOK_EVENTS,
           format: "native",
           retryPolicy: {
             maximumAttempts: 8,
@@ -46,10 +51,17 @@ export const POST = route("admin", async ({ body, request }) => {
         },
         key,
       );
-      return {
-        webhook: response.data.webhook,
-        secretAvailable: response.data.secretAvailable,
-      };
+      return Response.json(
+        {
+          data: {
+            webhook: response.data.webhook,
+            secret: response.data.secret,
+            secretAvailable: response.data.secretAvailable,
+          },
+          requestId: response.metadata.requestId,
+        },
+        { headers: secretHeaders },
+      );
     }
     case "retrieve":
       return webhooks.retrieve(text(body, "webhookId"));
@@ -75,7 +87,19 @@ export const POST = route("admin", async ({ body, request }) => {
         { overlapSeconds: 3600 },
         key,
       );
-      return { secretMetadata: response.data.secretMetadata };
+      // The previous secret stays valid for overlapSeconds; deploy the new one
+      // as POLYMORFA_WEBHOOK_SECRET before the overlap ends.
+      return Response.json(
+        {
+          data: {
+            secret: response.data.secret,
+            secretAvailable: response.data.secretAvailable,
+            secretMetadata: response.data.secretMetadata,
+          },
+          requestId: response.metadata.requestId,
+        },
+        { headers: secretHeaders },
+      );
     }
     case "delivery":
       return webhookDeliveries.retrieve(text(body, "deliveryId"));

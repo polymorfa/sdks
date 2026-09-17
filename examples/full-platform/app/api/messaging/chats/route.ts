@@ -3,14 +3,13 @@ import {
   action,
   oneOf,
   route,
-  sessionOf,
   text,
   unknownAction,
 } from "../../../../lib/route.js";
 
 const TIMERS = { off: 0, "24h": 86400, "7d": 604800, "90d": 7776000 } as const;
 
-export const POST = route("agent", async ({ body }) => {
+export const POST = route("agent", async ({ body, sessionOf }) => {
   const chats = messaging().chats;
   const session = sessionOf(body);
   const chatId = text(body, "chatId");

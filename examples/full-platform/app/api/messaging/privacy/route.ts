@@ -10,7 +10,6 @@ import {
   action,
   oneOf,
   route,
-  sessionOf,
   text,
   unknownAction,
 } from "../../../../lib/route.js";
@@ -20,7 +19,7 @@ const TIMERS = { off: 0, "24h": 86400, "7d": 604800, "90d": 7776000 } as const;
 
 export const GET = route("admin", () => messaging().privacy.get(env.session()));
 
-export const POST = route("admin", async ({ body }) => {
+export const POST = route("admin", async ({ body, sessionOf }) => {
   const privacy = messaging().privacy;
   const session = sessionOf(body);
   switch (action(body)) {

@@ -28,6 +28,8 @@ export interface RouteContext {
   readonly operator: Operator;
   readonly body: Body;
   readonly url: URL;
+  /** Sessions this operator may address. */
+  readonly sessionOf: (body: Body) => string;
 }
 
 const privateHeaders = { "Cache-Control": "no-store, private" };
@@ -40,6 +42,8 @@ export function route(
   return async (request) => {
     try {
       assertServerRuntime();
+      const rejected = rejectCrossSite(request);
+      if (rejected !== null) return rejected;
       const operator = await authenticate(request);
       if (operator === null) return problem(401, "unauthorized");
       if (role === "admin" && operator.role !== "admin") {
@@ -51,6 +55,7 @@ export function route(
         operator,
         body,
         url: new URL(request.url),
+        sessionOf: (input) => sessionOf(input, operator.role),
       });
       if (result instanceof Response) return result;
       return Response.json(unwrap(result), { headers: privateHeaders });
@@ -58,6 +63,23 @@ export function route(
       return errorResponse(error);
     }
   };
+}
+
+/**
+ * CSRF defence for cookie-authenticated routes: mutations must be JSON (which a
+ * cross-site form cannot send without a CORS preflight) and come from this
+ * app's own origin.
+ */
+function rejectCrossSite(request: Request): Response | null {
+  if (request.method === "GET" || request.method === "HEAD") return null;
+  const type = request.headers.get("content-type") ?? "";
+  if (type.split(";")[0]?.trim().toLowerCase() !== "application/json") {
+    return problem(415, "unsupported_media_type");
+  }
+  if (request.headers.get("origin") !== env.appOrigin()) {
+    return problem(403, "cross_origin_request");
+  }
+  return null;
 }
 
 function unwrap(result: unknown): unknown {
@@ -231,8 +253,18 @@ export function idempotencyKey(request: Request): string {
   return request.headers.get("idempotency-key") ?? crypto.randomUUID();
 }
 
-export function sessionOf(body: Body): string {
-  return optionalText(body, "session") ?? env.session();
+/**
+ * Agents may only address the default session or one listed in
+ * POLYMORFA_AGENT_SESSIONS; admins may address any session.
+ */
+function sessionOf(body: Body, role: Role): string {
+  const requested = optionalText(body, "session");
+  const fallback = env.session();
+  if (requested === undefined || requested === fallback) return fallback;
+  if (role === "admin" || env.agentSessions().includes(requested)) {
+    return requested;
+  }
+  throw new InputError("session is not available to this operator.");
 }
 
 /** Accepts `{ chat: { phoneNumber } }`, `{ chat: { id } }` or `{ chat: { bsuid } }`. */

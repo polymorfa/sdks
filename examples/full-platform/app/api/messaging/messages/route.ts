@@ -13,13 +13,12 @@ import {
   optionalFlag,
   optionalText,
   route,
-  sessionOf,
   text,
   texts,
   type Body,
 } from "../../../../lib/route.js";
 
-export const POST = route("agent", async ({ body, request }) => {
+export const POST = route("agent", async ({ body, sessionOf, request }) => {
   const messages = messaging().messages;
   const session = sessionOf(body);
   const conversation = conversationOf(body);

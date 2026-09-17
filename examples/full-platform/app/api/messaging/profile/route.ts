@@ -1,16 +1,10 @@
 import { messaging } from "../../../../lib/polymorfa.js";
-import {
-  action,
-  route,
-  sessionOf,
-  text,
-  unknownAction,
-} from "../../../../lib/route.js";
+import { action, route, text, unknownAction } from "../../../../lib/route.js";
 import { env } from "../../../../lib/env.js";
 
 export const GET = route("agent", () => messaging().profile.get(env.session()));
 
-export const POST = route("admin", async ({ body }) => {
+export const POST = route("admin", async ({ body, sessionOf }) => {
   const profile = messaging().profile;
   const session = sessionOf(body);
   switch (action(body)) {

@@ -5,7 +5,6 @@ import {
   integer,
   object,
   route,
-  sessionOf,
   text,
   unknownAction,
 } from "../../../../lib/route.js";
@@ -14,7 +13,7 @@ import {
 // inspect and operate existing sessions.
 export const GET = route("agent", () => messaging().sessions.list());
 
-export const POST = route("admin", async ({ body }) => {
+export const POST = route("admin", async ({ body, sessionOf }) => {
   const sessions = messaging().sessions;
   const session = sessionOf(body);
   switch (action(body)) {

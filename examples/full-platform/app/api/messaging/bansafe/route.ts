@@ -1,12 +1,6 @@
 import { messaging } from "../../../../lib/polymorfa.js";
 import { env } from "../../../../lib/env.js";
-import {
-  action,
-  flag,
-  route,
-  sessionOf,
-  unknownAction,
-} from "../../../../lib/route.js";
+import { action, flag, route, unknownAction } from "../../../../lib/route.js";
 
 // BanSafe settings through the Messaging API.
 export const GET = route("admin", async () => {
@@ -28,7 +22,7 @@ export const GET = route("admin", async () => {
   };
 });
 
-export const POST = route("admin", async ({ body }) => {
+export const POST = route("admin", async ({ body, sessionOf }) => {
   const banSafe = messaging().banSafe;
   const projectId = env.projectId();
   switch (action(body)) {

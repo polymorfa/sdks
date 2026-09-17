@@ -2,7 +2,6 @@ import { messaging } from "../../../../lib/polymorfa.js";
 import {
   action,
   route,
-  sessionOf,
   text,
   unknownAction,
   type Body,
@@ -13,7 +12,7 @@ export const GET = route("agent", () =>
   messaging().quickReplies.list(env.session()),
 );
 
-export const POST = route("agent", async ({ body }) => {
+export const POST = route("agent", async ({ body, sessionOf }) => {
   const quickReplies = messaging().quickReplies;
   const session = sessionOf(body);
   switch (action(body)) {
