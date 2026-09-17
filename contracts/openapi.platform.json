@@ -20831,7 +20831,8 @@
                 "rejected",
                 "missed",
                 "ended"
-              ]
+              ],
+              "description": "Call outcome. `offered` and `accepted` calls may still be live. `rejected` is an incoming call a participant declined. `missed` is an incoming call that rang without an answer. Both keep that state after the call ends. `ended` covers every other finished call: answered calls, outgoing calls, and incoming calls the service could not host. `endReason` gives the cause."
             }
           },
           {
@@ -23901,7 +23902,8 @@
               "rejected",
               "missed",
               "ended"
-            ]
+            ],
+            "description": "Call outcome. `offered` and `accepted` calls may still be live. `rejected` is an incoming call a participant declined. `missed` is an incoming call that rang without an answer. Both keep that state after the call ends. `ended` covers every other finished call: answered calls, outgoing calls, and incoming calls the service could not host. `endReason` gives the cause."
           },
           "live": {
             "type": "boolean",
@@ -24026,7 +24028,8 @@
                   "rejected",
                   "missed",
                   "ended"
-                ]
+                ],
+                "description": "Call outcome. `offered` and `accepted` calls may still be live. `rejected` is an incoming call a participant declined. `missed` is an incoming call that rang without an answer. Both keep that state after the call ends. `ended` covers every other finished call: answered calls, outgoing calls, and incoming calls the service could not host. `endReason` gives the cause."
               },
               "live": {
                 "type": "boolean"
