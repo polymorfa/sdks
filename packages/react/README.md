@@ -71,6 +71,46 @@ images) so the message list can show it.
   banner shows the quoted text (pass `conversation` or `messages` to resolve
   it) with a cancel button. `accept` and `multiple` (default `true`) apply to
   the file picker. Enter sends; Shift+Enter adds a line.
+- **Composer toolbar.** The toolbar reads, in order: `startActions`, the
+  emoji button, the attach button, the message field, `endActions`, and
+  either the microphone or the send button. The send button replaces the
+  microphone once there is text or an uploaded attachment. `placeholder`
+  replaces the localized placeholder, and the field grows to `maxRows`
+  (default 8) before it scrolls. Every button is at least 40px.
+- **Emoji.** The smiley button (`emoji`, default `true`) opens a picker with
+  search, a Recent tab, and nine categories. Arrow keys move through the
+  grid, Escape closes it and returns focus to the button, and a picked emoji
+  is inserted at the caret. Recent emoji are kept in `localStorage` when it
+  is available. The picker flips above or below the button to stay on
+  screen, and shows as a bottom sheet at 600px wide or less. The emoji set
+  is built in and needs no network.
+- **Voice notes.** Where the browser has `MediaRecorder` and
+  `getUserMedia`, an empty composer shows a microphone (`voiceNotes`,
+  default `true`). While recording, a bar shows the elapsed time, a live
+  input level, a delete button, and a send button. Sending adds the
+  recording as an `audio/webm` (or `audio/ogg`) attachment through
+  `upload`, then sends it; pass `voiceNoteAutoSend={false}` to leave it in
+  the composer instead. A denied microphone shows a localized error.
+  Recording start and stop are announced politely, and the microphone is
+  released when the recording ends or the composer unmounts.
+- **Quick replies.** Pass `quickReplies` (`{ id, shortcut, text,
+description? }[]`). Typing `/` at the start of a word opens a list
+  filtered by shortcut and text. The field follows the ARIA combobox
+  pattern: Up and Down move, Enter or Tab inserts, and Escape closes the
+  list. Choosing an option replaces the `/word` with its `text`, then calls
+  `onQuickReply(option)`.
+
+```tsx
+<ComposeBox
+  controller={composer}
+  placeholder="Reply to Casey"
+  quickReplies={[
+    { id: "thanks", shortcut: "thanks", text: "Thanks for reaching out!" },
+  ]}
+  endActions={<TemplateButton />}
+/>
+```
+
 - **Drawer.** The drawer is a non-modal dialog labelled by its title. When
   `open` changes to `true`, it focuses the message field (or the close
   button); closing it returns focus to the element that had it. A drawer

@@ -1,17 +1,37 @@
-import type {
-  ComposerAttachment,
-  ConversationController,
-  ConversationMessage,
-  ConversationSnapshot,
-  LocalAttachment,
-  MessageAttachment,
-  MessageComposerController,
-  MessageComposerSnapshot,
-  RenderedTemplate,
-  TemplateBuilderController,
+import {
+  VoiceNoteRecorder,
+  localAttachmentFromFile,
+  type ComposerAttachment,
+  type ConversationController,
+  type ConversationMessage,
+  type ConversationSnapshot,
+  type LocalAttachment,
+  type MessageAttachment,
+  type MessageComposerController,
+  type MessageComposerSnapshot,
+  type RenderedTemplate,
+  type TemplateBuilderController,
+  type VoiceNoteError,
+  type VoiceNoteRecorderSnapshot,
 } from "@polymorfa/browser";
 import {
   CHAT_ICONS,
+  EMOJI_CATEGORY_ICONS,
+  EMOJI_PICKER_CATEGORIES,
+  applyQuickReply,
+  emojiInCategory,
+  filterQuickReplies,
+  findQuickReplyQuery,
+  formatElapsed,
+  insertText,
+  placePopover,
+  quickReplyLabel,
+  readRecentEmoji,
+  recentEmojiEntries,
+  recordRecentEmoji,
+  searchEmoji,
+  type EmojiPickerCategory,
+  type QuickReplyOption,
   ENGLISH_MESSAGES,
   appearanceToCssVariables,
   formatDayLabel,
@@ -790,6 +810,394 @@ function AttachmentChip({
   );
 }
 
+const EMOJI_COLUMNS = 8;
+
+function gridColumns(cells: readonly HTMLElement[]): number {
+  const first = cells[0];
+  if (first === undefined) return EMOJI_COLUMNS;
+  let columns = 0;
+  for (const cell of cells) {
+    if (cell.offsetTop !== first.offsetTop) break;
+    columns += 1;
+  }
+  return columns > 0 && columns < cells.length ? columns : EMOJI_COLUMNS;
+}
+
+function narrowViewport(): boolean {
+  return (
+    typeof matchMedia === "function" && matchMedia("(max-width: 600px)").matches
+  );
+}
+
+function EmojiPicker({
+  anchor,
+  configuration,
+  slots,
+  onPick,
+  onClose,
+}: {
+  readonly anchor: { readonly current: HTMLElement | null };
+  readonly configuration: Configuration;
+  readonly slots: Slots;
+  readonly onPick: (emoji: string) => void;
+  readonly onClose: (restoreFocus: boolean) => void;
+}) {
+  const popover = useRef<HTMLDivElement>(null);
+  const search = useRef<HTMLInputElement>(null);
+  const grid = useRef<HTMLDivElement>(null);
+  const id = useId();
+  const [recent, setRecent] = useState<readonly string[]>(() =>
+    readRecentEmoji(),
+  );
+  const [category, setCategory] = useState<EmojiPickerCategory>(() =>
+    recent.length > 0 ? "recent" : "smileys",
+  );
+  const [query, setQuery] = useState("");
+  const [active, setActive] = useState(0);
+  const latestClose = useLatest(onClose);
+
+  const entries = useMemo(
+    () =>
+      query.trim() !== ""
+        ? searchEmoji(query)
+        : category === "recent"
+          ? recentEmojiEntries(recent)
+          : emojiInCategory(category),
+    [query, category, recent],
+  );
+  const activeIndex = Math.min(active, Math.max(0, entries.length - 1));
+
+  useIsomorphicLayoutEffect(() => {
+    const node = popover.current;
+    if (node === null) return;
+    const place = () => {
+      const target = anchor.current;
+      if (target === null) return;
+      const rect = target.getBoundingClientRect();
+      const width = node.offsetWidth || 360;
+      const height = node.offsetHeight || 400;
+      const direction =
+        getComputedStyle(target).direction === "rtl" ? "rtl" : "ltr";
+      const spot = placePopover(
+        rect,
+        { width, height },
+        { width: window.innerWidth, height: window.innerHeight },
+        { direction },
+      );
+      node.style.setProperty("--pmfa-pop-top", `${spot.top}px`);
+      node.style.setProperty("--pmfa-pop-left", `${spot.left}px`);
+      node.style.setProperty("--pmfa-pop-max", `${spot.maxHeight}px`);
+      node.dataset.placement = spot.placement;
+      node.removeAttribute("data-measuring");
+    };
+    place();
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    return () => {
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
+  }, [anchor]);
+
+  useEffect(() => {
+    // On small screens the search field would raise the keyboard over the
+    // sheet, so focus goes to the sheet itself.
+    if (narrowViewport()) popover.current?.focus({ preventScroll: true });
+    else search.current?.focus({ preventScroll: true });
+    const onPointer = (event: PointerEvent) => {
+      const path = event.composedPath();
+      if (
+        (popover.current !== null && path.includes(popover.current)) ||
+        (anchor.current !== null && path.includes(anchor.current))
+      )
+        return;
+      latestClose.current(false);
+    };
+    document.addEventListener("pointerdown", onPointer, true);
+    return () => document.removeEventListener("pointerdown", onPointer, true);
+  }, [anchor, latestClose]);
+
+  const cells = () => [
+    ...(grid.current?.querySelectorAll<HTMLElement>(".pmfa-emoji-cell") ?? []),
+  ];
+  const focusCell = (index: number) => {
+    const list = cells();
+    const next = Math.max(0, Math.min(index, list.length - 1));
+    setActive(next);
+    list[next]?.focus();
+    list[next]?.scrollIntoView?.({ block: "nearest" });
+  };
+  const pick = (emoji: string) => {
+    setRecent(recordRecentEmoji(emoji));
+    onPick(emoji);
+  };
+  const selectTab = (next: EmojiPickerCategory) => {
+    setCategory(next);
+    setQuery("");
+    setActive(0);
+    if (grid.current !== null)
+      grid.current.parentElement?.scrollTo?.({ top: 0 });
+  };
+  const heading =
+    query.trim() !== ""
+      ? text(configuration, "composer.emojiSearch")
+      : text(configuration, `composer.emojiCategory.${category}`);
+  return (
+    <div
+      ref={popover}
+      {...slots("emojiPicker", "pmfa-popover pmfa-emoji")}
+      role="dialog"
+      aria-label={text(configuration, "composer.emojiPicker")}
+      tabIndex={-1}
+      data-measuring=""
+      onKeyDown={(event) => {
+        if (event.key !== "Escape" || event.nativeEvent.isComposing) return;
+        event.preventDefault();
+        event.stopPropagation();
+        latestClose.current(true);
+      }}
+    >
+      <div className="pmfa-emoji-search">
+        <Icon name="search" />
+        <input
+          ref={search}
+          type="search"
+          className="pmfa-input"
+          aria-label={text(configuration, "composer.emojiSearch")}
+          placeholder={text(configuration, "composer.emojiSearch")}
+          value={query}
+          aria-controls={`${id}-panel`}
+          onChange={(event) => {
+            setQuery(event.currentTarget.value);
+            setActive(0);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              focusCell(0);
+            } else if (event.key === "Enter" && entries[0] !== undefined) {
+              event.preventDefault();
+              pick(entries[0].emoji);
+            }
+          }}
+        />
+      </div>
+      <div
+        className="pmfa-emoji-tabs"
+        role="tablist"
+        aria-label={text(configuration, "composer.emojiCategories")}
+        onKeyDown={(event) => {
+          if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+          event.preventDefault();
+          const rtl = getComputedStyle(event.currentTarget).direction === "rtl";
+          const step = (event.key === "ArrowRight") !== rtl ? 1 : -1;
+          const index = EMOJI_PICKER_CATEGORIES.indexOf(category);
+          const next =
+            EMOJI_PICKER_CATEGORIES[
+              (index + step + EMOJI_PICKER_CATEGORIES.length) %
+                EMOJI_PICKER_CATEGORIES.length
+            ] ?? "smileys";
+          selectTab(next);
+          event.currentTarget
+            .querySelector<HTMLElement>(`[data-category="${next}"]`)
+            ?.focus();
+        }}
+      >
+        {EMOJI_PICKER_CATEGORIES.map((name) => {
+          const selected = query.trim() === "" && name === category;
+          return (
+            <button
+              key={name}
+              type="button"
+              role="tab"
+              className="pmfa-emoji-tab"
+              data-category={name}
+              id={`${id}-tab-${name}`}
+              aria-selected={selected}
+              aria-controls={`${id}-panel`}
+              tabIndex={
+                name === (query.trim() === "" ? category : "recent") ? 0 : -1
+              }
+              aria-label={text(configuration, `composer.emojiCategory.${name}`)}
+              title={text(configuration, `composer.emojiCategory.${name}`)}
+              onClick={() => selectTab(name)}
+            >
+              <span aria-hidden="true">{EMOJI_CATEGORY_ICONS[name]}</span>
+            </button>
+          );
+        })}
+      </div>
+      <div
+        className="pmfa-emoji-body"
+        id={`${id}-panel`}
+        role="tabpanel"
+        aria-label={heading}
+      >
+        <p className="pmfa-emoji-heading" aria-hidden="true">
+          {heading}
+        </p>
+        {entries.length === 0 ? (
+          <p className="pmfa-emoji-empty">
+            {text(
+              configuration,
+              query.trim() === ""
+                ? "composer.emojiNoRecent"
+                : "composer.emojiNoResults",
+            )}
+          </p>
+        ) : (
+          <div
+            ref={grid}
+            className="pmfa-emoji-grid"
+            role="group"
+            aria-label={heading}
+            onKeyDown={(event) => {
+              const list = cells();
+              const index = list.indexOf(event.target as HTMLElement);
+              if (index < 0) return;
+              const columns = gridColumns(list);
+              const rtl =
+                getComputedStyle(event.currentTarget).direction === "rtl";
+              const moves: Record<string, number> = {
+                ArrowRight: rtl ? -1 : 1,
+                ArrowLeft: rtl ? 1 : -1,
+                ArrowDown: columns,
+                ArrowUp: -columns,
+                Home: -index,
+                End: list.length - 1 - index,
+              };
+              const move = moves[event.key];
+              if (move === undefined) return;
+              event.preventDefault();
+              if (event.key === "ArrowUp" && index < columns) {
+                search.current?.focus();
+                return;
+              }
+              focusCell(index + move);
+            }}
+          >
+            {entries.map((entry, index) => (
+              <button
+                key={`${entry.emoji}-${index}`}
+                type="button"
+                className="pmfa-emoji-cell"
+                tabIndex={index === activeIndex ? 0 : -1}
+                aria-label={entry.name}
+                title={entry.name}
+                onFocus={() => setActive(index)}
+                onClick={() => pick(entry.emoji)}
+              >
+                {entry.emoji}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const LEVEL_BARS = 28;
+
+function RecordingBar({
+  snapshot,
+  configuration,
+  slots,
+  autoSend,
+  onCancel,
+  onStop,
+}: {
+  readonly snapshot: VoiceNoteRecorderSnapshot;
+  readonly configuration: Configuration;
+  readonly slots: Slots;
+  readonly autoSend: boolean;
+  readonly onCancel: () => void;
+  readonly onStop: () => void;
+}) {
+  // A rolling history of input levels, newest last.
+  const [history, setHistory] = useState<{
+    readonly revision: number;
+    readonly levels: readonly number[];
+  }>({ revision: snapshot.revision, levels: [] });
+  if (history.revision !== snapshot.revision) {
+    setHistory({
+      revision: snapshot.revision,
+      levels: [...history.levels, snapshot.level].slice(-LEVEL_BARS),
+    });
+  }
+  const levels = [
+    ...Array.from<number>({
+      length: LEVEL_BARS - history.levels.length,
+    }).fill(0),
+    ...history.levels,
+  ];
+  const stopLabel = text(
+    configuration,
+    autoSend ? "composer.sendVoiceNote" : "composer.stopRecording",
+  );
+  return (
+    <div
+      {...slots("recordingBar", "pmfa-recording")}
+      role="group"
+      aria-label={text(configuration, "composer.recording")}
+    >
+      <button
+        type="button"
+        className="pmfa-btn pmfa-btn-ghost pmfa-btn-icon pmfa-rec-cancel"
+        aria-label={text(configuration, "composer.cancelRecording")}
+        title={text(configuration, "composer.cancelRecording")}
+        onClick={onCancel}
+      >
+        <Icon name="trash" />
+      </button>
+      <div className="pmfa-recording-status">
+        <span className="pmfa-rec-dot" aria-hidden="true" />
+        <span className="pmfa-rec-time" role="timer">
+          {formatElapsed(snapshot.elapsed)}
+        </span>
+        <span
+          className="pmfa-rec-level"
+          role="meter"
+          aria-label={text(configuration, "composer.recordingLevel")}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(snapshot.level * 100)}
+        >
+          {levels.map((level, index) => (
+            <span
+              key={index}
+              style={
+                {
+                  "--pmfa-level": String(Math.max(0.12, level)),
+                } as CSSProperties
+              }
+            />
+          ))}
+        </span>
+      </div>
+      <button
+        type="button"
+        className="pmfa-btn pmfa-btn-primary pmfa-btn-icon pmfa-send"
+        aria-label={stopLabel}
+        title={stopLabel}
+        disabled={snapshot.status !== "recording"}
+        onClick={onStop}
+      >
+        <Icon name={autoSend ? "sendArrow" : "sent"} />
+      </button>
+    </div>
+  );
+}
+
+const voiceErrorKeys = {
+  "permission-denied": "composer.microphoneDenied",
+  unavailable: "composer.microphoneUnavailable",
+  failed: "composer.recordingFailed",
+} as const satisfies Record<VoiceNoteError, MessageKey>;
+
+const isVoiceSupported = () => VoiceNoteRecorder.isSupported();
+const notSupported = () => false;
+
 export interface ComposeBoxProps extends ControllerProps<MessageComposerController> {
   readonly onSent?: () => void;
   readonly className?: string;
@@ -802,6 +1210,27 @@ export interface ComposeBoxProps extends ControllerProps<MessageComposerControll
   readonly conversation?: ConversationController;
   /** Resolves the reply banner's quoted message without a controller. */
   readonly messages?: readonly ConversationMessage[];
+  /** Replaces the locale's `composer.placeholder`. */
+  readonly placeholder?: string;
+  /** Rendered in the toolbar before the built-in buttons. */
+  readonly startActions?: ReactNode;
+  /** Rendered after the message field, before the send or mic button. */
+  readonly endActions?: ReactNode;
+  /** Show the emoji picker button. Defaults to `true`. */
+  readonly emoji?: boolean;
+  /**
+   * Show the voice note button. Defaults to `true` where the browser has
+   * `MediaRecorder` and `getUserMedia`.
+   */
+  readonly voiceNotes?: boolean;
+  /** Send a voice note as soon as it finishes uploading. Defaults to `true`. */
+  readonly voiceNoteAutoSend?: boolean;
+  /** Options for the "/" quick reply menu. */
+  readonly quickReplies?: readonly QuickReplyOption[];
+  /** Called after a quick reply's text is inserted. */
+  readonly onQuickReply?: (option: QuickReplyOption) => void;
+  /** Rows the message field grows to before it scrolls. Defaults to 8. */
+  readonly maxRows?: number;
 }
 export function ComposeBox({
   controller,
@@ -813,6 +1242,15 @@ export function ComposeBox({
   multiple = true,
   conversation,
   messages,
+  placeholder,
+  startActions,
+  endActions,
+  emoji = true,
+  voiceNotes,
+  voiceNoteAutoSend = true,
+  quickReplies,
+  onQuickReply,
+  maxRows = 8,
 }: ComposeBoxProps) {
   const resolved = useResolvedController(controller, createController);
   const snapshot: MessageComposerSnapshot = useController(resolved);
@@ -822,8 +1260,19 @@ export function ComposeBox({
   const root = useShell(slots, "composer", "pmfa-composer", className);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const emojiButtonRef = useRef<HTMLButtonElement>(null);
+  const micRef = useRef<HTMLButtonElement>(null);
+  const pendingCaret = useRef<number | undefined>(undefined);
+  const menuId = useId();
   const [dragging, setDragging] = useState(false);
   const [rejection, setRejection] = useState<string | undefined>(undefined);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [caret, setCaret] = useState(0);
+  const [dismissedText, setDismissedText] = useState<string | undefined>(
+    undefined,
+  );
+  const [activeOption, setActiveOption] = useState(0);
+  const [announcement, setAnnouncement] = useState("");
   // A rejected file's message clears once the text changes, a send
   // succeeds, or the composer resets.
   const [previousSnapshot, setPreviousSnapshot] = useState(snapshot);
@@ -833,17 +1282,56 @@ export function ComposeBox({
       setRejection(undefined);
   }
 
+  // Voice notes
+  const voiceSupported = useSyncExternalStore(
+    NO_SUBSCRIPTION,
+    isVoiceSupported,
+    notSupported,
+  );
+  const voiceEnabled = (voiceNotes ?? true) && voiceSupported;
+  const recorderRef = useRef<VoiceNoteRecorder | undefined>(undefined);
+  const [recorder, setRecorder] = useState<VoiceNoteRecorder | undefined>(
+    undefined,
+  );
+  const recording = useOptionalController(recorder);
+  useEffect(
+    () => () => {
+      recorderRef.current?.dispose();
+      recorderRef.current = undefined;
+    },
+    [],
+  );
+  const recorderActive =
+    recording !== undefined &&
+    (recording.status === "recording" || recording.status === "stopping");
+  const voiceError =
+    recording?.status === "error" && recording.error !== undefined
+      ? text(configuration, voiceErrorKeys[recording.error])
+      : undefined;
+
   useIsomorphicLayoutEffect(() => {
     const input = inputRef.current;
-    if (input === null || supportsFieldSizing) return;
-    input.style.height = "auto";
-    input.style.height = `${input.scrollHeight + 2}px`;
+    if (input === null) return;
+    if (!supportsFieldSizing) {
+      input.style.height = "auto";
+      input.style.height = `${input.scrollHeight + 2}px`;
+    }
+    const target = pendingCaret.current;
+    if (target !== undefined && input.value === snapshot.text) {
+      pendingCaret.current = undefined;
+      input.setSelectionRange(target, target);
+    }
   }, [snapshot.text]);
 
   const canSend =
     !snapshot.sending &&
     (snapshot.text.trim() !== "" ||
       snapshot.attachments.some(({ status }) => status === "ready"));
+  const showMic =
+    voiceEnabled &&
+    !snapshot.sending &&
+    snapshot.text.trim() === "" &&
+    !snapshot.attachments.some(({ status }) => status === "ready");
   const submit = () => {
     if (!canSend) return;
     void resolved.submit().then(
@@ -867,18 +1355,129 @@ export function ComposeBox({
     [resolved],
   );
 
+  const replaceText = (value: string, nextCaret: number) => {
+    pendingCaret.current = nextCaret;
+    setRejection(undefined);
+    setCaret(nextCaret);
+    resolved.setText(value);
+  };
+  const insertEmoji = (value: string) => {
+    const input = inputRef.current;
+    const current = resolved.getSnapshot().text;
+    const start = input?.selectionStart ?? current.length;
+    const end = input?.selectionEnd ?? start;
+    const edit = insertText(current, value, start, end);
+    replaceText(edit.text, edit.caret);
+  };
+  const closeEmoji = useCallback((restoreFocus: boolean) => {
+    setEmojiOpen(false);
+    if (restoreFocus) emojiButtonRef.current?.focus();
+  }, []);
+
+  // Quick replies
+  const quickMatch =
+    quickReplies !== undefined && quickReplies.length > 0 && !recorderActive
+      ? findQuickReplyQuery(
+          snapshot.text,
+          Math.min(caret, snapshot.text.length),
+        )
+      : undefined;
+  const options =
+    quickMatch === undefined || quickReplies === undefined
+      ? []
+      : filterQuickReplies(quickReplies, quickMatch.query);
+  const menuOpen = options.length > 0 && dismissedText !== snapshot.text;
+  const [previousQuery, setPreviousQuery] = useState(quickMatch?.query);
+  if (previousQuery !== quickMatch?.query) {
+    setPreviousQuery(quickMatch?.query);
+    setActiveOption(0);
+  }
+  const activeIndex = Math.min(activeOption, Math.max(0, options.length - 1));
+  const chooseOption = (option: QuickReplyOption) => {
+    if (quickMatch === undefined) return;
+    const edit = applyQuickReply(snapshot.text, quickMatch, option);
+    replaceText(edit.text, edit.caret);
+    onQuickReply?.(option);
+    inputRef.current?.focus();
+  };
+
+  const startRecording = () => {
+    let active = recorderRef.current;
+    if (active === undefined) {
+      active = new VoiceNoteRecorder();
+      recorderRef.current = active;
+      setRecorder(active);
+    }
+    setEmojiOpen(false);
+    const current = active;
+    void current.start().then(() => {
+      if (current.getSnapshot().status === "recording")
+        setAnnouncement(text(configuration, "composer.recording"));
+    });
+  };
+  const cancelRecording = () => {
+    recorderRef.current?.cancel();
+    setAnnouncement(text(configuration, "composer.recordingCancelled"));
+    requestAnimationFrameSafe(() => micRef.current?.focus());
+  };
+  const stopRecording = () => {
+    const active = recorderRef.current;
+    if (active === undefined) return;
+    void active.stop().then(async (file) => {
+      setAnnouncement(text(configuration, "composer.recordingStopped"));
+      requestAnimationFrameSafe(() => inputRef.current?.focus());
+      if (file === undefined) return;
+      const attachment = localAttachmentFromFile(file);
+      try {
+        await resolved.addAttachment(attachment);
+      } catch (cause) {
+        setRejection(errorText(cause));
+        return;
+      }
+      if (!voiceNoteAutoSend) return;
+      const after = resolved.getSnapshot();
+      const added = after.attachments.find(({ id }) => id === attachment.id);
+      if (
+        added?.status !== "ready" ||
+        after.sending ||
+        after.attachments.some(({ status }) => status !== "ready")
+      )
+        return;
+      await resolved.submit().then(
+        () => {
+          if (resolved.getSnapshot().status !== "error") onSent?.();
+        },
+        () => undefined,
+      );
+    });
+  };
+
   const pool = messages ?? conversationSnapshot?.messages;
   const replied =
     snapshot.replyTo === undefined
       ? undefined
       : pool?.find(({ id }) => id === snapshot.replyTo);
-  const error = snapshot.error ?? rejection;
+  const error = snapshot.error ?? rejection ?? voiceError;
+  const inputSlot = slots("composerInput", "pmfa-input");
+  const combobox =
+    quickReplies !== undefined && quickReplies.length > 0
+      ? {
+          role: "combobox",
+          "aria-autocomplete": "list" as const,
+          "aria-expanded": menuOpen,
+          "aria-controls": menuId,
+          ...(menuOpen
+            ? { "aria-activedescendant": `${menuId}-${activeIndex}` }
+            : {}),
+        }
+      : {};
 
   return (
     <form
       {...root}
       data-pmfa="compose-box"
       {...(dragging ? { "data-dragging": "" } : {})}
+      {...(recorderActive ? { "data-recording": "" } : {})}
       onSubmit={(event) => {
         event.preventDefault();
         submit();
@@ -907,6 +1506,48 @@ export function ComposeBox({
       <div className="pmfa-drop-hint" aria-hidden="true">
         {text(configuration, "composer.dropHint")}
       </div>
+      <span className="pmfa-sr" aria-live="polite">
+        {announcement}
+      </span>
+      {menuOpen && (
+        <div {...slots("quickReplyMenu", "pmfa-qr")}>
+          <div className="pmfa-qr-title" aria-hidden="true">
+            {text(configuration, "composer.quickReplies")}
+          </div>
+          <ul
+            id={menuId}
+            role="listbox"
+            aria-label={text(configuration, "composer.quickReplies")}
+          >
+            {options.map((option, index) => (
+              <li
+                key={option.id}
+                id={`${menuId}-${index}`}
+                role="option"
+                className="pmfa-qr-option"
+                aria-selected={index === activeIndex}
+                onMouseDown={(event) => event.preventDefault()}
+                onMouseMove={() => {
+                  if (index !== activeIndex) setActiveOption(index);
+                }}
+                onClick={() => chooseOption(option)}
+              >
+                <span className="pmfa-qr-head">
+                  <span className="pmfa-qr-shortcut">
+                    {quickReplyLabel(option)}
+                  </span>
+                  {option.description !== undefined && (
+                    <span className="pmfa-qr-description">
+                      {option.description}
+                    </span>
+                  )}
+                </span>
+                <span className="pmfa-qr-text">{option.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {snapshot.replyTo !== undefined && (
         <div {...slots("replyBanner", "pmfa-reply-banner")}>
           <span className="pmfa-reply-body">
@@ -950,7 +1591,42 @@ export function ComposeBox({
           ))}
         </ul>
       )}
-      <div className="pmfa-composer-row">
+      {recorderActive && recording !== undefined && (
+        <RecordingBar
+          snapshot={recording}
+          configuration={configuration}
+          slots={slots}
+          autoSend={voiceNoteAutoSend}
+          onCancel={cancelRecording}
+          onStop={stopRecording}
+        />
+      )}
+      <div
+        {...slots("composerToolbar", "pmfa-composer-row")}
+        hidden={recorderActive}
+      >
+        {startActions !== undefined && startActions !== null && (
+          <div className="pmfa-composer-actions pmfa-composer-start">
+            {startActions}
+          </div>
+        )}
+        {emoji && (
+          <button
+            ref={emojiButtonRef}
+            type="button"
+            {...slots(
+              "emojiButton",
+              "pmfa-btn pmfa-btn-ghost pmfa-btn-icon pmfa-emoji-button",
+            )}
+            aria-label={text(configuration, "composer.emoji")}
+            title={text(configuration, "composer.emoji")}
+            aria-haspopup="dialog"
+            aria-expanded={emojiOpen}
+            onClick={() => setEmojiOpen((open) => !open)}
+          >
+            <Icon name="smiley" />
+          </button>
+        )}
         <button
           type="button"
           {...slots("composerAttach", "pmfa-btn pmfa-btn-ghost pmfa-btn-icon")}
@@ -975,15 +1651,26 @@ export function ComposeBox({
         />
         <textarea
           ref={inputRef}
-          {...slots("composerInput", "pmfa-input")}
+          {...inputSlot}
+          style={
+            {
+              ...inputSlot.style,
+              "--pmfa-composer-max-rows": String(Math.max(1, maxRows)),
+            } as CSSProperties
+          }
+          {...combobox}
           aria-label={text(configuration, "composer.label")}
           rows={1}
-          placeholder={text(configuration, "composer.placeholder")}
+          placeholder={
+            placeholder ?? text(configuration, "composer.placeholder")
+          }
           value={snapshot.text}
           onChange={(event) => {
             setRejection(undefined);
+            setCaret(event.currentTarget.selectionStart);
             resolved.setText(event.currentTarget.value);
           }}
+          onSelect={(event) => setCaret(event.currentTarget.selectionStart)}
           onPaste={(event: ClipboardEvent<HTMLTextAreaElement>) => {
             const files = event.clipboardData?.files;
             if (files === undefined || files.length === 0) return;
@@ -991,33 +1678,88 @@ export function ComposeBox({
             addFiles(files);
           }}
           onKeyDown={(event) => {
-            if (
-              event.key === "Enter" &&
-              !event.shiftKey &&
-              !event.nativeEvent.isComposing
-            ) {
+            if (event.nativeEvent.isComposing) return;
+            if (menuOpen) {
+              const option = options[activeIndex];
+              if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                event.preventDefault();
+                const step = event.key === "ArrowDown" ? 1 : -1;
+                setActiveOption(
+                  (activeIndex + step + options.length) % options.length,
+                );
+                return;
+              }
+              if (
+                (event.key === "Enter" && !event.shiftKey) ||
+                event.key === "Tab"
+              ) {
+                if (option === undefined) return;
+                event.preventDefault();
+                chooseOption(option);
+                return;
+              }
+              if (event.key === "Escape") {
+                event.preventDefault();
+                event.stopPropagation();
+                setDismissedText(snapshot.text);
+                return;
+              }
+            }
+            if (event.key === "Enter" && !event.shiftKey) {
               event.preventDefault();
               submit();
             }
           }}
         />
-        <button
-          type="submit"
-          {...slots(
-            "composerSend",
-            "pmfa-btn pmfa-btn-primary pmfa-btn-icon pmfa-send",
-          )}
-          aria-label={
-            snapshot.sending
-              ? text(configuration, "composer.sending")
-              : text(configuration, "composer.send")
-          }
-          title={text(configuration, "composer.send")}
-          disabled={!canSend}
-        >
-          <Icon name="send" />
-        </button>
+        {endActions !== undefined && endActions !== null && (
+          <div className="pmfa-composer-actions pmfa-composer-end">
+            {endActions}
+          </div>
+        )}
+        {showMic ? (
+          <button
+            ref={micRef}
+            type="button"
+            {...slots(
+              "voiceButton",
+              "pmfa-btn pmfa-btn-ghost pmfa-btn-icon pmfa-voice",
+            )}
+            aria-label={text(configuration, "composer.voiceNote")}
+            title={text(configuration, "composer.voiceNote")}
+            aria-busy={recording?.status === "requesting"}
+            disabled={recording?.status === "requesting"}
+            onClick={startRecording}
+          >
+            <Icon name="mic" />
+          </button>
+        ) : (
+          <button
+            type="submit"
+            {...slots(
+              "composerSend",
+              "pmfa-btn pmfa-btn-primary pmfa-btn-icon pmfa-send",
+            )}
+            aria-label={
+              snapshot.sending
+                ? text(configuration, "composer.sending")
+                : text(configuration, "composer.send")
+            }
+            title={text(configuration, "composer.send")}
+            disabled={!canSend}
+          >
+            <Icon name="sendArrow" />
+          </button>
+        )}
       </div>
+      {emojiOpen && emoji && !recorderActive && (
+        <EmojiPicker
+          anchor={emojiButtonRef}
+          configuration={configuration}
+          slots={slots}
+          onPick={insertEmoji}
+          onClose={closeEmoji}
+        />
+      )}
       {error !== undefined && (
         <p {...slots("error", "pmfa-error")} role="alert">
           {error}
@@ -1025,6 +1767,12 @@ export function ComposeBox({
       )}
     </form>
   );
+}
+
+function requestAnimationFrameSafe(callback: () => void): void {
+  if (typeof requestAnimationFrame === "function")
+    requestAnimationFrame(callback);
+  else setTimeout(callback, 0);
 }
 
 // ── Drawer ────────────────────────────────────────────────────────────
