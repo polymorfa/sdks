@@ -303,7 +303,12 @@ export interface CallInit {
   /** Media reattach attempts after an unexpected drop. Default 3. */
   readonly reconnectAttempts?: number;
   readonly now?: () => number;
+  /** An outbound call this client placed with `exclusive: true`. */
+  readonly exclusive?: boolean;
 }
+
+/** Upper bound on the platform release after a local media failure. */
+const RELEASE_TIMEOUT_MS = 5_000;
 
 /**
  * One call. Created by the client for every inbound `call.received` and every
@@ -347,6 +352,8 @@ export class Call extends Emitter<CallEvents> {
   #answeredBy: string | undefined;
   #exclusive = false;
   #claimedByOther = false;
+  /** This client claimed the call: its own answer, or an exclusive placement. */
+  #claimedByUs = false;
   #reconnectTimer: ReturnType<typeof setTimeout> | undefined;
   readonly #externalMedia: boolean;
   #mediaReady = false;
@@ -377,7 +384,10 @@ export class Call extends Emitter<CallEvents> {
     this.audio = new AudioTrack(16_000);
     this.video = new VideoTrack();
     // The placing participant owns an outbound call.
-    if (init.direction === "outbound") this.#accepted = true;
+    if (init.direction === "outbound") {
+      this.#accepted = true;
+      this.#claimedByUs = init.exclusive === true;
+    }
   }
 
   get state(): CallState {
@@ -487,6 +497,7 @@ export class Call extends Emitter<CallEvents> {
       });
       accepted = true;
       this.#accepted = true;
+      this.#claimedByUs = result.exclusive;
       this.#applyClaim({
         answered: result.answered,
         answeredBy: result.answeredBy,
@@ -495,7 +506,7 @@ export class Call extends Emitter<CallEvents> {
     })();
     const run = accepting
       .then(() => this.#bridge())
-      .catch((cause: unknown) => {
+      .catch(async (cause: unknown) => {
         this.#accepting = undefined;
         if (this.#state === "ended") throw cause;
         if (!accepted) {
@@ -507,6 +518,7 @@ export class Call extends Emitter<CallEvents> {
           this.#transition("incoming");
           throw cause;
         }
+        await this.#release(cause);
         this.#mediaFailed(cause);
         throw cause;
       });
@@ -596,6 +608,7 @@ export class Call extends Emitter<CallEvents> {
       try {
         await this.#bridge();
       } catch (cause) {
+        await this.#release(cause);
         this.#mediaFailed(cause);
       }
       return;
@@ -824,14 +837,12 @@ export class Call extends Emitter<CallEvents> {
         this.#end("claimed");
         return;
       case "refused":
-        this.emit(
-          "error",
+        void this.#failAfterRelease(
           new CallsError(
             "media_refused",
             "The platform refused the media connection.",
           ),
         );
-        this.#end("connection_failed");
         return;
       case "unauthorized":
       case "lost":
@@ -843,13 +854,11 @@ export class Call extends Emitter<CallEvents> {
   #reconnect(refreshToken: boolean, attempt: number): void {
     if (this.ended) return;
     if (attempt >= this.#reconnectAttempts) {
-      this.emit(
-        "error",
+      void this.#failAfterRelease(
         refreshToken
           ? new CallsAuthError()
           : new CallsError("media_lost", "Media connection lost."),
       );
-      this.#end("connection_failed");
       return;
     }
     this.#transition("reconnecting");
@@ -869,13 +878,11 @@ export class Call extends Emitter<CallEvents> {
           }
           if (!retryable(cause)) {
             // Refused or no longer available: reattaching cannot help.
-            this.emit(
-              "error",
+            void this.#failAfterRelease(
               cause instanceof CallsError
                 ? cause
                 : new CallsError("media_failed", "Media could not attach."),
             );
-            this.#end("connection_failed");
             return;
           }
           this.#reconnect(
@@ -885,6 +892,49 @@ export class Call extends Emitter<CallEvents> {
         },
       );
     }, delay);
+  }
+
+  /**
+   * The platform still counts this client as on the call after its media
+   * failed. Release it before the call becomes terminal here, so the remote
+   * party is not left on a call nobody controls: end a call this client
+   * claimed (nobody else can take it over), otherwise leave with this
+   * connection. A claim by someone else needs nothing. Bounded by
+   * RELEASE_TIMEOUT_MS; failures are swallowed so the media error stays the
+   * one reported. External media adapters release the call themselves.
+   */
+  async #release(cause?: unknown): Promise<void> {
+    if (this.ended || !this.#accepted || this.#externalMedia) return;
+    if (cause instanceof CallClaimedError) return;
+    const abort = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<void>((resolve) => {
+      timer = (this.#mediaOptions.setTimeout ?? setTimeout)(() => {
+        abort.abort();
+        resolve();
+      }, RELEASE_TIMEOUT_MS);
+    });
+    const request = this.#claimedByUs
+      ? this.#api.end(this.id, abort.signal)
+      : this.#api.leave(
+          this.id,
+          this.connectionId,
+          abort.signal,
+          this.#participant,
+        );
+    try {
+      await Promise.race([request.catch(() => undefined), timeout]);
+    } finally {
+      (this.#mediaOptions.clearTimeout ?? clearTimeout)(timer);
+    }
+  }
+
+  /** Release the call on the platform, then report `error` and end here. */
+  async #failAfterRelease(error: CallsError): Promise<void> {
+    await this.#release();
+    if (this.ended) return;
+    this.emit("error", error);
+    this.#end("connection_failed");
   }
 
   #transition(next: CallState): void {

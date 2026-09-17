@@ -242,7 +242,14 @@ export class CallsClient extends Emitter<ClientEvents> {
       options.signal === undefined
         ? await this.#api.place(input)
         : await this.#api.place(input, options.signal);
-    const call = this.#newCall(callId, "outbound", to, video);
+    const call = this.#newCall(
+      callId,
+      "outbound",
+      to,
+      video,
+      undefined,
+      options.exclusive === true,
+    );
     if (generation !== this.#connectGeneration || options.signal?.aborted) {
       await call.end();
       throw new Error("Call placement was cancelled.");
@@ -256,8 +263,10 @@ export class CallsClient extends Emitter<ClientEvents> {
     peer: string,
     video: boolean,
     capabilities?: CallCapabilities,
+    exclusive = false,
   ): Call {
     return new Call({
+      exclusive,
       id,
       session: this.session,
       direction,

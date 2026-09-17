@@ -271,7 +271,11 @@ describe("answer, join and claims", () => {
       });
       await answering;
       FakeWebSocket.instances[0]!.drop(code, reason);
+      await flush();
       expect(call.endReason).toBe(endReason);
+      // A refused media connection is released on the platform first; a
+      // remote hang-up needs no release.
+      expect(api.leave).toHaveBeenCalledTimes(code === 4400 ? 1 : 0);
       t.fireTimeouts();
       await flush();
       expect(FakeWebSocket.instances).toHaveLength(1);

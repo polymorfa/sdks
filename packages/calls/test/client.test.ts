@@ -1306,3 +1306,139 @@ describe("CallsClient — concurrent answers", () => {
     expect(call!.state).toBe("ended");
   });
 });
+
+describe("CallsClient — releasing a call whose media failed", () => {
+  async function answered(
+    exclusive: boolean,
+    fail: (h: ReturnType<typeof clientWith>) => void,
+  ) {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const seen: string[] = [];
+    const record = (kind: string) => async () => {
+      seen.push(`${kind}:${call!.state}`);
+    };
+    h.api.leave.mockImplementation(record("leave"));
+    h.api.end.mockImplementation(record("end"));
+    h.api.accept.mockImplementationOnce(async () => ({
+      answered: true,
+      answeredBy: "client:self",
+      exclusive,
+    }));
+    const errors: string[] = [];
+    call!.on("error", (e) => errors.push(e.code));
+    fail(h);
+    const answering = call!.answer({ exclusive });
+    return { h, call: call!, answering, seen, errors };
+  }
+
+  const tokenFailure = (h: ReturnType<typeof clientWith>) =>
+    h.api.token.mockRejectedValue(new Error("token service down"));
+
+  it.each([
+    [true, "end"],
+    [false, "leave"],
+  ] as const)(
+    "releases (exclusive: %s → %s) before ending locally when the media token fails",
+    async (exclusive, kind) => {
+      const r = await answered(exclusive, tokenFailure);
+      await expect(r.answering).rejects.toThrow();
+      // Released while the call was still live here.
+      expect(r.seen).toEqual([`${kind}:connecting`]);
+      if (kind === "leave")
+        expect(r.h.api.leave).toHaveBeenCalledWith(
+          "CALL-1",
+          r.call.connectionId,
+          expect.any(AbortSignal),
+          undefined,
+        );
+      else
+        expect(r.h.api.end).toHaveBeenCalledWith(
+          "CALL-1",
+          expect.any(AbortSignal),
+        );
+      expect(r.call.state).toBe("ended");
+      expect(r.call.endReason).toBe("connection_failed");
+    },
+  );
+
+  it.each([
+    [true, "end"],
+    [false, "leave"],
+  ] as const)(
+    "releases (exclusive: %s → %s) when the media-ready timeout expires",
+    async (exclusive, kind) => {
+      const r = await answered(exclusive, () => undefined);
+      await flush();
+      r.h.ws(1).open(); // no ready frame
+      r.h.t.fireTimeouts();
+      await expect(r.answering).rejects.toThrow(/did not report media ready/);
+      expect(r.seen).toEqual([`${kind}:connecting`]);
+      expect(r.call.endReason).toBe("connection_failed");
+    },
+  );
+
+  it("reports the media error when the release fails, and bounds a release that hangs", async () => {
+    const failing = await answered(false, tokenFailure);
+    failing.h.api.leave.mockRejectedValue(new Error("release refused"));
+    await expect(failing.answering).rejects.not.toThrow("release refused");
+    expect(failing.call.endReason).toBe("connection_failed");
+
+    const hanging = await answered(true, tokenFailure);
+    hanging.h.api.end.mockImplementation(() => new Promise(() => {}));
+    let settled = false;
+    void hanging.answering.catch(() => (settled = true));
+    await flush(20);
+    expect(settled).toBe(false);
+    expect(hanging.call.state).toBe("connecting");
+    // The release timeout fires; the call ends locally anyway.
+    hanging.h.t.fireTimeouts();
+    await flush(20);
+    expect(settled).toBe(true);
+    expect(hanging.call.endReason).toBe("connection_failed");
+  });
+
+  it("ends a call placed exclusively when its media fails after the callee answers", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    const call = await h.client.place("+15550100", { exclusive: true });
+    h.api.token.mockRejectedValue(new Error("token service down"));
+    life.text({
+      type: "event",
+      event: "call.accepted",
+      callId: call.id,
+      payload: {},
+      timestamp: "",
+    });
+    await flush(20);
+    expect(h.api.end).toHaveBeenCalledWith(call.id, expect.any(AbortSignal));
+    expect(h.api.leave).not.toHaveBeenCalled();
+    expect(call.endReason).toBe("connection_failed");
+  });
+
+  it("leaves before ending when media reattachment is exhausted", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const answering = call!.answer();
+    const media = await bridge(h);
+    await answering;
+    const states: string[] = [];
+    h.api.leave.mockImplementation(async () => {
+      states.push(call!.state);
+    });
+    h.api.token.mockRejectedValue(new Error("token service down"));
+    media.drop(1006);
+    for (let i = 0; i < 6; i += 1) {
+      h.t.fireTimeouts();
+      await flush(20);
+    }
+    expect(states).toEqual(["reconnecting"]);
+    expect(call!.endReason).toBe("connection_failed");
+  });
+});

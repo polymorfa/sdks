@@ -16,6 +16,11 @@
   optional `answeredBy`, `exclusive`, `sessionConnection` and `capabilities`.
   `CallEndedPayload` adds optional `sessionConnection`. `CallMissedPayload` and
   `CallRejectedPayload` no longer extend or alias `CallReceivedPayload`.
+- `@polymorfa/calls`: when media fails after an answer, join or remote
+  pickup, or is lost for good, the call is released on the platform before it
+  ends locally: ended when this client claimed it (exclusive answer or
+  placement), otherwise left. `answer()` and `join()` reject after the
+  release, which waits at most 5 seconds.
 - `ClientTokenManager` (browser) and `CallsTokenSource` (`@polymorfa/calls`)
   never reuse or cache a provider call that started before a forced refresh
   or `invalidate()`, so a reconnect after a revoked token asks for a new one.

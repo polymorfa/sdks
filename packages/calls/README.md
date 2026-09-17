@@ -112,6 +112,14 @@ stopped working. It does not reconnect after it leaves, after the call ends,
 when another participant claimed the call (`CallClaimedError`), or when the
 platform refuses the connection; the call then ends with a reason.
 
+When media cannot be set up after an answer, join or remote pickup, or it is
+lost for good (reconnection exhausted or refused), the client first releases
+the call on the platform: it ends a call this client claimed (an exclusive
+answer or an exclusive placement) and otherwise leaves with its
+`connectionId`. The release waits at most 5 seconds and its failure is not
+reported; the call then ends with `connection_failed` and the media error.
+A call another participant claimed is not released.
+
 While calling is turned off for the session in its call settings, placing,
 answering, joining, inviting and connecting media reject with
 `CallsDisabledError` (`code: "calls_disabled"`). Calls in progress continue.
