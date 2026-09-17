@@ -23819,6 +23819,10 @@
             "type": "boolean",
             "description": "Whether an answer from the SIP trunk claims the call."
           },
+          "hostCloudApiCalls": {
+            "type": "boolean",
+            "description": "Whether Polymorfa Calls answers the session's incoming calls when the session uses the Cloud API. When false (the default), your app answers them through the Graph API `/calls` endpoint and Polymorfa Calls does not host them. Sessions on a linked device ignore it."
+          },
           "revision": {
             "type": "integer",
             "minimum": 0,
@@ -23837,6 +23841,7 @@
           "inboundRoute",
           "sipTrunkId",
           "sipClaim",
+          "hostCloudApiCalls",
           "revision",
           "updatedAt"
         ]
@@ -23933,7 +23938,8 @@
           },
           "terminateReason": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "The end reason exactly as recorded. `endReason` is the same reason for display: malformed codes become `other` and each code has a label."
           },
           "endReason": {
             "nullable": true,
@@ -24154,6 +24160,7 @@
                   "enum": [
                     "webrtc",
                     "socket",
+                    "sip",
                     "unknown"
                   ]
                 },
@@ -24507,10 +24514,14 @@
             "type": "string",
             "format": "uuid",
             "nullable": true,
-            "description": "Required when switching to `sip_trunk`; omit to keep the stored trunk. Not allowed with `clients`."
+            "description": "Required when switching to `sip_trunk`; omit to keep the stored trunk. With `clients` send `null` or omit it: a trunk ID is refused."
           },
           "sipClaim": {
             "type": "boolean"
+          },
+          "hostCloudApiCalls": {
+            "type": "boolean",
+            "description": "True has Polymorfa Calls answer the session's Cloud API calls instead of your Graph API integration."
           },
           "expectedRevision": {
             "type": "integer",
@@ -31217,7 +31228,7 @@
         "properties": {
           "callsEnabled": {
             "type": "boolean",
-            "description": "Whether the session can place, answer and receive calls. When false, placing, answering, joining and attaching media fail with `403 calls_disabled`, incoming calls are declined, and SIP trunks cannot place calls through the session. Calls in progress continue. Defaults to true."
+            "description": "Whether the session can place, answer and receive calls. When false, placing, answering, joining and attaching media fail with `403 calls_disabled`, incoming calls are declined, and SIP trunks cannot place calls through the session. Calls in progress continue, and the participant that answered or placed one can reconnect to it. Defaults to true."
           },
           "includeSelfAudio": {
             "type": "boolean",
@@ -31235,6 +31246,10 @@
           "sipClaim": {
             "type": "boolean",
             "description": "Whether an answer from the SIP trunk claims the call, which ends ringing on your other clients. Defaults to true."
+          },
+          "hostCloudApiCalls": {
+            "type": "boolean",
+            "description": "Whether Polymorfa Calls answers the session's incoming calls when the session uses the Cloud API. When false (the default), your app answers them through the Graph API `/calls` endpoint and Polymorfa Calls does not host them. Sessions on a linked device ignore it."
           },
           "revision": {
             "type": "integer",
@@ -31254,9 +31269,11 @@
           "inboundRoute",
           "sipTrunkId",
           "sipClaim",
+          "hostCloudApiCalls",
           "revision",
           "updatedAt"
-        ]
+        ],
+        "additionalProperties": false
       },
       "PlatformAccessGetCallSettingsResponse": {
         "type": "object",
@@ -31319,11 +31336,15 @@
             "type": "string",
             "nullable": true,
             "format": "uuid",
-            "description": "The SIP trunk for `sip_trunk`: a trunk in the session's project whose direction is `outbound` or `both`. Required when switching the route to `sip_trunk`; omit it to keep the stored trunk. Not allowed with `clients`, which clears the trunk."
+            "description": "The SIP trunk for `sip_trunk`: a trunk in the session's project whose direction is `outbound` or `both`. Required when switching the route to `sip_trunk`; omit it to keep the stored trunk. With `clients` send `null` or omit it: a trunk ID is refused, and `clients` clears the stored trunk."
           },
           "sipClaim": {
             "type": "boolean",
             "description": "Whether an answer from the SIP trunk claims the call."
+          },
+          "hostCloudApiCalls": {
+            "type": "boolean",
+            "description": "Set to true to have Polymorfa Calls answer the session's Cloud API calls instead of your Graph API integration. Applies to calls that arrive after the change."
           },
           "expectedRevision": {
             "type": "integer",

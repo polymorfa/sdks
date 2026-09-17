@@ -1515,6 +1515,12 @@ export interface SessionCallSettings {
   /** Whether an answer from the SIP trunk claims the call. `true` by default. */
   readonly sipClaim: boolean;
   /**
+   * On a Cloud API session, whether Polymorfa Calls answers incoming calls.
+   * `false` by default: your Graph API integration answers them. Sessions on a
+   * linked device ignore it.
+   */
+  readonly hostCloudApiCalls: boolean;
+  /**
    * Increases on every change; `0` while the session uses the defaults. Send
    * it as `expectedRevision` so an update cannot overwrite another change.
    */
@@ -1544,6 +1550,8 @@ export interface UpdateSessionCallSettingsRequest {
    */
   readonly sipTrunkId?: string | null;
   readonly sipClaim?: boolean;
+  /** `true` has Polymorfa Calls answer a Cloud API session's incoming calls. */
+  readonly hostCloudApiCalls?: boolean;
   /**
    * Apply the update only if the settings still have this `revision`;
    * otherwise it fails with `PolymorfaConflictError` (`state_conflict`).

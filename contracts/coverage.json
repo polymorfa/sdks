@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "1b39266027657759e3be0e2ca7e224fca611c789",
+  "sourceCommit": "37191fc1cfa75537b426845f4afa978a642474b1",
   "excludedContracts": [
     {
       "family": "graph",
@@ -2198,7 +2198,7 @@
       "method": "GET",
       "path": "/console/call-settings/{sessionId}",
       "operationId": "getSessionCallSettings",
-      "fingerprint": "57804440e68238935ef8193c15e657dc2a9cb18bc97bcca0a4ea7ff8d5727319",
+      "fingerprint": "997e400ae6a9a231225d5b817e14614f1e2e4b6a25dee79f9397d3273e1bb2a9",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -2231,7 +2231,7 @@
       "method": "GET",
       "path": "/console/calls/{callId}",
       "operationId": "getCall",
-      "fingerprint": "926245078d4bbdbfacce22a32a6673a642020745ee156b02c2ae3846a06a1304",
+      "fingerprint": "f47295fdb5063d34fa471002a46553a031942cd32bafda5135eb90462955c804",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -3124,7 +3124,7 @@
       "method": "GET",
       "path": "/platform/sessions/{session}/call-settings",
       "operationId": "getCallSettings",
-      "fingerprint": "bf04c1f239ee1e9c88eeb71effc6e50cb48e99107e135fdbdb7708a7412d06fe",
+      "fingerprint": "54c441ae3e8c1e99dde41c06e3443e03f3a24a5757cdb8332db2a6db81908389",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.retrieveCallSettings"
@@ -4322,7 +4322,7 @@
       "method": "PUT",
       "path": "/console/call-settings/{sessionId}",
       "operationId": "updateSessionCallSettings",
-      "fingerprint": "386608467e23615a420cc24931aa77d0ce4a6309197b64f8236b7386f6b34bde",
+      "fingerprint": "25625641faf51f69b35972ad7907cc53aadea2279bca31ac5df76c6f053ef6eb",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -4465,7 +4465,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{session}/call-settings",
       "operationId": "updateCallSettings",
-      "fingerprint": "edc45a4b1184268165ae4f195964d8af4874b046adb2ad5a96d025ac6e856dcc",
+      "fingerprint": "87f71cf19db9fc4e8e81e44545b549b850ee46e617bf5e416d173757f3f48e47",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.updateCallSettings"

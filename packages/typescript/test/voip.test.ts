@@ -364,6 +364,11 @@ describe("VoipResource", () => {
     ).toThrow(PolymorfaValidationError);
     expect(() =>
       sdk.voip.updateCallSettings("support/eu", {
+        hostCloudApiCalls: "yes",
+      } as unknown as { hostCloudApiCalls: boolean }),
+    ).toThrow(PolymorfaValidationError);
+    expect(() =>
+      sdk.voip.updateCallSettings("support/eu", {
         includeSelfAudio: true,
         expectedRevision: -1,
       }),

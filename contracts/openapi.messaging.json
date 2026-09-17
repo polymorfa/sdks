@@ -17759,7 +17759,7 @@
           "VoIP"
         ],
         "summary": "Place an outbound call from a session",
-        "description": "**Required scope:** `sessions:manage`\n\nOriginates a WhatsApp call to `to` (an E.164 phone number or a user ID) from the named session. The call is owned by the placing participant and rings on the callee's device: `call.accepted` follows when they pick up and `call.ended` when either side hangs up. Attach media with `/offer` or the media socket. `exclusive: true` claims the call for the placing participant. Client tokens place from their bound session; server credentials must name one. Outbound starts share a rate limit per organization and source session across server credentials and client tokens; client-token rules also apply.",
+        "description": "**Required scope:** `sessions:manage`\n\nOriginates a WhatsApp call to `to` (an E.164 phone number or a user ID) from the named session. The call is owned by the placing participant and rings on the callee's device: `call.accepted` follows when they pick up and `call.ended` when either side hangs up. Carry its audio and video with a Polymorfa Calls SDK. `exclusive: true` claims the call for the placing participant. Client tokens place from their bound session; server credentials must name one. Outbound starts share a rate limit per organization and source session across server credentials and client tokens; client-token rules also apply.",
         "security": [
           {
             "BearerAuth": []

@@ -5,7 +5,8 @@
 - `Client.sipTrunks` manages SIP trunks (beta). Session call settings add
   `callsEnabled` (turn calling off for a session; refusals use
   `calls_disabled`, raised as `CallsDisabledError` by `@polymorfa/calls` and
-  the browser client), `inboundRoute`, `sipTrunkId`, `sipClaim`, and `revision`. An update changes
+  the browser client), `inboundRoute`, `sipTrunkId`, `sipClaim`, `hostCloudApiCalls` (whether
+  Polymorfa Calls answers a Cloud API session's calls), and `revision`. An update changes
   only the settings you send (`includeSelfAudio` is optional) and accepts
   `expectedRevision`. Webhook types add `call.connection_joined` and
   `call.connection_left`, including the SIP trunk departure reasons.

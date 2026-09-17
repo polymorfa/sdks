@@ -2,9 +2,9 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`1b39266027657759e3be0e2ca7e224fca611c789` on branch
-`t3code/calls-unified-clients`. That commit is local and unpushed; re-pin to the
-merged commit before release. `source.json` records the original paths and
+`37191fc1cfa75537b426845f4afa978a642474b1` on branch
+`t3code/calls-unified-clients`. That commit is pushed but not merged; re-pin to
+the merged commit before release. `source.json` records the original paths and
 SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
@@ -16,7 +16,8 @@ SHA-256 hashes. `coverage.json` uses the same source revision.
 | Changed fingerprint |          0 |
 | Total               |        419 |
 
-This revision adds the SIP trunk operations, covered by `Client.sipTrunks`,
+This revision adds `hostCloudApiCalls` to session call settings, a `sip`
+connection transport in Console call detail, and the SIP trunk operations, covered by `Client.sipTrunks`,
 and the calling switch, routing and revision fields of session call settings. The SIP error codes and
 `calls_disabled` added to the shared public error enum changed the fingerprint of every
 operation that references it; those operations were reviewed and only the

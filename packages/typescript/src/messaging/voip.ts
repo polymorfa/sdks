@@ -169,13 +169,15 @@ export class VoipResource {
       inboundRoute,
       sipTrunkId,
       sipClaim,
+      hostCloudApiCalls,
     } = body;
     if (
       callsEnabled === undefined &&
       includeSelfAudio === undefined &&
       inboundRoute === undefined &&
       sipTrunkId === undefined &&
-      sipClaim === undefined
+      sipClaim === undefined &&
+      hostCloudApiCalls === undefined
     ) {
       throw new PolymorfaValidationError(
         "Send at least one call setting to change.",
@@ -185,6 +187,7 @@ export class VoipResource {
       ["callsEnabled", callsEnabled],
       ["includeSelfAudio", includeSelfAudio],
       ["sipClaim", sipClaim],
+      ["hostCloudApiCalls", hostCloudApiCalls],
     ] as const) {
       if (value !== undefined && typeof value !== "boolean") {
         throw new PolymorfaValidationError(`${name} must be a boolean.`);
