@@ -2,12 +2,14 @@ export {
   PolymorfaElement,
   type ElementConfiguration,
   type ElementController,
+  type ElementStylesheet,
 } from "./base.js";
 export {
   PolymorfaChatDrawerElement,
   PolymorfaComposeBoxElement,
   PolymorfaMessageListElement,
   defineChatElements,
+  type ReplyHandler,
 } from "./chat.js";
 export {
   PolymorfaTemplateBuilderElement,

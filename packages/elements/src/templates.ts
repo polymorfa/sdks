@@ -3,6 +3,7 @@ import type {
   TemplateBuilderController,
   TemplateBuilderSnapshot,
 } from "@polymorfa/browser";
+import type { ComponentSlot } from "@polymorfa/ui";
 import { PolymorfaElement, button, element, textElement } from "./base.js";
 
 export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBuilderSnapshot> {
@@ -165,6 +166,21 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
     }
     grid.append(form, aside);
     panel.append(title, grid);
+    const slots: readonly (readonly [string, ComponentSlot])[] = [
+      [".pmfa-field", "field"],
+      [".pmfa-label", "label"],
+      [".pmfa-input", "input"],
+      [".pmfa-error", "error"],
+      [".pmfa-actions", "actions"],
+    ];
+    for (const [selector, slot] of slots)
+      for (const node of panel.querySelectorAll(selector))
+        this.decorate(node, slot);
+    this.decorate(panel, "templateBuilder");
+    this.decorate(save, "primaryButton");
+    this.decorate(preview, "button");
+    this.decorate(submit, "button");
+    this.decorate(aside, "preview");
     if (focus !== undefined)
       queueMicrotask(() => {
         const target = this.root.querySelector<
