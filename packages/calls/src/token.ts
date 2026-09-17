@@ -43,7 +43,11 @@ export class CallsTokenSource {
   readonly #now: () => number;
   readonly #skew: number;
   #cached: CallsToken | undefined;
-  #pending: Promise<CallsToken> | undefined;
+  #pending:
+    | { readonly promise: Promise<CallsToken>; readonly refresh: boolean }
+    | undefined;
+  // Only the latest provider call may replace the cached token.
+  #fetchGeneration = 0;
 
   constructor(
     provider: string | CallsTokenProvider,
@@ -76,12 +80,17 @@ export class CallsTokenSource {
         cached.expiresAt - this.#skew > this.#now())
     )
       return Promise.resolve(cached);
-    if (request.refresh === true) this.#cached = undefined;
-    if (this.#pending !== undefined) return this.#pending;
-    const pending = this.#fetch(request).finally(() => {
-      if (this.#pending === pending) this.#pending = undefined;
+    const refresh = request.refresh === true;
+    if (refresh) this.#cached = undefined;
+    // A refresh never takes the result of a provider call that was not asked
+    // to refresh: that call may return the refused token.
+    if (this.#pending !== undefined && (!refresh || this.#pending.refresh))
+      return this.#pending.promise;
+    const generation = ++this.#fetchGeneration;
+    const pending = this.#fetch(request, generation).finally(() => {
+      if (this.#pending?.promise === pending) this.#pending = undefined;
     });
-    this.#pending = pending;
+    this.#pending = { promise: pending, refresh };
     return pending;
   }
 
@@ -90,13 +99,16 @@ export class CallsTokenSource {
     this.#cached = undefined;
   }
 
-  async #fetch(request: CallsTokenRequest): Promise<CallsToken> {
+  async #fetch(
+    request: CallsTokenRequest,
+    generation: number,
+  ): Promise<CallsToken> {
     const supplied = await this.#provider({
       refresh: request.refresh === true,
       ...(request.signal === undefined ? {} : { signal: request.signal }),
     });
     const token = normalizeToken(supplied);
-    this.#cached = token;
+    if (generation === this.#fetchGeneration) this.#cached = token;
     return token;
   }
 }

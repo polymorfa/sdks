@@ -165,6 +165,30 @@ describe("SIP trunks", () => {
     );
   });
 
+  it("checks the trunk with the caller's options but not its idempotency key", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async (_input, init) =>
+      init?.method === "DELETE"
+        ? Response.json({
+            success: true,
+            data: { id: TRUNK_ID, deleted: true },
+          })
+        : Response.json({ success: true, data: trunk("project-a") }),
+    );
+    const scoped = organizationClient(fetch).project("project-a");
+    await scoped.sipTrunks.delete(TRUNK_ID, {
+      apiVersion: "2026-09-01",
+      headers: { "x-trace": "abc" },
+      idempotencyKey: "delete-1",
+    });
+    const [read, change] = fetch.mock.calls.map(
+      ([, init]) => new Headers(init?.headers),
+    );
+    expect(read?.get("x-trace")).toBe("abc");
+    expect(read?.get("idempotency-key")).toBeNull();
+    expect(change?.get("idempotency-key")).toBe("delete-1");
+    expect(read?.get("polymorfa-version")).toBe("2026-09-01");
+  });
+
   it("matches the project regardless of letter case", async () => {
     const projectId = "018F0000-0000-7000-8000-00000000000A";
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>

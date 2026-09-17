@@ -16,6 +16,18 @@ export default defineConfig({
           new URL("./packages/calls/src/internal.ts", import.meta.url),
         ),
       },
+      {
+        find: /^@polymorfa\/browser$/,
+        replacement: fileURLToPath(
+          new URL("./packages/browser/src/index.ts", import.meta.url),
+        ),
+      },
+      {
+        find: /^@polymorfa\/browser\/internal$/,
+        replacement: fileURLToPath(
+          new URL("./packages/browser/src/internal.ts", import.meta.url),
+        ),
+      },
     ],
   },
   test: {

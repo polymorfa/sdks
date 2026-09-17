@@ -458,6 +458,37 @@ describe("WebRtcMediaFactory track negotiation", () => {
     expect(session.restartIce).toBeUndefined();
   });
 
+  it("rolls the camera back when attaching it to the sender fails", async () => {
+    const audio = new FakeTrack("audio");
+    const local = new FakeStream([audio]);
+    const camera = new FakeTrack("video");
+    const getUserMedia = vi
+      .fn()
+      .mockResolvedValueOnce(local)
+      .mockResolvedValueOnce(new FakeStream([camera]));
+    const peer = peerConnection();
+    const session = await factoryFor({
+      peer,
+      signaling: signaling(),
+      getUserMedia,
+    }).open("call-1", false, callbacks, new AbortController().signal);
+    const sender = peer.transceivers[1]!.sender as unknown as {
+      replaceTrack: (track: unknown) => Promise<void>;
+    };
+    const original = sender.replaceTrack.bind(sender);
+    sender.replaceTrack = async (track) => {
+      if (track !== null) throw new Error("attach rejected");
+      await original(track);
+    };
+
+    await expect(
+      session.enableVideo?.(new AbortController().signal),
+    ).rejects.toThrow("attach rejected");
+    expect(camera.stop).toHaveBeenCalled();
+    // No camera track is left behind to satisfy a later upgrade's guard.
+    expect(local.getVideoTracks()).toHaveLength(0);
+  });
+
   it("rolls the camera back when the upgrade re-offer fails", async () => {
     const audio = new FakeTrack("audio");
     const local = new FakeStream([audio]);

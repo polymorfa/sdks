@@ -83,17 +83,34 @@ export interface SipTrunkInboundInput {
   readonly allowedDestinations?: readonly string[];
 }
 
-export interface CreateSipTrunkInput {
+interface CreateSipTrunkBase {
   readonly name: string;
   readonly enabled?: boolean;
-  readonly direction: SipTrunkDirection;
-  /** Required unless `direction` is `inbound`. */
-  readonly outbound?: SipTrunkOutboundInput;
-  /** Required unless `direction` is `outbound`. */
-  readonly inbound?: SipTrunkInboundInput;
   readonly codecs?: readonly SipCodec[];
   readonly maxConcurrentCalls?: number;
 }
+
+/**
+ * A new trunk. `direction` decides which configuration it takes: `outbound`
+ * for WhatsApp calls you send to your PBX, `inbound` for calls your PBX
+ * places, and both for `both`.
+ */
+export type CreateSipTrunkInput =
+  | (CreateSipTrunkBase & {
+      readonly direction: "outbound";
+      readonly outbound: SipTrunkOutboundInput;
+      readonly inbound?: never;
+    })
+  | (CreateSipTrunkBase & {
+      readonly direction: "inbound";
+      readonly inbound: SipTrunkInboundInput;
+      readonly outbound?: never;
+    })
+  | (CreateSipTrunkBase & {
+      readonly direction: "both";
+      readonly outbound: SipTrunkOutboundInput;
+      readonly inbound: SipTrunkInboundInput;
+    });
 
 export interface UpdateSipTrunkInput {
   /** Refuse the change with `sip_trunk_revision_conflict` if the trunk has another revision. */
@@ -240,8 +257,13 @@ export class SipTrunksResource<O extends ClientOwner> {
 
   async #confine(trunkId: string, options: RequestOptions): Promise<void> {
     if (!this.confineById) return;
-    const { signal } = options;
-    const response = await this.#retrieve(trunkId, signal ? { signal } : {});
+    // The check reads with the caller's options; the idempotency key belongs
+    // to the change that follows.
+    const read: { -readonly [K in keyof RequestOptions]: RequestOptions[K] } = {
+      ...options,
+    };
+    delete read.idempotencyKey;
+    const response = await this.#retrieve(trunkId, read);
     this.#assertProject(trunkId, response.data);
   }
 

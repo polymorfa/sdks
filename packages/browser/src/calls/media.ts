@@ -554,9 +554,9 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       local.addTrack(track);
       // The camera transceiver already exists; attach the track to it and
       // re-offer so the platform learns the new stream.
-      await camera.sender.replaceTrack(track);
-      camera.sender.setStreams?.(local);
       try {
+        await camera.sender.replaceTrack(track);
+        camera.sender.setStreams?.(local);
         await renegotiate({}, enableSignal);
       } catch (cause) {
         await camera.sender.replaceTrack(null).catch(() => undefined);
