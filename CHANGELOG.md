@@ -63,6 +63,12 @@
     `labelVideo` receives `RemoteVideoInfo` with a `label`.
   - `@polymorfa/elements`: `pmfa-call` accepts the `exclusive` attribute and
     renders Join, Dismiss, Leave, waiting calls and participants.
+  - `CallsSnapshot.answering` is `true` while an answer or join is in flight;
+    the controller then refuses `answer()`, `join()`, `reject()` and
+    `place()`, and the React and element incoming controls are disabled. An
+    answer completes for the call it started on, even if another invitation
+    was selected meanwhile; a call dismissed during its answer is left, or
+    ended when the answer claimed it.
   - A call you placed offers only Hang up until it connects;
     `controller.leave()` ends it in that state, and a local media failure
     (such as a denied microphone) while it rings ends it rather than leaving

@@ -896,3 +896,148 @@ describe("waiting invitations and call history", () => {
     controller.dispose();
   });
 });
+
+describe("changing the displayed invitation while an answer is in flight", () => {
+  function pending() {
+    const f = fixture();
+    let finish!: () => void;
+    let fail!: (cause: unknown) => void;
+    vi.mocked(f.backend.answer).mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          finish = resolve;
+          fail = reject;
+        }),
+    );
+    const leave = vi.fn(async () => undefined);
+    const controller = new CallsController({ ...f.backend, leave }, f.media);
+    controller.initialize();
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    return {
+      ...f,
+      leave,
+      controller,
+      finish: () => finish(),
+      fail: (cause: unknown) => fail(cause),
+    };
+  }
+
+  it("shows the answered call with its controls after another invitation was selected", async () => {
+    const h = pending();
+    const answering = h.controller.answer();
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "A",
+      status: "incoming",
+      answering: true,
+    });
+    h.controller.select("B");
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "B",
+      status: "incoming",
+      answering: true,
+    });
+    // Nothing else can start while the answer is in flight.
+    await expect(h.controller.answer()).rejects.toThrow(
+      "An answer is in progress",
+    );
+    await expect(h.controller.reject()).rejects.toThrow(
+      "An answer is in progress",
+    );
+    await expect(h.controller.place("+15550102")).rejects.toThrow(
+      "An answer is in progress",
+    );
+    h.finish();
+    await answering;
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "A",
+      peer: "+15550100",
+      status: "connecting",
+      answering: false,
+    });
+    expect(h.media.open).toHaveBeenCalledWith(
+      "A",
+      false,
+      expect.any(Object),
+      expect.any(AbortSignal),
+      expect.any(Object),
+    );
+    // Media callbacks reach the displayed call.
+    h.connect("connected");
+    expect(h.controller.getSnapshot().status).toBe("connected");
+    // B is still waiting.
+    expect(h.controller.getSnapshot().invitations.map((i) => i.callId)).toEqual(
+      ["B"],
+    );
+    expect(h.leave).not.toHaveBeenCalled();
+    expect(h.backend.hangup).not.toHaveBeenCalled();
+    h.controller.dispose();
+  });
+
+  it("keeps the displayed invitation intact when the answer for another fails", async () => {
+    const h = pending();
+    const answering = h.controller.answer();
+    h.controller.select("B");
+    h.fail(new Error("network down"));
+    await answering;
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "B",
+      status: "incoming",
+      answering: false,
+    });
+    expect(h.controller.getSnapshot().error).toBeUndefined();
+    expect(h.media.open).not.toHaveBeenCalled();
+    h.controller.dispose();
+  });
+
+  it.each([
+    [false, "leaves"],
+    [true, "ends"],
+  ] as const)(
+    "dismissing an answer in flight (exclusive: %s) %s the call once answered",
+    async (exclusive, outcome) => {
+      expect(outcome).toBe(exclusive ? "ends" : "leaves");
+      const h = pending();
+      const answering = h.controller.answer({ exclusive });
+      h.controller.dismiss("A");
+      // The next waiting call is shown; the answer still completes.
+      expect(h.controller.getSnapshot()).toMatchObject({
+        callId: "B",
+        status: "incoming",
+        answering: true,
+      });
+      h.finish();
+      await answering;
+      if (exclusive) {
+        expect(h.backend.hangup).toHaveBeenCalledWith(
+          "A",
+          expect.any(AbortSignal),
+        );
+        expect(h.leave).not.toHaveBeenCalled();
+      } else {
+        expect(h.leave).toHaveBeenCalledWith(
+          "A",
+          undefined,
+          expect.any(AbortSignal),
+        );
+        expect(h.backend.hangup).not.toHaveBeenCalled();
+      }
+      expect(h.media.open).not.toHaveBeenCalled();
+      expect(h.controller.getSnapshot()).toMatchObject({
+        callId: "B",
+        status: "incoming",
+        answering: false,
+      });
+      expect(
+        h.controller.getSnapshot().invitations.map((i) => i.callId),
+      ).toEqual(["B"]);
+      h.controller.dispose();
+    },
+  );
+});

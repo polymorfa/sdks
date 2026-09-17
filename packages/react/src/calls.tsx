@@ -573,6 +573,9 @@ export function IncomingCallCard({
   // already shows the call ended, so the rejection only needs absorbing.
   const claimed = snapshot.claimedByOther;
   const joinable = !claimed && snapshot.canJoin;
+  // An answer or join is in flight (possibly for another listed call): the
+  // controller refuses these until it settles.
+  const busy = snapshot.answering === true;
   const applyPreToggles = () => {
     if (preMuted || (offersVideo && !cameraOn))
       resolved.setMuted({
@@ -730,6 +733,7 @@ export function IncomingCallCard({
                 type="button"
                 className="pmfa-calls-btn pmfa-calls-btn-decline"
                 onClick={() => void resolved.reject().catch(() => undefined)}
+                disabled={busy}
                 aria-label={t(locale, "calls.reject")}
               >
                 <HangupIcon />
@@ -743,6 +747,7 @@ export function IncomingCallCard({
                 type="button"
                 className="pmfa-calls-btn pmfa-calls-btn-answer"
                 onClick={join}
+                disabled={busy}
                 aria-label={t(locale, "calls.join")}
               >
                 {offersVideo && cameraOn ? <VideoIcon /> : <PhoneIcon />}
@@ -755,6 +760,7 @@ export function IncomingCallCard({
                 type="button"
                 className="pmfa-calls-btn pmfa-calls-btn-answer"
                 onClick={accept}
+                disabled={busy}
                 aria-label={t(locale, "calls.answer")}
               >
                 {offersVideo && cameraOn ? <VideoIcon /> : <PhoneIcon />}

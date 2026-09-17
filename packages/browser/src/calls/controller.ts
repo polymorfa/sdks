@@ -251,6 +251,12 @@ export interface CallsSnapshot extends ControllerSnapshot {
   readonly participants: readonly CallParticipant[];
   /** Remote video tiles of the displayed call; streams are on the controller. */
   readonly remoteVideos: readonly RemoteVideoInfo[];
+  /**
+   * An answer or join is in progress. Until it settles, `answer()`, `join()`,
+   * `reject()` and `place()` are refused; `select()` and `dismiss()` stay
+   * available.
+   */
+  readonly answering?: boolean;
 }
 export interface CallsControllerOptions {
   readonly createIdempotencyKey?: () => string;
@@ -319,6 +325,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
    */
   readonly #answered = new Set<string>();
   #answering: string | undefined;
+  /** The user dismissed the call `#answering` names before the answer settled. */
+  #answerDismissed = false;
+  #disposed = false;
   #remoteVideos: readonly RemoteVideo[] = [];
   #publicVideos: {
     source: readonly RemoteVideo[];
@@ -340,6 +349,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         devices: [],
         selectedDevices: {},
         invitations: [],
+        answering: false,
         ...EMPTY_CALL,
       },
       options.now,
@@ -383,6 +393,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     this.assertActive();
     if (this.#placing)
       throw new Error("A call placement is already in progress.");
+    this.#assertNotAnswering("place a call");
     const current = this.getSnapshot();
     if (
       (this.call && !this.call.ended && current.status !== "incoming") ||
@@ -454,6 +465,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       readonly callId?: string;
     } = {},
   ): Promise<void> {
+    this.#assertNotAnswering("answer a call");
     const current = this.#showInvitation(options.callId, "answer");
     if (current.claimedByOther) throw new CallClaimedError();
     await this.#accept(current, {
@@ -470,6 +482,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   async join(
     options: { readonly video?: boolean; readonly callId?: string } = {},
   ): Promise<void> {
+    this.#assertNotAnswering("join a call");
     const current = this.#showInvitation(options.callId, "join");
     if (current.claimedByOther) throw new CallClaimedError();
     if (!current.canJoin)
@@ -486,6 +499,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
    * every participant; only call it on an explicit user action.
    */
   async reject(options: { readonly callId?: string } = {}): Promise<void> {
+    this.#assertNotAnswering("decline a call");
     const current = this.#showInvitation(options.callId, "reject");
     if (current.canJoin || current.claimedByOther || current.answeredBy)
       throw new Error(
@@ -505,6 +519,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     const current = this.getSnapshot();
     const id = callId ?? current.callId;
     if (id === undefined) return;
+    // The answer in flight completes; it then leaves or ends this call.
+    if (id === this.#answering) this.#answerDismissed = true;
     const known = this.#forget(id);
     if (current.callId === id && current.status === "incoming") {
       this.#advance({ ...this.#baseFields(), status: "ready" });
@@ -716,6 +732,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   }
 
   protected override onDispose(): void {
+    this.#disposed = true;
     this.#operation += 1;
     this.#clearResumption();
     this.#abort.abort();
@@ -790,6 +807,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     const operation = this.#begin(false);
     const callId = current.callId;
     this.#answering = callId;
+    this.#answerDismissed = false;
+    this.#republish();
     let offering = false;
     try {
       const signal = this.#abort.signal;
@@ -805,10 +824,30 @@ export class CallsController extends ObservableController<CallsSnapshot> {
             });
       if (operation !== this.#operation) return;
       this.#remember(callId);
+      // The display may have moved on while the request was in flight: the
+      // user selected or dismissed an invitation, or a remote end removed it.
+      const listed = this.#invitations.has(callId);
+      const roster = this.#rosters.get(callId);
       this.#forget(callId);
       const accepted = result ?? undefined;
+      if (this.#answerDismissed) {
+        await this.#release(callId, accepted?.exclusive ?? options.exclusive);
+        return;
+      }
+      if (!listed) return;
+      const latest = this.getSnapshot();
+      const base =
+        latest.callId === callId
+          ? latest
+          : {
+              ...current,
+              devices: latest.devices,
+              selectedDevices: latest.selectedDevices,
+              participants: roster ?? current.participants,
+            };
+      this.#remoteVideos = [];
       this.transition({
-        ...callFields(this.getSnapshot(), false),
+        ...callFields(base, false),
         status: "accepted",
         video: options.video,
         claimedByOther: false,
@@ -819,6 +858,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       offering = true;
       await this.#openMedia(callId, options.video, operation);
     } catch (cause) {
+      const elsewhere = this.getSnapshot().callId !== callId;
       if (
         !offering &&
         operation === this.#operation &&
@@ -837,6 +877,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
             canJoin: false,
           };
           this.#invitations.set(callId, claimed);
+          // Another invitation is displayed: only the listed call changes.
+          if (elsewhere) return;
           const snapshot = this.getSnapshot();
           this.transition({
             ...callFields(snapshot, false),
@@ -854,6 +896,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         }
         return;
       }
+      // A refused answer for a call that is no longer displayed must not put
+      // the displayed invitation into an error state.
+      if (!offering && elsewhere) return;
       this.#fail(
         cause,
         operation,
@@ -861,7 +906,45 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         offering,
       );
     } finally {
-      if (this.#answering === callId) this.#answering = undefined;
+      if (this.#answering === callId) {
+        this.#answering = undefined;
+        this.#answerDismissed = false;
+        if (!this.#disposed) this.#republish();
+      }
+    }
+  }
+
+  #assertNotAnswering(action: string): void {
+    if (this.#answering !== undefined)
+      throw new Error(
+        `An answer is in progress; wait for it before you ${action}.`,
+      );
+  }
+
+  /** Publish the current snapshot again, with derived fields refreshed. */
+  #republish(): void {
+    const current = this.getSnapshot();
+    this.transition({ ...current });
+  }
+
+  /**
+   * Undo an answer the user dismissed while it was in flight. A claimed call
+   * has no one else to take it, so it is ended; otherwise only this client
+   * leaves and other participants can still join. Without a leave hook no
+   * media connection was opened, so there is nothing to leave.
+   */
+  async #release(callId: string, exclusive: boolean): Promise<void> {
+    const signal = new AbortController().signal;
+    try {
+      if (exclusive) await this.#backend.hangup(callId, signal);
+      else
+        await this.#backend.leave?.(
+          callId,
+          this.#backend.connectionId?.(callId),
+          signal,
+        );
+    } catch {
+      // The call was dismissed; nothing displays it to report the failure on.
     }
   }
 
@@ -1262,11 +1345,15 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     });
   }
 
-  /** Keeps `invitations` current on every transition. */
+  /** Keeps `invitations` and `answering` current on every transition. */
   protected override transition(
     next: Omit<CallsSnapshot, "revision" | "updatedAt">,
   ): void {
-    super.transition({ ...next, invitations: [...this.#invitations.values()] });
+    super.transition({
+      ...next,
+      invitations: [...this.#invitations.values()],
+      answering: this.#answering !== undefined,
+    });
   }
 }
 

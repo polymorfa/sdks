@@ -596,6 +596,46 @@ describe("unified call element", () => {
     h.controller.dispose();
   });
 
+  it("disables Answer and Reject while an answer is in flight", async () => {
+    const h = setup();
+    let finish!: () => void;
+    h.signaling.accept.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = () =>
+            resolve({
+              answered: true,
+              answeredBy: "client:self",
+              exclusive: false,
+            });
+        }),
+    );
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    h.part("answer")?.click();
+    expect(h.part("answer")?.disabled).toBe(true);
+    expect(h.part("reject")?.disabled).toBe(true);
+    h.part("show")?.click();
+    expect(h.controller.getSnapshot().callId).toBe("B");
+    expect(h.part("answer")?.disabled).toBe(true);
+    finish();
+    await vi.waitFor(() =>
+      expect(h.controller.getSnapshot()).toMatchObject({
+        callId: "A",
+        answering: false,
+      }),
+    );
+    expect(h.part("hangup")).not.toBeNull();
+    h.node.remove();
+    h.controller.dispose();
+  });
+
   it("offers only Hang up on a placed call until it connects", async () => {
     const h = setup();
     await h.controller.place("+15550100");

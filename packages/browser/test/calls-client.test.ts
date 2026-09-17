@@ -176,6 +176,43 @@ describe("browser widget and shared calls client", () => {
     expect(f.calls.controller.call?.ended).toBe(true);
   });
 
+  it("leaves a call the user dismissed while its answer was in flight", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    event(socket, "call.received", "CALL-IN", { from: "+15550100" });
+    let finish!: (response: Response) => void;
+    f.fetch.mockImplementationOnce(
+      async () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const answering = f.calls.controller.answer();
+    await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
+    f.calls.controller.dismiss("CALL-IN");
+    finish(
+      new Response(
+        JSON.stringify({
+          data: { answered: true, answeredBy: "client:self", exclusive: false },
+        }),
+        { headers: { "content-type": "application/json" } },
+      ),
+    );
+    await answering;
+    await vi.waitFor(() =>
+      expect(
+        f.fetch.mock.calls.some(([url]) =>
+          String(url).endsWith("/CALL-IN/leave"),
+        ),
+      ).toBe(true),
+    );
+    expect(f.media.open).not.toHaveBeenCalled();
+    expect(f.calls.controller.getSnapshot()).toMatchObject({
+      status: "ready",
+      answering: false,
+    });
+  });
+
   it("keeps a confirmed remote end terminal when local cleanup rejects", async () => {
     const f = fixture();
     const socket = await f.connect();

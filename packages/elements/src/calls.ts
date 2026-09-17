@@ -89,6 +89,13 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
       panel.append(textElement("p", snapshot.peer, "peer"));
     const controller = this.configuredController<CallsController>();
     if (status === "incoming" && snapshot !== undefined) {
+      // An answer or join is in flight: the controller refuses these until it
+      // settles, so they are disabled.
+      const busy = snapshot.answering === true;
+      const guarded = (value: HTMLButtonElement) => {
+        value.disabled = busy;
+        return value;
+      };
       // These reject when a remote hang-up lands between the render and the
       // click. The snapshot already says so, so this only keeps the rejection
       // from going unhandled — the same handling the React card uses.
@@ -102,10 +109,12 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
       } else if (snapshot.canJoin) {
         panel.append(
           textElement("p", messages["calls.joinable"], "joinable"),
-          button(
-            messages["calls.join"],
-            "primary join",
-            () => void controller?.join().catch(() => undefined),
+          guarded(
+            button(
+              messages["calls.join"],
+              "primary join",
+              () => void controller?.join().catch(() => undefined),
+            ),
           ),
           button(messages["calls.dismiss"], "dismiss", () =>
             ignoreDisposed(() => controller?.dismiss()),
@@ -114,15 +123,20 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
       } else {
         const exclusive = this.exclusive;
         panel.append(
-          button(
-            messages["calls.answer"],
-            "primary answer",
-            () => void controller?.answer({ exclusive }).catch(() => undefined),
+          guarded(
+            button(
+              messages["calls.answer"],
+              "primary answer",
+              () =>
+                void controller?.answer({ exclusive }).catch(() => undefined),
+            ),
           ),
-          button(
-            messages["calls.reject"],
-            "reject",
-            () => void controller?.reject().catch(() => undefined),
+          guarded(
+            button(
+              messages["calls.reject"],
+              "reject",
+              () => void controller?.reject().catch(() => undefined),
+            ),
           ),
         );
       }

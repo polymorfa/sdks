@@ -1025,6 +1025,62 @@ describe("unified calls UI", () => {
     f.controller.dispose();
   });
 
+  it("disables answer controls while an answer is in flight, including for another selected call", async () => {
+    const f = feedFixture();
+    let finish!: () => void;
+    f.signaling.accept.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = () =>
+            resolve({
+              answered: true,
+              answeredBy: "client:self",
+              exclusive: false,
+            });
+        }),
+    );
+    const host = mount(
+      <PolymorfaProvider>
+        <CallSurface controller={f.controller} popout={false} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    const control = (label: string) =>
+      host.querySelector(`[aria-label='${label}']`) as HTMLButtonElement;
+    await act(async () => {
+      control("Answer").click();
+    });
+    expect(control("Answer").disabled).toBe(true);
+    expect(control("Reject").disabled).toBe(true);
+    await act(async () => {
+      f.controller.select("B");
+    });
+    expect(f.controller.getSnapshot().callId).toBe("B");
+    expect(control("Answer").disabled).toBe(true);
+    expect(control("Reject").disabled).toBe(true);
+    await act(async () => {
+      finish();
+    });
+    // The answered call is displayed with its in-call controls.
+    await vi.waitFor(() =>
+      expect(f.controller.getSnapshot()).toMatchObject({
+        callId: "A",
+        answering: false,
+      }),
+    );
+    expect(
+      control("Hang up") ?? control("End call for everyone"),
+    ).not.toBeNull();
+    f.controller.dispose();
+  });
+
   it("offers only Hang up on a placed call until it connects", async () => {
     const f = fixture();
     const host = mount(

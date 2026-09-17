@@ -99,6 +99,11 @@ the controller never declines one for you. The first invitation is displayed;
   `reject()` is refused: declining would end the claimer's call.
 - While calling is turned off for the number, `place()`, `answer()` and
   `join()` reject with `CallsDisabledError` from `@polymorfa/calls`.
+- While an answer or join is in flight, `snapshot.answering` is `true` and
+  `answer()`, `join()`, `reject()` and `place()` are refused. `select()` and
+  `dismiss()` still work: the answered call is displayed once it is accepted,
+  even if you selected another invitation. If you dismissed it, the controller
+  leaves it (or ends it when the answer claimed it) instead of showing it.
 - `controller.reject()` declines a ringing call and ends it for everyone.
 - `controller.leave()` closes this browser's connection; the call continues.
   On a call this browser placed that has not connected, it ends the call

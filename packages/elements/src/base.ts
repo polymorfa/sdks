@@ -149,6 +149,7 @@ const BASE_STYLES = `
 button, input, textarea, select { font: inherit; }
 button { border: 0; border-radius: var(--pmfa-radius-medium); padding: var(--pmfa-spacing-small) var(--pmfa-spacing-medium); cursor: pointer; }
 button[part~="primary"] { background: var(--pmfa-color-primary); color: white; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 [part~="muted"] { color: var(--pmfa-color-muted); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
 `;
