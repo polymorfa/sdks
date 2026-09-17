@@ -113,7 +113,17 @@ export class PolymorfaComposeBoxElement extends PolymorfaElement<MessageComposer
   protected renderContent(
     snapshot: MessageComposerSnapshot | undefined,
   ): readonly Node[] {
-    const focused = this.root.activeElement?.localName === "textarea";
+    // Every edit re-renders and replaces the textarea; keep focus and the
+    // selection where the person left them.
+    const active = this.root.activeElement;
+    const selection =
+      active instanceof HTMLTextAreaElement
+        ? {
+            start: active.selectionStart,
+            end: active.selectionEnd,
+            direction: active.selectionDirection,
+          }
+        : undefined;
     const form = element("form", "composer") as HTMLFormElement;
     form.className = this.rootClass("pmfa-composer");
     const input = document.createElement("textarea");
@@ -126,7 +136,9 @@ export class PolymorfaComposeBoxElement extends PolymorfaElement<MessageComposer
     const empty = () => input.value.trim() === "";
     const submit = () => {
       if (snapshot?.sending || empty()) return;
-      void this.configuredController<MessageComposerController>()?.submit();
+      void this.configuredController<MessageComposerController>()
+        ?.submit()
+        .catch(() => undefined);
     };
     const send = button(
       snapshot?.sending
@@ -160,10 +172,14 @@ export class PolymorfaComposeBoxElement extends PolymorfaElement<MessageComposer
       event.preventDefault();
       submit();
     });
-    if (focused)
+    if (selection !== undefined)
       queueMicrotask(() => {
         input.focus();
-        input.setSelectionRange(input.value.length, input.value.length);
+        input.setSelectionRange(
+          selection.start,
+          selection.end,
+          selection.direction,
+        );
       });
     return [form];
   }
@@ -267,7 +283,11 @@ function byCreatedAt(
   left: { readonly createdAt: number },
   right: { readonly createdAt: number },
 ): number {
-  const a = Number.isFinite(left.createdAt) ? left.createdAt : Infinity;
-  const b = Number.isFinite(right.createdAt) ? right.createdAt : Infinity;
+  const a = sortableTime(left.createdAt);
+  const b = sortableTime(right.createdAt);
   return a === b ? 0 : a < b ? -1 : 1;
+}
+
+function sortableTime(value: number): number {
+  return Number.isNaN(new Date(value).getTime()) ? Infinity : value;
 }

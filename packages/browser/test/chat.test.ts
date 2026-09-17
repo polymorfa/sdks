@@ -181,6 +181,10 @@ describe("MessageComposerController", () => {
     );
     controller.setText("long");
     await expect(controller.submit()).rejects.toThrow("3 characters");
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "error",
+      error: "Message text cannot exceed 3 characters.",
+    });
     const pending = controller.addAttachment({
       id: "local-1",
       name: "a.txt",

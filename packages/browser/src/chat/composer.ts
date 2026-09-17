@@ -126,11 +126,15 @@ export class MessageComposerController extends ObservableController<MessageCompo
     const current = this.getSnapshot();
     if (current.sending) throw new Error("Composer is already sending.");
     if (current.text.length > this.#maxTextLength)
-      throw new Error(
+      this.#rejectSubmit(
+        current,
         `Message text cannot exceed ${this.#maxTextLength} characters.`,
       );
     if (current.attachments.some(({ status }) => status !== "ready"))
-      throw new Error("Attachments must finish uploading before send.");
+      this.#rejectSubmit(
+        current,
+        "Attachments must finish uploading before send.",
+      );
     if (current.text.trim() === "" && current.attachments.length === 0)
       throw new Error("Message cannot be empty.");
     const abort = new AbortController();
@@ -161,6 +165,16 @@ export class MessageComposerController extends ObservableController<MessageCompo
     } finally {
       if (this.#sendAbort === abort) this.#sendAbort = undefined;
     }
+  }
+
+  /** Publish a validation failure so bound UI can show it, then reject. */
+  #rejectSubmit(current: MessageComposerSnapshot, message: string): never {
+    this.transition({
+      ...composerFields(current),
+      status: "error",
+      error: message,
+    });
+    throw new Error(message);
   }
 
   cancelSend(): void {

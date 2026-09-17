@@ -125,9 +125,9 @@ describe("React bindings", () => {
     const root = createRoot(host);
     act(() => root.render(<TemplateBuilder controller={controller} />));
 
-    expect(host.querySelector('[aria-label="Header text"]')).not.toBeNull();
+    expect(host.querySelector('[data-field="header"]')).not.toBeNull();
     const body = host.querySelector(
-      '[aria-label="Template body"]',
+      '[data-field="body"]',
     ) as HTMLTextAreaElement;
     expect(body.value).toBe("Hello {{name}}");
     expect(
@@ -164,6 +164,13 @@ describe("React bindings", () => {
         direction: "inbound",
         status: "pending",
       },
+      {
+        id: "d",
+        text: "Out of range",
+        createdAt: 9e15,
+        direction: "inbound",
+        status: "sent",
+      },
     ];
     const snapshot = {
       status: "ready",
@@ -194,6 +201,7 @@ describe("React bindings", () => {
       "a",
       "b",
       "c",
+      "d",
     ]);
     expect(items[1]?.className).toContain("pmfa-msg-out");
     expect(items[1]?.textContent).toContain("Not delivered");

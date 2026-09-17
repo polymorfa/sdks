@@ -225,7 +225,13 @@ export function ComposeBox({
   );
   const submit = () => {
     if (snapshot.sending || snapshot.text.trim() === "") return;
-    void resolved.submit().then(onSent);
+    void resolved.submit().then(
+      () => {
+        // A failed send resolves with the error in the snapshot.
+        if (resolved.getSnapshot().status !== "error") onSent?.();
+      },
+      () => undefined,
+    );
   };
   return (
     <form
@@ -421,7 +427,7 @@ export function TemplateBuilder({
           <Field label={text(configuration, "templates.name")}>
             <input
               className="pmfa-input"
-              aria-label="Template name"
+              data-field="name"
               value={snapshot.draft?.name ?? ""}
               onChange={(event) => resolved.setName(event.currentTarget.value)}
             />
@@ -430,7 +436,7 @@ export function TemplateBuilder({
             <Field label={text(configuration, "templates.header")}>
               <input
                 className="pmfa-input"
-                aria-label="Header text"
+                data-field="header"
                 value={definition.header.text}
                 onChange={(event) =>
                   resolved.updateDefinition({
@@ -443,8 +449,8 @@ export function TemplateBuilder({
           <Field label={text(configuration, "templates.body")}>
             <textarea
               className="pmfa-input"
-              aria-label="Template body"
               rows={4}
+              data-field="body"
               value={definition?.body ?? ""}
               onChange={(event) => resolved.setBody(event.currentTarget.value)}
             />
@@ -453,7 +459,7 @@ export function TemplateBuilder({
             <Field label={text(configuration, "templates.footer")}>
               <input
                 className="pmfa-input"
-                aria-label="Template footer"
+                data-field="footer"
                 value={definition.footer}
                 onChange={(event) =>
                   resolved.updateDefinition({
@@ -472,7 +478,13 @@ export function TemplateBuilder({
                     <span>{`{{${variable.name}}}`}</span>
                     <input
                       className="pmfa-input"
-                      aria-label={`Variable ${variable.name} example`}
+                      aria-label={text(
+                        configuration,
+                        "templates.variableExample",
+                        {
+                          name: variable.name,
+                        },
+                      )}
                       value={variable.example}
                       onChange={(event) =>
                         resolved.setVariableExample(
@@ -498,7 +510,9 @@ export function TemplateBuilder({
                     <span>{templateButton.type.replace("_", " ")}</span>
                     <input
                       className="pmfa-input"
-                      aria-label={`Button ${index + 1} text`}
+                      aria-label={text(configuration, "templates.buttonText", {
+                        index: String(index + 1),
+                      })}
                       value={templateButton.text ?? ""}
                       onChange={(event) => {
                         const buttons = [...(definition.buttons ?? [])];
@@ -523,7 +537,9 @@ export function TemplateBuilder({
                 <textarea
                   key={`card-${index}`}
                   className="pmfa-input"
-                  aria-label={`Carousel card ${index + 1} body`}
+                  aria-label={text(configuration, "templates.cardBody", {
+                    index: String(index + 1),
+                  })}
                   value={card.body}
                   onChange={(event) => {
                     const cards = [...(definition.carousel?.cards ?? [])];
@@ -650,7 +666,11 @@ function byCreatedAt(
   left: { readonly createdAt: number },
   right: { readonly createdAt: number },
 ): number {
-  const a = Number.isFinite(left.createdAt) ? left.createdAt : Infinity;
-  const b = Number.isFinite(right.createdAt) ? right.createdAt : Infinity;
+  const a = sortableTime(left.createdAt);
+  const b = sortableTime(right.createdAt);
   return a === b ? 0 : a < b ? -1 : 1;
+}
+
+function sortableTime(value: number): number {
+  return Number.isNaN(new Date(value).getTime()) ? Infinity : value;
 }

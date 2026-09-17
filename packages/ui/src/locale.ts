@@ -23,9 +23,10 @@ export const ENGLISH_MESSAGES = {
   "templates.footer": "Footer",
   "templates.variables": "Variable examples",
   "templates.buttons": "Buttons",
+  "templates.variableExample": "Variable {name} example",
   "templates.buttonText": "Button {index} text",
   "templates.cards": "Carousel cards",
-  "templates.cardBody": "Card {index} body",
+  "templates.cardBody": "Carousel card {index} body",
   "templates.save": "Save draft",
   "templates.preview": "Preview",
   "templates.previewHint":

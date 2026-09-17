@@ -21,8 +21,11 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
     const form = element("div", "form");
     form.className = "pmfa-tb-form";
 
-    const name = input("Template name", snapshot?.draft?.name ?? "", (value) =>
-      controller()?.setName(value),
+    const name = input(
+      "name",
+      undefined,
+      snapshot?.draft?.name ?? "",
+      (value) => controller()?.setName(value),
     );
     form.append(field(this.text("templates.name"), name));
     const definition = snapshot?.draft?.definition;
@@ -30,7 +33,7 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
       form.append(
         field(
           this.text("templates.header"),
-          input("Header text", definition.header.text, (value) =>
+          input("header", undefined, definition.header.text, (value) =>
             controller()?.updateDefinition({
               header: { format: "text", text: value },
             }),
@@ -38,7 +41,7 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
         ),
       );
     }
-    const body = textArea("Template body", definition?.body ?? "", (value) =>
+    const body = textArea("body", undefined, definition?.body ?? "", (value) =>
       controller()?.setBody(value),
     );
     body.rows = 4;
@@ -47,7 +50,7 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
       form.append(
         field(
           this.text("templates.footer"),
-          input("Template footer", definition.footer, (value) =>
+          input("footer", undefined, definition.footer, (value) =>
             controller()?.updateDefinition({ footer: value }),
           ),
         ),
@@ -60,7 +63,8 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
           pair(
             `{{${variable.name}}}`,
             input(
-              `Variable ${variable.name} example`,
+              `variable:${variable.name}`,
+              this.text("templates.variableExample", { name: variable.name }),
               variable.example,
               (value) => controller()?.setVariableExample(variable.name, value),
             ),
@@ -76,7 +80,8 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
           pair(
             templateButton.type.replace("_", " "),
             input(
-              `Button ${index + 1} text`,
+              `button:${index}`,
+              this.text("templates.buttonText", { index: String(index + 1) }),
               templateButton.text ?? "",
               (value) => {
                 const buttons = [...(definition?.buttons ?? [])];
@@ -97,13 +102,18 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
         definition?.carousel?.cards ?? []
       ).entries()) {
         cards.append(
-          textArea(`Carousel card ${index + 1} body`, card.body, (value) => {
-            const next = [...(definition?.carousel?.cards ?? [])];
-            const current = next[index];
-            if (current !== undefined)
-              next[index] = { ...current, body: value };
-            controller()?.updateDefinition({ carousel: { cards: next } });
-          }),
+          textArea(
+            `card:${index}`,
+            this.text("templates.cardBody", { index: String(index + 1) }),
+            card.body,
+            (value) => {
+              const next = [...(definition?.carousel?.cards ?? [])];
+              const current = next[index];
+              if (current !== undefined)
+                next[index] = { ...current, body: value };
+              controller()?.updateDefinition({ carousel: { cards: next } });
+            },
+          ),
         );
       }
     }
@@ -159,7 +169,7 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
       queueMicrotask(() => {
         const target = this.root.querySelector<
           HTMLInputElement | HTMLTextAreaElement
-        >(`[aria-label="${CSS.escape(focus.label)}"]`);
+        >(`[data-field="${CSS.escape(focus.field)}"]`);
         target?.focus();
         target?.setSelectionRange(focus.start, focus.end);
       });
@@ -173,16 +183,16 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
  */
 function focusedField(
   root: ShadowRoot,
-): { label: string; start: number; end: number } | undefined {
+): { field: string; start: number; end: number } | undefined {
   const active = root.activeElement;
   if (!(
     active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement
   ))
     return undefined;
-  const label = active.getAttribute("aria-label");
-  if (label === null) return undefined;
+  const field = active.dataset.field;
+  if (field === undefined) return undefined;
   return {
-    label,
+    field,
     start: active.selectionStart ?? active.value.length,
     end: active.selectionEnd ?? active.value.length,
   };
@@ -223,27 +233,31 @@ function alert(message: string): HTMLElement {
 }
 
 function input(
-  label: string,
+  key: string,
+  label: string | undefined,
   value: string,
   onInput: (value: string) => void,
 ): HTMLInputElement {
   const field = document.createElement("input");
   field.className = "pmfa-input";
   field.value = value;
-  field.setAttribute("aria-label", label);
+  field.dataset.field = key;
+  if (label !== undefined) field.setAttribute("aria-label", label);
   field.addEventListener("input", () => onInput(field.value));
   return field;
 }
 
 function textArea(
-  label: string,
+  key: string,
+  label: string | undefined,
   value: string,
   onInput: (value: string) => void,
 ): HTMLTextAreaElement {
   const area = document.createElement("textarea");
   area.className = "pmfa-input";
   area.value = value;
-  area.setAttribute("aria-label", label);
+  area.dataset.field = key;
+  if (label !== undefined) area.setAttribute("aria-label", label);
   area.addEventListener("input", () => onInput(area.value));
   return area;
 }

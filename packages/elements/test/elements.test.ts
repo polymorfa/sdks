@@ -368,12 +368,12 @@ describe("portable elements", () => {
     document.body.append(node);
 
     expect(
-      node.shadowRoot?.querySelector('[aria-label="Header text"]'),
+      node.shadowRoot?.querySelector('[data-field="header"]'),
     ).not.toBeNull();
     expect(
       (
         node.shadowRoot?.querySelector(
-          '[aria-label="Template body"]',
+          '[data-field="body"]',
         ) as HTMLTextAreaElement
       ).value,
     ).toBe("Hello {{name}}");
