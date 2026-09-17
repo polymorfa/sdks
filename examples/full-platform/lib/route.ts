@@ -17,7 +17,8 @@ import {
 } from "@polymorfa/sdk";
 
 import { authenticate, type Operator, type Role } from "./auth.js";
-import { env } from "./env.js";
+import { env, isDemoMode } from "./env.js";
+import { demoFixture } from "./desk/demo-fixtures.js";
 
 export type Body = Readonly<Record<string, unknown>>;
 
@@ -38,6 +39,7 @@ const privateHeaders = { "Cache-Control": "no-store, private" };
 export function route(
   role: Role,
   handler: (context: RouteContext) => Promise<unknown>,
+  options: { readonly demo?: "handler" | "fixture" } = {},
 ): (request: Request) => Promise<Response> {
   return async (request) => {
     try {
@@ -50,6 +52,20 @@ export function route(
         return problem(403, "forbidden");
       }
       const body = request.method === "GET" ? {} : await readBody(request);
+      // Without credentials, SDK routes answer with sample data so the UI
+      // works out of the box. Desk routes use the mock data layer instead.
+      if (options.demo !== "handler" && isDemoMode()) {
+        return Response.json(
+          {
+            data: demoFixture(
+              new URL(request.url).pathname,
+              request.method,
+              body,
+            ),
+          },
+          { headers: privateHeaders },
+        );
+      }
       const result = await handler({
         request,
         operator,
@@ -76,7 +92,7 @@ function rejectCrossSite(request: Request): Response | null {
   if (type.split(";")[0]?.trim().toLowerCase() !== "application/json") {
     return problem(415, "unsupported_media_type");
   }
-  if (request.headers.get("origin") !== env.appOrigin()) {
+  if (request.headers.get("origin") !== env.appOrigin(request)) {
     return problem(403, "cross_origin_request");
   }
   return null;

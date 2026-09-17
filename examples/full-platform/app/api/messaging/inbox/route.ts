@@ -1,6 +1,6 @@
 import { messaging } from "../../../../lib/polymorfa.js";
 import { env } from "../../../../lib/env.js";
-import { page, publish } from "../../../../lib/realtime.js";
+import { emit, page } from "../../../../lib/realtime.js";
 import {
   InputError,
   idempotencyKey,
@@ -41,6 +41,6 @@ export const POST = route("agent", async ({ body, request }) => {
     direction: "outbound" as const,
     status: "sent" as const,
   };
-  publish({ type: "message", chat, message });
+  emit("inbox.message", env.session(), { chat, message });
   return message;
 });

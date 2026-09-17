@@ -1,8 +1,12 @@
-import { DEMO_ROLE_COOKIE, DEMO_USER_COOKIE } from "../../../lib/auth.js";
+import {
+  DEMO_ROLE_COOKIE,
+  DEMO_USER_COOKIE,
+  demoSignInEnabled,
+} from "../../../lib/auth.js";
 
-// Development sign-in for the demo. Disabled in production builds.
+// Demo sign-in. Disabled in production unless the app runs on demo data.
 export async function POST(request: Request): Promise<Response> {
-  if (process.env.NODE_ENV === "production") {
+  if (!demoSignInEnabled()) {
     return new Response(null, { status: 404 });
   }
   const form = await request.formData();
@@ -12,7 +16,7 @@ export async function POST(request: Request): Promise<Response> {
   }
   const role = form.get("role") === "admin" ? "admin" : "agent";
   const cookie = "Path=/; HttpOnly; SameSite=Lax";
-  const headers = new Headers({ Location: "/inbox" });
+  const headers = new Headers({ Location: "/tickets" });
   headers.append("Set-Cookie", `${DEMO_USER_COOKIE}=${user}; ${cookie}`);
   headers.append("Set-Cookie", `${DEMO_ROLE_COOKIE}=${role}; ${cookie}`);
   return new Response(null, { status: 303, headers });

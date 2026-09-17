@@ -1,13 +1,15 @@
 import { createClientTokenRoute } from "@polymorfa/nextjs";
 
 import { authenticate } from "../../../../../lib/auth.js";
-import { env } from "../../../../../lib/env.js";
+import { env, isDemoMode } from "../../../../../lib/env.js";
 import { messaging } from "../../../../../lib/polymorfa.js";
 
 // Calls token minted through `voip.token`. The session's client rules must
 // grant voip_place, voip_answer and voip_signal.
 export const POST = createClientTokenRoute({
   authorize: async (request) => {
+    // Demo sign-in cookies are forgeable, so never mint real tokens for them.
+    if (isDemoMode()) return null;
     const operator = await authenticate(request);
     return operator === null ? null : { userId: operator.userId };
   },

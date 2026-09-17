@@ -8,7 +8,9 @@ import {
   type WebhookEvent,
 } from "@polymorfa/sdk";
 
-import { publish } from "./realtime.js";
+import { desk } from "./desk/data.js";
+import type { DeskMessageKind } from "./desk/types.js";
+import { emit, publish } from "./realtime.js";
 
 /** Every event type `handle` reacts to. Webhook registrations subscribe to all of them. */
 export const WEBHOOK_EVENTS = [
@@ -72,68 +74,64 @@ export async function receiveWebhook(
 }
 
 function handle(event: WebhookEvent): void {
+  // Browsers get the verified event unchanged, in the same envelope.
+  publish(event);
   if (isEvent(event, "message.received")) {
-    receiveMessage(event.payload);
+    receiveMessage(event.payload, event.session);
   } else if (isEvent(event, "message.ack")) {
     for (const message of event.payload.messages) {
       console.info("ack", message.id);
     }
-  } else if (isEvent(event, "call.received")) {
-    publish({
-      type: "call.received",
-      callId: event.payload.callId,
-      from: event.payload.from,
-    });
-  } else if (isEvent(event, "call.ended")) {
-    publish({
-      type: "call.ended",
-      callId: event.payload.callId,
-      reason: event.payload.reason,
-    });
-  } else if (isEvent(event, "call.missed")) {
-    publish({
-      type: "call.ended",
-      callId: event.payload.callId,
-      reason: event.payload.reason,
-    });
-  } else if (isEvent(event, "session.status")) {
-    publish({
-      type: "session.status",
-      session: event.session,
-      status: event.payload.status,
-    });
   } else if (isEvent(event, "session.connected")) {
     console.info("connected", event.session, event.payload.accountType);
   } else if (isEvent(event, "session.logged_out")) {
     console.warn("logged out", event.session, event.payload.reason);
-  } else if (isEvent(event, "template.status")) {
-    publish({
-      type: "template.status",
-      templateId: event.payload.templateId,
-      status: event.payload.status,
-    });
   } else if (isEvent(event, "campaign.completed")) {
     console.info("campaign completed", event.payload.campaignId);
   } else if (isEvent(event, "bansafe.enforcement")) {
     console.warn("BanSafe enforcement changed", event.session);
-  } else if (isEvent(event, "customer.created")) {
-    console.info("customer created", event.id);
-  } else {
+  } else if (
+    !isEvent(event, "call.received") &&
+    !isEvent(event, "call.ended") &&
+    !isEvent(event, "call.missed") &&
+    !isEvent(event, "session.status") &&
+    !isEvent(event, "template.status") &&
+    !isEvent(event, "customer.created")
+  ) {
     // Unknown and newer event types are preserved for forward compatibility.
     console.info("unhandled webhook", event.event);
   }
 }
 
-function receiveMessage(payload: MessageReceivedPayload): void {
+function receiveMessage(
+  payload: MessageReceivedPayload,
+  session: string | undefined,
+): void {
   const chat = payload.conversation.phoneNumber ?? payload.conversation.id;
   const linked = isLinkedDevice(payload) ? payload : undefined;
-  publish({
-    type: "message",
+  const createdAt = toMilliseconds(payload.timestamp);
+  const phone = payload.conversation.phoneNumber;
+  // Customer messages open or update a help-desk ticket.
+  if (linked?.fromMe !== true && phone !== undefined && session !== undefined) {
+    void desk()
+      .then((data) => {
+        data.ingestInbound?.({
+          id: payload.id,
+          session,
+          phone,
+          text: linked?.text ?? linked?.caption ?? "",
+          kind: kindOf(payload.type),
+          createdAt,
+        });
+      })
+      .catch((error: unknown) => console.error("ticket ingest failed", error));
+  }
+  emit("inbox.message", session ?? "unknown", {
     chat,
     message: {
       id: payload.id,
       text: linked?.text ?? linked?.caption ?? `[${payload.type}]`,
-      createdAt: toMilliseconds(payload.timestamp),
+      createdAt,
       direction: linked?.fromMe === true ? "outbound" : "inbound",
       status: "sent",
     },
@@ -150,4 +148,29 @@ function toMilliseconds(timestamp: number | string): number {
   const value = typeof timestamp === "number" ? timestamp : Number(timestamp);
   if (!Number.isFinite(value)) return Date.parse(String(timestamp));
   return value < 1e12 ? value * 1000 : value;
+}
+
+function kindOf(type: string): DeskMessageKind {
+  switch (type) {
+    case "image":
+    case "video":
+    case "audio":
+    case "location":
+    case "sticker":
+      return type;
+    case "voice":
+    case "ptt":
+      return "audio";
+    case "document":
+    case "file":
+      return "document";
+    case "contact":
+    case "contacts":
+      return "contact";
+    case "interactive":
+    case "button":
+      return "interactive";
+    default:
+      return "text";
+  }
 }

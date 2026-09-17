@@ -13,9 +13,12 @@ export async function GET(request: Request): Promise<Response> {
       const send = (event: RealtimeEvent) =>
         controller.enqueue(
           encoder.encode(
-            `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`,
+            `event: ${event.event}\ndata: ${JSON.stringify(event)}\n\n`,
           ),
         );
+      // Flush headers right away so the browser reports the stream as open,
+      // and ask it to reconnect after three seconds if the stream drops.
+      controller.enqueue(encoder.encode("retry: 3000\n: connected\n\n"));
       const unsubscribe = subscribe(send);
       const heartbeat = setInterval(
         () => controller.enqueue(encoder.encode(": keep-alive\n\n")),
@@ -39,6 +42,7 @@ export async function GET(request: Request): Promise<Response> {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-store",
       Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
     },
   });
 }

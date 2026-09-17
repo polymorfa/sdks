@@ -29,7 +29,27 @@ export const env = {
       .split(",")
       .map((name) => name.trim())
       .filter((name) => name.length > 0),
-  /** Public origin of this app, e.g. https://support.example.com. */
-  appOrigin: () => new URL(requiredEnv("APP_ORIGIN")).origin,
+  /**
+   * Public origin of this app, e.g. https://support.example.com. In demo mode
+   * without APP_ORIGIN, the origin the request was addressed to is used.
+   */
+  appOrigin: (request?: Request) => {
+    const configured = optionalEnv("APP_ORIGIN");
+    if (configured === undefined && request !== undefined && isDemoMode()) {
+      return new URL(request.url).origin;
+    }
+    return new URL(requiredEnv("APP_ORIGIN")).origin;
+  },
   baseUrl: () => optionalEnv("POLYMORFA_API_BASE_URL"),
 };
+
+/**
+ * Demo data is used when no project token is configured, or when
+ * ACME_DEMO_DATA=true forces it.
+ */
+export function isDemoMode(): boolean {
+  return (
+    optionalEnv("ACME_DEMO_DATA") === "true" ||
+    optionalEnv("POLYMORFA_PROJECT_TOKEN") === undefined
+  );
+}

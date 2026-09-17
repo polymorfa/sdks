@@ -1,3 +1,5 @@
+import { isDemoMode } from "./env.js";
+
 export type Role = "agent" | "admin";
 
 export interface Operator {
@@ -6,6 +8,14 @@ export interface Operator {
 }
 
 export const DEMO_USER_COOKIE = "acme_demo_user";
+
+/**
+ * The demo sign-in is available in development, and in production only while
+ * the app runs on built-in demo data (no Polymorfa credentials are used then).
+ */
+export function demoSignInEnabled(): boolean {
+  return process.env.NODE_ENV !== "production" || isDemoMode();
+}
 export const DEMO_ROLE_COOKIE = "acme_demo_role";
 
 /**
