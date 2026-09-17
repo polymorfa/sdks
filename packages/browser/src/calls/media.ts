@@ -361,6 +361,9 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         ? `${base}:${source}`
         : base;
 
+    // Video receive slots the remote side has agreed to. Transceivers added
+    // for a re-offer that failed are not counted until one succeeds.
+    let negotiatedSlots = 0;
     let negotiating: Promise<void> = Promise.resolve();
     const renegotiate = (
       options: RTCOfferOptions,
@@ -371,6 +374,7 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         if (renegotiateWith === undefined)
           throw new Error("Signaling does not support renegotiation.");
         throwIfAborted(renegotiateSignal);
+        const offered = videoTransceivers().length;
         const offer = await peer.createOffer(options);
         await peer.setLocalDescription(offer);
         try {
@@ -385,6 +389,7 @@ export class WebRtcMediaFactory implements CallMediaFactory {
           );
           if (closed) return;
           await peer.setRemoteDescription({ type: "answer", sdp: answer.sdp });
+          negotiatedSlots = offered;
         } catch (cause) {
           // Without this the peer is stranded in `have-local-offer`.
           if (!closed)
@@ -399,17 +404,35 @@ export class WebRtcMediaFactory implements CallMediaFactory {
     };
 
     // The platform found more video sources than receive slots. Offer more,
-    // up to the bound, so every participant can be seen.
-    let slotsTarget = 0;
+    // up to the bound, so every participant can be seen. Only a successful
+    // re-offer counts: after a failed one, the next report offers the
+    // already-added slots again. One slot re-offer runs at a time; a report
+    // that arrives meanwhile is handled when it settles.
+    let slotsWanted = 0;
+    let growing = false;
     const growSlots = (needed: number) => {
-      const target = Math.min(this.#maxVideoSlots, Math.floor(needed));
-      if (target <= Math.max(slotsTarget, videoTransceivers().length)) return;
-      slotsTarget = target;
-      if (this.#signaling.renegotiate === undefined) return;
-      const add = target - videoTransceivers().length;
+      if (this.#signaling.renegotiate === undefined || closed) return;
+      slotsWanted = Math.max(
+        slotsWanted,
+        Math.min(this.#maxVideoSlots, Math.floor(needed)),
+      );
+      if (growing || slotsWanted <= negotiatedSlots) return;
+      const add = slotsWanted - videoTransceivers().length;
       for (let i = 0; i < add; i += 1)
         peer.addTransceiver("video", { direction: "recvonly" });
-      void renegotiate({}, signal).catch(() => undefined);
+      growing = true;
+      void renegotiate({}, signal).then(
+        () => {
+          growing = false;
+          // A larger report arrived while this re-offer ran.
+          if (slotsWanted > negotiatedSlots) growSlots(slotsWanted);
+        },
+        () => {
+          // Transient failure: wait for the platform to report again.
+          growing = false;
+          slotsWanted = negotiatedSlots;
+        },
+      );
     };
 
     control.onmessage = (event: MessageEvent) => {
@@ -473,6 +496,7 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       );
       applyIceServers(peer, answer);
       await peer.setRemoteDescription({ type: "answer", sdp: answer.sdp });
+      negotiatedSlots = videoTransceivers().length;
       remoteDescribed = true;
       for (const candidate of pendingCandidates.splice(0))
         void peer.addIceCandidate(candidate).catch(() => undefined);

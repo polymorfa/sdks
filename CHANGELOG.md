@@ -21,6 +21,10 @@
   ends locally: ended when this client claimed it (exclusive answer or
   placement), otherwise left. `answer()` and `join()` reject after the
   release, which waits at most 5 seconds.
+- Browser calls: a group video slot request whose re-offer failed is offered
+  again on the next report, so participants beyond the initial slots become
+  visible; participants reported before an outbound placement returned are
+  shown on the placed call.
 - `CallsClient` no longer emits `incoming` for a call whose `call.ended`,
   `call.missed` or `call.rejected` event arrived before `call.received`; the
   call is reported through `ended` only. The browser `CallsController` also

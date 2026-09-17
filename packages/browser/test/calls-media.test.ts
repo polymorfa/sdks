@@ -730,6 +730,51 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
     expect(s["renegotiate"]).toHaveBeenCalledTimes(2);
   });
 
+  it("offers added slots again after a failed re-offer", async () => {
+    const { peer, signaling: s } = await opened({ maxVideoSlots: 6 });
+    const videoSlots = () =>
+      peer.transceivers.filter((t) => t.receiver.track.kind === "video").length;
+    vi.mocked(s["renegotiate"]!).mockRejectedValueOnce(new Error("503"));
+    control(peer, { type: "video_slots_exhausted", slots: 4, needed: 5 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(videoSlots()).toBe(5);
+    expect(s["renegotiate"]).toHaveBeenCalledTimes(1);
+    // The same report again: the slot exists but was never negotiated.
+    control(peer, { type: "video_slots_exhausted", slots: 4, needed: 5 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(videoSlots()).toBe(5);
+    expect(s["renegotiate"]).toHaveBeenCalledTimes(2);
+    // Now negotiated: the same report does nothing.
+    control(peer, { type: "video_slots_exhausted", slots: 5, needed: 5 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(s["renegotiate"]).toHaveBeenCalledTimes(2);
+  });
+
+  it("runs one slot re-offer at a time and follows up with the largest request", async () => {
+    let finish!: () => void;
+    const { peer, signaling: s } = await opened({ maxVideoSlots: 8 });
+    const videoSlots = () =>
+      peer.transceivers.filter((t) => t.receiver.track.kind === "video").length;
+    vi.mocked(s["renegotiate"]!).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = () => resolve({ sdp: "v=0", iceServers: [] });
+        }),
+    );
+    control(peer, { type: "video_slots_exhausted", slots: 4, needed: 5 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    control(peer, { type: "video_slots_exhausted", slots: 4, needed: 6 });
+    control(peer, { type: "video_slots_exhausted", slots: 4, needed: 7 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(s["renegotiate"]).toHaveBeenCalledTimes(1);
+    expect(videoSlots()).toBe(5);
+    finish();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(s["renegotiate"]).toHaveBeenCalledTimes(2);
+    expect(videoSlots()).toBe(7);
+  });
+
   it("does not add slots when signaling cannot renegotiate", async () => {
     const basic = signaling();
     delete (basic as { renegotiate?: unknown }).renegotiate;

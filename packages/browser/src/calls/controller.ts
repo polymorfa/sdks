@@ -434,6 +434,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       if (operation !== this.#operation) return;
       this.#remember(callId);
       this.#remoteVideos = [];
+      // Roster events that raced the placement request were applied to the
+      // shared call before this controller knew the id; start from them.
+      const shared = this.#backend.getCall?.(callId);
       this.transition({
         ...this.#baseFields(),
         status: "ringing",
@@ -445,6 +448,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         audioMuted: false,
         videoMuted: false,
         exclusive: options.exclusive === true,
+        ...(shared === undefined ? {} : { participants: shared.participants }),
       });
       const call = this.call;
       if (call?.ended) {

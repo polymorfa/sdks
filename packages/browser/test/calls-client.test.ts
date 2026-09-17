@@ -121,6 +121,46 @@ describe("browser widget and shared calls client", () => {
     expect(f.calls.controller.call?.ended).toBe(true);
     expect(f.media.open).not.toHaveBeenCalled();
   });
+  it("keeps participants reported before placement returned", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    let finish!: (response: Response) => void;
+    f.fetch.mockImplementationOnce(
+      async () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const placing = f.calls.controller.place("+15550100");
+    await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
+    const participant = {
+      id: "15550100",
+      phoneNumber: "+15550100",
+      audioMuted: false,
+      video: false,
+      state: "ringing",
+    };
+    event(socket, "call.participant_joined", "CALL-OUT", { participant });
+    finish(
+      new Response(JSON.stringify({ data: { callId: "CALL-OUT" } }), {
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    await placing;
+    expect(f.calls.controller.call?.participants).toEqual([participant]);
+    expect(f.calls.controller.getSnapshot()).toMatchObject({
+      callId: "CALL-OUT",
+      participants: [participant],
+    });
+    // Later roster events still apply.
+    event(socket, "call.participant_state", "CALL-OUT", {
+      participant: { ...participant, state: "connected" },
+    });
+    expect(f.calls.controller.getSnapshot().participants).toEqual([
+      { ...participant, state: "connected" },
+    ]);
+  });
+
   it("leaves, and never ends, a call when microphone acquisition fails", async () => {
     const f = fixture();
     const socket = await f.connect();
