@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Added `examples/full-platform`, a Next.js App Router support desk that uses
+  the Messaging and management clients, signed webhooks, the browser
+  controllers, React components, Web Components, Next.js route helpers, and
+  the development assistant. QuickLink appears only as a created hosted `url`.
+
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`
   no longer registers `pmfa-quicklink` or exports the `./quicklink` subpath, and

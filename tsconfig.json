@@ -11,6 +11,7 @@
       "@polymorfa/elements": ["./packages/elements/src/index.ts"],
       "@polymorfa/nextjs": ["./packages/nextjs/src/index.ts"],
       "@polymorfa/react": ["./packages/react/src/index.ts"],
+      "@polymorfa/sdk": ["./packages/typescript/dist/index.d.ts"],
       "@polymorfa/ui": ["./packages/ui/src/index.ts"]
     },
     "strict": true,

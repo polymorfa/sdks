@@ -1,0 +1,31 @@
+{
+  "name": "@polymorfa/example-full-platform",
+  "version": "0.1.0-dev.0",
+  "private": true,
+  "description": "Acme Support: a Next.js App Router app that uses every Polymorfa SDK surface",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@polymorfa/browser": "0.1.0-dev.0",
+    "@polymorfa/devtools": "0.1.0-dev.0",
+    "@polymorfa/elements": "0.1.0-dev.0",
+    "@polymorfa/nextjs": "0.1.0-dev.0",
+    "@polymorfa/react": "0.1.0-dev.0",
+    "@polymorfa/sdk": "0.1.0-dev.0",
+    "@polymorfa/ui": "0.1.0-dev.0",
+    "next": "^15.5.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "typescript": "^6.0.3"
+  }
+}
