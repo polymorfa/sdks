@@ -18,6 +18,7 @@ this SDK's initial scope.
 | `@polymorfa/ui`       | Isomorphic          | Appearance, locale, direction, motion, and diagnostic contracts                   |
 | `@polymorfa/elements` | Browser             | Portable custom elements for React-free, Vue, Svelte, and plain HTML applications |
 | `@polymorfa/react`    | Browser             | React bindings over the same controllers                                          |
+| `@polymorfa/store`    | Browser             | Opt-in IndexedDB store for webhook-shaped events, with live sources and chat data |
 | `@polymorfa/nextjs`   | Server              | App Router-compatible client-token and webhook helpers                            |
 | `@polymorfa/devtools` | Development browser | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
 
@@ -495,6 +496,17 @@ stage, control dock, and a pop-out window), plus `IncomingCallCard`,
 `CallStage`, `CallControls`, and `DialPad` for composition. The design mirrors
 the official WhatsApp desktop call windows in a monochrome Material-3 voice;
 colors derive from the shared appearance variables.
+
+### Local event store
+
+`@polymorfa/store` keeps an opt-in IndexedDB copy of webhook-shaped events for
+applications that store messages themselves. Your backend receives webhooks
+and streams them to the browser; the store files messages, conversations,
+contacts, presence, calls, labels, sessions, templates, and other events into
+separate stores and feeds `ConversationController` through
+`createStoreConversationSource()`. Message content is written to the device;
+see the [store guide](packages/store/README.md#privacy) for encryption,
+redaction, and retention.
 
 ## Next.js and dev mode
 

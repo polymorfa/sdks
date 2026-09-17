@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- New opt-in package `@polymorfa/store` keeps a local IndexedDB copy of
+  webhook-shaped events. `createPolymorfaStore()` files messages,
+  conversations, contacts, presence, calls, labels, sessions, and templates
+  into separate stores, logs every event, and keeps other types in `custom`.
+  Ingest skips repeated event IDs and never replaces newer state with older
+  state. `connectEventSource()` follows `fromEventSource()`,
+  `fromEventStream()`, `fromWebSocket()`, or `fromIterable()` sources and
+  saves a resume cursor. `createStoreConversationSource()` backs
+  `ConversationController`, and `@polymorfa/store/react` adds
+  `usePolymorfaStoreQuery()`. Stores sync across tabs, apply retention, fall
+  back to memory when IndexedDB is unavailable, and accept `encrypt`,
+  `decrypt`, and `redact` options. Message content is stored on the device.
+  The Polymorfa client-token event stream is planned and not available yet.
+  See the [store guide](packages/store/README.md).
 - `ComposeBox` and `pmfa-compose-box` gain a WhatsApp-style toolbar: an emoji
   picker with search, recent emoji, and categories; voice notes with a
   recording bar, timer, and level meter; and "/" quick replies with
