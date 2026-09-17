@@ -253,17 +253,23 @@ export function createBrowserCalls(
           : snapshot.endReason === "pod_lost"
             ? "pod_lost"
             : "connection_failed";
-      // Nobody else is on an outbound call that is still ringing. Leaving
-      // would keep the callee ringing, so end it, as disconnect() does.
-      const ringing = call.direction === "outbound" && call.state === "ringing";
+      // Nobody else is on an outbound call that is still ringing, and nobody
+      // can take over a call this client claimed (exclusive answer or
+      // placement). Leaving either would strand the other party, so end it,
+      // as @polymorfa/calls does for socket media.
+      const release =
+        (call.direction === "outbound" && call.state === "ringing") ||
+        call._claimedBySelf;
       call._remoteEnded(reason);
-      if (ringing)
+      if (release)
         void api
           .end(call.id)
           .catch((cause: unknown) =>
             options.onError?.({ code: "end_failed", message: message(cause) }),
           );
-      // Media failed locally: leave the connection; the call continues for others.
+      // Media failed locally: leave the connection; the call continues for
+      // others. The platform requires a connection id; the call's own id is
+      // the one the media session offers with.
       else
         void api.leave(call.id, call.connectionId).catch((cause: unknown) =>
           options.onError?.({

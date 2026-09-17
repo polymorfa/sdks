@@ -21,6 +21,11 @@
   ends locally: ended when this client claimed it (exclusive answer or
   placement), otherwise left. `answer()` and `join()` reject after the
   release, which waits at most 5 seconds.
+- Browser calls: when media fails on a call this browser claimed (an
+  exclusive answer or placement), the call is ended rather than left, so the
+  other party is not left on an answered call. The React incoming card
+  applies its pre-answer microphone and camera choices only to the call that
+  was answered.
 - Browser calls: a group video slot request whose re-offer failed is offered
   again on the next report, so participants beyond the initial slots become
   visible; participants reported before an outbound placement returned are

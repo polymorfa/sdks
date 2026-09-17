@@ -1143,6 +1143,88 @@ describe("unified calls UI", () => {
     f.controller.dispose();
   });
 
+  it("does not apply an answered call's pre-answer choices to the call shown after it ended", async () => {
+    const f = feedFixture();
+    let finish!: () => void;
+    f.signaling.accept.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = () =>
+            resolve({
+              answered: true,
+              answeredBy: "client:self",
+              exclusive: false,
+            });
+        }),
+    );
+    const host = mount(
+      <PolymorfaProvider>
+        <CallSurface controller={f.controller} popout={false} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: true },
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: true },
+    });
+    const control = (label: string) =>
+      host.querySelector(`[aria-label='${label}']`) as HTMLButtonElement;
+    await act(async () => {
+      control("Answer muted").click();
+    });
+    await act(async () => {
+      control("Answer").click();
+    });
+    // A ends while its answer is in flight; B is shown.
+    f.emit({ type: "ended", callId: "A", reason: "remote_hangup" });
+    expect(f.controller.getSnapshot().callId).toBe("B");
+    await act(async () => {
+      finish();
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(f.controller.getSnapshot()).toMatchObject({
+      callId: "B",
+      status: "incoming",
+      audioMuted: false,
+      videoMuted: false,
+      answering: false,
+    });
+    f.controller.dispose();
+  });
+
+  it("applies pre-answer choices to the call that was answered", async () => {
+    const f = feedFixture();
+    const host = mount(
+      <PolymorfaProvider>
+        <CallSurface controller={f.controller} popout={false} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: true },
+    });
+    const control = (label: string) =>
+      host.querySelector(`[aria-label='${label}']`) as HTMLButtonElement;
+    await act(async () => {
+      control("Answer muted").click();
+    });
+    await act(async () => {
+      control("Answer").click();
+    });
+    await vi.waitFor(() =>
+      expect(f.controller.getSnapshot()).toMatchObject({
+        callId: "A",
+        audioMuted: true,
+      }),
+    );
+    f.controller.dispose();
+  });
+
   it("offers only Hang up on a placed call until it connects", async () => {
     const f = fixture();
     const host = mount(

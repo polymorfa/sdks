@@ -283,6 +283,61 @@ describe("browser widget and shared calls client", () => {
     expect(f.calls.controller.getSnapshot().error).toBeUndefined();
   });
 
+  it("ends, and does not leave, a call this browser claimed when the microphone is denied", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    f.media.open.mockRejectedValueOnce(
+      new Error("Microphone permission denied"),
+    );
+    event(socket, "call.received", "CALL-IN", { from: "+15550100" });
+    await f.calls.controller.answer({ exclusive: true });
+    // The claim stopped other participants from taking the call over.
+    await vi.waitFor(() =>
+      expect(
+        f.fetch.mock.calls.some(
+          ([url, init]) =>
+            init?.method === "DELETE" &&
+            new URL(String(url)).pathname === "/messaging/voip/calls/CALL-IN",
+        ),
+      ).toBe(true),
+    );
+    expect(
+      f.fetch.mock.calls.some(([url]) => String(url).endsWith("/leave")),
+    ).toBe(false);
+    expect(f.calls.controller.call?.endReason).toBe("connection_failed");
+  });
+
+  it("ends an exclusive placement whose media fails after the callee answered", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    let fail!: (cause: Error) => void;
+    f.media.open.mockImplementationOnce(
+      () =>
+        new Promise((_resolve, reject) => {
+          fail = reject;
+        }),
+    );
+    const placing = f.calls.controller.place("+15550100", { exclusive: true });
+    await vi.waitFor(() => expect(f.media.open).toHaveBeenCalled());
+    event(socket, "call.accepted", "CALL-OUT");
+    await flush();
+    expect(f.calls.controller.call?.state).not.toBe("ringing");
+    fail(new Error("Camera unplugged"));
+    await placing;
+    await vi.waitFor(() =>
+      expect(
+        f.fetch.mock.calls.some(
+          ([url, init]) =>
+            init?.method === "DELETE" &&
+            new URL(String(url)).pathname === "/messaging/voip/calls/CALL-OUT",
+        ),
+      ).toBe(true),
+    );
+    expect(
+      f.fetch.mock.calls.some(([url]) => String(url).endsWith("/leave")),
+    ).toBe(false);
+  });
+
   it("keeps a confirmed remote end terminal when local cleanup rejects", async () => {
     const f = fixture();
     const socket = await f.connect();

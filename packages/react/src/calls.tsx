@@ -53,6 +53,14 @@ function ignoreDisposed(run: () => void): void {
   }
 }
 
+/** A call this client answered or joined that has not ended. */
+const ANSWERED_STATUSES = new Set<CallsSnapshot["status"]>([
+  "accepted",
+  "connecting",
+  "connected",
+  "reconnecting",
+]);
+
 const ACTIVE_STATUSES = new Set<CallsSnapshot["status"]>([
   "ringing",
   "accepted",
@@ -587,7 +595,13 @@ export function IncomingCallCard({
       : failure.callId === undefined || failure.callId === snapshot.callId
         ? ("calls.answerFailed" as const)
         : ("calls.previousFailed" as const);
+  const answeredId = snapshot.callId;
   const applyPreToggles = () => {
+    // The answer can settle without this call becoming active: it ended, was
+    // dismissed, or another call is displayed now. Those choices belong to
+    // this call only.
+    const now = resolved.getSnapshot();
+    if (now.callId !== answeredId || !ANSWERED_STATUSES.has(now.status)) return;
     if (preMuted || (offersVideo && !cameraOn))
       resolved.setMuted({
         ...(preMuted ? { audio: true } : {}),

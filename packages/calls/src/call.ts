@@ -429,6 +429,14 @@ export class Call extends Emitter<CallEvents> {
       canJoin: this.canJoin,
     };
   }
+  /**
+   * @internal This client holds the claim: its own exclusive answer, or a
+   * placement with `exclusive: true`. Media adapters end such a call, rather
+   * than leave it, when its media fails.
+   */
+  get _claimedBySelf(): boolean {
+    return this.#claimedByUs;
+  }
   get claimedByOther(): boolean {
     return this.#claimedByOther && !this.#accepted && !this.ended;
   }
