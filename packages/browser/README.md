@@ -38,6 +38,32 @@ message resource for text and reply sends. Supply an upload adapter and a
 `createMessage` mapping for attachments; client tokens cannot call the media
 routes directly.
 
+## Voice notes
+
+`VoiceNoteRecorder` records from the microphone with `getUserMedia` and
+`MediaRecorder`. Its snapshot has `status` (`idle`, `requesting`,
+`recording`, `stopping`, or `error`), `elapsed` milliseconds, an input
+`level` from 0 to 1, the container `mimeType`, and an `error` of
+`permission-denied`, `unavailable`, or `failed`.
+
+```ts
+import { VoiceNoteRecorder, localAttachmentFromFile } from "@polymorfa/browser";
+
+if (VoiceNoteRecorder.isSupported()) {
+  const recorder = new VoiceNoteRecorder();
+  await recorder.start();
+  // later
+  const file = await recorder.stop(); // File or undefined
+  if (file) await composer.addAttachment(localAttachmentFromFile(file));
+}
+```
+
+`stop()` resolves with an `audio/webm` or `audio/ogg` file named
+`voice-note-<time>.webm` (or `.ogg`); the time is ISO 8601 with `:` and `.`
+replaced by `-`. `cancel()` discards the recording. The microphone tracks
+stop when recording ends, when a pending permission request is cancelled,
+and on `dispose()`.
+
 ## Calls
 
 `createBrowserCalls` connects the shared Calls client to `CallsController` and

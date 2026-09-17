@@ -22,3 +22,12 @@ export {
   type MessageComposerOptions,
   type MessageComposerSnapshot,
 } from "./composer.js";
+export {
+  VoiceNoteRecorder,
+  voiceNoteName,
+  type MediaRecorderConstructor,
+  type VoiceNoteError,
+  type VoiceNoteRecorderOptions,
+  type VoiceNoteRecorderSnapshot,
+  type VoiceNoteStatus,
+} from "./voice-recorder.js";
