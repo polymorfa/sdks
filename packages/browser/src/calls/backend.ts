@@ -74,7 +74,15 @@ export class IncomingCallRelay {
    */
   accepted(
     callId: string,
-    claim: { readonly answeredBy?: string; readonly exclusive?: boolean } = {},
+    claim: {
+      readonly answeredBy?: string;
+      readonly exclusive?: boolean;
+      /** The webhook's `capabilities`, when present. */
+      readonly capabilities?: {
+        readonly video?: boolean;
+        readonly invite?: boolean;
+      };
+    } = {},
   ): void {
     this.#emit({
       type: "accepted",
@@ -83,6 +91,9 @@ export class IncomingCallRelay {
         ? {}
         : { answeredBy: claim.answeredBy }),
       exclusive: claim.exclusive === true,
+      ...(claim.capabilities === undefined
+        ? {}
+        : { capabilities: capabilitiesFrom(claim.capabilities) }),
     });
   }
 

@@ -211,6 +211,73 @@ describe("browser widget and shared calls client", () => {
     expect(f.calls.controller.getSnapshot().status).toBe("connected");
   });
 
+  it("updates a placed call's capabilities from the answer", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    await f.calls.controller.place("+15550100", { video: true });
+    expect(f.calls.controller.getSnapshot().capabilities).toMatchObject({
+      video: true,
+      invite: true,
+    });
+    event(socket, "call.accepted", "CALL-OUT", {
+      capabilities: { video: false, invite: false },
+    });
+    await flush();
+    expect(f.calls.controller.getSnapshot()).toMatchObject({
+      capabilities: { video: false, invite: false, mute: true },
+      video: false,
+    });
+  });
+
+  it("seeds a placed call's capabilities reported before placement returned", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    let finish!: (response: Response) => void;
+    f.fetch.mockImplementationOnce(
+      async () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const placing = f.calls.controller.place("+15550100");
+    await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
+    event(socket, "call.accepted", "CALL-OUT", {
+      capabilities: { video: false, invite: false },
+    });
+    finish(
+      new Response(JSON.stringify({ data: { callId: "CALL-OUT" } }), {
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    await placing;
+    expect(f.calls.controller.getSnapshot().capabilities).toEqual({
+      video: false,
+      invite: false,
+      mute: true,
+    });
+  });
+
+  it("keeps capabilities reported for a waiting invitation", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    event(socket, "call.received", "CALL-A", { from: "+15550100" });
+    event(socket, "call.received", "CALL-B", {
+      from: "+15550101",
+      hasVideo: true,
+    });
+    event(socket, "call.accepted", "CALL-B", {
+      answeredBy: "client:other",
+      capabilities: { video: false, invite: false },
+    });
+    f.calls.controller.select("CALL-B");
+    expect(f.calls.controller.getSnapshot()).toMatchObject({
+      callId: "CALL-B",
+      capabilities: { video: false, invite: false },
+      video: false,
+      canJoin: true,
+    });
+  });
+
   it("leaves, and never ends, a call when microphone acquisition fails", async () => {
     const f = fixture();
     const socket = await f.connect();

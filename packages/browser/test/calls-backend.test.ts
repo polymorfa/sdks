@@ -418,6 +418,31 @@ describe("createSignalingCallsBackend", () => {
     controller.dispose();
   });
 
+  it("relays capabilities reported with call.accepted", async () => {
+    const relay = new IncomingCallRelay();
+    const controller = new CallsController(
+      createSignalingCallsBackend({
+        signaling: signaling(),
+        incoming: relay,
+        place: async () => "call-out",
+      }),
+      media().factory,
+    );
+    controller.initialize();
+    await controller.place("+12025550199", { video: true });
+    relay.accepted("call-out", { capabilities: { invite: false } });
+    expect(controller.getSnapshot()).toMatchObject({
+      capabilities: { video: true, invite: false, mute: true },
+      video: true,
+    });
+    relay.accepted("call-out", { capabilities: { video: false } });
+    expect(controller.getSnapshot()).toMatchObject({
+      capabilities: { video: false, invite: true, mute: true },
+      video: false,
+    });
+    controller.dispose();
+  });
+
   it("carries the destination to the place hook and adopts its call id", async () => {
     const place = vi.fn(async () => ({ callId: "server-call-9" }));
     const controller = new CallsController(

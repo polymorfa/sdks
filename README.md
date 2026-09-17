@@ -498,7 +498,9 @@ negotiation and socket transports are internal to the SDK; the packages export
 only these calling operations.
 
 Each call reports its `capabilities` (`video`, `invite`, `mute`), and every
-component gates its controls on them. The
+component gates its controls on them. A placed call starts with video and
+invitations allowed and takes the platform's report when the callee answers.
+The
 controller also owns capture/playback device choice (`setPreferredDevices`,
 `switchDevice`, `refreshDevices`) so a microphone or camera swap mid-call is a
 track replacement, not a renegotiation. The shared call model supports

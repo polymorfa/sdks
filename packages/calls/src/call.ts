@@ -239,6 +239,8 @@ type CallEvents = {
   ended: [reason: CallEndReason];
   /** Answer or claim information changed. */
   claim: [CallClaim];
+  /** The platform reported different capabilities (on `call.accepted`). */
+  capabilities: [CallCapabilities];
   participantJoined: [Participant];
   participantLeft: [participantId: string, reason: string | undefined];
   participantState: [Participant];
@@ -261,20 +263,26 @@ export const DEFAULT_CALL_CAPABILITIES: CallCapabilities = Object.freeze({
   invite: true,
 });
 
-/** Read platform-reported capabilities, keeping defaults for absent fields. */
-export function capabilitiesFrom(value: unknown): CallCapabilities {
-  if (value === null || typeof value !== "object")
-    return DEFAULT_CALL_CAPABILITIES;
+/**
+ * Read platform-reported capabilities, keeping `fallback` (the defaults
+ * unless given) for absent or malformed fields.
+ */
+export function capabilitiesFrom(
+  value: unknown,
+  fallback: CallCapabilities = DEFAULT_CALL_CAPABILITIES,
+): CallCapabilities {
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    return fallback;
   const reported = value as Record<string, unknown>;
   return {
     video:
       typeof reported["video"] === "boolean"
         ? reported["video"]
-        : DEFAULT_CALL_CAPABILITIES.video,
+        : fallback.video,
     invite:
       typeof reported["invite"] === "boolean"
         ? reported["invite"]
-        : DEFAULT_CALL_CAPABILITIES.invite,
+        : fallback.invite,
   };
 }
 
@@ -320,10 +328,19 @@ export class Call extends Emitter<CallEvents> {
   readonly session: string;
   readonly direction: CallDirection;
   readonly peer: string;
-  /** True when the call offered video. */
-  readonly hasVideo: boolean;
-  /** What this call supports. */
-  readonly capabilities: CallCapabilities;
+  /** True when the call offered video and the call can carry it. */
+  get hasVideo(): boolean {
+    return this.#offeredVideo && this.#capabilities.video;
+  }
+  /**
+   * What this call supports. An outbound call starts with the defaults and
+   * takes the platform's report from `call.accepted` (`capabilities` event).
+   */
+  get capabilities(): CallCapabilities {
+    return this.#capabilities;
+  }
+  readonly #offeredVideo: boolean;
+  #capabilities: CallCapabilities;
   /** This client's media connection id; reused on reconnect. */
   readonly connectionId: string;
   readonly audio: AudioTrack;
@@ -364,8 +381,8 @@ export class Call extends Emitter<CallEvents> {
     this.session = init.session;
     this.direction = init.direction;
     this.peer = init.peer;
-    this.capabilities = init.capabilities ?? DEFAULT_CALL_CAPABILITIES;
-    this.hasVideo = init.video && this.capabilities.video;
+    this.#capabilities = init.capabilities ?? DEFAULT_CALL_CAPABILITIES;
+    this.#offeredVideo = init.video;
     if (init.connectionId !== undefined && !isConnectionId(init.connectionId))
       throw new CallsError(
         "invalid_connection_id",
@@ -608,8 +625,22 @@ export class Call extends Emitter<CallEvents> {
    * claimed it.
    */
   async _remoteAccepted(
-    claim: { readonly answeredBy?: string; readonly exclusive?: boolean } = {},
+    claim: {
+      readonly answeredBy?: string;
+      readonly exclusive?: boolean;
+      /** Reported capabilities; absent keeps the current ones. */
+      readonly capabilities?: CallCapabilities;
+    } = {},
   ): Promise<void> {
+    if (
+      !this.ended &&
+      claim.capabilities !== undefined &&
+      (claim.capabilities.video !== this.#capabilities.video ||
+        claim.capabilities.invite !== this.#capabilities.invite)
+    ) {
+      this.#capabilities = Object.freeze({ ...claim.capabilities });
+      this.emit("capabilities", this.#capabilities);
+    }
     if (this.direction === "outbound") {
       if (this.#state !== "ringing") return;
       this.#transition("connecting");

@@ -1479,3 +1479,88 @@ describe("CallsClient — terminal events that arrive before call.received", () 
     },
   );
 });
+
+describe("CallsClient — capabilities reported on call.accepted", () => {
+  function accepted(
+    life: FakeWebSocket,
+    callId: string,
+    payload: Record<string, unknown>,
+  ) {
+    life.text({
+      type: "event",
+      event: "call.accepted",
+      callId,
+      payload,
+      timestamp: "",
+    });
+  }
+
+  it("updates an outbound call's capabilities from the answer", async () => {
+    const h = clientWith(undefined, { mediaMode: "external" });
+    const life = await connected(h);
+    const call = await h.client.place("+15550100", { video: true });
+    expect(call.capabilities).toEqual({ video: true, invite: true });
+    expect(call.hasVideo).toBe(true);
+    const reported: unknown[] = [];
+    call.on("capabilities", (c) => reported.push(c));
+    accepted(life, call.id, { capabilities: { video: false, invite: false } });
+    await flush();
+    expect(call.capabilities).toEqual({ video: false, invite: false });
+    expect(call.hasVideo).toBe(false);
+    expect(reported).toEqual([{ video: false, invite: false }]);
+    expect(call.state).toBe("connecting");
+  });
+
+  it.each([
+    ["absent", {}, { video: true, invite: true }],
+    ["malformed", { capabilities: "none" }, { video: true, invite: true }],
+    [
+      "partial",
+      { capabilities: { invite: false, video: "no" } },
+      { video: true, invite: false },
+    ],
+  ] as const)(
+    "keeps current values for %s reports",
+    async (_label, payload, expected) => {
+      const h = clientWith(undefined, { mediaMode: "external" });
+      const life = await connected(h);
+      const call = await h.client.place("+15550100");
+      accepted(life, call.id, payload);
+      await flush();
+      expect(call.capabilities).toEqual(expected);
+    },
+  );
+
+  it("applies capabilities from an answer that arrived before placement returned", async () => {
+    const api = fakeApi();
+    let resolvePlace!: (value: { callId: string }) => void;
+    api.place.mockImplementationOnce(
+      () => new Promise((resolve) => (resolvePlace = resolve)),
+    );
+    const h = clientWith(api, { mediaMode: "external" });
+    const life = await connected(h);
+    const placing = h.client.place("+15550100");
+    await flush();
+    accepted(life, "CALL-FAST", {
+      capabilities: { video: false, invite: false },
+    });
+    resolvePlace({ callId: "CALL-FAST" });
+    const call = await placing;
+    expect(call.capabilities).toEqual({ video: false, invite: false });
+  });
+
+  it("updates an inbound call's capabilities when it is answered elsewhere", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    accepted(life, "CALL-1", {
+      answeredBy: "client:other",
+      capabilities: { video: true, invite: false },
+    });
+    await flush();
+    expect(call!.capabilities).toEqual({ video: true, invite: false });
+    expect(call!.canJoin).toBe(true);
+  });
+});

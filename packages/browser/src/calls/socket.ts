@@ -271,6 +271,11 @@ export function lifecycleEventFrom(
           ? { answeredBy }
           : {}),
         exclusive: payload.exclusive === true,
+        ...(payload.capabilities !== null &&
+        typeof payload.capabilities === "object" &&
+        !Array.isArray(payload.capabilities)
+          ? { capabilities: capabilitiesFrom(payload.capabilities) }
+          : {}),
       };
     }
     case "call.ended": {

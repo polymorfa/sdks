@@ -212,6 +212,9 @@ export function createBrowserCalls(
         if (state === "connecting" || state === "connected")
           emit({ type: "accepted", callId: call.id });
     });
+    call.on("capabilities", (capabilities) =>
+      emit({ type: "capabilities", callId: call.id, capabilities }),
+    );
     call.on("participantJoined", (participant) =>
       emit({ type: "participant", callId: call.id, participant }),
     );

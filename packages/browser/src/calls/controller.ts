@@ -144,6 +144,20 @@ export type CallLifecycleEvent =
       readonly exclusive?: boolean;
       /** Set by backends that know this client's participant reference. */
       readonly claimedByOther?: boolean;
+      /** Capabilities the platform reported with the answer. */
+      readonly capabilities?: {
+        readonly video: boolean;
+        readonly invite: boolean;
+      };
+    }
+  | {
+      /** The platform reported different capabilities for a call. */
+      readonly type: "capabilities";
+      readonly callId: string;
+      readonly capabilities: {
+        readonly video: boolean;
+        readonly invite: boolean;
+      };
     }
   | {
       readonly type: "ended";
@@ -423,7 +437,6 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     )
       throw new Error("Finish the active call before placing another.");
     const operation = this.#begin();
-    const capabilities = DEFAULT_CAPABILITIES;
     const video = options.video ?? false;
     // Only a refused offer carries the pod's terminal hints.
     let offering = false;
@@ -450,6 +463,10 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       const answered =
         shared !== undefined &&
         (shared.state === "connecting" || shared.state === "connected");
+      const capabilities =
+        shared === undefined
+          ? DEFAULT_CAPABILITIES
+          : capabilitiesOf(shared.capabilities);
       this.transition({
         ...this.#baseFields(),
         status: answered ? "accepted" : "ringing",
@@ -1273,6 +1290,12 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   }
 
   #receive(event: CallLifecycleEvent): void {
+    if (
+      (event.type === "capabilities" || event.type === "accepted") &&
+      event.capabilities !== undefined
+    )
+      this.#applyCapabilities(event.callId, event.capabilities);
+    if (event.type === "capabilities") return;
     const current = this.getSnapshot();
     if (event.type === "incomingCall") {
       if (this.#invitations.has(event.call.callId)) return;
@@ -1406,6 +1429,42 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         this.transition({ ...callFields(current), status: "ringing" });
         return;
     }
+  }
+
+  /**
+   * Take a call's reported capabilities: a listed invitation keeps them for
+   * when it is displayed, and the displayed call updates its controls. Video
+   * the call cannot carry is dropped.
+   */
+  #applyCapabilities(
+    callId: string,
+    reported: { readonly video: boolean; readonly invite: boolean },
+  ): void {
+    const capabilities = capabilitiesOf(reported);
+    const invitation = this.#invitations.get(callId);
+    if (invitation !== undefined)
+      this.#invitations.set(callId, { ...invitation, capabilities });
+    const current = this.getSnapshot();
+    if (
+      current.callId !== callId ||
+      current.status === "ended" ||
+      current.status === "error"
+    ) {
+      if (invitation !== undefined)
+        this.transition({ ...callFields(current), status: current.status });
+      return;
+    }
+    if (
+      current.capabilities.video === capabilities.video &&
+      current.capabilities.invite === capabilities.invite
+    )
+      return;
+    this.transition({
+      ...callFields(current),
+      status: current.status,
+      capabilities,
+      video: current.video && capabilities.video,
+    });
   }
 
   /** Fields every new displayed call starts from. */

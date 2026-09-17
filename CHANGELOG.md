@@ -21,6 +21,11 @@
   ends locally: ended when this client claimed it (exclusive answer or
   placement), otherwise left. `answer()` and `join()` reject after the
   release, which waits at most 5 seconds.
+- Capabilities reported with `call.accepted` now apply: `Call.capabilities`
+  and `Call.hasVideo` update (new `capabilities` event on `Call`), and the
+  browser controller refreshes `snapshot.capabilities` for the displayed call
+  and for waiting invitations. `IncomingCallRelay.accepted()` accepts the
+  webhook's `capabilities`.
 - Browser calls: when a microphone or camera switch fails,
   `snapshot.selectedDevices` goes back to the device the capture is using,
   also after several quick switches.

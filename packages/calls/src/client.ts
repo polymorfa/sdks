@@ -366,11 +366,19 @@ export class CallsClient extends Emitter<ClientEvents> {
     switch (event.event) {
       case "call.accepted": {
         const answeredBy = event.payload["answeredBy"];
+        const reported = event.payload["capabilities"];
         void call._remoteAccepted({
           ...(typeof answeredBy === "string" && answeredBy.length > 0
             ? { answeredBy }
             : {}),
           exclusive: event.payload["exclusive"] === true,
+          // The only capability report for an outbound call; absent or
+          // malformed fields keep what the call already has.
+          ...(reported !== null &&
+          typeof reported === "object" &&
+          !Array.isArray(reported)
+            ? { capabilities: capabilitiesFrom(reported, call.capabilities) }
+            : {}),
         });
         return;
       }

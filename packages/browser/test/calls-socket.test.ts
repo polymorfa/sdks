@@ -623,6 +623,19 @@ describe("socket frame mapping", () => {
       callId: "CALL-1",
       exclusive: false,
     });
+    expect(
+      ev("call.accepted", { capabilities: { video: false, invite: false } }),
+    ).toEqual({
+      type: "accepted",
+      callId: "CALL-1",
+      exclusive: false,
+      capabilities: { video: false, invite: false },
+    });
+    expect(ev("call.accepted", { capabilities: ["video"] })).toEqual({
+      type: "accepted",
+      callId: "CALL-1",
+      exclusive: false,
+    });
     const participant = {
       id: "p1",
       phoneNumber: "+15550101",
