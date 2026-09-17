@@ -786,3 +786,38 @@ describe("continuing after a refused reject", () => {
     controller.dispose();
   });
 });
+
+describe("leaving an outgoing call before it connects", () => {
+  it("ends the call instead of leaving the callee ringing", async () => {
+    const f = fixture();
+    const leave = vi.fn(async () => undefined);
+    const controller = new CallsController({ ...f.backend, leave }, f.media);
+    controller.initialize();
+    await controller.place("+15550100");
+    await controller.leave();
+    expect(f.backend.hangup).toHaveBeenCalledWith(
+      "call-1",
+      expect.any(AbortSignal),
+    );
+    expect(leave).not.toHaveBeenCalled();
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      endReason: "hangup",
+    });
+    controller.dispose();
+  });
+
+  it("still leaves an outgoing call once it connected", async () => {
+    const f = fixture();
+    const leave = vi.fn(async () => undefined);
+    const controller = new CallsController({ ...f.backend, leave }, f.media);
+    controller.initialize();
+    await controller.place("+15550100");
+    f.emit({ type: "connected", callId: "call-1" });
+    await controller.leave();
+    expect(leave).toHaveBeenCalledOnce();
+    expect(f.backend.hangup).not.toHaveBeenCalled();
+    expect(controller.getSnapshot().endReason).toBe("left");
+    controller.dispose();
+  });
+});

@@ -101,8 +101,11 @@ the controller never declines one for you. The first invitation is displayed;
   `join()` reject with `CallsDisabledError` from `@polymorfa/calls`.
 - `controller.reject()` declines a ringing call and ends it for everyone.
 - `controller.leave()` closes this browser's connection; the call continues.
+  On a call this browser placed that has not connected, it ends the call
+  instead, so the callee stops ringing.
 - `controller.end()` (and `hangup()`) ends the call for every participant.
-- Disposing the controller leaves the call; it never ends it.
+- Disposing the controller leaves a joined call. It ends only a call this
+  browser placed that is still ringing.
 
 After a call ends, the next waiting invitation is displayed.
 

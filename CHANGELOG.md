@@ -62,6 +62,11 @@
     `labelVideo` receives `RemoteVideoInfo` with a `label`.
   - `@polymorfa/elements`: `pmfa-call` accepts the `exclusive` attribute and
     renders Join, Dismiss, Leave, waiting calls and participants.
+  - A call you placed offers only Hang up until it connects;
+    `controller.leave()` ends it in that state, and a local media failure
+    (such as a denied microphone) while it rings ends it rather than leaving
+    the callee ringing. A second `answer()` or `join()` while one is in
+    progress settles with the first, once media connects or fails.
 
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`

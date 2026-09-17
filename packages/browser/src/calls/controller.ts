@@ -515,7 +515,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
 
   /**
    * Leave the displayed call: close this client's media connection. The call
-   * continues for the other participants.
+   * continues for the other participants. An outgoing call that has not
+   * connected has no other participants, so leaving it ends it instead;
+   * otherwise the callee would keep ringing.
    */
   async leave(): Promise<void> {
     const current = this.getSnapshot();
@@ -526,6 +528,10 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       return;
     }
     if (current.status === "ended" || current.status === "error") return;
+    if (isUnconnectedOutgoing(current)) {
+      await this.end();
+      return;
+    }
     const leave = this.#backend.leave;
     const connectionId =
       this.#media?.connectionId ?? this.#backend.connectionId?.(callId);
@@ -1296,6 +1302,15 @@ function videoInfo(video: RemoteVideo): RemoteVideoInfo {
       ? {}
       : { participant: video.participant }),
   };
+}
+
+/** A call this client placed that never connected: nobody else is on it. */
+function isUnconnectedOutgoing(snapshot: CallsSnapshot): boolean {
+  return (
+    snapshot.direction === "outgoing" &&
+    snapshot.status !== "connected" &&
+    snapshot.connectedAt === undefined
+  );
 }
 
 function callFields(

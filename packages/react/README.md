@@ -79,7 +79,8 @@ calls are listed under the card with a Show button.
 In a call, `CallControls` shows Leave on calls nobody claimed (`showLeave`
 overrides this). Leave closes only this browser's connection; the red button
 ends the call for everyone and is labelled "End call for everyone" when Leave
-is shown.
+is shown. A call this browser placed shows only Hang up until it connects,
+because leaving it would keep the callee ringing.
 
 ### Participant video
 

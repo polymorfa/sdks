@@ -491,7 +491,8 @@ takes an `exclusive` choice: `false` (the default) leaves other participants
 ringing so they can join, and `true` claims the call. A call another
 participant answered without a claim offers Join; a claimed call shows as
 answered elsewhere. Leave closes only this browser's connection; hang-up ends
-the call for everyone. Each remote participant's video arrives as its own
+the call for everyone. A call you placed offers only hang-up until it
+connects, and a microphone failure while it rings ends it. Each remote participant's video arrives as its own
 stream in `controller.remoteVideos`; call audio is merged. Signaling, media
 negotiation and socket transports are internal to the SDK; the packages export
 only these calling operations.

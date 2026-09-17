@@ -193,8 +193,17 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
               }),
         );
       // Leave closes only this connection; hang-up ends the call for
-      // everyone. Leave is offered where nobody claimed the call.
-      if (!snapshot.exclusive)
+      // everyone. Leave is offered where nobody claimed the call, except on
+      // a call this client placed that has not connected: leaving it would
+      // keep the callee ringing.
+      const leaveShown =
+        !snapshot.exclusive &&
+        !(
+          snapshot.direction === "outgoing" &&
+          status !== "connected" &&
+          snapshot.connectedAt === undefined
+        );
+      if (leaveShown)
         panel.append(
           button(
             messages["calls.leave"],
@@ -204,7 +213,7 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
         );
       panel.append(
         button(
-          snapshot.exclusive ? messages["calls.hangup"] : messages["calls.end"],
+          leaveShown ? messages["calls.end"] : messages["calls.hangup"],
           "hangup",
           () => void controller?.hangup().catch(() => undefined),
         ),

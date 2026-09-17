@@ -492,6 +492,7 @@ describe("unified call element", () => {
     const controller = new CallsController(
       createSignalingCallsBackend({
         signaling,
+        place: async () => "call-out",
         incoming: {
           subscribe: (listener) => {
             listeners.add(listener);
@@ -591,6 +592,20 @@ describe("unified call element", () => {
     );
     expect(h.close).toHaveBeenCalledWith({ leave: true });
     expect(h.signaling.end).not.toHaveBeenCalled();
+    h.node.remove();
+    h.controller.dispose();
+  });
+
+  it("offers only Hang up on a placed call until it connects", async () => {
+    const h = setup();
+    await h.controller.place("+15550100");
+    expect(h.controller.getSnapshot().exclusive).toBe(false);
+    // Leaving would drop this connection while the callee keeps ringing.
+    expect(h.part("leave")).toBeNull();
+    expect(h.part("hangup")?.textContent).toBe("Hang up");
+    h.emit({ type: "connected", callId: "call-out" });
+    expect(h.part("leave")).not.toBeNull();
+    expect(h.part("hangup")?.textContent).toBe("End call for everyone");
     h.node.remove();
     h.controller.dispose();
   });

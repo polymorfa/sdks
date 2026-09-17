@@ -61,6 +61,8 @@ and `canJoin`, and the `claim` event fires when they change. When another
 participant claims the call, `claimedByOther` is `true`: stop ringing and do
 not call `reject()`, which would end the call for the participant who
 answered. `answer()` and `join()` reject with `CallClaimedError` in that case.
+A second `answer()` or `join()` while one is in progress returns the same
+promise: it resolves once media connects and rejects if media fails.
 
 ## Model
 

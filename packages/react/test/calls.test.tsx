@@ -1025,6 +1025,34 @@ describe("unified calls UI", () => {
     f.controller.dispose();
   });
 
+  it("offers only Hang up on a placed call until it connects", async () => {
+    const f = fixture();
+    const host = mount(
+      <PolymorfaProvider>
+        <CallControls controller={f.controller} showLeave />
+      </PolymorfaProvider>,
+    );
+    await act(async () => {
+      await f.controller.place("+12025550123");
+    });
+    expect(f.controller.getSnapshot().exclusive).toBe(false);
+    // Leaving would drop this connection while the callee keeps ringing.
+    expect(host.querySelector("[aria-label='Leave call']")).toBeNull();
+    const hangup = host.querySelector(
+      "[aria-label='Hang up']",
+    ) as HTMLButtonElement;
+    expect(hangup.title).toBe("Hang up");
+    await act(async () => {
+      hangup.click();
+    });
+    expect(f.signaling.end).toHaveBeenCalledWith(
+      "call-out",
+      expect.any(AbortSignal),
+    );
+    expect(f.signaling.leave).not.toHaveBeenCalled();
+    f.controller.dispose();
+  });
+
   it("hides Leave on a claimed call unless asked", async () => {
     const f = feedFixture();
     f.signaling.accept.mockResolvedValue({

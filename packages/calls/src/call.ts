@@ -1,4 +1,4 @@
-import type { AcceptCallResult, CallsApi } from "./api.js";
+import type { CallsApi } from "./api.js";
 import { CallClaimedError, CallsAuthError, CallsError } from "./errors.js";
 import { Emitter } from "./events.js";
 import {
@@ -339,7 +339,8 @@ export class Call extends Emitter<CallEvents> {
   #startedAt: number;
   #connectedAt: number | undefined;
   #endedAt: number | undefined;
-  #accepting: Promise<AcceptCallResult> | undefined;
+  /** The in-flight answer or join, through media attachment. */
+  #accepting: Promise<void> | undefined;
   /** This client's accept succeeded. */
   #accepted = false;
   #answered = false;
@@ -463,8 +464,9 @@ export class Call extends Emitter<CallEvents> {
   }
 
   #accept(options: { exclusive: boolean; video: boolean }): Promise<void> {
-    if (this.#accepting !== undefined)
-      return this.#accepting.then(() => undefined);
+    // A concurrent answer or join settles with the attempt already running,
+    // so it also waits for media and fails if media fails.
+    if (this.#accepting !== undefined) return this.#accepting;
     if (this.#state !== "incoming")
       return Promise.reject(
         new CallsError(
@@ -490,9 +492,7 @@ export class Call extends Emitter<CallEvents> {
         answeredBy: result.answeredBy,
         exclusive: result.exclusive,
       });
-      return result;
     })();
-    this.#accepting = accepting;
     const run = accepting
       .then(() => this.#bridge())
       .catch((cause: unknown) => {
@@ -510,6 +510,7 @@ export class Call extends Emitter<CallEvents> {
         this.#mediaFailed(cause);
         throw cause;
       });
+    this.#accepting = run;
     return run;
   }
 

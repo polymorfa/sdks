@@ -67,7 +67,8 @@ its own:
   (`claimed` part) and Dismiss only.
 - Other waiting calls are listed in the `invitations` part with Show buttons.
 - During a call nobody claimed, Leave (`leave` part) closes only this
-  connection, and the `hangup` button reads "End call for everyone".
+  connection, and the `hangup` button reads "End call for everyone". A call
+  this browser placed shows only Hang up until it connects.
 - The `participants` part lists the call's WhatsApp participants.
 
 Participant video tiles are part of the React package; this element renders

@@ -152,6 +152,30 @@ describe("browser widget and shared calls client", () => {
     expect(f.calls.controller.call?.endReason).toBe("connection_failed");
   });
 
+  it("ends, and does not only leave, a ringing outbound call when microphone acquisition fails", async () => {
+    const f = fixture();
+    await f.connect();
+    f.media.open.mockRejectedValueOnce(
+      new Error("Microphone permission denied"),
+    );
+    await f.calls.controller.place("+15550100");
+    // Leaving would close this connection while the callee keeps ringing.
+    await vi.waitFor(() =>
+      expect(
+        f.fetch.mock.calls.some(
+          ([url, init]) =>
+            init?.method === "DELETE" &&
+            new URL(String(url)).pathname === "/messaging/voip/calls/CALL-OUT",
+        ),
+      ).toBe(true),
+    );
+    expect(
+      f.fetch.mock.calls.some(([url]) => String(url).endsWith("/leave")),
+    ).toBe(false);
+    expect(f.calls.controller.getSnapshot().status).toBe("error");
+    expect(f.calls.controller.call?.ended).toBe(true);
+  });
+
   it("keeps a confirmed remote end terminal when local cleanup rejects", async () => {
     const f = fixture();
     const socket = await f.connect();

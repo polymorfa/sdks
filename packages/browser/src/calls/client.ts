@@ -58,7 +58,8 @@ export interface BrowserCalls {
   connect(): Promise<void>;
   /**
    * Release the widget, media and lifecycle stream. Joined calls are left,
-   * not ended. Create a new instance to reconnect.
+   * not ended; a placed call that is still ringing is ended. Create a new
+   * instance to reconnect.
    */
   dispose(): Promise<void>;
 }
@@ -252,12 +253,23 @@ export function createBrowserCalls(
           : snapshot.endReason === "pod_lost"
             ? "pod_lost"
             : "connection_failed";
+      // Nobody else is on an outbound call that is still ringing. Leaving
+      // would keep the callee ringing, so end it, as disconnect() does.
+      const ringing = call.direction === "outbound" && call.state === "ringing";
       call._remoteEnded(reason);
+      if (ringing)
+        void api
+          .end(call.id)
+          .catch((cause: unknown) =>
+            options.onError?.({ code: "end_failed", message: message(cause) }),
+          );
       // Media failed locally: leave the connection; the call continues for others.
-      void api
-        .leave(call.id, call.connectionId)
-        .catch((cause: unknown) =>
-          options.onError?.({ code: "leave_failed", message: message(cause) }),
+      else
+        void api.leave(call.id, call.connectionId).catch((cause: unknown) =>
+          options.onError?.({
+            code: "leave_failed",
+            message: message(cause),
+          }),
         );
     }
   });

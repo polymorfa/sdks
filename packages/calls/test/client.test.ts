@@ -1268,3 +1268,41 @@ describe("participant departure metadata", () => {
     },
   );
 });
+
+describe("CallsClient — concurrent answers", () => {
+  it("resolves a second answer() only once media is connected", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const first = call!.answer();
+    const second = call!.join();
+    let settled = false;
+    void second.then(() => (settled = true));
+    await flush();
+    // The platform accepted the call, but media is not attached yet.
+    expect(h.api.accept).toHaveBeenCalledTimes(1);
+    expect(settled).toBe(false);
+    await bridge(h);
+    await expect(first).resolves.toBeUndefined();
+    await expect(second).resolves.toBeUndefined();
+    expect(call!.state).toBe("connected");
+  });
+
+  it("rejects a second answer() when media fails after acceptance", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const first = call!.answer();
+    const second = call!.answer();
+    await flush();
+    h.ws(1).open(); // no ready frame: the media attempt times out
+    h.t.fireTimeouts();
+    await expect(first).rejects.toThrow(/did not report media ready/);
+    await expect(second).rejects.toThrow(/did not report media ready/);
+    expect(call!.state).toBe("ended");
+  });
+});

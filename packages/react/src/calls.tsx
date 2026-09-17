@@ -1257,7 +1257,9 @@ export interface CallControlsProps extends ControllerProps {
   /**
    * Show a Leave button that closes only this connection. Defaults to
    * showing it on calls nobody claimed, where others can stay in the call.
-   * The red button always ends the call for everyone.
+   * Never shown on a call this client placed that has not connected: nobody
+   * else is on it, so the red button ends it. The red button always ends the
+   * call for everyone.
    */
   readonly showLeave?: boolean;
 }
@@ -1286,6 +1288,13 @@ export function CallControls({
   if (!ACTIVE_STATUSES.has(snapshot.status)) return null;
 
   const live = snapshot.status === "connected";
+  // Leaving a call this client placed before it connected would keep the
+  // callee ringing; only ending it is offered.
+  const placing =
+    snapshot.direction === "outgoing" &&
+    !live &&
+    snapshot.connectedAt === undefined;
+  const leaveShown = !placing && (showLeave ?? !snapshot.exclusive);
   const showCamera = snapshot.capabilities.video && disableVideo !== true;
   // The affordance stays visible on an audio call (the settled design) and is
   // disabled until it can act: connected, and either already a video call or
@@ -1404,7 +1413,7 @@ export function CallControls({
               </button>
             </div>
           )}
-          {(showLeave ?? !snapshot.exclusive) && (
+          {leaveShown && (
             <button
               type="button"
               className="pmfa-calls-btn pmfa-calls-btn-ctrl pmfa-calls-btn-leave"
@@ -1422,14 +1431,8 @@ export function CallControls({
             // holding an application-supplied one can still be clicked
             // against; the call is over either way.
             onClick={() => void resolved.hangup().catch(() => undefined)}
-            aria-label={t(
-              locale,
-              (showLeave ?? !snapshot.exclusive) ? "calls.end" : "calls.hangup",
-            )}
-            title={t(
-              locale,
-              (showLeave ?? !snapshot.exclusive) ? "calls.end" : "calls.hangup",
-            )}
+            aria-label={t(locale, leaveShown ? "calls.end" : "calls.hangup")}
+            title={t(locale, leaveShown ? "calls.end" : "calls.hangup")}
           >
             <HangupIcon />
           </button>
