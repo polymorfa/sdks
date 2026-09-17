@@ -113,3 +113,8 @@ hash of the caller id picks one of eight palette tones.
 If a reject or hangup request fails, the call stays active and its controls remain
 available for retry. The UI shows a localized failure message and keeps existing
 media connected until the call ends. `snapshot.error` clears when ending succeeds.
+
+While an answer is in flight, the incoming card disables Answer, Join, Reject
+and its camera and microphone choices. A failed answer shows a notice on the
+incoming card: on the call itself when it is still ringing, or on the next
+waiting call when the answered call's media failed.

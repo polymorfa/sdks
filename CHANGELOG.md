@@ -68,7 +68,13 @@
     `place()`, and the React and element incoming controls are disabled. An
     answer completes for the call it started on, even if another invitation
     was selected meanwhile; a call dismissed during its answer is left, or
-    ended when the answer claimed it.
+    ended when the answer claimed it. The React card also disables its
+    pre-answer camera and microphone choices while answering.
+  - A refused answer keeps the call displayed as `incoming` with
+    `snapshot.error`. When media fails after answering, the next waiting
+    call is displayed and keeps the failure; `snapshot.error.callId` names
+    the failed call. The React card and `pmfa-call` (`failure` part) show a
+    notice (`calls.answerFailed`, `calls.previousFailed`).
   - A call you placed offers only Hang up until it connects;
     `controller.leave()` ends it in that state, and a local media failure
     (such as a denied microphone) while it rings ends it rather than leaving

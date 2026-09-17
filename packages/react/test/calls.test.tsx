@@ -1081,6 +1081,68 @@ describe("unified calls UI", () => {
     f.controller.dispose();
   });
 
+  it("shows a waiting call after an answer fails, with a notice", async () => {
+    const f = feedFixture();
+    vi.mocked(f.media.open).mockRejectedValueOnce(new Error("denied"));
+    const host = mount(
+      <PolymorfaProvider>
+        <CallSurface controller={f.controller} popout={false} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    await act(async () => {
+      await f.controller.answer();
+    });
+    expect(f.controller.getSnapshot().callId).toBe("B");
+    const card = host.querySelector("[role='alertdialog']") as HTMLElement;
+    expect(card.getAttribute("aria-label")).toBe(
+      "Incoming call from +15550101",
+    );
+    const notice = host.querySelector(
+      ".pmfa-calls-subtitle[role='status']",
+    ) as HTMLElement;
+    expect(notice.textContent).toBe(
+      "The previous call could not be connected.",
+    );
+    expect(
+      (host.querySelector("[aria-label='Answer']") as HTMLButtonElement)
+        .disabled,
+    ).toBe(false);
+    f.controller.dispose();
+  });
+
+  it("disables the pre-answer camera and microphone choices while answering", async () => {
+    const f = feedFixture();
+    f.signaling.accept.mockImplementationOnce(() => new Promise(() => {}));
+    const host = mount(
+      <PolymorfaProvider>
+        <CallSurface controller={f.controller} popout={false} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "V", from: "+15550100", video: true },
+    });
+    const control = (label: string) =>
+      host.querySelector(`[aria-label='${label}']`) as HTMLButtonElement;
+    expect(control("Answer muted").disabled).toBe(false);
+    expect(control("Answer without camera").disabled).toBe(false);
+    await act(async () => {
+      control("Answer").click();
+    });
+    // The pending answer already captured these choices.
+    expect(control("Answer muted").disabled).toBe(true);
+    expect(control("Answer without camera").disabled).toBe(true);
+    f.controller.dispose();
+  });
+
   it("offers only Hang up on a placed call until it connects", async () => {
     const f = fixture();
     const host = mount(

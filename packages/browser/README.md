@@ -104,6 +104,14 @@ the controller never declines one for you. The first invitation is displayed;
   `dismiss()` still work: the answered call is displayed once it is accepted,
   even if you selected another invitation. If you dismissed it, the controller
   leaves it (or ends it when the answer claimed it) instead of showing it.
+  Only that call ending cancels the answer; `end()` for another displayed
+  call is refused meanwhile.
+- If the platform refuses an answer, the call stays displayed as `incoming`
+  with `snapshot.error` (`answer_failed` or `join_failed`), so it can be
+  retried or declined. If media fails after the call was answered, the
+  failed call is published as `error` (or `ended` for a terminal offer)
+  and the next waiting invitation is displayed. The failure stays in
+  `snapshot.error`; `error.callId` names the call it belongs to.
 - `controller.reject()` declines a ringing call and ends it for everyone.
 - `controller.leave()` closes this browser's connection; the call continues.
   On a call this browser placed that has not connected, it ends the call

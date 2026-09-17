@@ -96,6 +96,24 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
         value.disabled = busy;
         return value;
       };
+      // A failed answer: this call's own (still ringing), or a previous
+      // call's that gave way to this one.
+      const failure = snapshot.error;
+      if (
+        failure !== undefined &&
+        failure.code !== "call_control_failed" &&
+        failure.code !== "call_claimed"
+      ) {
+        const notice = textElement(
+          "p",
+          failure.callId === undefined || failure.callId === snapshot.callId
+            ? messages["calls.answerFailed"]
+            : messages["calls.previousFailed"],
+          "failure",
+        );
+        notice.setAttribute("role", "status");
+        panel.append(notice);
+      }
       // These reject when a remote hang-up lands between the render and the
       // click. The snapshot already says so, so this only keeps the rejection
       // from going unhandled — the same handling the React card uses.

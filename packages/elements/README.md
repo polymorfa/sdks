@@ -66,6 +66,10 @@ its own:
 - A call another participant claimed shows "Answered by another participant"
   (`claimed` part) and Dismiss only.
 - Other waiting calls are listed in the `invitations` part with Show buttons.
+- While an answer is in flight, Answer, Join and Reject are disabled. A failed
+  answer shows a `failure` notice on the incoming call: on the call itself
+  when it is still ringing, or on the next waiting call when the answered
+  call's media failed.
 - During a call nobody claimed, Leave (`leave` part) closes only this
   connection, and the `hangup` button reads "End call for everyone". A call
   this browser placed shows only Hang up until it connects.

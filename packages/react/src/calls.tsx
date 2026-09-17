@@ -576,6 +576,17 @@ export function IncomingCallCard({
   // An answer or join is in flight (possibly for another listed call): the
   // controller refuses these until it settles.
   const busy = snapshot.answering === true;
+  // A failed answer: this call's own (still ringing), or a previous call's
+  // that gave way to this one.
+  const failure = snapshot.error;
+  const failureKey =
+    failure === undefined ||
+    failure.code === "call_control_failed" ||
+    failure.code === "call_claimed"
+      ? undefined
+      : failure.callId === undefined || failure.callId === snapshot.callId
+        ? ("calls.answerFailed" as const)
+        : ("calls.previousFailed" as const);
   const applyPreToggles = () => {
     if (preMuted || (offersVideo && !cameraOn))
       resolved.setMuted({
@@ -602,6 +613,8 @@ export function IncomingCallCard({
       type="button"
       className={`pmfa-calls-btn pmfa-calls-mini${preMuted ? " pmfa-calls-on" : ""}`}
       onClick={() => setPreMuted((v) => !v)}
+      // The pending answer applies the value from when it was pressed.
+      disabled={busy}
       aria-label={t(
         locale,
         preMuted ? "calls.answerUnmuted" : "calls.answerMuted",
@@ -629,6 +642,7 @@ export function IncomingCallCard({
           className="pmfa-calls-subtitle"
           role={
             snapshot.error?.code === "call_control_failed" ||
+            failureKey !== undefined ||
             claimed ||
             joinable
               ? "status"
@@ -639,13 +653,15 @@ export function IncomingCallCard({
             locale,
             snapshot.error?.code === "call_control_failed"
               ? "calls.controlFailed"
-              : claimed
-                ? "calls.answeredElsewhere"
-                : joinable
-                  ? "calls.joinable"
-                  : offersVideo
-                    ? "calls.videoCall"
-                    : "calls.audioCall",
+              : failureKey !== undefined
+                ? failureKey
+                : claimed
+                  ? "calls.answeredElsewhere"
+                  : joinable
+                    ? "calls.joinable"
+                    : offersVideo
+                      ? "calls.videoCall"
+                      : "calls.audioCall",
           )}
         </div>
 
@@ -676,6 +692,7 @@ export function IncomingCallCard({
                 type="button"
                 className={`pmfa-calls-btn pmfa-calls-mini${cameraOn ? "" : " pmfa-calls-on"}`}
                 onClick={() => setCameraOn((v) => !v)}
+                disabled={busy}
                 aria-label={t(
                   locale,
                   cameraOn

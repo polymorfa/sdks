@@ -213,6 +213,36 @@ describe("browser widget and shared calls client", () => {
     });
   });
 
+  it("cleans up a call whose offer was terminal before showing a waiting call", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    event(socket, "call.received", "CALL-A", { from: "+15550100" });
+    event(socket, "call.received", "CALL-B", { from: "+15550101" });
+    f.media.open.mockRejectedValueOnce(
+      Object.assign(new Error("Capacity"), { status: 503 }),
+    );
+    await f.calls.controller.answer();
+    expect(f.calls.controller.getSnapshot()).toMatchObject({
+      callId: "CALL-B",
+      status: "incoming",
+    });
+    // The shared model of A is ended and its connection left.
+    await vi.waitFor(() =>
+      expect(
+        f.fetch.mock.calls.some(([url]) =>
+          String(url).endsWith("/CALL-A/leave"),
+        ),
+      ).toBe(true),
+    );
+    f.calls.controller.dismiss("CALL-B");
+    // A no longer counts as an active call, so a new placement goes through.
+    await f.calls.controller.place("+15550102");
+    expect(f.calls.controller.getSnapshot()).toMatchObject({
+      callId: "CALL-OUT",
+    });
+    expect(f.calls.controller.getSnapshot().error).toBeUndefined();
+  });
+
   it("keeps a confirmed remote end terminal when local cleanup rejects", async () => {
     const f = fixture();
     const socket = await f.connect();

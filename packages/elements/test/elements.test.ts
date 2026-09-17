@@ -489,6 +489,16 @@ describe("unified call element", () => {
       end: vi.fn(async () => undefined),
     };
     const close = vi.fn(async () => undefined);
+    const media = {
+      open: vi.fn(async () => ({
+        localStream: new MediaStream(),
+        remoteStream: new MediaStream(),
+        close,
+        setMuted: vi.fn(),
+        audioEnabled: () => true,
+        videoEnabled: () => false,
+      })),
+    };
     const controller = new CallsController(
       createSignalingCallsBackend({
         signaling,
@@ -500,16 +510,7 @@ describe("unified call element", () => {
           },
         },
       }),
-      {
-        open: async () => ({
-          localStream: new MediaStream(),
-          remoteStream: new MediaStream(),
-          close,
-          setMuted: vi.fn(),
-          audioEnabled: () => true,
-          videoEnabled: () => false,
-        }),
-      },
+      media,
     );
     controller.initialize();
     const node = document.createElement("pmfa-call") as PolymorfaCallElement;
@@ -522,7 +523,7 @@ describe("unified call element", () => {
     const emit = (event: CallLifecycleEvent) => {
       for (const listener of [...listeners]) listener(event);
     };
-    return { node, controller, signaling, close, part, emit };
+    return { node, controller, signaling, close, media, part, emit };
   }
 
   it("answers without a claim unless the exclusive attribute is set", async () => {
@@ -632,6 +633,50 @@ describe("unified call element", () => {
       }),
     );
     expect(h.part("hangup")).not.toBeNull();
+    h.node.remove();
+    h.controller.dispose();
+  });
+
+  it("shows the waiting call after an answer's media fails, with a notice", async () => {
+    const h = setup();
+    h.media.open.mockRejectedValueOnce(new Error("denied"));
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    await h.controller.answer();
+    expect(h.controller.getSnapshot().callId).toBe("B");
+    expect(h.part("peer")?.textContent).toBe("+15550101");
+    expect(h.part("failure")?.textContent).toBe(
+      "The previous call could not be connected.",
+    );
+    expect(h.part("answer")).not.toBeNull();
+    h.node.remove();
+    h.controller.dispose();
+  });
+
+  it("shows the failure on a call whose answer was refused", async () => {
+    const h = setup();
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    h.signaling.accept.mockRejectedValueOnce(new Error("offline"));
+    await h.controller.answer();
+    // A is still ringing: its card shows the failure and can retry.
+    expect(h.part("failure")?.textContent).toBe(
+      "Could not connect the call. Try again.",
+    );
+    expect(h.part("failure")?.getAttribute("role")).toBe("status");
+    expect(h.part("answer")?.disabled).toBe(false);
     h.node.remove();
     h.controller.dispose();
   });

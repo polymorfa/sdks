@@ -236,6 +236,11 @@ export interface CallsSnapshot extends ControllerSnapshot {
     readonly code: string;
     readonly message: string;
     readonly recoverable: boolean;
+    /**
+     * The call the error is about. It differs from `callId` when a failed
+     * call gave way to a waiting invitation.
+     */
+    readonly callId?: string;
   };
   /** Every incoming call this client knows about, displayed one included. */
   readonly invitations: readonly CallInvitation[];
@@ -327,6 +332,13 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   #answering: string | undefined;
   /** The user dismissed the call `#answering` names before the answer settled. */
   #answerDismissed = false;
+  /** The call `#answering` names ended, or was hung up, before it settled. */
+  #answerCancelled = false;
+  /**
+   * Aborts the in-flight answer request. Only that call's end and disposal
+   * use it; other calls' events never invalidate the answer.
+   */
+  #answerAbort = new AbortController();
   #disposed = false;
   #remoteVideos: readonly RemoteVideo[] = [];
   #publicVideos: {
@@ -571,6 +583,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   /** End the displayed call for every participant. */
   async end(): Promise<void> {
     const callId = this.getSnapshot().callId;
+    if (this.#answering !== undefined && callId !== this.#answering)
+      this.#assertNotAnswering("end another call");
     if (callId !== undefined)
       await this.#finish(callId, "hangup", (signal) =>
         this.#backend.hangup(callId, signal),
@@ -733,6 +747,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
 
   protected override onDispose(): void {
     this.#disposed = true;
+    this.#answerAbort.abort();
     this.#operation += 1;
     this.#clearResumption();
     this.#abort.abort();
@@ -767,7 +782,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     return shown as CallsSnapshot & { callId: string };
   }
 
-  #display(invitation: CallInvitation): void {
+  #display(invitation: CallInvitation, error?: CallsSnapshot["error"]): void {
     const capabilities = invitation.capabilities;
     this.#remoteVideos = [];
     this.transition({
@@ -782,6 +797,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       videoMuted: false,
       ...invitationFields(invitation),
       participants: this.#rosters.get(invitation.callId) ?? [],
+      ...(error === undefined ? {} : { error }),
     });
   }
 
@@ -804,14 +820,19 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     current: CallsSnapshot & { callId: string },
     options: { video: boolean; exclusive: boolean; join: boolean },
   ): Promise<void> {
-    const operation = this.#begin(false);
+    this.#begin(false);
     const callId = current.callId;
     this.#answering = callId;
     this.#answerDismissed = false;
-    this.#republish();
-    let offering = false;
+    this.#answerCancelled = false;
+    this.#answerAbort = new AbortController();
+    // Publish `answering`, dropping any failure left from an earlier attempt.
+    this.transition({ ...callFields(current, false), status: current.status });
+    const code = options.join ? "join_failed" : "answer_failed";
+    // Media operation, taken once the answer succeeded and the call shows.
+    let operation: number | undefined;
     try {
-      const signal = this.#abort.signal;
+      const signal = this.#answerAbort.signal;
       const join = this.#backend.join;
       const result =
         options.join && join !== undefined
@@ -822,19 +843,19 @@ export class CallsController extends ObservableController<CallsSnapshot> {
               exclusive: options.exclusive,
               video: options.video,
             });
-      if (operation !== this.#operation) return;
+      // The answer belongs to its own call: only that call ending, or
+      // disposal, invalidates it. Anything else the user did meanwhile
+      // (selecting or dismissing invitations, another call ending) does not.
+      if (this.#disposed || this.#answerCancelled) return;
       this.#remember(callId);
-      // The display may have moved on while the request was in flight: the
-      // user selected or dismissed an invitation, or a remote end removed it.
       const listed = this.#invitations.has(callId);
       const roster = this.#rosters.get(callId);
       this.#forget(callId);
       const accepted = result ?? undefined;
-      if (this.#answerDismissed) {
+      if (this.#answerDismissed || !listed) {
         await this.#release(callId, accepted?.exclusive ?? options.exclusive);
         return;
       }
-      if (!listed) return;
       const latest = this.getSnapshot();
       const base =
         latest.callId === callId
@@ -845,6 +866,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
               selectedDevices: latest.selectedDevices,
               participants: roster ?? current.participants,
             };
+      operation = this.#begin(false);
       this.#remoteVideos = [];
       this.transition({
         ...callFields(base, false),
@@ -855,63 +877,69 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         exclusive: accepted?.exclusive ?? options.exclusive,
         ...(accepted?.answeredBy ? { answeredBy: accepted.answeredBy } : {}),
       });
-      offering = true;
       await this.#openMedia(callId, options.video, operation);
     } catch (cause) {
-      const elsewhere = this.getSnapshot().callId !== callId;
-      if (
-        !offering &&
-        operation === this.#operation &&
-        isCallClaimed(cause) &&
-        !this.#abort.signal.aborted
-      ) {
-        // Another participant claimed it. Keep the invitation visible so the
-        // application can stop ringing; never decline it.
-        const invitation = this.#invitations.get(callId);
-        if (invitation !== undefined) {
-          const claimed: CallInvitation = {
+      if (operation !== undefined) {
+        // Accepted, then media failed.
+        this.#fail(cause, operation, code, true);
+        return;
+      }
+      if (this.#disposed || this.#answerCancelled || this.#answerDismissed)
+        return;
+      const invitation = this.#invitations.get(callId);
+      if (invitation === undefined) return;
+      const claimed = isCallClaimed(cause);
+      // Another participant claimed it. Keep the invitation visible so the
+      // application can stop ringing; never decline it.
+      const next: CallInvitation = claimed
+        ? {
             ...invitation,
             answered: true,
             exclusive: true,
             claimedByOther: true,
             canJoin: false,
-          };
-          this.#invitations.set(callId, claimed);
-          // Another invitation is displayed: only the listed call changes.
-          if (elsewhere) return;
-          const snapshot = this.getSnapshot();
-          this.transition({
-            ...callFields(snapshot, false),
-            status: "incoming",
-            ...invitationFields(claimed),
-            error: {
-              code: "call_claimed",
-              message:
-                cause instanceof Error
-                  ? cause.message
-                  : "Another participant claimed this call.",
-              recoverable: false,
-            },
-          });
-        }
+          }
+        : invitation;
+      this.#invitations.set(callId, next);
+      const snapshot = this.getSnapshot();
+      // Another invitation is displayed: only the listed call changes.
+      if (snapshot.callId !== callId) {
+        this.transition({ ...snapshot });
         return;
       }
-      // A refused answer for a call that is no longer displayed must not put
-      // the displayed invitation into an error state.
-      if (!offering && elsewhere) return;
-      this.#fail(
-        cause,
-        operation,
-        options.join ? "join_failed" : "answer_failed",
-        offering,
-      );
+      // The platform refused the answer, so the call is still ringing. Show
+      // it again with the failure, so it can be retried or declined.
+      this.transition({
+        ...callFields(snapshot, false),
+        status: "incoming",
+        ...invitationFields(next),
+        error: {
+          code: claimed ? "call_claimed" : code,
+          message:
+            cause instanceof Error
+              ? cause.message
+              : claimed
+                ? "Another participant claimed this call."
+                : "Call operation failed.",
+          recoverable: !claimed,
+          callId,
+        },
+      });
     } finally {
       if (this.#answering === callId) {
         this.#answering = undefined;
         this.#answerDismissed = false;
+        this.#answerCancelled = false;
         if (!this.#disposed) this.#republish();
       }
     }
+  }
+
+  /** The call being answered ended: the answer must not display it. */
+  #cancelAnswer(callId: string): void {
+    if (this.#answering !== callId) return;
+    this.#answerCancelled = true;
+    this.#answerAbort.abort();
   }
 
   #assertNotAnswering(action: string): void {
@@ -928,7 +956,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   }
 
   /**
-   * Undo an answer the user dismissed while it was in flight. A claimed call
+   * Undo an answer that succeeded for a call nothing displays any more (the
+   * user dismissed it while the answer was in flight). A claimed call
    * has no one else to take it, so it is ended; otherwise only this client
    * leaves and other participants can still join. Without a leave hook no
    * media connection was opened, so there is nothing to leave.
@@ -1133,6 +1162,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       });
       return;
     }
+    this.#cancelAnswer(callId);
     if (operation !== this.#operation) return;
     const finishedOperation = ++this.#operation;
     this.#forget(callId);
@@ -1158,7 +1188,14 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     if (closedId !== undefined) this.#forget(closedId);
     const waiting = [...this.#invitations.values()][0];
     if (waiting !== undefined) {
-      this.#display(waiting);
+      // Publish the closed call's terminal state first: observers such as the
+      // shared call model clean up the call the snapshot names.
+      if (
+        closedId !== undefined &&
+        (next.status === "ended" || next.status === "error")
+      )
+        this.transition({ ...next, remoteVideos: [] });
+      this.#display(waiting, next.status === "error" ? next.error : undefined);
       return;
     }
     this.transition({
@@ -1208,6 +1245,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     if (!displayed) {
       if (invitation === undefined) return;
       if (event.type === "ended") {
+        this.#cancelAnswer(event.callId);
         this.#forget(event.callId);
         this.transition({ ...callFields(current), status: current.status });
       } else if (event.type === "accepted") {
@@ -1229,6 +1267,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     switch (event.type) {
       case "ended": {
         if (current.status === "ended") return;
+        this.#cancelAnswer(event.callId);
         this.#operation += 1;
         this.#abort.abort();
         this.#abort = new AbortController();
@@ -1333,16 +1372,22 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       });
       return;
     }
-    this.transition({
-      ...callFields(this.getSnapshot()),
-      status: "error",
+    const current = this.getSnapshot();
+    const failed = {
+      ...callFields(current),
+      status: "error" as const,
       error: {
         code,
         message:
           cause instanceof Error ? cause.message : "Call operation failed.",
         recoverable: true,
+        ...(current.callId === undefined ? {} : { callId: current.callId }),
       },
-    });
+    };
+    // A waiting invitation is shown next, carrying the failure.
+    if ([...this.#invitations.keys()].some((id) => id !== current.callId))
+      this.#advance(failed);
+    else this.transition(failed);
   }
 
   /** Keeps `invitations` and `answering` current on every transition. */
