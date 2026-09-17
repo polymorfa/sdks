@@ -37,6 +37,8 @@ export {
   PolymorfaServerError,
   PolymorfaTimeoutError,
   PolymorfaValidationError,
+  PolymorfaMediaIntegrityError,
+  type MediaIntegrityErrorCode,
   type PolymorfaErrorOptions,
 } from "./errors.js";
 export { MessagingClient } from "./messaging/client.js";
@@ -150,7 +152,36 @@ export { ContactsResource } from "./messaging/contacts.js";
 export { GroupsResource } from "./messaging/groups.js";
 export { LabelsResource } from "./messaging/labels.js";
 export { IdentitiesResource } from "./messaging/identities.js";
-export { MessagingMediaResource } from "./messaging/media.js";
+export {
+  MessagingMediaResource,
+  signedUrlExpiry,
+  type MediaDownloadBlob,
+  type MediaDownloadRedirectUrl,
+  type MediaDownloadStream,
+  type MediaDownloadStreamedUrl,
+  type MediaDownloadUrl,
+} from "./messaging/media.js";
+export {
+  DEFAULT_WHATSAPP_MEDIA_MAX_BYTES,
+  decodeWhatsAppMedia,
+  decryptWhatsAppMedia,
+  deriveWhatsAppMediaKeys,
+  downloadWhatsAppMedia,
+  isWhatsAppMediaUrl,
+  webCryptoMediaCrypto,
+  type ResolvedDecryptOptions,
+  type WhatsAppMediaCrypto,
+  type WhatsAppMediaDecryptOptions,
+  type WhatsAppMediaDescriptor,
+  type WhatsAppMediaDownload,
+  type WhatsAppMediaDownloadOptions,
+  type WhatsAppMediaInput,
+  type WhatsAppMediaKeys,
+  type WhatsAppMediaKind,
+  type WhatsAppMediaMessage,
+  type WhatsAppMediaVerifyMode,
+} from "./media/whatsapp.js";
+export { parseContentDispositionFilename } from "./transport/content-disposition.js";
 export { MessagesResource } from "./messaging/messages.js";
 export { MessagingBanSafeResource } from "./messaging/bansafe.js";
 export { ObservationPoliciesResource } from "./messaging/observation-policies.js";
@@ -645,6 +676,8 @@ export type {
   RawRequest,
   RequestOptions,
   ResponseMetadata,
+  StreamRedirect,
+  StreamResponse,
 } from "./transport/types.js";
 export { SDK_VERSION } from "./version.js";
 export {

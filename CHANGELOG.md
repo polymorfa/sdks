@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+- Added streaming media downloads to `MessagingClient.media`.
+  `downloadStream()` returns an unbuffered body with `contentType`,
+  `contentLength`, `filename` and `requestId`. `downloadBlob()` returns a
+  typed `Blob`. `downloadUrl()` returns the short-lived signed storage URL
+  without following it. When the SDK follows a storage redirect, it never
+  sends the Polymorfa credential to the storage host. `download()` keeps its
+  existing behavior.
+- Added direct WhatsApp media downloads.
+  `MessagingClient.media.downloadFromWhatsApp()` and
+  `downloadWhatsAppMedia()` fetch the encrypted file named by a message
+  webhook's `media` field from `*.whatsapp.net`, then verify and decrypt it
+  locally. `decodeWhatsAppMedia()`, `deriveWhatsAppMediaKeys()` and
+  `decryptWhatsAppMedia()` are exported for custom fetching. Integrity and
+  size failures raise the new `PolymorfaMediaIntegrityError`.
+- Added the `@polymorfa/sdk/node` entry point. It provides
+  `downloadMediaToFile()`, `downloadWhatsAppMediaToFile()`,
+  `writeStreamToFile()` (temporary file, then rename) and `nodeMediaCrypto`
+  for streaming decryption.
+- `@polymorfa/nextjs` adds `createMediaDownloadRoute()` with `redirect`,
+  `proxy` and `whatsapp` modes, a required fail-closed `authorize` callback,
+  and safe response headers.
+
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`
   no longer registers `pmfa-quicklink` or exports the `./quicklink` subpath, and
