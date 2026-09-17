@@ -9,116 +9,230 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
   protected renderContent(
     snapshot: TemplateBuilderSnapshot | undefined,
   ): readonly Node[] {
+    const focus = focusedField(this.root);
+    const controller = () =>
+      this.configuredController<TemplateBuilderController>();
     const panel = element("section", "panel template-builder");
-    panel.append(textElement("h2", "Template builder", "title"));
-    const name = document.createElement("input");
-    name.value = snapshot?.draft?.name ?? "";
-    name.setAttribute("aria-label", "Template name");
-    name.addEventListener("input", () =>
-      this.configuredController<TemplateBuilderController>()?.setName(
-        name.value,
-      ),
+    panel.className = this.rootClass("pmfa-tb");
+    const title = textElement("h2", this.text("templates.title"), "title");
+    title.className = "pmfa-tb-title";
+    const grid = element("div");
+    grid.className = "pmfa-tb-grid";
+    const form = element("div", "form");
+    form.className = "pmfa-tb-form";
+
+    const name = input("Template name", snapshot?.draft?.name ?? "", (value) =>
+      controller()?.setName(value),
     );
-    panel.append(name);
+    form.append(field(this.text("templates.name"), name));
     const definition = snapshot?.draft?.definition;
     if (definition?.header?.format === "text") {
-      panel.append(
-        textArea("Header text", definition.header.text, (value) =>
-          this.configuredController<TemplateBuilderController>()?.updateDefinition(
-            { header: { format: "text", text: value } },
+      form.append(
+        field(
+          this.text("templates.header"),
+          input("Header text", definition.header.text, (value) =>
+            controller()?.updateDefinition({
+              header: { format: "text", text: value },
+            }),
           ),
         ),
       );
     }
-    panel.append(
-      textArea("Template body", definition?.body ?? "", (value) =>
-        this.configuredController<TemplateBuilderController>()?.setBody(value),
-      ),
+    const body = textArea("Template body", definition?.body ?? "", (value) =>
+      controller()?.setBody(value),
     );
+    body.rows = 4;
+    form.append(field(this.text("templates.body"), body));
     if (definition?.footer !== undefined) {
-      panel.append(
-        textArea("Template footer", definition.footer, (value) =>
-          this.configuredController<TemplateBuilderController>()?.updateDefinition(
-            { footer: value },
+      form.append(
+        field(
+          this.text("templates.footer"),
+          input("Template footer", definition.footer, (value) =>
+            controller()?.updateDefinition({ footer: value }),
           ),
         ),
       );
     }
-    for (const variable of definition?.variables ?? []) {
-      const field = document.createElement("input");
-      field.value = variable.example;
-      field.setAttribute("aria-label", `Variable ${variable.name} example`);
-      field.addEventListener("input", () =>
-        this.configuredController<TemplateBuilderController>()?.setVariableExample(
-          variable.name,
-          field.value,
-        ),
-      );
-      panel.append(field);
-    }
-    for (const [index, templateButton] of (
-      definition?.buttons ?? []
-    ).entries()) {
-      const field = document.createElement("input");
-      field.value = templateButton.text ?? "";
-      field.setAttribute("aria-label", `Button ${index + 1} text`);
-      field.addEventListener("input", () => {
-        const buttons = [...(definition?.buttons ?? [])];
-        const current = buttons[index];
-        if (current !== undefined)
-          buttons[index] = { ...current, text: field.value };
-        this.configuredController<TemplateBuilderController>()?.updateDefinition(
-          {
-            buttons,
-          },
+    if ((definition?.variables.length ?? 0) > 0) {
+      const pairs = group(form, this.text("templates.variables"));
+      for (const variable of definition?.variables ?? [])
+        pairs.append(
+          pair(
+            `{{${variable.name}}}`,
+            input(
+              `Variable ${variable.name} example`,
+              variable.example,
+              (value) => controller()?.setVariableExample(variable.name, value),
+            ),
+          ),
         );
-      });
-      panel.append(field);
     }
-    for (const [index, card] of (definition?.carousel?.cards ?? []).entries()) {
-      panel.append(
-        textArea(`Carousel card ${index + 1} body`, card.body, (value) => {
-          const cards = [...(definition?.carousel?.cards ?? [])];
-          const current = cards[index];
-          if (current !== undefined) cards[index] = { ...current, body: value };
-          this.configuredController<TemplateBuilderController>()?.updateDefinition(
-            {
-              carousel: { cards },
-            },
-          );
-        }),
-      );
+    if ((definition?.buttons?.length ?? 0) > 0) {
+      const pairs = group(form, this.text("templates.buttons"));
+      for (const [index, templateButton] of (
+        definition?.buttons ?? []
+      ).entries()) {
+        pairs.append(
+          pair(
+            templateButton.type.replace("_", " "),
+            input(
+              `Button ${index + 1} text`,
+              templateButton.text ?? "",
+              (value) => {
+                const buttons = [...(definition?.buttons ?? [])];
+                const current = buttons[index];
+                if (current !== undefined)
+                  buttons[index] = { ...current, text: value };
+                controller()?.updateDefinition({ buttons });
+              },
+            ),
+          ),
+        );
+      }
     }
+    if ((definition?.carousel?.cards.length ?? 0) > 0) {
+      const cards = group(form, this.text("templates.cards"));
+      cards.className = "pmfa-tb-form";
+      for (const [index, card] of (
+        definition?.carousel?.cards ?? []
+      ).entries()) {
+        cards.append(
+          textArea(`Carousel card ${index + 1} body`, card.body, (value) => {
+            const next = [...(definition?.carousel?.cards ?? [])];
+            const current = next[index];
+            if (current !== undefined)
+              next[index] = { ...current, body: value };
+            controller()?.updateDefinition({ carousel: { cards: next } });
+          }),
+        );
+      }
+    }
+    for (const issue of snapshot?.localIssues ?? [])
+      form.append(alert(issue.message));
+    if (snapshot?.error !== undefined)
+      form.append(alert(snapshot.error.message));
 
+    const busy =
+      snapshot?.status === "saving" ||
+      snapshot?.status === "previewing" ||
+      snapshot?.status === "submitting";
+    const unsaved = snapshot?.templateId === undefined || snapshot.dirty;
     const save = button(
-      "Save draft",
+      this.text("templates.save"),
       "primary save",
-      () => void this.configuredController<TemplateBuilderController>()?.save(),
+      () => void controller()?.save(),
+      "pmfa-btn pmfa-btn-primary",
     );
     save.disabled =
-      snapshot?.draft === undefined || (snapshot.localIssues.length ?? 0) > 0;
+      busy ||
+      snapshot?.draft === undefined ||
+      (snapshot.localIssues.length ?? 0) > 0;
     const preview = button(
-      "Preview",
+      this.text("templates.preview"),
       "preview",
-      () =>
-        void this.configuredController<TemplateBuilderController>()?.refreshPreview(),
+      () => void controller()?.refreshPreview(),
     );
-    preview.disabled = snapshot?.templateId === undefined || snapshot.dirty;
+    preview.disabled = busy || unsaved;
     const submit = button(
-      "Submit to Meta",
+      this.text("templates.submit"),
       "submit",
-      () =>
-        void this.configuredController<TemplateBuilderController>()?.submitToMeta(),
+      () => void controller()?.submitToMeta(),
     );
-    submit.disabled = snapshot?.templateId === undefined || snapshot.dirty;
-    panel.append(save, preview, submit);
+    submit.disabled = busy || unsaved;
+    const actions = element("div", "actions");
+    actions.className = "pmfa-actions";
+    actions.append(save, preview, submit);
+    form.append(actions);
 
+    const aside = element("div", "preview");
+    aside.className = "pmfa-tb-aside";
     if (snapshot?.preview !== undefined)
-      panel.append(renderPreview(snapshot.preview.rendered));
-    for (const issue of snapshot?.localIssues ?? [])
-      panel.append(textElement("p", issue.message, "error"));
+      aside.append(renderPreview(snapshot.preview.rendered));
+    else {
+      const hint = textElement("p", this.text("templates.previewHint"));
+      hint.className = "pmfa-hint";
+      aside.append(hint);
+    }
+    grid.append(form, aside);
+    panel.append(title, grid);
+    if (focus !== undefined)
+      queueMicrotask(() => {
+        const target = this.root.querySelector<
+          HTMLInputElement | HTMLTextAreaElement
+        >(`[aria-label="${CSS.escape(focus.label)}"]`);
+        target?.focus();
+        target?.setSelectionRange(focus.start, focus.end);
+      });
     return [panel];
   }
+}
+
+/**
+ * The element re-renders on every edit, which replaces the field being typed
+ * in. Remember it so focus and the caret survive the re-render.
+ */
+function focusedField(
+  root: ShadowRoot,
+): { label: string; start: number; end: number } | undefined {
+  const active = root.activeElement;
+  if (!(
+    active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement
+  ))
+    return undefined;
+  const label = active.getAttribute("aria-label");
+  if (label === null) return undefined;
+  return {
+    label,
+    start: active.selectionStart ?? active.value.length,
+    end: active.selectionEnd ?? active.value.length,
+  };
+}
+
+function field(label: string, control: HTMLElement): HTMLLabelElement {
+  const wrapper = document.createElement("label");
+  wrapper.className = "pmfa-field";
+  const caption = textElement("span", label);
+  caption.className = "pmfa-label";
+  wrapper.append(caption, control);
+  return wrapper;
+}
+
+function group(form: HTMLElement, legend: string): HTMLElement {
+  const fieldset = document.createElement("fieldset");
+  fieldset.className = "pmfa-field";
+  fieldset.append(textElement("legend", legend));
+  const pairs = element("div");
+  pairs.className = "pmfa-pairs";
+  fieldset.append(pairs);
+  form.append(fieldset);
+  return pairs;
+}
+
+function pair(caption: string, control: HTMLElement): HTMLLabelElement {
+  const wrapper = document.createElement("label");
+  wrapper.className = "pmfa-pair";
+  wrapper.append(textElement("span", caption), control);
+  return wrapper;
+}
+
+function alert(message: string): HTMLElement {
+  const value = textElement("p", message, "error");
+  value.className = "pmfa-error";
+  value.setAttribute("role", "alert");
+  return value;
+}
+
+function input(
+  label: string,
+  value: string,
+  onInput: (value: string) => void,
+): HTMLInputElement {
+  const field = document.createElement("input");
+  field.className = "pmfa-input";
+  field.value = value;
+  field.setAttribute("aria-label", label);
+  field.addEventListener("input", () => onInput(field.value));
+  return field;
 }
 
 function textArea(
@@ -127,6 +241,7 @@ function textArea(
   onInput: (value: string) => void,
 ): HTMLTextAreaElement {
   const area = document.createElement("textarea");
+  area.className = "pmfa-input";
   area.value = value;
   area.setAttribute("aria-label", label);
   area.addEventListener("input", () => onInput(area.value));
@@ -136,24 +251,49 @@ function textArea(
 function renderPreview(preview: RenderedTemplate): HTMLOutputElement {
   const output = document.createElement("output");
   output.setAttribute("part", "preview-output");
-  if (preview.header?.text !== undefined)
-    output.append(textElement("strong", preview.header.text));
-  output.append(textElement("p", preview.body));
-  if (preview.footer !== undefined)
-    output.append(textElement("small", preview.footer));
+  output.className = "pmfa-preview";
+  const bubble = element("div");
+  bubble.className = "pmfa-preview-bubble";
+  if (preview.header?.text !== undefined) {
+    const header = textElement("strong", preview.header.text);
+    header.className = "pmfa-preview-header";
+    bubble.append(header);
+  }
+  const body = textElement("p", preview.body);
+  body.className = "pmfa-preview-body";
+  bubble.append(body);
+  if (preview.footer !== undefined) {
+    const footer = textElement("small", preview.footer);
+    footer.className = "pmfa-preview-footer";
+    bubble.append(footer);
+  }
+  output.append(bubble);
   for (const templateButton of preview.buttons)
-    output.append(textElement("span", templateButton.text, "preview-button"));
-  for (const card of preview.cards) {
-    const article = element("article", "preview-card");
-    article.append(textElement("p", card.body));
-    for (const templateButton of card.buttons)
-      article.append(
-        textElement("span", templateButton.text, "preview-button"),
-      );
-    output.append(article);
+    output.append(previewButton(templateButton.text));
+  if (preview.cards.length > 0) {
+    const cards = element("div");
+    cards.className = "pmfa-preview-cards";
+    for (const card of preview.cards) {
+      const article = element("article", "preview-card");
+      article.className = "pmfa-preview-card";
+      const cardBody = textElement("p", card.body);
+      cardBody.className = "pmfa-preview-body";
+      article.append(cardBody);
+      for (const templateButton of card.buttons)
+        article.append(previewButton(templateButton.text));
+      cards.append(article);
+    }
+    output.append(cards);
   }
   return output;
 }
+
+function previewButton(text: string): HTMLElement {
+  const value = textElement("span", text, "preview-button");
+  value.className = "pmfa-preview-button";
+  return value;
+}
+
 export function defineTemplateElements(
   registry: CustomElementRegistry = customElements,
 ): void {

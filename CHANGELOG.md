@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- The chat and template components in `@polymorfa/react` and
+  `@polymorfa/elements` now ship a stylesheet: message bubbles by direction
+  with time and delivery status, a drawer that is full width on small
+  screens, a labelled template form that stacks on narrow containers, and a
+  WhatsApp-style template preview. Both packages follow the `light`, `dark`,
+  and `system` themes. Messages render oldest first whatever order the
+  controller holds, and the list stays at the newest message while the reader
+  is at the end. `ChatDrawer` shows its close button only when `onClose` is
+  set, and closes on Escape. `@polymorfa/ui` exports `COMPONENT_STYLES`,
+  `injectComponentStyles()` and `themeClassName()`, plus new locale keys for
+  the labels.
+
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`
   no longer registers `pmfa-quicklink` or exports the `./quicklink` subpath, and

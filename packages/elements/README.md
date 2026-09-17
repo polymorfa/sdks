@@ -21,6 +21,11 @@ controls, live-region status, direction propagation, and controller unbinding
 when disconnected. Vue, Svelte and other frameworks can use the elements
 without a React runtime.
 
+Chat and template elements render the same `pmfa-*` classes and stylesheet
+as the React components, including the `light`, `dark`, and `system` themes.
+Set the drawer title with the `heading` attribute. Place a `pmfa-compose-box`
+inside `pmfa-chat-drawer` to show it in the drawer footer.
+
 `pmfa-template-builder` uses the same canonical template controller as the
 React binding. Its open shadow root exposes stable parts for the editor,
 validation messages, preview buttons/cards, save action, preview action, and

@@ -21,3 +21,8 @@ export {
   type MessageKey,
 } from "./locale.js";
 export { redactDiagnostic } from "./redaction.js";
+export {
+  COMPONENT_STYLES,
+  injectComponentStyles,
+  themeClassName,
+} from "./styles.js";

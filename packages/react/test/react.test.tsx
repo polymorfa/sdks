@@ -141,4 +141,65 @@ describe("React bindings", () => {
     expect(host.textContent).toContain("Submit to Meta");
     act(() => root.unmount());
   });
+  it("renders messages oldest first with direction, status, and labels", () => {
+    const messages = [
+      {
+        id: "b",
+        text: "Second",
+        createdAt: 2_000,
+        direction: "outbound",
+        status: "failed",
+      },
+      {
+        id: "a",
+        text: "First",
+        createdAt: 1_000,
+        direction: "inbound",
+        status: "sent",
+      },
+      {
+        id: "c",
+        text: "No time",
+        createdAt: Number.NaN,
+        direction: "inbound",
+        status: "pending",
+      },
+    ];
+    const snapshot = {
+      status: "ready",
+      messages,
+      hasMore: false,
+      revision: 0,
+      updatedAt: 0,
+    };
+    const controller = {
+      getSnapshot: () => snapshot,
+      subscribe: () => () => undefined,
+      dispose: vi.fn(),
+      loadMore: vi.fn(),
+    };
+    const host = document.createElement("div");
+    const root = createRoot(host);
+    act(() =>
+      root.render(
+        <PolymorfaProvider appearance={{ theme: "dark" }}>
+          <MessageList controller={controller as never} />
+        </PolymorfaProvider>,
+      ),
+    );
+    const list = host.querySelector('[data-pmfa="message-list"]');
+    expect(list?.className).toContain("pmfa-dark");
+    const items = [...host.querySelectorAll("li.pmfa-msg")];
+    expect(items.map((item) => item.getAttribute("data-message-id"))).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
+    expect(items[1]?.className).toContain("pmfa-msg-out");
+    expect(items[1]?.textContent).toContain("Not delivered");
+    expect(items[2]?.querySelector("time")).toBeNull();
+    expect(items[2]?.textContent).toContain("Sending");
+    expect(document.getElementById("pmfa-component-styles")).not.toBeNull();
+    act(() => root.unmount());
+  });
 });

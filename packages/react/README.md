@@ -16,6 +16,11 @@ directly or created through a component factory; only factory-created
 controllers are disposed by the binding. `useController` and
 `useResolvedController` support custom rendering without forking state logic.
 
+The chat and template components add the shared `@polymorfa/ui` stylesheet
+to the document on mount and use `pmfa-*` class names, so a host stylesheet
+can adjust them. Every component also takes a `className`. Visible text comes
+from the provider's locale.
+
 `TemplateBuilder` edits canonical headers, bodies, footers, button labels,
 carousel card bodies, and variable examples. It keeps “Save draft” and “Submit
 to Meta” as separate actions and renders structured previews. Use

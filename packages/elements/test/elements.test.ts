@@ -460,4 +460,60 @@ describe("call control retries", () => {
       }
     },
   );
+  it("renders chat oldest first and labels template fields", () => {
+    const list = document.createElement(
+      "pmfa-message-list",
+    ) as PolymorfaMessageListElement;
+    list.controller = fixtureController({
+      messages: [
+        {
+          id: "b",
+          text: "Second",
+          createdAt: 2_000,
+          direction: "outbound",
+          status: "sent",
+        },
+        {
+          id: "a",
+          text: "First",
+          createdAt: 1_000,
+          direction: "inbound",
+          status: "sent",
+        },
+      ],
+      hasMore: false,
+      revision: 0,
+      updatedAt: 0,
+    }).controller as never;
+    document.body.append(list);
+    const ids = [
+      ...(list.shadowRoot?.querySelectorAll<HTMLElement>(".pmfa-msg") ?? []),
+    ].map((item) => item.dataset.messageId);
+    expect(ids).toEqual(["a", "b"]);
+    list.remove();
+
+    const controller = new TemplateBuilderController({} as never);
+    controller.create({
+      name: "welcome",
+      definition: {
+        version: 1,
+        kind: "standard",
+        category: "UTILITY",
+        language: "en",
+        body: "Hello",
+        variables: [],
+      },
+    });
+    const builder = document.createElement(
+      "pmfa-template-builder",
+    ) as PolymorfaTemplateBuilderElement;
+    builder.controller = controller as never;
+    document.body.append(builder);
+    const labels = [
+      ...(builder.shadowRoot?.querySelectorAll(".pmfa-label") ?? []),
+    ].map((label) => label.textContent);
+    expect(labels).toEqual(["Template name", "Body"]);
+    builder.remove();
+    controller.dispose();
+  });
 });

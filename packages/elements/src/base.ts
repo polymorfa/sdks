@@ -1,6 +1,10 @@
 import {
+  COMPONENT_STYLES,
+  ENGLISH_MESSAGES,
   appearanceToCssVariables,
   createLocale,
+  themeClassName,
+  type MessageKey,
   defineAppearance,
   type AppearanceInput,
   type Locale,
@@ -70,6 +74,21 @@ export abstract class PolymorfaElement<
   protected locale(): Locale {
     return this.#configuration.locale ?? createLocale("en");
   }
+  /** Root classes for the rendered surface: theme plus the given names. */
+  protected rootClass(names: string): string {
+    const theme = defineAppearance(this.#configuration.appearance).theme;
+    return `${themeClassName(theme)} ${names}`;
+  }
+  protected text(
+    key: MessageKey,
+    values: Readonly<Record<string, string>> = {},
+  ): string {
+    const template = this.locale().messages[key] ?? ENGLISH_MESSAGES[key];
+    return template.replace(
+      /\{(\w+)\}/g,
+      (_, name: string) => values[name] ?? "",
+    );
+  }
   protected abstract renderContent(
     snapshot: T | undefined,
     locale: Locale,
@@ -86,8 +105,12 @@ export abstract class PolymorfaElement<
       appearanceToCssVariables(appearance),
     ))
       this.style.setProperty(name, value);
+    this.style.setProperty(
+      "--pmfa-drawer-width",
+      appearance.layout.drawerWidth,
+    );
     const style = document.createElement("style");
-    style.textContent = BASE_STYLES;
+    style.textContent = BASE_STYLES + COMPONENT_STYLES;
     this.root.replaceChildren(
       style,
       ...this.renderContent(this.snapshot(), locale),
@@ -133,9 +156,11 @@ export function button(
   label: string,
   part: string,
   action: () => void,
+  className = "pmfa-btn",
 ): HTMLButtonElement {
   const value = document.createElement("button");
   value.type = "button";
+  value.className = className;
   value.setAttribute("part", part);
   value.textContent = label;
   value.addEventListener("click", action);
@@ -143,12 +168,15 @@ export function button(
 }
 
 const BASE_STYLES = `
-:host { color: var(--pmfa-color-foreground); font: var(--pmfa-font-size-base)/1.45 var(--pmfa-font-family); }
+:host { display: block; color: var(--pmfa-color-foreground); font: var(--pmfa-font-size-base)/1.45 var(--pmfa-font-family); }
 *, *::before, *::after { box-sizing: border-box; }
-[part~="panel"] { background: var(--pmfa-color-background); border: 1px solid var(--pmfa-color-border); border-radius: var(--pmfa-radius-large); box-shadow: var(--pmfa-shadow-panel); padding: var(--pmfa-spacing-large); }
+[part~="panel"] { background: var(--pmfa-c-bg, var(--pmfa-color-background)); color: var(--pmfa-c-fg, inherit); border: 1px solid var(--pmfa-c-border, var(--pmfa-color-border)); border-radius: var(--pmfa-radius-large); box-shadow: var(--pmfa-shadow-panel); padding: var(--pmfa-spacing-large); }
 button, input, textarea, select { font: inherit; }
 button { border: 0; border-radius: var(--pmfa-radius-medium); padding: var(--pmfa-spacing-small) var(--pmfa-spacing-medium); cursor: pointer; }
 button[part~="primary"] { background: var(--pmfa-color-primary); color: white; }
+[part~="call"] { display: flex; flex-wrap: wrap; align-items: center; gap: var(--pmfa-spacing-small); }
+[part~="call"] > h2, [part~="call"] > p { flex: 1 1 100%; margin: 0; }
+[part~="call"] > [part~="peer"] { color: var(--pmfa-c-muted, var(--pmfa-color-muted)); font-variant-numeric: tabular-nums; margin-bottom: var(--pmfa-spacing-small); }
 [part~="muted"] { color: var(--pmfa-color-muted); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
 `;
