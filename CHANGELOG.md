@@ -27,7 +27,22 @@
 - `@polymorfa/browser` adds `LocalAttachment.file`,
   `MessageAttachment.url` and `previewUrl`, `localAttachmentFromFile()`, and
   `createConversationComposerActions()`, which sends composer drafts through
-  a `ConversationController`.
+  a `ConversationController`. `ConversationController.send()` accepts an
+  optional `AbortSignal`; the composer actions pass the composer's signal, so
+  `cancelSend()` cancels the request and marks the message failed.
+- Attachment URLs render as links or images only when they use `https:`,
+  `http:`, or `blob:`. `@polymorfa/ui` exports `safeAttachmentUrl()` for the
+  same check in custom renderers.
+- `ChatDrawer` and `pmfa-chat-drawer` no longer take focus when they mount
+  open; pass `autoFocus` (React) or set the `autofocus` attribute. Focus
+  still moves in when `open` changes to `true`. Escape closes a drawer only
+  when pressed inside it and not during IME composition. A rejected-file
+  message in the composer clears after an edit, a successful send, or a
+  reset. `pmfa-compose-box` re-renders its reply banner when its
+  `conversation` updates.
+- `pmfa-template-builder` names its preview area `preview-panel`; `preview`
+  stays on the Preview button, and `slotPartName("preview")` returns
+  `preview-panel`. Validation messages keep their nodes between edits.
 - Styling: bundled rules sit in `@layer polymorfa`, so unlayered app CSS
   overrides them. Appearance adds `darkVariables` (emitted as
   `--pmfa-dark-color-*`) and `unstyled`. Every chat and template node has a

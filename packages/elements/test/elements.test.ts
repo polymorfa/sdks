@@ -743,6 +743,7 @@ describe("chat element features", () => {
     ) as PolymorfaChatDrawerElement;
     drawer.controller = conversation as never;
     drawer.composerController = composer;
+    drawer.setAttribute("autofocus", "");
     const slotted = document.createElement("p");
     slotted.textContent = "Slotted footer";
     drawer.append(slotted);
@@ -922,5 +923,328 @@ describe("chat element features", () => {
       "",
     );
     list.remove();
+  });
+});
+
+describe("element review fixes", () => {
+  const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
+  const emptyConversation = () =>
+    fixtureController({
+      status: "ready",
+      messages: [],
+      hasMore: false,
+      revision: 0,
+      updatedAt: 0,
+    }).controller as never;
+
+  it("never renders unsafe attachment URLs as links or images", () => {
+    const list = document.createElement(
+      "pmfa-message-list",
+    ) as PolymorfaMessageListElement;
+    list.controller = fixtureController({
+      status: "ready",
+      hasMore: false,
+      revision: 0,
+      updatedAt: 0,
+      messages: [
+        {
+          id: "x1",
+          text: "",
+          createdAt: Date.now(),
+          direction: "inbound",
+          status: "sent",
+          attachments: [
+            {
+              id: "a1",
+              name: "doc.pdf",
+              size: 1,
+              contentType: "application/pdf",
+              url: "javascript:alert(document.domain)",
+            },
+            {
+              id: "a2",
+              name: "pic.png",
+              size: 1,
+              contentType: "image/png",
+              url: "javascript:alert(1)",
+              previewUrl: "https://cdn.example/pic.png",
+            },
+            {
+              id: "a3",
+              name: "bad.png",
+              size: 1,
+              contentType: "image/png",
+              url: "vbscript:msgbox(1)",
+              previewUrl: "javascript:alert(1)",
+            },
+            {
+              id: "a4",
+              name: "ok.pdf",
+              size: 1,
+              contentType: "application/pdf",
+              url: "https://cdn.example/ok.pdf",
+            },
+          ],
+        },
+      ],
+    }).controller as never;
+    document.body.append(list);
+    try {
+      const root = list.shadowRoot;
+      const hrefs = [...(root?.querySelectorAll("a") ?? [])].map((node) =>
+        node.getAttribute("href"),
+      );
+      expect(hrefs).toEqual(["https://cdn.example/ok.pdf"]);
+      const sources = [...(root?.querySelectorAll("img") ?? [])].map((node) =>
+        node.getAttribute("src"),
+      );
+      expect(sources).toEqual(["https://cdn.example/pic.png"]);
+      const cards = root?.querySelectorAll('[part~="attachment"]');
+      expect(cards).toHaveLength(4);
+      expect(cards?.[0]?.tagName).toBe("DIV");
+      expect(cards?.[1]?.tagName).toBe("DIV");
+      expect(cards?.[2]?.tagName).toBe("DIV");
+      expect(cards?.[2]?.textContent).toContain("bad.png");
+    } finally {
+      list.remove();
+    }
+  });
+
+  it("keeps template issue nodes across unrelated edits and names parts once", () => {
+    const controller = new TemplateBuilderController({} as never);
+    controller.create({
+      name: "",
+      definition: {
+        version: 1,
+        kind: "standard",
+        category: "UTILITY",
+        language: "en",
+        body: "",
+        variables: [],
+      },
+    } as never);
+    const builder = document.createElement(
+      "pmfa-template-builder",
+    ) as PolymorfaTemplateBuilderElement;
+    builder.controller = controller as never;
+    document.body.append(builder);
+    try {
+      const root = builder.shadowRoot;
+      const before = [...(root?.querySelectorAll('[role="alert"]') ?? [])];
+      expect(before.length).toBeGreaterThan(0);
+      const panel = root?.querySelector('[part~="template-builder"]');
+      controller.setBody("Hello");
+      const after = [...(root?.querySelectorAll('[role="alert"]') ?? [])];
+      expect(after.length).toBeGreaterThan(0);
+      expect(after.length).toBeLessThan(before.length);
+      for (const node of after) expect(before).toContain(node);
+      controller.setName("order_ready");
+      const kept = [...(root?.querySelectorAll('[role="alert"]') ?? [])];
+      for (const node of kept) expect(after).toContain(node);
+      expect(root?.querySelector('[part~="template-builder"]')).toBe(panel);
+
+      const previewParts = [
+        ...(root?.querySelectorAll('[part~="preview"]') ?? []),
+      ];
+      expect(previewParts).toHaveLength(1);
+      expect(previewParts[0]?.tagName).toBe("BUTTON");
+      expect(root?.querySelectorAll('[part~="preview-panel"]')).toHaveLength(1);
+    } finally {
+      builder.remove();
+      controller.dispose();
+    }
+  });
+
+  it("leaves focus alone on connect unless autofocus is set", async () => {
+    const outside = document.createElement("input");
+    document.body.append(outside);
+    outside.focus();
+    const drawer = document.createElement(
+      "pmfa-chat-drawer",
+    ) as PolymorfaChatDrawerElement;
+    drawer.controller = emptyConversation();
+    document.body.append(drawer);
+    try {
+      await tick();
+      expect(document.activeElement).toBe(outside);
+
+      // Opening after mount moves focus in; closing returns it.
+      drawer.open = false;
+      drawer.open = true;
+      await tick();
+      expect(document.activeElement).toBe(drawer);
+      expect(drawer.shadowRoot?.activeElement).toBe(
+        drawer.shadowRoot?.querySelector('[part~="close"]'),
+      );
+      drawer.open = false;
+      expect(document.activeElement).toBe(outside);
+
+      const focused = document.createElement(
+        "pmfa-chat-drawer",
+      ) as PolymorfaChatDrawerElement;
+      focused.controller = emptyConversation();
+      focused.setAttribute("autofocus", "");
+      document.body.append(focused);
+      await tick();
+      expect(document.activeElement).toBe(focused);
+      focused.remove();
+    } finally {
+      drawer.remove();
+      outside.remove();
+    }
+  });
+
+  it("closes only the drawer that receives Escape, outside IME composition", async () => {
+    const outside = document.createElement("input");
+    document.body.append(outside);
+    const first = document.createElement(
+      "pmfa-chat-drawer",
+    ) as PolymorfaChatDrawerElement;
+    const second = document.createElement(
+      "pmfa-chat-drawer",
+    ) as PolymorfaChatDrawerElement;
+    first.controller = emptyConversation();
+    second.controller = emptyConversation();
+    document.body.append(first, second);
+    try {
+      outside.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+      );
+      expect([first.open, second.open]).toEqual([true, true]);
+
+      const close = first.shadowRoot?.querySelector(
+        '[part~="close"]',
+      ) as HTMLButtonElement;
+      close.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Escape",
+          bubbles: true,
+          composed: true,
+          isComposing: true,
+        }),
+      );
+      expect(first.open).toBe(true);
+
+      const escape = new KeyboardEvent("keydown", {
+        key: "Escape",
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      });
+      close.dispatchEvent(escape);
+      expect(escape.defaultPrevented).toBe(true);
+      expect([first.open, second.open]).toEqual([false, true]);
+    } finally {
+      first.remove();
+      second.remove();
+      outside.remove();
+    }
+  });
+
+  it("clears a rejected-file error after a send, an edit, or a reset", async () => {
+    const composer = new MessageComposerController(
+      { upload: vi.fn(), send: vi.fn(async () => undefined) },
+      { maxAttachmentSize: 1 },
+    );
+    const box = document.createElement(
+      "pmfa-compose-box",
+    ) as PolymorfaComposeBoxElement;
+    box.controller = composer as never;
+    document.body.append(box);
+    const root = box.shadowRoot;
+    const input = root?.querySelector('input[type="file"]') as HTMLInputElement;
+    const reject = async () => {
+      Object.defineProperty(input, "files", {
+        configurable: true,
+        value: [new File(["too big"], "big.txt")],
+      });
+      input.dispatchEvent(new Event("change"));
+      await tick();
+      expect(root?.querySelector(".pmfa-error")?.textContent).toBe(
+        "Attachment exceeds 1 bytes.",
+      );
+    };
+    try {
+      await reject();
+      composer.setText("hello");
+      await composer.submit();
+      expect(root?.querySelector(".pmfa-error")).toBeNull();
+
+      await reject();
+      const textarea = root?.querySelector("textarea") as HTMLTextAreaElement;
+      textarea.value = "typed";
+      textarea.dispatchEvent(new Event("input"));
+      expect(root?.querySelector(".pmfa-error")).toBeNull();
+
+      await reject();
+      composer.reset();
+      expect(root?.querySelector(".pmfa-error")).toBeNull();
+    } finally {
+      box.remove();
+      composer.dispose();
+    }
+  });
+
+  it("bounds the custom stylesheet cache", async () => {
+    const { cachedTextSheetCount } = await import("../src/base.js");
+    const node = document.createElement(
+      "pmfa-message-list",
+    ) as PolymorfaMessageListElement;
+    node.controller = emptyConversation();
+    document.body.append(node);
+    try {
+      for (let index = 0; index < 100; index += 1)
+        node.configuration = {
+          stylesheet: `.pmfa-bubble { order: ${index}; }`,
+        };
+      expect(cachedTextSheetCount()).toBeLessThanOrEqual(32);
+    } finally {
+      node.remove();
+    }
+  });
+
+  it("re-renders the compose box reply banner when its conversation loads", async () => {
+    let resolveLoad: (value: { messages: never }) => void = () => undefined;
+    const conversation = new ConversationController({
+      load: () =>
+        new Promise((resolve) => {
+          resolveLoad = resolve as never;
+        }),
+      subscribe: () => () => undefined,
+      send: async () => {
+        throw new Error("n/a");
+      },
+    });
+    const composer = new MessageComposerController({
+      upload: vi.fn(),
+      send: vi.fn(async () => undefined),
+    });
+    composer.setReplyTo("m1");
+    const box = document.createElement(
+      "pmfa-compose-box",
+    ) as PolymorfaComposeBoxElement;
+    box.controller = composer as never;
+    box.conversation = conversation;
+    document.body.append(box);
+    try {
+      const loading = conversation.load();
+      const banner = () =>
+        box.shadowRoot?.querySelector('[part~="reply-banner"]')?.textContent;
+      expect(banner()).not.toContain("Where is my order?");
+      resolveLoad({ messages: chatMessages as never });
+      await loading;
+      expect(banner()).toContain("Where is my order?");
+      box.remove();
+      const renders = vi.fn();
+      box.addEventListener("pmfa-render", renders);
+      const reload = conversation.load();
+      resolveLoad({ messages: chatMessages as never });
+      await reload;
+      expect(renders).not.toHaveBeenCalled();
+    } finally {
+      box.remove();
+      composer.dispose();
+      conversation.dispose();
+    }
   });
 });

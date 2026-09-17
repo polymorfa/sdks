@@ -6,13 +6,26 @@ import type {
 import type { ComponentSlot } from "@polymorfa/ui";
 import { PolymorfaElement, button, element, textElement } from "./base.js";
 
+interface BuilderShell {
+  readonly generation: number;
+  readonly panel: HTMLElement;
+  readonly form: HTMLElement;
+  readonly aside: HTMLElement;
+  readonly issues: HTMLElement;
+  /** Issue nodes keyed by code and path, so an alert is announced once. */
+  readonly issueNodes: Map<string, HTMLElement>;
+}
+
 export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBuilderSnapshot> {
-  protected renderContent(
-    snapshot: TemplateBuilderSnapshot | undefined,
-  ): readonly Node[] {
-    const focus = focusedField(this.root);
-    const controller = () =>
-      this.configuredController<TemplateBuilderController>();
+  #shell: BuilderShell | undefined;
+
+  /**
+   * The panel, form, and issue list persist across renders; only the fields
+   * and actions inside them are rebuilt.
+   */
+  #shellFor(): BuilderShell {
+    if (this.#shell !== undefined && this.#shell.generation === this.generation)
+      return this.#shell;
     const panel = element("section", "panel template-builder");
     panel.className = this.rootClass("pmfa-tb");
     const title = textElement("h2", this.text("templates.title"), "title");
@@ -21,6 +34,66 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
     grid.className = "pmfa-tb-grid";
     const form = element("div", "form");
     form.className = "pmfa-tb-form";
+    const aside = element("div", "preview-panel");
+    aside.className = "pmfa-tb-aside";
+    const issues = element("div", "issues");
+    issues.className = "pmfa-tb-issues";
+    grid.append(form, aside);
+    panel.append(title, grid);
+    this.decorate(panel, "templateBuilder");
+    this.decorate(aside, "preview");
+    this.#shell = {
+      generation: this.generation,
+      panel,
+      form,
+      aside,
+      issues,
+      issueNodes: new Map(),
+    };
+    return this.#shell;
+  }
+
+  #syncIssues(
+    shell: BuilderShell,
+    snapshot: TemplateBuilderSnapshot | undefined,
+  ) {
+    const entries: (readonly [string, string])[] = (
+      snapshot?.localIssues ?? []
+    ).map((issue) => [
+      `issue:${issue.code}:${issue.path ?? ""}`,
+      issue.message,
+    ]);
+    if (snapshot?.error !== undefined)
+      entries.push([`error:${snapshot.error.code}`, snapshot.error.message]);
+    const keys = new Set(entries.map(([key]) => key));
+    for (const [key, node] of shell.issueNodes)
+      if (!keys.has(key)) {
+        node.remove();
+        shell.issueNodes.delete(key);
+      }
+    const nodes = entries.map(([key, message]) => {
+      let node = shell.issueNodes.get(key);
+      if (node === undefined) {
+        node = this.decorate(alert(message), "error");
+        shell.issueNodes.set(key, node);
+      } else if (node.textContent !== message) node.textContent = message;
+      return node;
+    });
+    reconcileInPlace(shell.issues, nodes);
+  }
+
+  protected renderContent(
+    snapshot: TemplateBuilderSnapshot | undefined,
+  ): readonly Node[] {
+    const focus = focusedField(this.root);
+    const controller = () =>
+      this.configuredController<TemplateBuilderController>();
+    const shell = this.#shellFor();
+    const { panel, aside } = shell;
+    const fields: HTMLElement[] = [];
+    const form = {
+      append: (...nodes: HTMLElement[]) => fields.push(...nodes),
+    };
 
     const name = input(
       "name",
@@ -118,10 +191,7 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
         );
       }
     }
-    for (const issue of snapshot?.localIssues ?? [])
-      form.append(alert(issue.message));
-    if (snapshot?.error !== undefined)
-      form.append(alert(snapshot.error.message));
+    this.#syncIssues(shell, snapshot);
 
     const busy =
       snapshot?.status === "saving" ||
@@ -153,34 +223,30 @@ export class PolymorfaTemplateBuilderElement extends PolymorfaElement<TemplateBu
     const actions = element("div", "actions");
     actions.className = "pmfa-actions";
     actions.append(save, preview, submit);
-    form.append(actions);
 
-    const aside = element("div", "preview");
-    aside.className = "pmfa-tb-aside";
     if (snapshot?.preview !== undefined)
-      aside.append(renderPreview(snapshot.preview.rendered));
+      aside.replaceChildren(renderPreview(snapshot.preview.rendered));
     else {
       const hint = textElement("p", this.text("templates.previewHint"));
       hint.className = "pmfa-hint";
-      aside.append(hint);
+      aside.replaceChildren(hint);
     }
-    grid.append(form, aside);
-    panel.append(title, grid);
     const slots: readonly (readonly [string, ComponentSlot])[] = [
       [".pmfa-field", "field"],
       [".pmfa-label", "label"],
       [".pmfa-input", "input"],
-      [".pmfa-error", "error"],
       [".pmfa-actions", "actions"],
     ];
-    for (const [selector, slot] of slots)
-      for (const node of panel.querySelectorAll(selector))
-        this.decorate(node, slot);
-    this.decorate(panel, "templateBuilder");
+    for (const root of [...fields, actions])
+      for (const [selector, slot] of slots) {
+        if (root.matches(selector)) this.decorate(root, slot);
+        for (const node of root.querySelectorAll(selector))
+          this.decorate(node, slot);
+      }
     this.decorate(save, "primaryButton");
     this.decorate(preview, "button");
     this.decorate(submit, "button");
-    this.decorate(aside, "preview");
+    reconcileInPlace(shell.form, [...fields, shell.issues, actions]);
     if (focus !== undefined)
       queueMicrotask(() => {
         const target = this.root.querySelector<
@@ -223,7 +289,24 @@ function field(label: string, control: HTMLElement): HTMLLabelElement {
   return wrapper;
 }
 
-function group(form: HTMLElement, legend: string): HTMLElement {
+/**
+ * Put `nodes` into `parent` in order. Stale children are removed first, so a
+ * node that stays is never detached and its live-region state survives.
+ */
+function reconcileInPlace(parent: Element, nodes: readonly Node[]): void {
+  const keep = new Set(nodes);
+  for (const child of [...parent.childNodes])
+    if (!keep.has(child)) child.remove();
+  nodes.forEach((node, index) => {
+    const current = parent.childNodes[index];
+    if (current !== node) parent.insertBefore(node, current ?? null);
+  });
+}
+
+function group(
+  form: { append(...nodes: HTMLElement[]): void },
+  legend: string,
+): HTMLElement {
   const fieldset = document.createElement("fieldset");
   fieldset.className = "pmfa-field";
   fieldset.append(textElement("legend", legend));

@@ -20,6 +20,7 @@ import {
   injectComponentStyles,
   isImageAttachment,
   layoutMessages,
+  safeAttachmentUrl,
   slotClassName,
   themeClassName,
   type Appearance,
@@ -41,10 +42,16 @@ import {
   type ClipboardEvent,
   type CSSProperties,
   type DragEvent,
+  type KeyboardEvent,
   type ReactNode,
 } from "react";
 import { usePolymorfa } from "./context.js";
-import { useController, useResolvedController } from "./hooks.js";
+import {
+  useController,
+  safeSubscribe,
+  useOwnedController,
+  useResolvedController,
+} from "./hooks.js";
 
 type ControllerProps<T> = {
   readonly controller?: T;
@@ -201,7 +208,7 @@ function useOptionalController<T>(
     | undefined,
 ): T | undefined {
   return useSyncExternalStore(
-    controller?.subscribe ?? NO_SUBSCRIPTION,
+    controller === undefined ? NO_SUBSCRIPTION : safeSubscribe(controller),
     controller?.getSnapshot ?? NO_SNAPSHOT,
     controller?.getSnapshot ?? NO_SNAPSHOT,
   );
@@ -252,23 +259,26 @@ function AttachmentView({
   readonly configuration: Configuration;
   readonly slots: Slots;
 }) {
-  const source = attachment.previewUrl ?? attachment.url;
-  if (isImageAttachment(attachment) && source !== undefined)
-    return (
+  // Unsafe schemes such as `javascript:` never reach `href` or `src`.
+  const url = safeAttachmentUrl(attachment.url);
+  const source = safeAttachmentUrl(attachment.previewUrl) ?? url;
+  if (isImageAttachment(attachment) && source !== undefined) {
+    const image = (
+      <img src={source} alt={attachment.name} loading="lazy" decoding="async" />
+    );
+    return url === undefined ? (
+      <div {...slots("attachment", "pmfa-att pmfa-att-media")}>{image}</div>
+    ) : (
       <a
         {...slots("attachment", "pmfa-att pmfa-att-media")}
-        href={attachment.url ?? source}
+        href={url}
         target="_blank"
         rel="noopener noreferrer"
       >
-        <img
-          src={source}
-          alt={attachment.name}
-          loading="lazy"
-          decoding="async"
-        />
+        {image}
       </a>
     );
+  }
   const body = (
     <>
       <span className="pmfa-att-icon">
@@ -282,12 +292,12 @@ function AttachmentView({
       </span>
     </>
   );
-  return attachment.url === undefined ? (
+  return url === undefined ? (
     <div {...slots("attachment", "pmfa-att pmfa-att-file")}>{body}</div>
   ) : (
     <a
       {...slots("attachment", "pmfa-att pmfa-att-file")}
-      href={attachment.url}
+      href={url}
       target="_blank"
       rel="noopener noreferrer"
       title={text(configuration, "chat.openAttachment", {
@@ -701,6 +711,23 @@ function hasFiles(event: DragEvent<HTMLElement>): boolean {
   return [...(event.dataTransfer?.types ?? [])].includes("Files");
 }
 
+function rejectionCleared(
+  previous: MessageComposerSnapshot,
+  next: MessageComposerSnapshot,
+): boolean {
+  if (previous.text !== next.text) return true;
+  if (previous.sending && !next.sending && next.error === undefined)
+    return true;
+  return (
+    next.status === "ready" &&
+    !next.sending &&
+    next.error === undefined &&
+    next.text === "" &&
+    next.attachments.length === 0 &&
+    next.replyTo === undefined
+  );
+}
+
 function AttachmentChip({
   attachment,
   configuration,
@@ -797,6 +824,14 @@ export function ComposeBox({
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [rejection, setRejection] = useState<string | undefined>(undefined);
+  // A rejected file's message clears once the text changes, a send
+  // succeeds, or the composer resets.
+  const [previousSnapshot, setPreviousSnapshot] = useState(snapshot);
+  if (previousSnapshot !== snapshot) {
+    setPreviousSnapshot(snapshot);
+    if (rejection !== undefined && rejectionCleared(previousSnapshot, snapshot))
+      setRejection(undefined);
+  }
 
   useIsomorphicLayoutEffect(() => {
     const input = inputRef.current;
@@ -945,7 +980,10 @@ export function ComposeBox({
           rows={1}
           placeholder={text(configuration, "composer.placeholder")}
           value={snapshot.text}
-          onChange={(event) => resolved.setText(event.currentTarget.value)}
+          onChange={(event) => {
+            setRejection(undefined);
+            resolved.setText(event.currentTarget.value);
+          }}
           onPaste={(event: ClipboardEvent<HTMLTextAreaElement>) => {
             const files = event.clipboardData?.files;
             if (files === undefined || files.length === 0) return;
@@ -1002,26 +1040,16 @@ export interface ChatDrawerProps extends MessageListProps {
   /** Renders the built-in composer and wires message Reply to it. */
   readonly composerController?: MessageComposerController;
   readonly createComposerController?: () => MessageComposerController;
+  /**
+   * Move focus into the drawer when it first mounts open. Defaults to
+   * `false`; focus always moves when `open` changes to `true`.
+   */
+  readonly autoFocus?: boolean;
   /** Props for the built-in composer. */
   readonly composerProps?: Omit<
     ComposeBoxProps,
     "controller" | "createController" | "conversation"
   >;
-}
-
-function useOptionalOwnedController<T extends { dispose(): void }>(
-  controller: T | undefined,
-  create: (() => T) | undefined,
-): T | undefined {
-  const owned = useRef<T | undefined>(undefined);
-  if (
-    controller === undefined &&
-    create !== undefined &&
-    owned.current === undefined
-  )
-    owned.current = create();
-  useEffect(() => () => owned.current?.dispose(), []);
-  return controller ?? owned.current;
 }
 
 function focusFirst(root: HTMLElement | null): void {
@@ -1047,6 +1075,7 @@ export function ChatDrawer({
   createComposerController,
   composerProps,
   onReply,
+  autoFocus = false,
   ...viewProps
 }: ChatDrawerProps) {
   const configuration = usePolymorfa();
@@ -1058,31 +1087,47 @@ export function ChatDrawer({
     controller ?? conversation,
     createController,
   );
-  const composing = useOptionalOwnedController(
+  const composing = useOwnedController(
     composerController,
     createComposerController,
   );
   const latestClose = useLatest(onClose);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !event.defaultPrevented)
-        latestClose.current?.();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open, latestClose]);
+  const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (
+      event.key !== "Escape" ||
+      event.defaultPrevented ||
+      event.nativeEvent.isComposing ||
+      latestClose.current === undefined
+    )
+      return;
+    event.preventDefault();
+    latestClose.current();
+  };
 
+  // Focus moves when `open` becomes true after mount, or on mount with
+  // `autoFocus`. Closing returns focus to where it was.
+  const lastOpen = useRef<boolean | undefined>(undefined);
+  const moveFocus = useRef(false);
+  const latestAutoFocus = useLatest(autoFocus);
   useEffect(() => {
-    if (!open || typeof document === "undefined") return;
+    // An effect re-run with the same `open` (StrictMode, `<Activity>`) keeps
+    // the earlier decision.
+    if (lastOpen.current !== open) {
+      moveFocus.current =
+        open &&
+        (lastOpen.current === false ||
+          (lastOpen.current === undefined && latestAutoFocus.current));
+      lastOpen.current = open;
+    }
+    if (!moveFocus.current || typeof document === "undefined") return;
     const previous = document.activeElement;
     focusFirst(panel.current);
     return () => {
       if (previous instanceof HTMLElement && previous.isConnected)
         previous.focus({ preventScroll: true });
     };
-  }, [open]);
+  }, [open, latestAutoFocus]);
 
   const reply = useMemo(
     () =>
@@ -1114,6 +1159,7 @@ export function ChatDrawer({
       {...root}
       ref={panel}
       tabIndex={-1}
+      onKeyDown={onKeyDown}
       data-pmfa="chat-drawer"
       role="dialog"
       aria-modal="false"

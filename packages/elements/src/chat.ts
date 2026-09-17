@@ -15,6 +15,7 @@ import {
   formatMessageTime,
   isImageAttachment,
   layoutMessages,
+  safeAttachmentUrl,
   type ChatIconName,
   type ComponentSlot,
   type MessageKey,
@@ -385,28 +386,36 @@ class MessageListView {
 
   #attachmentNode(attachment: MessageAttachment): HTMLElement {
     const { host } = this;
-    const source = attachment.previewUrl ?? attachment.url;
+    // Unsafe schemes such as `javascript:` never reach `href` or `src`.
+    const url = safeAttachmentUrl(attachment.url);
+    const source = safeAttachmentUrl(attachment.previewUrl) ?? url;
     if (isImageAttachment(attachment) && source !== undefined) {
-      const link = document.createElement("a");
-      link.className = "pmfa-att pmfa-att-media";
-      link.href = attachment.url ?? source;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
       const image = document.createElement("img");
       image.src = source;
       image.alt = attachment.name;
       image.loading = "lazy";
       image.decoding = "async";
+      if (url === undefined) {
+        const frame = document.createElement("div");
+        frame.className = "pmfa-att pmfa-att-media";
+        frame.append(image);
+        return host.decorate(frame, "attachment");
+      }
+      const link = document.createElement("a");
+      link.className = "pmfa-att pmfa-att-media";
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
       link.append(image);
       return host.decorate(link, "attachment");
     }
     const node =
-      attachment.url === undefined
+      url === undefined
         ? document.createElement("div")
         : document.createElement("a");
     node.className = "pmfa-att pmfa-att-file";
-    if (node instanceof HTMLAnchorElement && attachment.url !== undefined) {
-      node.href = attachment.url;
+    if (node instanceof HTMLAnchorElement && url !== undefined) {
+      node.href = url;
       node.target = "_blank";
       node.rel = "noopener noreferrer";
       node.title = host.text("chat.openAttachment", { name: attachment.name });
@@ -424,6 +433,29 @@ class MessageListView {
 }
 
 // ── Composer ──────────────────────────────────────────────────────────
+
+/**
+ * Whether a composer change retires a rejected-file message: the text was
+ * edited, a send succeeded, or the composer was reset.
+ */
+function rejectionCleared(
+  previous: MessageComposerSnapshot | undefined,
+  next: MessageComposerSnapshot | undefined,
+): boolean {
+  if (previous === undefined || next === undefined || previous === next)
+    return false;
+  if (previous.text !== next.text) return true;
+  if (previous.sending && !next.sending && next.error === undefined)
+    return true;
+  return (
+    next.status === "ready" &&
+    !next.sending &&
+    next.error === undefined &&
+    next.text === "" &&
+    next.attachments.length === 0 &&
+    next.replyTo === undefined
+  );
+}
 
 const supportsFieldSizing = () =>
   typeof CSS !== "undefined" &&
@@ -535,6 +567,7 @@ class ComposerView {
     this.input.placeholder = host.text("composer.placeholder");
     this.input.setAttribute("aria-label", host.text("composer.label"));
     this.input.addEventListener("input", () => {
+      this.#rejection = undefined;
       this.options.controller()?.setText(this.input.value);
       this.#sync();
       this.#grow();
@@ -600,6 +633,7 @@ class ComposerView {
   }
 
   update(snapshot: MessageComposerSnapshot | undefined): void {
+    if (rejectionCleared(this.#snapshot, snapshot)) this.#rejection = undefined;
     this.#snapshot = snapshot;
     const { host } = this;
     const accept = this.options.accept();
@@ -885,15 +919,45 @@ export class PolymorfaComposeBoxElement extends ChatElement<MessageComposerSnaps
   #view: ComposerView | undefined;
   #viewGeneration: number | undefined;
   #conversation: ConversationController | undefined;
+  #conversationUnsubscribe: (() => void) | undefined;
   #messages: readonly ConversationMessage[] | undefined;
 
-  /** Resolves the reply banner's quoted message. */
+  /** Resolves the reply banner's quoted message, and follows its updates. */
   get conversation(): ConversationController | undefined {
     return this.#conversation;
   }
   set conversation(value: ConversationController | undefined) {
+    if (value === this.#conversation) return;
+    this.#unbindConversation();
     this.#conversation = value;
+    if (this.isConnected) this.#bindConversation();
     this.render();
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.#bindConversation();
+  }
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.#unbindConversation();
+  }
+
+  #bindConversation(): void {
+    const conversation = this.#conversation;
+    if (conversation === undefined || this.#conversationUnsubscribe) return;
+    try {
+      this.#conversationUnsubscribe = conversation.subscribe(() =>
+        this.render(),
+      );
+    } catch {
+      // A disposed conversation has nothing further to publish.
+    }
+  }
+
+  #unbindConversation(): void {
+    this.#conversationUnsubscribe?.();
+    this.#conversationUnsubscribe = undefined;
   }
   /** Resolves the reply banner's quoted message without a controller. */
   get messages(): readonly ConversationMessage[] | undefined {
@@ -954,6 +1018,7 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
     "accept",
     "multiple",
     "replyable",
+    "autofocus",
   ];
   #open = true;
   #opener: HTMLElement | undefined;
@@ -966,17 +1031,26 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
   #onReply: ReplyHandler | undefined;
   #titleId = `pmfa-drawer-title-${Math.random().toString(36).slice(2)}`;
   #onKey = (event: KeyboardEvent) => {
-    if (this.#open && event.key === "Escape" && !event.defaultPrevented)
-      this.#close();
+    if (
+      !this.#open ||
+      event.key !== "Escape" ||
+      event.defaultPrevented ||
+      event.isComposing
+    )
+      return;
+    event.preventDefault();
+    this.#close();
   };
 
   set open(value: boolean) {
-    const opening = value && !this.#open;
+    const wasOpen = this.#open;
+    // Focus moves only when a mounted drawer opens.
+    const opening = value && !wasOpen && this.isConnected;
     this.#open = value;
     if (opening) this.#previous = document.activeElement;
     this.render();
     if (opening) this.#focusFirst();
-    if (!value) this.#restoreFocus();
+    if (!value && wasOpen) this.#restoreFocus();
   }
   get open(): boolean {
     return this.#open;
@@ -1014,8 +1088,11 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
   override connectedCallback(): void {
     super.connectedCallback();
     this.#bindComposer();
-    document.addEventListener("keydown", this.#onKey);
-    if (this.#open) {
+    // Listening on the host only sees Escape pressed inside this drawer.
+    this.addEventListener("keydown", this.#onKey);
+    // Opening by default must not pull focus away from the page; opt in with
+    // the `autofocus` attribute.
+    if (this.#open && this.hasAttribute("autofocus")) {
       this.#previous = document.activeElement;
       this.#focusFirst();
     }
@@ -1024,7 +1101,7 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
     super.disconnectedCallback();
     this.#composerUnsubscribe?.();
     this.#composerUnsubscribe = undefined;
-    document.removeEventListener("keydown", this.#onKey);
+    this.removeEventListener("keydown", this.#onKey);
   }
 
   #bindComposer(): void {

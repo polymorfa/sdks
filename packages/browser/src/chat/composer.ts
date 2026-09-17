@@ -63,14 +63,17 @@ export function createConversationComposerActions(
 ): ComposerActions {
   return {
     upload,
-    send: (draft) =>
-      conversation.send({
-        text: draft.text,
-        ...(draft.replyTo === undefined ? {} : { replyTo: draft.replyTo }),
-        ...(draft.attachments.length === 0
-          ? {}
-          : { attachments: draft.attachments }),
-      }),
+    send: (draft, signal) =>
+      conversation.send(
+        {
+          text: draft.text,
+          ...(draft.replyTo === undefined ? {} : { replyTo: draft.replyTo }),
+          ...(draft.attachments.length === 0
+            ? {}
+            : { attachments: draft.attachments }),
+        },
+        signal,
+      ),
   };
 }
 

@@ -56,8 +56,12 @@ drawer.addEventListener("pmfa-close", () => drawer.remove());
   set, and Reply sets that composer's reply target. Slotted children still
   render in the footer, so a `pmfa-compose-box` placed inside works as
   before. Set the title with the `heading` attribute. The drawer is a
-  non-modal dialog; it focuses the message field (or its close button) when
-  it opens, returns focus when it closes, and closes on Escape.
+  non-modal dialog. When `open` changes to `true`, it focuses the message
+  field (or its close button); when it closes, focus returns to `opener` or
+  to the element that had it. A drawer that is already open when it connects
+  leaves focus alone unless it has the `autofocus` attribute. Escape closes
+  the drawer only when pressed inside it, and not while an input method is
+  composing text.
 - `pmfa-compose-box` attaches files from its paperclip button, a paste, or a
   drop, shows upload progress and failures with a remove button, and shows a
   reply banner. Set its `conversation` or `messages` property so the banner
@@ -103,7 +107,9 @@ list and every slot and part name.
 `pmfa-template-builder` uses the same canonical template controller as the
 React binding. Its open shadow root exposes stable parts for the editor,
 validation messages, preview buttons/cards, save action, preview action, and
-Meta submission action.
+Meta submission action. The Preview button is `preview`, and the preview area
+is `preview-panel`. Validation messages keep their nodes while they still
+apply, so a screen reader announces each one once.
 
 ## Calls
 

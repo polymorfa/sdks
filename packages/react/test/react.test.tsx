@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act } from "react";
+import { act, StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -410,6 +410,7 @@ describe("React chat features", () => {
           composerController={composer}
           onReply={onReply}
           title="Support"
+          autoFocus
         />
       );
     }
@@ -438,10 +439,17 @@ describe("React chat features", () => {
     );
     expect(composer.getSnapshot().replyTo).toBeUndefined();
 
+    let escape: KeyboardEvent | undefined;
     act(() => {
-      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+      escape = new KeyboardEvent("keydown", {
+        key: "Escape",
+        bubbles: true,
+        cancelable: true,
+      });
+      textarea?.dispatchEvent(escape);
     });
     expect(onClose).toHaveBeenCalledTimes(1);
+    expect(escape?.defaultPrevented).toBe(true);
     act(() => view.root.render(<Harness open={false} />));
     expect(document.activeElement).toBe(opener);
     view.unmount();
@@ -656,5 +664,250 @@ describe("React chat features", () => {
       "#8ab4ff",
     );
     view.unmount();
+  });
+
+  it("never renders unsafe attachment URLs as links or images", () => {
+    const message: ConversationMessage = {
+      id: "x1",
+      text: "",
+      createdAt: now,
+      direction: "inbound",
+      status: "sent",
+      attachments: [
+        {
+          id: "a1",
+          name: "doc.pdf",
+          size: 1,
+          contentType: "application/pdf",
+          url: "javascript:alert(document.domain)",
+        },
+        {
+          id: "a2",
+          name: "pic.png",
+          size: 1,
+          contentType: "image/png",
+          url: "javascript:alert(1)",
+          previewUrl: "https://cdn.example/pic.png",
+        },
+        {
+          id: "a3",
+          name: "bad.png",
+          size: 1,
+          contentType: "image/png",
+          url: "data:text/html,<script>alert(1)</script>",
+          previewUrl: "javascript:alert(1)",
+        },
+        {
+          id: "a4",
+          name: "ok.pdf",
+          size: 1,
+          contentType: "application/pdf",
+          url: "blob:https://app.example/1",
+        },
+      ],
+    };
+    const controller = fixtureController();
+    const snapshot = {
+      messages: [message],
+      hasMore: false,
+      revision: 0,
+      updatedAt: 0,
+    };
+    controller.getSnapshot = () => snapshot as never;
+    const view = mount(<MessageList controller={controller as never} />);
+    const hrefs = [...view.host.querySelectorAll("a")].map((node) =>
+      node.getAttribute("href"),
+    );
+    expect(hrefs).toEqual(["blob:https://app.example/1"]);
+    const sources = [...view.host.querySelectorAll("img")].map((node) =>
+      node.getAttribute("src"),
+    );
+    expect(sources).toEqual(["https://cdn.example/pic.png"]);
+    const cards = view.host.querySelectorAll('[data-slot="attachment"]');
+    expect(cards).toHaveLength(4);
+    expect(cards[0]?.tagName).toBe("DIV");
+    expect(cards[0]?.textContent).toContain("doc.pdf");
+    expect(cards[1]?.tagName).toBe("DIV");
+    expect(cards[2]?.tagName).toBe("DIV");
+    expect(cards[2]?.textContent).toContain("bad.png");
+    view.unmount();
+  });
+
+  it("keeps factory controllers usable under StrictMode", async () => {
+    const conversations: ConversationController[] = [];
+    const composers: MessageComposerController[] = [];
+    const view = mount(
+      <StrictMode>
+        <ChatDrawer
+          createController={() => {
+            const made = new ConversationController(source(chat));
+            conversations.push(made);
+            return made;
+          }}
+          createComposerController={() => {
+            const made = new MessageComposerController({
+              upload: vi.fn(),
+              send: vi.fn(async () => undefined),
+            });
+            composers.push(made);
+            return made;
+          }}
+        />
+      </StrictMode>,
+    );
+    const composer = composers.at(-1);
+    const conversation = conversations.at(-1);
+    expect(() => composer?.setText("hi")).not.toThrow();
+    await act(async () => {
+      await conversation?.load();
+    });
+    const textarea = view.host.querySelector("textarea");
+    expect(textarea?.value).toBe("hi");
+    expect(view.host.textContent).toContain("Where is my order?");
+    const reply = view.host.querySelector(
+      '[data-message-id="m1"] [data-slot="replyButton"]',
+    ) as HTMLButtonElement;
+    act(() => reply.click());
+    expect(composer?.getSnapshot().replyTo).toBe("m1");
+    // Every controller except the live one was disposed.
+    for (const made of [...composers, ...conversations].filter(
+      (item) => item !== composer && item !== conversation,
+    ))
+      expect(
+        () => made.getSnapshot() && made.subscribe(() => undefined),
+      ).toThrow();
+    view.unmount();
+    expect(() => composer?.setText("bye")).toThrow(/disposed/);
+    expect(() => conversation?.subscribe(() => undefined)).toThrow(/disposed/);
+  });
+
+  it("keeps a createController list usable under StrictMode", async () => {
+    let made: ConversationController | undefined;
+    const view = mount(
+      <StrictMode>
+        <MessageList
+          createController={() =>
+            (made = new ConversationController(source(chat)))
+          }
+        />
+      </StrictMode>,
+    );
+    await act(async () => {
+      await made?.load();
+    });
+    expect(view.host.textContent).toContain("Where is my order?");
+    view.unmount();
+    expect(() => made?.subscribe(() => undefined)).toThrow(/disposed/);
+  });
+
+  it("moves drawer focus only on open, and closes on Escape from inside", () => {
+    const outside = document.createElement("input");
+    document.body.append(outside);
+    outside.focus();
+    const conversation = fixtureController();
+    const onClose = vi.fn();
+    let setOpen: (open: boolean) => void = () => undefined;
+    function Harness() {
+      const [open, update] = useState(true);
+      setOpen = update;
+      return (
+        <>
+          <ChatDrawer
+            open={open}
+            onClose={onClose}
+            controller={conversation as never}
+            title="First"
+          />
+          <ChatDrawer
+            onClose={onClose}
+            controller={conversation as never}
+            title="Second"
+          />
+        </>
+      );
+    }
+    const view = mount(
+      <StrictMode>
+        <Harness />
+      </StrictMode>,
+    );
+    expect(document.activeElement).toBe(outside);
+
+    // Escape outside every drawer closes nothing.
+    act(() => {
+      outside.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+      );
+    });
+    expect(onClose).not.toHaveBeenCalled();
+
+    // An IME composition keeps the drawer open.
+    const [first] = view.host.querySelectorAll('[role="dialog"]');
+    act(() => {
+      first?.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Escape",
+          bubbles: true,
+          isComposing: true,
+        }),
+      );
+    });
+    expect(onClose).not.toHaveBeenCalled();
+
+    act(() => setOpen(false));
+    act(() => setOpen(true));
+    const reopened = view.host.querySelector('[role="dialog"]');
+    const close = reopened?.querySelector('[data-slot="drawerClose"]');
+    expect(document.activeElement).toBe(close);
+    act(() => {
+      close?.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Escape",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+    expect(onClose).toHaveBeenCalledTimes(1);
+    act(() => setOpen(false));
+    expect(document.activeElement).toBe(outside);
+    view.unmount();
+    outside.remove();
+  });
+
+  it("clears a rejected-file error after a send, an edit, or a reset", async () => {
+    const composer = new MessageComposerController(
+      {
+        upload: vi.fn(),
+        send: vi.fn(async () => undefined),
+      },
+      { maxAttachmentSize: 1 },
+    );
+    const view = mount(<ComposeBox controller={composer} />);
+    const input = view.host.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    const reject = async () => {
+      setFiles(input, [new File(["too big"], "big.txt")]);
+      await act(async () => undefined);
+      expect(view.host.querySelector('[role="alert"]')?.textContent).toBe(
+        "Attachment exceeds 1 bytes.",
+      );
+    };
+    await reject();
+    act(() => composer.setText("hello"));
+    expect(view.host.querySelector('[role="alert"]')).toBeNull();
+
+    await reject();
+    await act(async () => {
+      await composer.submit();
+    });
+    expect(view.host.querySelector('[role="alert"]')).toBeNull();
+
+    await reject();
+    act(() => composer.reset());
+    expect(view.host.querySelector('[role="alert"]')).toBeNull();
+    view.unmount();
+    composer.dispose();
   });
 });

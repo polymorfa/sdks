@@ -59,7 +59,8 @@ images) so the message list can show it.
   "Today", "Yesterday", or a localized date between days, and shows a
   pending, sent, or failed icon on outbound messages. Images render as lazy
   thumbnails; other files render as a card with name, size, and a link when
-  `url` is set. A reply shows the quoted message, and selecting the quote
+  `url` is set. Only `https:`, `http:`, and `blob:` URLs become links or
+  images; any other scheme renders the card without one. A reply shows the quoted message, and selecting the quote
   scrolls to and focuses it. Failed outbound messages offer Retry, which
   calls `controller.retry(clientId)`. Pass `onReply` to offer Reply on every
   message.
@@ -70,9 +71,12 @@ images) so the message list can show it.
   banner shows the quoted text (pass `conversation` or `messages` to resolve
   it) with a cancel button. `accept` and `multiple` (default `true`) apply to
   the file picker. Enter sends; Shift+Enter adds a line.
-- **Drawer.** The drawer is a non-modal dialog labelled by its title. Opening
-  it focuses the message field (or the close button); closing it returns
-  focus to the element that had it. Escape calls `onClose`. A `composer`
+- **Drawer.** The drawer is a non-modal dialog labelled by its title. When
+  `open` changes to `true`, it focuses the message field (or the close
+  button); closing it returns focus to the element that had it. A drawer
+  that mounts open leaves focus alone unless you pass `autoFocus`. Escape
+  pressed inside the drawer calls `onClose`, except while an input method is
+  composing text. A `composer`
   node replaces the built-in composer, and `conversation` is an alias of
   `controller`.
 - **Custom rendering.** `renderMessage(message)` replaces a bubble's

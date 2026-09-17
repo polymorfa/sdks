@@ -9,6 +9,7 @@ import {
   formatFileSize,
   layoutMessages,
   slotPartName,
+  safeAttachmentUrl,
   createLocale,
   defineAppearance,
   mergeAppearance,
@@ -132,7 +133,33 @@ describe("appearance", () => {
     expect(formatFileSize(1536, "en")).toBe("1.5 kB");
     expect(formatFileSize(25 * 1024 * 1024, "en")).toBe("25 MB");
     expect(slotPartName("messageMeta")).toBe("message-meta");
+    expect(slotPartName("preview")).toBe("preview-panel");
     expect(COMPONENT_SLOTS).toContain("composerAttach");
+  });
+
+  it("allows only http, https, and blob attachment URLs", () => {
+    expect(safeAttachmentUrl("https://cdn.example/a.png")).toBe(
+      "https://cdn.example/a.png",
+    );
+    expect(safeAttachmentUrl("http://cdn.example/a.pdf")).toBe(
+      "http://cdn.example/a.pdf",
+    );
+    expect(safeAttachmentUrl("blob:https://app.example/1234")).toBe(
+      "blob:https://app.example/1234",
+    );
+    for (const unsafe of [
+      "javascript:alert(1)",
+      " JavaScript:alert(1)",
+      "java\tscript:alert(1)",
+      "data:text/html,<script>alert(1)</script>",
+      "vbscript:msgbox(1)",
+      "file:///etc/passwd",
+      "/relative/path.png",
+      "not a url",
+      "",
+      undefined,
+    ])
+      expect(safeAttachmentUrl(unsafe)).toBeUndefined();
   });
 
   it("creates a partial locale with English fallback and inferred direction", () => {

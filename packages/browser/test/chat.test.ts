@@ -277,4 +277,35 @@ describe("composer and conversation wiring", () => {
       expect.anything(),
     );
   });
+
+  it("forwards composer cancellation to the conversation request", async () => {
+    const fixture = fixtureSource();
+    let received: AbortSignal | undefined;
+    fixture.source.send = vi.fn(
+      (_draft, signal?: AbortSignal) =>
+        new Promise<never>((_resolve, reject) => {
+          received = signal;
+          signal?.addEventListener("abort", () => reject(new Error("aborted")));
+        }),
+    );
+    const conversation = new ConversationController(fixture.source, {
+      createClientId: () => "client-3",
+    });
+    await conversation.load();
+    const composer = new MessageComposerController(
+      createConversationComposerActions(conversation, vi.fn()),
+    );
+    composer.setText("stop me");
+    const sending = composer.submit();
+    await Promise.resolve();
+    expect(received?.aborted).toBe(false);
+    composer.cancelSend();
+    expect(received?.aborted).toBe(true);
+    await sending;
+    expect(conversation.getSnapshot().messages[0]).toMatchObject({
+      clientId: "client-3",
+      status: "failed",
+      error: "Message send was cancelled.",
+    });
+  });
 });

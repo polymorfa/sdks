@@ -45,8 +45,18 @@ export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];
 /** Per-slot class names a component adds on top of the appearance. */
 export type SlotClassNames = Partial<Record<ComponentSlot, string>>;
 
-/** The CSS `part` name for a slot: `messageMeta` becomes `message-meta`. */
+const PART_NAME_OVERRIDES: Partial<Record<ComponentSlot, string>> = {
+  // `preview` already names the template builder's Preview button.
+  preview: "preview-panel",
+};
+
+/**
+ * The CSS `part` name for a slot: `messageMeta` becomes `message-meta`. The
+ * `preview` slot uses `preview-panel`, since `preview` names the button.
+ */
 export function slotPartName(slot: ComponentSlot): string {
+  const override = PART_NAME_OVERRIDES[slot];
+  if (override !== undefined) return override;
   return slot.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 }
 

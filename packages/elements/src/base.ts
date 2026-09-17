@@ -63,17 +63,35 @@ function supportsAdoptedSheets(): boolean {
 
 // Constructable sheets are shared by every element in the document.
 let defaultSheet: CSSStyleSheet | undefined;
+/** Custom CSS text sheets, least recently used first. */
 const textSheets = new Map<string, CSSStyleSheet>();
+const MAX_TEXT_SHEETS = 32;
 
 function constructedSheet(css: string): CSSStyleSheet {
-  let sheet = css === DEFAULT_STYLES ? defaultSheet : textSheets.get(css);
+  if (css === DEFAULT_STYLES) {
+    if (defaultSheet === undefined) {
+      defaultSheet = new CSSStyleSheet();
+      defaultSheet.replaceSync(css);
+    }
+    return defaultSheet;
+  }
+  let sheet = textSheets.get(css);
   if (sheet === undefined) {
     sheet = new CSSStyleSheet();
     sheet.replaceSync(css);
-    if (css === DEFAULT_STYLES) defaultSheet = sheet;
-    else textSheets.set(css, sheet);
+  } else textSheets.delete(css);
+  textSheets.set(css, sheet);
+  while (textSheets.size > MAX_TEXT_SHEETS) {
+    const oldest = textSheets.keys().next().value;
+    if (oldest === undefined) break;
+    textSheets.delete(oldest);
   }
   return sheet;
+}
+
+/** @internal Number of cached custom CSS text sheets, for tests. */
+export function cachedTextSheetCount(): number {
+  return textSheets.size;
 }
 
 function sheetText(sheet: string | CSSStyleSheet): string {

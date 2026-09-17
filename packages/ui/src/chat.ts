@@ -140,6 +140,28 @@ export function isImageAttachment(attachment: {
   return attachment.contentType.toLowerCase().startsWith("image/");
 }
 
+const SAFE_ATTACHMENT_PROTOCOLS = new Set(["https:", "http:", "blob:"]);
+
+/**
+ * `url` when it is an absolute `https:`, `http:`, or `blob:` URL, otherwise
+ * `undefined`. Use it before placing an attachment URL in `href` or `src`, so
+ * `javascript:` and other schemes never reach the DOM.
+ */
+export function safeAttachmentUrl(
+  url: string | undefined | null,
+): string | undefined {
+  if (typeof url !== "string" || url.trim() === "") return undefined;
+  let parsed: URL;
+  try {
+    parsed = new URL(url.trim());
+  } catch {
+    return undefined;
+  }
+  return SAFE_ATTACHMENT_PROTOCOLS.has(parsed.protocol)
+    ? parsed.href
+    : undefined;
+}
+
 /**
  * Outline icons (24×24, 2px stroke) used by the chat surfaces. Each value is
  * the `d` attribute of a single `<path>`.

@@ -79,6 +79,13 @@ document, and Web Components do not adopt it. Components still render their
 `pmfa-*` classes, `data-slot` attributes (React), and `part` names (Web
 Components), so you can style them from scratch.
 
+React adds the bundled stylesheet to the document once, the first time a
+styled component mounts, and it stays there. Its `pmfa-*` rules then also
+match unstyled React components on the same page. Keep `unstyled: true` for
+every React component on a page (or style the unstyled ones with unlayered
+CSS, which overrides the bundled `@layer polymorfa` rules). Web Components
+keep styles inside each shadow root, so they are not affected.
+
 ### Slots
 
 Every structural node has a slot name. `appearance.elements[slot]` accepts a
@@ -118,11 +125,12 @@ kebab-case slot name to the node's `part` attribute.
 | `actions`         | `actions`          | Template action row                  |
 | `primaryButton`   | `primary-button`   | Save draft                           |
 | `button`          | `button`           | Preview and Submit to Meta           |
-| `preview`         | `preview`          | Template preview area                |
+| `preview`         | `preview-panel`    | Template preview area                |
 | `error`           | `error`            | Error message                        |
 
 `COMPONENT_SLOTS` lists them, and `slotPartName()` converts a slot to its
-part name. Web Components keep their earlier part names as well, such as
+part name (`preview` maps to `preview-panel`, because the
+Preview button already uses `preview`). Web Components keep their earlier part names as well, such as
 `meta`, `input`, `send`, `header`, `title`, and `close`.
 
 ### Web Component stylesheets
