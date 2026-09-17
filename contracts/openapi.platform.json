@@ -24607,7 +24607,7 @@
           },
           "hideWatermark": {
             "type": "boolean",
-            "description": "Hide Powered by Polymorfa. Requires Premium team access."
+            "description": "Saved preference to hide Powered by Polymorfa. QuickLink pages hide it only while the team is active and has a Branded QuickLink add-on, an active launch trial, or an Enterprise agreement."
           },
           "allowPhoneChange": {
             "type": "boolean",
@@ -24803,7 +24803,7 @@
           },
           "hideWatermark": {
             "type": "boolean",
-            "description": "Hide Powered by Polymorfa. Requires Premium team access."
+            "description": "Hide Powered by Polymorfa. Setting `true` requires an active team with a Branded QuickLink add-on, an active launch trial, or an Enterprise agreement; otherwise the request returns `402` with code `premium_required`."
           },
           "allowPhoneChange": {
             "type": "boolean",

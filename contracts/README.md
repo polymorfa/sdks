@@ -2,7 +2,7 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`37191fc1cfa75537b426845f4afa978a642474b1` on branch
+`51eb4370979fd5781e7a64f483215ba13ee16b06` on branch
 `t3code/calls-unified-clients`. That commit is pushed but not merged; re-pin to
 the merged commit before release. `source.json` records the original paths and
 SHA-256 hashes. `coverage.json` uses the same source revision.
