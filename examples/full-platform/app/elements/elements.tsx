@@ -42,7 +42,13 @@ export function ElementsDemo() {
       if (disposed) return;
       definePolymorfaElements();
       const configuration = {
-        appearance: { theme: "dark" as const },
+        // Follow the theme the app applied to the document.
+        appearance: {
+          theme:
+            document.documentElement.dataset.theme === "dark"
+              ? ("dark" as const)
+              : ("light" as const),
+        },
         locale: createLocale("en"),
       };
       if (list.current) {

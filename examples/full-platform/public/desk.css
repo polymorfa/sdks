@@ -4301,6 +4301,15 @@ a.m-doc:hover {
   font-family: var(--font);
 }
 
+.builder .pmfa-tb-title {
+  margin-bottom: 18px;
+  font-size: 17px;
+}
+
+.builder .pmfa-tb-form {
+  gap: 16px;
+}
+
 .builder .pmfa-tb-aside {
   padding: 20px 12px;
   border-radius: var(--radius-lg);
