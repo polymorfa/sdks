@@ -2,13 +2,32 @@ import {
   ObservableController,
   type ControllerSnapshot,
 } from "../controller.js";
-import type { MessageAttachment } from "./conversation.js";
+import type {
+  ConversationController,
+  MessageAttachment,
+} from "./conversation.js";
 
 export interface LocalAttachment {
   readonly id: string;
   readonly name: string;
   readonly size: number;
   readonly contentType: string;
+  /** The picked or pasted bytes, for `ComposerActions.upload` to read. */
+  readonly file?: Blob;
+}
+
+/** Describe a picked, pasted, or dropped file as a composer attachment. */
+export function localAttachmentFromFile(
+  file: File,
+  createId: () => string = () => crypto.randomUUID(),
+): LocalAttachment {
+  return {
+    id: createId(),
+    name: file.name,
+    size: file.size,
+    contentType: file.type === "" ? "application/octet-stream" : file.type,
+    file,
+  };
 }
 
 export interface ComposerAttachment extends LocalAttachment {
@@ -31,6 +50,28 @@ export interface ComposerActions {
     signal: AbortSignal,
   ): Promise<MessageAttachment>;
   send(draft: ComposerDraft, signal: AbortSignal): Promise<void>;
+}
+
+/**
+ * Composer actions that send through a conversation, so the composer and the
+ * message list share one optimistic history. `upload` stays yours: it turns
+ * the local bytes into a hosted `MessageAttachment`.
+ */
+export function createConversationComposerActions(
+  conversation: ConversationController,
+  upload: ComposerActions["upload"],
+): ComposerActions {
+  return {
+    upload,
+    send: (draft) =>
+      conversation.send({
+        text: draft.text,
+        ...(draft.replyTo === undefined ? {} : { replyTo: draft.replyTo }),
+        ...(draft.attachments.length === 0
+          ? {}
+          : { attachments: draft.attachments }),
+      }),
+  };
 }
 
 export interface MessageComposerSnapshot extends ControllerSnapshot {

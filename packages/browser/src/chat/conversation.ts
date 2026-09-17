@@ -11,6 +11,10 @@ export interface MessageAttachment {
   readonly name: string;
   readonly size: number;
   readonly contentType: string;
+  /** Where the full file can be opened or downloaded. */
+  readonly url?: string;
+  /** A smaller image to show inline; falls back to `url` for images. */
+  readonly previewUrl?: string;
 }
 
 export interface ConversationMessage {

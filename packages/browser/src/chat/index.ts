@@ -13,6 +13,8 @@ export {
 } from "./conversation.js";
 export {
   MessageComposerController,
+  createConversationComposerActions,
+  localAttachmentFromFile,
   type ComposerActions,
   type ComposerAttachment,
   type ComposerDraft,
