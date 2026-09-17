@@ -112,6 +112,12 @@ kebab-case slot name to the node's `part` attribute.
 | `composerInput`   | `composer-input`   | Message textarea                     |
 | `composerSend`    | `composer-send`    | Send button                          |
 | `composerAttach`  | `composer-attach`  | Attach button                        |
+| `composerToolbar` | `composer-toolbar` | Composer button and field row        |
+| `emojiButton`     | `emoji-button`     | Emoji picker button                  |
+| `emojiPicker`     | `emoji-picker`     | Emoji picker popover                 |
+| `voiceButton`     | `voice-button`     | Record voice note button             |
+| `recordingBar`    | `recording-bar`    | Voice note recording bar             |
+| `quickReplyMenu`  | `quick-reply-menu` | "/" quick reply list                 |
 | `attachmentChip`  | `attachment-chip`  | Pending attachment                   |
 | `replyBanner`     | `reply-banner`     | "Replying to …" banner               |
 | `drawer`          | `drawer`           | Drawer panel                         |
@@ -132,6 +138,21 @@ kebab-case slot name to the node's `part` attribute.
 part name (`preview` maps to `preview-panel`, because the
 Preview button already uses `preview`). Web Components keep their earlier part names as well, such as
 `meta`, `input`, `send`, `header`, `title`, and `close`.
+
+### Composer helpers
+
+The React and Web Component composers share these exports, which you can
+use in a custom composer:
+
+- `QuickReplyOption`, `findQuickReplyQuery()`, `filterQuickReplies()`, and
+  `applyQuickReply()` for "/" quick replies.
+- `insertText()` inserts at a caret or over a selection.
+- `emojiList()`, `emojiInCategory()`, `searchEmoji()`, `readRecentEmoji()`,
+  and `recordRecentEmoji()` expose the built-in set of about 430 emoji with
+  English names and keywords. It lives in its own module, so bundlers drop
+  it when nothing imports it.
+- `placePopover()` positions a fixed popover beside an anchor inside the
+  viewport, and `formatElapsed()` formats a recording time as `mm:ss`.
 
 ### Web Component stylesheets
 

@@ -36,6 +36,35 @@ export {
   type SlotClassNames,
 } from "./slots.js";
 export {
+  applyQuickReply,
+  filterQuickReplies,
+  findQuickReplyQuery,
+  formatElapsed,
+  insertText,
+  placePopover,
+  quickReplyLabel,
+  type PopoverPlacement,
+  type PopoverRect,
+  type QuickReplyOption,
+  type QuickReplyQuery,
+  type TextEdit,
+} from "./composer.js";
+export {
+  EMOJI_CATEGORIES,
+  EMOJI_CATEGORY_ICONS,
+  EMOJI_PICKER_CATEGORIES,
+  emojiInCategory,
+  emojiList,
+  findEmoji,
+  readRecentEmoji,
+  recentEmojiEntries,
+  recordRecentEmoji,
+  searchEmoji,
+  type EmojiCategory,
+  type EmojiEntry,
+  type EmojiPickerCategory,
+} from "./emoji.js";
+export {
   CHAT_ICONS,
   compareMessageTime,
   formatDayLabel,
