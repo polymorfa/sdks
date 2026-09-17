@@ -1027,7 +1027,11 @@ export function CallStage({
   const ringingLine =
     snapshot.status === "reconnecting"
       ? `${t(locale, "calls.reconnecting")}…`
-      : !live && snapshot.direction === "outgoing"
+      : !live &&
+          snapshot.direction === "outgoing" &&
+          // With a shared call model the controller reports the answer, so
+          // an answered call that is still connecting no longer "rings".
+          (snapshot.status === "ringing" || resolved.call === undefined)
         ? t(locale, "calls.ringingTo", { peer })
         : null;
   const identity = (

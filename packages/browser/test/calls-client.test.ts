@@ -161,6 +161,56 @@ describe("browser widget and shared calls client", () => {
     ]);
   });
 
+  it("starts a placed call as answered when the callee picked up before placement returned", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    let finish!: (response: Response) => void;
+    f.fetch.mockImplementationOnce(
+      async () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const statuses: string[] = [];
+    f.calls.controller.subscribe(() => {
+      const s = f.calls.controller.getSnapshot();
+      if (s.callId === "CALL-OUT") statuses.push(s.status);
+    });
+    const placing = f.calls.controller.place("+15550100");
+    await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
+    event(socket, "call.accepted", "CALL-OUT");
+    finish(
+      new Response(JSON.stringify({ data: { callId: "CALL-OUT" } }), {
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    await placing;
+    expect(f.calls.controller.call?.state).toBe("connecting");
+    expect(f.calls.controller.getSnapshot().status).toBe("connecting");
+    expect(statuses).not.toContain("ringing");
+    f.callbacks().onConnectionState("connected");
+    await flush();
+    expect(f.calls.controller.getSnapshot().status).toBe("connected");
+  });
+
+  it("reports a placed call as ringing until the callee answers", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    await f.calls.controller.place("+15550100");
+    // Media is open, but nobody has answered.
+    expect(f.media.open).toHaveBeenCalled();
+    expect(f.calls.controller.getSnapshot().status).toBe("ringing");
+    // An ICE blip while ringing resumes to ringing.
+    f.callbacks().onIceConnectionState?.("disconnected");
+    expect(f.calls.controller.getSnapshot().status).toBe("reconnecting");
+    f.callbacks().onIceConnectionState?.("connected");
+    expect(f.calls.controller.getSnapshot().status).toBe("ringing");
+    f.callbacks().onConnectionState("connected");
+    event(socket, "call.accepted", "CALL-OUT");
+    await flush();
+    expect(f.calls.controller.getSnapshot().status).toBe("connected");
+  });
+
   it("leaves, and never ends, a call when microphone acquisition fails", async () => {
     const f = fixture();
     const socket = await f.connect();

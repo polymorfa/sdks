@@ -1225,6 +1225,40 @@ describe("unified calls UI", () => {
     f.controller.dispose();
   });
 
+  it("stops showing Ringing once a shared call reports the callee answered", async () => {
+    const base = fixture();
+    const relay = new IncomingCallRelay();
+    const shared = { state: "ringing", participants: [], ended: false };
+    const controller = new CallsController(
+      {
+        ...createSignalingCallsBackend({
+          signaling: base.signaling,
+          incoming: relay,
+          place: async () => "call-out",
+        }),
+        getCall: () => shared as never,
+      },
+      base.media,
+    );
+    controller.initialize();
+    base.controller.dispose();
+    const host = mount(
+      <PolymorfaProvider>
+        <CallStage controller={controller} />
+      </PolymorfaProvider>,
+    );
+    await act(async () => {
+      await controller.place("+12025550123");
+    });
+    expect(controller.getSnapshot().status).toBe("ringing");
+    expect(host.textContent).toContain("Ringing +12025550123");
+    shared.state = "connecting";
+    act(() => relay.accepted("call-out"));
+    expect(controller.getSnapshot().status).toBe("connecting");
+    expect(host.textContent).not.toContain("Ringing");
+    controller.dispose();
+  });
+
   it("offers only Hang up on a placed call until it connects", async () => {
     const f = fixture();
     const host = mount(

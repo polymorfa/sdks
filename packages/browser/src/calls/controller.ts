@@ -316,7 +316,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   #resumeTimer: ReturnType<typeof setTimeout> | undefined;
   #giveUpTimer: ReturnType<typeof setTimeout> | undefined;
   /** The status resumption interrupted, restored when media comes back. */
-  #resumedFrom: "connected" | "connecting" | undefined;
+  #resumedFrom: "connected" | "connecting" | "ringing" | undefined;
   /** Per-kind switch counter, so a stale failure cannot undo a newer switch. */
   readonly #deviceSwitches = new Map<string, number>();
   /**
@@ -443,12 +443,16 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       if (operation !== this.#operation) return;
       this.#remember(callId);
       this.#remoteVideos = [];
-      // Roster events that raced the placement request were applied to the
-      // shared call before this controller knew the id; start from them.
+      // Roster and acceptance events that raced the placement request were
+      // applied to the shared call before this controller knew the id; start
+      // from them. An ended shared call is adopted below.
       const shared = this.#backend.getCall?.(callId);
+      const answered =
+        shared !== undefined &&
+        (shared.state === "connecting" || shared.state === "connected");
       this.transition({
         ...this.#baseFields(),
-        status: "ringing",
+        status: answered ? "accepted" : "ringing",
         callId,
         peer: to,
         direction: "outgoing",
@@ -1016,9 +1020,15 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     video: boolean,
     operation: number,
   ): Promise<void> {
+    // A placed call the remote party has not answered keeps ringing while its
+    // media opens, when the shared call can say so.
+    const before = this.getSnapshot();
     this.transition({
-      ...callFields(this.getSnapshot()),
-      status: "connecting",
+      ...callFields(before),
+      status:
+        before.status === "ringing" && this.call?.state === "ringing"
+          ? "ringing"
+          : "connecting",
     });
     const connectionId = this.#backend.connectionId?.(callId);
     const media = await this.#mediaFactory.open(
@@ -1055,6 +1065,16 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       return;
     }
     this.#media = media;
+    // Answered while the capture was opening: media is connecting now.
+    const answeredMeanwhile = this.getSnapshot();
+    if (
+      answeredMeanwhile.callId === callId &&
+      answeredMeanwhile.status === "accepted"
+    )
+      this.transition({
+        ...callFields(answeredMeanwhile),
+        status: "connecting",
+      });
     // The capture opened with the preferred devices, or the track's own
     // device when the browser reports it.
     this.#appliedDevices.clear();
@@ -1146,7 +1166,11 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   #beginResumption(callId: string, restartAfterMs: number): void {
     if (this.#giveUpTimer !== undefined) return;
     const current = this.getSnapshot();
-    if (current.status !== "connected" && current.status !== "connecting")
+    if (
+      current.status !== "connected" &&
+      current.status !== "connecting" &&
+      current.status !== "ringing"
+    )
       return;
     this.#resumedFrom = current.status;
     this.transition({ ...callFields(current), status: "reconnecting" });
@@ -1337,9 +1361,18 @@ export class CallsController extends ObservableController<CallsSnapshot> {
           });
           return;
         }
-        // The remote party picked up a call this client placed.
+        // The remote party picked up a call this client placed. With media
+        // already open it is connecting; otherwise media opens next.
+        if (
+          current.status === "reconnecting" &&
+          this.#resumedFrom === "ringing"
+        )
+          this.#resumedFrom = "connecting";
         if (current.status === "ringing")
-          this.transition({ ...callFields(current), status: "accepted" });
+          this.transition({
+            ...callFields(current),
+            status: this.#media === undefined ? "accepted" : "connecting",
+          });
         return;
       }
       case "videostate":
