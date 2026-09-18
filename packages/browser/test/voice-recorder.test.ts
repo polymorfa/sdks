@@ -5,7 +5,12 @@ import {
   type MediaRecorderConstructor,
 } from "../src/index.js";
 
-function fakeMedia(options: { readonly types?: readonly string[] } = {}) {
+function fakeMedia(
+  options: {
+    readonly types?: readonly string[];
+    readonly reported?: string;
+  } = {},
+) {
   const track = { stop: vi.fn() };
   const stream = { getTracks: () => [track] } as unknown as MediaStream;
   const recorders: FakeRecorder[] = [];
@@ -24,7 +29,7 @@ function fakeMedia(options: { readonly types?: readonly string[] } = {}) {
       recorders.push(this);
     }
     get mimeType() {
-      return this.options?.mimeType ?? "";
+      return options.reported ?? this.options?.mimeType ?? "";
     }
     start = vi.fn(() => {
       this.state = "recording";
@@ -118,6 +123,31 @@ describe("VoiceNoteRecorder", () => {
     expect(voiceNoteName("audio/webm", 0)).toBe(
       "voice-note-1970-01-01T00-00-00-000Z.webm",
     );
+  });
+
+  it("records Safari's audio/mp4 as an .m4a file", async () => {
+    const media = fakeMedia({ types: ["audio/mp4"] });
+    const recorder = new VoiceNoteRecorder(media.options);
+    await recorder.start();
+    expect(recorder.getSnapshot().mimeType).toBe("audio/mp4");
+    const file = await recorder.stop();
+    expect(file?.type).toBe("audio/mp4");
+    expect(file?.name.endsWith(".m4a")).toBe(true);
+    expect(voiceNoteName("audio/mp4;codecs=mp4a.40.2", 0)).toBe(
+      "voice-note-1970-01-01T00-00-00-000Z.m4a",
+    );
+  });
+
+  it("rejects a recording in a container it cannot label", async () => {
+    const media = fakeMedia({ reported: "audio/x-unknown" });
+    const recorder = new VoiceNoteRecorder(media.options);
+    await recorder.start();
+    expect(await recorder.stop()).toBeUndefined();
+    expect(media.track.stop).toHaveBeenCalled();
+    expect(recorder.getSnapshot()).toMatchObject({
+      status: "error",
+      error: "failed",
+    });
   });
 
   it("cancels without producing a file", async () => {

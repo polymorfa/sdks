@@ -40,7 +40,7 @@ export const ENGLISH_MESSAGES = {
   "composer.emojiPicker": "Emoji picker",
   "composer.emojiSearch": "Search emoji",
   "composer.emojiNoResults": "No emoji found",
-  "composer.emojiNoRecent": "Emoji you use appear here",
+  "composer.emojiNoRecent": "Emoji you use will appear here",
   "composer.emojiCategories": "Emoji categories",
   "composer.emojiCategory.recent": "Recent",
   "composer.emojiCategory.smileys": "Smileys and emotion",

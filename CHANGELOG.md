@@ -27,7 +27,8 @@
   `emojiPicker`, `voiceButton`, `recordingBar`, and `quickReplyMenu`. See the
   [React](packages/react/README.md#chat) and
   [Web Component](packages/elements/README.md#chat) guides.
-- `@polymorfa/browser` adds `VoiceNoteRecorder`, and `@polymorfa/ui` adds
+- `@polymorfa/browser` adds `VoiceNoteRecorder`, which records WebM, Ogg, or
+  (in Safari) MP4 audio, and `@polymorfa/ui` adds
   `QuickReplyOption`, the built-in emoji set, and composer helpers. See
   [voice notes](packages/browser/README.md#voice-notes).
 - The `@polymorfa/devtools` panel now starts collapsed behind a small
