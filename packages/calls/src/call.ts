@@ -370,6 +370,8 @@ export class Call extends Emitter<CallEvents> {
   #endedAt: number | undefined;
   /** The in-flight answer or join, through media attachment. */
   #accepting: Promise<void> | undefined;
+  /** The in-flight accept request alone, without media attachment. */
+  #acceptRequest: Promise<unknown> | undefined;
   /** This client's accept succeeded. */
   #accepted = false;
   #answered = false;
@@ -541,7 +543,7 @@ export class Call extends Emitter<CallEvents> {
       );
     if (this.claimedByOther) return Promise.reject(new CallClaimedError());
     let accepted = false;
-    const accepting = (async () => {
+    const accepting: Promise<void> = (async () => {
       this.#transition("connecting");
       const result = await this.#api.accept(this.id, {
         exclusive: options.exclusive,
@@ -579,6 +581,12 @@ export class Call extends Emitter<CallEvents> {
         throw cause;
       });
     this.#accepting = run;
+    this.#acceptRequest = accepting;
+    void accepting
+      .finally(() => {
+        if (this.#acceptRequest === accepting) this.#acceptRequest = undefined;
+      })
+      .catch(() => undefined);
     // Once settled, later answer() and join() calls check the call's state
     // again instead of reusing this result. Failures already clear it above.
     void run.then(
@@ -621,6 +629,14 @@ export class Call extends Emitter<CallEvents> {
     if (this.direction === "outbound" && this.#state === "ringing") {
       await this.end();
       return;
+    }
+    // An accept still in flight may yet succeed and put this client on the
+    // call (possibly with a claim); wait for it, so a successful one is left
+    // on the platform too instead of only dropped here.
+    const acceptRequest = this.#acceptRequest;
+    if (!this.#accepted && acceptRequest !== undefined) {
+      await acceptRequest.catch(() => undefined);
+      if (this.ended) return;
     }
     const attached = this.#accepted;
     const media = this.#media;
@@ -687,6 +703,15 @@ export class Call extends Emitter<CallEvents> {
     }
     if (this.direction === "outbound") {
       if (this.#state !== "ringing") return;
+      // The remote party answered. A placement with `exclusive: true` holds
+      // the claim even when the event does not repeat it.
+      this.#applyClaim({
+        answered: true,
+        ...(claim.answeredBy === undefined
+          ? {}
+          : { answeredBy: claim.answeredBy }),
+        exclusive: claim.exclusive === true || this.#claimedByUs,
+      });
       this.#transition("connecting");
       try {
         await this.#bridge();

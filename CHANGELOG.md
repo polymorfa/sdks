@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- `@polymorfa/sdk/calls`: a placed call records the answer in `call.claim`
+  (`answered`, `answeredBy`, `exclusive`) and emits `claim` when the callee
+  picks up. `disconnect()` and `leave()` wait for an answer still in flight
+  and leave the call if it succeeds. Concurrent token requests share one
+  provider call without sharing cancellation: cancelling one request no
+  longer fails the others, and the provider call is cancelled only when
+  every waiting request is.
 - Call diagnostics. `MessagingClient.voip.report()` sends quality figures or
   an error code for one of your media connections
   (`POST /messaging/voip/calls/{id}/reports`), with the new

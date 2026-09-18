@@ -43,9 +43,7 @@ export class CallsTokenSource {
   readonly #now: () => number;
   readonly #skew: number;
   #cached: CallsToken | undefined;
-  #pending:
-    | { readonly promise: Promise<CallsToken>; readonly refresh: boolean }
-    | undefined;
+  #pending: PendingFetch | undefined;
   // Only the latest provider call may replace the cached token.
   #fetchGeneration = 0;
 
@@ -84,14 +82,75 @@ export class CallsTokenSource {
     if (refresh) this.#cached = undefined;
     // A refresh never takes the result of a provider call that was not asked
     // to refresh: that call may return the refused token.
-    if (this.#pending !== undefined && (!refresh || this.#pending.refresh))
-      return this.#pending.promise;
-    const generation = ++this.#fetchGeneration;
-    const pending = this.#fetch(request, generation).finally(() => {
-      if (this.#pending?.promise === pending) this.#pending = undefined;
+    let pending = this.#pending;
+    if (pending === undefined || (refresh && !pending.refresh)) {
+      const generation = ++this.#fetchGeneration;
+      const controller = new AbortController();
+      const entry: PendingFetch = {
+        promise: Promise.resolve() as unknown as Promise<CallsToken>,
+        refresh,
+        controller,
+        waiters: 0,
+        anchored: false,
+      };
+      entry.promise = this.#fetch(
+        refresh,
+        controller.signal,
+        generation,
+      ).finally(() => {
+        if (this.#pending === entry) this.#pending = undefined;
+      });
+      // Every caller may have gone before it settles.
+      entry.promise.catch(() => undefined);
+      this.#pending = entry;
+      pending = entry;
+    }
+    return this.#wait(pending, request.signal);
+  }
+
+  /**
+   * Hand one caller the shared provider call. The call runs under its own
+   * signal: a caller's cancellation rejects only that caller, and the call
+   * itself is cancelled once every caller that could cancel has done so and
+   * no caller without a signal is waiting.
+   */
+  #wait(
+    entry: PendingFetch,
+    signal: AbortSignal | undefined,
+  ): Promise<CallsToken> {
+    if (signal === undefined) {
+      entry.anchored = true;
+      return entry.promise;
+    }
+    if (signal.aborted) return Promise.reject(signal.reason);
+    entry.waiters += 1;
+    return new Promise<CallsToken>((resolve, reject) => {
+      let done = false;
+      const leave = () => {
+        if (done) return false;
+        done = true;
+        entry.waiters -= 1;
+        signal.removeEventListener("abort", onAbort);
+        return true;
+      };
+      const onAbort = () => {
+        if (!leave()) return;
+        reject(signal.reason);
+        if (entry.waiters === 0 && !entry.anchored) {
+          if (this.#pending === entry) this.#pending = undefined;
+          entry.controller.abort(signal.reason);
+        }
+      };
+      signal.addEventListener("abort", onAbort, { once: true });
+      entry.promise.then(
+        (token) => {
+          if (leave()) resolve(token);
+        },
+        (cause: unknown) => {
+          if (leave()) reject(cause);
+        },
+      );
     });
-    this.#pending = { promise: pending, refresh };
-    return pending;
   }
 
   /**
@@ -106,17 +165,25 @@ export class CallsTokenSource {
   }
 
   async #fetch(
-    request: CallsTokenRequest,
+    refresh: boolean,
+    signal: AbortSignal,
     generation: number,
   ): Promise<CallsToken> {
-    const supplied = await this.#provider({
-      refresh: request.refresh === true,
-      ...(request.signal === undefined ? {} : { signal: request.signal }),
-    });
+    const supplied = await this.#provider({ refresh, signal });
     const token = normalizeToken(supplied);
     if (generation === this.#fetchGeneration) this.#cached = token;
     return token;
   }
+}
+
+interface PendingFetch {
+  promise: Promise<CallsToken>;
+  readonly refresh: boolean;
+  readonly controller: AbortController;
+  /** Callers with a signal still waiting. */
+  waiters: number;
+  /** A caller without a signal is waiting, so the call is never cancelled. */
+  anchored: boolean;
 }
 
 export function normalizeToken(supplied: unknown): CallsToken {

@@ -59,6 +59,55 @@ describe("CallsTokenSource", () => {
     expect(calls).toBe(2);
   });
 
+  it("keeps one caller's cancellation from failing another caller's shared fetch", async () => {
+    const pending = deferred<string>();
+    const signals: (AbortSignal | undefined)[] = [];
+    const source = new CallsTokenSource(async ({ signal }) => {
+      signals.push(signal);
+      // A provider that honours its signal, as documented.
+      return await new Promise<string>((resolve, reject) => {
+        signal?.addEventListener("abort", () => reject(signal.reason));
+        void pending.promise.then(resolve);
+      });
+    });
+    const first = new AbortController();
+    const cancelled = source.get({ signal: first.signal });
+    const kept = source.get({ signal: new AbortController().signal });
+    const unsignalled = source.get();
+    expect(signals).toHaveLength(1);
+    first.abort(new Error("placement cancelled"));
+    await expect(cancelled).rejects.toThrow("placement cancelled");
+    // The shared provider call is still running for the other callers.
+    expect(signals[0]?.aborted).toBe(false);
+    pending.resolve("pmfa_ct_shared");
+    expect((await kept).value).toBe("pmfa_ct_shared");
+    expect((await unsignalled).value).toBe("pmfa_ct_shared");
+  });
+
+  it("cancels the shared provider call once every caller has cancelled", async () => {
+    const signals: AbortSignal[] = [];
+    const source = new CallsTokenSource(
+      ({ signal }) =>
+        new Promise<string>((_resolve, reject) => {
+          signals.push(signal!);
+          signal!.addEventListener("abort", () => reject(signal!.reason));
+        }),
+    );
+    const a = new AbortController();
+    const b = new AbortController();
+    const first = source.get({ signal: a.signal });
+    const second = source.get({ signal: b.signal });
+    a.abort(new Error("a"));
+    await expect(first).rejects.toThrow("a");
+    expect(signals[0]?.aborted).toBe(false);
+    b.abort(new Error("b"));
+    await expect(second).rejects.toThrow("b");
+    expect(signals[0]?.aborted).toBe(true);
+    // A later request starts a fresh provider call.
+    void source.get().catch(() => undefined);
+    expect(signals).toHaveLength(2);
+  });
+
   it("lets a plain request share an in-flight refresh", async () => {
     const calls: boolean[] = [];
     const source = new CallsTokenSource(async ({ refresh }) => {

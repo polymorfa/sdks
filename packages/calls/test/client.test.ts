@@ -1616,3 +1616,98 @@ describe("CallsClient — answering a settled call", () => {
     expect(h.api.accept).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("CallsClient — disconnecting during an answer", () => {
+  it.each([false, true])(
+    "leaves a call whose answer (exclusive: %s) succeeds after disconnect()",
+    async (exclusive) => {
+      const api = fakeApi();
+      let finish!: () => void;
+      api.accept.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = () =>
+              resolve({ answered: true, answeredBy: "client:self", exclusive });
+          }),
+      );
+      const h = clientWith(api, { mediaMode: "external" });
+      const life = await connected(h);
+      let call: Call | undefined;
+      h.client.on("incoming", (c) => (call = c));
+      ring(life);
+      const answering = call!.answer({ exclusive }).catch(() => undefined);
+      await flush();
+      const disconnecting = h.client.disconnect();
+      await flush();
+      // Nothing is sent before the accept settles.
+      expect(api.leave).not.toHaveBeenCalled();
+      finish();
+      await disconnecting;
+      await answering;
+      expect(api.leave).toHaveBeenCalledWith(
+        "CALL-1",
+        call!.connectionId,
+        undefined,
+        undefined,
+      );
+      expect(call!.endReason).toBe("left");
+    },
+  );
+
+  it("only stops tracking when the in-flight answer is refused", async () => {
+    const api = fakeApi();
+    let refuse!: (cause: Error) => void;
+    api.accept.mockImplementationOnce(
+      () =>
+        new Promise((_resolve, reject) => {
+          refuse = reject;
+        }),
+    );
+    const h = clientWith(api, { mediaMode: "external" });
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const answering = call!.answer().catch(() => undefined);
+    await flush();
+    const disconnecting = h.client.disconnect();
+    refuse(new Error("offline"));
+    await disconnecting;
+    await answering;
+    expect(api.leave).not.toHaveBeenCalled();
+    expect(call!.ended).toBe(true);
+  });
+});
+
+describe("CallsClient — claim state of a placed call", () => {
+  it.each([
+    [false, {}, { answered: true, exclusive: false }],
+    [true, {}, { answered: true, exclusive: true }],
+    [
+      false,
+      { answeredBy: "15550100", exclusive: true },
+      { answered: true, answeredBy: "15550100", exclusive: true },
+    ],
+  ] as const)(
+    "records the answer (placed exclusive: %s, event %j)",
+    async (exclusive, payload, expected) => {
+      const h = clientWith(undefined, { mediaMode: "external" });
+      const life = await connected(h);
+      const call = await h.client.place("+15550100", { exclusive });
+      expect(call.claim.answered).toBe(false);
+      const claims: unknown[] = [];
+      call.on("claim", (claim) => claims.push(claim));
+      life.text({
+        type: "event",
+        event: "call.accepted",
+        callId: call.id,
+        payload,
+        timestamp: "",
+      });
+      await flush();
+      expect(call.claim).toMatchObject(expected);
+      expect(claims).toHaveLength(1);
+      expect(call.state).toBe("connecting");
+    },
+  );
+});
