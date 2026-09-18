@@ -1,6 +1,7 @@
 {
   "name": "@polymorfa/calls",
   "version": "0.1.0-dev.0",
+  "private": true,
   "description": "Programmatic Polymorfa Calls client: place, answer and carry WhatsApp voice and video calls from code",
   "type": "module",
   "license": "MIT",
@@ -28,9 +29,5 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
   }
 }

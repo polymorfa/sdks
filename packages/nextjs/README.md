@@ -33,7 +33,7 @@ export const POST = createClientTokenRoute({
 ```
 
 Browser calls use this same route. `POST /platform/client-tokens` is the only
-way to mint a client token, so `@polymorfa/calls` and `@polymorfa/browser`
+way to mint a client token, so `@polymorfa/sdk/calls` and `@polymorfa/browser`
 receive the token from `messaging.clientTokens.mint`. The path the browser
 posts to is your own route; `createClientTokenProvider` defaults to
 `/api/polymorfa/token`. Grant the session's client rules the Calls actions

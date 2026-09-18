@@ -98,7 +98,7 @@ the controller never declines one for you. The first invitation is displayed;
   call. `answer()` and `join()` then reject with `CallClaimedError`, and
   `reject()` is refused: declining would end the claimer's call.
 - While calling is turned off for the number, `place()`, `answer()` and
-  `join()` reject with `CallsDisabledError` from `@polymorfa/calls`.
+  `join()` reject with `CallsDisabledError` from `@polymorfa/sdk/calls`.
 - While an answer or join is in flight, `snapshot.answering` is `true` and
   `answer()`, `join()`, `reject()` and `place()` are refused. `select()` and
   `dismiss()` still work: the answered call is displayed once it is accepted,

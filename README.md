@@ -12,16 +12,16 @@ this SDK's initial scope.
 
 ## Package architecture
 
-| Package               | Runtime              | Responsibility                                                                    |
-| --------------------- | -------------------- | --------------------------------------------------------------------------------- |
-| `@polymorfa/sdk`      | Node.js 20+          | Messaging, management, system, and Bridge server clients                          |
-| `@polymorfa/calls`    | Node.js 22+, Browser | Calls lifecycle, answer/join/leave, and programmatic media sockets                |
-| `@polymorfa/browser`  | Browser              | Client-token transport and framework-neutral product controllers                  |
-| `@polymorfa/ui`       | Isomorphic           | Appearance, locale, direction, motion, and diagnostic contracts                   |
-| `@polymorfa/elements` | Browser              | Portable custom elements for React-free, Vue, Svelte, and plain HTML applications |
-| `@polymorfa/react`    | Browser              | React bindings over the same controllers                                          |
-| `@polymorfa/nextjs`   | Server               | App Router-compatible client-token and webhook helpers                            |
-| `@polymorfa/devtools` | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
+| Package                | Runtime              | Responsibility                                                                    |
+| ---------------------- | -------------------- | --------------------------------------------------------------------------------- |
+| `@polymorfa/sdk`       | Node.js 20+          | Messaging, management, system, and Bridge server clients                          |
+| `@polymorfa/sdk/calls` | Node.js 22+, Browser | Calls lifecycle, answer/join/leave, and programmatic media sockets                |
+| `@polymorfa/browser`   | Browser              | Client-token transport and framework-neutral product controllers                  |
+| `@polymorfa/ui`        | Isomorphic           | Appearance, locale, direction, motion, and diagnostic contracts                   |
+| `@polymorfa/elements`  | Browser              | Portable custom elements for React-free, Vue, Svelte, and plain HTML applications |
+| `@polymorfa/react`     | Browser              | React bindings over the same controllers                                          |
+| `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
+| `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
 
 The non-server packages are complete development artifacts on `dev`, but have
 not been published. Their names are the intended public identities in the
@@ -49,6 +49,16 @@ import {
 ```
 
 Node.js 20 or newer is required. The package has no runtime dependencies.
+
+The programmatic Calls client ships inside the same package as the
+`@polymorfa/sdk/calls` subpath; there is no separate Calls package to install:
+
+```ts
+import { CallsClient } from "@polymorfa/sdk/calls";
+```
+
+`@polymorfa/sdk/calls` needs Node.js 22 or newer for its built-in `WebSocket`.
+On older runtimes, pass a `WebSocket` implementation to `CallsClient`.
 
 ## Messaging client
 
@@ -465,7 +475,7 @@ controller lifecycles.
 
 ### Calls
 
-`createBrowserCalls` connects the shared `@polymorfa/calls` model to the
+`createBrowserCalls` connects the shared `@polymorfa/sdk/calls` model to the
 existing browser controller and WebRTC media. It places calls directly with a
 short-lived client token, receives lifecycle events, and exposes the active
 model as `controller.call`. Pass its controller to React or Web Components.

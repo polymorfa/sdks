@@ -36,6 +36,9 @@ describe("npm package", () => {
     expect(paths).toContain("README.md");
     expect(paths).toContain("packages/typescript/README.md");
     expect(paths).toContain("packages/typescript/dist/index.js");
+    expect(paths).toContain("packages/calls/README.md");
+    expect(paths).toContain("packages/calls/dist/index.js");
+    expect(paths).toContain("packages/calls/dist/index.d.ts");
     expect(
       paths.some((path) => path.includes("/src/") || path.includes("/test/")),
     ).toBe(false);
@@ -129,6 +132,22 @@ describe("npm package", () => {
       listenerApiExported: false,
       memberInvite: "undefined",
       organizationUpdate: "undefined",
+    });
+
+    const callsConsumer = join(directory, "calls-consumer.mjs");
+    writeFileSync(
+      callsConsumer,
+      'import * as calls from "@polymorfa/sdk/calls"; console.log(JSON.stringify({ client: typeof calls.CallsClient, disabled: typeof calls.CallsDisabledError, sampleRate: typeof calls.DEFAULT_SAMPLE_RATE }));',
+    );
+    const importedCalls = spawnSync(process.execPath, [callsConsumer], {
+      cwd: directory,
+      encoding: "utf8",
+    });
+    expect(importedCalls.status, importedCalls.stderr).toBe(0);
+    expect(JSON.parse(importedCalls.stdout)).toEqual({
+      client: "function",
+      disabled: "function",
+      sampleRate: "number",
     });
 
     const installedManifest = JSON.parse(

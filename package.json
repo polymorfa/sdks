@@ -36,16 +36,22 @@
     ".": {
       "types": "./packages/typescript/dist/index.d.ts",
       "import": "./packages/typescript/dist/index.js"
+    },
+    "./calls": {
+      "types": "./packages/calls/dist/index.d.ts",
+      "import": "./packages/calls/dist/index.js"
     }
   },
   "files": [
     "packages/typescript/dist",
     "packages/typescript/README.md",
+    "packages/calls/dist",
+    "packages/calls/README.md",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && tsc -p packages/calls/tsconfig.build.json",
     "build:workspaces": "npm run build --workspaces --if-present",
     "check:coverage": "node scripts/check-coverage.mjs --messaging contracts/openapi.messaging.json --platform contracts/openapi.platform.json --ledger contracts/coverage.json --strict",
     "check:names": "node scripts/check-retired-name.mjs",

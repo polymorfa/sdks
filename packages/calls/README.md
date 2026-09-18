@@ -1,4 +1,7 @@
-# `@polymorfa/calls`
+# `@polymorfa/sdk/calls`
+
+This directory is the source of the `@polymorfa/sdk/calls` subpath. It is built
+into the `@polymorfa/sdk` package and is not published on its own.
 
 Programmatic Polymorfa Calls: a client you run from code that follows a session,
 rings on inbound WhatsApp calls, places outbound ones, and hands you each call's
@@ -6,7 +9,7 @@ audio and video to read and write. The browser call UI in `@polymorfa/react` and
 `@polymorfa/elements` uses the same call model with WebRTC as its media path.
 
 ```ts
-import { CallsClient } from "@polymorfa/calls";
+import { CallsClient } from "@polymorfa/sdk/calls";
 
 const client = new CallsClient({
   token: process.env.POLYMORFA_API_KEY!, // or a client-token provider
