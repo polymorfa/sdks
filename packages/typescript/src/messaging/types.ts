@@ -1501,10 +1501,14 @@ export interface SessionCallSettings {
    */
   readonly callsEnabled: boolean;
   /**
-   * Include a connection's own audio in the merged call audio it receives.
-   * `false` by default. WhatsApp never receives its own audio.
+   * Conference mode, `true` by default. When `true`, every participant you
+   * connect to a call (browser, app and server connections, and SIP trunk
+   * callers) hears the WhatsApp party and each other. When `false`, each
+   * hears only the WhatsApp party. The WhatsApp party always hears all of
+   * your participants, and nobody hears their own audio, including from
+   * their other connections.
    */
-  readonly includeSelfAudio: boolean;
+  readonly conferenceMode: boolean;
   /**
    * Where incoming WhatsApp calls ring. `clients` rings your connected
    * participants; `sip_trunk` also sends each call to `sipTrunkId`.
@@ -1538,7 +1542,11 @@ export type CallInboundRoute = "clients" | "sip_trunk";
 export interface UpdateSessionCallSettingsRequest {
   /** `false` turns calling off for the session; `true` turns it back on. */
   readonly callsEnabled?: boolean;
-  readonly includeSelfAudio?: boolean;
+  /**
+   * `true` lets the participants you connect hear each other as well as the
+   * WhatsApp party; `false` lets each hear only the WhatsApp party.
+   */
+  readonly conferenceMode?: boolean;
   /**
    * Routing to a different trunk requires the SIP trunks beta. `clients`
    * clears the trunk.

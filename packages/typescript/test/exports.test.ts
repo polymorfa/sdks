@@ -265,9 +265,9 @@ describe("public exports", () => {
     expectTypeOf<VoipAcceptCallResult>().toHaveProperty("answeredBy");
     expectTypeOf<VoipLeaveCallRequest>().toHaveProperty("connectionId");
     expectTypeOf<VoipParticipant>().toHaveProperty("state");
-    expectTypeOf<SessionCallSettings>().toHaveProperty("includeSelfAudio");
+    expectTypeOf<SessionCallSettings>().toHaveProperty("conferenceMode");
     expectTypeOf<UpdateSessionCallSettingsRequest>().toHaveProperty(
-      "includeSelfAudio",
+      "conferenceMode",
     );
   });
 });

@@ -35,7 +35,7 @@ const participant = {
   state: "invited",
 };
 const callSettings = {
-  includeSelfAudio: true,
+  conferenceMode: true,
   updatedAt: "2026-09-16T10:00:00.000Z",
 };
 const calls = [
@@ -119,8 +119,8 @@ const calls = [
   {
     operationId: "updateCallSettings",
     method: "updateCallSettings",
-    args: ["support/eu", { includeSelfAudio: true }],
-    body: { includeSelfAudio: true },
+    args: ["support/eu", { conferenceMode: true }],
+    body: { conferenceMode: true },
     status: 200,
     response: { success: true, data: callSettings },
   },
@@ -137,7 +137,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("0f9963a43462c76601c4abfbb4dd14da2da2cf6f");
+    expect(source.commit).toBe("d2217b84f232248fc7e5c00e7893c86a66b52e82");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",

@@ -163,9 +163,15 @@ export class VoipResource {
     if (typeof body !== "object" || body === null) {
       throw new PolymorfaValidationError("Call settings must be an object.");
     }
+    // The platform rejects the retired setting as an unknown field.
+    if ("includeSelfAudio" in body) {
+      throw new PolymorfaValidationError(
+        "includeSelfAudio was replaced by conferenceMode.",
+      );
+    }
     const {
       callsEnabled,
-      includeSelfAudio,
+      conferenceMode,
       inboundRoute,
       sipTrunkId,
       sipClaim,
@@ -173,7 +179,7 @@ export class VoipResource {
     } = body;
     if (
       callsEnabled === undefined &&
-      includeSelfAudio === undefined &&
+      conferenceMode === undefined &&
       inboundRoute === undefined &&
       sipTrunkId === undefined &&
       sipClaim === undefined &&
@@ -185,7 +191,7 @@ export class VoipResource {
     }
     for (const [name, value] of [
       ["callsEnabled", callsEnabled],
-      ["includeSelfAudio", includeSelfAudio],
+      ["conferenceMode", conferenceMode],
       ["sipClaim", sipClaim],
       ["hostCloudApiCalls", hostCloudApiCalls],
     ] as const) {

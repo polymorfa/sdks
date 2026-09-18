@@ -344,13 +344,16 @@ own participant, so the SDK rejects `participant` for client tokens. The SDK
 checks `participant` and `connectionId` (`[A-Za-z0-9_-]{8,64}`) before sending.
 
 `voip.retrieveCallSettings(session)` and `voip.updateCallSettings(session,
-{ includeSelfAudio, inboundRoute, sipTrunkId, sipClaim, hostCloudApiCalls })` read and change the
+{ conferenceMode, inboundRoute, sipTrunkId, sipClaim, hostCloudApiCalls })` read and change the
 session's call settings through `/platform/sessions/{session}/call-settings`.
 `callsEnabled: false` turns calling off for the session: placing, answering,
 joining, inviting and media fail with `PolymorfaAuthorizationError`
 (`calls_disabled`), incoming calls are declined, and calls in progress
-continue. Merged call audio excludes each connection's own audio unless
-`includeSelfAudio` is `true`. `inboundRoute` is `clients` (the default) or
+continue. `conferenceMode` (default `true`) lets every participant you connect
+to a call (browser, app and server connections, and SIP trunk callers) hear
+the WhatsApp party and each other; with `false`, each hears only the WhatsApp
+party. The WhatsApp party always hears all of your participants, and nobody
+hears their own audio in either mode. `inboundRoute` is `clients` (the default) or
 `sip_trunk`, which also sends incoming calls to `sipTrunkId`; `sipClaim`
 (default `true`) makes the trunk's answer claim the call. On a Cloud API
 session, `hostCloudApiCalls: true` has Polymorfa Calls answer incoming calls;

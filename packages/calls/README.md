@@ -84,9 +84,10 @@ promise: it resolves once media connects and rejects if media fails.
   `reconnecting`, and `ended`, with the methods above, `participants`,
   `connectionId`, and `startedAt` / `connectedAt` / `duration`.
 - **`call.audio`** — merged call audio as signed 16-bit mono PCM at `sampleRate`
-  (16 kHz unless the platform names another rate), both directions. By
-  default the merged stream excludes your own audio; the session's
-  `includeSelfAudio` call setting changes that.
+  (16 kHz unless the platform names another rate), both directions. It never
+  contains your own audio. With the session's `conferenceMode` call setting
+  on (the default) it also carries the session's other participants; with it
+  off, only the WhatsApp party.
 - **`call.video`** — one outgoing H.264 stream and one received stream per
   remote participant. `sources` maps each `CallVideoSource.id` to its `label`
   and owner: `participant` for a WhatsApp participant, or `connectionId` and

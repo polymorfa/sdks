@@ -10,12 +10,23 @@
   handshake fails (connection refused or reset, or a non-WebSocket reply) now
   settles like a dropped socket. `connect()` resolves and retries with backoff,
   and a media `connect()` rejects, instead of waiting indefinitely.
+- Breaking: the `includeSelfAudio` call setting is replaced by
+  `conferenceMode` (default `true`) in `SessionCallSettings`,
+  `UpdateSessionCallSettingsRequest` and `MessagingClient.voip`
+  `retrieveCallSettings` / `updateCallSettings`. With conference mode on,
+  every participant you connect to a call (browser, app and server
+  connections, and SIP trunk callers) hears the WhatsApp party and each
+  other; with it off, each hears only the WhatsApp party. The WhatsApp party
+  always hears all of your participants, and nobody hears their own audio in
+  either mode. The platform rejects `includeSelfAudio`, and the SDK fails
+  before sending it with a `PolymorfaValidationError` that names
+  `conferenceMode`.
 - `Client.sipTrunks` manages SIP trunks (beta). Session call settings add
   `callsEnabled` (turn calling off for a session; refusals use
   `calls_disabled`, raised as `CallsDisabledError` by `@polymorfa/calls` and
   the browser client), `inboundRoute`, `sipTrunkId`, `sipClaim`, `hostCloudApiCalls` (whether
   Polymorfa Calls answers a Cloud API session's calls), and `revision`. An update changes
-  only the settings you send (`includeSelfAudio` is optional) and accepts
+  only the settings you send (`conferenceMode` is optional) and accepts
   `expectedRevision`. Webhook types add `call.connection_joined` and
   `call.connection_left`, including the SIP trunk departure reasons.
 - Call webhook payload types match the contract. `CallReceivedPayload` adds
@@ -69,7 +80,7 @@
     (`clientTokens.mint`, or `@polymorfa/nextjs` helpers). `MessagingClient.voip`
     no longer has `token()`, `socketTicket()` or `agentToken()`; it has
     `place`, `accept`, `reject`, `leave`, `end`, `addParticipant`,
-    `retrieveCallSettings` and `updateCallSettings` (`includeSelfAudio`,
+    `retrieveCallSettings` and `updateCallSettings` (`conferenceMode`,
     `updatedAt` is `null` until changed). `reject` and `leave` accept
     `participant` for server credentials.
   - Signaling, media negotiation, sockets and media framing are internal. The

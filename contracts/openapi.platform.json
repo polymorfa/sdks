@@ -23798,9 +23798,9 @@
             "type": "boolean",
             "description": "Whether the session can place, answer and receive calls."
           },
-          "includeSelfAudio": {
+          "conferenceMode": {
             "type": "boolean",
-            "description": "Whether each participant hears their own audio in the merged call audio they receive. The WhatsApp party never receives its own audio."
+            "description": "Conference mode. When true, every participant you connect to a call (including SIP trunk callers) hears the WhatsApp party and every other participant you connected. When false, each of them hears only the WhatsApp party. The WhatsApp party always hears all of your participants, and no participant hears their own audio. Sessions without saved settings report true."
           },
           "inboundRoute": {
             "type": "string",
@@ -23838,7 +23838,7 @@
         },
         "required": [
           "callsEnabled",
-          "includeSelfAudio",
+          "conferenceMode",
           "inboundRoute",
           "sipTrunkId",
           "sipClaim",
@@ -24503,8 +24503,9 @@
             "type": "boolean",
             "description": "False refuses new and incoming calls on the session."
           },
-          "includeSelfAudio": {
-            "type": "boolean"
+          "conferenceMode": {
+            "type": "boolean",
+            "description": "Set to true so that the participants you connect to a call hear each other as well as the WhatsApp party, or false so that each hears only the WhatsApp party."
           },
           "inboundRoute": {
             "type": "string",
@@ -31233,9 +31234,9 @@
             "type": "boolean",
             "description": "Whether the session can place, answer and receive calls. When false, placing, answering, joining and attaching media fail with `403 calls_disabled`, incoming calls are declined, and SIP trunks cannot place calls through the session. Calls in progress continue, and the participant that answered or placed one can reconnect to it. Defaults to true."
           },
-          "includeSelfAudio": {
+          "conferenceMode": {
             "type": "boolean",
-            "description": "Whether each participant hears their own audio in the merged call audio they receive. Defaults to false. The WhatsApp party never receives its own audio."
+            "description": "Conference mode. When true, every participant you connect to a call (including SIP trunk callers) hears the WhatsApp party and every other participant you connected. When false, each of them hears only the WhatsApp party. The WhatsApp party always hears all of your participants, and no participant hears their own audio. Defaults to true."
           },
           "inboundRoute": {
             "$ref": "#/components/schemas/PlatformAccessCallInboundRoute"
@@ -31268,7 +31269,7 @@
         },
         "required": [
           "callsEnabled",
-          "includeSelfAudio",
+          "conferenceMode",
           "inboundRoute",
           "sipTrunkId",
           "sipClaim",
@@ -31321,9 +31322,9 @@
             "type": "boolean",
             "description": "Set to false to refuse new and incoming calls on the session; true allows them again."
           },
-          "includeSelfAudio": {
+          "conferenceMode": {
             "type": "boolean",
-            "description": "Set to true to include each participant's own audio in the merged call audio they receive."
+            "description": "Set to true so that the participants you connect to a call hear each other as well as the WhatsApp party, or false so that each hears only the WhatsApp party."
           },
           "inboundRoute": {
             "allOf": [

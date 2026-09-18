@@ -286,9 +286,15 @@ describe("VoipResource", () => {
     ).toThrow(PolymorfaValidationError);
     expect(() =>
       sdk.voip.updateCallSettings("support", {
-        includeSelfAudio: "yes",
-      } as unknown as { includeSelfAudio: boolean }),
+        conferenceMode: "yes",
+      } as unknown as { conferenceMode: boolean }),
     ).toThrow(PolymorfaValidationError);
+    // The retired setting fails before sending, with its replacement named.
+    expect(() =>
+      sdk.voip.updateCallSettings("support", {
+        includeSelfAudio: true,
+      } as unknown as { conferenceMode: boolean }),
+    ).toThrow("includeSelfAudio was replaced by conferenceMode.");
     expect(server.requests).toHaveLength(0);
   });
 
@@ -307,7 +313,7 @@ describe("VoipResource", () => {
       PolymorfaConfigurationError,
     );
     expect(() =>
-      sdk.voip.updateCallSettings("support", { includeSelfAudio: true }),
+      sdk.voip.updateCallSettings("support", { conferenceMode: true }),
     ).toThrow(PolymorfaConfigurationError);
     await sdk.voip.place({ to: "+15550100" });
     expect(server.requests).toHaveLength(1);
@@ -319,7 +325,7 @@ describe("VoipResource", () => {
   it("reads and replaces session call settings with a project token", async () => {
     const settings = {
       callsEnabled: true,
-      includeSelfAudio: true,
+      conferenceMode: true,
       inboundRoute: "sip_trunk",
       sipTrunkId: "018f0000-0000-7000-8000-0000000000aa",
       sipClaim: false,
@@ -327,7 +333,7 @@ describe("VoipResource", () => {
       updatedAt: "2026-09-16T10:00:00.000Z",
     };
     const server = await serve([
-      json({ success: true, data: { ...settings, includeSelfAudio: false } }),
+      json({ success: true, data: { ...settings, conferenceMode: false } }),
       json({ success: true, data: settings }),
     ]);
     const sdk = client(server, { type: "projectToken", value: PROJECT_TOKEN });
@@ -335,9 +341,9 @@ describe("VoipResource", () => {
     expectTypeOf(current).toEqualTypeOf<
       ApiResponse<SessionCallSettingsResponse>
     >();
-    expect(current.data.data.includeSelfAudio).toBe(false);
+    expect(current.data.data.conferenceMode).toBe(false);
     const updated = await sdk.voip.updateCallSettings("support/eu", {
-      includeSelfAudio: true,
+      conferenceMode: true,
       expectedRevision: current.data.data.revision,
     });
     expect(updated.data.data).toEqual(settings);
@@ -346,7 +352,7 @@ describe("VoipResource", () => {
       ["PUT", "/platform/sessions/support%2Feu/call-settings"],
     ]);
     expect(JSON.parse(server.requests[1]?.body ?? "null")).toEqual({
-      includeSelfAudio: true,
+      conferenceMode: true,
       expectedRevision: 3,
     });
     expect(() => sdk.voip.updateCallSettings("support/eu", {})).toThrow(
@@ -369,7 +375,7 @@ describe("VoipResource", () => {
     ).toThrow(PolymorfaValidationError);
     expect(() =>
       sdk.voip.updateCallSettings("support/eu", {
-        includeSelfAudio: true,
+        conferenceMode: true,
         expectedRevision: -1,
       }),
     ).toThrow(PolymorfaValidationError);
@@ -382,7 +388,7 @@ describe("VoipResource", () => {
         success: true,
         data: {
           callsEnabled: false,
-          includeSelfAudio: false,
+          conferenceMode: false,
           inboundRoute: "clients",
           sipTrunkId: null,
           sipClaim: true,

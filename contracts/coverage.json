@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "0f9963a43462c76601c4abfbb4dd14da2da2cf6f",
+  "sourceCommit": "d2217b84f232248fc7e5c00e7893c86a66b52e82",
   "excludedContracts": [
     {
       "family": "graph",
@@ -2198,7 +2198,7 @@
       "method": "GET",
       "path": "/console/call-settings/{sessionId}",
       "operationId": "getSessionCallSettings",
-      "fingerprint": "997e400ae6a9a231225d5b817e14614f1e2e4b6a25dee79f9397d3273e1bb2a9",
+      "fingerprint": "cd00d0e76a5963f3c01c7df9ac1f12205586ffc07124f1f7426ec939dc75265d",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -3124,7 +3124,7 @@
       "method": "GET",
       "path": "/platform/sessions/{session}/call-settings",
       "operationId": "getCallSettings",
-      "fingerprint": "54c441ae3e8c1e99dde41c06e3443e03f3a24a5757cdb8332db2a6db81908389",
+      "fingerprint": "2e16c85bc1a52f79fc1c064dc50e6f2113b31114abcc13b5b236e6378a09fd5f",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.retrieveCallSettings"
@@ -4322,7 +4322,7 @@
       "method": "PUT",
       "path": "/console/call-settings/{sessionId}",
       "operationId": "updateSessionCallSettings",
-      "fingerprint": "25625641faf51f69b35972ad7907cc53aadea2279bca31ac5df76c6f053ef6eb",
+      "fingerprint": "61098f4433c3f88799c6ea3e335261db0f6e7bdeeeccac6189981c5251c0386f",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -4465,7 +4465,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{session}/call-settings",
       "operationId": "updateCallSettings",
-      "fingerprint": "87f71cf19db9fc4e8e81e44545b549b850ee46e617bf5e416d173757f3f48e47",
+      "fingerprint": "119a00cfb1586386b5e705eef9ecc639bb3aa575cd5a0168fee57c9cadcef00d",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.updateCallSettings"
