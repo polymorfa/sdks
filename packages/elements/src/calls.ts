@@ -69,6 +69,7 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
   ): readonly Node[] {
     const messages = locale.messages;
     const panel = element("section", "panel call");
+    panel.className = this.rootClass("pmfa-call");
     const status = snapshot?.status ?? "ready";
     // idle and ready are absent on purpose: nothing to announce, and this
     // region is assertive — a raw status identifier would be read out.
@@ -132,6 +133,7 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
               messages["calls.join"],
               "primary join",
               () => void controller?.join().catch(() => undefined),
+              "pmfa-btn pmfa-btn-primary",
             ),
           ),
           button(messages["calls.dismiss"], "dismiss", () =>
@@ -147,6 +149,7 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
               "primary answer",
               () =>
                 void controller?.answer({ exclusive }).catch(() => undefined),
+              "pmfa-btn pmfa-btn-primary",
             ),
           ),
           guarded(
@@ -248,6 +251,7 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
           leaveShown ? messages["calls.end"] : messages["calls.hangup"],
           "hangup",
           () => void controller?.hangup().catch(() => undefined),
+          "pmfa-btn pmfa-btn-danger",
         ),
       );
       const participants = (snapshot.participants ?? []).filter(

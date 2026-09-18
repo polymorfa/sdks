@@ -17,8 +17,10 @@ export {
   type ChatDrawerProps,
   type ComposeBoxProps,
   type MessageListProps,
+  type RenderAttachment,
   type TemplateBuilderProps,
 } from "./components.js";
+export type { QuickReplyOption } from "@polymorfa/ui";
 export {
   CALLS_STYLES,
   CallControls,
