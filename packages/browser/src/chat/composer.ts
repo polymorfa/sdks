@@ -2,13 +2,32 @@ import {
   ObservableController,
   type ControllerSnapshot,
 } from "../controller.js";
-import type { MessageAttachment } from "./conversation.js";
+import type {
+  ConversationController,
+  MessageAttachment,
+} from "./conversation.js";
 
 export interface LocalAttachment {
   readonly id: string;
   readonly name: string;
   readonly size: number;
   readonly contentType: string;
+  /** The picked or pasted bytes, for `ComposerActions.upload` to read. */
+  readonly file?: Blob;
+}
+
+/** Describe a picked, pasted, or dropped file as a composer attachment. */
+export function localAttachmentFromFile(
+  file: File,
+  createId: () => string = () => crypto.randomUUID(),
+): LocalAttachment {
+  return {
+    id: createId(),
+    name: file.name,
+    size: file.size,
+    contentType: file.type === "" ? "application/octet-stream" : file.type,
+    file,
+  };
 }
 
 export interface ComposerAttachment extends LocalAttachment {
@@ -31,6 +50,31 @@ export interface ComposerActions {
     signal: AbortSignal,
   ): Promise<MessageAttachment>;
   send(draft: ComposerDraft, signal: AbortSignal): Promise<void>;
+}
+
+/**
+ * Composer actions that send through a conversation, so the composer and the
+ * message list share one optimistic history. `upload` stays yours: it turns
+ * the local bytes into a hosted `MessageAttachment`.
+ */
+export function createConversationComposerActions(
+  conversation: ConversationController,
+  upload: ComposerActions["upload"],
+): ComposerActions {
+  return {
+    upload,
+    send: (draft, signal) =>
+      conversation.send(
+        {
+          text: draft.text,
+          ...(draft.replyTo === undefined ? {} : { replyTo: draft.replyTo }),
+          ...(draft.attachments.length === 0
+            ? {}
+            : { attachments: draft.attachments }),
+        },
+        signal,
+      ),
+  };
 }
 
 export interface MessageComposerSnapshot extends ControllerSnapshot {
@@ -126,11 +170,15 @@ export class MessageComposerController extends ObservableController<MessageCompo
     const current = this.getSnapshot();
     if (current.sending) throw new Error("Composer is already sending.");
     if (current.text.length > this.#maxTextLength)
-      throw new Error(
+      this.#rejectSubmit(
+        current,
         `Message text cannot exceed ${this.#maxTextLength} characters.`,
       );
     if (current.attachments.some(({ status }) => status !== "ready"))
-      throw new Error("Attachments must finish uploading before send.");
+      this.#rejectSubmit(
+        current,
+        "Attachments must finish uploading before send.",
+      );
     if (current.text.trim() === "" && current.attachments.length === 0)
       throw new Error("Message cannot be empty.");
     const abort = new AbortController();
@@ -161,6 +209,16 @@ export class MessageComposerController extends ObservableController<MessageCompo
     } finally {
       if (this.#sendAbort === abort) this.#sendAbort = undefined;
     }
+  }
+
+  /** Publish a validation failure so bound UI can show it, then reject. */
+  #rejectSubmit(current: MessageComposerSnapshot, message: string): never {
+    this.transition({
+      ...composerFields(current),
+      status: "error",
+      error: message,
+    });
+    throw new Error(message);
   }
 
   cancelSend(): void {
