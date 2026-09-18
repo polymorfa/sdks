@@ -58,8 +58,8 @@ if (VoiceNoteRecorder.isSupported()) {
 }
 ```
 
-`stop()` resolves with an `audio/webm` or `audio/ogg` file named
-`voice-note-<time>.webm` (or `.ogg`); the time is ISO 8601 with `:` and `.`
+`stop()` resolves with an `audio/webm`, `audio/ogg`, or `audio/mp4` file named
+`voice-note-<time>.webm` (`.ogg` or `.m4a`); the time is ISO 8601 with `:` and `.`
 replaced by `-`. `cancel()` discards the recording. The microphone tracks
 stop when recording ends, when a pending permission request is cancelled,
 and on `dispose()`.

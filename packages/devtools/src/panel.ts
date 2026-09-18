@@ -372,7 +372,9 @@ export function mountDevAssistant(
     else launcher.focus();
   };
   apply();
-  launcher.addEventListener("click", () => setOpen(!isOpen, false));
+  // Opening from the launcher moves focus into the panel, which precedes the
+  // launcher in tab order; closing leaves focus on the launcher itself.
+  launcher.addEventListener("click", () => setOpen(!isOpen, true));
   close.addEventListener("click", () => setOpen(false, true));
   shadow.addEventListener("keydown", (event) => {
     const key = event as KeyboardEvent;

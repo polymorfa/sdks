@@ -2114,7 +2114,13 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
   protected renderContent(
     snapshot: ConversationSnapshot | undefined,
   ): readonly Node[] {
-    if (!this.#open) return [];
+    if (!this.#open) {
+      // A closed drawer must not keep a recording (and its microphone) alive.
+      this.#composerView?.form.remove();
+      this.#composerView?.dispose();
+      this.#composerView = undefined;
+      return [];
+    }
     const parts = this.#partsFor();
     const { panel } = parts;
     const className = this.rootClass("pmfa-drawer");

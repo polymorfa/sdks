@@ -88,7 +88,7 @@ images) so the message list can show it.
   `getUserMedia`, an empty composer shows a microphone (`voiceNotes`,
   default `true`). While recording, a bar shows the elapsed time, a live
   input level, a delete button, and a send button. Sending adds the
-  recording as an `audio/webm` (or `audio/ogg`) attachment through
+  recording as an `audio/webm` (`audio/ogg` or `audio/mp4`) attachment through
   `upload`, then sends it; pass `voiceNoteAutoSend={false}` to leave it in
   the composer instead. A denied microphone shows a localized error.
   Recording start and stop are announced politely, and the microphone is
@@ -148,7 +148,11 @@ styles from the provider:
 
 The bundled rules sit in `@layer polymorfa`, so unlayered app CSS overrides
 them. `appearance.unstyled` stops the chat, template, and call components
-from adding their stylesheets. See the
+from adding their stylesheets. The bundled stylesheet is document-wide and stays
+installed once any styled component has mounted, so its `.pmfa-*` rules still
+match unstyled components rendered alongside styled ones, or after a provider
+switches to `unstyled: true`. Keep unstyled components on a page without styled
+Polymorfa components, or override the bundled rules from unlayered CSS. See the
 [`@polymorfa/ui` styling reference](../ui/README.md#styling) for the variable
 list, dark colors, and every slot name.
 
