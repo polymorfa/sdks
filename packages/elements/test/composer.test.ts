@@ -3,6 +3,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { MessageComposerController } from "@polymorfa/browser";
 import {
   definePolymorfaElements,
+  type PolymorfaChatDrawerElement,
   type PolymorfaComposeBoxElement,
 } from "../src/index.js";
 
@@ -167,5 +168,48 @@ describe("pmfa-compose-box parity", () => {
     expect(off.root.querySelector('[part~="composer-send"]')).not.toBeNull();
     controller.dispose();
     other.dispose();
+  });
+
+  it("releases an active recording when the drawer closes", async () => {
+    const track = { stop: vi.fn() };
+    class FakeRecorder {
+      static isTypeSupported = () => true;
+      state = "inactive";
+      mimeType = "audio/webm;codecs=opus";
+      ondataavailable: ((event: { data: Blob }) => void) | null = null;
+      onstop: (() => void) | null = null;
+      start() {
+        this.state = "recording";
+      }
+      stop() {
+        this.state = "inactive";
+        this.onstop?.();
+      }
+    }
+    vi.stubGlobal("MediaRecorder", FakeRecorder);
+    vi.stubGlobal("AudioContext", undefined);
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia: async () => ({ getTracks: () => [track] }) },
+    });
+    const controller = composer();
+    const drawer = document.createElement(
+      "pmfa-chat-drawer",
+    ) as PolymorfaChatDrawerElement;
+    drawer.composerController = controller;
+    document.body.append(drawer);
+    const root = drawer.shadowRoot!;
+    root.querySelector<HTMLButtonElement>('[part~="voice-button"]')!.click();
+    await vi.waitFor(() =>
+      expect(root.querySelector('[part~="recording-bar"]')).not.toBeNull(),
+    );
+    drawer.open = false;
+    expect(track.stop).toHaveBeenCalled();
+    expect(root.querySelector("form")).toBeNull();
+    drawer.open = true;
+    expect(root.querySelector('[part~="recording-bar"]')).toBeNull();
+    expect(root.querySelector('[part~="voice-button"]')).not.toBeNull();
+    drawer.remove();
+    controller.dispose();
   });
 });

@@ -72,6 +72,9 @@ describe("mountDevAssistant", () => {
     launcher.click();
     expect(panel.hidden).toBe(false);
     expect(launcher.getAttribute("aria-expanded")).toBe("true");
+    expect(root.activeElement).toBe(
+      panel.querySelector("input:checked, select, button"),
+    );
     expect(sessionStorage.getItem("polymorfa:devtools:open")).toBe("1");
 
     root
@@ -93,8 +96,10 @@ describe("mountDevAssistant", () => {
     expect(panel.hidden).toBe(true);
     expect(root.activeElement).toBe(launcher);
     launcher.click();
+    expect(panel.contains(root.activeElement)).toBe(true);
     launcher.click();
     expect(mounted.isOpen).toBe(false);
+    expect(root.activeElement).toBe(launcher);
     mounted.dispose();
     expect(mounted.element.isConnected).toBe(false);
   });

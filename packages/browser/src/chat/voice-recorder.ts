@@ -15,7 +15,7 @@ export interface VoiceNoteRecorderSnapshot extends ControllerSnapshot {
   readonly elapsed: number;
   /** Input level from `0` to `1`, updated about every animation frame. */
   readonly level: number;
-  /** Container type of the recording, `audio/webm` or `audio/ogg`. */
+  /** Container type of the recording: `audio/webm`, `audio/ogg`, or `audio/mp4`. */
   readonly mimeType?: string;
   readonly error?: VoiceNoteError;
 }
@@ -62,6 +62,7 @@ const CANDIDATE_TYPES = [
   "audio/webm",
   "audio/ogg;codecs=opus",
   "audio/ogg",
+  "audio/mp4",
 ] as const;
 
 function environment(options: VoiceNoteRecorderOptions) {
@@ -271,10 +272,19 @@ export class VoiceNoteRecorder extends ObservableController<VoiceNoteRecorderSna
 
   #finalize(recorder: MediaRecorderLike): void {
     if (this.#recorder !== recorder) return;
+    const reported = recorder.mimeType;
     const type =
-      containerType(recorder.mimeType) ??
-      this.getSnapshot().mimeType ??
-      "audio/webm";
+      reported === undefined || reported === ""
+        ? (this.getSnapshot().mimeType ?? "audio/webm")
+        : containerType(reported);
+    if (type === undefined) {
+      // Never relabel audio in a container the upload path cannot name.
+      this.#chunks = [];
+      this.#release();
+      this.#resolve(undefined);
+      if (!this.#disposed()) this.#fail("failed");
+      return;
+    }
     const blob = new Blob(this.#chunks, { type });
     this.#chunks = [];
     this.#release();
@@ -386,14 +396,26 @@ function stopTracks(stream: MediaStream): void {
   for (const track of stream.getTracks()) track.stop();
 }
 
+/** Recording containers the SDK can upload, with their file extensions. */
+const CONTAINER_EXTENSIONS: ReadonlyMap<string, string> = new Map([
+  ["audio/webm", "webm"],
+  ["audio/ogg", "ogg"],
+  ["audio/mp4", "m4a"],
+]);
+
+/** The allowlisted container for a reported type, or `undefined`. */
 function containerType(type: string | undefined): string | undefined {
   if (type === undefined || type === "") return undefined;
-  const base = type.split(";", 1)[0]?.trim().toLowerCase();
-  return base === "audio/ogg" ? "audio/ogg" : "audio/webm";
+  const base = type.split(";", 1)[0]?.trim().toLowerCase() ?? "";
+  return CONTAINER_EXTENSIONS.has(base) ? base : undefined;
 }
 
-/** `voice-note-<ISO time>.webm` (or `.ogg`), with `:` replaced for portability. */
+/**
+ * `voice-note-<ISO time>.webm` (`.ogg` or `.m4a` for those containers), with
+ * `:` replaced for portability.
+ */
 export function voiceNoteName(type: string, time: number = Date.now()): string {
   const stamp = new Date(time).toISOString().replace(/[:.]/g, "-");
-  return `voice-note-${stamp}.${type === "audio/ogg" ? "ogg" : "webm"}`;
+  const container = containerType(type) ?? "audio/webm";
+  return `voice-note-${stamp}.${CONTAINER_EXTENSIONS.get(container) ?? "webm"}`;
 }
