@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- `PolymorfaError` exposes `requestLogUrl`, `docUrl`, and `rateLimitReason`,
+  and `requestId` now prefers the error body's `request_id` over the
+  `X-Request-Id` header. `code` is typed as `PolymorfaErrorCode`, a union of
+  the documented codes (including the new WhatsApp codes
+  `recipient_not_on_whatsapp`, `conversation_window_closed`,
+  `template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
+  `new_chat_limit_reached`, and `whatsapp_account_restricted`) that still
+  accepts any string. A `413` now throws `PolymorfaValidationError`.
+  `BrowserError` gains `docUrl` and reads `code`, `requestId`, and the message
+  from the error object. The `polymorfa-ratelimit-reason` header is kept in
+  response metadata.
+- Breaking (types only): `Client.projects.create` returns `CreatedProject`, and
+  `CreateProjectRequest.defaultTier` is `ProjectDefaultTier`.
+  `ProductionEnrollmentResult` adds `billingMode: "payg"`.
+
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`
   no longer registers `pmfa-quicklink` or exports the `./quicklink` subpath, and

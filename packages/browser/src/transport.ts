@@ -317,20 +317,50 @@ function httpError(
               : response.status >= 500
                 ? "server"
                 : "http";
+  const fields = errorFields(details);
+  // Cross-origin callers cannot always read X-Request-Id; the body repeats it.
+  const requestId = fields.requestId ?? metadata.requestId;
   return new BrowserHttpError(errorMessage(details, response.status), {
     category,
     status: response.status,
     details,
     metadata,
-    ...(metadata.requestId === undefined
-      ? {}
-      : { requestId: metadata.requestId }),
+    ...(fields.code === undefined ? {} : { code: fields.code }),
+    ...(requestId === undefined ? {} : { requestId }),
+    ...(fields.docUrl === undefined ? {} : { docUrl: fields.docUrl }),
   });
+}
+
+function errorFields(details: unknown): {
+  readonly code?: string;
+  readonly requestId?: string;
+  readonly docUrl?: string;
+} {
+  if (typeof details !== "object" || details === null) return {};
+  const record = details as Record<string, unknown>;
+  const error =
+    typeof record.error === "object" && record.error !== null
+      ? (record.error as Record<string, unknown>)
+      : undefined;
+  const text = (value: unknown) =>
+    typeof value === "string" && value.length > 0 ? value : undefined;
+  const code = text(error ? error.code : record.code);
+  const requestId = text(error?.request_id);
+  const docUrl = text(record.docs);
+  return {
+    ...(code === undefined ? {} : { code }),
+    ...(requestId === undefined ? {} : { requestId }),
+    ...(docUrl === undefined ? {} : { docUrl }),
+  };
 }
 
 function errorMessage(details: unknown, status: number): string {
   if (typeof details === "object" && details !== null) {
     const record = details as Record<string, unknown>;
+    if (typeof record.error === "object" && record.error !== null) {
+      const message = (record.error as Record<string, unknown>).message;
+      if (typeof message === "string") return message;
+    }
     if (typeof record.message === "string") return record.message;
     if (typeof record.error === "string") return record.error;
   }

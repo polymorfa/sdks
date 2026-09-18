@@ -2,7 +2,7 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`aca849cda44ad8582d7ae87489404d2483173a53`. `source.json` records their original
+`8480b165d509df072ad74c3a1a976895f7676ff2`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
@@ -19,6 +19,17 @@ It does not claim coverage in other languages, package publication, or a
 successful live call.
 
 ## Reconciliation
+
+This revision adds `request_id` (required) and `request_log_url` to every
+error object, and extends the `PublicError` code enum with the WhatsApp codes
+(`recipient_not_on_whatsapp`, `conversation_window_closed`,
+`template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
+`new_chat_limit_reached`, `whatsapp_account_restricted`) and the BanSafe codes
+the API now delivers. That moved 384 fingerprints; each was reviewed, and all
+but three changed only in error responses. The other three are `createProject`
+and `requestProductionEnrollment` (upstream Pay-As-You-Go changes, now typed as
+`CreatedProject` and `ProductionEnrollmentResult.billingMode`), and the
+excluded console logs read. `PolymorfaError` exposes the new fields.
 
 This revision replaces raw account platform codes with `phonePlatform` and
 `accountType` on the session account, profile, and `session.connected`

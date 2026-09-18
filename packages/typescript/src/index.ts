@@ -37,7 +37,12 @@ export {
   PolymorfaServerError,
   PolymorfaTimeoutError,
   PolymorfaValidationError,
+  POLYMORFA_ERROR_CODES,
+  isKnownPolymorfaErrorCode,
+  type KnownPolymorfaErrorCode,
+  type PolymorfaErrorCode,
   type PolymorfaErrorOptions,
+  type PolymorfaRateLimitReason,
 } from "./errors.js";
 export { MessagingClient } from "./messaging/client.js";
 export {
@@ -527,6 +532,8 @@ export type {
   ProductionEnrollmentRequest,
   ProductionEnrollmentResult,
   Project,
+  CreatedProject,
+  ProjectDefaultTier,
   ProjectIcon,
   ProjectToken,
   ProjectWithStats,

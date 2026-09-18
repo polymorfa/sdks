@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`aca849cda44ad8582d7ae87489404d2483173a53`. Graph-compatible APIs are outside
+`8480b165d509df072ad74c3a1a976895f7676ff2`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -293,6 +293,36 @@ authentication, authorization, not found, conflict, rate limiting, server,
 connection, timeout, and caller-cancellation cases. HTTP errors carry status,
 request ID, decoded details, and response metadata when the server supplied
 them.
+
+Every API error also exposes the fields from its error body:
+
+```ts
+import { PolymorfaError, PolymorfaRateLimitError } from "@polymorfa/sdk";
+
+try {
+  await messaging.messages.send("sales", message);
+} catch (error) {
+  if (error instanceof PolymorfaError) {
+    error.code; // "conversation_window_closed", typed as PolymorfaErrorCode
+    error.requestId; // body `request_id`, else the X-Request-Id header
+    error.requestLogUrl; // Console request log, for team keys and project tokens
+    error.docUrl; // https://docs.polymorfa.com/api/errors#conversation-window-closed
+  }
+  if (error instanceof PolymorfaRateLimitError) {
+    error.rateLimitReason; // "whatsapp", "request_rate", ...
+  }
+}
+```
+
+`PolymorfaErrorCode` lists the documented codes, including
+`recipient_not_on_whatsapp`, `conversation_window_closed`,
+`template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
+`new_chat_limit_reached`, `whatsapp_account_restricted`, and the BanSafe codes,
+and still accepts codes a newer API adds. `POLYMORFA_ERROR_CODES` and
+`isKnownPolymorfaErrorCode()` are exported. `requestLogUrl` is absent for
+client tokens and for requests the API did not log. `BrowserError` exposes
+`code`, `requestId`, and `docUrl` from the same body, so browser callers get the
+request ID even when the `X-Request-Id` header is not readable.
 
 ## Timeouts, cancellation, retries, and idempotency
 
