@@ -15413,7 +15413,7 @@
             "name": "Idempotency-Key",
             "in": "header",
             "required": false,
-            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`.",
             "schema": {
               "type": "string",
               "minLength": 1,
@@ -15447,6 +15447,17 @@
                   "$ref": "#/components/schemas/SendMessageResponse"
                 }
               }
+            },
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
             }
           },
           "202": {
@@ -15455,6 +15466,17 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AsyncAcceptedResponse"
+                }
+              }
+            },
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
                 }
               }
             }
@@ -15511,6 +15533,15 @@
           },
           "409": {
             "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -15924,7 +15955,7 @@
             "name": "Idempotency-Key",
             "in": "header",
             "required": false,
-            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`.",
             "schema": {
               "type": "string",
               "minLength": 1,
@@ -15950,6 +15981,17 @@
                   "$ref": "#/components/schemas/SendReactionResponse"
                 }
               }
+            },
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
             }
           },
           "202": {
@@ -15958,6 +16000,17 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AsyncAcceptedResponse"
+                }
+              }
+            },
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
                 }
               }
             }
@@ -16014,6 +16067,15 @@
           },
           "409": {
             "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -16280,7 +16342,7 @@
             "name": "Idempotency-Key",
             "in": "header",
             "required": false,
-            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`.",
             "schema": {
               "type": "string",
               "minLength": 1,
@@ -16304,6 +16366,17 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            },
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
                 }
               }
             }
@@ -16390,6 +16463,15 @@
           },
           "409": {
             "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -16479,7 +16561,7 @@
             "name": "Idempotency-Key",
             "in": "header",
             "required": false,
-            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`.",
             "schema": {
               "type": "string",
               "minLength": 1,
@@ -16494,6 +16576,17 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            },
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
                 }
               }
             }
@@ -16580,6 +16673,15 @@
           },
           "409": {
             "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -30878,7 +30980,7 @@
             "name": "Idempotency-Key",
             "in": "header",
             "required": false,
-            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`.",
             "schema": {
               "type": "string",
               "minLength": 1,
@@ -30902,6 +31004,17 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            },
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
                 }
               }
             }
@@ -30988,6 +31101,15 @@
           },
           "409": {
             "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -39003,7 +39125,7 @@
             "name": "Idempotency-Key",
             "in": "header",
             "required": false,
-            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`.",
             "schema": {
               "type": "string",
               "minLength": 1,
@@ -39027,6 +39149,17 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CreateCampaignResponse"
+                }
+              }
+            },
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
                 }
               }
             }
@@ -39133,6 +39266,15 @@
           },
           "409": {
             "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -39550,7 +39692,7 @@
             "name": "Idempotency-Key",
             "in": "header",
             "required": false,
-            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`.",
             "schema": {
               "type": "string",
               "minLength": 1,
@@ -39574,6 +39716,17 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LaunchCampaignResponse"
+                }
+              }
+            },
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
                 }
               }
             }
@@ -39680,6 +39833,15 @@
           },
           "409": {
             "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {

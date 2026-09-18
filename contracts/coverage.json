@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "204033d3697c5b63f82aca377c9d487e2e0f6371",
+  "sourceCommit": "a3ae8546f3dc090052aee2b8b68c62ac169e10b2",
   "excludedContracts": [
     {
       "family": "graph",
@@ -68,7 +68,7 @@
       "method": "DELETE",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
       "operationId": "deleteMessage",
-      "fingerprint": "b3f8f620cedb20968f87437ccb6f0acb1f38f1aac2dfe0d74ef7f4c42f715f13",
+      "fingerprint": "1310cec655f226c0350ed68d66d7610da0f48094ccd893048af09c102f977ca7",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.chats.deleteMessage"
@@ -1018,7 +1018,7 @@
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/messages/{messageId}/reaction",
       "operationId": "reactToChannelMessage",
-      "fingerprint": "7bb8982bdee7e30b4d3f71fd99481f15b13512d10d59a9bcb428251689d9514f",
+      "fingerprint": "502a774bd59cfb5656a22b033be5f8fd91a982e2b446fb5fdfd9278944d0a0bb",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.reactToMessage"
@@ -1216,7 +1216,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/react",
       "operationId": "sendReaction",
-      "fingerprint": "d24de1111eb4b98d0e95d36c55f2cd7a381eafeb92118eded3c72c038c29ccfb",
+      "fingerprint": "8f24b8afbe7fbddd51cdab11046465edcc04916eee196c46d0bb5a192802c0d3",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.react"
@@ -1238,7 +1238,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/send",
       "operationId": "sendMessage",
-      "fingerprint": "b47f07f449bb2bbbec99530488d8fde6e9c5432d8b7bdc14e721bdbeebf2dad9",
+      "fingerprint": "d115d8a49adfd9b95e69c85a46a65f056ca146fe357e5b6eaf3954b02de6b63f",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.send"
@@ -1337,7 +1337,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns",
       "operationId": "createCampaign",
-      "fingerprint": "5b335d8cda7b2ca0cd5421f0bffa31a9f639978fb8f911bede2f7f0841dca70f",
+      "fingerprint": "f22d3a82b1a082a924a65674d807f47129e4dda5257891afbabd1e9b0d66af41",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.create"
@@ -1348,7 +1348,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/launch",
       "operationId": "launchCampaign",
-      "fingerprint": "97c301cfbd998cda0b9ff5ae4a7bb3d715e5d36c104af5a3bb12c710162912d4",
+      "fingerprint": "c2a781f74c473c6f7c719725e85a885f90225dc36dd8aae304293904415a28c6",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.launch"
@@ -1749,7 +1749,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
       "operationId": "editMessage",
-      "fingerprint": "5fd814e59af6ea04d2b70dab79b572971632027534863d39fd5a663b868a680e",
+      "fingerprint": "03787510d1a53d961ac162102a6e16a5bf4fef0acade113758a882443ff82a74",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.chats.editMessage"
