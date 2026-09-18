@@ -4,7 +4,7 @@ import {
   isParticipant,
   parseLifecycleFrame,
   type LifecycleFrame,
-} from "@polymorfa/calls/internal";
+} from "@polymorfa/sdk/calls/internal";
 import type { CallEndReason, CallLifecycleEvent } from "./controller.js";
 import type { CallsSignaling, TrickleCandidate } from "./signaling.js";
 

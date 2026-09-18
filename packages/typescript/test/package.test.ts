@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 
 const repositoryRoot = new URL("../../../", import.meta.url).pathname;
+const packageRoot = new URL("../", import.meta.url).pathname;
 
 describe("npm package", () => {
   it("packs and imports in a clean consumer without runtime dependencies", () => {
@@ -24,7 +25,7 @@ describe("npm package", () => {
     const packed = spawnSync(
       "npm",
       ["pack", "--json", "--ignore-scripts", "--pack-destination", directory],
-      { cwd: repositoryRoot, encoding: "utf8", env: environment },
+      { cwd: packageRoot, encoding: "utf8", env: environment },
     );
     expect(packed.status, packed.stderr).toBe(0);
     const metadata = JSON.parse(packed.stdout) as Array<{
@@ -34,11 +35,12 @@ describe("npm package", () => {
     const paths = metadata[0]?.files.map(({ path }) => path) ?? [];
     expect(paths).toContain("LICENSE");
     expect(paths).toContain("README.md");
-    expect(paths).toContain("packages/typescript/README.md");
-    expect(paths).toContain("packages/typescript/dist/index.js");
-    expect(paths).toContain("packages/calls/README.md");
-    expect(paths).toContain("packages/calls/dist/index.js");
-    expect(paths).toContain("packages/calls/dist/index.d.ts");
+    expect(paths).toContain("dist/index.js");
+    // The Calls client is compiled into this package, not a dependency.
+    expect(paths).toContain("dist/calls/index.js");
+    expect(paths).toContain("dist/calls/index.d.ts");
+    expect(paths).toContain("dist/calls/internal.js");
+    expect(paths).toContain("package.json");
     expect(
       paths.some((path) => path.includes("/src/") || path.includes("/test/")),
     ).toBe(false);

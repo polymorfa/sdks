@@ -6,8 +6,8 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`1b39266027657759e3be0e2ca7e224fca611c789` (monorepo branch
-`t3code/calls-unified-clients`, not yet pushed). Graph-compatible APIs are outside
+`1681cdaa96c2625220c32fc3a912b380179fa9ee` (monorepo branch
+`t3code/calls-unified-5-client-diagnostics`, pushed but not merged). Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -29,15 +29,23 @@ Polymorfa npm organization. No mobile-native binding is part of this milestone.
 
 ## TypeScript development install
 
-The package has not been published to npm. Install the verified development
-branch directly from GitHub:
+The packages have not been published to npm. Build them from a clone of the
+development branch and install the packed tarballs:
 
 ```bash
-npm install github:polymorfa/sdks#dev
+git clone --branch dev https://github.com/polymorfa/sdks.git
+cd sdks
+npm ci
+npm run build:workspaces
+npm pack -w @polymorfa/sdk           # add -w @polymorfa/browser for browser apps
+npm install /path/to/sdks/polymorfa-sdk-0.1.0-dev.0.tgz   # from your application
 ```
 
-The Git install runs the package build through `prepare`. The published package
-name and root import are already stable:
+`npm install github:polymorfa/sdks#dev` no longer installs the SDK: the
+repository root is a private workspace, and `@polymorfa/sdk` lives in
+`packages/typescript`.
+
+The published package name and root import are already stable:
 
 ```ts
 import {
@@ -51,7 +59,10 @@ import {
 Node.js 20 or newer is required. The package has no runtime dependencies.
 
 The programmatic Calls client ships inside the same package as the
-`@polymorfa/sdk/calls` subpath; there is no separate Calls package to install:
+`@polymorfa/sdk/calls` subpath; there is no separate Calls package to install.
+`@polymorfa/browser` depends on `@polymorfa/sdk` and uses this same Calls
+client, so errors raised by browser calls are the classes exported from
+`@polymorfa/sdk/calls`:
 
 ```ts
 import { CallsClient } from "@polymorfa/sdk/calls";
@@ -562,6 +573,10 @@ not establish API parity. Raw requests never count as typed coverage. See the
 rules.
 
 ## Development
+
+The repository is an npm workspace: `packages/typescript` is `@polymorfa/sdk`,
+and `packages/calls` is a private workspace compiled into
+`@polymorfa/sdk/calls`.
 
 ```bash
 npm install

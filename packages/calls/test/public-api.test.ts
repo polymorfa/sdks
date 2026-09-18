@@ -3,7 +3,7 @@ import * as publicApi from "../src/index.js";
 import { Call } from "../src/internal.js";
 import { fakeApi } from "./helpers.js";
 
-describe("@polymorfa/calls public entry point", () => {
+describe("@polymorfa/sdk/calls public entry point", () => {
   it("exports only neutral calling operations", () => {
     expect(Object.keys(publicApi).sort()).toEqual([
       "AudioTrack",

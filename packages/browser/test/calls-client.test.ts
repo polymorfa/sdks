@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CallClaimedError, CallsDisabledError } from "@polymorfa/calls";
+import { CallClaimedError, CallsDisabledError } from "@polymorfa/sdk/calls";
 import { createInternalBrowserCalls as createBrowserCalls } from "../src/calls/client.js";
 import { BrowserCallsApi } from "../src/calls/api.js";
 import { BrowserTransport } from "../src/transport.js";

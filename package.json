@@ -1,24 +1,15 @@
 {
-  "name": "@polymorfa/sdk",
-  "version": "0.1.0-dev.0",
-  "description": "Handwritten Polymorfa server SDK for TypeScript and Node.js",
+  "name": "polymorfa-sdks",
+  "private": true,
+  "description": "Workspace for the Polymorfa SDK packages",
   "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/polymorfa/sdks.git"
   },
-  "bugs": {
-    "url": "https://github.com/polymorfa/sdks/issues"
-  },
-  "homepage": "https://github.com/polymorfa/sdks#readme",
-  "keywords": [
-    "polymorfa",
-    "messaging",
-    "sdk"
-  ],
-  "sideEffects": false,
   "workspaces": [
+    "packages/typescript",
     "packages/calls",
     "packages/browser",
     "packages/ui",
@@ -30,41 +21,16 @@
   "engines": {
     "node": ">=20"
   },
-  "main": "./packages/typescript/dist/index.js",
-  "types": "./packages/typescript/dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./packages/typescript/dist/index.d.ts",
-      "import": "./packages/typescript/dist/index.js"
-    },
-    "./calls": {
-      "types": "./packages/calls/dist/index.d.ts",
-      "import": "./packages/calls/dist/index.js"
-    }
-  },
-  "files": [
-    "packages/typescript/dist",
-    "packages/typescript/README.md",
-    "packages/calls/dist",
-    "packages/calls/README.md",
-    "README.md",
-    "LICENSE"
-  ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && tsc -p packages/calls/tsconfig.build.json",
+    "build": "npm run build -w @polymorfa/sdk",
     "build:workspaces": "npm run build --workspaces --if-present",
     "check:coverage": "node scripts/check-coverage.mjs --messaging contracts/openapi.messaging.json --platform contracts/openapi.platform.json --ledger contracts/coverage.json --strict",
     "check:names": "node scripts/check-retired-name.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint \"packages/**/*.{ts,tsx}\" vitest.config.ts",
-    "prepare": "npm run build",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

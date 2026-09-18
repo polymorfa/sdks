@@ -6,7 +6,7 @@ import {
   type CallReport,
   type CallsToken,
   type CallsTokenRequest,
-} from "@polymorfa/calls/internal";
+} from "@polymorfa/sdk/calls/internal";
 import { BrowserTransport } from "../transport.js";
 
 export interface IceServer {

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CallsApiError, type CallReport } from "@polymorfa/calls/internal";
+import { CallsApiError, type CallReport } from "@polymorfa/sdk/calls/internal";
 import {
   BROWSER_SDK_VERSION,
   mediaErrorCode,

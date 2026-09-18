@@ -4,7 +4,7 @@ import {
   isParticipant,
   isSourceHandle,
   type Participant,
-} from "@polymorfa/calls/internal";
+} from "@polymorfa/sdk/calls/internal";
 import type {
   CallsSignaling,
   SdpAnswer,

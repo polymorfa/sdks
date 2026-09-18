@@ -1,4 +1,7 @@
-import { capabilitiesFrom, type CallReport } from "@polymorfa/calls/internal";
+import {
+  capabilitiesFrom,
+  type CallReport,
+} from "@polymorfa/sdk/calls/internal";
 import type {
   CallEndReason,
   CallLifecycleEvent,

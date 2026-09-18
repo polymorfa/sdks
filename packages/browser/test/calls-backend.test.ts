@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { CallClaimedError } from "@polymorfa/calls";
+import { CallClaimedError } from "@polymorfa/sdk/calls";
 import {
   CallsController,
   IncomingCallRelay,

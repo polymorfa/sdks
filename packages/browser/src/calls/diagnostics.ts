@@ -4,7 +4,7 @@ import {
   type CallQualityFigures,
   type CallReport,
   type CallReportClient,
-} from "@polymorfa/calls/internal";
+} from "@polymorfa/sdk/calls/internal";
 
 /** Package version sent with reports from `@polymorfa/browser`. */
 export const BROWSER_SDK_VERSION = "0.1.0-dev.0";

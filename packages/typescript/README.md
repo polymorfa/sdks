@@ -2,11 +2,18 @@
 
 The handwritten Polymorfa server SDK for TypeScript and Node.js.
 
-Install the development branch:
+This package has not been published to npm. Build it from a clone of the
+development branch and install the packed tarball:
 
 ```bash
-npm install github:polymorfa/sdks#dev
+npm ci
+npm run build:workspaces
+npm pack -w @polymorfa/sdk
 ```
+
+The Calls client is part of this package as `@polymorfa/sdk/calls`.
+`@polymorfa/sdk/calls/internal` exists for the Polymorfa browser package;
+applications must not import it.
 
 Import the management and Messaging clients, errors, response metadata,
 request options, pagination, webhook utilities, and public request/response

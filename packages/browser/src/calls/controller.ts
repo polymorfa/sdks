@@ -7,7 +7,7 @@ import {
   type CallErrorCode,
   type CallReport,
   type Participant,
-} from "@polymorfa/calls/internal";
+} from "@polymorfa/sdk/calls/internal";
 import {
   BROWSER_REPORT_CLIENT,
   ConnectionDiagnostics,

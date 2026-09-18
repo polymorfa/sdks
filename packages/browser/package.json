@@ -6,7 +6,7 @@
   "license": "MIT",
   "sideEffects": false,
   "dependencies": {
-    "@polymorfa/calls": "0.1.0-dev.0"
+    "@polymorfa/sdk": "0.1.0-dev.0"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

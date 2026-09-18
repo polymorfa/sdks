@@ -299,7 +299,10 @@ describe("Call diagnostics (socket media)", () => {
 describe("CALLS_SDK_VERSION", () => {
   it("matches the @polymorfa/sdk package version that ships the Calls client", () => {
     const root = JSON.parse(
-      readFileSync(new URL("../../../package.json", import.meta.url), "utf8"),
+      readFileSync(
+        new URL("../../typescript/package.json", import.meta.url),
+        "utf8",
+      ),
     ) as { version: string };
     expect(CALLS_SDK_VERSION).toBe(root.version);
   });

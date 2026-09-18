@@ -9,7 +9,7 @@ import {
   type CallsTokenRequest,
   type Participant,
   type PlaceCallRequest,
-} from "@polymorfa/calls/internal";
+} from "@polymorfa/sdk/calls/internal";
 import { BrowserTransport } from "../transport.js";
 import { CallsSignalingClient, claimedError } from "./signaling.js";
 

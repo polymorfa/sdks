@@ -1,4 +1,4 @@
-import { CallClaimedError } from "@polymorfa/calls";
+import { CallClaimedError } from "@polymorfa/sdk/calls";
 import { describe, expect, it, vi } from "vitest";
 import {
   BrowserTransport,

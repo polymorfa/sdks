@@ -5,13 +5,19 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: /^@polymorfa\/calls$/,
+        find: /^@polymorfa\/sdk$/,
+        replacement: fileURLToPath(
+          new URL("./packages/typescript/src/index.ts", import.meta.url),
+        ),
+      },
+      {
+        find: /^@polymorfa\/sdk\/calls$/,
         replacement: fileURLToPath(
           new URL("./packages/calls/src/index.ts", import.meta.url),
         ),
       },
       {
-        find: /^@polymorfa\/calls\/internal$/,
+        find: /^@polymorfa\/sdk\/calls\/internal$/,
         replacement: fileURLToPath(
           new URL("./packages/calls/src/internal.ts", import.meta.url),
         ),

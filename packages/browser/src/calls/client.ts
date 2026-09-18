@@ -3,7 +3,7 @@ import {
   type Call,
   type CallsClientOptions,
   type InternalCallsClientOptions,
-} from "@polymorfa/calls/internal";
+} from "@polymorfa/sdk/calls/internal";
 import {
   BrowserTransport,
   type BrowserTransportOptions,
@@ -271,7 +271,7 @@ export function createBrowserCalls(
       // Nobody else is on an outbound call that is still ringing, and nobody
       // can take over a call this client claimed (exclusive answer or
       // placement). Leaving either would strand the other party, so end it,
-      // as @polymorfa/calls does for socket media.
+      // as @polymorfa/sdk/calls does for socket media.
       const release =
         (call.direction === "outbound" && call.state === "ringing") ||
         call._claimedBySelf;

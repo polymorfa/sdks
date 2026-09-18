@@ -2,6 +2,11 @@
 
 Framework-neutral browser transport and product controllers for Polymorfa.
 
+`@polymorfa/browser` depends on `@polymorfa/sdk` for the Calls client
+(`@polymorfa/sdk/calls`). It imports nothing else from that package, so no
+server code reaches the browser, and call errors such as `CallsDisabledError`
+are the classes exported from `@polymorfa/sdk/calls`.
+
 This package accepts only short-lived `pmfa_ct_` client tokens obtained from an application callback. It never accepts or stores server API keys.
 
 ```ts

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Packaging: `@polymorfa/browser` depends on `@polymorfa/sdk` and uses its
+  Calls client (`@polymorfa/sdk/calls`) instead of a separate package, so
+  there is one copy of the Calls classes: `instanceof CallsDisabledError`
+  (and the other Calls errors) with the class from `@polymorfa/sdk/calls`
+  works for errors raised by browser calls. The SDK now lives in the
+  `packages/typescript` workspace; installing from the GitHub repository root
+  (`npm install github:polymorfa/sdks#dev`) no longer installs it. Install the
+  packed `@polymorfa/sdk` tarball instead.
 - `@polymorfa/sdk/calls`: a placed call records the answer in `call.claim`
   (`answered`, `answeredBy`, `exclusive`) and emits `claim` when the callee
   picks up. `disconnect()` and `leave()` wait for an answer still in flight
@@ -43,7 +51,7 @@
   `conferenceMode`.
 - `Client.sipTrunks` manages SIP trunks (beta). Session call settings add
   `callsEnabled` (turn calling off for a session; refusals use
-  `calls_disabled`, raised as `CallsDisabledError` by `@polymorfa/calls` and
+  `calls_disabled`, raised as `CallsDisabledError` by `@polymorfa/sdk/calls` and
   the browser client), `inboundRoute`, `sipTrunkId`, `sipClaim`, `hostCloudApiCalls` (whether
   Polymorfa Calls answers a Cloud API session's calls), and `revision`. An update changes
   only the settings you send (`conferenceMode` is optional) and accepts
@@ -55,7 +63,7 @@
   optional `answeredBy`, `exclusive`, `sessionConnection` and `capabilities`.
   `CallEndedPayload` adds optional `sessionConnection`. `CallMissedPayload` and
   `CallRejectedPayload` no longer extend or alias `CallReceivedPayload`.
-- `@polymorfa/calls`: when media fails after an answer, join or remote
+- `@polymorfa/sdk/calls`: when media fails after an answer, join or remote
   pickup, or is lost for good, the call is released on the platform before it
   ends locally: ended when this client claimed it (exclusive answer or
   placement), otherwise left. `answer()` and `join()` reject after the
@@ -89,7 +97,7 @@
   `call.missed` or `call.rejected` event arrived before `call.received`; the
   call is reported through `ended` only. The browser `CallsController` also
   ignores an invitation that arrives after its call was reported ended.
-- `ClientTokenManager` (browser) and `CallsTokenSource` (`@polymorfa/calls`)
+- `ClientTokenManager` (browser) and `CallsTokenSource` (`@polymorfa/sdk/calls`)
   never reuse or cache a provider call that started before a forced refresh
   or `invalidate()`, so a reconnect after a revoked token asks for a new one.
 - Breaking: Calls use one neutral calling API. Session answer modes and
@@ -114,7 +122,7 @@
     `createBrowserCalls`. `BrowserCallsOptions` no longer takes `media` or
     `mediaFactory`, and `CallsClientOptions` no longer takes `api` or
     `mediaMode`.
-  - `@polymorfa/calls`: pass `token` (string or provider) and, for server
+  - `@polymorfa/sdk/calls`: pass `token` (string or provider) and, for server
     credentials, `participant`. `Call.hangup()` is now `Call.end()` (ends the
     call for everyone). New: `answer({ exclusive })`, `join()`, `leave()`,
     `claim`, `claimedByOther`, `canJoin`, `connectionId`, the `claim` event,
@@ -128,7 +136,7 @@
     snapshot adds `mute`). `CallLine`, `capabilitiesFor`, the `line` options
     and the React `DialPad` `line` prop are removed; use
     `DialPad allowVideo={false}` for numbers whose calls cannot carry video.
-    `Call.capabilities` is new in `@polymorfa/calls`.
+    `Call.capabilities` is new in `@polymorfa/sdk/calls`.
   - `@polymorfa/browser`: incoming calls are never declined for you.
     `CallsController` tracks every invitation (`snapshot.invitations`) and
     adds `join()`, `leave()`, `end()`, `dismiss()`, `select()`,
