@@ -433,8 +433,9 @@ describe("CallsController resumption and terminal offers", () => {
     controller.initialize();
     await controller.place("+12025550123");
     ice?.("connected");
-    // The connection state machine, not ICE, marks connected.
-    expect(controller.getSnapshot().status).toBe("connecting");
+    // The connection state machine, not ICE, marks connected; the callee has
+    // not answered, so the placed call is still ringing.
+    expect(controller.getSnapshot().status).toBe("ringing");
     ice?.("disconnected");
     expect(controller.getSnapshot().status).toBe("reconnecting");
     t.fire(2_000);
@@ -442,16 +443,16 @@ describe("CallsController resumption and terminal offers", () => {
     ice?.("connected");
     // A flap that never moved `connectionState` still has to end: recovery
     // restores the call itself rather than waiting for a state change that
-    // may never come. This one flapped during setup, so it recovers to
-    // `connecting` — reporting `connected` here would start the duration
-    // counter on a call whose media never came up.
-    expect(controller.getSnapshot().status).toBe("connecting");
+    // may never come. This one flapped during setup, so it recovers to the
+    // status it had (`ringing`) — reporting `connected` here would start the
+    // duration counter on a call whose media never came up.
+    expect(controller.getSnapshot().status).toBe("ringing");
     expect(controller.getSnapshot().connectedAt).toBeUndefined();
     // ICE recovery must cancel the give-up timer, or the call would still be
     // dropped mid-conversation once the window elapsed.
     expect(t.pending()).toBe(0);
     t.fire(15_000);
-    expect(controller.getSnapshot().status).toBe("connecting");
+    expect(controller.getSnapshot().status).toBe("ringing");
     controller.dispose();
     expect(t.pending()).toBe(0);
   });

@@ -631,6 +631,20 @@ describe("socket frame mapping", () => {
       exclusive: false,
       capabilities: { video: false, invite: false },
     });
+    // Only reported flags travel; the controller merges them.
+    expect(
+      ev("call.accepted", { capabilities: { invite: false, video: "no" } }),
+    ).toEqual({
+      type: "accepted",
+      callId: "CALL-1",
+      exclusive: false,
+      capabilities: { invite: false },
+    });
+    expect(ev("call.accepted", { capabilities: {} })).toEqual({
+      type: "accepted",
+      callId: "CALL-1",
+      exclusive: false,
+    });
     expect(ev("call.accepted", { capabilities: ["video"] })).toEqual({
       type: "accepted",
       callId: "CALL-1",

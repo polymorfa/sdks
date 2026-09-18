@@ -278,6 +278,63 @@ describe("browser widget and shared calls client", () => {
     });
   });
 
+  it("does not open a camera for a placed call the answer says cannot carry video", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    let finish!: (response: Response) => void;
+    f.fetch.mockImplementationOnce(
+      async () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const placing = f.calls.controller.place("+15550100", { video: true });
+    await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
+    event(socket, "call.accepted", "CALL-OUT", {
+      capabilities: { video: false, invite: true },
+    });
+    finish(
+      new Response(JSON.stringify({ data: { callId: "CALL-OUT" } }), {
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    await placing;
+    expect(f.media.open).toHaveBeenCalledWith(
+      "CALL-OUT",
+      false,
+      expect.any(Object),
+      expect.any(AbortSignal),
+      expect.any(Object),
+    );
+    expect(f.calls.controller.getSnapshot().video).toBe(false);
+  });
+
+  it("keeps the call when leaving it fails, so leave can be retried", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    event(socket, "call.received", "CALL-IN", { from: "+15550100" });
+    await f.calls.controller.answer();
+    f.fetch.mockImplementationOnce(
+      async () =>
+        new Response(
+          JSON.stringify({ error: { code: "unavailable", message: "Retry" } }),
+          { status: 503, headers: { "content-type": "application/json" } },
+        ),
+    );
+    await f.calls.controller.leave();
+    expect(f.calls.controller.getSnapshot()).toMatchObject({
+      callId: "CALL-IN",
+      error: { code: "call_control_failed" },
+    });
+    expect(f.calls.controller.call?.ended).toBe(false);
+    await f.calls.controller.leave();
+    expect(f.calls.controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      endReason: "left",
+    });
+    expect(f.calls.controller.call?.endReason).toBe("left");
+  });
+
   it("leaves, and never ends, a call when microphone acquisition fails", async () => {
     const f = fixture();
     const socket = await f.connect();

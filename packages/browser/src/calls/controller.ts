@@ -144,19 +144,23 @@ export type CallLifecycleEvent =
       readonly exclusive?: boolean;
       /** Set by backends that know this client's participant reference. */
       readonly claimedByOther?: boolean;
-      /** Capabilities the platform reported with the answer. */
+      /**
+       * Capabilities the platform reported with the answer. Reported fields
+       * only: an absent field keeps the call's current value.
+       */
       readonly capabilities?: {
-        readonly video: boolean;
-        readonly invite: boolean;
+        readonly video?: boolean;
+        readonly invite?: boolean;
       };
     }
   | {
       /** The platform reported different capabilities for a call. */
       readonly type: "capabilities";
       readonly callId: string;
+      /** Reported fields only; an absent field keeps the current value. */
       readonly capabilities: {
-        readonly video: boolean;
-        readonly invite: boolean;
+        readonly video?: boolean;
+        readonly invite?: boolean;
       };
     }
   | {
@@ -467,6 +471,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         shared === undefined
           ? DEFAULT_CAPABILITIES
           : capabilitiesOf(shared.capabilities);
+      // A call the platform says cannot carry video opens no camera.
+      const offered = video && capabilities.video;
       this.transition({
         ...this.#baseFields(),
         status: answered ? "accepted" : "ringing",
@@ -474,7 +480,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         peer: to,
         direction: "outgoing",
         capabilities,
-        video,
+        video: offered,
         audioMuted: false,
         videoMuted: false,
         exclusive: options.exclusive === true,
@@ -490,7 +496,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         return;
       }
       offering = true;
-      await this.#openMedia(callId, video, operation);
+      await this.#openMedia(callId, offered, operation);
     } catch (cause) {
       this.#fail(cause, operation, "place_failed", offering);
     } finally {
@@ -1037,15 +1043,12 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     video: boolean,
     operation: number,
   ): Promise<void> {
-    // A placed call the remote party has not answered keeps ringing while its
-    // media opens, when the shared call can say so.
+    // A placed call keeps ringing while its media opens: it is connecting
+    // only once the remote party has answered.
     const before = this.getSnapshot();
     this.transition({
       ...callFields(before),
-      status:
-        before.status === "ringing" && this.call?.state === "ringing"
-          ? "ringing"
-          : "connecting",
+      status: before.status === "ringing" ? "ringing" : "connecting",
     });
     const connectionId = this.#backend.connectionId?.(callId);
     const media = await this.#mediaFactory.open(
@@ -1438,13 +1441,22 @@ export class CallsController extends ObservableController<CallsSnapshot> {
    */
   #applyCapabilities(
     callId: string,
-    reported: { readonly video: boolean; readonly invite: boolean },
+    reported: { readonly video?: boolean; readonly invite?: boolean },
   ): void {
-    const capabilities = capabilitiesOf(reported);
+    // Reported fields only: a partial report must not reset the other one.
+    const merge = (base: CallCapabilities): CallCapabilities => ({
+      video: reported.video ?? base.video,
+      invite: reported.invite ?? base.invite,
+      mute: base.mute,
+    });
     const invitation = this.#invitations.get(callId);
     if (invitation !== undefined)
-      this.#invitations.set(callId, { ...invitation, capabilities });
+      this.#invitations.set(callId, {
+        ...invitation,
+        capabilities: merge(invitation.capabilities),
+      });
     const current = this.getSnapshot();
+    const capabilities = merge(current.capabilities);
     if (
       current.callId !== callId ||
       current.status === "ended" ||

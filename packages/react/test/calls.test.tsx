@@ -277,7 +277,7 @@ describe("Calls UI", () => {
       ).click();
     });
     expect(f.controller.getSnapshot()).toMatchObject({
-      status: "connecting",
+      status: "ringing",
       peer: "+12025550",
       direction: "outgoing",
       video: true,
@@ -297,7 +297,7 @@ describe("Calls UI", () => {
         new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
       );
     });
-    expect(f.controller.getSnapshot().status).toBe("connecting");
+    expect(f.controller.getSnapshot().status).toBe("ringing");
     expect(f.media.open).toHaveBeenCalledTimes(1);
 
     // The buttons are disabled now, but the input keeps focus and its value.
@@ -1222,6 +1222,25 @@ describe("unified calls UI", () => {
         audioMuted: true,
       }),
     );
+    f.controller.dispose();
+  });
+
+  it("shows Ringing only while a placed call rings, without a shared call model", async () => {
+    const f = fixture(); // signaling backend: no getCall
+    const host = mount(
+      <PolymorfaProvider>
+        <CallStage controller={f.controller} />
+      </PolymorfaProvider>,
+    );
+    await act(async () => {
+      await f.controller.place("+12025550123");
+    });
+    expect(f.controller.call).toBeUndefined();
+    expect(f.controller.getSnapshot().status).toBe("ringing");
+    expect(host.textContent).toContain("Ringing +12025550123");
+    act(() => f.relay.accepted("call-out"));
+    expect(f.controller.getSnapshot().status).toBe("connecting");
+    expect(host.textContent).not.toContain("Ringing");
     f.controller.dispose();
   });
 

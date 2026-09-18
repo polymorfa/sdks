@@ -140,8 +140,9 @@ describe("createSignalingCallsBackend", () => {
     });
 
     await controller.place("+12025550199", { video: true });
+    // Media is open; the callee has not answered.
     expect(controller.getSnapshot()).toMatchObject({
-      status: "connecting",
+      status: "ringing",
       callId: "call-out-1",
       direction: "outgoing",
       video: true,
@@ -435,9 +436,10 @@ describe("createSignalingCallsBackend", () => {
       capabilities: { video: true, invite: false, mute: true },
       video: true,
     });
+    // A partial report changes only what it reports.
     relay.accepted("call-out", { capabilities: { video: false } });
     expect(controller.getSnapshot()).toMatchObject({
-      capabilities: { video: false, invite: true, mute: true },
+      capabilities: { video: false, invite: false, mute: true },
       video: false,
     });
     controller.dispose();
@@ -465,7 +467,7 @@ describe("createSignalingCallsBackend", () => {
       expect.any(AbortSignal),
     );
     expect(controller.getSnapshot()).toMatchObject({
-      status: "connecting",
+      status: "ringing",
       callId: "server-call-9",
       peer: "+12025550199",
     });

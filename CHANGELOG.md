@@ -21,6 +21,12 @@
   ends locally: ended when this client claimed it (exclusive answer or
   placement), otherwise left. `answer()` and `join()` reject after the
   release, which waits at most 5 seconds.
+- `Call.leave()` ends a placed call that is still ringing, and a failed leave
+  request keeps the call live so it can be retried. A placed call's
+  controller status stays `ringing` until the callee answers, for every
+  backend, and the React stage shows "Ringing" only in that state. A partial
+  capability report changes only the flags it reports, and a placed call the
+  answer reports as audio-only opens no camera.
 - Capabilities reported with `call.accepted` now apply: `Call.capabilities`
   and `Call.hasVideo` update (new `capabilities` event on `Call`), and the
   browser controller refreshes `snapshot.capabilities` for the displayed call

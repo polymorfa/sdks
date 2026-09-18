@@ -1564,3 +1564,32 @@ describe("CallsClient — capabilities reported on call.accepted", () => {
     expect(call!.canJoin).toBe(true);
   });
 });
+
+describe("Call.leave()", () => {
+  it("ends a placed call that is still ringing instead of leaving it", async () => {
+    const h = clientWith(undefined, { mediaMode: "external" });
+    await connected(h);
+    const call = await h.client.place("+15550100");
+    expect(call.state).toBe("ringing");
+    await call.leave();
+    expect(h.api.end).toHaveBeenCalledWith(call.id);
+    expect(h.api.leave).not.toHaveBeenCalled();
+    expect(call.endReason).toBe("hangup");
+  });
+
+  it("keeps the call live and retryable when the leave request fails", async () => {
+    const h = clientWith(undefined, { mediaMode: "external" });
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    await call!.answer();
+    h.api.leave.mockRejectedValueOnce(new Error("network down"));
+    await expect(call!.leave()).rejects.toThrow("network down");
+    expect(call!.ended).toBe(false);
+    expect(h.client.calls).toContain(call);
+    await call!.leave();
+    expect(h.api.leave).toHaveBeenCalledTimes(2);
+    expect(call!.endReason).toBe("left");
+  });
+});

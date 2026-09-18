@@ -577,19 +577,24 @@ export class Call extends Emitter<CallEvents> {
    */
   async leave(): Promise<void> {
     if (this.#state === "ended") return;
+    // Nobody else is on a placed call the remote party has not answered, so
+    // leaving it would keep that party ringing with no way to stop it.
+    if (this.direction === "outbound" && this.#state === "ringing") {
+      await this.end();
+      return;
+    }
     const attached = this.#accepted;
     const media = this.#media;
-    try {
-      if (attached && !(media?.leave() ?? false))
-        await this.#api.leave(
-          this.id,
-          this.connectionId,
-          undefined,
-          this.#participant,
-        );
-    } finally {
-      this.#end("left");
-    }
+    // A refused request leaves the call live so it can be retried; the local
+    // model only goes terminal once this client is really out of the call.
+    if (attached && !(media?.leave() ?? false))
+      await this.#api.leave(
+        this.id,
+        this.connectionId,
+        undefined,
+        this.#participant,
+      );
+    this.#end("left");
   }
 
   /** End the call for every participant. Idempotent. */

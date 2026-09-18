@@ -245,6 +245,24 @@ export function parseCallsSocketMessage(
  * Map a pushed `call.*` event onto the controller's lifecycle vocabulary. The
  * number wins over the public ID. Outgoing offers are the browser's own.
  */
+/** The capability flags a payload actually reports, if any. */
+function reportedCapabilities(
+  value: unknown,
+): { readonly video?: boolean; readonly invite?: boolean } | undefined {
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    return undefined;
+  const reported = value as Record<string, unknown>;
+  const flags = {
+    ...(typeof reported["video"] === "boolean"
+      ? { video: reported["video"] }
+      : {}),
+    ...(typeof reported["invite"] === "boolean"
+      ? { invite: reported["invite"] }
+      : {}),
+  };
+  return Object.keys(flags).length === 0 ? undefined : flags;
+}
+
 export function lifecycleEventFrom(
   message: Extract<CallsSocketServerMessage, { type: "event" }>,
 ): CallLifecycleEvent | undefined {
@@ -264,6 +282,7 @@ export function lifecycleEventFrom(
     }
     case "call.accepted": {
       const answeredBy = payload.answeredBy;
+      const capabilities = reportedCapabilities(payload.capabilities);
       return {
         type: "accepted",
         callId: message.callId,
@@ -271,11 +290,9 @@ export function lifecycleEventFrom(
           ? { answeredBy }
           : {}),
         exclusive: payload.exclusive === true,
-        ...(payload.capabilities !== null &&
-        typeof payload.capabilities === "object" &&
-        !Array.isArray(payload.capabilities)
-          ? { capabilities: capabilitiesFrom(payload.capabilities) }
-          : {}),
+        // Reported fields only: the controller merges them with what the
+        // call already has, so a partial report cannot flip the other flag.
+        ...(capabilities === undefined ? {} : { capabilities }),
       };
     }
     case "call.ended": {

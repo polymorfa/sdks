@@ -47,14 +47,14 @@ exchange, or session answer mode.
 Every incoming call rings until a participant answers or declines it. The
 client never declines a call on its own.
 
-| Call                                | Effect                                                                                                                                                                      |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `call.answer({ exclusive, video })` | Accepts the call and attaches media. `exclusive` defaults to `false`: other participants keep ringing and can join. `exclusive: true` claims it; others get `call_claimed`. |
-| `call.join({ video })`              | Accepts a call another participant answered without a claim. Never claims.                                                                                                  |
-| `call.reject()`                     | Declines a ringing call. This ends the call for everyone.                                                                                                                   |
-| `call.leave()`                      | Closes this client's media connection. The call continues for others.                                                                                                       |
-| `call.end()`                        | Ends the call for every participant.                                                                                                                                        |
-| `call.addParticipant(to)`           | Invites another WhatsApp party.                                                                                                                                             |
+| Call                                | Effect                                                                                                                                                                                              |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `call.answer({ exclusive, video })` | Accepts the call and attaches media. `exclusive` defaults to `false`: other participants keep ringing and can join. `exclusive: true` claims it; others get `call_claimed`.                         |
+| `call.join({ video })`              | Accepts a call another participant answered without a claim. Never claims.                                                                                                                          |
+| `call.reject()`                     | Declines a ringing call. This ends the call for everyone.                                                                                                                                           |
+| `call.leave()`                      | Closes this client's media connection. The call continues for others. A placed call that is still ringing is ended instead. If the request fails, the call stays live and `leave()` can be retried. |
+| `call.end()`                        | Ends the call for every participant.                                                                                                                                                                |
+| `call.addParticipant(to)`           | Invites another WhatsApp party.                                                                                                                                                                     |
 
 `call.claim` reports `answered`, `answeredBy`, `exclusive`, `claimedByOther`,
 and `canJoin`, and the `claim` event fires when they change. When another

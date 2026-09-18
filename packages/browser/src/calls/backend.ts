@@ -91,9 +91,20 @@ export class IncomingCallRelay {
         ? {}
         : { answeredBy: claim.answeredBy }),
       exclusive: claim.exclusive === true,
+      // Reported fields only; the controller merges them with the call's
+      // current capabilities.
       ...(claim.capabilities === undefined
         ? {}
-        : { capabilities: capabilitiesFrom(claim.capabilities) }),
+        : {
+            capabilities: {
+              ...(typeof claim.capabilities.video === "boolean"
+                ? { video: claim.capabilities.video }
+                : {}),
+              ...(typeof claim.capabilities.invite === "boolean"
+                ? { invite: claim.capabilities.invite }
+                : {}),
+            },
+          }),
     });
   }
 
