@@ -1,3 +1,4 @@
+import { CALLS_SDK_VERSION, reportPlatform } from "./diagnostics.js";
 import { HttpCallsApi, type CallsApi, type FetchLike } from "./api.js";
 import {
   Call,
@@ -44,6 +45,13 @@ export interface CallsClientOptions {
   readonly random?: () => number;
   readonly now?: () => number;
   readonly createIdempotencyKey?: () => string;
+  /**
+   * Send call diagnostics for this client's media connections (default
+   * `true`): an error code when media fails to connect, times out, loses its
+   * token or gives up reconnecting, and the connection's reconnect count when
+   * it closes. Reports carry no personal data. `false` sends none.
+   */
+  readonly diagnostics?: boolean;
 }
 
 /**
@@ -286,6 +294,15 @@ export class CallsClient extends Emitter<ClientEvents> {
         ? {}
         : { reconnectAttempts: this.#o.reconnectAttempts }),
       ...(this.#o.now === undefined ? {} : { now: this.#o.now }),
+      ...(this.#o.diagnostics === false
+        ? {}
+        : {
+            diagnostics: {
+              sdk: "@polymorfa/sdk",
+              version: CALLS_SDK_VERSION,
+              platform: reportPlatform(),
+            },
+          }),
     });
   }
 

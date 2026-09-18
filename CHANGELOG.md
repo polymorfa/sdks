@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Call diagnostics. `MessagingClient.voip.report()` sends quality figures or
+  an error code for one of your media connections
+  (`POST /messaging/voip/calls/{id}/reports`), with the new
+  `VoipCallReportRequest` types. `createBrowserCalls` reports each
+  connection's round-trip time, jitter, packet counts, codecs, ICE candidate
+  type and reconnect count every 15 seconds and when it closes, plus error
+  codes for denied or missing devices, ICE and negotiation failures, stalled
+  media, reconnection give-up and unsupported browsers. `@polymorfa/sdk/calls`
+  reports media timeouts, token failures and reconnection give-up, and each
+  connection's reconnect count. Reports carry no personal data, are
+  best-effort, and never affect the call. Turn them off with
+  `diagnostics: false` on `createBrowserCalls`, the `CallsController` options
+  or `CallsClient`.
 - The programmatic Calls client ships inside `@polymorfa/sdk` as the
   `@polymorfa/sdk/calls` subpath. Import `CallsClient` and the Calls error
   classes from `@polymorfa/sdk/calls`; there is no separate `@polymorfa/calls`

@@ -8224,6 +8224,210 @@
           "data"
         ]
       },
+      "VoipCallReportClient": {
+        "type": "object",
+        "properties": {
+          "sdk": {
+            "type": "string",
+            "pattern": "^[a-z0-9@/._-]{1,32}$",
+            "description": "Package name of the SDK that sends the report.",
+            "example": "@polymorfa/browser"
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,6}\\.[0-9]{1,6}\\.[0-9]{1,6}(?:[-+][0-9A-Za-z.+-]{1,24})?$",
+            "description": "SDK version: `MAJOR.MINOR.PATCH` with an optional suffix.",
+            "example": "1.4.0"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "browser",
+              "node",
+              "other"
+            ]
+          }
+        },
+        "required": [
+          "sdk",
+          "version",
+          "platform"
+        ],
+        "additionalProperties": false
+      },
+      "VoipCallQuality": {
+        "type": "object",
+        "properties": {
+          "rttMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60000,
+            "description": "Round-trip time in milliseconds.",
+            "example": 84
+          },
+          "jitterMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60000,
+            "description": "Receive jitter in milliseconds.",
+            "example": 6
+          },
+          "packetsLost": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647,
+            "description": "Packets lost since the connection started.",
+            "example": 12
+          },
+          "packetsReceived": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647,
+            "description": "Packets received since the connection started.",
+            "example": 4810
+          },
+          "audioCodec": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9/.-]{1,32}$",
+            "description": "Negotiated audio codec.",
+            "example": "audio/opus"
+          },
+          "videoCodec": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9/.-]{1,32}$",
+            "description": "Negotiated video codec.",
+            "example": "video/VP8"
+          },
+          "candidateType": {
+            "type": "string",
+            "enum": [
+              "host",
+              "srflx",
+              "prflx",
+              "relay"
+            ],
+            "description": "Type of the local ICE candidate in use. `relay` means media flows through a TURN relay."
+          },
+          "reconnects": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000,
+            "description": "Times this connection reconnected so far.",
+            "example": 0
+          }
+        },
+        "additionalProperties": false,
+        "description": "Omit figures you did not measure. Send at least one."
+      },
+      "VoipCallQualityReport": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "quality"
+            ]
+          },
+          "connectionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "description": "Client-chosen identifier of one media connection. Reusing it replaces that connection.",
+            "example": "conn_0123456789"
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Server credentials only: the participant acting in the call. Defaults to `default`. Client tokens act as their own participant and must omit this field.",
+            "example": "agent-7"
+          },
+          "client": {
+            "$ref": "#/components/schemas/VoipCallReportClient"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/VoipCallQuality"
+          }
+        },
+        "required": [
+          "kind",
+          "connectionId",
+          "quality"
+        ],
+        "additionalProperties": false
+      },
+      "VoipCallErrorReport": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          "connectionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "description": "Client-chosen identifier of one media connection. Reusing it replaces that connection.",
+            "example": "conn_0123456789"
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Server credentials only: the participant acting in the call. Defaults to `default`. Client tokens act as their own participant and must omit this field.",
+            "example": "agent-7"
+          },
+          "client": {
+            "$ref": "#/components/schemas/VoipCallReportClient"
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "media_permission_denied",
+                  "device_not_found",
+                  "device_in_use",
+                  "ice_failed",
+                  "negotiation_failed",
+                  "media_timeout",
+                  "reconnect_exhausted",
+                  "token_refresh_failed",
+                  "unsupported_browser",
+                  "other"
+                ]
+              }
+            },
+            "required": [
+              "code"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "kind",
+          "connectionId",
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "VoipCallReportRequest": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/VoipCallQualityReport"
+          },
+          {
+            "$ref": "#/components/schemas/VoipCallErrorReport"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "quality": "#/components/schemas/VoipCallQualityReport",
+            "error": "#/components/schemas/VoipCallErrorReport"
+          }
+        }
+      },
       "Participant": {
         "type": "object",
         "properties": {
@@ -19298,6 +19502,239 @@
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
         },
         "description": "**Required scope:** `sessions:manage`"
+      }
+    },
+    "/messaging/voip/calls/{id}/reports": {
+      "post": {
+        "operationId": "voipReportCallDiagnostics",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Report call diagnostics from your app",
+        "description": "**Required scope:** `sessions:manage`\n\nRecords quality figures or an error that your app measured for one of its connections. The Console shows the latest quality report and the reported errors of each connection on the call. Reports are optional and are accepted while the call is live and for 10 minutes after it ends. Each connection can send one quality report every 5 seconds and 20 error reports per minute. At most 200 reports are kept per call: at that limit a quality report replaces the connection's oldest quality report, and other reports are not stored.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipCallReportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Report accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`state_conflict` when the call is not live, ended more than 10 minutes ago, or is outside the credential's boundary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_gone",
+                    "message": "The requested retained resource has expired or was removed.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-gone"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The connection exceeded its report limit: one quality report every 5 seconds or 20 error reports per minute",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "rate_limit_error",
+                    "code": "rate_limit_exceeded",
+                    "message": "The request limit was reached. Follow Retry-After when supplied.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#rate-limit-exceeded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call authority or report storage is unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
       }
     },
     "/messaging/voip/calls/{id}": {

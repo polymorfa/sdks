@@ -3,6 +3,7 @@ import {
   CallsApiError,
   CallsDisabledError,
 } from "./errors.js";
+import type { CallReport } from "./diagnostics.js";
 import { isParticipant, type Participant } from "./protocol.js";
 import {
   CallsTokenSource,
@@ -95,6 +96,15 @@ export interface CallsApi {
   ): Promise<void>;
   /** End the call for every participant. */
   end(callId: string, signal?: AbortSignal): Promise<void>;
+  /**
+   * Send a diagnostics report for one connection. Optional: without it the
+   * client sends none. `participant` is dropped for client tokens.
+   */
+  report?(
+    callId: string,
+    report: CallReport,
+    signal?: AbortSignal,
+  ): Promise<void>;
   addParticipant(
     callId: string,
     to: string,
@@ -279,6 +289,26 @@ export class HttpCallsApi implements CallsApi {
           ? {}
           : { participant }),
       }),
+      signal,
+    );
+  }
+
+  async report(
+    callId: string,
+    report: CallReport,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#request(
+      "POST",
+      callPath(callId, "/reports"),
+      async (token) => {
+        if (!isClientToken(token) || report.participant === undefined)
+          return report;
+        // A client token acts as its own participant and must not name one.
+        const body: Record<string, unknown> = { ...report };
+        delete body["participant"];
+        return body;
+      },
       signal,
     );
   }

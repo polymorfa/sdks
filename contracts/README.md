@@ -2,21 +2,27 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`d2217b84f232248fc7e5c00e7893c86a66b52e82` on branch
-`t3code/calls-unified-clients`. That commit is pushed but not merged; re-pin to
+`1681cdaa96c2625220c32fc3a912b380179fa9ee` on branch
+`t3code/calls-unified-5-client-diagnostics`. That commit is pushed but not merged; re-pin to
 the merged commit before release. `source.json` records the original paths and
 SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        303 |
+| Covered             |        304 |
 | Missing             |          0 |
 | Excluded            |        116 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        419 |
+| Total               |        420 |
 
-This revision adds `hostCloudApiCalls` to session call settings, a `sip`
+This revision adds app-reported call diagnostics
+(`POST /messaging/voip/calls/{id}/reports`, covered by
+`MessagingClient.voip.report`, and sent automatically by the browser and
+Calls clients), replaces `includeSelfAudio` with `conferenceMode` in session
+call settings, and moves Console call detail from `clientReports` to
+`appReports` (excluded, Console-only). Earlier revisions added
+`hostCloudApiCalls` to session call settings, a `sip`
 connection transport in Console call detail, and the SIP trunk operations, covered by `Client.sipTrunks`,
 and the calling switch, routing and revision fields of session call settings. The SIP error codes and
 `calls_disabled` added to the shared public error enum changed the fingerprint of every

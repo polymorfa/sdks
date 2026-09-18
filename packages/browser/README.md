@@ -141,6 +141,27 @@ After a call ends, the next waiting invitation is displayed.
 
 Disposal releases tracks and connections.
 
+### Diagnostics
+
+While a call's media is open, the controller sends call diagnostics for this
+browser's connection to `POST /messaging/voip/calls/{id}/reports`, where
+they appear with the call in the Console:
+
+- Every 15 seconds, and once when the connection closes: round-trip time,
+  audio jitter, packets lost and received, the audio and video codecs, the
+  ICE candidate type (`relay` means a TURN relay), and how many times the
+  connection reconnected. Figures come from `RTCPeerConnection.getStats()`.
+- When something fails: an error code (`media_permission_denied`,
+  `device_not_found`, `device_in_use`, `ice_failed`, `negotiation_failed`,
+  `media_timeout`, `reconnect_exhausted` or `unsupported_browser`).
+
+Each report names the connection and `@polymorfa/browser` with its version.
+Reports contain no phone numbers, names, device labels, IP addresses, audio or
+video. They are best-effort: a failed report is not retried, a refused one
+(other than rate limiting) stops reporting for the connection, and nothing
+about reporting affects the call. The client token needs the `voip_signal`
+action. Turn reporting off with `createBrowserCalls({ diagnostics: false })`.
+
 If a reject or hangup request fails, the call stays active and its controls remain
 available for retry. The UI shows a localized failure message and keeps existing
 media connected until the call ends. `snapshot.error` clears when ending succeeds

@@ -79,3 +79,14 @@ export {
   type VideoSourceOwner,
 } from "./protocol.js";
 export { Emitter } from "./events.js";
+export {
+  CALLS_SDK_VERSION,
+  CallReporter,
+  reportPlatform,
+  statusOf,
+  type CallErrorCode,
+  type CallQualityFigures,
+  type CallReport,
+  type CallReportClient,
+  type CallReporterOptions,
+} from "./diagnostics.js";

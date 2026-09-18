@@ -363,6 +363,19 @@ only the settings you send. Pass the `revision` you read as
 the settings changed meanwhile.
 These methods require a server credential.
 
+`voip.report(callId, report)` sends diagnostics your app measured for one of
+its media connections: `{ kind: "quality", connectionId, quality }` with at
+least one of `rttMs`, `jitterMs`, `packetsLost`, `packetsReceived`,
+`audioCodec`, `videoCodec`, `candidateType` and `reconnects`, or
+`{ kind: "error", connectionId, error: { code } }`. `client` optionally names
+the SDK (`sdk`, `version`, `platform`). The SDK rejects fields the platform
+does not accept before sending. The platform accepts one quality report per
+connection every 5 seconds and 20 error reports per minute, while the call is
+live and for 10 minutes after it ends. Treat reports as best-effort: do not
+retry a `4xx`, and drop reports refused with `429` or `503`. Client tokens
+need the `voip_signal` action and cannot send `participant`. The browser and
+Calls clients send these reports for you.
+
 ## SIP trunks
 
 `Client.sipTrunks` manages the SIP trunks that connect a PBX to a project's

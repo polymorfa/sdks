@@ -101,6 +101,29 @@ const calls = [
     response: { success: true },
   },
   {
+    operationId: "voipReportCallDiagnostics",
+    method: "report",
+    args: [
+      callId,
+      {
+        kind: "quality",
+        connectionId: "conn_0123456789",
+        participant: "desk-1",
+        client: { sdk: "@polymorfa/sdk", version: "1.2.3", platform: "node" },
+        quality: { rttMs: 42, candidateType: "relay" },
+      },
+    ],
+    body: {
+      kind: "quality",
+      connectionId: "conn_0123456789",
+      participant: "desk-1",
+      client: { sdk: "@polymorfa/sdk", version: "1.2.3", platform: "node" },
+      quality: { rttMs: 42, candidateType: "relay" },
+    },
+    status: 202,
+    response: { success: true },
+  },
+  {
     operationId: "voipAddParticipant",
     method: "addParticipant",
     args: [callId, { to: "+15550100" }],
@@ -137,7 +160,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("d2217b84f232248fc7e5c00e7893c86a66b52e82");
+    expect(source.commit).toBe("1681cdaa96c2625220c32fc3a912b380179fa9ee");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",

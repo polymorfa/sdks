@@ -1,4 +1,4 @@
-import { capabilitiesFrom } from "@polymorfa/calls/internal";
+import { capabilitiesFrom, type CallReport } from "@polymorfa/calls/internal";
 import type {
   CallEndReason,
   CallLifecycleEvent,
@@ -204,6 +204,12 @@ export function createSignalingCallsBackend(
     },
     hangup: (callId: string, signal: AbortSignal) =>
       options.signaling.end(callId, signal),
+    ...(options.signaling.report === undefined
+      ? {}
+      : {
+          report: (callId: string, report: CallReport) =>
+            options.signaling.report!(callId, report),
+        }),
   };
 }
 

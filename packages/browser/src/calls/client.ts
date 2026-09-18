@@ -28,6 +28,12 @@ export interface BrowserCallsOptions extends BrowserTransportOptions {
   readonly WebSocket?: CallsClientOptions["WebSocket"];
   readonly controller?: CallsControllerOptions;
   /**
+   * Send call diagnostics (default `true`): connection quality figures every
+   * 15 seconds and when a connection closes, and an error code when media
+   * fails. No personal data is sent. Same as `controller.diagnostics`.
+   */
+  readonly diagnostics?: boolean;
+  /**
    * Failures that do not belong to one call. `code: "unauthorized"` means the
    * platform stopped accepting the client token; the next attempt asks
    * `getClientToken` for a new one.
@@ -169,6 +175,7 @@ export function createBrowserCalls(
       // Keep the model live if the request fails, so the widget can retry.
       await requireCall(id).end();
     },
+    report: (id, report) => api.report(id, report),
   };
   const media =
     options.mediaFactory ??
@@ -176,7 +183,12 @@ export function createBrowserCalls(
       ...options.media,
       signaling: new CallsSignalingClient(transport),
     });
-  const controller = new CallsController(backend, media, options.controller);
+  const controller = new CallsController(backend, media, {
+    ...options.controller,
+    ...(options.diagnostics === undefined
+      ? {}
+      : { diagnostics: options.diagnostics }),
+  });
   client.on("incoming", (call) => {
     if (disposed || call.ended) return;
     // Every invitation is listed; none is declined on the application's behalf.

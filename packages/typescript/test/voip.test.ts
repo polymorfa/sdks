@@ -298,6 +298,92 @@ describe("VoipResource", () => {
     expect(server.requests).toHaveLength(0);
   });
 
+  it("sends call reports and rejects reports the platform would refuse", async () => {
+    const server = await serve([
+      json({ success: true }, 202),
+      json({ success: true }, 202),
+    ]);
+    const sdk = client(server, { type: "clientToken", value: "pmfa_ct_web" });
+    const quality = {
+      kind: "quality",
+      connectionId: "conn_0123456789",
+      client: {
+        sdk: "@polymorfa/browser",
+        version: "0.1.0-dev.0",
+        platform: "browser",
+      },
+      quality: {
+        rttMs: 40,
+        jitterMs: 3,
+        packetsLost: 0,
+        packetsReceived: 1200,
+        audioCodec: "audio/opus",
+        candidateType: "srflx",
+        reconnects: 1,
+      },
+    } as const;
+    const sent = await sdk.voip.report("call/1", quality);
+    expectTypeOf(sent).toEqualTypeOf<ApiResponse<SuccessResponse>>();
+    await sdk.voip.report("call/1", {
+      kind: "error",
+      connectionId: "conn_0123456789",
+      error: { code: "ice_failed" },
+    });
+    expect(server.requests.map(({ method, path }) => [method, path])).toEqual([
+      ["POST", "/messaging/voip/calls/call%2F1/reports"],
+      ["POST", "/messaging/voip/calls/call%2F1/reports"],
+    ]);
+    expect(JSON.parse(server.requests[0]?.body ?? "null")).toEqual(quality);
+    expect(JSON.parse(server.requests[1]?.body ?? "null")).toEqual({
+      kind: "error",
+      connectionId: "conn_0123456789",
+      error: { code: "ice_failed" },
+    });
+    const invalid: unknown[] = [
+      { ...quality, participant: "desk-1" }, // client tokens act as themselves
+      { ...quality, connectionId: "short" },
+      { ...quality, quality: {} },
+      { ...quality, quality: { rttMs: 60_001 } },
+      { ...quality, quality: { jitterMs: 1.5 } },
+      { ...quality, quality: { packetsLost: -1 } },
+      { ...quality, quality: { reconnects: 1001 } },
+      { ...quality, quality: { audioCodec: "audio opus" } },
+      { ...quality, quality: { candidateType: "turn" } },
+      { ...quality, quality: { mos: 4 } },
+      { ...quality, extra: true },
+      { ...quality, client: { ...quality.client, sdk: "Polymorfa" } },
+      { ...quality, client: { ...quality.client, version: "1.2" } },
+      { ...quality, client: { ...quality.client, platform: "ios" } },
+      { ...quality, client: { ...quality.client, name: "x" } },
+      {
+        kind: "error",
+        connectionId: "conn_0123456789",
+        error: { code: "boom" },
+      },
+      {
+        kind: "error",
+        connectionId: "conn_0123456789",
+        error: { code: "other", detail: "x" },
+      },
+      {
+        kind: "error",
+        connectionId: "conn_0123456789",
+        quality: { rttMs: 1 },
+      },
+      { kind: "debug", connectionId: "conn_0123456789" },
+    ];
+    for (const body of invalid)
+      expect(
+        () => sdk.voip.report("call/1", body as never),
+        JSON.stringify(body),
+      ).toThrow(
+        (body as { participant?: string }).participant === undefined
+          ? PolymorfaValidationError
+          : PolymorfaConfigurationError,
+      );
+    expect(server.requests).toHaveLength(2);
+  });
+
   it("lets a client token act only as itself", async () => {
     const server = await serve([
       json(

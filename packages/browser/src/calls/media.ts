@@ -162,6 +162,8 @@ export interface CallMediaSession {
     signal: AbortSignal,
     devices?: SelectedCallDevices,
   ): Promise<void>;
+  /** The connection's WebRTC statistics, for diagnostics. Optional for fakes. */
+  getStats?(): Promise<RTCStatsReport>;
   /** Re-offer with fresh ICE credentials after a network change. Optional for fakes. */
   restartIce?(signal: AbortSignal): Promise<void>;
   /**
@@ -232,7 +234,11 @@ export class WebRtcMediaFactory implements CallMediaFactory {
     this.#mediaDevices = options.mediaDevices ?? navigator.mediaDevices;
     this.#createPeer =
       options.createPeerConnection ??
-      ((configuration) => new RTCPeerConnection(configuration));
+      ((configuration) => {
+        if (typeof RTCPeerConnection === "undefined")
+          throw unsupported("This browser does not support WebRTC calls.");
+        return new RTCPeerConnection(configuration);
+      });
     this.#pollIntervalMs = options.pollIntervalMs ?? 1_000;
     this.#maxVideoSlots = Math.max(
       1,
@@ -280,6 +286,8 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       throw new Error(
         "connectionId must be 8–64 characters of A–Z, a–z, 0–9, _ or -.",
       );
+    if (typeof this.#mediaDevices?.getUserMedia !== "function")
+      throw unsupported("This browser cannot capture a microphone or camera.");
     const local = await this.#mediaDevices.getUserMedia(
       constraintsFor(video, preferences.devices),
     );
@@ -608,6 +616,7 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         if (muted.video !== undefined)
           setTracks(local.getVideoTracks(), !muted.video);
       },
+      getStats: () => peer.getStats(),
       audioEnabled: () => local.getAudioTracks().some(({ enabled }) => enabled),
       videoEnabled: () => local.getVideoTracks().some(({ enabled }) => enabled),
       // Same-kind switches run one at a time so the last request wins.
@@ -686,6 +695,13 @@ function candidateFrom(candidate: RTCIceCandidateInit): TrickleCandidate {
       : { sdpMLineIndex: candidate.sdpMLineIndex }),
   };
 }
+/** A missing browser capability; reported as `unsupported_browser`. */
+function unsupported(message: string): Error {
+  const error = new Error(message);
+  error.name = "NotSupportedError";
+  return error;
+}
+
 function applyIceServers(peer: RTCPeerConnection, answer: SdpAnswer): void {
   peer.setConfiguration({
     iceServers: answer.iceServers.map((server) => ({

@@ -9,6 +9,7 @@ import type {
   SessionCallSettingsResponse,
   SuccessResponse,
   UpdateSessionCallSettingsRequest,
+  VoipCallReportRequest,
   VoipAcceptCallRequest,
   VoipAcceptCallResponse,
   VoipAddParticipantRequest,
@@ -21,6 +22,31 @@ import type {
 
 const PARTICIPANT_PATTERN = /^[A-Za-z0-9._:@-]{1,128}$/;
 const CONNECTION_ID_PATTERN = /^[A-Za-z0-9_-]{8,64}$/;
+const REPORT_SDK_PATTERN = /^[a-z0-9@/._-]{1,32}$/;
+const REPORT_VERSION_PATTERN =
+  /^[0-9]{1,6}\.[0-9]{1,6}\.[0-9]{1,6}(?:[-+][0-9A-Za-z.+-]{1,24})?$/;
+const CODEC_PATTERN = /^[A-Za-z0-9/.-]{1,32}$/;
+const ERROR_CODES = new Set([
+  "media_permission_denied",
+  "device_not_found",
+  "device_in_use",
+  "ice_failed",
+  "negotiation_failed",
+  "media_timeout",
+  "reconnect_exhausted",
+  "token_refresh_failed",
+  "unsupported_browser",
+  "other",
+]);
+const CANDIDATE_TYPES = new Set(["host", "srflx", "prflx", "relay"]);
+/** Integer figures and their upper bounds; all start at 0. */
+const QUALITY_INTEGERS = {
+  rttMs: 60_000,
+  jitterMs: 60_000,
+  packetsLost: 2_147_483_647,
+  packetsReceived: 2_147_483_647,
+  reconnects: 1_000,
+} as const;
 
 /**
  * Polymorfa Calls control routes. Every incoming call rings until a
@@ -106,6 +132,29 @@ export class VoipResource {
     return this.transport.request({
       method: "POST",
       path: `${callPath(callId)}/leave`,
+      body,
+      ...options,
+    });
+  }
+
+  /**
+   * Sends quality figures or an error your app measured for one of its media
+   * connections. The platform accepts one quality report per connection every
+   * 5 seconds and 20 error reports per minute, while the call is live and for
+   * 10 minutes after it ends. Reports are best-effort: do not retry a `4xx`,
+   * and drop a report refused with `429` or `503`. Client tokens need the
+   * `voip_signal` action and must not send `participant`.
+   */
+  report(
+    callId: string,
+    body: VoipCallReportRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessResponse>> {
+    assertCallReport(body);
+    this.assertParticipant(body.participant);
+    return this.transport.request({
+      method: "POST",
+      path: `${callPath(callId)}/reports`,
       body,
       ...options,
     });
@@ -255,6 +304,89 @@ export class VoipResource {
 
 function nonEmpty(value: unknown): boolean {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+/** Mirrors the strict request schema, so an invalid report never leaves. */
+function assertCallReport(body: VoipCallReportRequest): void {
+  const fail = (message: string): never => {
+    throw new PolymorfaValidationError(message);
+  };
+  if (typeof body !== "object" || body === null)
+    fail("A call report must be an object.");
+  const record = body as unknown as Record<string, unknown>;
+  const allowed = new Set([
+    "kind",
+    "connectionId",
+    "participant",
+    "client",
+    record["kind"] === "error" ? "error" : "quality",
+  ]);
+  for (const key of Object.keys(record))
+    if (!allowed.has(key)) fail(`Unknown call report field: ${key}.`);
+  if (
+    typeof body.connectionId !== "string" ||
+    !CONNECTION_ID_PATTERN.test(body.connectionId)
+  )
+    fail(
+      "connectionId must be 8 to 64 letters, digits, underscores, or hyphens.",
+    );
+  if (body.client !== undefined) {
+    const client = body.client as unknown as Record<string, unknown>;
+    if (typeof client !== "object" || client === null)
+      fail("client must be an object.");
+    for (const key of Object.keys(client))
+      if (!["sdk", "version", "platform"].includes(key))
+        fail(`Unknown client field: ${key}.`);
+    if (
+      typeof client["sdk"] !== "string" ||
+      !REPORT_SDK_PATTERN.test(client["sdk"])
+    )
+      fail("client.sdk must be 1 to 32 of a-z 0-9 @ / . _ -.");
+    if (
+      typeof client["version"] !== "string" ||
+      client["version"].length > 32 ||
+      !REPORT_VERSION_PATTERN.test(client["version"])
+    )
+      fail("client.version must be MAJOR.MINOR.PATCH with an optional suffix.");
+    if (!["browser", "node", "other"].includes(client["platform"] as string))
+      fail("client.platform must be browser, node, or other.");
+  }
+  if (body.kind === "error") {
+    const error = body.error as unknown as Record<string, unknown> | undefined;
+    if (typeof error !== "object" || error === null)
+      fail("An error report needs error.");
+    for (const key of Object.keys(error!))
+      if (key !== "code") fail(`Unknown error field: ${key}.`);
+    if (!ERROR_CODES.has(error!["code"] as string))
+      fail("error.code is not a known call error code.");
+    return;
+  }
+  if (body.kind !== "quality") fail("kind must be quality or error.");
+  const quality = (body as { quality?: unknown }).quality as
+    Record<string, unknown> | undefined;
+  if (typeof quality !== "object" || quality === null)
+    fail("A quality report needs quality.");
+  let figures = 0;
+  for (const [key, value] of Object.entries(quality!)) {
+    if (value === undefined) continue;
+    figures += 1;
+    if (key in QUALITY_INTEGERS) {
+      const max = QUALITY_INTEGERS[key as keyof typeof QUALITY_INTEGERS];
+      if (
+        !Number.isInteger(value) ||
+        (value as number) < 0 ||
+        (value as number) > max
+      )
+        fail(`quality.${key} must be an integer from 0 to ${max}.`);
+    } else if (key === "audioCodec" || key === "videoCodec") {
+      if (typeof value !== "string" || !CODEC_PATTERN.test(value))
+        fail(`quality.${key} must be 1 to 32 of A-Z a-z 0-9 / . -.`);
+    } else if (key === "candidateType") {
+      if (!CANDIDATE_TYPES.has(value as string))
+        fail("quality.candidateType must be host, srflx, prflx, or relay.");
+    } else fail(`Unknown quality field: ${key}.`);
+  }
+  if (figures === 0) fail("A quality report needs at least one figure.");
 }
 
 function callPath(callId: string): string {

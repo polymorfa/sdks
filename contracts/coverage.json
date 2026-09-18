@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "d2217b84f232248fc7e5c00e7893c86a66b52e82",
+  "sourceCommit": "1681cdaa96c2625220c32fc3a912b380179fa9ee",
   "excludedContracts": [
     {
       "family": "graph",
@@ -1498,6 +1498,17 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/messaging/voip/calls/{id}/reports",
+      "operationId": "voipReportCallDiagnostics",
+      "fingerprint": "3da69f9be50a1f51973ebddfa24eaa4d4a91a657077ccb02e38f3c04825f3248",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.voip.report"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/messaging/voip/calls/{id}/offer",
       "operationId": "voipOffer",
       "fingerprint": "378893eacf04ad235983d7ff13022ffdefb5491fd1cdafa4a0852262d4b7362d",
@@ -2231,7 +2242,7 @@
       "method": "GET",
       "path": "/console/calls/{callId}",
       "operationId": "getCall",
-      "fingerprint": "f47295fdb5063d34fa471002a46553a031942cd32bafda5135eb90462955c804",
+      "fingerprint": "0b0a7493860975fbdaf4140ee02ebede9ffa2b4c7453edc5b0dad1b2b1d29b10",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."

@@ -15,7 +15,7 @@ afterEach(async () => {
   FakeWebSocket.instances = [];
 });
 
-function fixture() {
+function fixture(extra: { diagnostics?: boolean } = {}) {
   let callbacks: CallMediaCallbacks | undefined;
   const session: CallMediaSession = {
     localStream: {} as MediaStream,
@@ -59,6 +59,7 @@ function fixture() {
     maxNetworkRetries: 0,
     WebSocket: FakeWebSocket as unknown as typeof WebSocket,
     mediaFactory: media,
+    ...extra,
   });
   owned.push(calls);
   return {
@@ -333,6 +334,51 @@ describe("browser widget and shared calls client", () => {
       endReason: "left",
     });
     expect(f.calls.controller.call?.endReason).toBe("left");
+  });
+
+  it("sends the connection's final report to the reports route as the client token", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    event(socket, "call.received", "CALL-IN", { from: "+15550100" });
+    await f.calls.controller.answer();
+    const connectionId = f.calls.controller.call?.connectionId;
+    await f.calls.controller.hangup();
+    await vi.waitFor(() =>
+      expect(
+        f.fetch.mock.calls.some(([url]) =>
+          String(url).endsWith("/CALL-IN/reports"),
+        ),
+      ).toBe(true),
+    );
+    const [, init] = f.fetch.mock.calls.find(([url]) =>
+      String(url).endsWith("/CALL-IN/reports"),
+    )!;
+    expect(init?.method).toBe("POST");
+    expect(new Headers(init?.headers).get("authorization")).toBe(
+      "Bearer pmfa_ct_test",
+    );
+    expect(JSON.parse(String(init?.body))).toEqual({
+      kind: "quality",
+      connectionId,
+      client: {
+        sdk: "@polymorfa/browser",
+        version: "0.1.0-dev.0",
+        platform: "browser",
+      },
+      quality: { reconnects: 0 },
+    });
+  });
+
+  it("sends no reports with diagnostics off", async () => {
+    const f = fixture({ diagnostics: false });
+    const socket = await f.connect();
+    event(socket, "call.received", "CALL-IN", { from: "+15550100" });
+    await f.calls.controller.answer();
+    await f.calls.controller.hangup();
+    await flush();
+    expect(
+      f.fetch.mock.calls.some(([url]) => String(url).endsWith("/reports")),
+    ).toBe(false);
   });
 
   it("leaves, and never ends, a call when microphone acquisition fails", async () => {

@@ -215,7 +215,7 @@ describe("Calls UI", () => {
       false,
       expect.any(Object),
       expect.any(AbortSignal),
-      { devices: {} },
+      { devices: {}, connectionId: expect.any(String) },
     );
     expect(
       host.querySelector("[aria-label='End call for everyone']"),

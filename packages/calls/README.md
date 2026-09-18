@@ -128,6 +128,20 @@ While calling is turned off for the session in its call settings, placing,
 answering, joining, inviting and connecting media reject with
 `CallsDisabledError` (`code: "calls_disabled"`). Calls in progress continue.
 
+## Diagnostics
+
+The client sends call diagnostics for its own media connections to
+`POST /messaging/voip/calls/{id}/reports`, where they appear with the call in
+the Console: an error code when media fails to attach, times out
+(`media_timeout`), loses its token (`token_refresh_failed`) or gives up
+reconnecting (`reconnect_exhausted`); other failures are reported as `other`.
+When the connection closes, it reports how many times the connection
+reconnected. It sends no other figures, because it does not measure them.
+Each report names the connection and `@polymorfa/sdk` with its version and
+runtime. No phone numbers, names, audio or video are sent. Reports are
+best-effort and never affect the call. Pass `diagnostics: false` to
+`new CallsClient()` to send none.
+
 ## Runtime
 
 Node 22+ for the global `WebSocket`, or pass `WebSocket` from `ws` on Node 20.

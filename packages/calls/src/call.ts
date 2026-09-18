@@ -1,4 +1,5 @@
 import type { CallsApi } from "./api.js";
+import { CallReporter, type CallReportClient } from "./diagnostics.js";
 import { CallClaimedError, CallsAuthError, CallsError } from "./errors.js";
 import { Emitter } from "./events.js";
 import {
@@ -313,6 +314,12 @@ export interface CallInit {
   readonly now?: () => number;
   /** An outbound call this client placed with `exclusive: true`. */
   readonly exclusive?: boolean;
+  /**
+   * Report this connection's media errors and reconnect count through
+   * `api.report`, naming this client. Socket media only; external media
+   * adapters report for themselves.
+   */
+  readonly diagnostics?: CallReportClient;
 }
 
 /** Upper bound on the platform release after a local media failure. */
@@ -373,6 +380,11 @@ export class Call extends Emitter<CallEvents> {
   #claimedByUs = false;
   #reconnectTimer: ReturnType<typeof setTimeout> | undefined;
   readonly #externalMedia: boolean;
+  readonly #reporter: CallReporter | undefined;
+  /** Media attached at least once, so there is a connection to report on. */
+  #mediaAttached = false;
+  /** Successful media reattachments of this connection. */
+  #reconnects = 0;
   #mediaReady = false;
 
   constructor(init: CallInit) {
@@ -394,6 +406,24 @@ export class Call extends Emitter<CallEvents> {
     this.#participant = init.participant;
     this.#self = init.self ?? (() => undefined);
     this.#externalMedia = init.mediaMode === "external";
+    const report = init.api.report;
+    this.#reporter =
+      init.diagnostics === undefined ||
+      this.#externalMedia ||
+      report === undefined
+        ? undefined
+        : new CallReporter({
+            connectionId: this.connectionId,
+            client: init.diagnostics,
+            ...(init.now === undefined ? {} : { now: init.now }),
+            send: (body) =>
+              report.call(init.api, this.id, {
+                ...body,
+                ...(init.participant === undefined
+                  ? {}
+                  : { participant: init.participant }),
+              }),
+          });
     this.#reconnectAttempts = init.reconnectAttempts ?? 3;
     this.#now = init.now ?? Date.now;
     this.#state = init.direction === "inbound" ? "incoming" : "ringing";
@@ -543,6 +573,7 @@ export class Call extends Emitter<CallEvents> {
           this.#transition("incoming");
           throw cause;
         }
+        this.#reportFailure(cause);
         await this.#release(cause);
         this.#mediaFailed(cause);
         throw cause;
@@ -652,6 +683,7 @@ export class Call extends Emitter<CallEvents> {
       try {
         await this.#bridge();
       } catch (cause) {
+        this.#reportFailure(cause);
         await this.#release(cause);
         this.#mediaFailed(cause);
       }
@@ -857,6 +889,7 @@ export class Call extends Emitter<CallEvents> {
       throw new CallsError("media_closed", "Media connection closed.");
     }
     attached = true;
+    this.#mediaAttached = true;
     this.audio._attach(media, ready?.sampleRate ?? media.sampleRate);
     this.video._attach(media);
     return ready;
@@ -881,6 +914,7 @@ export class Call extends Emitter<CallEvents> {
         this.#end("claimed");
         return;
       case "refused":
+        this.#reporter?.error("other");
         void this.#failAfterRelease(
           new CallsError(
             "media_refused",
@@ -898,6 +932,9 @@ export class Call extends Emitter<CallEvents> {
   #reconnect(refreshToken: boolean, attempt: number): void {
     if (this.ended) return;
     if (attempt >= this.#reconnectAttempts) {
+      this.#reporter?.error(
+        refreshToken ? "token_refresh_failed" : "reconnect_exhausted",
+      );
       void this.#failAfterRelease(
         refreshToken
           ? new CallsAuthError()
@@ -912,6 +949,7 @@ export class Call extends Emitter<CallEvents> {
       void this.#attach(refreshToken).then(
         (ready) => {
           if (ready === undefined || this.ended) return;
+          this.#reconnects += 1;
           this.#transition("connected");
         },
         (cause: unknown) => {
@@ -922,6 +960,7 @@ export class Call extends Emitter<CallEvents> {
           }
           if (!retryable(cause)) {
             // Refused or no longer available: reattaching cannot help.
+            this.#reportFailure(cause);
             void this.#failAfterRelease(
               cause instanceof CallsError
                 ? cause
@@ -973,6 +1012,23 @@ export class Call extends Emitter<CallEvents> {
     }
   }
 
+  /**
+   * Report why media failed. Claims by another participant are not a media
+   * failure; causes without a closer code are `other`.
+   */
+  #reportFailure(cause: unknown): void {
+    if (this.#reporter === undefined || cause instanceof CallClaimedError)
+      return;
+    this.#reporter.error(
+      cause instanceof CallsAuthError ||
+        (cause instanceof CallsError && cause.code === "token_failed")
+        ? "token_refresh_failed"
+        : cause instanceof CallsError && cause.code === "media_timeout"
+          ? "media_timeout"
+          : "other",
+    );
+  }
+
   /** Release the call on the platform, then report `error` and end here. */
   async #failAfterRelease(error: CallsError): Promise<void> {
     await this.#release();
@@ -997,6 +1053,11 @@ export class Call extends Emitter<CallEvents> {
       this.#reconnectTimer = undefined;
     }
     this.#transition("ended");
+    // The connection's final figure: how often it reconnected. Only real
+    // measurements are sent, and socket media measures nothing else.
+    if (this.#mediaAttached)
+      this.#reporter?.quality({ reconnects: this.#reconnects }, true);
+    this.#reporter?.stop();
     const media = this.#media;
     this.#media = undefined;
     media?.close();

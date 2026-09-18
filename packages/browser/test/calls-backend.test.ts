@@ -152,7 +152,7 @@ describe("createSignalingCallsBackend", () => {
       true,
       expect.any(Object),
       expect.any(AbortSignal),
-      { devices: {} },
+      { devices: {}, connectionId: expect.any(String) },
     );
     await controller.hangup();
     expect(s.end).toHaveBeenLastCalledWith(
@@ -729,7 +729,7 @@ describe("createSignalingCallsBackend", () => {
       false,
       expect.any(Object),
       expect.any(AbortSignal),
-      { devices: {} },
+      { devices: {}, connectionId: expect.any(String) },
     );
   });
 
@@ -755,7 +755,10 @@ describe("createSignalingCallsBackend", () => {
       false,
       expect.any(Object),
       expect.any(AbortSignal),
-      { devices: { audioInput: "mic-1", audioOutput: "spk" } },
+      {
+        devices: { audioInput: "mic-1", audioOutput: "spk" },
+        connectionId: expect.any(String),
+      },
     );
     await controller.switchDevice("audioInput", "mic-2");
     expect(m.session.switchInput).toHaveBeenCalledWith(

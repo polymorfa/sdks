@@ -3,6 +3,7 @@ import {
   CallsDisabledError,
   type AcceptCallOptions,
   type AcceptCallResult,
+  type CallReport,
   type CallsToken,
   type CallsTokenRequest,
 } from "@polymorfa/calls/internal";
@@ -70,6 +71,12 @@ export interface CallsSignaling {
   ): Promise<void>;
   /** End the call for every participant. */
   end(callId: string, signal?: AbortSignal): Promise<void>;
+  /** Send a diagnostics report for one connection. Optional for fakes. */
+  report?(
+    callId: string,
+    report: CallReport,
+    signal?: AbortSignal,
+  ): Promise<void>;
   /** Credential for socket authentication frames. Optional for fakes. */
   token?(request?: CallsTokenRequest): Promise<CallsToken>;
   /** Absolute `ws(s)://` URL for a socket path. Optional for fakes. */
@@ -196,6 +203,25 @@ export class CallsSignalingClient implements CallsSignaling {
       path: this.#path(callId),
       ...(signal === undefined ? {} : { signal }),
       idempotencyKey: `voip-end:${callId}`,
+    });
+  }
+  /**
+   * Best-effort: one attempt, no retries. A client token acts as its own
+   * participant, so the report names none.
+   */
+  async report(
+    callId: string,
+    report: CallReport,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    const body: Record<string, unknown> = { ...report };
+    delete body["participant"];
+    await this.#transport.request({
+      method: "POST",
+      path: this.#path(callId, "/reports"),
+      body,
+      maxNetworkRetries: 0,
+      ...(signal === undefined ? {} : { signal }),
     });
   }
   token(request: CallsTokenRequest = {}): Promise<CallsToken> {

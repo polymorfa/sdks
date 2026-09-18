@@ -1,9 +1,18 @@
 import {
   CallClaimedError,
+  CallReporter,
+  createConnectionId,
   type AcceptCallResult,
   type Call,
+  type CallErrorCode,
+  type CallReport,
   type Participant,
 } from "@polymorfa/calls/internal";
+import {
+  BROWSER_REPORT_CLIENT,
+  ConnectionDiagnostics,
+  mediaErrorCode,
+} from "./diagnostics.js";
 import {
   ObservableController,
   type ControllerSnapshot,
@@ -227,6 +236,11 @@ export interface CallsBackend {
   /** End the call for every participant. */
   hangup(callId: string, signal: AbortSignal): Promise<void>;
   /**
+   * Send a diagnostics report for one of this browser's connections.
+   * Optional: without it the controller sends none.
+   */
+  report?(callId: string, report: CallReport): Promise<void>;
+  /**
    * Leave one media connection. When omitted, the media session leaves on
    * its own when it closes.
    */
@@ -293,6 +307,14 @@ export interface CallsControllerOptions {
   readonly iceRestartAfterMs?: number;
   readonly setTimeout?: typeof globalThis.setTimeout;
   readonly clearTimeout?: typeof globalThis.clearTimeout;
+  /**
+   * Send call diagnostics for this browser's media connections (default
+   * `true`): round-trip time, jitter, packet counts, codecs, candidate type
+   * and reconnect count every 15 seconds and when the connection closes, and
+   * an error code when media fails. Reports carry no personal data. `false`
+   * sends none.
+   */
+  readonly diagnostics?: boolean;
 }
 
 /** HTTP statuses on the offer that mean the call cannot be established at all. */
@@ -367,6 +389,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
    */
   #answerAbort = new AbortController();
   #disposed = false;
+  readonly #diagnosticsEnabled: boolean;
+  /** Reports for the open media connection. */
+  #diagnostics: ConnectionDiagnostics | undefined;
   #remoteVideos: readonly RemoteVideo[] = [];
   #publicVideos: {
     source: readonly RemoteVideo[];
@@ -404,6 +429,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       options.setTimeout ?? globalThis.setTimeout.bind(globalThis);
     this.#clearTimeout =
       options.clearTimeout ?? globalThis.clearTimeout.bind(globalThis);
+    this.#diagnosticsEnabled = options.diagnostics !== false;
   }
 
   initialize(): void {
@@ -679,10 +705,16 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       media?.enableVideo === undefined
     )
       return;
-    await media.enableVideo(
-      this.#abort.signal,
-      this.getSnapshot().selectedDevices,
-    );
+    try {
+      await media.enableVideo(
+        this.#abort.signal,
+        this.getSnapshot().selectedDevices,
+      );
+    } catch (cause) {
+      // A denied camera or a failed re-offer; the audio call carries on.
+      if (this.#media === media) this.#reportError(mediaErrorCode(cause));
+      throw cause;
+    }
     const after = this.getSnapshot();
     if (this.#abort.signal.aborted) return;
     if (
@@ -1050,41 +1082,120 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       ...callFields(before),
       status: before.status === "ringing" ? "ringing" : "connecting",
     });
-    const connectionId = this.#backend.connectionId?.(callId);
-    const media = await this.#mediaFactory.open(
-      callId,
-      video,
-      {
-        onConnectionState: (state) => this.#connection(callId, state),
-        onIceConnectionState: (state) => this.#ice(callId, state),
-        onRemoteStream: () => {
-          const current = this.getSnapshot();
-          if (current.callId === callId)
-            this.transition({ ...callFields(current), status: current.status });
-        },
-        onRemoteVideos: (videos) => {
-          const current = this.getSnapshot();
-          if (current.callId !== callId || this.#media !== media) return;
-          if (current.status === "ended" || current.status === "error") return;
-          this.#remoteVideos = videos;
-          this.transition({
-            ...callFields(current),
-            status: current.status,
-            remoteVideos: videos.map(videoInfo),
-          });
-        },
-      },
-      this.#abort.signal,
-      {
-        devices: this.getSnapshot().selectedDevices,
-        ...(connectionId === undefined ? {} : { connectionId }),
-      },
-    );
+    // Named here, not by the media session, so a failure to open can be
+    // reported for the connection it was meant to be.
+    const connectionId =
+      this.#backend.connectionId?.(callId) ?? createConnectionId();
+    let media: CallMediaSession;
+    try {
+      media = await this.#openWith(callId, video, connectionId);
+    } catch (cause) {
+      if (operation === this.#operation)
+        this.#reportOnce(callId, connectionId, cause);
+      throw cause;
+    }
     if (operation !== this.#operation) {
       await media.close();
       return;
     }
     this.#media = media;
+    this.#diagnostics?.close();
+    this.#diagnostics = this.#diagnosticsFor(
+      callId,
+      media.connectionId ?? connectionId,
+      media,
+    );
+    this.#diagnostics?.start();
+    this.#afterOpen(callId, media);
+  }
+
+  /** Report a failure of a connection that never opened. */
+  #reportOnce(callId: string, connectionId: string, cause: unknown): void {
+    const code = mediaErrorCode(cause);
+    const send = this.#backend.report;
+    if (!this.#diagnosticsEnabled || code === undefined || send === undefined)
+      return;
+    new CallReporter({
+      connectionId,
+      client: BROWSER_REPORT_CLIENT,
+      send: (report) => send.call(this.#backend, callId, report),
+      now: this.#now,
+    }).error(code);
+  }
+
+  #diagnosticsFor(
+    callId: string,
+    connectionId: string,
+    media: CallMediaSession,
+  ): ConnectionDiagnostics | undefined {
+    const send = this.#backend.report;
+    if (!this.#diagnosticsEnabled || send === undefined) return undefined;
+    return new ConnectionDiagnostics({
+      connectionId,
+      send: (report: CallReport) => send.call(this.#backend, callId, report),
+      ...(media.getStats === undefined
+        ? {}
+        : { getStats: () => media.getStats!() }),
+      live: () => {
+        const now = this.getSnapshot();
+        return now.callId === callId && now.status === "connected";
+      },
+      setTimeout: this.#setTimeout,
+      clearTimeout: this.#clearTimeout,
+      now: this.#now,
+    });
+  }
+
+  /** Report an error for the open media connection. */
+  #reportError(code: CallErrorCode | undefined): void {
+    if (code !== undefined) this.#diagnostics?.error(code);
+  }
+
+  #openWith(
+    callId: string,
+    video: boolean,
+    connectionId: string,
+  ): Promise<CallMediaSession> {
+    let media: CallMediaSession | undefined;
+    return this.#mediaFactory
+      .open(
+        callId,
+        video,
+        {
+          onConnectionState: (state) => this.#connection(callId, state),
+          onIceConnectionState: (state) => this.#ice(callId, state),
+          onRemoteStream: () => {
+            const current = this.getSnapshot();
+            if (current.callId === callId)
+              this.transition({
+                ...callFields(current),
+                status: current.status,
+              });
+          },
+          onRemoteVideos: (videos) => {
+            const current = this.getSnapshot();
+            if (current.callId !== callId || this.#media !== media) return;
+            if (current.status === "ended" || current.status === "error")
+              return;
+            this.#remoteVideos = videos;
+            this.transition({
+              ...callFields(current),
+              status: current.status,
+              remoteVideos: videos.map(videoInfo),
+            });
+          },
+        },
+        this.#abort.signal,
+        {
+          devices: this.getSnapshot().selectedDevices,
+          connectionId,
+        },
+      )
+      .then((opened) => (media = opened));
+  }
+
+  /** Bring the snapshot in line with media that just opened. */
+  #afterOpen(callId: string, media: CallMediaSession): void {
     // Answered while the capture was opening: media is connecting now.
     const answeredMeanwhile = this.getSnapshot();
     if (
@@ -1140,6 +1251,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         if (current.status !== "reconnecting") return;
         if (call.state !== "connected") return;
       }
+      if (current.status === "reconnecting") this.#diagnostics?.reconnected();
       this.#clearResumption();
       this.transition({
         ...callFields(current),
@@ -1154,6 +1266,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         endReason: "connection_failed",
       });
     } else if (state === "failed") {
+      this.#reportError("ice_failed");
       // One ICE restart within the resumption window before giving up.
       this.#beginResumption(callId, 0);
     }
@@ -1165,10 +1278,15 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       this.#beginResumption(callId, this.#iceRestartAfterMs);
       return;
     }
+    if (state === "failed") {
+      this.#reportError("ice_failed");
+      return;
+    }
     if (state !== "connected" && state !== "completed") return;
     const resumed = this.#resumedFrom;
     this.#clearResumption();
     if (current.status !== "reconnecting") return;
+    this.#diagnostics?.reconnected();
     const status = resumed ?? "connected";
     this.transition({
       ...callFields(current),
@@ -1199,6 +1317,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       this.#clearResumption();
       const now = this.getSnapshot();
       if (now.callId !== callId || now.status !== "reconnecting") return;
+      this.#reportError("reconnect_exhausted");
       void this.#closeMedia().catch(() => undefined);
       this.#advance({
         ...callFields(now, false),
@@ -1496,6 +1615,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
 
   async #closeMedia(options: { readonly leave?: boolean } = {}): Promise<void> {
     this.#clearResumption();
+    // Final figures are read before the connection closes.
+    this.#diagnostics?.close();
+    this.#diagnostics = undefined;
     const media = this.#media;
     this.#media = undefined;
     await media?.close(options);

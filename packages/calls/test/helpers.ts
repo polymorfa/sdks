@@ -94,6 +94,7 @@ export function fakeApi(): FakeApi {
     reject: vi.fn(async () => undefined),
     leave: vi.fn(async () => undefined),
     end: vi.fn(async () => undefined),
+    report: vi.fn(async () => undefined),
     addParticipant: vi.fn(async (_id: string, to: string) => ({
       id: `p-${to}`,
       phoneNumber: to,

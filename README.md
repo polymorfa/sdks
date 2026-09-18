@@ -517,6 +517,11 @@ track replacement, not a renegotiation. The shared call model supports
 participant invitations. Browser WebRTC calls receive live participant joins,
 state changes, and departures through the lifecycle stream.
 
+The browser and Calls clients send call diagnostics for their own media
+connections (quality figures and error codes, no personal data) so the Console
+can show why a call sounded bad or failed. Pass `diagnostics: false` to turn
+this off; `MessagingClient.voip.report()` sends your own.
+
 `@polymorfa/react` ships the complete call UI: `CallSurface` (incoming card,
 stage, control dock, and a pop-out window), plus `IncomingCallCard`,
 `CallStage`, `CallControls`, `ParticipantVideoGrid`, `ParticipantList`, and

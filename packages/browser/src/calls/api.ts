@@ -3,6 +3,7 @@ import {
   isParticipant,
   type AcceptCallOptions,
   type AcceptCallResult,
+  type CallReport,
   type CallsApi,
   type CallsToken,
   type CallsTokenRequest,
@@ -109,6 +110,14 @@ export class BrowserCallsApi implements CallsApi {
 
   end(callId: string, signal?: AbortSignal): Promise<void> {
     return this.#signaling.end(callId, signal);
+  }
+
+  report(
+    callId: string,
+    report: CallReport,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    return this.#signaling.report(callId, report, signal);
   }
 
   async addParticipant(

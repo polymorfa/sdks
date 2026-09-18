@@ -1466,6 +1466,70 @@ export interface VoipLeaveCallRequest {
   readonly participant?: VoipParticipantReference;
 }
 
+/** SDK that sent a call report. */
+export interface VoipCallReportClient {
+  /** Package name. Matches `[a-z0-9@/._-]{1,32}`. */
+  readonly sdk: string;
+  /** `MAJOR.MINOR.PATCH` with an optional `-` or `+` suffix, at most 32 characters. */
+  readonly version: string;
+  readonly platform: "browser" | "node" | "other";
+}
+
+/**
+ * Figures an app measured for one connection. Omit what you did not
+ * measure; send at least one.
+ */
+export interface VoipCallQuality {
+  /** Round-trip time in milliseconds, 0–60000. */
+  readonly rttMs?: number;
+  /** Receive jitter in milliseconds, 0–60000. */
+  readonly jitterMs?: number;
+  /** Packets lost since the connection started. */
+  readonly packetsLost?: number;
+  /** Packets received since the connection started. */
+  readonly packetsReceived?: number;
+  /** Negotiated audio codec, for example `audio/opus`. */
+  readonly audioCodec?: string;
+  readonly videoCodec?: string;
+  /** Local ICE candidate type in use; `relay` means a TURN relay. */
+  readonly candidateType?: "host" | "srflx" | "prflx" | "relay";
+  /** Times this connection reconnected so far, 0–1000. */
+  readonly reconnects?: number;
+}
+
+export type VoipCallErrorCode =
+  | "media_permission_denied"
+  | "device_not_found"
+  | "device_in_use"
+  | "ice_failed"
+  | "negotiation_failed"
+  | "media_timeout"
+  | "reconnect_exhausted"
+  | "token_refresh_failed"
+  | "unsupported_browser"
+  | "other";
+
+interface VoipCallReportBase {
+  /** The connection the report is about. Matches `[A-Za-z0-9_-]{8,64}`. */
+  readonly connectionId: string;
+  /** Server credentials only: the participant that owns the connection. */
+  readonly participant?: VoipParticipantReference;
+  readonly client?: VoipCallReportClient;
+}
+
+export interface VoipCallQualityReport extends VoipCallReportBase {
+  readonly kind: "quality";
+  readonly quality: VoipCallQuality;
+}
+
+export interface VoipCallErrorReport extends VoipCallReportBase {
+  readonly kind: "error";
+  readonly error: { readonly code: VoipCallErrorCode };
+}
+
+/** Body for `POST /messaging/voip/calls/{callId}/reports`. */
+export type VoipCallReportRequest = VoipCallQualityReport | VoipCallErrorReport;
+
 /** Body for `POST /messaging/voip/calls/{callId}/reject`. */
 export interface VoipRejectCallRequest {
   /** Server credentials only: the participant declining the call. */
