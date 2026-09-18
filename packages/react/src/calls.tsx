@@ -189,7 +189,10 @@ function useCallsRoot(): {
   readonly locale: Locale;
 } {
   const configuration = usePolymorfa();
-  useEffect(() => injectCallsStyles(), []);
+  const unstyled = configuration.appearance.unstyled === true;
+  useEffect(() => {
+    if (!unstyled) injectCallsStyles();
+  }, [unstyled]);
   const call = configuration.appearance.elements["call"];
   const theme = configuration.appearance.theme;
   const className = [
@@ -1460,12 +1463,14 @@ export function CallSurface({
 
 /**
  * One injected `<style>` tag, scoped under `.pmfa-calls` so nothing leaks into
- * the host app. Colors derive from the shared `--pmfa-*` appearance variables
+ * the host app, inside the `polymorfa` cascade layer so unlayered host CSS
+ * wins. Colors derive from the shared `--pmfa-*` appearance variables
  * with the monochrome Material-3 palette as fallbacks; the verbs use
  * `--pmfa-color-success` / `--pmfa-color-danger`. All motion is disabled under
  * `prefers-reduced-motion: reduce`.
  */
 export const CALLS_STYLES = `
+@layer polymorfa {
 .pmfa-calls {
   --pmfa-calls-accent: var(--pmfa-color-foreground, oklch(0.15 0 0));
   --pmfa-calls-accent-soft: oklch(0.96 0 0);
@@ -1612,5 +1617,6 @@ export const CALLS_STYLES = `
 @keyframes pmfa-calls-rise { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @media (prefers-reduced-motion: reduce) {
   .pmfa-calls *, .pmfa-calls *::before, .pmfa-calls *::after { animation: none !important; transition: none !important; }
+}
 }
 `;

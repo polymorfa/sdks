@@ -2,6 +2,80 @@
 
 ## Unreleased
 
+- `ComposeBox` and `pmfa-compose-box` gain a WhatsApp-style toolbar: an emoji
+  picker with search, recent emoji, and categories; voice notes with a
+  recording bar, timer, and level meter; and "/" quick replies with
+  keyboard selection. New props are `placeholder`, `startActions`,
+  `endActions`, `emoji`, `voiceNotes`, `voiceNoteAutoSend`, `quickReplies`,
+  `onQuickReply`, and `maxRows`; the element takes the matching attributes,
+  a `quickReplies` property, `start-actions` and `end-actions` slots, and a
+  `pmfa-quick-reply` event. New slots are `composerToolbar`, `emojiButton`,
+  `emojiPicker`, `voiceButton`, `recordingBar`, and `quickReplyMenu`. See the
+  [React](packages/react/README.md#chat) and
+  [Web Component](packages/elements/README.md#chat) guides.
+- `@polymorfa/browser` adds `VoiceNoteRecorder`, and `@polymorfa/ui` adds
+  `QuickReplyOption`, the built-in emoji set, and composer helpers. See
+  [voice notes](packages/browser/README.md#voice-notes).
+- The `@polymorfa/devtools` panel now starts collapsed behind a small
+  launcher in the bottom-left corner, so it no longer covers the composer.
+  `mountDevAssistant()` accepts `position`, `defaultOpen`, and `offset`, and
+  the panel closes on Escape and follows the system color scheme. See the
+  [devtools guide](packages/devtools/README.md).
+
+- The chat and template components in `@polymorfa/react` and
+  `@polymorfa/elements` now ship a stylesheet: message bubbles by direction
+  with time and delivery status, a drawer that is full width on small
+  screens, a labelled template form that stacks on narrow containers, and a
+  WhatsApp-style template preview. Both packages follow the `light`, `dark`,
+  and `system` themes. Messages render oldest first whatever order the
+  controller holds, and the list stays at the newest message while the reader
+  is at the end. `ChatDrawer` shows its close button only when `onClose` is
+  set, and closes on Escape. `@polymorfa/ui` exports `COMPONENT_STYLES`,
+  `injectComponentStyles()` and `themeClassName()`, plus new locale keys for
+  the labels.
+- Chat components in `@polymorfa/react` and `@polymorfa/elements` gain
+  attachments, replies, and retry. Messages show image thumbnails and file
+  cards, a quote of the message they reply to, date separators, grouping by
+  side, and pending, sent, or failed icons; failed outbound messages offer
+  Retry. The composer attaches files from a button, a paste, or a drop, shows
+  upload progress with a remove button, reports rejected files, and shows a
+  reply banner. `ChatDrawer` and `pmfa-chat-drawer` accept
+  `composerController` to render the composer and wire Reply to it, move
+  focus into the drawer on open, and restore it on close. The message list is
+  now a `role="log"` region. See the [React](packages/react/README.md#chat)
+  and [Web Component](packages/elements/README.md#chat) guides.
+- `@polymorfa/browser` adds `LocalAttachment.file`,
+  `MessageAttachment.url` and `previewUrl`, `localAttachmentFromFile()`, and
+  `createConversationComposerActions()`, which sends composer drafts through
+  a `ConversationController`. `ConversationController.send()` accepts an
+  optional `AbortSignal`; the composer actions pass the composer's signal, so
+  `cancelSend()` cancels the request and marks the message failed.
+- Attachment URLs render as links or images only when they use `https:`,
+  `http:`, or `blob:`. `@polymorfa/ui` exports `safeAttachmentUrl()` for the
+  same check in custom renderers.
+- `ChatDrawer` and `pmfa-chat-drawer` no longer take focus when they mount
+  open; pass `autoFocus` (React) or set the `autofocus` attribute. Focus
+  still moves in when `open` changes to `true`. Escape closes a drawer only
+  when pressed inside it and not during IME composition. A rejected-file
+  message in the composer clears after an edit, a successful send, or a
+  reset. `pmfa-compose-box` re-renders its reply banner when its
+  `conversation` updates.
+- `pmfa-template-builder` names its preview area `preview-panel`; `preview`
+  stays on the Preview button, and `slotPartName("preview")` returns
+  `preview-panel`. Validation messages keep their nodes between edits.
+- Styling: bundled rules sit in `@layer polymorfa`, so unlayered app CSS
+  overrides them. Appearance adds `darkVariables` (emitted as
+  `--pmfa-dark-color-*`) and `unstyled`. Every chat and template node has a
+  slot name: React applies `appearance.elements[slot]`, a new `classNames`
+  prop, and `data-slot`; Web Components add kebab-case `part` names next to
+  the existing ones and accept `configuration.stylesheet`. `MessageList`
+  adds `renderAttachment` and `onReply`. See the
+  [styling reference](packages/ui/README.md#styling).
+- Breaking: the React `MessageList` root is now a `div` with `role="log"`
+  that wraps the `ol`; select it with `[data-pmfa="message-list"]`. The Web
+  Component list part `message-list` moved to the same wrapper. Web
+  Components now share one adopted stylesheet instead of a `<style>` element
+  per render, and default dark-theme danger buttons use dark text.
 - Added `examples/full-platform`, Acme Support: a multi-agent WhatsApp help
   desk built with Next.js on every Polymorfa SDK surface. It has a ticket inbox
   with queues, assignment, transfer, tags, private notes, quick replies,
