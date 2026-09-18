@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (151 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (74 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (153 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (76 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -765,6 +765,302 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PlatformAccessSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
+        "description": "**Required scope:** `sessions:manage`",
+        "x-audience": "public"
+      }
+    },
+    "/platform/sessions/{session}/call-settings": {
+      "get": {
+        "operationId": "getCallSettings",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Get call settings for a session",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Call settings. Sessions without saved settings return the defaults.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessGetCallSettingsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        },
+        "description": "**Required scope:** `sessions:read`",
+        "x-audience": "public"
+      },
+      "put": {
+        "operationId": "updateCallSettings",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Replace call settings for a session",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessUpdateCallSettingsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Call settings saved. They apply to a call the next time a participant answers or connects to it, including calls in progress.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessUpdateCallSettingsResponse"
                 }
               }
             }
@@ -2717,6 +3013,176 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/console/call-settings/{sessionId}": {
+      "get": {
+        "operationId": "getSessionCallSettings",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Read session call settings",
+        "description": "Returns the call settings for an owned session. Sessions without saved settings return the defaults and a null `updatedAt`.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console call settings; requires live dashboard membership. The Platform API publishes the same settings under /platform/sessions/{session}/call-settings.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Database session UUID or stable session slug.",
+            "schema": {
+              "$ref": "#/components/schemas/SessionIdentifier"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SessionCallSettings"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateSessionCallSettings",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Update session call settings",
+        "description": "Replaces the call settings for an owned session. New calls use the saved settings.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console call settings; requires live dashboard membership. The Platform API publishes the same settings under /platform/sessions/{session}/call-settings.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Database session UUID or stable session slug.",
+            "schema": {
+              "$ref": "#/components/schemas/SessionIdentifier"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSessionCallSettingsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SessionCallSettings"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -8974,8 +9440,8 @@
         "tags": [
           "projects"
         ],
-        "summary": "Create project",
-        "description": "Public Management API. Requires a team API key with `sessions:manage`. Project tokens are not accepted.",
+        "summary": "Create a project",
+        "description": "Creates a project in development. A Free team can have one active project; creating another returns `409` with code `payg_required` until the team upgrades to Pay-As-You-Go. Pay-As-You-Go teams have no project limit.\n\nRequires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -8989,12 +9455,62 @@
           }
         ],
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false,
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "defaultTier": {
+                    "type": "string",
+                    "enum": [
+                      "free",
+                      "standard",
+                      "pro"
+                    ],
+                    "default": "standard"
+                  },
+                  "icon": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "type",
+                      "value"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "emoji",
+                          "icon",
+                          "image"
+                        ]
+                      },
+                      "value": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "color": {
+                        "type": "string",
+                        "maxLength": 64
+                      },
+                      "storageId": {
+                        "type": "string",
+                        "maxLength": 256
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -9019,10 +9535,22 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CreatedProject"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -9030,8 +9558,8 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -9191,7 +9719,7 @@
           "projects"
         ],
         "summary": "Request production enrollment",
-        "description": "Creates a durable production-enrollment operation. The project stays in development until provisioning succeeds. Poll the returned operationId for progress.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Upgrades the team to Pay-As-You-Go and creates a durable production-enrollment operation in the same request. The upgrade is permanent: every real number is billed from its next 24-hour window, and the free real number and one-project limit no longer apply. An active launch offer continues until it ends. The project stays in development until provisioning succeeds. Poll the returned operationId for progress.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -21396,6 +21924,44 @@
         ],
         "additionalProperties": false
       },
+      "SessionCallSettings": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "conferenceMode": {
+            "type": "boolean",
+            "description": "Conference mode. When true, every participant you connect to a call hears the WhatsApp party and every other participant you connected. When false, each of them hears only the WhatsApp party. The WhatsApp party always hears all of your participants, and no participant hears their own audio. Sessions without saved settings report true."
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the settings were last changed, or null when the session uses the defaults."
+          }
+        },
+        "required": [
+          "conferenceMode",
+          "updatedAt"
+        ]
+      },
+      "UpdateSessionCallSettingsRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "conferenceMode": {
+            "type": "boolean",
+            "description": "Set to true so that the participants you connect to a call hear each other as well as the WhatsApp party, or false so that each hears only the WhatsApp party."
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Project that owns the session."
+          }
+        },
+        "required": [
+          "conferenceMode"
+        ]
+      },
       "QuickLinkSettings": {
         "type": "object",
         "additionalProperties": false,
@@ -21467,7 +22033,7 @@
           },
           "hideWatermark": {
             "type": "boolean",
-            "description": "Hide Powered by Polymorfa. Requires Premium team access."
+            "description": "Saved preference to hide Powered by Polymorfa. QuickLink pages hide it only while the team is active and has a Branded QuickLink add-on, an active launch trial, or an Enterprise agreement."
           },
           "allowPhoneChange": {
             "type": "boolean",
@@ -21663,7 +22229,7 @@
           },
           "hideWatermark": {
             "type": "boolean",
-            "description": "Hide Powered by Polymorfa. Requires Premium team access."
+            "description": "Hide Powered by Polymorfa. Setting `true` requires an active team with a Branded QuickLink add-on, an active launch trial, or an Enterprise agreement; otherwise the request returns `402` with code `premium_required`."
           },
           "allowPhoneChange": {
             "type": "boolean",
@@ -22830,6 +23396,13 @@
               "provisioning",
               "ready"
             ]
+          },
+          "billingMode": {
+            "type": "string",
+            "enum": [
+              "payg"
+            ],
+            "description": "The team's billing mode after the request. Always Pay-As-You-Go."
           }
         },
         "required": [
@@ -22839,7 +23412,82 @@
           "slug",
           "stage",
           "operationId",
-          "enrollmentStatus"
+          "enrollmentStatus",
+          "billingMode"
+        ]
+      },
+      "CreatedProject": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "orgId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "value"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "color": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "storageId": {
+                "type": "string",
+                "maxLength": 256
+              }
+            }
+          },
+          "defaultTier": {
+            "type": "string",
+            "enum": [
+              "free",
+              "standard",
+              "pro"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "development"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "orgId",
+          "name",
+          "slug",
+          "icon",
+          "defaultTier",
+          "isActive",
+          "stage"
         ]
       },
       "ProductionEnrollmentCommandResult": {
@@ -27993,6 +28641,74 @@
           "enabled"
         ]
       },
+      "PlatformAccessCallSettings": {
+        "type": "object",
+        "properties": {
+          "conferenceMode": {
+            "type": "boolean",
+            "description": "Conference mode. When true, every participant you connect to a call hears the WhatsApp party and every other participant you connected. When false, each of them hears only the WhatsApp party. The WhatsApp party always hears all of your participants, and no participant hears their own audio. Defaults to true."
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When the settings were last changed, or null when the session uses the defaults."
+          }
+        },
+        "required": [
+          "conferenceMode",
+          "updatedAt"
+        ]
+      },
+      "PlatformAccessGetCallSettingsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/PlatformAccessCallSettings"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "PlatformAccessUpdateCallSettingsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/PlatformAccessCallSettings"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "PlatformAccessUpdateCallSettingsRequest": {
+        "type": "object",
+        "properties": {
+          "conferenceMode": {
+            "type": "boolean",
+            "description": "Set to true so that the participants you connect to a call hear each other as well as the WhatsApp party, or false so that each hears only the WhatsApp party."
+          }
+        },
+        "required": [
+          "conferenceMode"
+        ],
+        "additionalProperties": false
+      },
       "PlatformAccessSessionConfigurationView": {
         "type": "object",
         "properties": {
@@ -28985,6 +29701,9 @@
                   "media_fetch_failed",
                   "resource_gone",
                   "state_conflict",
+                  "call_claimed",
+                  "call_not_ringing",
+                  "connection_limit",
                   "rate_limit_exceeded",
                   "internal_error",
                   "operation_not_supported",

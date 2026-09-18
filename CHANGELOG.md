@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added `MessagingClient.testing.triggerEvent()` and
+  `MessagingClient.testing.listEventFixtures()` to fire signed test events for
+  Test numbers, with typed fixture names (`TestEventFixture`,
+  `TEST_EVENT_FIXTURES`), per-fixture `TestEventOverrides`, and the
+  `fromSession` simulated-message option.
+
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`
   no longer registers `pmfa-quicklink` or exports the `./quicklink` subpath, and

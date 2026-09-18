@@ -174,15 +174,22 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "aca849cda44ad8582d7ae87489404d2483173a53",
-      total: 403,
-      covered: 297,
+      sourceCommit: "3d20ec3f6d326f74fb6d2e90b92402ccd3b9ac14",
+      total: 406,
+      covered: 290,
       partial: 0,
-      missing: 0,
-      excluded: 106,
-      changed: 0,
-      resolutions: [],
+      missing: 5,
+      excluded: 103,
+      changed: 8,
     });
+    // Operations removed by the unified Calls revision; reconciled by the SDK Calls PR.
+    const resolutions = (
+      result.report as { resolutions: Array<{ path: string; status: string }> }
+    ).resolutions;
+    for (const resolution of resolutions) {
+      expect(resolution.status).toBe("removed");
+      expect(resolution.path).toMatch(/^\/messaging\/voip\//);
+    }
   });
 
   it("maps the complete Customers contract to the Platform resource", () => {

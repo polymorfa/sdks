@@ -2,23 +2,34 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`aca849cda44ad8582d7ae87489404d2483173a53`. `source.json` records their original
+`3d20ec3f6d326f74fb6d2e90b92402ccd3b9ac14` (branch `codex/cli-trigger`,
+polymorfa/polymorfa#203; re-sync to its merge commit before release). `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        297 |
-| Missing             |          0 |
-| Excluded            |        106 |
+| Covered             |        290 |
+| Missing             |          5 |
+| Excluded            |        103 |
 | Partial             |          0 |
-| Changed fingerprint |          0 |
-| Total               |        403 |
+| Changed fingerprint |          8 |
+| Total               |        406 |
 
 Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
 successful live call.
 
 ## Reconciliation
+
+This revision adds the test-event operations, covered by
+`MessagingClient.testing.triggerEvent` and `listEventFixtures`. Between the
+previous snapshot and this one, 165 operation fingerprints changed only because
+`PublicError` and `PlatformAccessPublicError` gained the `connection_limit`,
+`call_claimed`, and `call_not_ringing` codes; the SDK does not enumerate error
+codes, so those fingerprints are refreshed with no method change. The unified
+Calls revision also changed six VoIP operations and two project operations
+(reported as changed) added five Calls operations (ledger status `missing`), and removed four VoIP token, mode, and socket-ticket operations (reported as removed).
+Those belong to the SDK Calls PR (#262) and are not claimed here.
 
 This revision replaces raw account platform codes with `phonePlatform` and
 `accountType` on the session account, profile, and `session.connected`

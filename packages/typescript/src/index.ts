@@ -768,6 +768,7 @@ export type * from "./messaging/session-configuration.js";
 export { SessionConfigurationResource } from "./platform/session-configuration.js";
 
 export type * from "./messaging/testing-configuration.js";
+export { TEST_EVENT_FIXTURES } from "./messaging/testing-configuration.js";
 
 export {
   CloudOnboardingResource,
