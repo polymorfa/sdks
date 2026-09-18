@@ -579,6 +579,14 @@ export class Call extends Emitter<CallEvents> {
         throw cause;
       });
     this.#accepting = run;
+    // Once settled, later answer() and join() calls check the call's state
+    // again instead of reusing this result. Failures already clear it above.
+    void run.then(
+      () => {
+        if (this.#accepting === run) this.#accepting = undefined;
+      },
+      () => undefined,
+    );
     return run;
   }
 

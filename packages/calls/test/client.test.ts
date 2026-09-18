@@ -1593,3 +1593,26 @@ describe("Call.leave()", () => {
     expect(call!.endReason).toBe("left");
   });
 });
+
+describe("CallsClient — answering a settled call", () => {
+  it("rejects answer() and join() once the call is connected or ended", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const answering = call!.answer();
+    await bridge(h);
+    await answering;
+    expect(call!.state).toBe("connected");
+    await expect(call!.answer()).rejects.toMatchObject({
+      code: "invalid_state",
+    });
+    await expect(call!.join()).rejects.toMatchObject({ code: "invalid_state" });
+    await call!.end();
+    await expect(call!.answer()).rejects.toMatchObject({
+      code: "invalid_state",
+    });
+    expect(h.api.accept).toHaveBeenCalledTimes(1);
+  });
+});
