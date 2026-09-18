@@ -14,6 +14,7 @@ export const GET = route("admin", async () => {
     version: version.data,
     // The URL is a short-lived connection target; do not cache it past expiresAt.
     bridge: {
+      wsUrl: bridgeRoute.data.wsUrl,
       region: bridgeRoute.data.region,
       kind: bridgeRoute.data.kind,
       expiresAt: bridgeRoute.data.expiresAt,

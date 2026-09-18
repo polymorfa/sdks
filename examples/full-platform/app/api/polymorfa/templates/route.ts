@@ -15,8 +15,10 @@ export function POST(request: Request): Promise<Response> {
     handler ??= createTemplateBuilderRoute({
       templates: demo ? demoTemplateResource : messaging().templates,
       authorize: async (request) => {
+        // Save, submit and delete change project templates, so only admins may
+        // use this route, matching /api/messaging/templates.
         const operator = await authenticate(request);
-        return operator === null ? null : { userId: operator.userId };
+        return operator?.role === "admin" ? { userId: operator.userId } : null;
       },
       resolveProjectSlug: () => (demo ? "demo" : env.projectSlug()),
       resolveSubmissionSession: () => (demo ? "demo" : env.templateSession()),
