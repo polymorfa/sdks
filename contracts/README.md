@@ -2,23 +2,32 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`aca849cda44ad8582d7ae87489404d2483173a53`. `source.json` records their original
+`09b8342c0d75817eb2c92035e17635061986e35f`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        297 |
+| Covered             |        299 |
 | Missing             |          0 |
 | Excluded            |        106 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        403 |
+| Total               |        405 |
 
 Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
 successful live call.
 
 ## Reconciliation
+
+This revision adds the project event stream. `Client.events.stream` covers
+`GET /platform/projects/{projectId}/events/stream` with reconnect and resume,
+and `Client.events.acknowledgeStream` covers its manual acknowledgement route.
+The same revision types the project create request and response and adds
+`billingMode` to the production enrollment result; `Client.projects.create` and
+`Client.projects.requestProductionEnrollment` keep their paths. The source
+commit is on the coordinated monorepo branch `codex/event-streams`, not yet
+merged to `dev`.
 
 This revision replaces raw account platform codes with `phonePlatform` and
 `accountType` on the session account, profile, and `session.connected`
@@ -60,7 +69,7 @@ The unified `Client` owns organization control-plane resources and creates
 immutable project views with `client.project(projectId)`. QuickLink management
 uses `Client.quickLinkSettings`; obsolete `/v1/widget` mappings are gone.
 Credential-free service probes use `SystemClient`, project-token Bridge route
-discovery uses `BridgeClient`, and listener transport remains CLI-only.
+discovery uses `BridgeClient`, and the CLI listener protocol stays CLI-only; the public event stream is a separate SDK method.
 
 ## Updating the ledger
 

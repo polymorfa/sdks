@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Added `Client.events.stream()`, an async iterator over a project's
+  server-sent event stream with type filters, resume from a cursor, automatic
+  reconnect with backoff, heartbeat supervision, and retention-gap reporting.
+  `Client.events.acknowledgeStream()` confirms progress on manual-ack streams,
+  and `Client.events.liveSource()` adapts the stream for `@polymorfa/store`.
+  The API route is a beta that requires `events:listen` and team enrollment.
+- `CreateProjectRequest.defaultTier` is typed as `"free" | "standard" | "pro"`,
+  and `ProductionEnrollmentResult` includes `billingMode: "payg"`.
+
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`
   no longer registers `pmfa-quicklink` or exports the `./quicklink` subpath, and

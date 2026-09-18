@@ -367,7 +367,7 @@ export interface ProjectWithStats {
 export interface CreateProjectRequest {
   readonly name: string;
   readonly icon?: ProjectIcon;
-  readonly defaultTier?: string;
+  readonly defaultTier?: "free" | "standard" | "pro";
 }
 
 export interface ProductionBusiness {
@@ -389,6 +389,8 @@ export interface ProductionEnrollmentResult {
   readonly operationId: string;
   readonly enrollmentStatus:
     "requested" | "approval_required" | "provisioning" | "ready";
+  /** The team is on Pay-As-You-Go after the request. */
+  readonly billingMode: "payg";
 }
 
 export interface ProductionEnrollmentCommandResult {

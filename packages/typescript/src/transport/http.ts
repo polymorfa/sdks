@@ -158,12 +158,10 @@ export class HttpTransport {
     }
   }
 
-  async #perform(
+  #headers(
     request: RawRequest,
-    decode: (response: Response) => Promise<unknown>,
     accept: string,
-  ): Promise<{ readonly response: Response; readonly data: unknown }> {
-    const url = requestUrl(this.#baseUrl, request.path, request.query);
+  ): { headers: Headers; encoded: ReturnType<typeof encodeRequestBody> } {
     const headers = new Headers(request.headers);
     if (!headers.has("accept")) headers.set("accept", accept);
     if (this.#authorization !== undefined) {
@@ -181,6 +179,83 @@ export class HttpTransport {
     if (encoded.contentType !== undefined && !headers.has("content-type")) {
       headers.set("content-type", encoded.contentType);
     }
+    return { headers, encoded };
+  }
+
+  /**
+   * Opens a long-lived streaming response, such as `text/event-stream`.
+   * `timeoutMs` bounds only the wait for response headers; the body stays
+   * open until the server ends it or `signal` aborts. A non-2xx response
+   * throws the same typed errors as `request`. Streams are never retried
+   * here; the caller owns reconnection.
+   */
+  async openStream(request: RawRequest & { readonly accept: string }): Promise<{
+    readonly response: Response;
+    readonly metadata: ResponseMetadata;
+  }> {
+    validatePath(request.path);
+    const url = requestUrl(this.#baseUrl, request.path, request.query);
+    const { headers, encoded } = this.#headers(request, request.accept);
+    const timeoutMs = assertNonNegativeInteger(
+      request.timeoutMs ?? this.#timeoutMs,
+      "timeoutMs",
+      false,
+    );
+    const controller = new AbortController();
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutMs);
+    const cancel = () => controller.abort(request.signal?.reason);
+    if (request.signal?.aborted === true) cancel();
+    else request.signal?.addEventListener("abort", cancel, { once: true });
+    let response: Response;
+    try {
+      response = await this.#fetch(url, {
+        method: request.method,
+        headers,
+        redirect: this.#authorization === undefined ? "follow" : "error",
+        ...(encoded.body === undefined ? {} : { body: encoded.body }),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      request.signal?.removeEventListener("abort", cancel);
+      if (request.signal?.aborted === true) {
+        throw new PolymorfaCancelledError(
+          "The request was cancelled by the caller.",
+          { code: "request_cancelled", cause: error },
+        );
+      }
+      if (timedOut) {
+        throw new PolymorfaTimeoutError(
+          `The stream did not open within ${timeoutMs}ms.`,
+          { code: "request_timeout", cause: error },
+        );
+      }
+      throw new PolymorfaConnectionError(
+        "The request could not reach the Polymorfa API.",
+        { code: "connection_error", cause: error },
+      );
+    } finally {
+      clearTimeout(timer);
+    }
+    const metadata = responseMetadata(response, 1);
+    if (!response.ok) {
+      request.signal?.removeEventListener("abort", cancel);
+      const data = await decodeResponseBody(response).catch(() => null);
+      throw apiError(response, data, metadata);
+    }
+    return Object.freeze({ response, metadata });
+  }
+
+  async #perform(
+    request: RawRequest,
+    decode: (response: Response) => Promise<unknown>,
+    accept: string,
+  ): Promise<{ readonly response: Response; readonly data: unknown }> {
+    const url = requestUrl(this.#baseUrl, request.path, request.query);
+    const { headers, encoded } = this.#headers(request, accept);
 
     const timeoutMs = assertNonNegativeInteger(
       request.timeoutMs ?? this.#timeoutMs,

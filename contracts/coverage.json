@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "aca849cda44ad8582d7ae87489404d2483173a53",
+  "sourceCommit": "09b8342c0d75817eb2c92035e17635061986e35f",
   "excludedContracts": [
     {
       "family": "graph",
@@ -4002,7 +4002,7 @@
       "method": "POST",
       "path": "/platform/projects",
       "operationId": "createProject",
-      "fingerprint": "b16fa2e68171c47abd0b5402e5308845ba2e96df849d1b60329d3f1e9f720a70",
+      "fingerprint": "721e1da85e764bb5f8e485741b9d706fc2041a6a35ff1f3692dd683b9761a45d",
       "typescript": {
         "status": "covered",
         "method": "Client.projects.create"
@@ -4032,6 +4032,28 @@
     },
     {
       "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/events/stream",
+      "operationId": "streamProjectEvents",
+      "fingerprint": "4bd7ba5e12543abd636436e2a89334cd76c8caa8f3f97b18240974c1ecfa0dfc",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.events.stream"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/events/stream/{streamId}/ack",
+      "operationId": "acknowledgeProjectEventStream",
+      "fingerprint": "0413cf3c14165e15e88979cfc150489e8279eacaf34f6c0d9c2c9f86fd0084c1",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.events.acknowledgeStream"
+      }
+    },
+    {
+      "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/approve",
       "operationId": "approveProductionEnrollment",
@@ -4057,7 +4079,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/promote",
       "operationId": "requestProductionEnrollment",
-      "fingerprint": "2046e49a4be94bcdbc2c5fc975d0e0b72c594ff7ec0990cf97f5126bd6095664",
+      "fingerprint": "f8716878b64e64106cef56b18232e714319c39dfdb04cb65eafb703e34c20fd5",
       "typescript": {
         "status": "covered",
         "method": "Client.projects.requestProductionEnrollment"
