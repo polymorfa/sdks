@@ -317,6 +317,15 @@ export type {
   MessageResponse,
   MessageReceipt,
   ConversationIdentity,
+  HistoryChat,
+  HistoryChatKind,
+  HistoryConversation,
+  HistoryDirection,
+  HistoryMedia,
+  HistoryMessage,
+  HistoryMessageSummary,
+  ListChatsParams,
+  ListMessagesParams,
   ConversationReference,
   MessageMediaContent,
   MessageSendContext,
@@ -455,6 +464,7 @@ export type {
 } from "./messaging/types.js";
 export { WebhooksResource as MessagingWebhooksResource } from "./messaging/webhooks.js";
 export { CursorPage, type PageDecoder, type PageResult } from "./pagination.js";
+export { HistoryPage } from "./messaging/history.js";
 export { AudiencesResource } from "./platform/audiences.js";
 export { ApiKeysResource } from "./platform/api-keys.js";
 export { AuditLogsResource } from "./platform/audit-logs.js";

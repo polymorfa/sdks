@@ -98,11 +98,13 @@ The handwritten Messaging resources in this milestone are:
 - `campaigns`: list, create, retrieve, inspect analytics, launch, pause, resume,
   stop, and requeue project campaigns through the Messaging control plane
 - `messages`: send every contract-defined message kind through one typed send
-  union, mark seen, set typing state, react, and star
+  union, mark seen, set typing state, react, and star; list and get stored
+  messages (message history beta)
 - `media`: download binary media, retrieve metadata, and request durable object
   persistence
-- `chats`: edit or delete sent messages, archive or unarchive chats, and set
-  disappearing-message timers
+- `chats`: list and get stored conversations (message history beta), edit or
+  delete sent messages, archive or unarchive chats, and set disappearing-message
+  timers
 - `channels`: list, create, retrieve, and delete channels; page channel
   messages and updates; and manage viewing, reactions, live-update
   subscriptions, following, and mute state
@@ -130,6 +132,31 @@ The handwritten Messaging resources in this milestone are:
 - `users`: retrieve a display-only identity verification code for a stable
   LID-backed user ID
 - `webhooks`: list, create, retrieve, update, and delete
+
+### Message history (beta)
+
+For Numbers with hosted message storage, and teams enrolled in the message
+history beta, read stored conversations and messages from your server with an
+organization key or project token. Listing conversations needs `chats:read`;
+reading messages needs `messages:read`. List methods return a `HistoryPage`
+that iterates every later page with `for await`, and `previousPage()` walks
+back. Media arrives as IDs to download with `media:read`, never as keys.
+
+```ts
+const chats = await messaging.chats.list("support-line", { limit: 50 });
+for await (const chat of chats)
+  console.log(chat.conversation.id, chat.lastActivityAt);
+
+const page = await messaging.messages.list("support-line", "+15550001111", {
+  direction: "inbound",
+  types: ["text", "image"],
+  since: new Date("2026-09-01T00:00:00Z"),
+});
+for await (const message of page) console.log(message.timestamp, message.text);
+```
+
+A Number without hosted message storage returns `404` with code
+`hms_not_enabled` (`PolymorfaNotFoundError`).
 
 ## Management client
 

@@ -1974,3 +1974,90 @@ export type ProjectTemplateResponse = SuccessEnvelope<ProjectTemplate>;
 export type ProjectTemplateOperationResponse = SuccessEnvelope<
   Readonly<Record<string, unknown>>
 >;
+
+// ── Stored message history (beta; hosted message storage) ─────────
+
+export type HistoryChatKind = "direct" | "group" | "channel" | "broadcast";
+export type HistoryDirection = "inbound" | "outbound";
+
+export interface HistoryConversation extends ConversationIdentity {
+  /** Author of an inbound group message. */
+  readonly sender?: ConversationIdentity;
+}
+
+/** A downloadable file. Fetch it with `client.media.download(id)` and `media:read`. */
+export interface HistoryMedia {
+  readonly id: string;
+  readonly mimeType: string;
+  readonly fileLength: number;
+  readonly url: string;
+}
+
+export interface HistoryMessage {
+  readonly id: string;
+  readonly whatsapp_id: string;
+  readonly conversation: HistoryConversation;
+  readonly direction: HistoryDirection;
+  readonly fromMe: boolean;
+  readonly type: string;
+  /** ISO 8601 time WhatsApp reported the message. */
+  readonly timestamp: string;
+  readonly pushName?: string;
+  readonly text?: string;
+  readonly caption?: string;
+  readonly mimeType?: string;
+  readonly filename?: string;
+  readonly ptt?: boolean;
+  readonly latitude?: number;
+  readonly longitude?: number;
+  readonly displayName?: string;
+  readonly title?: string;
+  readonly reaction?: string;
+  readonly reactionTo?: string;
+  readonly edited?: boolean;
+  readonly unavailable?: boolean;
+  readonly unavailableReason?: string;
+  readonly pollOptions?: readonly {
+    readonly name: string;
+    readonly hash: string;
+  }[];
+  readonly media?: readonly HistoryMedia[];
+}
+
+export interface HistoryMessageSummary {
+  readonly id: string;
+  readonly whatsapp_id: string;
+  readonly direction: HistoryDirection;
+  readonly type: string;
+  readonly timestamp: string;
+}
+
+export interface HistoryChat {
+  readonly conversation: ConversationIdentity;
+  readonly kind: HistoryChatKind;
+  readonly lastActivityAt: string;
+  readonly lastMessage: HistoryMessageSummary;
+}
+
+export interface ListChatsParams {
+  /** 1 to 100; default 50. */
+  readonly limit?: number;
+  readonly cursor?: string;
+  readonly kind?: HistoryChatKind;
+  /** ISO 8601 or Date. */
+  readonly activeSince?: string | Date;
+  readonly activeBefore?: string | Date;
+}
+
+export interface ListMessagesParams {
+  /** 1 to 100; default 50. */
+  readonly limit?: number;
+  readonly cursor?: string;
+  /** `desc` (newest first, default) or `asc`. */
+  readonly order?: "asc" | "desc";
+  readonly since?: string | Date;
+  readonly until?: string | Date;
+  readonly direction?: HistoryDirection;
+  /** Up to 16 message types, for example `["text", "image"]`. */
+  readonly types?: readonly string[];
+}

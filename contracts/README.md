@@ -2,23 +2,31 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`aca849cda44ad8582d7ae87489404d2483173a53`. `source.json` records their original
+`42fc2d8d370efc126394307118f444dd6371f1ba`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        297 |
+| Covered             |        301 |
 | Missing             |          0 |
 | Excluded            |        106 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        403 |
+| Total               |        407 |
 
 Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
 successful live call.
 
 ## Reconciliation
+
+This revision is synced from the message history API change (polymorfa/polymorfa
+PR #202, not yet merged). It adds four beta history reads:
+`MessagingClient.chats.list`, `chats.get`, `messages.list`, and `messages.get`.
+The shared public error code set gains `hms_not_enabled`, which changes the
+fingerprint of every operation that references the error schema without
+changing their typed methods. Platform project promotion now returns
+`billingMode`.
 
 This revision replaces raw account platform codes with `phonePlatform` and
 `accountType` on the session account, profile, and `session.connected`
