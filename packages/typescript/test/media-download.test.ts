@@ -147,6 +147,23 @@ describe("MessagingMediaResource streaming downloads", () => {
     expect(storage.init.credentials).toBe("omit");
   });
 
+  it("cancels the body of a redirect it rejects", async () => {
+    const cancel = vi.fn();
+    const body = new ReadableStream<Uint8Array>({ cancel });
+    const { fetch } = mockFetch(
+      () =>
+        new Response(body, {
+          status: 302,
+          headers: { location: "ftp://storage.example.com/x" },
+        }),
+    );
+    const error = await client(fetch)
+      .media.downloadStream("m")
+      .catch((caught: unknown) => caught);
+    expect(error).toMatchObject({ code: "invalid_redirect" });
+    expect(cancel).toHaveBeenCalled();
+  });
+
   it("rejects a redirect to a non-HTTPS location", async () => {
     const { fetch, calls } = mockFetch(
       () =>

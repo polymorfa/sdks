@@ -135,8 +135,13 @@ export class HttpTransport {
           );
         }
         if (REDIRECT_STATUSES.has(response.status)) {
-          const location = redirectLocation(response, apiUrl, metadata);
-          await opened.discard();
+          let location: string;
+          try {
+            location = redirectLocation(response, apiUrl, metadata);
+          } finally {
+            // Cancel the redirect body whether or not its location is valid.
+            await opened.discard();
+          }
           if (returnRedirect) {
             return Object.freeze({ location, metadata });
           }
