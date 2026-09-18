@@ -98,6 +98,21 @@ describe("MediaSocket authentication", () => {
     expect(closes).toEqual([{ reason: "claimed", code: 1008 }]);
   });
 
+  it("rejects when the handshake fails with an error and no close", async () => {
+    const { media } = mediaWith();
+    const closes: MediaClose[] = [];
+    media.on("close", (close) => closes.push(close));
+    const connecting = media.connect();
+    await flush();
+    const ws = FakeWebSocket.instances[0]!;
+    ws.failHandshake();
+    await expect(connecting).rejects.toThrow();
+    expect(media.connected).toBe(false);
+    expect(ws.closed).toBeDefined();
+    ws.drop(1006);
+    expect(closes).toEqual([{ reason: "lost", code: 1006 }]);
+  });
+
   it("rejects with CallsAuthError on a 4401 close", async () => {
     const { media } = mediaWith();
     const connecting = media.connect();

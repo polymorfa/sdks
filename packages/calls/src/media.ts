@@ -229,7 +229,9 @@ export class MediaSocket extends Emitter<Events> {
     }
     socket.binaryType = "arraybuffer";
     this.#socket = socket;
+    let opened = false;
     socket.onopen = () => {
+      opened = true;
       const auth: MediaClientFrame = {
         type: "auth",
         token,
@@ -289,7 +291,20 @@ export class MediaSocket extends Emitter<Events> {
       if (frame.kind === "audio") this.emit("audio", frame.pcm);
       else this.emit("video", frame.frame);
     };
-    socket.onerror = () => undefined;
+    // Node 22's WebSocket reports a failed handshake (refused, reset, or a
+    // non-101 reply) with an error event and never fires close, so treat an
+    // error before open as the close that other runtimes deliver.
+    socket.onerror = () => {
+      if (opened || this.#socket !== socket) return;
+      const onclose = socket.onclose;
+      socket.onopen = socket.onmessage = socket.onclose = socket.onerror = null;
+      try {
+        socket.close();
+      } catch {
+        // never opened
+      }
+      onclose?.call(socket, { code: 1006 } as CloseEvent);
+    };
     socket.onclose = (event) => {
       this.#stopHeartbeat();
       if (this.#socket === socket) this.#socket = undefined;

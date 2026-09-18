@@ -330,7 +330,9 @@ export class LifecycleSocket extends Emitter<Events> {
             }
           }, timeoutMs)
         : undefined;
+    let opened = false;
     socket.onopen = () => {
+      opened = true;
       const frame: LifecycleClientFrame = { type: "auth", token: token.value };
       socket.send(JSON.stringify(frame));
     };
@@ -366,7 +368,20 @@ export class LifecycleSocket extends Emitter<Events> {
       }
       this.#receive(frame);
     };
-    socket.onerror = () => undefined;
+    // Node 22's WebSocket reports a failed handshake (refused, reset, or a
+    // non-101 reply) with an error event and never fires close, so treat an
+    // error before open as the close that other runtimes deliver.
+    socket.onerror = () => {
+      if (opened || this.#socket !== socket) return;
+      const onclose = socket.onclose;
+      detach(socket);
+      try {
+        socket.close();
+      } catch {
+        // never opened
+      }
+      onclose?.call(socket, { code: 1006 } as CloseEvent);
+    };
     socket.onclose = (event) => {
       this.#clearOpenTimer();
       this.#stopHeartbeat();

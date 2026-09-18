@@ -171,6 +171,26 @@ describe("LifecycleSocket authentication", () => {
     }
   });
 
+  it("settles and retries when a handshake fails with an error and no close", async () => {
+    const h = lifecycleWith();
+    const connecting = h.socket.connect();
+    await flush();
+    const first = FakeWebSocket.instances[0]!;
+    first.failHandshake();
+    await connecting;
+    expect(h.socket.connected).toBe(false);
+    expect(first.closed).toBeDefined();
+    // A late close from the failed socket is ignored.
+    first.drop(1006);
+    h.t.fireTimeouts();
+    await flush();
+    expect(FakeWebSocket.instances).toHaveLength(2);
+    FakeWebSocket.instances[1]!.authenticate();
+    await flush();
+    expect(h.socket.connected).toBe(true);
+    h.socket.close();
+  });
+
   it("does not refresh the token after an ordinary drop", async () => {
     const h = lifecycleWith();
     const connecting = h.socket.connect();

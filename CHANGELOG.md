@@ -6,6 +6,10 @@
   `@polymorfa/sdk/calls` subpath. Import `CallsClient` and the Calls error
   classes from `@polymorfa/sdk/calls`; there is no separate `@polymorfa/calls`
   package to install.
+- `@polymorfa/sdk/calls` on Node.js 22: a lifecycle or media socket whose
+  handshake fails (connection refused or reset, or a non-WebSocket reply) now
+  settles like a dropped socket. `connect()` resolves and retries with backoff,
+  and a media `connect()` rejects, instead of waiting indefinitely.
 - `Client.sipTrunks` manages SIP trunks (beta). Session call settings add
   `callsEnabled` (turn calling off for a session; refusals use
   `calls_disabled`, raised as `CallsDisabledError` by `@polymorfa/calls` and

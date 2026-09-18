@@ -52,6 +52,13 @@ export class FakeWebSocket {
     this.readyState = FakeWebSocket.CLOSED;
     this.onclose?.({ code, reason });
   }
+  /**
+   * A failed handshake as Node 22 reports it: an error event, no close event,
+   * and the socket left CONNECTING.
+   */
+  failHandshake(): void {
+    this.onerror?.({});
+  }
   /** Open and answer the auth frame with `ready`, as the platform does. */
   authenticate(ready: Record<string, unknown> = { session: "support" }): void {
     this.open();
