@@ -3,11 +3,53 @@ import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   DisappearingTimerRequest,
   EditMessageRequest,
+  HistoryChat,
+  ListChatsParams,
   SuccessResponse,
 } from "./types.js";
+import { isoTime, loadHistoryPage, type HistoryPage } from "./history.js";
 
 export class ChatsResource {
   constructor(private readonly transport: HttpTransport) {}
+
+  /**
+   * Lists stored conversations for a Number with hosted message storage, most
+   * recent activity first. Beta; requires `chats:read`. Iterate the returned
+   * page with `for await` to read every page.
+   */
+  list(
+    session: string,
+    params: ListChatsParams = {},
+    options: RequestOptions = {},
+  ): Promise<HistoryPage<HistoryChat>> {
+    return loadHistoryPage<HistoryChat>(
+      this.transport,
+      `/messaging/${encodeURIComponent(session)}/chats`,
+      {
+        limit: params.limit,
+        kind: params.kind,
+        activeSince: isoTime(params.activeSince),
+        activeBefore: isoTime(params.activeBefore),
+      },
+      options,
+      params.cursor,
+    );
+  }
+
+  /** Returns one stored conversation. Beta; requires `chats:read`. */
+  async get(
+    session: string,
+    conversation: string,
+    options: RequestOptions = {},
+  ): Promise<
+    ApiResponse<{ readonly success: true; readonly data: HistoryChat }>
+  > {
+    return this.transport.request({
+      method: "GET",
+      path: chatPath(session, conversation),
+      ...options,
+    });
+  }
 
   editMessage(
     session: string,

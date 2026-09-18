@@ -1,6 +1,9 @@
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
+import { isoTime, loadHistoryPage, type HistoryPage } from "./history.js";
 import type {
+  HistoryMessage,
+  ListMessagesParams,
   ReactRequest,
   SeenRequest,
   SendMessageRequest,
@@ -14,6 +17,49 @@ import type {
 
 export class MessagesResource {
   constructor(private readonly transport: HttpTransport) {}
+
+  /**
+   * Lists stored messages in one conversation, newest first by default. Beta;
+   * requires `messages:read` and hosted message storage on the Number.
+   * `conversation` is a conversation ID or an E.164 phone number.
+   */
+  list(
+    session: string,
+    conversation: string,
+    params: ListMessagesParams = {},
+    options: RequestOptions = {},
+  ): Promise<HistoryPage<HistoryMessage>> {
+    return loadHistoryPage<HistoryMessage>(
+      this.transport,
+      `${historyChatPath(session, conversation)}/messages`,
+      {
+        limit: params.limit,
+        order: params.order,
+        since: isoTime(params.since),
+        until: isoTime(params.until),
+        direction: params.direction,
+        types: params.types === undefined ? undefined : params.types.join(","),
+      },
+      options,
+      params.cursor,
+    );
+  }
+
+  /** Returns one stored message. Beta; requires `messages:read`. */
+  get(
+    session: string,
+    conversation: string,
+    messageId: string,
+    options: RequestOptions = {},
+  ): Promise<
+    ApiResponse<{ readonly success: true; readonly data: HistoryMessage }>
+  > {
+    return this.transport.request({
+      method: "GET",
+      path: `${historyChatPath(session, conversation)}/messages/${encodeURIComponent(messageId)}`,
+      ...options,
+    });
+  }
 
   send(
     session: string,
@@ -68,4 +114,8 @@ export class MessagesResource {
       ...options,
     });
   }
+}
+
+function historyChatPath(session: string, conversation: string): string {
+  return `/messaging/${encodeURIComponent(session)}/chats/${encodeURIComponent(conversation)}`;
 }

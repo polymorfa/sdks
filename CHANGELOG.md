@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Added message history (beta) reads: `MessagingClient.chats.list()`,
+  `chats.get()`, `messages.list()`, and `messages.get()`. Lists return a new
+  exported `HistoryPage` with `for await` auto-pagination, `previousPage()`, and
+  the serving `dataRegion`. New exported types: `HistoryChat`,
+  `HistoryMessage`, `HistoryMessageSummary`, `HistoryConversation`,
+  `HistoryMedia`, `HistoryChatKind`, `HistoryDirection`, `ListChatsParams`, and
+  `ListMessagesParams`. Requires `chats:read` / `messages:read`, hosted message
+  storage on the Number, and beta enrollment. Response metadata now includes the
+  `polymorfa-data-region` header.
+- `ProductionEnrollmentResult` now includes `billingMode: "payg"`.
+
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`
   no longer registers `pmfa-quicklink` or exports the `./quicklink` subpath, and

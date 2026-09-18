@@ -389,6 +389,8 @@ export interface ProductionEnrollmentResult {
   readonly operationId: string;
   readonly enrollmentStatus:
     "requested" | "approval_required" | "provisioning" | "ready";
+  /** The team's billing mode after the request; always Pay-As-You-Go. */
+  readonly billingMode: "payg";
 }
 
 export interface ProductionEnrollmentCommandResult {
