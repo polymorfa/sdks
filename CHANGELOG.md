@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Message writes are safe to retry. `messages.send`, `messages.react`,
+  `chats.editMessage`, `chats.deleteMessage`, `channels.reactToMessage`, and
+  Messaging `campaigns.create` and `campaigns.launch` generate an
+  `Idempotency-Key` when you don't pass `idempotencyKey`, and their automatic
+  retries reuse it. The browser client's `messages.send` and `react` do the
+  same. A response with `Idempotent-Replayed: true` is final and is not
+  retried. A caller-supplied key still wins.
+- `projects.create` now returns `CreatedProject`, the shape the API returns,
+  instead of `Project`. `CreateProjectRequest.defaultTier` is typed as
+  `ProjectDefaultTier` (`free`, `standard`, or `pro`), and
+  `ProductionEnrollmentResult` gains `billingMode: "payg"`.
+
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`
   no longer registers `pmfa-quicklink` or exports the `./quicklink` subpath, and

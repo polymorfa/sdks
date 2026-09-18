@@ -6272,6 +6272,8 @@
                   "media_fetch_failed",
                   "resource_gone",
                   "state_conflict",
+                  "idempotency_conflict",
+                  "idempotency_in_progress",
                   "rate_limit_exceeded",
                   "internal_error",
                   "operation_not_supported",
@@ -15406,6 +15408,17 @@
             "required": true,
             "name": "session",
             "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "requestBody": {
@@ -15492,6 +15505,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "idempotency_conflict",
+                    "message": "This Idempotency-Key was already used with a different request. Use a new key for a different request.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#idempotency-conflict"
                 }
               }
             }
@@ -15886,6 +15919,17 @@
             "required": true,
             "name": "session",
             "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "requestBody": {
@@ -15964,6 +16008,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "idempotency_conflict",
+                    "message": "This Idempotency-Key was already used with a different request. Use a new key for a different request.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#idempotency-conflict"
                 }
               }
             }
@@ -16211,6 +16275,17 @@
             "required": true,
             "name": "messageId",
             "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "requestBody": {
@@ -16313,6 +16388,26 @@
               }
             }
           },
+          "409": {
+            "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "idempotency_conflict",
+                    "message": "This Idempotency-Key was already used with a different request. Use a new key for a different request.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#idempotency-conflict"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
             "content": {
@@ -16379,6 +16474,17 @@
             "required": true,
             "name": "messageId",
             "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "responses": {
@@ -16468,6 +16574,26 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "idempotency_conflict",
+                    "message": "This Idempotency-Key was already used with a different request. Use a new key for a different request.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#idempotency-conflict"
                 }
               }
             }
@@ -30747,6 +30873,17 @@
             "required": true,
             "name": "messageId",
             "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "requestBody": {
@@ -30845,6 +30982,26 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "idempotency_conflict",
+                    "message": "This Idempotency-Key was already used with a different request. Use a new key for a different request.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#idempotency-conflict"
                 }
               }
             }
@@ -38841,6 +38998,17 @@
             "required": true,
             "name": "projectSlug",
             "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "requestBody": {
@@ -38959,6 +39127,26 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "idempotency_conflict",
+                    "message": "This Idempotency-Key was already used with a different request. Use a new key for a different request.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#idempotency-conflict"
                 }
               }
             }
@@ -39357,6 +39545,17 @@
             "required": true,
             "name": "id",
             "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key that makes this write safe to retry for 24 hours. A retry with the same key and the same request returns the original status and body with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`. Keys are scoped to the credential that sent them.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "requestBody": {
@@ -39475,6 +39674,26 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The Idempotency-Key was used for a different request (`idempotency_conflict`), or its original request is still running (`idempotency_in_progress`, with Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "idempotency_conflict",
+                    "message": "This Idempotency-Key was already used with a different request. Use a new key for a different request.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#idempotency-conflict"
                 }
               }
             }

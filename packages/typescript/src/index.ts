@@ -527,6 +527,8 @@ export type {
   ProductionEnrollmentRequest,
   ProductionEnrollmentResult,
   Project,
+  CreatedProject,
+  ProjectDefaultTier,
   ProjectIcon,
   ProjectToken,
   ProjectWithStats,

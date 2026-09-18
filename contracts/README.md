@@ -2,7 +2,7 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`aca849cda44ad8582d7ae87489404d2483173a53`. `source.json` records their original
+`204033d3697c5b63f82aca377c9d487e2e0f6371`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
@@ -19,6 +19,14 @@ It does not claim coverage in other languages, package publication, or a
 successful live call.
 
 ## Reconciliation
+
+This revision adds the optional `Idempotency-Key` header and its `409`
+outcomes to seven Messaging writes, and two public error codes to the shared
+error schema. That schema change moves the fingerprint of every Messaging
+operation that references it; each keeps its existing typed method. The
+Platform `createProject` and `requestProductionEnrollment` operations gained
+typed request and response bodies, now reflected in `CreatedProject` and
+`ProductionEnrollmentResult.billingMode`.
 
 This revision replaces raw account platform codes with `phonePlatform` and
 `accountType` on the session account, profile, and `session.connected`

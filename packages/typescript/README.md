@@ -460,6 +460,41 @@ are not Messages routes: they remain `MessagingClient.chats.editMessage` and
 `deleteMessage`, require `chats:manage` with a server key, and are not in the
 client-token allowlist.
 
+### Idempotent sends
+
+These methods send an `Idempotency-Key` on every call:
+
+- `messages.send` and `messages.react`
+- `chats.editMessage` and `chats.deleteMessage`
+- `channels.reactToMessage`
+- `campaigns.create` and `campaigns.launch`
+
+If you don't pass `idempotencyKey`, the SDK generates a random UUID for the
+call. Every automatic retry of that call reuses the key, so the API returns the
+first result instead of sending the message again. Pass your own key, such as
+an order event ID, to deduplicate across processes or restarts:
+
+```ts
+await messaging.messages.send(
+  "support",
+  {
+    conversation: { phoneNumber: "+15551234567" },
+    content: { text: "Shipped" },
+  },
+  { idempotencyKey: `order-${orderId}-shipped` },
+);
+```
+
+The API keeps each key for 24 hours per credential. Reusing a key for a
+different request fails with `PolymorfaConflictError` (`idempotency_conflict`).
+A retry that arrives while the first request is still running receives
+`idempotency_in_progress`, and the SDK retries it after `Retry-After`. When a
+response carries `Idempotent-Replayed: true`, the SDK treats it as final and
+does not retry. A replayed `result_unknown` means the first attempt's outcome
+is unknown, so check message events before you send again with a new key.
+
+`BrowserMessagingClient.messages.send` and `react` generate keys the same way.
+
 ## Messaging media
 
 `MessagingClient.media` is distinct from `Client.media`. It exposes all

@@ -19,6 +19,7 @@ import { decodeResponseBody, encodeRequestBody } from "./body.js";
 import {
   canRetryRequest,
   defaultSleep,
+  isIdempotentReplay,
   isRetryableStatus,
   retryDelayMs,
 } from "./retry.js";
@@ -102,7 +103,8 @@ export class HttpTransport {
         if (
           eligible &&
           attempt <= retries &&
-          isRetryableStatus(response.status)
+          isRetryableStatus(response.status) &&
+          !isIdempotentReplay(response)
         ) {
           await this.#sleep(
             retryDelayMs(response, attempt, this.#random),
