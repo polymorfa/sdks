@@ -1,3 +1,12 @@
+import {
+  CallClaimedError,
+  CallsDisabledError,
+  type AcceptCallOptions,
+  type AcceptCallResult,
+  type CallReport,
+  type CallsToken,
+  type CallsTokenRequest,
+} from "@polymorfa/sdk/calls/internal";
 import { BrowserTransport } from "../transport.js";
 
 export interface IceServer {
@@ -14,41 +23,67 @@ export interface TrickleCandidate {
   readonly sdpMid?: string;
   readonly sdpMLineIndex?: number;
 }
-/** A single-use ticket for the calls WebSocket (`POST /messaging/voip/ws-ticket`). */
-export interface SocketTicket {
-  readonly ticket: string;
-  /** Unix epoch milliseconds. */
-  readonly expiresAt: number;
-  /** Root-relative or absolute URL of the socket, ticket included. */
-  readonly url: string;
+/** An SDP offer for one media connection of a call. */
+export interface OfferRequest {
+  readonly sdp: string;
+  readonly connectionId: string;
 }
+
 export interface CallsSignaling {
-  offer(callId: string, sdp: string, signal?: AbortSignal): Promise<SdpAnswer>;
+  offer(
+    callId: string,
+    request: OfferRequest,
+    signal?: AbortSignal,
+  ): Promise<SdpAnswer>;
   /**
-   * Re-offer on an established call (audio→video upgrade, ICE restart). The
-   * pod answers on the same peer connection. Optional for fakes.
+   * Re-offer on an established connection (camera upgrade, more receive
+   * slots, ICE restart). Optional for fakes.
    */
   renegotiate?(
     callId: string,
-    sdp: string,
+    request: OfferRequest,
     signal?: AbortSignal,
   ): Promise<SdpAnswer>;
-  /** Mint a single-use ticket for the calls WebSocket. Optional for fakes. */
-  socketTicket?(session?: string, signal?: AbortSignal): Promise<SocketTicket>;
-  /** Absolute `ws(s)://` URL for a ticket. Optional for fakes. */
-  socketUrl?(ticket: SocketTicket): string;
   candidate(
     callId: string,
     candidate: TrickleCandidate,
+    connectionId: string,
     signal?: AbortSignal,
   ): Promise<void>;
+  /** Poll the pod's queued candidates for the call. */
   candidates(
     callId: string,
     signal?: AbortSignal,
   ): Promise<readonly TrickleCandidate[]>;
-  teardown(callId: string, signal?: AbortSignal): Promise<void>;
+  /** Answer or join. Optional for fakes. */
+  accept?(
+    callId: string,
+    options: AcceptCallOptions,
+    signal?: AbortSignal,
+  ): Promise<AcceptCallResult>;
+  /** Decline a ringing call; ends it for everyone. Optional for fakes. */
+  reject?(callId: string, signal?: AbortSignal): Promise<void>;
+  /** Close one media connection; the call continues. */
+  leave(
+    callId: string,
+    connectionId: string,
+    signal?: AbortSignal,
+  ): Promise<void>;
+  /** End the call for every participant. */
+  end(callId: string, signal?: AbortSignal): Promise<void>;
+  /** Send a diagnostics report for one connection. Optional for fakes. */
+  report?(
+    callId: string,
+    report: CallReport,
+    signal?: AbortSignal,
+  ): Promise<void>;
+  /** Credential for socket authentication frames. Optional for fakes. */
+  token?(request?: CallsTokenRequest): Promise<CallsToken>;
+  /** Absolute `ws(s)://` URL for a socket path. Optional for fakes. */
+  socketUrl?(path: string): string;
 }
 
+/** Client-token signaling over the Messaging REST routes. */
 export class CallsSignalingClient implements CallsSignaling {
   readonly #transport: BrowserTransport;
   readonly #prefix: string;
@@ -58,23 +93,27 @@ export class CallsSignalingClient implements CallsSignaling {
   }
   async offer(
     callId: string,
-    sdp: string,
+    request: OfferRequest,
     signal?: AbortSignal,
   ): Promise<SdpAnswer> {
-    const response = await this.#transport.request<{
-      readonly data: SdpAnswer;
-    }>({
-      method: "POST",
-      path: this.#path(callId, "/offer"),
-      body: { sdp },
-      ...(signal === undefined ? {} : { signal }),
-      idempotencyKey: `voip-offer:${callId}`,
-    });
+    const response = await this.#transport
+      .request<{
+        readonly data: SdpAnswer;
+      }>({
+        method: "POST",
+        path: this.#path(callId, "/offer"),
+        body: { sdp: request.sdp, connectionId: request.connectionId },
+        ...(signal === undefined ? {} : { signal }),
+        idempotencyKey: `voip-offer:${callId}:${request.connectionId}:${nonce()}`,
+      })
+      .catch((cause: unknown) => {
+        throw claimedError(cause);
+      });
     return response.data.data;
   }
   async renegotiate(
     callId: string,
-    sdp: string,
+    request: OfferRequest,
     signal?: AbortSignal,
   ): Promise<SdpAnswer> {
     const response = await this.#transport.request<{
@@ -82,50 +121,21 @@ export class CallsSignalingClient implements CallsSignaling {
     }>({
       method: "POST",
       path: this.#path(callId, "/renegotiate"),
-      body: { sdp },
+      body: { sdp: request.sdp, connectionId: request.connectionId },
       ...(signal === undefined ? {} : { signal }),
     });
     return response.data.data;
-  }
-  /**
-   * Mint a socket ticket. The `session` argument is accepted for interface
-   * compatibility and deliberately not sent: this client authenticates with a
-   * `pmfa_ct_` token, which the API binds to exactly one session and refuses
-   * (403) when a request names another. The bound session is used instead.
-   */
-  async socketTicket(
-    _session?: string,
-    signal?: AbortSignal,
-  ): Promise<SocketTicket> {
-    const response = await this.#transport.request<{
-      readonly data: SocketTicket;
-    }>({
-      method: "POST",
-      path: `${this.#prefix}/voip/ws-ticket`,
-      body: {},
-      ...(signal === undefined ? {} : { signal }),
-    });
-    return response.data.data;
-  }
-  socketUrl(ticket: SocketTicket): string {
-    const url = new URL(ticket.url, `${this.#transport.baseUrl}/`);
-    url.protocol =
-      url.protocol === "https:"
-        ? "wss:"
-        : url.protocol === "http:"
-          ? "ws:"
-          : url.protocol;
-    return url.toString();
   }
   async candidate(
     callId: string,
     candidate: TrickleCandidate,
+    connectionId: string,
     signal?: AbortSignal,
   ): Promise<void> {
     await this.#transport.request({
       method: "POST",
       path: this.#path(callId, "/candidate"),
-      body: candidate,
+      body: { ...candidate, connectionId },
       ...(signal === undefined ? {} : { signal }),
     });
   }
@@ -142,15 +152,144 @@ export class CallsSignalingClient implements CallsSignaling {
     });
     return response.data.data.candidates;
   }
-  async teardown(callId: string, signal?: AbortSignal): Promise<void> {
+  async accept(
+    callId: string,
+    options: AcceptCallOptions,
+    signal?: AbortSignal,
+  ): Promise<AcceptCallResult> {
+    const response = await this.#transport
+      .request<{ readonly data?: unknown }>({
+        method: "POST",
+        path: this.#path(callId, "/accept"),
+        body: {
+          exclusive: options.exclusive === true,
+          ...(options.video === undefined ? {} : { video: options.video }),
+        },
+        ...(signal === undefined ? {} : { signal }),
+      })
+      .catch((cause: unknown) => {
+        throw claimedError(cause);
+      });
+    const data = response.data?.data as Partial<AcceptCallResult> | undefined;
+    return {
+      answered: data?.answered === true,
+      answeredBy: typeof data?.answeredBy === "string" ? data.answeredBy : "",
+      exclusive: data?.exclusive === true,
+    };
+  }
+  async reject(callId: string, signal?: AbortSignal): Promise<void> {
+    await this.#transport.request({
+      method: "POST",
+      path: this.#path(callId, "/reject"),
+      ...(signal === undefined ? {} : { signal }),
+    });
+  }
+  async leave(
+    callId: string,
+    connectionId: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#transport.request({
+      method: "POST",
+      path: this.#path(callId, "/leave"),
+      body: { connectionId },
+      ...(signal === undefined ? {} : { signal }),
+      idempotencyKey: `voip-leave:${callId}:${connectionId}`,
+    });
+  }
+  async end(callId: string, signal?: AbortSignal): Promise<void> {
     await this.#transport.request({
       method: "DELETE",
       path: this.#path(callId),
       ...(signal === undefined ? {} : { signal }),
-      idempotencyKey: `voip-teardown:${callId}`,
+      idempotencyKey: `voip-end:${callId}`,
     });
+  }
+  /**
+   * Best-effort: one attempt, no retries. A client token acts as its own
+   * participant, so the report names none.
+   */
+  async report(
+    callId: string,
+    report: CallReport,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    const body: Record<string, unknown> = { ...report };
+    delete body["participant"];
+    await this.#transport.request({
+      method: "POST",
+      path: this.#path(callId, "/reports"),
+      body,
+      maxNetworkRetries: 0,
+      ...(signal === undefined ? {} : { signal }),
+    });
+  }
+  token(request: CallsTokenRequest = {}): Promise<CallsToken> {
+    return this.#transport.token(
+      request.refresh === undefined ? {} : { refresh: request.refresh },
+    );
+  }
+  socketUrl(path: string): string {
+    const url = new URL(path, `${this.#transport.baseUrl}/`);
+    url.protocol =
+      url.protocol === "https:"
+        ? "wss:"
+        : url.protocol === "http:"
+          ? "ws:"
+          : url.protocol;
+    return url.toString();
   }
   #path(callId: string, suffix = ""): string {
     return `${this.#prefix}/voip/calls/${encodeURIComponent(callId)}${suffix}`;
   }
+}
+
+/**
+ * Turn a `409 call_claimed` HTTP failure into {@link CallClaimedError} and a
+ * `403 calls_disabled` one into {@link CallsDisabledError}.
+ */
+export function claimedError(cause: unknown): unknown {
+  const message = cause instanceof Error ? cause.message : undefined;
+  if (isCallClaimed(cause)) return new CallClaimedError(message);
+  if (hasFailureCode(cause, 403, "calls_disabled")) {
+    return cause instanceof CallsDisabledError
+      ? cause
+      : new CallsDisabledError(message);
+  }
+  return cause;
+}
+
+function hasFailureCode(cause: unknown, status: number, code: string): boolean {
+  const failure = cause as {
+    status?: unknown;
+    code?: unknown;
+    details?: unknown;
+  } | null;
+  if (failure?.status !== status) return false;
+  if (failure.code === code) return true;
+  const details = failure.details as Record<string, unknown> | undefined;
+  const error = details?.["error"] as Record<string, unknown> | undefined;
+  return error?.["code"] === code || details?.["code"] === code;
+}
+
+/** True for a `409` failure whose code (or response body code) is `call_claimed`. */
+export function isCallClaimed(cause: unknown): boolean {
+  if (cause instanceof CallClaimedError) return true;
+  const failure = cause as {
+    status?: unknown;
+    code?: unknown;
+    details?: unknown;
+  } | null;
+  if (failure?.status !== 409) return false;
+  if (failure.code === "call_claimed") return true;
+  const details = failure.details as Record<string, unknown> | undefined;
+  const error = details?.["error"] as Record<string, unknown> | undefined;
+  return (
+    error?.["code"] === "call_claimed" || details?.["code"] === "call_claimed"
+  );
+}
+
+function nonce(): string {
+  const bytes = globalThis.crypto.getRandomValues(new Uint8Array(6));
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }

@@ -7,16 +7,21 @@ import {
   IncomingCallRelay,
   createSignalingCallsBackend,
   type CallMediaFactory,
+  type CallLifecycleEvent,
   type CallMediaSession,
   type CallsSignaling,
+  type RemoteVideo,
   type CallsSnapshot,
-} from "@polymorfa/browser";
+} from "@polymorfa/browser/internal";
 import { createLocale } from "@polymorfa/ui";
 import {
   CallControls,
+  CallStage,
   CallSurface,
   DialPad,
   IncomingCallCard,
+  ParticipantList,
+  ParticipantVideoGrid,
   PolymorfaProvider,
   formatDuration,
   useCallDuration,
@@ -28,12 +33,19 @@ import {
 
 function fixture() {
   const relay = new IncomingCallRelay();
-  const signaling: CallsSignaling = {
+  const signaling = {
     offer: vi.fn(async () => ({ sdp: "v=0", iceServers: [] })),
     candidate: vi.fn(async () => undefined),
     candidates: vi.fn(async () => []),
-    teardown: vi.fn(async () => undefined),
-  };
+    accept: vi.fn(async () => ({
+      answered: true,
+      answeredBy: "client:self",
+      exclusive: false,
+    })),
+    reject: vi.fn(async () => undefined),
+    leave: vi.fn(async () => undefined),
+    end: vi.fn(async () => undefined),
+  } satisfies CallsSignaling;
   const session: CallMediaSession = {
     localStream: new MediaStream(),
     remoteStream: new MediaStream(),
@@ -136,10 +148,11 @@ describe("Calls UI", () => {
         host.querySelector("[aria-label='Reject']") as HTMLButtonElement
       ).click();
     });
-    expect(f.signaling.teardown).toHaveBeenCalledWith(
+    expect(f.signaling.reject).toHaveBeenCalledWith(
       "CALL-1",
       expect.any(AbortSignal),
     );
+    expect(f.signaling.end).not.toHaveBeenCalled();
     expect(host.querySelector("[role='alertdialog']")).toBeNull();
     expect(f.controller.getSnapshot()).toMatchObject({
       status: "ended",
@@ -202,9 +215,11 @@ describe("Calls UI", () => {
       false,
       expect.any(Object),
       expect.any(AbortSignal),
-      { devices: {} },
+      { devices: {}, connectionId: expect.any(String) },
     );
-    expect(host.querySelector("[aria-label='Hang up']")).not.toBeNull();
+    expect(
+      host.querySelector("[aria-label='End call for everyone']"),
+    ).not.toBeNull();
     // Audio-only offers on a video-capable line still show the camera
     // upgrade affordance, disabled until the call connects.
     const camera = host.querySelector(
@@ -220,22 +235,28 @@ describe("Calls UI", () => {
 
     await act(async () => {
       (
-        host.querySelector("[aria-label='Hang up']") as HTMLButtonElement
+        host.querySelector(
+          "[aria-label='End call for everyone']",
+        ) as HTMLButtonElement
       ).click();
     });
-    expect(f.signaling.teardown).toHaveBeenCalledWith(
+    expect(f.signaling.end).toHaveBeenCalledWith(
       "CALL-2",
       expect.any(AbortSignal),
     );
     expect(host.querySelector("[data-pmfa='call-surface']")).toBeNull();
   });
 
-  it("dials audio or video on a linked device and audio only on the Business Calling API line", async () => {
+  it("dials audio or video, and audio only when video is not allowed", async () => {
     const f = fixture();
     const host = mount(
       <PolymorfaProvider>
         <DialPad controller={f.controller} defaultValue="+1202555" />
-        <DialPad controller={f.controller} line="cloudApi" className="cloud" />
+        <DialPad
+          controller={f.controller}
+          allowVideo={false}
+          className="cloud"
+        />
       </PolymorfaProvider>,
     );
     expect(
@@ -256,11 +277,10 @@ describe("Calls UI", () => {
       ).click();
     });
     expect(f.controller.getSnapshot()).toMatchObject({
-      status: "connecting",
+      status: "ringing",
       peer: "+12025550",
       direction: "outgoing",
       video: true,
-      line: "linkedDevice",
     });
   });
 
@@ -277,7 +297,7 @@ describe("Calls UI", () => {
         new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
       );
     });
-    expect(f.controller.getSnapshot().status).toBe("connecting");
+    expect(f.controller.getSnapshot().status).toBe("ringing");
     expect(f.media.open).toHaveBeenCalledTimes(1);
 
     // The buttons are disabled now, but the input keeps focus and its value.
@@ -404,7 +424,8 @@ describe("Calls UI", () => {
           offer: vi.fn(async () => ({ sdp: "v=0", iceServers: [] })),
           candidate: vi.fn(async () => undefined),
           candidates: vi.fn(async () => []),
-          teardown: vi.fn(async () => undefined),
+          leave: vi.fn(async () => undefined),
+          end: vi.fn(async () => undefined),
         },
         incoming: new IncomingCallRelay(),
         place: async () => {
@@ -502,7 +523,7 @@ describe("Calls UI", () => {
       await f.controller.answer();
     });
     const button = host.querySelector(
-      "[aria-label='Hang up']",
+      "[aria-label='End call for everyone']",
     ) as HTMLButtonElement;
     // #finish transitions after its await, so a controller disposed under a
     // still-mounted dock makes hangup() reject.
@@ -548,7 +569,7 @@ describe("Calls UI", () => {
 });
 
 describe("failed call controls", () => {
-  it.each(["Reject", "Hang up"])(
+  it.each(["Reject", "End call for everyone"])(
     "keeps %s visible and media alive until retry succeeds",
     async (label) => {
       const f = fixture();
@@ -564,13 +585,12 @@ describe("failed call controls", () => {
           video: false,
         }),
       );
-      if (label === "Hang up")
+      if (label !== "Reject")
         await act(async () => {
           await f.controller.answer();
         });
-      vi.mocked(f.signaling.teardown).mockRejectedValueOnce(
-        new Error("temporarily unavailable"),
-      );
+      const control = label === "Reject" ? f.signaling.reject : f.signaling.end;
+      control.mockRejectedValueOnce(new Error("temporarily unavailable"));
       await act(async () => {
         (
           host.querySelector(`[aria-label='${label}']`) as HTMLButtonElement
@@ -584,7 +604,7 @@ describe("failed call controls", () => {
           host.querySelector(`[aria-label='${label}']`) as HTMLButtonElement
         ).click();
       });
-      expect(f.signaling.teardown).toHaveBeenCalledTimes(2);
+      expect(control).toHaveBeenCalledTimes(2);
       expect(f.controller.getSnapshot().status).toBe("ended");
       expect(f.controller.getSnapshot().error).toBeUndefined();
       expect(host.querySelector("[data-pmfa='call-surface']")).toBeNull();
@@ -619,11 +639,13 @@ it("finishes pending media setup after a refused hangup", async () => {
     answer = f.controller.answer();
     await Promise.resolve();
   });
-  vi.mocked(f.signaling.teardown).mockRejectedValueOnce(
-    new Error("temporarily unavailable"),
-  );
+  f.signaling.end.mockRejectedValueOnce(new Error("temporarily unavailable"));
   await act(async () => {
-    (host.querySelector("[aria-label='Hang up']") as HTMLButtonElement).click();
+    (
+      host.querySelector(
+        "[aria-label='End call for everyone']",
+      ) as HTMLButtonElement
+    ).click();
   });
   await act(async () => {
     resolveMedia(f.session);
@@ -631,7 +653,9 @@ it("finishes pending media setup after a refused hangup", async () => {
   });
   expect(f.controller.localStream).toBe(f.session.localStream);
   expect(f.session.close).not.toHaveBeenCalled();
-  expect(host.querySelector("[aria-label='Hang up']")).not.toBeNull();
+  expect(
+    host.querySelector("[aria-label='End call for everyone']"),
+  ).not.toBeNull();
   await act(async () => {
     await f.controller.hangup();
   });
@@ -655,7 +679,7 @@ it("ends after successful remote hangup even when local media cleanup fails", as
   await act(async () => {
     await f.controller.answer();
   });
-  vi.mocked(f.signaling.teardown).mockRejectedValueOnce(new Error("try again"));
+  f.signaling.end.mockRejectedValueOnce(new Error("try again"));
   await act(async () => {
     await f.controller.hangup();
   });
@@ -663,7 +687,11 @@ it("ends after successful remote hangup even when local media cleanup fails", as
     new Error("media close failed"),
   );
   await act(async () => {
-    (host.querySelector("[aria-label='Hang up']") as HTMLButtonElement).click();
+    (
+      host.querySelector(
+        "[aria-label='End call for everyone']",
+      ) as HTMLButtonElement
+    ).click();
   });
   expect(f.controller.getSnapshot().status).toBe("ended");
   expect(f.controller.getSnapshot().error).toBeUndefined();
@@ -697,9 +725,7 @@ it("keeps the same status element while a control failure is visible", async () 
     act(() =>
       vi.mocked(f.media.open).mock.calls[0]![2].onConnectionState("connected"),
     );
-    vi.mocked(f.signaling.teardown).mockRejectedValueOnce(
-      new Error("try again"),
-    );
+    f.signaling.end.mockRejectedValueOnce(new Error("try again"));
     await act(async () => {
       await f.controller.hangup();
     });
@@ -716,4 +742,591 @@ it("keeps the same status element while a control failure is visible", async () 
     f.controller.dispose();
     vi.useRealTimers();
   }
+});
+
+describe("unified calls UI", () => {
+  function feedFixture() {
+    const listeners = new Set<(event: CallLifecycleEvent) => void>();
+    const base = fixture();
+    const controller = new CallsController(
+      createSignalingCallsBackend({
+        signaling: base.signaling,
+        incoming: {
+          subscribe: (listener) => {
+            listeners.add(listener);
+            return () => listeners.delete(listener);
+          },
+        },
+      }),
+      base.media,
+    );
+    controller.initialize();
+    base.controller.dispose();
+    return {
+      ...base,
+      controller,
+      emit: (event: CallLifecycleEvent) =>
+        act(() => {
+          for (const listener of [...listeners]) listener(event);
+        }),
+    };
+  }
+
+  it("answers without a claim by default and claims when exclusive is set", async () => {
+    for (const exclusive of [undefined, true]) {
+      const f = feedFixture();
+      const host = mount(
+        <PolymorfaProvider>
+          <CallSurface
+            controller={f.controller}
+            popout={false}
+            {...(exclusive === undefined ? {} : { exclusive })}
+          />
+        </PolymorfaProvider>,
+      );
+      f.emit({
+        type: "incomingCall",
+        call: { callId: "CALL-X", from: "+15550100", video: false },
+      });
+      await act(async () => {
+        (
+          host.querySelector("[aria-label='Answer']") as HTMLButtonElement
+        ).click();
+      });
+      expect(f.signaling.accept).toHaveBeenCalledWith(
+        "CALL-X",
+        { exclusive: exclusive === true, video: false },
+        expect.any(AbortSignal),
+      );
+      f.controller.dispose();
+    }
+  });
+
+  it("shows Join for a shared call and Dismiss, never Reject, for a claimed one", async () => {
+    const f = feedFixture();
+    const host = mount(
+      <PolymorfaProvider>
+        <IncomingCallCard
+          controller={f.controller}
+          resolveName={(peer) => (peer === "+15550101" ? "Dana" : undefined)}
+        />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    // The second call is listed, not declined.
+    const others = host.querySelector(
+      "[aria-label='Other incoming calls']",
+    ) as HTMLElement;
+    expect(others.textContent).toContain("Dana");
+    expect(f.signaling.reject).not.toHaveBeenCalled();
+
+    f.emit({
+      type: "accepted",
+      callId: "A",
+      answeredBy: "client:other",
+      exclusive: true,
+    });
+    expect(host.textContent).toContain("Answered by another participant");
+    expect(host.querySelector("[aria-label='Reject']")).toBeNull();
+    expect(host.querySelector("[aria-label='Answer']")).toBeNull();
+    expect(host.querySelector("[aria-label='Dismiss']")).not.toBeNull();
+
+    f.emit({ type: "accepted", callId: "B", answeredBy: "client:other" });
+    act(() => {
+      (
+        host.querySelector("[aria-label='Dismiss']") as HTMLButtonElement
+      ).click();
+    });
+    expect(host.textContent).toContain("Call in progress. You can join.");
+    expect(host.querySelector("[aria-label='Reject']")).toBeNull();
+    await act(async () => {
+      (host.querySelector("[aria-label='Join']") as HTMLButtonElement).click();
+    });
+    expect(f.signaling.accept).toHaveBeenCalledWith(
+      "B",
+      { exclusive: false, video: false },
+      expect.any(AbortSignal),
+    );
+    expect(f.signaling.reject).not.toHaveBeenCalled();
+    f.controller.dispose();
+  });
+
+  it("renders one labelled video tile per remote participant with stable keys", async () => {
+    const f = feedFixture();
+    const streams = new Map<string, MediaStream>();
+    const video = (
+      key: string,
+      source: number,
+      owner: Partial<RemoteVideo>,
+    ): RemoteVideo => {
+      const stream = streams.get(key) ?? new MediaStream();
+      streams.set(key, stream);
+      return { key, source, mid: String(source), stream, ...owner };
+    };
+    const host = mount(
+      <PolymorfaProvider>
+        <CallStage
+          controller={f.controller}
+          labelVideo={(info) =>
+            info.connectionId === "agent-conn-1" ? "Support agent" : undefined
+          }
+        />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "V", from: "+15550100", video: true },
+    });
+    await act(async () => {
+      await f.controller.answer();
+    });
+    const callbacks = vi.mocked(f.media.open).mock.calls[0]![2];
+    const participant = {
+      id: "123",
+      phoneNumber: "+15550100",
+      audioMuted: false,
+      video: true,
+      state: "connected" as const,
+    };
+    act(() =>
+      callbacks.onRemoteVideos?.([
+        video("participant:123", 4, { participant }),
+        video("connection:agent-conn-1", 7, { connectionId: "agent-conn-1" }),
+        video("connection:tab-conn-2", 8, {
+          connectionId: "tab-conn-2",
+          connectionParticipant: "client:tab-2",
+        }),
+        video("connection:tab-conn-3", 10, { connectionId: "tab-conn-3" }),
+      ]),
+    );
+    const grid = host.querySelector(
+      "[aria-label='Participant video']",
+    ) as HTMLElement;
+    expect(grid.getAttribute("data-count")).toBe("4");
+    const tiles = [...grid.querySelectorAll("li")];
+    // Application label, then the connection's participant reference, then
+    // the generic label.
+    expect(tiles.map((tile) => tile.textContent)).toEqual([
+      "+15550100",
+      "Support agent",
+      "client:tab-2",
+      "Participant",
+    ]);
+    const first = tiles[0]!.querySelector("video") as HTMLVideoElement;
+    expect(first.getAttribute("aria-label")).toBe("Video from +15550100");
+    expect(first.muted).toBe(true);
+    expect(first.srcObject).toBe(streams.get("participant:123"));
+
+    // A source change for the same participant keeps the same tile element.
+    act(() =>
+      callbacks.onRemoteVideos?.([
+        video("participant:123", 9, { participant }),
+      ]),
+    );
+    const after = host.querySelector("[aria-label='Participant video'] video");
+    expect(after).toBe(first);
+    expect(
+      host.querySelectorAll("[aria-label='Participant video'] li"),
+    ).toHaveLength(1);
+
+    act(() => callbacks.onRemoteVideos?.([]));
+    expect(host.querySelector("[aria-label='Participant video']")).toBeNull();
+    f.controller.dispose();
+  });
+
+  it("renders nothing from the grid without remote video", () => {
+    const f = feedFixture();
+    const host = mount(
+      <PolymorfaProvider>
+        <ParticipantVideoGrid controller={f.controller} />
+      </PolymorfaProvider>,
+    );
+    expect(host.innerHTML).toBe("");
+    f.controller.dispose();
+  });
+
+  it("lists participants with their state", () => {
+    const f = feedFixture();
+    const host = mount(
+      <PolymorfaProvider>
+        <ParticipantList controller={f.controller} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "P", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "participant",
+      callId: "P",
+      participant: {
+        id: "p1",
+        phoneNumber: "+15550101",
+        audioMuted: true,
+        video: false,
+        state: "connected",
+      },
+    });
+    f.emit({
+      type: "participant",
+      callId: "P",
+      participant: {
+        id: "p2",
+        audioMuted: false,
+        video: false,
+        state: "ringing",
+      },
+    });
+    const list = host.querySelector("ul") as HTMLElement;
+    expect(list.getAttribute("aria-labelledby")).toBeTruthy();
+    expect(
+      [...list.querySelectorAll("li")].map((li) => li.textContent),
+    ).toEqual(["+15550101In call · Muted", "p2Ringing"]);
+    f.emit({ type: "participantLeft", callId: "P", participantId: "p1" });
+    expect(host.querySelectorAll("li")).toHaveLength(1);
+    f.controller.dispose();
+  });
+
+  it("offers Leave on shared calls and leaves without ending the call", async () => {
+    const f = feedFixture();
+    const host = mount(
+      <PolymorfaProvider>
+        <CallControls controller={f.controller} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "L", from: "+15550100", video: false },
+    });
+    await act(async () => {
+      await f.controller.answer();
+    });
+    expect(
+      host.querySelector("[aria-label='End call for everyone']"),
+    ).not.toBeNull();
+    await act(async () => {
+      (
+        host.querySelector("[aria-label='Leave call']") as HTMLButtonElement
+      ).click();
+    });
+    expect(f.session.close).toHaveBeenCalledWith({ leave: true });
+    expect(f.signaling.end).not.toHaveBeenCalled();
+    expect(f.controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      endReason: "left",
+    });
+    f.controller.dispose();
+  });
+
+  it("disables answer controls while an answer is in flight, including for another selected call", async () => {
+    const f = feedFixture();
+    let finish!: () => void;
+    f.signaling.accept.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = () =>
+            resolve({
+              answered: true,
+              answeredBy: "client:self",
+              exclusive: false,
+            });
+        }),
+    );
+    const host = mount(
+      <PolymorfaProvider>
+        <CallSurface controller={f.controller} popout={false} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    const control = (label: string) =>
+      host.querySelector(`[aria-label='${label}']`) as HTMLButtonElement;
+    await act(async () => {
+      control("Answer").click();
+    });
+    expect(control("Answer").disabled).toBe(true);
+    expect(control("Reject").disabled).toBe(true);
+    await act(async () => {
+      f.controller.select("B");
+    });
+    expect(f.controller.getSnapshot().callId).toBe("B");
+    expect(control("Answer").disabled).toBe(true);
+    expect(control("Reject").disabled).toBe(true);
+    await act(async () => {
+      finish();
+    });
+    // The answered call is displayed with its in-call controls.
+    await vi.waitFor(() =>
+      expect(f.controller.getSnapshot()).toMatchObject({
+        callId: "A",
+        answering: false,
+      }),
+    );
+    expect(
+      control("Hang up") ?? control("End call for everyone"),
+    ).not.toBeNull();
+    f.controller.dispose();
+  });
+
+  it("shows a waiting call after an answer fails, with a notice", async () => {
+    const f = feedFixture();
+    vi.mocked(f.media.open).mockRejectedValueOnce(new Error("denied"));
+    const host = mount(
+      <PolymorfaProvider>
+        <CallSurface controller={f.controller} popout={false} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    await act(async () => {
+      await f.controller.answer();
+    });
+    expect(f.controller.getSnapshot().callId).toBe("B");
+    const card = host.querySelector("[role='alertdialog']") as HTMLElement;
+    expect(card.getAttribute("aria-label")).toBe(
+      "Incoming call from +15550101",
+    );
+    const notice = host.querySelector(
+      ".pmfa-calls-subtitle[role='status']",
+    ) as HTMLElement;
+    expect(notice.textContent).toBe(
+      "The previous call could not be connected.",
+    );
+    expect(
+      (host.querySelector("[aria-label='Answer']") as HTMLButtonElement)
+        .disabled,
+    ).toBe(false);
+    f.controller.dispose();
+  });
+
+  it("disables the pre-answer camera and microphone choices while answering", async () => {
+    const f = feedFixture();
+    f.signaling.accept.mockImplementationOnce(() => new Promise(() => {}));
+    const host = mount(
+      <PolymorfaProvider>
+        <CallSurface controller={f.controller} popout={false} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "V", from: "+15550100", video: true },
+    });
+    const control = (label: string) =>
+      host.querySelector(`[aria-label='${label}']`) as HTMLButtonElement;
+    expect(control("Answer muted").disabled).toBe(false);
+    expect(control("Answer without camera").disabled).toBe(false);
+    await act(async () => {
+      control("Answer").click();
+    });
+    // The pending answer already captured these choices.
+    expect(control("Answer muted").disabled).toBe(true);
+    expect(control("Answer without camera").disabled).toBe(true);
+    f.controller.dispose();
+  });
+
+  it("does not apply an answered call's pre-answer choices to the call shown after it ended", async () => {
+    const f = feedFixture();
+    let finish!: () => void;
+    f.signaling.accept.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = () =>
+            resolve({
+              answered: true,
+              answeredBy: "client:self",
+              exclusive: false,
+            });
+        }),
+    );
+    const host = mount(
+      <PolymorfaProvider>
+        <CallSurface controller={f.controller} popout={false} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: true },
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: true },
+    });
+    const control = (label: string) =>
+      host.querySelector(`[aria-label='${label}']`) as HTMLButtonElement;
+    await act(async () => {
+      control("Answer muted").click();
+    });
+    await act(async () => {
+      control("Answer").click();
+    });
+    // A ends while its answer is in flight; B is shown.
+    f.emit({ type: "ended", callId: "A", reason: "remote_hangup" });
+    expect(f.controller.getSnapshot().callId).toBe("B");
+    await act(async () => {
+      finish();
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(f.controller.getSnapshot()).toMatchObject({
+      callId: "B",
+      status: "incoming",
+      audioMuted: false,
+      videoMuted: false,
+      answering: false,
+    });
+    f.controller.dispose();
+  });
+
+  it("applies pre-answer choices to the call that was answered", async () => {
+    const f = feedFixture();
+    const host = mount(
+      <PolymorfaProvider>
+        <CallSurface controller={f.controller} popout={false} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: true },
+    });
+    const control = (label: string) =>
+      host.querySelector(`[aria-label='${label}']`) as HTMLButtonElement;
+    await act(async () => {
+      control("Answer muted").click();
+    });
+    await act(async () => {
+      control("Answer").click();
+    });
+    await vi.waitFor(() =>
+      expect(f.controller.getSnapshot()).toMatchObject({
+        callId: "A",
+        audioMuted: true,
+      }),
+    );
+    f.controller.dispose();
+  });
+
+  it("shows Ringing only while a placed call rings, without a shared call model", async () => {
+    const f = fixture(); // signaling backend: no getCall
+    const host = mount(
+      <PolymorfaProvider>
+        <CallStage controller={f.controller} />
+      </PolymorfaProvider>,
+    );
+    await act(async () => {
+      await f.controller.place("+12025550123");
+    });
+    expect(f.controller.call).toBeUndefined();
+    expect(f.controller.getSnapshot().status).toBe("ringing");
+    expect(host.textContent).toContain("Ringing +12025550123");
+    act(() => f.relay.accepted("call-out"));
+    expect(f.controller.getSnapshot().status).toBe("connecting");
+    expect(host.textContent).not.toContain("Ringing");
+    f.controller.dispose();
+  });
+
+  it("stops showing Ringing once a shared call reports the callee answered", async () => {
+    const base = fixture();
+    const relay = new IncomingCallRelay();
+    const shared = { state: "ringing", participants: [], ended: false };
+    const controller = new CallsController(
+      {
+        ...createSignalingCallsBackend({
+          signaling: base.signaling,
+          incoming: relay,
+          place: async () => "call-out",
+        }),
+        getCall: () => shared as never,
+      },
+      base.media,
+    );
+    controller.initialize();
+    base.controller.dispose();
+    const host = mount(
+      <PolymorfaProvider>
+        <CallStage controller={controller} />
+      </PolymorfaProvider>,
+    );
+    await act(async () => {
+      await controller.place("+12025550123");
+    });
+    expect(controller.getSnapshot().status).toBe("ringing");
+    expect(host.textContent).toContain("Ringing +12025550123");
+    shared.state = "connecting";
+    act(() => relay.accepted("call-out"));
+    expect(controller.getSnapshot().status).toBe("connecting");
+    expect(host.textContent).not.toContain("Ringing");
+    controller.dispose();
+  });
+
+  it("offers only Hang up on a placed call until it connects", async () => {
+    const f = fixture();
+    const host = mount(
+      <PolymorfaProvider>
+        <CallControls controller={f.controller} showLeave />
+      </PolymorfaProvider>,
+    );
+    await act(async () => {
+      await f.controller.place("+12025550123");
+    });
+    expect(f.controller.getSnapshot().exclusive).toBe(false);
+    // Leaving would drop this connection while the callee keeps ringing.
+    expect(host.querySelector("[aria-label='Leave call']")).toBeNull();
+    const hangup = host.querySelector(
+      "[aria-label='Hang up']",
+    ) as HTMLButtonElement;
+    expect(hangup.title).toBe("Hang up");
+    await act(async () => {
+      hangup.click();
+    });
+    expect(f.signaling.end).toHaveBeenCalledWith(
+      "call-out",
+      expect.any(AbortSignal),
+    );
+    expect(f.signaling.leave).not.toHaveBeenCalled();
+    f.controller.dispose();
+  });
+
+  it("hides Leave on a claimed call unless asked", async () => {
+    const f = feedFixture();
+    f.signaling.accept.mockResolvedValue({
+      answered: true,
+      answeredBy: "client:self",
+      exclusive: true,
+    });
+    const host = mount(
+      <PolymorfaProvider>
+        <CallControls controller={f.controller} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "E", from: "+15550100", video: false },
+    });
+    await act(async () => {
+      await f.controller.answer({ exclusive: true });
+    });
+    expect(host.querySelector("[aria-label='Leave call']")).toBeNull();
+    expect(host.querySelector("[aria-label='Hang up']")).not.toBeNull();
+    f.controller.dispose();
+  });
 });

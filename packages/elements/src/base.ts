@@ -43,6 +43,7 @@ const BASE_STYLES = `
 button, input, textarea, select { font: inherit; }
 button { border: 0; border-radius: var(--pmfa-radius-medium); padding: var(--pmfa-spacing-small) var(--pmfa-spacing-medium); cursor: pointer; }
 button[part~="primary"] { background: var(--pmfa-color-primary); color: white; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 [part~="call"] { display: flex; flex-wrap: wrap; align-items: center; gap: var(--pmfa-spacing-small); }
 [part~="call"] > h2, [part~="call"] > p { flex: 1 1 100%; margin: 0; }
 [part~="call"] > [part~="peer"] { color: var(--pmfa-c-muted, var(--pmfa-color-muted)); font-variant-numeric: tabular-nums; margin-bottom: var(--pmfa-spacing-small); }

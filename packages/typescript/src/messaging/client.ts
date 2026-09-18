@@ -100,7 +100,7 @@ export class MessagingClient {
     this.quickLinks = new QuickLinksResource(transport, credential.type);
     this.templates = new TemplatesResource(transport);
     this.users = new UsersResource(transport);
-    this.voip = new VoipResource(transport);
+    this.voip = new VoipResource(transport, credential.type);
     this.webhooks = new WebhooksResource(transport);
     this.raw = new RawClient(transport);
   }

@@ -8,11 +8,13 @@ import {
   IncomingCallRelay,
   createSignalingCallsBackend,
   TemplateBuilderController,
-} from "@polymorfa/browser";
+  type CallLifecycleEvent,
+} from "@polymorfa/browser/internal";
 import {
   definePolymorfaElements,
   type ElementController,
   PolymorfaMessageListElement,
+  PolymorfaCallElement,
   PolymorfaChatDrawerElement,
   PolymorfaComposeBoxElement,
   PolymorfaTemplateBuilderElement,
@@ -92,7 +94,6 @@ describe("portable elements", () => {
       status: "connected",
       revision: 0,
       updatedAt: 0,
-      line: "linkedDevice",
       capabilities: { video: true, mute: true },
       video: true,
       audioMuted: false,
@@ -132,7 +133,6 @@ describe("portable elements", () => {
       status: "connected",
       revision: 0,
       updatedAt: 0,
-      line: "linkedDevice",
       capabilities: { video: true, mute: true },
       video: true,
       audioMuted: false,
@@ -220,7 +220,6 @@ describe("portable elements", () => {
         status: "incoming",
         revision: 0,
         updatedAt: 0,
-        line: "linkedDevice",
         capabilities: { video: true, mute: true },
         video: false,
         audioMuted: false,
@@ -262,7 +261,6 @@ describe("portable elements", () => {
       status: "connected",
       revision: 0,
       updatedAt: 0,
-      line: "linkedDevice",
       capabilities: { video: true, mute: true },
       video: true,
       audioMuted: false,
@@ -394,7 +392,9 @@ describe("call control retries", () => {
     "retains the %s button after a refused request",
     async (part) => {
       const relay = new IncomingCallRelay();
-      const teardown = vi.fn(async () => undefined);
+      const reject = vi.fn(async () => undefined);
+      const end = vi.fn(async () => undefined);
+      const control = part === "reject" ? reject : end;
       const close = vi.fn(async () => undefined);
       const controller = new CallsController(
         createSignalingCallsBackend({
@@ -402,7 +402,14 @@ describe("call control retries", () => {
             offer: async () => ({ sdp: "v=0", iceServers: [] }),
             candidate: async () => undefined,
             candidates: async () => [],
-            teardown,
+            accept: async () => ({
+              answered: true,
+              answeredBy: "client:self",
+              exclusive: false,
+            }),
+            reject,
+            leave: async () => undefined,
+            end,
           },
           incoming: relay,
         }),
@@ -429,7 +436,7 @@ describe("call control retries", () => {
           video: false,
         });
         if (part === "hangup") await controller.answer();
-        teardown.mockRejectedValueOnce(new Error("temporarily unavailable"));
+        control.mockRejectedValueOnce(new Error("temporarily unavailable"));
         (
           node.shadowRoot?.querySelector(
             `[part="${part}"]`,
@@ -455,7 +462,7 @@ describe("call control retries", () => {
         await vi.waitFor(() =>
           expect(controller.getSnapshot().status).toBe("ended"),
         );
-        expect(teardown).toHaveBeenCalledTimes(2);
+        expect(control).toHaveBeenCalledTimes(2);
         expect(controller.getSnapshot().error).toBeUndefined();
       } finally {
         node.remove();
@@ -1246,5 +1253,258 @@ describe("element review fixes", () => {
       composer.dispose();
       conversation.dispose();
     }
+  });
+});
+
+describe("unified call element", () => {
+  function setup() {
+    const listeners = new Set<(event: CallLifecycleEvent) => void>();
+    const accept = vi.fn(
+      async (_id: string, options: { exclusive?: boolean }) => ({
+        answered: true,
+        answeredBy: "client:self",
+        exclusive: options.exclusive === true,
+      }),
+    );
+    const signaling = {
+      offer: async () => ({ sdp: "v=0", iceServers: [] }),
+      candidate: async () => undefined,
+      candidates: async () => [],
+      accept,
+      reject: vi.fn(async () => undefined),
+      leave: vi.fn(async () => undefined),
+      end: vi.fn(async () => undefined),
+    };
+    const close = vi.fn(async () => undefined);
+    const media = {
+      open: vi.fn(async () => ({
+        localStream: new MediaStream(),
+        remoteStream: new MediaStream(),
+        close,
+        setMuted: vi.fn(),
+        audioEnabled: () => true,
+        videoEnabled: () => false,
+      })),
+    };
+    const controller = new CallsController(
+      createSignalingCallsBackend({
+        signaling,
+        place: async () => "call-out",
+        incoming: {
+          subscribe: (listener) => {
+            listeners.add(listener);
+            return () => listeners.delete(listener);
+          },
+        },
+      }),
+      media,
+    );
+    controller.initialize();
+    const node = document.createElement("pmfa-call") as PolymorfaCallElement;
+    node.controller = controller;
+    document.body.append(node);
+    const part = (name: string) =>
+      node.shadowRoot?.querySelector(
+        `[part~="${name}"]`,
+      ) as HTMLButtonElement | null;
+    const emit = (event: CallLifecycleEvent) => {
+      for (const listener of [...listeners]) listener(event);
+    };
+    return { node, controller, signaling, close, media, part, emit };
+  }
+
+  it("answers without a claim unless the exclusive attribute is set", async () => {
+    for (const exclusive of [false, true]) {
+      const h = setup();
+      if (exclusive) h.node.setAttribute("exclusive", "");
+      expect(h.node.exclusive).toBe(exclusive);
+      h.emit({
+        type: "incomingCall",
+        call: { callId: "C", from: "+15550100", video: false },
+      });
+      h.part("answer")?.click();
+      await vi.waitFor(() =>
+        expect(h.signaling.accept).toHaveBeenCalledWith(
+          "C",
+          { exclusive, video: false },
+          expect.any(AbortSignal),
+        ),
+      );
+      h.node.remove();
+      h.controller.dispose();
+    }
+  });
+
+  it("shows Dismiss for a claimed call and Join for a shared one", async () => {
+    const h = setup();
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    expect(h.part("invitations")?.textContent).toContain("+15550101");
+    h.emit({
+      type: "accepted",
+      callId: "A",
+      answeredBy: "client:other",
+      exclusive: true,
+    });
+    expect(h.part("claimed")?.textContent).toBe(
+      "Answered by another participant",
+    );
+    expect(h.part("answer")).toBeNull();
+    expect(h.part("reject")).toBeNull();
+    h.emit({ type: "accepted", callId: "B", answeredBy: "client:other" });
+    h.part("dismiss")?.click();
+    expect(h.controller.getSnapshot().callId).toBe("B");
+    expect(h.part("reject")).toBeNull();
+    h.part("join")?.click();
+    await vi.waitFor(() =>
+      expect(h.controller.getSnapshot().status).toBe("connecting"),
+    );
+    expect(h.signaling.accept).toHaveBeenCalledWith(
+      "B",
+      { exclusive: false, video: false },
+      expect.any(AbortSignal),
+    );
+    expect(h.signaling.reject).not.toHaveBeenCalled();
+
+    // Leave closes this connection only.
+    expect(h.part("hangup")?.textContent).toBe("End call for everyone");
+    h.part("leave")?.click();
+    await vi.waitFor(() =>
+      expect(h.controller.getSnapshot().endReason).toBe("left"),
+    );
+    expect(h.close).toHaveBeenCalledWith({ leave: true });
+    expect(h.signaling.end).not.toHaveBeenCalled();
+    h.node.remove();
+    h.controller.dispose();
+  });
+
+  it("disables Answer and Reject while an answer is in flight", async () => {
+    const h = setup();
+    let finish!: () => void;
+    h.signaling.accept.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = () =>
+            resolve({
+              answered: true,
+              answeredBy: "client:self",
+              exclusive: false,
+            });
+        }),
+    );
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    h.part("answer")?.click();
+    expect(h.part("answer")?.disabled).toBe(true);
+    expect(h.part("reject")?.disabled).toBe(true);
+    h.part("show")?.click();
+    expect(h.controller.getSnapshot().callId).toBe("B");
+    expect(h.part("answer")?.disabled).toBe(true);
+    finish();
+    await vi.waitFor(() =>
+      expect(h.controller.getSnapshot()).toMatchObject({
+        callId: "A",
+        answering: false,
+      }),
+    );
+    expect(h.part("hangup")).not.toBeNull();
+    h.node.remove();
+    h.controller.dispose();
+  });
+
+  it("shows the waiting call after an answer's media fails, with a notice", async () => {
+    const h = setup();
+    h.media.open.mockRejectedValueOnce(new Error("denied"));
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    await h.controller.answer();
+    expect(h.controller.getSnapshot().callId).toBe("B");
+    expect(h.part("peer")?.textContent).toBe("+15550101");
+    expect(h.part("failure")?.textContent).toBe(
+      "The previous call could not be connected.",
+    );
+    expect(h.part("answer")).not.toBeNull();
+    h.node.remove();
+    h.controller.dispose();
+  });
+
+  it("shows the failure on a call whose answer was refused", async () => {
+    const h = setup();
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    h.signaling.accept.mockRejectedValueOnce(new Error("offline"));
+    await h.controller.answer();
+    // A is still ringing: its card shows the failure and can retry.
+    expect(h.part("failure")?.textContent).toBe(
+      "Could not connect the call. Try again.",
+    );
+    expect(h.part("failure")?.getAttribute("role")).toBe("status");
+    expect(h.part("answer")?.disabled).toBe(false);
+    h.node.remove();
+    h.controller.dispose();
+  });
+
+  it("offers only Hang up on a placed call until it connects", async () => {
+    const h = setup();
+    await h.controller.place("+15550100");
+    expect(h.controller.getSnapshot().exclusive).toBe(false);
+    // Leaving would drop this connection while the callee keeps ringing.
+    expect(h.part("leave")).toBeNull();
+    expect(h.part("hangup")?.textContent).toBe("Hang up");
+    h.emit({ type: "connected", callId: "call-out" });
+    expect(h.part("leave")).not.toBeNull();
+    expect(h.part("hangup")?.textContent).toBe("End call for everyone");
+    h.node.remove();
+    h.controller.dispose();
+  });
+
+  it("lists participants of the active call", async () => {
+    const h = setup();
+    h.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    await h.controller.answer();
+    h.emit({
+      type: "participant",
+      callId: "A",
+      participant: {
+        id: "p1",
+        phoneNumber: "+15550102",
+        audioMuted: true,
+        video: false,
+        state: "connected",
+      },
+    });
+    const list = h.part("participants");
+    expect(list?.getAttribute("aria-label")).toBe("Participants");
+    expect(list?.textContent).toBe("+15550102");
+    expect(list?.querySelector('[part~="muted"]')).not.toBeNull();
+    h.node.remove();
+    h.controller.dispose();
   });
 });

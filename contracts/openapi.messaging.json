@@ -1638,6 +1638,33 @@
             "type": "boolean",
             "description": "Whether the offered call advertised video.",
             "example": false
+          },
+          "sessionConnection": {
+            "type": "string",
+            "enum": [
+              "linked_device",
+              "cloud_api"
+            ],
+            "description": "Connection of the session that carries the call: a linked device or the WhatsApp Business Cloud API.",
+            "example": "linked_device"
+          },
+          "capabilities": {
+            "type": "object",
+            "properties": {
+              "video": {
+                "type": "boolean",
+                "description": "The call can carry video."
+              },
+              "invite": {
+                "type": "boolean",
+                "description": "More participants can be invited into the call."
+              }
+            },
+            "required": [
+              "video",
+              "invite"
+            ],
+            "description": "What the call supports."
           }
         },
         "required": [
@@ -1749,6 +1776,42 @@
           },
           "callId": {
             "type": "string"
+          },
+          "answeredBy": {
+            "type": "string",
+            "description": "Participant reference that answered or placed the call: `client:<id>` or `server:<id>`.",
+            "example": "client:agent-7"
+          },
+          "exclusive": {
+            "type": "boolean",
+            "description": "Present and `true` when the answering participant claimed the call."
+          },
+          "sessionConnection": {
+            "type": "string",
+            "enum": [
+              "linked_device",
+              "cloud_api"
+            ],
+            "description": "Connection of the session that carries the call: a linked device or the WhatsApp Business Cloud API.",
+            "example": "linked_device"
+          },
+          "capabilities": {
+            "type": "object",
+            "properties": {
+              "video": {
+                "type": "boolean",
+                "description": "The call can carry video."
+              },
+              "invite": {
+                "type": "boolean",
+                "description": "More participants can be invited into the call."
+              }
+            },
+            "required": [
+              "video",
+              "invite"
+            ],
+            "description": "What the call supports."
           }
         },
         "required": [
@@ -1884,7 +1947,7 @@
           },
           "reason": {
             "type": "string",
-            "description": "Termination reason: user_hangup | timeout | lost_connection | rejected | capacity | pod_lost.",
+            "description": "Termination reason: user_hangup | timeout | lost_connection | rejected | capacity | pod_lost | connection_failed | upstream_failed.",
             "example": "user_hangup"
           },
           "direction": {
@@ -1900,6 +1963,15 @@
             "type": "boolean",
             "description": "Whether the call carried video.",
             "example": false
+          },
+          "sessionConnection": {
+            "type": "string",
+            "enum": [
+              "linked_device",
+              "cloud_api"
+            ],
+            "description": "Connection of the session that carries the call: a linked device or the WhatsApp Business Cloud API.",
+            "example": "linked_device"
           }
         },
         "required": [
@@ -2244,6 +2316,170 @@
           },
           "payload": {
             "$ref": "#/components/schemas/CallParticipantLeftPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CallConnection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "description": "Client-chosen connection identifier.",
+            "example": "conn_0123456789"
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^(?:client|server):[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Participant reference: `client:<id>` for a client token or `server:<id>` for a server credential.",
+            "example": "client:agent-7"
+          },
+          "transport": {
+            "type": "string",
+            "enum": [
+              "webrtc",
+              "socket",
+              "sip"
+            ],
+            "description": "`webrtc` for a browser connection, `socket` for a server or app connection, `sip` for a SIP trunk."
+          }
+        },
+        "required": [
+          "id",
+          "participant",
+          "transport"
+        ]
+      },
+      "CallConnectionJoinedPayload": {
+        "type": "object",
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "connection": {
+            "$ref": "#/components/schemas/CallConnection"
+          }
+        },
+        "required": [
+          "callId",
+          "connection"
+        ]
+      },
+      "CallConnectionJoinedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.connection_joined"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallConnectionJoinedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CallConnectionLeftPayload": {
+        "type": "object",
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "connectionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "description": "Client-chosen connection identifier.",
+            "example": "conn_0123456789"
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^(?:client|server):[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Participant reference: `client:<id>` for a client token or `server:<id>` for a server credential.",
+            "example": "client:agent-7"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "left",
+              "replaced",
+              "claimed",
+              "call_ended",
+              "sip_busy",
+              "sip_declined",
+              "sip_no_answer",
+              "sip_unavailable",
+              "sip_auth_failed"
+            ],
+            "description": "`left`: the connection left. `replaced`: a reconnect reused the connection id. `claimed`: another participant claimed the call. `sip_busy`, `sip_declined`, `sip_no_answer`, `sip_unavailable` and `sip_auth_failed`: a SIP trunk did not join the call. `call_ended`: the call ended while a SIP trunk was still ringing. A SIP trunk that never joined reports only this event, with no `call.connection_joined` before it. Connections still open when the call ends are closed by `call.ended` without a separate event.",
+            "example": "left"
+          }
+        },
+        "required": [
+          "callId",
+          "connectionId",
+          "participant",
+          "reason"
+        ]
+      },
+      "CallConnectionLeftEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.connection_left"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallConnectionLeftPayload"
           }
         },
         "required": [
@@ -6272,6 +6508,17 @@
                   "media_fetch_failed",
                   "resource_gone",
                   "state_conflict",
+                  "call_claimed",
+                  "call_not_ringing",
+                  "connection_limit",
+                  "unsupported_for_connection",
+                  "call_permission_required",
+                  "invalid_sip_trunk",
+                  "calls_disabled",
+                  "sip_trunk_in_use",
+                  "sip_trunk_revision_conflict",
+                  "sip_trunk_limit",
+                  "sip_unavailable",
                   "rate_limit_exceeded",
                   "internal_error",
                   "operation_not_supported",
@@ -7604,10 +7851,23 @@
           "sdp": {
             "type": "string",
             "minLength": 1
+          },
+          "connectionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "description": "Client-chosen identifier of one media connection. Reusing it replaces that connection.",
+            "example": "conn_0123456789"
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Server credentials only: the participant acting in the call. Defaults to `default`. Client tokens act as their own participant and must omit this field.",
+            "example": "agent-7"
           }
         },
         "required": [
-          "sdp"
+          "sdp",
+          "connectionId"
         ]
       },
       "VoipRenegotiateResponse": {
@@ -7634,100 +7894,24 @@
           "sdp": {
             "type": "string",
             "minLength": 1
-          }
-        },
-        "required": [
-          "sdp"
-        ]
-      },
-      "VoipSocketTicket": {
-        "type": "object",
-        "properties": {
-          "ticket": {
-            "type": "string"
           },
-          "expiresAt": {
-            "type": "number"
-          },
-          "url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "ticket",
-          "expiresAt",
-          "url"
-        ]
-      },
-      "VoipSocketTicketResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          },
-          "data": {
-            "$ref": "#/components/schemas/VoipSocketTicket"
-          }
-        },
-        "required": [
-          "success",
-          "data"
-        ]
-      },
-      "VoipSocketTicketRequest": {
-        "type": "object",
-        "properties": {
-          "session": {
+          "connectionId": {
             "type": "string",
-            "minLength": 1
-          }
-        }
-      },
-      "VoipAgentToken": {
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string"
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "description": "Client-chosen identifier of one media connection. Reusing it replaces that connection.",
+            "example": "conn_0123456789"
           },
-          "expiresAt": {
-            "type": "number"
+          "participant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Server credentials only: the participant acting in the call. Defaults to `default`. Client tokens act as their own participant and must omit this field.",
+            "example": "agent-7"
           }
         },
         "required": [
-          "token",
-          "expiresAt"
+          "sdp",
+          "connectionId"
         ]
-      },
-      "VoipAgentTokenResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          },
-          "data": {
-            "$ref": "#/components/schemas/VoipAgentToken"
-          }
-        },
-        "required": [
-          "success",
-          "data"
-        ]
-      },
-      "VoipAgentTokenRequest": {
-        "type": "object",
-        "properties": {
-          "ttlSeconds": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 3600
-          }
-        }
       },
       "VoipPlacedCall": {
         "type": "object",
@@ -7781,10 +7965,58 @@
           },
           "video": {
             "type": "boolean"
+          },
+          "exclusive": {
+            "type": "boolean",
+            "description": "Claim the call for the placing participant."
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Server credentials only: the participant acting in the call. Defaults to `default`. Client tokens act as their own participant and must omit this field.",
+            "example": "agent-7"
           }
         },
         "required": [
           "to"
+        ]
+      },
+      "VoipAnswerResult": {
+        "type": "object",
+        "properties": {
+          "answered": {
+            "type": "boolean"
+          },
+          "answeredBy": {
+            "type": "string",
+            "example": "client:agent-7"
+          },
+          "exclusive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "answered",
+          "answeredBy",
+          "exclusive"
+        ]
+      },
+      "VoipAcceptCallResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/VoipAnswerResult"
+          }
+        },
+        "required": [
+          "success",
+          "data"
         ]
       },
       "VoipAcceptCallRequest": {
@@ -7792,8 +8024,49 @@
         "properties": {
           "video": {
             "type": "boolean"
+          },
+          "exclusive": {
+            "type": "boolean",
+            "description": "Claim the call. Other participants then receive `409 call_claimed` for accept and media, and their open connections close."
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Server credentials only: the participant acting in the call. Defaults to `default`. Client tokens act as their own participant and must omit this field.",
+            "example": "agent-7"
           }
         }
+      },
+      "VoipRejectCallRequest": {
+        "type": "object",
+        "properties": {
+          "participant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Server credentials only: the participant acting in the call. Defaults to `default`. Client tokens act as their own participant and must omit this field.",
+            "example": "agent-7"
+          }
+        }
+      },
+      "VoipLeaveRequest": {
+        "type": "object",
+        "properties": {
+          "connectionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "description": "Client-chosen identifier of one media connection. Reusing it replaces that connection.",
+            "example": "conn_0123456789"
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Server credentials only: the participant acting in the call. Defaults to `default`. Client tokens act as their own participant and must omit this field.",
+            "example": "agent-7"
+          }
+        },
+        "required": [
+          "connectionId"
+        ]
       },
       "VoipParticipant": {
         "type": "object",
@@ -7872,65 +8145,6 @@
           "to"
         ]
       },
-      "VoipModeResponse": {
-        "type": "object",
-        "properties": {
-          "session": {
-            "type": "string"
-          },
-          "mode": {
-            "type": "string",
-            "enum": [
-              "browser",
-              "agent",
-              "sdk"
-            ]
-          }
-        },
-        "required": [
-          "session",
-          "mode"
-        ]
-      },
-      "VoipModeResult": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          },
-          "data": {
-            "$ref": "#/components/schemas/VoipModeResponse"
-          }
-        },
-        "required": [
-          "success",
-          "data"
-        ]
-      },
-      "VoipModeRequest": {
-        "type": "object",
-        "properties": {
-          "session": {
-            "type": "string",
-            "minLength": 1,
-            "example": "support"
-          },
-          "mode": {
-            "type": "string",
-            "enum": [
-              "browser",
-              "agent",
-              "sdk"
-            ]
-          }
-        },
-        "required": [
-          "mode"
-        ]
-      },
       "VoipCandidateRequest": {
         "type": "object",
         "properties": {
@@ -7942,10 +8156,23 @@
           },
           "sdpMLineIndex": {
             "type": "integer"
+          },
+          "connectionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "description": "Client-chosen identifier of one media connection. Reusing it replaces that connection.",
+            "example": "conn_0123456789"
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Server credentials only: the participant acting in the call. Defaults to `default`. Client tokens act as their own participant and must omit this field.",
+            "example": "agent-7"
           }
         },
         "required": [
-          "candidate"
+          "candidate",
+          "connectionId"
         ]
       },
       "TrickleCandidate": {
@@ -7997,58 +8224,209 @@
           "data"
         ]
       },
-      "VoipToken": {
+      "VoipCallReportClient": {
         "type": "object",
         "properties": {
-          "token": {
-            "type": "string"
+          "sdk": {
+            "type": "string",
+            "pattern": "^[a-z0-9@/._-]{1,32}$",
+            "description": "Package name of the SDK that sends the report.",
+            "example": "@polymorfa/browser"
           },
-          "expiresAt": {
-            "type": "number"
+          "version": {
+            "type": "string",
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,6}\\.[0-9]{1,6}\\.[0-9]{1,6}(?:[-+][0-9A-Za-z.+-]{1,24})?$",
+            "description": "SDK version: `MAJOR.MINOR.PATCH` with an optional suffix.",
+            "example": "1.4.0"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "browser",
+              "node",
+              "other"
+            ]
           }
         },
         "required": [
-          "token",
-          "expiresAt"
-        ]
+          "sdk",
+          "version",
+          "platform"
+        ],
+        "additionalProperties": false
       },
-      "VoipTokenResponse": {
+      "VoipCallQuality": {
         "type": "object",
         "properties": {
-          "success": {
-            "type": "boolean",
+          "rttMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60000,
+            "description": "Round-trip time in milliseconds.",
+            "example": 84
+          },
+          "jitterMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60000,
+            "description": "Receive jitter in milliseconds.",
+            "example": 6
+          },
+          "packetsLost": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647,
+            "description": "Packets lost since the connection started.",
+            "example": 12
+          },
+          "packetsReceived": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647,
+            "description": "Packets received since the connection started.",
+            "example": 4810
+          },
+          "audioCodec": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9/.-]{1,32}$",
+            "description": "Negotiated audio codec.",
+            "example": "audio/opus"
+          },
+          "videoCodec": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9/.-]{1,32}$",
+            "description": "Negotiated video codec.",
+            "example": "video/VP8"
+          },
+          "candidateType": {
+            "type": "string",
             "enum": [
-              true
+              "host",
+              "srflx",
+              "prflx",
+              "relay"
+            ],
+            "description": "Type of the local ICE candidate in use. `relay` means media flows through a TURN relay."
+          },
+          "reconnects": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000,
+            "description": "Times this connection reconnected so far.",
+            "example": 0
+          }
+        },
+        "additionalProperties": false,
+        "description": "Omit figures you did not measure. Send at least one."
+      },
+      "VoipCallQualityReport": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "quality"
             ]
           },
-          "data": {
-            "$ref": "#/components/schemas/VoipToken"
+          "connectionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "description": "Client-chosen identifier of one media connection. Reusing it replaces that connection.",
+            "example": "conn_0123456789"
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Server credentials only: the participant acting in the call. Defaults to `default`. Client tokens act as their own participant and must omit this field.",
+            "example": "agent-7"
+          },
+          "client": {
+            "$ref": "#/components/schemas/VoipCallReportClient"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/VoipCallQuality"
           }
         },
         "required": [
-          "success",
-          "data"
-        ]
+          "kind",
+          "connectionId",
+          "quality"
+        ],
+        "additionalProperties": false
       },
-      "VoipTokenRequest": {
+      "VoipCallErrorReport": {
         "type": "object",
         "properties": {
-          "session": {
+          "kind": {
             "type": "string",
-            "minLength": 1
+            "enum": [
+              "error"
+            ]
           },
-          "ephemeralId": {
+          "connectionId": {
             "type": "string",
-            "minLength": 1
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "description": "Client-chosen identifier of one media connection. Reusing it replaces that connection.",
+            "example": "conn_0123456789"
           },
-          "ttlSeconds": {
-            "type": "integer"
+          "participant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Server credentials only: the participant acting in the call. Defaults to `default`. Client tokens act as their own participant and must omit this field.",
+            "example": "agent-7"
+          },
+          "client": {
+            "$ref": "#/components/schemas/VoipCallReportClient"
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "media_permission_denied",
+                  "device_not_found",
+                  "device_in_use",
+                  "ice_failed",
+                  "negotiation_failed",
+                  "media_timeout",
+                  "reconnect_exhausted",
+                  "token_refresh_failed",
+                  "unsupported_browser",
+                  "other"
+                ]
+              }
+            },
+            "required": [
+              "code"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
-          "session",
-          "ephemeralId"
-        ]
+          "kind",
+          "connectionId",
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "VoipCallReportRequest": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/VoipCallQualityReport"
+          },
+          {
+            "$ref": "#/components/schemas/VoipCallErrorReport"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "quality": "#/components/schemas/VoipCallQualityReport",
+            "error": "#/components/schemas/VoipCallErrorReport"
+          }
+        }
       },
       "Participant": {
         "type": "object",
@@ -17133,10 +17511,12 @@
     "/messaging/voip/calls/{id}/offer": {
       "post": {
         "operationId": "voipOffer",
+        "x-internal": true,
         "tags": [
           "VoIP"
         ],
-        "summary": "Submit an SDP offer and receive the pod's answer + ICE servers",
+        "summary": "Attach a WebRTC connection and receive the pod's answer + ICE servers",
+        "description": "**Required scope:** `sessions:manage`\n\nSubmits the SDP offer for one connection. The offer carries one audio transceiver, a data channel negotiated out of band with label `pmfa.calls` and id 0, and one or more video transceivers. Reusing a `connectionId` replaces that connection.",
         "security": [
           {
             "BearerAuth": []
@@ -17156,6 +17536,7 @@
           }
         ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -17256,7 +17637,7 @@
             }
           },
           "409": {
-            "description": "Call not ready — no media session on the owning pod yet",
+            "description": "`call_claimed` when another participant claimed the call, `connection_limit` when the call has no free connection, or `state_conflict` when the call is not ready",
             "content": {
               "application/json": {
                 "schema": {
@@ -17265,12 +17646,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "call_claimed",
+                    "message": "Another participant claimed this call.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#call-claimed"
                 }
               }
             }
@@ -17358,17 +17739,18 @@
         },
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
-        },
-        "description": "**Required scope:** `sessions:manage`"
+        }
       }
     },
     "/messaging/voip/calls/{id}/renegotiate": {
       "post": {
         "operationId": "voipRenegotiate",
+        "x-internal": true,
         "tags": [
           "VoIP"
         ],
-        "summary": "Re-offer on an established call (add video, restart ICE) and receive the pod's answer",
+        "summary": "Re-offer on an established connection and receive the pod's answer",
+        "description": "**Required scope:** `sessions:manage`\n\nRenegotiates one connection, for example to add video, add receive transceivers after `video_slots_exhausted`, or restart ICE.",
         "security": [
           {
             "BearerAuth": []
@@ -17388,6 +17770,7 @@
           }
         ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -17488,7 +17871,7 @@
             }
           },
           "409": {
-            "description": "Call not ready — no media session on the owning pod yet",
+            "description": "`call_claimed` when another participant claimed the call, `connection_limit` when the call has no free connection, or `state_conflict` when the call is not ready",
             "content": {
               "application/json": {
                 "schema": {
@@ -17497,365 +17880,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "call_claimed",
+                    "message": "Another participant claimed this call.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "resource_gone",
-                    "message": "The requested retained resource has expired or was removed.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#resource-gone"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "api_error",
-                    "code": "internal_error",
-                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "api_error",
-                    "code": "service_unavailable",
-                    "message": "A required service is unavailable. Check completion before repeating a write.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
-                }
-              }
-            }
-          }
-        },
-        "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
-        },
-        "description": "**Required scope:** `sessions:manage`"
-      }
-    },
-    "/messaging/voip/ws-ticket": {
-      "post": {
-        "operationId": "voipSocketTicket",
-        "tags": [
-          "VoIP"
-        ],
-        "summary": "Mint a single-use ticket for the calls WebSocket",
-        "description": "**Required scope:** `sessions:manage`\n\nBrowsers cannot send an Authorization header on a WebSocket upgrade, so the calls socket (`GET /voip/ws?ticket=…`) is opened with a ticket obtained here. Tickets are single-use and expire after 60 seconds. Client tokens are bound to their session; server keys must name one.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "x-required-scope": "sessions:manage",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VoipSocketTicketRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Ticket minted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VoipSocketTicketResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request — request body or params failed validation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "invalid_parameter",
-                    "message": "Correct the invalid request field.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid authentication token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "authentication_error",
-                    "code": "invalid_credential",
-                    "message": "Supply a valid credential.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Authenticated but not permitted (missing scope or rule violation)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "permission_denied",
-                    "message": "The credential does not have access to this resource.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "resource_not_found",
-                    "message": "The resource is unavailable to this caller.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "api_error",
-                    "code": "internal_error",
-                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
-                }
-              }
-            }
-          }
-        },
-        "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
-        }
-      }
-    },
-    "/messaging/voip/calls/{id}/agent-token": {
-      "post": {
-        "operationId": "voipAgentToken",
-        "tags": [
-          "VoIP"
-        ],
-        "summary": "Mint a per-call ticket for a voice agent's media WebSocket",
-        "description": "**Required scope:** `sessions:manage`\n\nServer keys only. The ticket is bound to this call, expires after `ttlSeconds` (default 300, max 3600) and is presented by the agent to the voip pod as `Authorization: Bearer <token>`. It grants nothing else.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "x-required-scope": "sessions:manage",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "example": "call-123"
-            },
-            "required": true,
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VoipAgentTokenRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Agent ticket minted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VoipAgentTokenResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request — request body or params failed validation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "invalid_parameter",
-                    "message": "Correct the invalid request field.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid authentication token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "authentication_error",
-                    "code": "invalid_credential",
-                    "message": "Supply a valid credential.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Authenticated but not permitted (missing scope or rule violation)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "permission_denied",
-                    "message": "The credential does not have access to this resource.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "resource_not_found",
-                    "message": "The resource is unavailable to this caller.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Call not ready — no media session on the owning pod yet",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#call-claimed"
                 }
               }
             }
@@ -17933,7 +17963,7 @@
           "VoIP"
         ],
         "summary": "Place an outbound call from a session",
-        "description": "**Required scope:** `sessions:manage`\n\nOriginates a WhatsApp call to `to` (an E.164 phone number or a user ID) from the named session. The call rings on the callee's device: `call.accepted` follows when they pick up and `call.ended` when either side hangs up. Attach media like any other call — `/offer` for a browser, the SDK media socket for programmatic audio/video. Client tokens place from their bound session; server keys must name one. Outbound starts share a rate limit per organization and source session across server keys and client tokens; client-token rules also apply.",
+        "description": "**Required scope:** `sessions:manage`\n\nOriginates a WhatsApp call to `to` (an E.164 phone number or a user ID) from the named session. The call is owned by the placing participant and rings on the callee's device: `call.accepted` follows when they pick up and `call.ended` when either side hangs up. Carry its audio and video with a Polymorfa Calls SDK. `exclusive: true` claims the call for the placing participant. Client tokens place from their bound session; server credentials must name one. Outbound starts share a rate limit per organization and source session across server credentials and client tokens; client-token rules also apply.",
         "security": [
           {
             "BearerAuth": []
@@ -17941,6 +17971,7 @@
         ],
         "x-required-scope": "sessions:manage",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -18001,7 +18032,7 @@
             }
           },
           "403": {
-            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "description": "`call_permission_required` when the recipient has not granted this business permission to call them, or the credential is not permitted",
             "content": {
               "application/json": {
                 "schema": {
@@ -18010,12 +18041,12 @@
                 "example": {
                   "error": {
                     "type": "permission_error",
-                    "code": "permission_denied",
-                    "message": "The credential does not have access to this resource.",
+                    "code": "call_permission_required",
+                    "message": "The recipient has not granted this business permission to call them.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                  "docs": "https://docs.polymorfa.com/api/errors#call-permission-required"
                 }
               }
             }
@@ -18041,7 +18072,7 @@
             }
           },
           "409": {
-            "description": "Session not ready — the named session cannot place an outbound call yet",
+            "description": "`unsupported_for_connection` when the session's connection cannot place this call (Cloud API calls are audio only), or `state_conflict` when the named session cannot place an outbound call yet",
             "content": {
               "application/json": {
                 "schema": {
@@ -18050,12 +18081,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "unsupported_for_connection",
+                    "message": "The session's connection does not support this call operation.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#unsupported-for-connection"
                 }
               }
             }
@@ -18140,6 +18171,26 @@
               }
             }
           },
+          "502": {
+            "description": "`upstream_failure` when the Cloud API refused or failed the call action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
+          },
           "503": {
             "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
             "content": {
@@ -18172,8 +18223,8 @@
         "tags": [
           "VoIP"
         ],
-        "summary": "Answer a ringing inbound call",
-        "description": "**Required scope:** `sessions:manage`\n\nAnswers a call the pod is holding for the SDK (sessions in `sdk` client mode ring instead of auto-answering). 409 when the call is not ringing — already answered, ended, or hosted by a session that auto-answers.",
+        "summary": "Answer or join a call",
+        "description": "**Required scope:** `sessions:manage`\n\nThe first accept answers a ringing call. `exclusive: true` claims it: other participants then receive `409 call_claimed` for accept and media, and their open connections close. Without a claim, later accepts join the answered call. Retrying with the same participant returns the same result. An exclusive request from another participant on a shared call is refused with `409 call_claimed`.",
         "security": [
           {
             "BearerAuth": []
@@ -18202,8 +18253,220 @@
           }
         },
         "responses": {
+          "200": {
+            "description": "Call answered or joined",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoipAcceptCallResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`call_claimed` when another participant claimed the call, or `state_conflict` when the call is not ready",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "call_claimed",
+                    "message": "Another participant claimed this call.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#call-claimed"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_gone",
+                    "message": "The requested retained resource has expired or was removed.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-gone"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/messaging/voip/calls/{id}/reject": {
+      "post": {
+        "operationId": "voipRejectCall",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Decline a ringing call",
+        "description": "**Required scope:** `sessions:manage`\n\nDeclines a ringing call and releases it. Returns `409 call_not_ringing` when the call is not ringing.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipRejectCallRequest"
+              }
+            }
+          }
+        },
+        "responses": {
           "202": {
-            "description": "Call answered",
+            "description": "Call declined",
             "content": {
               "application/json": {
                 "schema": {
@@ -18293,7 +18556,7 @@
             }
           },
           "409": {
-            "description": "Call not ready — no media session on the owning pod yet",
+            "description": "`call_not_ringing` when the call was already answered, declined, or ended",
             "content": {
               "application/json": {
                 "schema": {
@@ -18302,12 +18565,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "call_not_ringing",
+                    "message": "The call is no longer ringing.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#call-not-ringing"
                 }
               }
             }
@@ -18378,14 +18641,14 @@
         }
       }
     },
-    "/messaging/voip/calls/{id}/reject": {
+    "/messaging/voip/calls/{id}/leave": {
       "post": {
-        "operationId": "voipRejectCall",
+        "operationId": "voipLeaveCall",
         "tags": [
           "VoIP"
         ],
-        "summary": "Decline a ringing inbound call",
-        "description": "**Required scope:** `sessions:manage`\n\nDeclines a call the pod is holding for the SDK and releases it. 409 when the call is not ringing.",
+        "summary": "Close one connection without ending the call",
+        "description": "**Required scope:** `sessions:manage`\n\nDisconnects the named connection. The call and the participant's other connections continue. Use `DELETE /voip/calls/{id}` to end the call for everyone.",
         "security": [
           {
             "BearerAuth": []
@@ -18404,9 +18667,19 @@
             "in": "path"
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipLeaveRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "202": {
-            "description": "Call declined",
+            "description": "Connection closed",
             "content": {
               "application/json": {
                 "schema": {
@@ -18588,7 +18861,7 @@
           "VoIP"
         ],
         "summary": "Invite another party into a live call",
-        "description": "**Required scope:** `sessions:manage`\n\nRings `to` (an E.164 phone number or a user ID) into the call, turning a 1:1 call into a group call. The invitee enters the roster as `invited`; roster changes reach the SDK media socket as `participant_joined` / `participant_state` / `participant_left` frames. 409 until the call has a live leg.",
+        "description": "**Required scope:** `sessions:manage`\n\nRings `to` (an E.164 phone number or a user ID) into the call, turning a 1:1 call into a group call. The invitee enters the roster as `invited`; roster changes reach media sockets as `participant_joined` / `participant_state` / `participant_left` frames. 409 until the call has a live leg.",
         "security": [
           {
             "BearerAuth": []
@@ -18708,7 +18981,7 @@
             }
           },
           "409": {
-            "description": "Call not ready — no media session on the owning pod yet",
+            "description": "`unsupported_for_connection` when the session connects through the Cloud API, which has no group calls, or `state_conflict` when the call has no live leg yet",
             "content": {
               "application/json": {
                 "schema": {
@@ -18717,12 +18990,12 @@
                 "example": {
                   "error": {
                     "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
+                    "code": "unsupported_for_connection",
+                    "message": "The session's connection does not support this call operation.",
                     "param": null
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                  "docs": "https://docs.polymorfa.com/api/errors#unsupported-for-connection"
                 }
               }
             }
@@ -18813,153 +19086,14 @@
         }
       }
     },
-    "/messaging/voip/mode": {
-      "post": {
-        "operationId": "voipSetMode",
-        "tags": [
-          "VoIP"
-        ],
-        "summary": "Choose how a session answers inbound calls",
-        "description": "**Required scope:** `sessions:manage`\n\n`browser` (default) answers each inbound call and bridges it to a browser through `/offer`; `agent` answers and bridges to the raw-audio socket; `sdk` lets the call ring and waits for your `/accept` or `/reject`. The claim persists until changed and applies to calls that arrive after it. Client tokens configure their bound session; server keys must name one.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "x-required-scope": "sessions:manage",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VoipModeRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Mode recorded",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VoipModeResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request — request body or params failed validation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "invalid_parameter",
-                    "message": "Correct the invalid request field.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid authentication token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "authentication_error",
-                    "code": "invalid_credential",
-                    "message": "Supply a valid credential.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Authenticated but not permitted (missing scope or rule violation)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "permission_denied",
-                    "message": "The credential does not have access to this resource.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "resource_not_found",
-                    "message": "The resource is unavailable to this caller.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "api_error",
-                    "code": "internal_error",
-                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
-                }
-              }
-            }
-          }
-        },
-        "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
-        }
-      }
-    },
     "/messaging/voip/calls/{id}/candidate": {
       "post": {
         "operationId": "voipCandidate",
+        "x-internal": true,
         "tags": [
           "VoIP"
         ],
-        "summary": "Trickle a local ICE candidate to the owning pod",
+        "summary": "Trickle a local ICE candidate to one connection",
         "security": [
           {
             "BearerAuth": []
@@ -18979,6 +19113,7 @@
           }
         ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -19168,6 +19303,7 @@
     "/messaging/voip/calls/{id}/candidates": {
       "get": {
         "operationId": "voipCandidates",
+        "x-internal": true,
         "tags": [
           "VoIP"
         ],
@@ -19368,13 +19504,247 @@
         "description": "**Required scope:** `sessions:manage`"
       }
     },
+    "/messaging/voip/calls/{id}/reports": {
+      "post": {
+        "operationId": "voipReportCallDiagnostics",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Report call diagnostics from your app",
+        "description": "**Required scope:** `sessions:manage`\n\nRecords quality figures or an error that your app measured for one of its connections. The Console shows the latest quality report and the reported errors of each connection on the call. Reports are optional and are accepted while the call is live and for 10 minutes after it ends. Each connection can send one quality report every 5 seconds and 20 error reports per minute. At most 200 reports are kept per call: at that limit a quality report replaces the connection's oldest quality report, and other reports are not stored.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipCallReportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Report accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`state_conflict` when the call is not live, ended more than 10 minutes ago, or is outside the credential's boundary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_gone",
+                    "message": "The requested retained resource has expired or was removed.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-gone"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The connection exceeded its report limit: one quality report every 5 seconds or 20 error reports per minute",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "rate_limit_error",
+                    "code": "rate_limit_exceeded",
+                    "message": "The request limit was reached. Follow Retry-After when supplied.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#rate-limit-exceeded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call authority or report storage is unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
     "/messaging/voip/calls/{id}": {
       "delete": {
         "operationId": "voipTeardown",
         "tags": [
           "VoIP"
         ],
-        "summary": "Tear down a call's browser media session",
+        "summary": "End a call for everyone",
+        "description": "**Required scope:** `sessions:manage`\n\nEnds the call and closes every connection. Repeating the request succeeds.",
         "security": [
           {
             "BearerAuth": []
@@ -19395,7 +19765,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Call torn down",
+            "description": "Call ended",
             "content": {
               "application/json": {
                 "schema": {
@@ -19567,156 +19937,7 @@
         },
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
-        },
-        "description": "**Required scope:** `sessions:manage`"
-      }
-    },
-    "/messaging/voip/token": {
-      "post": {
-        "operationId": "voipToken",
-        "tags": [
-          "VoIP"
-        ],
-        "summary": "Mint a short-lived browser client token for the VoIP SDK",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "x-required-scopes": [
-          "sessions:manage",
-          "messages:write",
-          "contacts:read",
-          "presence:read",
-          "presence:observe",
-          "mcp"
-        ],
-        "x-required-scope-mode": "all",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VoipTokenRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Client token minted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VoipTokenResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request — request body or params failed validation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "invalid_parameter",
-                    "message": "Correct the invalid request field.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid authentication token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "authentication_error",
-                    "code": "invalid_credential",
-                    "message": "Supply a valid credential.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Authenticated but not permitted (missing scope or rule violation)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "permission_denied",
-                    "message": "The credential does not have access to this resource.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "resource_not_found",
-                    "message": "The resource is unavailable to this caller.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "api_error",
-                    "code": "internal_error",
-                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
-                }
-              }
-            }
-          }
-        },
-        "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
-        },
-        "description": "**Required scopes (all):** `sessions:manage` · `messages:write` · `contacts:read` · `presence:read` · `presence:observe` · `mcp`"
+        }
       }
     },
     "/messaging/{session}/groups": {
@@ -43432,6 +43653,54 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CallParticipantLeftEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "call.connection_joined": {
+      "post": {
+        "operationId": "onCallConnectionJoined",
+        "summary": "Connection joined a call",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallConnectionJoinedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "call.connection_left": {
+      "post": {
+        "operationId": "onCallConnectionLeft",
+        "summary": "Connection left a call",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallConnectionLeftEvent"
               }
             }
           }
