@@ -1,16 +1,17 @@
 # Calls UI design
 
 **Date:** 2026-09-05
-**Status:** Shipped on `dev` in `@polymorfa/react` (`CallSurface`,
+**Status:** Superseded in part by Calls contract revision 1 (2026-09-16, see
+the addendum at the end). Shipped on `dev` in `@polymorfa/react` (`CallSurface`,
 `IncomingCallCard`, `CallStage`, `CallControls`, `DialPad`) over the
 `@polymorfa/browser` `CallsController`.
 
 ## Outcome
 
-One call UI for both calling lines — a paired WhatsApp device session
-(`linkedDevice`, audio and video) and the WhatsApp Business Calling API
-(`cloudApi`, audio only) — behind a single capability-gated call model.
-Components read `snapshot.capabilities`; nothing branches on the line name.
+One call UI for every number, behind a single capability-gated call model.
+The platform reports each call's capabilities (video, invitations);
+components read `snapshot.capabilities` and never branch on how a number is
+connected.
 
 ## Design language
 
@@ -77,8 +78,8 @@ directly and needs no webhook plumbing (the Transport addendum below), or the
 application relays the server's `call.received` webhook into
 `IncomingCallRelay`, with `incomingCallFromWebhook` mapping the payload. The
 relay is the fallback for deployments that already carry webhooks to the
-browser, not a prerequisite. The server mints the browser token
-with `MessagingClient.voip.token` after granting the session's client rules the
+browser, not a prerequisite. The server mints the browser client token with
+`POST /platform/client-tokens` after granting the session's client rules the
 `voip_place`, `voip_answer`, and `voip_signal` actions.
 
 ### Outbound placement (2026-09-06)
@@ -107,8 +108,8 @@ calls needs no such route.
 ## Transport (2026-09-06 addendum)
 
 The kit no longer depends on the application relaying webhooks. `CallsSocket`
-opens the calls WebSocket with a single-use ticket (`POST /api/voip/ws-ticket`)
-and is both the backend's lifecycle source (incoming, accepted, ended with the
+opens the calls WebSocket (originally with a single-use ticket; since revision
+1 with the client token as its first frame) and is both the backend's lifecycle source (incoming, accepted, ended with the
 pod's reason mapped onto the controller vocabulary) and the media factory's
 `candidateTransport`. REST candidate polling pauses while the socket is up and
 resumes while it reconnects; `IncomingCallRelay` remains for deployments that
@@ -117,3 +118,29 @@ prefer their own channel. The camera button on an audio call now calls
 dropped connection renders the existing "Reconnecting" message while the
 controller restarts ICE inside a 15 s resumption window. None of this changes
 the visual design.
+
+## Unified clients (2026-09-16, Calls contract revision 1)
+
+- No session answer modes and no calling tickets. The browser client token
+  authenticates REST calls, the lifecycle socket (`/voip/ws`, first frame
+  `{ type: "auth", token }`, replacement frames before expiry, 4401 on
+  revocation), and the media socket.
+- Incoming calls ring until someone answers or declines. The controller tracks
+  every invitation (`snapshot.invitations`) and never declines one on its own.
+- Answer takes `exclusive` (default `false`). `claimedByOther` shows a call
+  another participant claimed (Dismiss only; no Reject). `canJoin` shows a call
+  answered without a claim (Join). Leave closes this connection; the red
+  button ends the call for everyone and reads "End call for everyone" when
+  Leave is shown.
+- WebRTC offers audio, the `pmfa.calls` data channel (negotiated, id 0), one
+  sendrecv camera transceiver and receive-only video slots (default 3, grown on
+  `video_slots_exhausted` up to 32 video transceivers). Remote participants
+  render as separate tiles in `ParticipantVideoGrid`; audio is one merged
+  stream played through a hidden element. `ParticipantList` shows the roster.
+- Public surface (2026-09-17): applications use only `createBrowserCalls`,
+  the controller, `CallsClient`/`Call` and the components. Signaling, the data
+  channel, transceiver slots, sockets and media framing described here and
+  above are SDK internals, reachable only through the package-private
+  `./internal` subpaths.
+- The visual language above is unchanged; new controls reuse the existing
+  pills, chips and dark card styles and respect reduced motion.
