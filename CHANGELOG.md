@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Dev prereleases of `@polymorfa/sdk`, `@polymorfa/browser`, `@polymorfa/ui`,
+  `@polymorfa/elements`, `@polymorfa/react`, `@polymorfa/store`,
+  `@polymorfa/nextjs` and `@polymorfa/devtools` publish to npm under the
+  `dev` dist-tag on each merge to `dev`. Versions follow
+  `0.1.0-dev.<UTC timestamp>`, internal dependencies are pinned to the same
+  version, and each release carries npm provenance. Install with
+  `npm install @polymorfa/sdk@dev`. See [releasing](docs/releasing.md).
 - New opt-in package `@polymorfa/store` keeps a local IndexedDB copy of
   webhook-shaped events. `createPolymorfaStore()` files messages,
   conversations, contacts, presence, calls, labels, sessions, and templates

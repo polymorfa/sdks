@@ -24,14 +24,24 @@ this SDK's initial scope.
 | `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
 | `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
 
-The non-server packages are complete development artifacts on `dev`, but have
-not been published. Their names are the intended public identities in the
+The non-server packages are complete development artifacts on `dev`. They
+publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
 Polymorfa npm organization. No mobile-native binding is part of this milestone.
 
 ## TypeScript development install
 
-The packages have not been published to npm. Build them from a clone of the
-development branch and install the packed tarballs:
+Each merge to `dev` publishes the public packages to npm under the `dev`
+dist-tag, with versions such as `0.1.0-dev.20260919094454`:
+
+```bash
+npm install @polymorfa/sdk@dev
+npm install @polymorfa/browser@dev   # browser apps
+```
+
+Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. No
+stable (`latest`) release exists. Publishing starts once the npm scope and
+trusted publisher are configured; until `npm view @polymorfa/sdk dist-tags`
+shows a `dev` tag, build from source and install the packed tarballs:
 
 ```bash
 git clone --branch dev https://github.com/polymorfa/sdks.git
@@ -41,6 +51,9 @@ npm run build:workspaces
 npm pack -w @polymorfa/sdk           # add -w @polymorfa/browser for browser apps
 npm install /path/to/sdks/polymorfa-sdk-0.1.0-dev.0.tgz   # from your application
 ```
+
+See [docs/releasing.md](docs/releasing.md) for the version scheme and the
+publishing workflow.
 
 `npm install github:polymorfa/sdks#dev` no longer installs the SDK: the
 repository root is a private workspace, and `@polymorfa/sdk` lives in
