@@ -412,7 +412,7 @@ Calls clients send these reports for you.
 ## SIP trunks
 
 `Client.sipTrunks` manages the SIP trunks that connect a PBX to a project's
-calls. SIP trunks are a beta: changes return `403` until your team is enrolled.
+calls. SIP trunks are part of Calls and need no enrollment.
 Team clients name the project on `list` and `create`; project clients use their
 own project.
 
