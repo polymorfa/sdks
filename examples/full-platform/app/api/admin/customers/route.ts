@@ -11,13 +11,15 @@ import {
   unknownAction,
 } from "../../../../lib/route.js";
 
-// GET pages through every active Customer with the cursor in `data.page`.
+// GET pages through active Customers with the cursor in `data.page`, up to
+// 1,000 per request. A non-null `nextCursor` means more remain: pass it back
+// as `?cursor=` to continue.
 export const GET = route("admin", async ({ url }) => {
   const customers = organization().customers;
   const projectId = env.projectId();
   const search = url.searchParams.get("search") ?? undefined;
   const all: CustomerSummary[] = [];
-  let cursor: string | undefined;
+  let cursor: string | undefined = url.searchParams.get("cursor") ?? undefined;
   do {
     const response = await customers.list({
       projectId,
@@ -27,9 +29,10 @@ export const GET = route("admin", async ({ url }) => {
       ...(cursor === undefined ? {} : { cursor }),
     });
     all.push(...response.data.data);
-    cursor = response.data.page.nextCursor ?? undefined;
+    const next: string | undefined = response.data.page.nextCursor ?? undefined;
+    cursor = next === cursor ? undefined : next;
   } while (cursor !== undefined && all.length < 1000);
-  return all;
+  return { items: all, nextCursor: cursor ?? null };
 });
 
 export const POST = route("admin", async ({ body, request }) => {

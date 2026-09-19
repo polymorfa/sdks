@@ -789,6 +789,11 @@ export function Toaster() {
 /** Copies text and confirms with a toast. */
 export function useCopy(): (text: string, what?: string) => void {
   return useCallback((text: string, what = "Copied") => {
+    // Undefined outside secure contexts, such as plain HTTP on a LAN address.
+    if (navigator.clipboard === undefined) {
+      toast("Copy failed. Select the text instead.", "danger");
+      return;
+    }
     void navigator.clipboard
       .writeText(text)
       .then(() => toast(`${what} to clipboard`, "success"))

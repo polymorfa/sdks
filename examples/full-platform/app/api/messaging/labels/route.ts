@@ -9,10 +9,9 @@ import {
   texts,
   unknownAction,
 } from "../../../../lib/route.js";
-import { env } from "../../../../lib/env.js";
 
-export const GET = route("agent", ({ url }) =>
-  messaging().labels.list(env.session(), {
+export const GET = route("agent", ({ body, sessionOf, url }) =>
+  messaging().labels.list(sessionOf(body), {
     includeObservation: url.searchParams.get("observation") === "true",
   }),
 );

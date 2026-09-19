@@ -8,9 +8,10 @@ import {
   texts,
   unknownAction,
 } from "../../../../lib/route.js";
-import { env } from "../../../../lib/env.js";
 
-export const GET = route("agent", () => messaging().groups.list(env.session()));
+export const GET = route("agent", ({ body, sessionOf }) =>
+  messaging().groups.list(sessionOf(body)),
+);
 
 export const POST = route("agent", async ({ body, sessionOf }) => {
   const groups = messaging().groups;

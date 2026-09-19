@@ -21,9 +21,13 @@ export const DEMO_ROLE_COOKIE = "acme_demo_role";
 /**
  * DEMO ONLY. Anyone can set these unsigned cookies from /api/demo-login (or by
  * hand) and claim any user or the admin role. Replace this function with your
- * real session lookup before deploying this app anywhere.
+ * real session lookup before deploying this app anywhere. In production with
+ * live credentials the cookies are ignored and every request is unauthenticated.
  */
 export async function authenticate(request: Request): Promise<Operator | null> {
+  // Where demo sign-in is off (production with live credentials), the demo
+  // cookies are not honoured at all, so nobody is signed in.
+  if (!demoSignInEnabled()) return null;
   const cookies = parseCookies(request.headers.get("cookie"));
   const userId = cookies.get(DEMO_USER_COOKIE);
   if (userId === undefined || !/^[\w.-]{1,64}$/.test(userId)) return null;

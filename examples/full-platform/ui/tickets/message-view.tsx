@@ -383,7 +383,6 @@ function VideoAttachment({
       <span className="m-play" aria-hidden="true">
         <Icon name="play" size={22} />
       </span>
-      <span className="m-video-length">0:14</span>
     </button>
   );
 }

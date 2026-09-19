@@ -1,21 +1,18 @@
 "use client";
 
 import {
-  BrowserCallsApi,
-  BrowserTransport,
-  CallsController,
-  CallsSignalingClient,
-  IncomingCallRelay,
-  WebRtcMediaFactory,
+  createBrowserCalls,
   createClientTokenProvider,
-  createSignalingCallsBackend,
-  incomingCallFromWebhook,
+  type CallsController,
+} from "@polymorfa/browser";
+// Demo mode only: the in-memory backend below needs the controller class,
+// which applications normally get from `createBrowserCalls`.
+import {
+  CallsController as DemoCallsController,
   type CallLifecycleEvent,
   type CallMediaFactory,
   type CallsBackend,
-} from "@polymorfa/browser";
-
-import { liveEvents } from "../lib/browser/live-events.js";
+} from "@polymorfa/browser/internal";
 
 export interface DeskCalls {
   readonly controller: CallsController;
@@ -24,47 +21,29 @@ export interface DeskCalls {
   readonly dispose: () => void;
 }
 
-/** Real calling: client-token signaling plus webhook-relayed inbound calls. */
+/**
+ * Real calling. The client token from /api/messaging/calls/token is the only
+ * credential; the lifecycle stream delivers incoming calls and their answers.
+ */
 function createLiveCalls(session: string): DeskCalls {
-  const transport = new BrowserTransport({
+  const calls = createBrowserCalls({
+    session,
     getClientToken: createClientTokenProvider({
       path: "/api/messaging/calls/token",
     }),
+    onError: (error) => {
+      // "unauthorized": the token expired or was revoked; the next reconnect
+      // asks the token route for a new one.
+      console.warn("Calls:", error.code);
+    },
   });
-  const signaling = new CallsSignalingClient(transport);
-  const api = new BrowserCallsApi(transport);
-  // Inbound calls arrive as webhooks on the server and are relayed here.
-  const relay = new IncomingCallRelay();
-  const controller = new CallsController(
-    createSignalingCallsBackend({
-      signaling,
-      incoming: relay,
-      // The client token places the call; the controller supplies the key.
-      place: ({ to, video, idempotencyKey }, signal) =>
-        api.place({ session, to, video, idempotencyKey }, signal),
-    }),
-    new WebRtcMediaFactory({ signaling }),
-  );
-  controller.initialize();
-  // The same webhook events the server verified, relayed unchanged.
-  const unsubscribe = liveEvents.subscribe({
-    "call.received": (event) =>
-      relay.receive(
-        incomingCallFromWebhook({
-          callId: event.payload.callId,
-          from: event.payload.from,
-        }),
-      ),
-    "call.ended": (event) =>
-      relay.ended(event.payload.callId, event.payload.reason),
-    "call.missed": (event) =>
-      relay.ended(event.payload.callId, event.payload.reason),
+  calls.connect().catch((error: unknown) => {
+    console.warn("Calls could not connect", error);
   });
   return {
-    controller,
+    controller: calls.controller,
     dispose: () => {
-      unsubscribe();
-      controller.dispose();
+      void calls.dispose();
     },
   };
 }
@@ -143,7 +122,7 @@ function createDemoCalls(): DeskCalls {
     },
   };
 
-  const controller = new CallsController(backend, media);
+  const controller = new DemoCallsController(backend, media);
   controller.initialize();
   return {
     controller,

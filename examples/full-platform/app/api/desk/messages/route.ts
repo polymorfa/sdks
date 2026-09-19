@@ -171,8 +171,8 @@ function readAttachments(value: unknown): MessageAttachment[] {
   return value.map((item: unknown) => {
     const entry = (item ?? {}) as Body;
     const url = text(entry, "url");
-    const parsed = new URL(url, "http://local");
-    if (parsed.pathname !== "/api/desk/media") {
+    // A relative path on this app; absolute URLs would point elsewhere.
+    if (!/^\/api\/desk\/media(\?|$)/.test(url)) {
       throw new InputError("Attachments must be uploaded first.");
     }
     const size = entry.size;

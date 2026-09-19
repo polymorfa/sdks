@@ -2,8 +2,8 @@ import { messaging } from "../../../../lib/polymorfa.js";
 import { env } from "../../../../lib/env.js";
 import { action, route, unknownAction } from "../../../../lib/route.js";
 
-export const GET = route("admin", () =>
-  messaging().clientTokens.retrieveRules(env.session()),
+export const GET = route("admin", ({ body, sessionOf }) =>
+  messaging().clientTokens.retrieveRules(sessionOf(body)),
 );
 
 export const POST = route("admin", async ({ body, sessionOf }) => {

@@ -10,6 +10,7 @@ import {
 
 import { desk } from "./desk/data.js";
 import type { DeskMessageKind } from "./desk/types.js";
+import { optionalEnv } from "./env.js";
 import { emit, publish } from "./realtime.js";
 
 /** Every event type `handle` reacts to. Webhook registrations subscribe to all of them. */
@@ -109,6 +110,8 @@ function receiveMessage(
 ): void {
   const chat = payload.conversation.phoneNumber ?? payload.conversation.id;
   const linked = isLinkedDevice(payload) ? payload : undefined;
+  // Both payload shapes may carry text or a caption.
+  const body = stringField(payload, "text") ?? stringField(payload, "caption");
   const createdAt = toMilliseconds(payload.timestamp);
   const phone = payload.conversation.phoneNumber;
   // Customer messages open or update a help-desk ticket.
@@ -119,23 +122,36 @@ function receiveMessage(
           id: payload.id,
           session,
           phone,
-          text: linked?.text ?? linked?.caption ?? "",
+          text: body ?? "",
           kind: kindOf(payload.type),
           createdAt,
         });
       })
       .catch((error: unknown) => console.error("ticket ingest failed", error));
   }
-  emit("inbox.message", session ?? "unknown", {
+  // The inbox reads and replies through POLYMORFA_SESSION, so only that
+  // session's messages go there; tickets above keep their own session.
+  if (session === undefined || session !== optionalEnv("POLYMORFA_SESSION")) {
+    return;
+  }
+  emit("inbox.message", session, {
     chat,
     message: {
       id: payload.id,
-      text: linked?.text ?? linked?.caption ?? `[${payload.type}]`,
+      text: body ?? `[${payload.type}]`,
       createdAt,
       direction: linked?.fromMe === true ? "outbound" : "inbound",
       status: "sent",
     },
   });
+}
+
+function stringField(
+  payload: MessageReceivedPayload,
+  key: "text" | "caption",
+): string | undefined {
+  const value = payload[key];
+  return typeof value === "string" ? value : undefined;
 }
 
 function isLinkedDevice(

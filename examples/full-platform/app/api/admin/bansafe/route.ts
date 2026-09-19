@@ -17,15 +17,18 @@ export const GET = route("admin", async () => {
   const projectId = env.projectId();
   const numbers: BanSafeNumber[] = [];
   let cursor: string | undefined;
-  do {
+  // At most 20 pages (2,000 numbers); stop if the cursor does not advance.
+  for (let pages = 0; pages < 20; pages += 1) {
     const page = await banSafe.listHealth({
       projectId,
       limit: 100,
       ...(cursor === undefined ? {} : { cursor }),
     });
     numbers.push(...page.data.data);
-    cursor = page.data.page.nextCursor ?? undefined;
-  } while (cursor !== undefined);
+    const next = page.data.page.nextCursor ?? undefined;
+    if (next === undefined || next === cursor) break;
+    cursor = next;
+  }
 
   const [
     signals,

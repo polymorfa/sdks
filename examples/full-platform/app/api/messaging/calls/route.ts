@@ -1,33 +1,17 @@
 import { messaging } from "../../../../lib/polymorfa.js";
-import {
-  action,
-  optionalInteger,
-  route,
-  text,
-  unknownAction,
-} from "../../../../lib/route.js";
+import { action, route, text, unknownAction } from "../../../../lib/route.js";
 
-// Browser calls use /api/messaging/calls/token. The browser places outbound
-// calls with that client token; the server SDK has no placement method.
-export const POST = route("agent", async ({ body, sessionOf }) => {
-  const session = sessionOf(body);
+// Browser calls use /api/messaging/calls/token: the browser places, answers,
+// joins and leaves calls with that client token. These server actions act on
+// a call by id with the project credential.
+export const POST = route("agent", async ({ body }) => {
   switch (action(body)) {
     case "reject":
-      // For calls parked in SDK answer mode.
-      return messaging().calls.reject(session, text(body, "callId"), {
-        from: text(body, "from"),
-      });
-    case "socketTicket":
-      // Single-use ticket for a server-side calls WebSocket.
-      return messaging().voip.socketTicket({ session });
-    case "agentToken": {
-      // Per-call ticket for a voice agent that streams PCM.
-      const ttlSeconds = optionalInteger(body, "ttlSeconds");
-      return messaging().voip.agentToken(
-        text(body, "callId"),
-        ttlSeconds === undefined ? {} : { ttlSeconds },
-      );
-    }
+      // Declines a ringing call for every participant.
+      return messaging().voip.reject(text(body, "callId"));
+    case "end":
+      // Ends the call for every participant, e.g. from a supervisor console.
+      return messaging().voip.end(text(body, "callId"));
     default:
       return unknownAction(action(body));
   }

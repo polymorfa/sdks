@@ -3,7 +3,7 @@ import { env } from "../../../../lib/env.js";
 import { action, flag, route, unknownAction } from "../../../../lib/route.js";
 
 // BanSafe settings through the Messaging API.
-export const GET = route("admin", async () => {
+export const GET = route("admin", async ({ body, sessionOf }) => {
   const banSafe = messaging().banSafe;
   const projectId = env.projectId();
   const [safeMode, warmup, insurance, health, session] = await Promise.all([
@@ -11,7 +11,7 @@ export const GET = route("admin", async () => {
     banSafe.getProjectWarmupPlan(projectId),
     banSafe.getProjectInsuranceEvidence(projectId),
     banSafe.getProjectHealthPolicy(projectId),
-    banSafe.getSessionSafeMode(env.session()),
+    banSafe.getSessionSafeMode(sessionOf(body)),
   ]);
   return {
     safeMode: safeMode.data.data,

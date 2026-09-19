@@ -71,7 +71,7 @@ export function QuickRepliesPage() {
 
   const rows = (replies.data ?? []).filter(
     (reply) =>
-      reply.shortcut.includes(search.toLowerCase()) ||
+      reply.shortcut.toLowerCase().includes(search.toLowerCase()) ||
       reply.message.toLowerCase().includes(search.toLowerCase()),
   );
 

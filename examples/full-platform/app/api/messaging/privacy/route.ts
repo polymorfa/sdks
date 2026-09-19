@@ -13,11 +13,12 @@ import {
   text,
   unknownAction,
 } from "../../../../lib/route.js";
-import { env } from "../../../../lib/env.js";
 
 const TIMERS = { off: 0, "24h": 86400, "7d": 604800, "90d": 7776000 } as const;
 
-export const GET = route("admin", () => messaging().privacy.get(env.session()));
+export const GET = route("admin", ({ body, sessionOf }) =>
+  messaging().privacy.get(sessionOf(body)),
+);
 
 export const POST = route("admin", async ({ body, sessionOf }) => {
   const privacy = messaging().privacy;
@@ -36,7 +37,10 @@ export const POST = route("admin", async ({ body, sessionOf }) => {
 });
 
 function mutation(setting: unknown, value: string): PrivacySettingMutation {
-  if (typeof setting !== "string" || !(setting in PRIVACY_SETTING_VALUES)) {
+  if (
+    typeof setting !== "string" ||
+    !Object.hasOwn(PRIVACY_SETTING_VALUES, setting)
+  ) {
     throw new InputError("Unknown privacy setting.");
   }
   const name = setting as PrivacySettingName;

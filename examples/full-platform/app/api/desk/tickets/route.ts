@@ -1,4 +1,5 @@
 import { desk } from "../../../../lib/desk/data.js";
+import { isDemoMode } from "../../../../lib/env.js";
 import type { TicketAction, TicketStatus } from "../../../../lib/desk/types.js";
 import {
   action,
@@ -42,11 +43,17 @@ export const GET = route(
 
 export const POST = route(
   "agent",
-  async ({ body, operator }) => {
+  async ({ body, operator, sessionOf }) => {
     const data = await desk();
     const name = action(body);
     if (name === "create") {
-      const connectionId = optionalText(body, "connectionId");
+      const requested = optionalText(body, "connectionId");
+      // Live sessions go through the same allow-list as every other route;
+      // demo connections are fixtures.
+      const connectionId =
+        requested === undefined || isDemoMode()
+          ? requested
+          : sessionOf({ session: requested });
       return data.createTicket(
         {
           phone: text(body, "phone").replace(/[\s()-]/g, ""),

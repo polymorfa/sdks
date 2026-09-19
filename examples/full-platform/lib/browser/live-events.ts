@@ -60,7 +60,12 @@ export class AppLiveEvents implements LiveEvents {
     this.#subscribers += 1;
     const entries = Object.entries(handlers).map(([name, handler]) => {
       const listener = (message: MessageEvent<string>) => {
-        const event = JSON.parse(message.data) as LiveEvent;
+        let event: LiveEvent;
+        try {
+          event = JSON.parse(message.data) as LiveEvent;
+        } catch {
+          return; // Ignore a malformed frame.
+        }
         if (event.event === name) {
           (handler as (event: LiveEvent) => void)(event);
         }

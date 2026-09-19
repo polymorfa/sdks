@@ -12,12 +12,16 @@ import {
 } from "../../../../lib/route.js";
 
 // Durable webhook endpoints and their deliveries. Project endpoints use the
-// project view; `?owner=organization` reads organization-owned endpoints.
+// project view; `?owner=organization` selects organization-owned endpoints
+// for both reads and actions.
+function ownerOf(url: URL) {
+  return url.searchParams.get("owner") === "organization"
+    ? organization()
+    : project();
+}
+
 export const GET = route("admin", async ({ url }) => {
-  const owner =
-    url.searchParams.get("owner") === "organization"
-      ? organization()
-      : project();
+  const owner = ownerOf(url);
   const [webhooks, deliveries] = await Promise.all([
     owner.webhooks.list({ limit: 50 }),
     owner.webhookDeliveries.list({ status: "failed", limit: 50 }),
@@ -32,8 +36,8 @@ export const GET = route("admin", async ({ url }) => {
 // Signing secrets are shown once, so the response must never be cached.
 const secretHeaders = { "Cache-Control": "no-store" };
 
-export const POST = route("admin", async ({ body, request }) => {
-  const { webhooks, webhookDeliveries } = project();
+export const POST = route("admin", async ({ body, request, url }) => {
+  const { webhooks, webhookDeliveries } = ownerOf(url);
   const key = { idempotencyKey: idempotencyKey(request) };
   switch (action(body)) {
     case "create": {

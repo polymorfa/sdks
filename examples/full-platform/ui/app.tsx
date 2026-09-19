@@ -35,10 +35,16 @@ function CallsProvider({ children }: { readonly children: ReactNode }) {
   const session = bootstrap.connections[0]?.id ?? "";
   useEffect(() => {
     // Calls need browser media APIs, so create them after mount.
-    if (!bootstrap.me.demo && session === "") return;
+    if (!bootstrap.me.demo && session === "") {
+      setCalls(null);
+      return;
+    }
     const created = createDeskCalls({ demo: bootstrap.me.demo, session });
     setCalls(created);
-    return () => created.dispose();
+    return () => {
+      setCalls((current) => (current === created ? null : current));
+      created.dispose();
+    };
   }, [bootstrap.me.demo, session]);
 
   const names = useMemo(

@@ -29,7 +29,10 @@ export interface RouteContext {
   readonly operator: Operator;
   readonly body: Body;
   readonly url: URL;
-  /** Sessions this operator may address. */
+  /**
+   * The session this operator may address: the body's `session` field (the
+   * `?session=` query for GET), or the default session.
+   */
   readonly sessionOf: (body: Body) => string;
 }
 
@@ -51,7 +54,10 @@ export function route(
       if (role === "admin" && operator.role !== "admin") {
         return problem(403, "forbidden");
       }
-      const body = request.method === "GET" ? {} : await readBody(request);
+      // GET reads take the session from `?session=`, checked by `sessionOf`
+      // exactly like a mutation's `session` field.
+      const body =
+        request.method === "GET" ? queryBody(request) : await readBody(request);
       // Without credentials, SDK routes answer with sample data so the UI
       // works out of the box. Desk routes use the mock data layer instead.
       if (options.demo !== "handler" && isDemoMode()) {
@@ -112,6 +118,11 @@ function isApiResponse(value: unknown): value is ApiResponse<unknown> {
     "metadata" in value &&
     "data" in value
   );
+}
+
+function queryBody(request: Request): Body {
+  const session = new URL(request.url).searchParams.get("session");
+  return session === null ? {} : { session };
 }
 
 async function readBody(request: Request): Promise<Body> {

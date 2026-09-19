@@ -2,7 +2,7 @@ import { PolymorfaConfigurationError } from "@polymorfa/sdk";
 
 export function requiredEnv(name: string): string {
   const value = process.env[name];
-  if (value === undefined || value.length === 0) {
+  if (value === undefined || value.trim().length === 0) {
     throw new PolymorfaConfigurationError(`${name} is not set.`, name);
   }
   return value;
@@ -10,7 +10,7 @@ export function requiredEnv(name: string): string {
 
 export function optionalEnv(name: string): string | undefined {
   const value = process.env[name];
-  return value === undefined || value.length === 0 ? undefined : value;
+  return value === undefined || value.trim().length === 0 ? undefined : value;
 }
 
 export const env = {

@@ -6,10 +6,9 @@ import {
   unknownAction,
   type Body,
 } from "../../../../lib/route.js";
-import { env } from "../../../../lib/env.js";
 
-export const GET = route("agent", () =>
-  messaging().quickReplies.list(env.session()),
+export const GET = route("agent", ({ body, sessionOf }) =>
+  messaging().quickReplies.list(sessionOf(body)),
 );
 
 export const POST = route("agent", async ({ body, sessionOf }) => {

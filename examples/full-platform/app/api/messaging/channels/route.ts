@@ -7,10 +7,9 @@ import {
   text,
   unknownAction,
 } from "../../../../lib/route.js";
-import { env } from "../../../../lib/env.js";
 
-export const GET = route("agent", () =>
-  messaging().channels.list(env.session()),
+export const GET = route("agent", ({ body, sessionOf }) =>
+  messaging().channels.list(sessionOf(body)),
 );
 
 export const POST = route("admin", async ({ body, sessionOf }) => {

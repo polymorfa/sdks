@@ -51,11 +51,16 @@ function SessionSettings() {
   const revision = project.revision ?? project.data?.revision ?? 0;
 
   const save = async () => {
+    const session = bootstrap.connections[0]?.id;
+    if (session === undefined) {
+      toast("Connect a WhatsApp session first", "danger");
+      return;
+    }
     setBusy(true);
     try {
       await callApi("/api/messaging/sessions", {
         action: "configure",
-        session: bootstrap.connections[0]?.id,
+        session,
         historySync: { mode },
         revision,
       });
