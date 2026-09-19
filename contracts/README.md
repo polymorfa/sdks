@@ -2,26 +2,27 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`331700f93fb3e858c7269a116820d8d4bec67aa8` on branch
-`codex/customer-scoped-tokens`. That commit is pushed but not merged; re-pin to
-the merged commit before release. `source.json` records the original paths and
-SHA-256 hashes. `coverage.json` uses the same source revision.
+`129d58aeb0eb6b9c6efadf3f07ade127834287d0` on branch `dev` (the merge commit
+for PR #207, Customer-scoped client tokens). `source.json` records the
+original paths and SHA-256 hashes. `coverage.json` uses the same source
+revision.
 
 This revision adds `customer` and `allow` to `mintClientToken` (covered by
-`MessagingClient.clientTokens.mint`). The branch is based on monorepo `dev`,
-which does not yet carry the unmerged Calls diagnostics route
-(`voipReportCallDiagnostics`, reported `removed`; the SDK keeps
-`MessagingClient.voip.report`) and changes the Console-only `getCall`
-response (excluded; fingerprint refreshed).
+`MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
+merged monorepo `dev`, the Calls diagnostics route
+(`voipReportCallDiagnostics`) is back with a refreshed fingerprint; the SDK
+keeps `MessagingClient.voip.report` covering it. The Console-only `getCall`
+response also picked up a refreshed fingerprint (still excluded). No
+operations were added or removed by this re-sync.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        303 |
+| Covered             |        304 |
 | Missing             |          0 |
 | Excluded            |        116 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        419 |
+| Total               |        420 |
 
 An earlier revision added app-reported call diagnostics
 (`POST /messaging/voip/calls/{id}/reports`, covered by

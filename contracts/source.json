@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "331700f93fb3e858c7269a116820d8d4bec67aa8",
-  "branch": "codex/customer-scoped-tokens",
-  "published": false,
-  "note": "Pushed commit on the monorepo branch, not yet merged. Re-pin to the merged commit before release; the repository field names the remote it will land in.",
+  "commit": "129d58aeb0eb6b9c6efadf3f07ade127834287d0",
+  "branch": "dev",
+  "published": true,
+  "note": "Merged commit on monorepo dev (merge of PR #207, Customer-scoped client tokens).",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "f4142ad6426ccc0e2f2df683a2d57ae00cf027b189ddaac392e1f6cffaf94072"
+      "sha256": "35bfcb79cca0776a24fdaa72a741c0a3722a78016c69f0a488f21214b10a7054"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "a115cde01ead807e5247368b462de1639147277198e02e801ba3c289b48f2ba5"
+      "sha256": "bb7b3e9f43929fea9272b780e4b8b5f6f603861873a40027019c14a836fb2279"
     }
   }
 }
