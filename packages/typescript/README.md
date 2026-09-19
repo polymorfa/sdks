@@ -262,7 +262,8 @@ Start an existing Linked Device session, then retrieve its connection status wit
 `sessions.retrieve`. The standard pairing flow is QuickLink. Direct JSON QR and phone
 pairing-code routes require `sessions:manage` plus an explicit organization
 entitlement; without it, the API returns `403` and the application must create
-a QuickLink. Operation inspection is console-only.
+a QuickLink. Follow a returned operation ID with `Client.operations.get` or
+`Client.operations.wait`.
 
 ```ts
 const started = await messaging.sessions.start("support", {
@@ -1447,6 +1448,7 @@ organization and project scope:
   `rotateSecret`
 - `webhookDeliveries.list`, `retrieve`, `listAttempts`, `retrieveAttempt`, and
   `retry`
+- `operations.list`, `get`, `listTransitions`, `cancel`, and `wait`
 
 ```ts
 const deliveries = await project.webhookDeliveries.list({

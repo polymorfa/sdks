@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Added `Client.operations` on organization and project clients: `list`
+  (filter by `projectId`, status, kind, resource, and time), `get` with an
+  optional server long-poll (`wait`, 0 to 30 seconds), `listTransitions`,
+  `cancel` (generates an `Idempotency-Key`), and `wait`, which chains
+  long-polls until the operation is terminal or `maxWaitMs` ends. Requires
+  `operations:read`; `cancel` requires `operations:cancel`.
+
 - Client rules: `ClientRules` and `SetClientRulesRequest` add
   `conversationTtlSeconds`, the seconds a sender stays replyable in
   `conversation` mode (300 to 604800; the API default is 86400).
