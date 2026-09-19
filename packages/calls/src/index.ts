@@ -1,38 +1,34 @@
-export { CallsClient, type CallsClientOptions } from "./client.js";
+// Public entry point: neutral calling operations only. Transport, signaling
+// and media framing live in internal modules (see `./internal`).
+export {
+  CallsClient,
+  type CallsClientOptions,
+  type PlaceOptions,
+} from "./client.js";
 export {
   Call,
   AudioTrack,
   VideoTrack,
+  type AnswerOptions,
+  type CallCapabilities,
+  type CallClaim,
   type CallDirection,
   type CallEndReason,
   type CallState,
+  type CallVideoFrame,
+  type CallVideoSource,
+  type OutgoingVideoFrame,
 } from "./call.js";
 export {
-  HttpCallsApi,
+  CallClaimedError,
   CallsApiError,
-  type CallsApi,
-  type AnswerMode,
-  type FetchLike,
-  type MediaTicket,
-  type PlaceCallRequest,
-  type SocketTicket,
-} from "./api.js";
-export { LifecycleSocket, type LifecycleEvent } from "./lifecycle.js";
-export { MediaSocket } from "./media.js";
-export {
-  DEFAULT_SAMPLE_RATE,
-  MediaFrameKind,
-  VideoCodec,
-  VIDEO_HEADER_BYTES,
-  decodeMediaFrame,
-  encodeAudioFrame,
-  encodeVideoFrame,
-  parseLifecycleFrame,
-  parseMediaControl,
-  type LifecycleFrame,
-  type MediaControlFrame,
-  type Participant,
-  type VideoFrame,
-  type VideoFrameHeader,
-} from "./protocol.js";
-export { Emitter } from "./events.js";
+  CallsAuthError,
+  CallsDisabledError,
+  CallsError,
+} from "./errors.js";
+export type {
+  CallsToken,
+  CallsTokenProvider,
+  CallsTokenRequest,
+} from "./token.js";
+export { DEFAULT_SAMPLE_RATE, type Participant } from "./protocol.js";

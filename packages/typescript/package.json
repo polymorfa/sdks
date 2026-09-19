@@ -1,0 +1,54 @@
+{
+  "name": "@polymorfa/sdk",
+  "version": "0.1.0-dev.0",
+  "description": "Handwritten Polymorfa server SDK for TypeScript and Node.js",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polymorfa/sdks.git",
+    "directory": "packages/typescript"
+  },
+  "bugs": {
+    "url": "https://github.com/polymorfa/sdks/issues"
+  },
+  "homepage": "https://github.com/polymorfa/sdks#readme",
+  "keywords": [
+    "polymorfa",
+    "messaging",
+    "sdk"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./calls": {
+      "types": "./dist/calls/index.d.ts",
+      "import": "./dist/calls/index.js"
+    },
+    "./calls/internal": {
+      "types": "./dist/calls/internal.d.ts",
+      "import": "./dist/calls/internal.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && tsc -p tsconfig.calls.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

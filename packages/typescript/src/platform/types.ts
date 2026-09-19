@@ -347,6 +347,11 @@ export interface Project {
   readonly stage: "development" | "production";
 }
 
+/** A project as returned by creation; new projects always start in development. */
+export interface CreatedProject extends Project {
+  readonly stage: "development";
+}
+
 export interface ProjectWithStats {
   readonly _id: string;
   readonly _creationTime: number;

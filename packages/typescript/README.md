@@ -2,11 +2,18 @@
 
 The handwritten Polymorfa server SDK for TypeScript and Node.js.
 
-Install the development branch:
+This package has not been published to npm. Build it from a clone of the
+development branch and install the packed tarball:
 
 ```bash
-npm install github:polymorfa/sdks#dev
+npm ci
+npm run build:workspaces
+npm pack -w @polymorfa/sdk
 ```
+
+The Calls client is part of this package as `@polymorfa/sdk/calls`.
+`@polymorfa/sdk/calls/internal` exists for the Polymorfa browser package;
+applications must not import it.
 
 Import the management and Messaging clients, errors, response metadata,
 request options, pagination, webhook utilities, and public request/response
@@ -75,8 +82,8 @@ a project token is exactly `pmfa_pt_` plus 94. The SDK checks only this public
 v1 grammar and never decodes or decrypts the credential.
 
 The SDK rejects `pmfa_ct_` browser tokens and CLI-only `pmfa_ls_` listener
-credentials before a management request. It also rejects call-agent
-`pmfa_at_` tickets, socket `pmfa_wst_` tickets, and simulated-device `pmfa_sd_`
+credentials before a management request. It also rejects retired call-agent
+`pmfa_at_` and socket `pmfa_wst_` tickets and simulated-device `pmfa_sd_`
 capabilities as server API keys. It does not expose a listener,
 `AsyncIterable`, event emitter, or forwarding API. Live forwarding belongs to
 `polymorfa listen`.
@@ -216,9 +223,10 @@ Next.js-compatible route adapter lives in `@polymorfa/nextjs`.
 
 Minting a client token and updating its session rules require all six client
 delegation scopes: `sessions:manage`, `messages:write`, `contacts:read`,
-`presence:read`, `presence:observe`, and `mcp`. The same requirement applies to
-`MessagingClient.voip.token`; the issuing key must cover every action that the
-session rules can delegate to the browser token.
+`presence:read`, `presence:observe`, and `mcp`. The issuing key must cover
+every action that the session rules can delegate to the browser token.
+`clientTokens.mint` (`POST /platform/client-tokens`) is the only token issuer,
+including for Calls; there are no call-specific tokens or tickets.
 
 ## Session connection lifecycle
 
@@ -301,6 +309,108 @@ The resource also provides `retrieve`, `picture`, `info`, `devices`,
 `businessProfile`, `blocklist`, and `unblock`. Contact operations are not
 available for Cloud API sessions.
 
+## Polymorfa Calls
+
+`MessagingClient.voip` controls calls from a server. Every incoming call rings
+until a participant accepts or rejects it; nothing answers automatically.
+
+```ts
+const placed = await messaging.voip.place(
+  { session: "support", to: "+15551234567", participant: "agent-7" },
+  { idempotencyKey: "place-order-1042" },
+);
+
+const accepted = await messaging.voip.accept(incomingCallId, {
+  exclusive: true,
+  participant: "agent-7",
+});
+console.log(accepted.data.data.answeredBy); // "server:agent-7"
+
+await messaging.voip.addParticipant(placed.data.data.callId, {
+  to: "+15557654321",
+});
+await messaging.voip.leave(incomingCallId, { connectionId: "conn_desk_1" });
+await messaging.voip.end(placed.data.data.callId);
+```
+
+- `place` requires `session` with a server credential and accepts `video`,
+  `exclusive`, and `participant`. Send an idempotency key to retry safely.
+- `accept` answers a ringing call. Later accepts from other participants join
+  the call unless a participant claimed it with `exclusive: true`; those
+  requests fail with `409 call_claimed` (`PolymorfaConflictError`). Repeating
+  an accept as the same participant has no further effect.
+- `reject` declines a ringing call and fails with `409 call_not_ringing`
+  otherwise.
+- `leave` closes one media connection. `end` ends the call for everyone.
+- `addParticipant` invites another WhatsApp user and returns a
+  `VoipParticipant`.
+
+A server credential acts as `server:<participant>`; `participant` matches
+`[A-Za-z0-9._:@-]{1,128}` and defaults to `default`. A client token acts as its
+own participant, so the SDK rejects `participant` for client tokens. The SDK
+checks `participant` and `connectionId` (`[A-Za-z0-9_-]{8,64}`) before sending.
+
+`voip.retrieveCallSettings(session)` and `voip.updateCallSettings(session,
+{ conferenceMode, inboundRoute, sipTrunkId, sipClaim, hostCloudApiCalls })` read and change the
+session's call settings through `/platform/sessions/{session}/call-settings`.
+`callsEnabled: false` turns calling off for the session: placing, answering,
+joining, inviting and media fail with `PolymorfaAuthorizationError`
+(`calls_disabled`), incoming calls are declined, and calls in progress
+continue. `conferenceMode` (default `true`) lets every participant you connect
+to a call (browser, app and server connections, and SIP trunk callers) hear
+the WhatsApp party and each other; with `false`, each hears only the WhatsApp
+party. The WhatsApp party always hears all of your participants, and nobody
+hears their own audio in either mode. `inboundRoute` is `clients` (the default) or
+`sip_trunk`, which also sends incoming calls to `sipTrunkId`; `sipClaim`
+(default `true`) makes the trunk's answer claim the call. On a Cloud API
+session, `hostCloudApiCalls: true` has Polymorfa Calls answer incoming calls;
+with the default `false`, your Graph API integration answers them. An update changes
+only the settings you send. Pass the `revision` you read as
+`expectedRevision` to fail with `PolymorfaConflictError` (`state_conflict`) if
+the settings changed meanwhile.
+These methods require a server credential.
+
+`voip.report(callId, report)` sends diagnostics your app measured for one of
+its media connections: `{ kind: "quality", connectionId, quality }` with at
+least one of `rttMs`, `jitterMs`, `packetsLost`, `packetsReceived`,
+`audioCodec`, `videoCodec`, `candidateType` and `reconnects`, or
+`{ kind: "error", connectionId, error: { code } }`. `client` optionally names
+the SDK (`sdk`, `version`, `platform`). The SDK rejects fields the platform
+does not accept before sending. The platform accepts one quality report per
+connection every 5 seconds and 20 error reports per minute, while the call is
+live and for 10 minutes after it ends. Treat reports as best-effort: do not
+retry a `4xx`, and drop reports refused with `429` or `503`. Client tokens
+need the `voip_signal` action and cannot send `participant`. The browser and
+Calls clients send these reports for you.
+
+## SIP trunks
+
+`Client.sipTrunks` manages the SIP trunks that connect a PBX to a project's
+calls. SIP trunks are a beta: changes return `403` until your team is enrolled.
+Team clients name the project on `list` and `create`; project clients use their
+own project.
+
+```ts
+const project = platform.project("018f0000-0000-7000-8000-000000000002");
+const { data } = await project.sipTrunks.create({
+  name: "Head office PBX",
+  direction: "both",
+  outbound: { targetUri: "sips:pbx.example.com", transport: "tls" },
+  inbound: { session: "support", allowedAddresses: ["203.0.113.10"] },
+});
+// Store data.inboundCredentials now; the password is not returned again.
+await project.sipTrunks.update(data.trunk.id, {
+  enabled: false,
+  expectedRevision: data.trunk.revision,
+});
+```
+
+`retrieve`, `update`, `delete`, and `rotateCredentials` take a trunk ID. A
+project client built from a team key reads the trunk first and refuses a trunk
+of another project with `PolymorfaNotFoundError`. Conflicts raise
+`PolymorfaConflictError` with `code` `sip_trunk_in_use`,
+`sip_trunk_revision_conflict`, `sip_trunk_limit`, or `state_conflict`.
+
 ## Calls and stable user identity
 
 The `calls`, `identities`, and `users` resources use public Polymorfa user IDs.
@@ -334,8 +444,8 @@ characters and the JSON `from` field must contain the incoming caller's
 public Polymorfa user ID or E.164 phone number. Path identifiers are URL-encoded.
 The SDK sends an idempotency key
 when supplied and only permits automatic retries of this POST when that key is
-nonempty. The source exposes no call list, retrieve, accept, history, watch,
-stream, or outgoing-call operation.
+nonempty. This session-scoped route is separate from the Polymorfa Calls
+routes on `MessagingClient.voip`.
 
 The pinned OpenAPI declares a generic synchronous `SuccessResponse` for call
 rejection. The live runner returns
@@ -1108,7 +1218,14 @@ if (isEvent(event, "history.sync")) {
 } else if (isEvent(event, "message.echo")) {
   console.log(event.payload.source, event.externalId);
 } else if (isEvent(event, "call.received")) {
-  console.log(event.payload.callId, event.payload.from.id);
+  console.log(
+    event.payload.callId,
+    event.payload.from.id,
+    event.payload.hasVideo,
+  );
+} else if (isEvent(event, "call.accepted")) {
+  // answeredBy and exclusive say who answered and whether they claimed it.
+  console.log(event.payload.answeredBy, event.payload.exclusive === true);
 } else if (isEvent(event, "message.failed")) {
   if (event.payload.error === "blocked_by_safety") {
     console.log(event.payload.code, event.payload.retryAfter);
