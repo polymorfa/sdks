@@ -45,6 +45,12 @@ export function createSameOriginTemplateBuilderTransport(
   };
 
   return Object.freeze({
+    async list(signal: AbortSignal) {
+      const value = await post({ action: "list" }, signal);
+      const templates = isRecord(value) ? value.templates : undefined;
+      if (!Array.isArray(templates)) throw invalidResponse();
+      return templates.map((template) => readTemplate({ template }));
+    },
     async load(templateId: string, signal: AbortSignal) {
       return readTemplate(await post({ action: "load", templateId }, signal));
     },

@@ -12,6 +12,8 @@ import type {
 } from "./types.js";
 
 export interface TemplateBuilderTransport {
+  /** Lists the project's templates, when the route supports it. */
+  list?(signal: AbortSignal): Promise<readonly ProjectTemplateDocument[]>;
   load(
     templateId: string,
     signal: AbortSignal,

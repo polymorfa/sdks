@@ -4,6 +4,24 @@ Framework-neutral Web Components for chat and composing, template
 building, and calls. Applications own controllers and data transports; elements
 render their immutable snapshots.
 
+## Drop-in elements
+
+```ts
+import { definePolymorfa } from "@polymorfa/elements";
+definePolymorfa({ tokenEndpoint: "/api/polymorfa/token" });
+```
+
+```html
+<pmfa-session-status></pmfa-session-status>
+<pmfa-connect-whatsapp></pmfa-connect-whatsapp>
+<pmfa-inbox style="height: 640px"></pmfa-inbox>
+```
+
+`definePolymorfa` is the equivalent of `<PolymorfaProvider tokenEndpoint>`:
+one client that refreshes tokens, shared by every element. Elements hide
+controls the grant lacks and warn once in development. `<pmfa-inbox>` has the
+conversation list and chat; the contact panel is React-only for now.
+
 ```ts
 import { definePolymorfaElements } from "@polymorfa/elements";
 

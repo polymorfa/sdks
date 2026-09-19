@@ -2,6 +2,49 @@
 
 React bindings for the framework-neutral controllers in `@polymorfa/browser`.
 
+## Drop-in components
+
+One provider, one server route, one component:
+
+```tsx
+"use client";
+import { Inbox, PolymorfaProvider } from "@polymorfa/react";
+
+<PolymorfaProvider tokenEndpoint="/api/polymorfa/token">
+  <Inbox />
+</PolymorfaProvider>;
+```
+
+With `tokenEndpoint`, the provider POSTs to your `createPolymorfaHandler`
+route, refreshes the token 60 s before it expires (80 % of the lifetime for
+short tokens), and retries failures with exponential backoff and jitter
+(1 s up to 30 s). A `401` or `403` stops retries until `refresh()`.
+`usePolymorfaClient()` returns the shared client; `usePermissions()` reports
+the grant for rendering only. `appearance` and `locale` work as before.
+
+| Component                                | Needs              | Notes                                                                                                                   |
+| ---------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `<Inbox/>`                               | `read_messages`    | List, chat and contact panel. Composer needs `send_message`, contact panel `read_contact`, the call button `voip_place` |
+| `<ConversationList/>`, `<ContactPanel/>` |                    | Inbox parts, usable alone                                                                                               |
+| `<ConnectWhatsAppButton/>`               | `connect_whatsapp` | Opens Polymorfa's hosted QuickLink page; never embeds it                                                                |
+| `<SessionStatus/>`                       |                    | Connection badge with a Retry button                                                                                    |
+| `<CallButton to/>`                       | `voip_place`       | Places a call with the browser Calls client and shows `CallSurface`                                                     |
+| `<TemplateManager/>`                     | `manage_templates` | Template list plus `<TemplateBuilder/>`                                                                                 |
+
+When a permission is missing, the control is hidden and development builds
+log one warning, for example
+`<Inbox/>: composer hidden; the token lacks "send_message". Add it to allow in mint().`
+Production builds log nothing.
+
+`<Inbox source={...}/>` accepts any `InboxDataSource`. The default reads your
+handler's `history` and `events` routes and sends with the client token. For
+a local cache, pass `createStoreInboxSource(store, { backend })` from
+`@polymorfa/store`. Every part takes `className` and `classNames` for its
+slots and follows `appearance`, including `unstyled`.
+
+`<CampaignComposer/>` is not included: campaign creation needs a server
+credential, so it belongs behind a handler route that does not exist yet.
+
 ```tsx
 import { MessageList, PolymorfaProvider } from "@polymorfa/react";
 
