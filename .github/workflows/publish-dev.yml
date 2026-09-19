@@ -73,6 +73,24 @@ jobs:
         run: |
           npm install --global npm@11.6.2
           npm --version
+      - name: Check npm publish authentication is configured
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -n "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "Using NPM_TOKEN fallback for authentication."
+          elif [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            echo "Using GitHub Actions OIDC token for trusted publishing."
+          else
+            {
+              echo "::error::No npm publish credentials available."
+              echo "Neither the NPM_TOKEN fallback secret nor OIDC (id-token: write) is configured."
+              echo "Set up trusted publishing or the NPM_TOKEN secret on the npm-dev environment before retrying."
+              echo "See docs/releasing.md, 'One-time operator setup'."
+            } >&2
+            exit 1
+          fi
       - name: Publish in dependency order
         env:
           # Empty unless the NPM_TOKEN fallback is configured. When empty,
@@ -89,7 +107,7 @@ jobs:
               echo "${name}@${VERSION} already published; skipping"
               continue
             fi
-            npm publish "packs/${tarball}" --tag dev --access public --provenance
+            npm publish "./packs/${tarball}" --tag dev --access public --provenance
           done
       - name: Summary
         env:
