@@ -154,7 +154,8 @@ export class BrowserTransport {
         if (
           retryableMethod &&
           attempt <= retries &&
-          isRetryableStatus(response.status)
+          isRetryableStatus(response.status) &&
+          !isIdempotentReplay(response)
         ) {
           await this.#sleep(
             retryDelay(response, attempt, this.#random),
@@ -327,20 +328,50 @@ function httpError(
               : response.status >= 500
                 ? "server"
                 : "http";
+  const fields = errorFields(details);
+  // Cross-origin callers cannot always read X-Request-Id; the body repeats it.
+  const requestId = fields.requestId ?? metadata.requestId;
   return new BrowserHttpError(errorMessage(details, response.status), {
     category,
     status: response.status,
     details,
     metadata,
-    ...(metadata.requestId === undefined
-      ? {}
-      : { requestId: metadata.requestId }),
+    ...(fields.code === undefined ? {} : { code: fields.code }),
+    ...(requestId === undefined ? {} : { requestId }),
+    ...(fields.docUrl === undefined ? {} : { docUrl: fields.docUrl }),
   });
+}
+
+function errorFields(details: unknown): {
+  readonly code?: string;
+  readonly requestId?: string;
+  readonly docUrl?: string;
+} {
+  if (typeof details !== "object" || details === null) return {};
+  const record = details as Record<string, unknown>;
+  const error =
+    typeof record.error === "object" && record.error !== null
+      ? (record.error as Record<string, unknown>)
+      : undefined;
+  const text = (value: unknown) =>
+    typeof value === "string" && value.length > 0 ? value : undefined;
+  const code = text(error ? error.code : record.code);
+  const requestId = text(error?.request_id);
+  const docUrl = text(record.docs);
+  return {
+    ...(code === undefined ? {} : { code }),
+    ...(requestId === undefined ? {} : { requestId }),
+    ...(docUrl === undefined ? {} : { docUrl }),
+  };
 }
 
 function errorMessage(details: unknown, status: number): string {
   if (typeof details === "object" && details !== null) {
     const record = details as Record<string, unknown>;
+    if (typeof record.error === "object" && record.error !== null) {
+      const message = (record.error as Record<string, unknown>).message;
+      if (typeof message === "string") return message;
+    }
     if (typeof record.message === "string") return record.message;
     if (typeof record.error === "string") return record.error;
   }
@@ -374,6 +405,14 @@ function classifyFailure(
       cause,
     },
   );
+}
+
+/**
+ * A replayed Idempotency-Key result is final: retrying returns the same
+ * recorded response, so a replayed failure is surfaced immediately.
+ */
+function isIdempotentReplay(response: Response): boolean {
+  return response.headers.get("idempotent-replayed") === "true";
 }
 
 function isRetryableStatus(status: number): boolean {

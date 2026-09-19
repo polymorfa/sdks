@@ -89,6 +89,15 @@ describe("Client organizations and projects", () => {
     expect(created.metadata.requestId).toBe("req_platform");
   });
 
+  it("accepts only the documented create-project icon types", async () => {
+    const { client } = await platformServer();
+    await client.projects.create({
+      name: "Typed icon",
+      // @ts-expect-error the API accepts only emoji, icon, or image icons
+      icon: { type: "invalid", value: "x" },
+    });
+  });
+
   it("maps production enrollment request, approval, and cancellation", async () => {
     const { client, requests } = await platformServer();
     const business = {

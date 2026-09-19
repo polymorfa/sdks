@@ -37,9 +37,14 @@ export {
   PolymorfaServerError,
   PolymorfaTimeoutError,
   PolymorfaValidationError,
+  POLYMORFA_ERROR_CODES,
+  isKnownPolymorfaErrorCode,
+  type KnownPolymorfaErrorCode,
+  type PolymorfaErrorCode,
   PolymorfaMediaIntegrityError,
   type MediaIntegrityErrorCode,
   type PolymorfaErrorOptions,
+  type PolymorfaRateLimitReason,
 } from "./errors.js";
 export { MessagingClient } from "./messaging/client.js";
 export {
@@ -367,6 +372,9 @@ export type {
   MessageSendContext,
   MessageTemplateSend,
   MintClientTokenRequest,
+  MintSessionClientTokenRequest,
+  MintCustomerClientTokenRequest,
+  CustomerClientTokenAction,
   MintClientTokenResponse,
   MessagingConnection,
   MuteChannelResponse,
@@ -589,7 +597,9 @@ export type {
   ProductionEnrollmentResult,
   CreatedProject,
   Project,
+  ProjectDefaultTier,
   ProjectIcon,
+  ProjectIconInput,
   ProjectToken,
   ProjectWithStats,
   SecurityIncident,
@@ -837,6 +847,7 @@ export type * from "./messaging/session-configuration.js";
 export { SessionConfigurationResource } from "./platform/session-configuration.js";
 
 export type * from "./messaging/testing-configuration.js";
+export { TEST_EVENT_FIXTURES } from "./messaging/testing-configuration.js";
 
 export {
   CloudOnboardingResource,

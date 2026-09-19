@@ -124,6 +124,23 @@ The server key that mints tokens needs all client delegation scopes:
 `sessions:manage`, `messages:write`, `contacts:read`, `presence:read`,
 `presence:observe`, and `mcp`.
 
+To mint one token for the numbers a Customer owns (beta), return `customer`
+instead of `session` from `resolve`. The server key also needs
+`customers:read`. Resolve the Customer ID on your server from the signed-in
+user; never take it from the request body.
+
+```ts
+resolve: async (subject) => ({
+  customer: await customerIdForUser(subject.userId),
+  ephemeralId: subject.userId,
+  allow: ["send_message", "read_presence"],
+}),
+```
+
+The adapter throws before minting when both or neither of `session` and
+`customer` are set, or when `allow` is set without `customer`; the route then
+answers `500 token_mint_failed`.
+
 `createTemplateBuilderRoute` pairs the browser template transport with
 `MessagingClient.templates`. The application authorizes every request and
 resolves both project scope and the Cloud API submission session on the server.

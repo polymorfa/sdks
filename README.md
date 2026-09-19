@@ -6,8 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`1681cdaa96c2625220c32fc3a912b380179fa9ee` (monorepo branch
-`t3code/calls-unified-5-client-diagnostics`, pushed but not merged). Graph-compatible APIs are outside
+`51026bfebe611c8f710ed9c1413a65ed16a0e01b` (monorepo `dev`). Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -24,14 +23,24 @@ this SDK's initial scope.
 | `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
 | `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
 
-The non-server packages are complete development artifacts on `dev`, but have
-not been published. Their names are the intended public identities in the
+The public packages are complete development artifacts on `dev`. They
+publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
 Polymorfa npm organization. No mobile-native binding is part of this milestone.
 
 ## TypeScript development install
 
-The packages have not been published to npm. Build them from a clone of the
-development branch and install the packed tarballs:
+Each push to `dev` publishes the public packages to npm under the `dev`
+dist-tag, with versions such as `0.1.0-dev.20260919094454`:
+
+```bash
+npm install @polymorfa/sdk@dev
+npm install @polymorfa/browser@dev   # browser apps
+```
+
+Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. No
+stable (`latest`) release exists. Publishing starts once the npm scope and
+trusted publisher are configured; until `npm view @polymorfa/sdk dist-tags`
+shows a `dev` tag, build from source and install the packed tarballs:
 
 ```bash
 git clone --branch dev https://github.com/polymorfa/sdks.git
@@ -41,6 +50,9 @@ npm run build:workspaces
 npm pack -w @polymorfa/sdk           # add -w @polymorfa/browser for browser apps
 npm install /path/to/sdks/polymorfa-sdk-0.1.0-dev.0.tgz   # from your application
 ```
+
+See [docs/releasing.md](docs/releasing.md) for the version scheme and the
+publishing workflow.
 
 `npm install github:polymorfa/sdks#dev` no longer installs the SDK: the
 repository root is a private workspace, and `@polymorfa/sdk` lives in
@@ -320,6 +332,36 @@ authentication, authorization, not found, conflict, rate limiting, server,
 connection, timeout, and caller-cancellation cases. HTTP errors carry status,
 request ID, decoded details, and response metadata when the server supplied
 them.
+
+Every API error also exposes the fields from its error body:
+
+```ts
+import { PolymorfaError, PolymorfaRateLimitError } from "@polymorfa/sdk";
+
+try {
+  await messaging.messages.send("sales", message);
+} catch (error) {
+  if (error instanceof PolymorfaError) {
+    error.code; // "conversation_window_closed", typed as PolymorfaErrorCode
+    error.requestId; // body `request_id`, else the X-Request-Id header
+    error.requestLogUrl; // Console request log, for team keys and project tokens
+    error.docUrl; // https://docs.polymorfa.com/api/errors#conversation-window-closed
+  }
+  if (error instanceof PolymorfaRateLimitError) {
+    error.rateLimitReason; // "whatsapp", "request_rate", ...
+  }
+}
+```
+
+`PolymorfaErrorCode` lists the documented codes, including
+`recipient_not_on_whatsapp`, `conversation_window_closed`,
+`template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
+`new_chat_limit_reached`, `whatsapp_account_restricted`, the BanSafe codes, and the Calls and SIP trunk codes,
+and still accepts codes a newer API adds. `POLYMORFA_ERROR_CODES` and
+`isKnownPolymorfaErrorCode()` are exported. `requestLogUrl` is absent for
+client tokens and for requests the API did not log. `BrowserError` exposes
+`code`, `requestId`, and `docUrl` from the same body, so browser callers get the
+request ID even when the `X-Request-Id` header is not readable.
 
 ## Timeouts, cancellation, retries, and idempotency
 
