@@ -1331,11 +1331,43 @@ export interface Operation {
 
 export type GetOperationResponse = SuccessEnvelope<Operation>;
 
-export interface MintClientTokenRequest {
-  readonly session: string;
+/** Actions a Customer-scoped client token can carry in `allow`. */
+export type CustomerClientTokenAction =
+  | "send_message"
+  | "send_reaction"
+  | "send_typing"
+  | "send_seen"
+  | "read_presence"
+  | "subscribe_presence"
+  | "read_contact";
+
+interface MintClientTokenBase {
   readonly ephemeralId: string;
   readonly ttlSeconds?: number;
 }
+
+/** A token limited to one session. */
+export interface MintSessionClientTokenRequest extends MintClientTokenBase {
+  readonly session: string;
+  readonly customer?: never;
+  readonly allow?: never;
+}
+
+/**
+ * A token covering the numbers one Customer owns when it is minted (beta).
+ * Each request also requires that the Customer still owns the number and
+ * passes that session's client rules. Requires `customers:read`.
+ */
+export interface MintCustomerClientTokenRequest extends MintClientTokenBase {
+  /** Polymorfa Customer ID. Never pass your own external ID. */
+  readonly customer: string;
+  /** Narrows the token's actions further; omit to use session rules alone. */
+  readonly allow?: readonly CustomerClientTokenAction[];
+  readonly session?: never;
+}
+
+export type MintClientTokenRequest =
+  MintSessionClientTokenRequest | MintCustomerClientTokenRequest;
 
 export interface ClientTokenValue {
   readonly token: string;

@@ -228,6 +228,32 @@ every action that the session rules can delegate to the browser token.
 `clientTokens.mint` (`POST /platform/client-tokens`) is the only token issuer,
 including for Calls; there are no call-specific tokens or tickets.
 
+### Customer-scoped tokens (beta)
+
+Pass a Polymorfa Customer ID in `customer` instead of `session` to mint one
+token for the numbers a Customer owns. The issuing key also needs
+`customers:read`, and the team must be enrolled in the Customer-scoped client
+tokens beta.
+
+```ts
+const { data } = await messaging.clientTokens.mint({
+  customer: "0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10",
+  ephemeralId: "user_42",
+  allow: ["send_message", "read_presence"],
+  ttlSeconds: 900,
+});
+```
+
+The token covers the numbers the Customer owns at mint time. A number moved
+to another Customer stops working with the token on the next request; a
+number moved to this Customer needs a new token. Each request is still
+limited by that session's client rules, and `allow` (typed as
+`CustomerClientTokenAction`) narrows it further. Customer-scoped tokens can't
+use Calls or MCP. Never pass your own external ID as `customer`; look up the
+Customer on your server first. The SDK throws `PolymorfaConfigurationError`
+before sending if both or neither of `session` and `customer` are set, or if
+`allow` is set without `customer`.
+
 ## Session connection lifecycle
 
 Session administration uses Platform routes and requires a server credential.
@@ -1718,6 +1744,45 @@ const invitation = await messaging.quickLinks.create({
 Fixture senders must be existing simulated numbers in that project. Test-number
 entitlements and history consent still apply; uploading a fixture does not enable
 hosted message storage.
+
+### Trigger test events
+
+Fire a named, signed test event for a Test number. The event reaches your
+webhooks and event history with `source: "test"` and does not change the Test
+number. Real numbers are refused with a `PolymorfaValidationError`, and each
+project can trigger 30 test events per minute (`PolymorfaRateLimitError`).
+
+```ts
+import { TEST_EVENT_FIXTURES } from "@polymorfa/sdk";
+
+const result = await messaging.testing.triggerEvent(projectId, {
+  session: "my-test-number",
+  event: "message.received", // one of TEST_EVENT_FIXTURES
+  overrides: { text: "hi", from: "+15550100001" },
+});
+console.log(result.data.eventId);
+
+// Rare events: failed delivery, ban warning, incoming call, template rejection.
+await messaging.testing.triggerEvent(projectId, {
+  session: "my-test-number",
+  event: "template.status",
+  overrides: { templateStatus: "REJECTED", reason: "INVALID_FORMAT" },
+});
+
+const { data } = await messaging.testing.listEventFixtures(projectId);
+```
+
+Set `fromSession` on a `message.received` request to send a simulated text
+from another connected Test number in the same project instead; the response
+has `delivery: "simulated"` and the event arrives as ordinary Test number
+activity. Both methods require an organization API key or project token with
+`sandbox:write` (trigger) or `sandbox:read` (list) and Test numbers access.
+
+Pass `{ idempotencyKey }` as the third argument to `triggerEvent` to retry
+safely. Repeating the request with the same key and body reuses the same event
+ID, so a retry after an uncertain response never creates a second event or
+duplicate webhook deliveries. With a key, the SDK also retries network and
+5xx failures.
 
 Trusted servers continue an issued Meta Cloud API invitation with
 `messaging.cloudOnboarding.advance({ quicklinkId, projectId, result })`.

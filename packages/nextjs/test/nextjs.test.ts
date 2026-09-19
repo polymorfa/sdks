@@ -45,6 +45,69 @@ describe("createClientTokenRoute", () => {
 });
 
 describe("createMessagingClientTokenMint", () => {
+  it("passes a Customer-scoped request through to the server SDK", async () => {
+    const mint = vi.fn(async () => ({
+      data: {
+        success: true as const,
+        data: {
+          token: "pmfa_ct_fixture",
+          expiresAt: "2026-08-19T20:00:00.000Z",
+        },
+      },
+    }));
+    const adapter = createMessagingClientTokenMint({
+      clientTokens: { mint },
+      resolve: () => ({
+        customer: "0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10",
+        ephemeralId: "user-1-tab-1",
+        allow: ["read_presence"],
+      }),
+    });
+    const request = new Request("https://app.test/token", { method: "POST" });
+    await expect(adapter({ userId: "user-1" }, request)).resolves.toMatchObject(
+      {
+        value: "pmfa_ct_fixture",
+      },
+    );
+    expect(mint).toHaveBeenCalledWith(
+      {
+        customer: "0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10",
+        ephemeralId: "user-1-tab-1",
+        allow: ["read_presence"],
+      },
+      { signal: request.signal },
+    );
+  });
+
+  it.each([
+    [
+      "both session and customer",
+      {
+        session: "support",
+        customer: "0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10",
+        ephemeralId: "u",
+      },
+    ],
+    ["neither session nor customer", { ephemeralId: "u" }],
+    [
+      "allow on a session token",
+      { session: "support", ephemeralId: "u", allow: ["send_message"] },
+    ],
+  ])("refuses %s before minting", async (_label, input) => {
+    const mint = vi.fn();
+    const adapter = createMessagingClientTokenMint({
+      clientTokens: { mint },
+      resolve: () => input as never,
+    });
+    await expect(
+      adapter(
+        { userId: "user-1" },
+        new Request("https://app.test/token", { method: "POST" }),
+      ),
+    ).rejects.toBeInstanceOf(TypeError);
+    expect(mint).not.toHaveBeenCalled();
+  });
+
   it("maps the server SDK envelope to normalized browser claims", async () => {
     const mint = vi.fn(async () => ({
       data: {

@@ -342,7 +342,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -362,7 +363,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -382,7 +384,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -402,7 +405,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -422,7 +426,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -484,7 +489,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -504,7 +510,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -524,7 +531,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -544,7 +552,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -564,7 +573,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -641,7 +651,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -661,7 +672,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -681,7 +693,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -701,7 +714,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -721,7 +735,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -781,7 +796,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -801,7 +817,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -821,7 +838,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -841,7 +859,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -861,7 +880,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -925,7 +945,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -945,7 +966,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -965,7 +987,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -985,7 +1008,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -1005,7 +1029,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -1078,7 +1103,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -1098,7 +1124,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -1118,7 +1145,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -1138,7 +1166,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -1158,7 +1187,8 @@
                     "type": "conflict_error",
                     "code": "state_conflict",
                     "message": "The request conflicts with the resource state.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
@@ -1178,7 +1208,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -1242,7 +1273,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -1262,7 +1294,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -1282,7 +1315,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -1302,7 +1336,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -1322,7 +1357,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -1382,7 +1418,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -1402,7 +1439,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -1422,7 +1460,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -1442,7 +1481,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -1462,7 +1502,8 @@
                     "type": "conflict_error",
                     "code": "sip_trunk_limit",
                     "message": "The project has reached its SIP trunk limit.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#sip-trunk-limit"
@@ -1482,7 +1523,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -1502,7 +1544,8 @@
                     "type": "api_error",
                     "code": "sip_unavailable",
                     "message": "SIP trunks are not available.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#sip-unavailable"
@@ -1564,7 +1607,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -1584,7 +1628,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -1604,7 +1649,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -1624,7 +1670,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -1644,7 +1691,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -1716,7 +1764,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -1736,7 +1785,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -1756,7 +1806,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -1776,7 +1827,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -1796,7 +1848,8 @@
                     "type": "conflict_error",
                     "code": "sip_trunk_revision_conflict",
                     "message": "The SIP trunk changed since it was read.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#sip-trunk-revision-conflict"
@@ -1816,7 +1869,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -1836,7 +1890,8 @@
                     "type": "api_error",
                     "code": "sip_unavailable",
                     "message": "SIP trunks are not available.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#sip-unavailable"
@@ -1897,7 +1952,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -1917,7 +1973,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -1937,7 +1994,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -1957,7 +2015,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -1977,7 +2036,8 @@
                     "type": "conflict_error",
                     "code": "sip_trunk_in_use",
                     "message": "A session still sends incoming calls to this SIP trunk.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#sip-trunk-in-use"
@@ -1997,7 +2057,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -2060,7 +2121,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -2080,7 +2142,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -2100,7 +2163,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -2120,7 +2184,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -2140,7 +2205,8 @@
                     "type": "conflict_error",
                     "code": "state_conflict",
                     "message": "The request conflicts with the resource state.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
@@ -2160,7 +2226,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -2180,7 +2247,8 @@
                     "type": "api_error",
                     "code": "sip_unavailable",
                     "message": "SIP trunks are not available.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#sip-unavailable"
@@ -2241,7 +2309,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -2261,7 +2330,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -2281,7 +2351,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -2301,7 +2372,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -2321,7 +2393,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -2390,7 +2463,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -2410,7 +2484,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -2430,7 +2505,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -2450,7 +2526,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -2470,7 +2547,8 @@
                     "type": "conflict_error",
                     "code": "state_conflict",
                     "message": "The request conflicts with the resource state.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
@@ -2490,7 +2568,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -2510,7 +2589,8 @@
                     "type": "api_error",
                     "code": "service_unavailable",
                     "message": "A required service is unavailable. Check completion before repeating a write.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
@@ -2738,7 +2818,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -2758,7 +2839,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -2778,7 +2860,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -2798,7 +2881,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -2818,7 +2902,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -2880,7 +2965,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -2900,7 +2986,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -2920,7 +3007,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -2940,7 +3028,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -2960,7 +3049,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -3022,7 +3112,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -3042,7 +3133,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -3062,7 +3154,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -3082,7 +3175,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -3102,7 +3196,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -3164,7 +3259,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -3184,7 +3280,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -3204,7 +3301,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -3224,7 +3322,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -3244,7 +3343,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -3315,7 +3415,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -3335,7 +3436,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -3355,7 +3457,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -3375,7 +3478,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -3395,7 +3499,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -3466,7 +3571,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -3486,7 +3592,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -3506,7 +3613,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -3526,7 +3634,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -3546,7 +3655,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -3617,7 +3727,8 @@
                     "type": "invalid_request_error",
                     "code": "invalid_parameter",
                     "message": "Correct the invalid request field.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
@@ -3637,7 +3748,8 @@
                     "type": "authentication_error",
                     "code": "invalid_credential",
                     "message": "Supply a valid credential.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
@@ -3657,7 +3769,8 @@
                     "type": "permission_error",
                     "code": "permission_denied",
                     "message": "The credential does not have access to this resource.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
@@ -3677,7 +3790,8 @@
                     "type": "invalid_request_error",
                     "code": "resource_not_found",
                     "message": "The resource is unavailable to this caller.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
@@ -3697,7 +3811,8 @@
                     "type": "api_error",
                     "code": "internal_error",
                     "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
@@ -21299,6 +21414,17 @@
               "maximum": 500,
               "default": 100
             }
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            }
           }
         ],
         "responses": {
@@ -22142,7 +22268,8 @@
               "type",
               "code",
               "message",
-              "param"
+              "param",
+              "request_id"
             ],
             "properties": {
               "type": {
@@ -22169,6 +22296,15 @@
                 "type": "string",
                 "nullable": true,
                 "description": "Invalid request field, or null when no field applies."
+              },
+              "request_id": {
+                "type": "string",
+                "description": "Matches the X-Request-Id response header. Include it when you contact support."
+              },
+              "request_log_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
               }
             }
           },
@@ -23827,7 +23963,7 @@
           "revision": {
             "type": "integer",
             "minimum": 0,
-            "description": "Increases on every change; 0 while the session uses the defaults."
+            "description": "Increases on every change; 0 while the session uses the defaults. Send it as `expectedRevision` to refuse an update that would overwrite someone else's change."
           },
           "updatedAt": {
             "type": "string",
@@ -31276,7 +31412,30 @@
           "session": {
             "type": "string",
             "minLength": 1,
-            "description": "ID of the session this token can access."
+            "description": "ID of the session this token can access. Provide exactly one of `session` or `customer`."
+          },
+          "customer": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Polymorfa Customer ID. The token covers the numbers this Customer owns when it is minted, and only while the Customer still owns each one. Provide exactly one of `session` or `customer`. Requires the `customers:read` scope and enrollment in the Customer-scoped client tokens beta."
+          },
+          "allow": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "send_message",
+                "send_reaction",
+                "send_typing",
+                "send_seen",
+                "read_presence",
+                "subscribe_presence",
+                "read_contact"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 7,
+            "description": "Actions this Customer-scoped token may use. Each request is also limited by the session's client rules. Omit to use the client rules alone. Only valid with `customer`."
           },
           "ephemeralId": {
             "type": "string",
@@ -31289,7 +31448,6 @@
           }
         },
         "required": [
-          "session",
           "ephemeralId"
         ]
       },
@@ -33130,7 +33288,23 @@
                   "credential_verification_unavailable",
                   "session_not_ready",
                   "command_dispatch_failed",
-                  "result_unknown"
+                  "result_unknown",
+                  "recipient_not_on_whatsapp",
+                  "conversation_window_closed",
+                  "template_not_approved",
+                  "media_too_large",
+                  "whatsapp_rate_limited",
+                  "new_chat_limit_reached",
+                  "whatsapp_account_restricted",
+                  "bansafe_suspended",
+                  "bansafe_org_suspended",
+                  "bansafe_cold_blocked",
+                  "bansafe_cold_held",
+                  "bansafe_throttled",
+                  "bansafe_daily_allowance_reached",
+                  "bansafe_accounting_unavailable",
+                  "bansafe_send_outcome_unknown",
+                  "campaigns_not_entitled"
                 ]
               },
               "message": {
@@ -33139,13 +33313,23 @@
               "param": {
                 "type": "string",
                 "nullable": true
+              },
+              "request_id": {
+                "type": "string",
+                "description": "Matches the X-Request-Id response header. Include it when you contact support."
+              },
+              "request_log_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
               }
             },
             "required": [
               "type",
               "code",
               "message",
-              "param"
+              "param",
+              "request_id"
             ]
           },
           "data": {
