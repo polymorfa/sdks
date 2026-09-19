@@ -2735,6 +2735,17 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/platform/call-retention",
+      "operationId": "getCallRetention",
+      "fingerprint": "18d796737434ac61999425bc07004e49dfdd5c1f507bc4556044c11e41e04212",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.callRetention.retrieve"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/platform/campaigns",
       "operationId": "listPlatformCampaigns",
       "fingerprint": "5b3da6a0dedd223a2445031682bd92ce2cd9d38ff5f0a87f93aadf68030d564c",
@@ -4403,6 +4414,17 @@
       "typescript": {
         "status": "excluded",
         "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/call-retention",
+      "operationId": "updateCallRetention",
+      "fingerprint": "e1de317ce1d558be88ccf18d7d903d47b292bb1f43b4fd53f1c2a86b73a0c3aa",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.callRetention.update"
       }
     },
     {
