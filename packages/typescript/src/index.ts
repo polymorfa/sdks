@@ -37,7 +37,14 @@ export {
   PolymorfaServerError,
   PolymorfaTimeoutError,
   PolymorfaValidationError,
+  POLYMORFA_ERROR_CODES,
+  isKnownPolymorfaErrorCode,
+  type KnownPolymorfaErrorCode,
+  type PolymorfaErrorCode,
+  PolymorfaMediaIntegrityError,
+  type MediaIntegrityErrorCode,
   type PolymorfaErrorOptions,
+  type PolymorfaRateLimitReason,
 } from "./errors.js";
 export { MessagingClient } from "./messaging/client.js";
 export {
@@ -150,7 +157,36 @@ export { ContactsResource } from "./messaging/contacts.js";
 export { GroupsResource } from "./messaging/groups.js";
 export { LabelsResource } from "./messaging/labels.js";
 export { IdentitiesResource } from "./messaging/identities.js";
-export { MessagingMediaResource } from "./messaging/media.js";
+export {
+  MessagingMediaResource,
+  signedUrlExpiry,
+  type MediaDownloadBlob,
+  type MediaDownloadRedirectUrl,
+  type MediaDownloadStream,
+  type MediaDownloadStreamedUrl,
+  type MediaDownloadUrl,
+} from "./messaging/media.js";
+export {
+  DEFAULT_WHATSAPP_MEDIA_MAX_BYTES,
+  decodeWhatsAppMedia,
+  decryptWhatsAppMedia,
+  deriveWhatsAppMediaKeys,
+  downloadWhatsAppMedia,
+  isWhatsAppMediaUrl,
+  webCryptoMediaCrypto,
+  type ResolvedDecryptOptions,
+  type WhatsAppMediaCrypto,
+  type WhatsAppMediaDecryptOptions,
+  type WhatsAppMediaDescriptor,
+  type WhatsAppMediaDownload,
+  type WhatsAppMediaDownloadOptions,
+  type WhatsAppMediaInput,
+  type WhatsAppMediaKeys,
+  type WhatsAppMediaKind,
+  type WhatsAppMediaMessage,
+  type WhatsAppMediaVerifyMode,
+} from "./media/whatsapp.js";
+export { parseContentDispositionFilename } from "./transport/content-disposition.js";
 export { MessagesResource } from "./messaging/messages.js";
 export { MessagingBanSafeResource } from "./messaging/bansafe.js";
 export { ObservationPoliciesResource } from "./messaging/observation-policies.js";
@@ -336,6 +372,9 @@ export type {
   MessageSendContext,
   MessageTemplateSend,
   MintClientTokenRequest,
+  MintSessionClientTokenRequest,
+  MintCustomerClientTokenRequest,
+  CustomerClientTokenAction,
   MintClientTokenResponse,
   MessagingConnection,
   MuteChannelResponse,
@@ -560,6 +599,7 @@ export type {
   Project,
   ProjectDefaultTier,
   ProjectIcon,
+  ProjectIconInput,
   ProjectToken,
   ProjectWithStats,
   SecurityIncident,
@@ -677,6 +717,8 @@ export type {
   RawRequest,
   RequestOptions,
   ResponseMetadata,
+  StreamRedirect,
+  StreamResponse,
 } from "./transport/types.js";
 export { SDK_VERSION } from "./version.js";
 export {
@@ -805,6 +847,7 @@ export type * from "./messaging/session-configuration.js";
 export { SessionConfigurationResource } from "./platform/session-configuration.js";
 
 export type * from "./messaging/testing-configuration.js";
+export { TEST_EVENT_FIXTURES } from "./messaging/testing-configuration.js";
 
 export {
   CloudOnboardingResource,

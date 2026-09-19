@@ -8,11 +8,87 @@
   `Idempotency-Key` when you don't pass `idempotencyKey`, and their automatic
   retries reuse it. The browser client's `messages.send` and `react` do the
   same. A response with `Idempotent-Replayed: true` is final and is not
-  retried. A caller-supplied key still wins.
-- `projects.create` now returns `CreatedProject`, the shape the API returns,
-  instead of `Project`. `CreateProjectRequest.defaultTier` is typed as
-  `ProjectDefaultTier` (`free`, `standard`, or `pro`), and
-  `ProductionEnrollmentResult` gains `billingMode: "payg"`.
+  retried, in both the server and browser transports. A caller-supplied key
+  still wins. `PolymorfaErrorCode` adds `idempotency_completed`,
+  `idempotency_conflict`, `idempotency_in_progress`, and
+  `idempotency_outcome_unknown`.
+- `CreateProjectRequest.icon` is typed as `ProjectIconInput`, whose `type` is
+  `emoji`, `icon`, or `image`, matching what the API accepts.
+- Dev prereleases of `@polymorfa/sdk`, `@polymorfa/browser`, `@polymorfa/ui`,
+  `@polymorfa/elements`, `@polymorfa/react`, `@polymorfa/store`,
+  `@polymorfa/nextjs` and `@polymorfa/devtools` publish to npm under the
+  `dev` dist-tag on each push to `dev`. Versions follow
+  `0.1.0-dev.<UTC timestamp>`, internal dependencies are pinned to the same
+  version, and each release carries npm provenance. Install with
+  `npm install @polymorfa/sdk@dev`. See [releasing](docs/releasing.md).
+- Added `MessagingClient.testing.triggerEvent()` and
+  `MessagingClient.testing.listEventFixtures()` to fire signed test events for
+  Test numbers, with typed fixture names (`TestEventFixture`,
+  `TEST_EVENT_FIXTURES`), per-fixture `TestEventOverrides`, and the
+  `fromSession` simulated-message option. `triggerEvent()` accepts an optional
+  `idempotencyKey` so a retried trigger reuses the same event.
+- `PolymorfaError` exposes `requestLogUrl`, `docUrl`, and `rateLimitReason`,
+  and `requestId` now prefers the error body's `request_id` over the
+  `X-Request-Id` header. `code` is typed as `PolymorfaErrorCode`, a union of
+  the documented codes (including the new WhatsApp codes
+  `recipient_not_on_whatsapp`, `conversation_window_closed`,
+  `template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
+  `new_chat_limit_reached`, and `whatsapp_account_restricted`; the Calls and SIP trunk codes; and the Platform `payg_required` and `premium_required` codes) that still
+  accepts any string. A `413` now throws `PolymorfaValidationError`.
+  `BrowserError` gains `docUrl` and reads `code`, `requestId`, and the message
+  from the error object. The `polymorfa-ratelimit-reason` header is kept in
+  response metadata.
+- Breaking (types only): `Client.projects.create` returns `CreatedProject`, and
+  `CreateProjectRequest.defaultTier` is `ProjectDefaultTier`.
+  `ProductionEnrollmentResult` adds `billingMode: "payg"`.
+- `MessagingClient.clientTokens.mint` accepts `customer` (a Polymorfa
+  Customer ID) instead of `session`, with an optional `allow` list, to mint a
+  Customer-scoped client token (beta). The token covers the numbers the
+  Customer owns when it is minted; the API re-checks ownership on every
+  request. `MintClientTokenRequest` is now a union of
+  `MintSessionClientTokenRequest` and `MintCustomerClientTokenRequest`, and
+  `CustomerClientTokenAction` lists the allowed actions. The SDK throws
+  `PolymorfaConfigurationError` before sending when both or neither of
+  `session` and `customer` are set, or when `allow` is set without
+  `customer`. `@polymorfa/nextjs` `createMessagingClientTokenMint` accepts
+  the same `customer` and `allow` from `resolve`.
+- New opt-in package `@polymorfa/store` keeps a local IndexedDB copy of
+  webhook-shaped events. `createPolymorfaStore()` files messages,
+  conversations, contacts, presence, calls, labels, sessions, and templates
+  into separate stores, logs every event, and keeps other types in `custom`.
+  Ingest skips repeated event IDs and never replaces newer state with older
+  state. `connectEventSource()` follows `fromEventSource()`,
+  `fromEventStream()`, `fromWebSocket()`, or `fromIterable()` sources and
+  saves a resume cursor. `fromEventStream({ format: "project" })` reads the
+  project event stream frames through a backend relay.
+  `createStoreConversationSource()` backs
+  `ConversationController`, and `@polymorfa/store/react` adds
+  `usePolymorfaStoreQuery()`. Stores sync across tabs, apply retention, fall
+  back to memory when IndexedDB is unavailable, and accept `encrypt`,
+  `decrypt`, and `redact` options. Message content is stored on the device.
+  The Polymorfa client-token event stream is planned and not available yet.
+  See the [store guide](packages/store/README.md).
+- Added streaming media downloads to `MessagingClient.media`.
+  `downloadStream()` returns an unbuffered body with `contentType`,
+  `contentLength`, `filename` and `requestId`. `downloadBlob()` returns a
+  typed `Blob`. `downloadUrl()` returns the short-lived signed storage URL
+  without following it. When the SDK follows a storage redirect, it never
+  sends the Polymorfa credential to the storage host. `download()` keeps its
+  existing behavior.
+- Added direct WhatsApp media downloads.
+  `MessagingClient.media.downloadFromWhatsApp()` and
+  `downloadWhatsAppMedia()` fetch the encrypted file named by a message
+  webhook's `media` field from `*.whatsapp.net`, then verify and decrypt it
+  locally. `decodeWhatsAppMedia()`, `deriveWhatsAppMediaKeys()` and
+  `decryptWhatsAppMedia()` are exported for custom fetching. Integrity and
+  size failures raise the new `PolymorfaMediaIntegrityError`.
+- Added the `@polymorfa/sdk/node` entry point. It provides
+  `downloadMediaToFile()`, `downloadWhatsAppMediaToFile()`,
+  `writeStreamToFile()` (temporary file, then rename) and `nodeMediaCrypto`
+  for streaming decryption.
+- `@polymorfa/nextjs` adds `createMediaDownloadRoute()` with `redirect`,
+  `proxy` and `whatsapp` modes, a required fail-closed `authorize` callback,
+  and safe response headers.
 - Packaging: `@polymorfa/browser` depends on `@polymorfa/sdk` and uses its
   Calls client (`@polymorfa/sdk/calls`) instead of a separate package, so
   there is one copy of the Calls classes: `instanceof CallsDisabledError`
@@ -256,6 +332,18 @@
   Component list part `message-list` moved to the same wrapper. Web
   Components now share one adopted stylesheet instead of a `<style>` element
   per render, and default dark-theme danger buttons use dark text.
+- Added `examples/full-platform`, Acme Support: a multi-agent WhatsApp help
+  desk built with Next.js on every Polymorfa SDK surface. It has a ticket inbox
+  with queues, assignment, transfer, tags, private notes, quick replies,
+  templates, interactive messages, voice notes, calls, contacts, campaigns,
+  connections, a dashboard, admin pages, and light and dark themes from 360px
+  wide up. Without credentials it runs on built-in demo data. History comes
+  from the app's own webhook-fed store, live changes arrive as
+  webhook-shaped server-sent events, and an opt-in IndexedDB cache opens chats
+  instantly. QuickLink appears only as a created hosted `url`. The example
+  checks the request origin on state-changing routes, rejects replayed
+  webhooks, and serves media with download-safe headers. It needs the
+  `ComposeBox` and `mountDevAssistant` options added in this release.
 
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`

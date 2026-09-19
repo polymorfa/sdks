@@ -45,6 +45,23 @@ The server key that mints tokens needs all client delegation scopes:
 `sessions:manage`, `messages:write`, `contacts:read`, `presence:read`,
 `presence:observe`, and `mcp`.
 
+To mint one token for the numbers a Customer owns (beta), return `customer`
+instead of `session` from `resolve`. The server key also needs
+`customers:read`. Resolve the Customer ID on your server from the signed-in
+user; never take it from the request body.
+
+```ts
+resolve: async (subject) => ({
+  customer: await customerIdForUser(subject.userId),
+  ephemeralId: subject.userId,
+  allow: ["send_message", "read_presence"],
+}),
+```
+
+The adapter throws before minting when both or neither of `session` and
+`customer` are set, or when `allow` is set without `customer`; the route then
+answers `500 token_mint_failed`.
+
 `createTemplateBuilderRoute` pairs the browser template transport with
 `MessagingClient.templates`. The application authorizes every request and
 resolves both project scope and the Cloud API submission session on the server.
@@ -69,6 +86,47 @@ export const POST = createTemplateBuilderRoute({
 Browser request bodies cannot override either resolver. Responses are private,
 non-cacheable, and server failures are returned without credential or internal
 error details.
+
+`createMediaDownloadRoute` serves Messaging media to signed-in users. Its
+`authorize` callback is required, and the route denies with `403` when the
+callback returns `null`, throws, or returns an invalid grant. Look up the
+media in your own records inside `authorize` instead of trusting an ID from
+the URL.
+
+```ts
+import { MessagingClient } from "@polymorfa/sdk";
+import { createMediaDownloadRoute } from "@polymorfa/nextjs";
+
+const messaging = new MessagingClient({
+  credential: { type: "apiKey", value: process.env.POLYMORFA_API_KEY! },
+});
+
+export const GET = createMediaDownloadRoute({
+  client: messaging,
+  mode: "proxy", // or "redirect" | "whatsapp"
+  authorize: async (request) => {
+    const attachment = await attachmentForUser(request);
+    return attachment ? { mediaId: attachment.polymorfaMediaId } : null;
+  },
+});
+```
+
+| Mode       | Behavior                                                                                                                                                          |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `redirect` | Answers `302` with the short-lived signed storage URL. If the API streams that file instead, the route proxies it.                                                |
+| `proxy`    | Streams the bytes through your route.                                                                                                                             |
+| `whatsapp` | Downloads and decrypts the file from the WhatsApp CDN on the server. `authorize` returns `{ message: { type, media } }`, loaded from your stored webhook payload. |
+
+The route accepts only `GET`. Every response carries `Cache-Control: private,
+no-store`, `X-Content-Type-Options: nosniff` and `Referrer-Policy:
+no-referrer`. Proxied responses also carry `Content-Security-Policy: sandbox`.
+Common image, audio and video types (`INLINE_MEDIA_TYPES`, which excludes SVG)
+are served `inline` with their normalized MIME type. All other types are served
+as `application/octet-stream` with `Content-Disposition: attachment`. Filenames
+are sanitized and sent with an RFC 6266 `filename*` parameter. The route
+returns `404` when the media is missing and `502` for any other upstream
+failure, with no upstream details. Redirect mode hands the signed URL to the
+browser, so use it only when the user may hold that link until it expires.
 
 `readVerifiedWebhook` preserves the raw request body and delegates verification
 to `constructWebhookEvent` from `@polymorfa/sdk`.

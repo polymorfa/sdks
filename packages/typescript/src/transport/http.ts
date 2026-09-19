@@ -16,6 +16,7 @@ import {
 } from "../errors.js";
 import { SDK_VERSION } from "../version.js";
 import { decodeResponseBody, encodeRequestBody } from "./body.js";
+import { parseContentDispositionFilename } from "./content-disposition.js";
 import {
   canRetryRequest,
   defaultSleep,
@@ -27,6 +28,8 @@ import type {
   ApiResponse,
   RawRequest,
   ResponseMetadata,
+  StreamRedirect,
+  StreamResponse,
   TransportOptions,
 } from "./types.js";
 
@@ -73,6 +76,257 @@ export class HttpTransport {
         response.ok ? response.arrayBuffer() : decodeResponseBody(response),
       "application/octet-stream, */*",
     );
+  }
+
+  /**
+   * Returns a successful response body as an unbuffered stream.
+   *
+   * Retries apply only before a body is handed to the caller. `timeoutMs`
+   * bounds the time until response headers arrive; the caller's `signal`
+   * stays linked to the body until it is fully read or cancelled. A redirect
+   * is followed manually, without Polymorfa credentials or caller headers.
+   */
+  async requestStream(request: RawRequest): Promise<StreamResponse> {
+    const result = await this.#stream(request, false);
+    if (!("body" in result)) {
+      throw new PolymorfaError("Unexpected unresolved redirect.");
+    }
+    return result;
+  }
+
+  /**
+   * Like `requestStream`, but returns a redirect target instead of following
+   * it. The body of a redirect response is discarded.
+   */
+  async requestStreamOrRedirect(
+    request: RawRequest,
+  ): Promise<StreamResponse | StreamRedirect> {
+    return this.#stream(request, true);
+  }
+
+  async #stream(
+    request: RawRequest,
+    returnRedirect: boolean,
+  ): Promise<StreamResponse | StreamRedirect> {
+    validatePath(request.path);
+    const retries = assertNonNegativeInteger(
+      request.maxNetworkRetries ?? this.#maxNetworkRetries,
+      "maxNetworkRetries",
+      true,
+    );
+    const eligible = canRetryRequest(request.method, request.idempotencyKey);
+    const apiUrl = requestUrl(this.#baseUrl, request.path, request.query);
+    let attempt = 0;
+
+    while (true) {
+      attempt += 1;
+      let opened: OpenedResponse | undefined;
+      try {
+        opened = await this.#open(request, apiUrl, {
+          headers: this.#headers(request, "application/octet-stream, */*"),
+          redirect: "manual",
+        });
+        let response = opened.response;
+        const metadata = responseMetadata(response, attempt);
+        if (response.type === "opaqueredirect" || response.status === 0) {
+          await opened.discard();
+          throw new PolymorfaConfigurationError(
+            "This runtime does not expose manual redirect responses.",
+            "fetch",
+          );
+        }
+        if (REDIRECT_STATUSES.has(response.status)) {
+          let location: string;
+          try {
+            location = redirectLocation(response, apiUrl, metadata);
+          } finally {
+            // Cancel the redirect body whether or not its location is valid.
+            await opened.discard();
+          }
+          if (returnRedirect) {
+            return Object.freeze({ location, metadata });
+          }
+          opened = await this.#open(request, new URL(location), {
+            headers: new Headers({
+              accept: "application/octet-stream, */*",
+              "user-agent": `polymorfa-node/${SDK_VERSION}`,
+            }),
+            redirect: "follow",
+            credentials: "omit",
+            referrerPolicy: "no-referrer",
+          });
+          response = opened.response;
+          if (!response.ok) {
+            await opened.discard();
+            if (
+              eligible &&
+              attempt <= retries &&
+              isRetryableStatus(response.status)
+            ) {
+              await this.#sleep(
+                retryDelayMs(response, attempt, this.#random),
+                request.signal,
+              );
+              continue;
+            }
+            throw new PolymorfaError(
+              `Media storage returned status ${response.status}.`,
+              {
+                status: response.status,
+                code: "media_storage_error",
+                ...(metadata.requestId === undefined
+                  ? {}
+                  : { requestId: metadata.requestId }),
+                metadata,
+              },
+            );
+          }
+          return streamResult(opened, apiUrl, metadata, true);
+        }
+        if (response.ok) {
+          return streamResult(opened, apiUrl, metadata, false);
+        }
+        const data = await opened.readError();
+        if (
+          eligible &&
+          attempt <= retries &&
+          isRetryableStatus(response.status)
+        ) {
+          await this.#sleep(
+            retryDelayMs(response, attempt, this.#random),
+            request.signal,
+          );
+          continue;
+        }
+        throw apiError(response, data, metadata);
+      } catch (error) {
+        opened?.release();
+        if (error instanceof PolymorfaError) {
+          throw error;
+        }
+        if (request.signal?.aborted === true) {
+          throw cancelledError(error);
+        }
+        if (error instanceof RequestTimeout) {
+          if (eligible && attempt <= retries) {
+            await this.#sleep(
+              retryDelayMs(undefined, attempt, this.#random),
+              request.signal,
+            );
+            continue;
+          }
+          throw new PolymorfaTimeoutError(
+            `The request exceeded its ${error.timeoutMs}ms timeout.`,
+            { code: "request_timeout", cause: error },
+          );
+        }
+        if (eligible && attempt <= retries) {
+          await this.#sleep(
+            retryDelayMs(undefined, attempt, this.#random),
+            request.signal,
+          );
+          continue;
+        }
+        throw new PolymorfaConnectionError(
+          "The request could not reach the Polymorfa API.",
+          { code: "connection_error", cause: error },
+        );
+      }
+    }
+  }
+
+  #headers(request: RawRequest, accept: string): Headers {
+    const headers = new Headers(request.headers);
+    if (!headers.has("accept")) headers.set("accept", accept);
+    if (this.#authorization !== undefined) {
+      headers.set("authorization", this.#authorization);
+    }
+    headers.set("user-agent", `polymorfa-node/${SDK_VERSION}`);
+    const apiVersion = request.apiVersion ?? this.#apiVersion;
+    if (apiVersion !== undefined) {
+      headers.set("polymorfa-version", apiVersion);
+    }
+    if (request.idempotencyKey !== undefined) {
+      headers.set("idempotency-key", request.idempotencyKey);
+    }
+    return headers;
+  }
+
+  async #open(
+    request: RawRequest,
+    url: URL,
+    init: Pick<
+      RequestInit,
+      "headers" | "redirect" | "credentials" | "referrerPolicy"
+    >,
+  ): Promise<OpenedResponse> {
+    const timeoutMs = assertNonNegativeInteger(
+      request.timeoutMs ?? this.#timeoutMs,
+      "timeoutMs",
+      false,
+    );
+    const controller = new AbortController();
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutMs);
+    const cancel = () => controller.abort(request.signal?.reason);
+    let released = false;
+    const release = () => {
+      if (released) return;
+      released = true;
+      clearTimeout(timer);
+      request.signal?.removeEventListener("abort", cancel);
+    };
+    if (request.signal?.aborted === true) {
+      cancel();
+    } else {
+      request.signal?.addEventListener("abort", cancel, { once: true });
+    }
+    const guard = async <T>(operation: () => Promise<T>): Promise<T> => {
+      try {
+        return await operation();
+      } catch (error) {
+        if (timedOut) throw new RequestTimeout(timeoutMs, error);
+        throw error;
+      }
+    };
+    let response: Response;
+    try {
+      response = await guard(() =>
+        this.#fetch(url, {
+          method: request.method,
+          ...init,
+          signal: controller.signal,
+        }),
+      );
+    } catch (error) {
+      release();
+      throw error;
+    }
+    return {
+      response,
+      signal: request.signal,
+      release,
+      startBody: () => clearTimeout(timer),
+      discard: async () => {
+        try {
+          await response.body?.cancel();
+        } catch {
+          // The body is discarded; a cancellation failure changes nothing.
+        } finally {
+          release();
+        }
+      },
+      readError: async () => {
+        try {
+          return await guard(() => decodeResponseBody(response));
+        } finally {
+          release();
+        }
+      },
+    };
   }
 
   async #request<T>(
@@ -223,6 +477,140 @@ export class HttpTransport {
   }
 }
 
+interface OpenedResponse {
+  readonly response: Response;
+  readonly signal: AbortSignal | undefined;
+  release(): void;
+  startBody(): void;
+  discard(): Promise<void>;
+  readError(): Promise<unknown>;
+}
+
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+
+function cancelledError(cause: unknown): PolymorfaCancelledError {
+  return new PolymorfaCancelledError(
+    "The request was cancelled by the caller.",
+    { code: "request_cancelled", cause },
+  );
+}
+
+function isLoopbackHost(hostname: string): boolean {
+  return (
+    hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]"
+  );
+}
+
+function redirectLocation(
+  response: Response,
+  apiUrl: URL,
+  metadata: ResponseMetadata,
+): string {
+  const header = response.headers.get("location");
+  let target: URL | undefined;
+  try {
+    target = header === null ? undefined : new URL(header, apiUrl);
+  } catch {
+    target = undefined;
+  }
+  if (
+    target === undefined ||
+    target.username !== "" ||
+    target.password !== "" ||
+    !(
+      target.protocol === "https:" ||
+      (target.protocol === "http:" && isLoopbackHost(target.hostname))
+    )
+  ) {
+    throw new PolymorfaError(
+      "The API returned a redirect without a valid HTTPS location.",
+      {
+        status: response.status,
+        code: "invalid_redirect",
+        ...(metadata.requestId === undefined
+          ? {}
+          : { requestId: metadata.requestId }),
+        metadata,
+      },
+    );
+  }
+  return target.toString();
+}
+
+function streamResult(
+  opened: OpenedResponse,
+  apiUrl: URL,
+  metadata: ResponseMetadata,
+  redirected: boolean,
+): StreamResponse {
+  const { response } = opened;
+  opened.startBody();
+  const contentType = response.headers.get("content-type") ?? undefined;
+  const lengthHeader = response.headers.get("content-length")?.trim();
+  const contentLength =
+    lengthHeader !== undefined && /^[0-9]{1,15}$/.test(lengthHeader)
+      ? Number(lengthHeader)
+      : undefined;
+  const filename = parseContentDispositionFilename(
+    response.headers.get("content-disposition"),
+  );
+  return Object.freeze({
+    body: guardedBody(response.body, opened),
+    ...(contentType === undefined ? {} : { contentType }),
+    ...(contentLength === undefined ? {} : { contentLength }),
+    ...(filename === undefined ? {} : { filename }),
+    url: apiUrl.toString(),
+    redirected,
+    metadata,
+  });
+}
+
+function guardedBody(
+  body: ReadableStream<Uint8Array> | null,
+  opened: OpenedResponse,
+): ReadableStream<Uint8Array> {
+  if (body === null) {
+    opened.release();
+    return new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.close();
+      },
+    });
+  }
+  const reader = body.getReader();
+  return new ReadableStream<Uint8Array>(
+    {
+      async pull(controller) {
+        try {
+          const { done, value } = await reader.read();
+          if (done) {
+            opened.release();
+            controller.close();
+            return;
+          }
+          controller.enqueue(value);
+        } catch (error) {
+          const aborted = opened.signal?.aborted === true;
+          opened.release();
+          controller.error(
+            aborted
+              ? cancelledError(error)
+              : new PolymorfaConnectionError(
+                  "The media response body could not be read.",
+                  { code: "connection_error", cause: error },
+                ),
+          );
+        }
+      },
+      async cancel(reason) {
+        opened.release();
+        await reader.cancel(reason);
+      },
+    },
+    { highWaterMark: 0 },
+  );
+}
+
 function validateBaseUrl(
   value: string,
   authorization: string | undefined,
@@ -337,6 +725,7 @@ const SAFE_RESPONSE_HEADERS = [
   "retry-after",
   "x-ratelimit-limit",
   "x-ratelimit-remaining",
+  "polymorfa-ratelimit-reason",
 ] as const;
 
 function apiError(
@@ -344,17 +733,28 @@ function apiError(
   body: unknown,
   metadata: ResponseMetadata,
 ): PolymorfaError {
+  const fields = errorFields(body);
+  const requestId = fields.requestId ?? metadata.requestId;
+  const rateLimitReason =
+    response.headers.get("polymorfa-ratelimit-reason") ?? undefined;
   const options: PolymorfaErrorOptions = {
     status: response.status,
-    ...(metadata.requestId === undefined
+    ...(requestId === undefined ? {} : { requestId }),
+    ...(fields.requestLogUrl === undefined
       ? {}
-      : { requestId: metadata.requestId }),
+      : { requestLogUrl: fields.requestLogUrl }),
+    ...(fields.docUrl === undefined ? {} : { docUrl: fields.docUrl }),
+    ...(rateLimitReason === undefined ? {} : { rateLimitReason }),
     details: body,
     metadata,
-    ...errorCode(body),
+    ...(fields.code === undefined ? {} : { code: fields.code }),
   };
   const message = errorMessage(body, response.status);
-  if (response.status === 400 || response.status === 422)
+  if (
+    response.status === 400 ||
+    response.status === 413 ||
+    response.status === 422
+  )
     return new PolymorfaValidationError(message, options);
   if (response.status === 401)
     return new PolymorfaAuthenticationError(message, options);
@@ -386,16 +786,36 @@ function errorMessage(body: unknown, status: number): string {
   return `Polymorfa API request failed with status ${status}.`;
 }
 
-function errorCode(body: unknown): Pick<PolymorfaErrorOptions, "code"> {
-  if (typeof body === "object" && body !== null) {
-    const record = body as Record<string, unknown>;
-    const code =
-      typeof record.error === "object" && record.error !== null
-        ? (record.error as Record<string, unknown>).code
-        : record.code;
-    if (typeof code === "string") return { code };
-  }
-  return {};
+interface ErrorFields {
+  readonly code?: string;
+  readonly requestId?: string;
+  readonly requestLogUrl?: string;
+  readonly docUrl?: string;
+}
+
+/**
+ * Reads the documented error object, `{ error: { code, request_id,
+ * request_log_url }, docs }`, and the older `{ error, code }` shape.
+ */
+function errorFields(body: unknown): ErrorFields {
+  if (typeof body !== "object" || body === null) return {};
+  const record = body as Record<string, unknown>;
+  const error =
+    typeof record.error === "object" && record.error !== null
+      ? (record.error as Record<string, unknown>)
+      : undefined;
+  const text = (value: unknown) =>
+    typeof value === "string" && value.length > 0 ? value : undefined;
+  const code = text(error ? error.code : record.code);
+  const requestId = text(error?.request_id);
+  const requestLogUrl = text(error?.request_log_url);
+  const docUrl = text(record.docs);
+  return {
+    ...(code === undefined ? {} : { code }),
+    ...(requestId === undefined ? {} : { requestId }),
+    ...(requestLogUrl === undefined ? {} : { requestLogUrl }),
+    ...(docUrl === undefined ? {} : { docUrl }),
+  };
 }
 
 function assertNonNegativeInteger(

@@ -371,9 +371,17 @@ export interface ProjectWithStats {
 
 export type ProjectDefaultTier = "free" | "standard" | "pro";
 
+/** Icon accepted by `projects.create`. */
+export interface ProjectIconInput {
+  readonly type: "emoji" | "icon" | "image";
+  readonly value: string;
+  readonly color?: string;
+  readonly storageId?: string;
+}
+
 export interface CreateProjectRequest {
   readonly name: string;
-  readonly icon?: ProjectIcon;
+  readonly icon?: ProjectIconInput;
   readonly defaultTier?: ProjectDefaultTier;
 }
 

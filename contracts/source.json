@@ -1,17 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "a3ae8546f3dc090052aee2b8b68c62ac169e10b2",
-  "note": "Messaging and platform snapshots also fold in the calls-folding and SIP trunk operations from branch t3code/calls-unified-5-client-diagnostics (source commit 1681cdaa96c2625220c32fc3a912b380179fa9ee), which are pushed but not yet merged upstream. Re-pin to one merged commit before release.",
+  "commit": "51026bfebe611c8f710ed9c1413a65ed16a0e01b",
+  "branch": "dev",
+  "published": true,
+  "note": "Merged commit on monorepo dev (merge of PR #197, Messaging idempotency).",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "66320b3c2cff2d23d8747684e11696290feb43d24cce6bed39006674a02f8fe8"
+      "sha256": "3c130c2a7b2d314a309a8d0a2759e41fb17b4adfbee1f6e8fa21690b2b3ceeed"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "0fc4b5322c81458f78c3f89ac56f92008e00d2248fbe0a0001624ab648febe7a"
+      "sha256": "dae2b8bd22eea862247b13aa78d9ca7fc9623815f5eda3f2436b1fd3ec3d8fdb"
     }
   }
 }

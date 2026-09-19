@@ -173,15 +173,21 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "a3ae8546f3dc090052aee2b8b68c62ac169e10b2",
-      total: 420,
-      covered: 304,
+      sourceCommit: "51026bfebe611c8f710ed9c1413a65ed16a0e01b",
+      total: 422,
+      covered: 306,
       partial: 0,
       missing: 0,
       excluded: 116,
       changed: 0,
-      resolutions: [],
     });
+    // Monorepo dev now carries the merged Calls diagnostics route the SDK
+    // already implements, so there is no unresolved removal left.
+    const resolutions = (result.report?.resolutions ?? []) as Array<{
+      operationId: string;
+      status: string;
+    }>;
+    expect(resolutions).toEqual([]);
   });
 
   it("maps the complete Customers contract to the Platform resource", () => {
