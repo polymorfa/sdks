@@ -2,9 +2,31 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`2259a1fd331c6ddbc8ad56a04333100ebfce7c2e` on monorepo `dev`. `source.json` records the
+`4b75534812dc25e839fda3c2ba231e46afe39534` on monorepo branch
+`t3code/calls-analytics`. That branch is not merged to `dev` yet: it is a
+coordinated PR dependency, and the snapshots must be re-synced to the merged
+`dev` commit before this SDK revision merges. `source.json` records the
 original paths and SHA-256 hashes. `coverage.json` uses the same source
 revision.
+
+Revision `4b755348` adds call analytics and call detail records:
+`GET /platform/calls/stats` (`getCallStats`), `GET /platform/calls`
+(`listCallRecords`) and `GET /platform/calls/export` (`exportCallRecords`),
+covered by `Client.calls.stats`, `Client.calls.list` and
+`Client.calls.export` (with `Client.calls.exportAll` walking export pages).
+The export returns CSV or NDJSON rather than a JSON envelope and carries the
+next cursor in the `Polymorfa-Next-Cursor` header, which the transport now
+keeps in response metadata. The stats `503` response references the shared
+`PropagationPending` response, whose description is about stored settings;
+the SDK treats it as an ordinary `PolymorfaServerError`. The same revision
+corrects the `PlatformAccessEventStreamFrame` discriminator mapping to the
+`PlatformAccessEventStream*Frame` schemas the document defines, which changes
+the `streamProjectEvents` fingerprint; `Client.events.stream` is unchanged.
+The Messaging contract adds the `bansafe.health_changed` and
+`bansafe.risk_changed` webhook events (typed as
+`BanSafeHealthChangedPayload` and `BanSafeRiskChangedPayload`); no Messaging
+operation fingerprint changed. The SIP trunk operation descriptions drop the
+beta enrollment note; descriptions do not affect fingerprints.
 
 Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
 `MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
@@ -16,12 +38,12 @@ operations were added or removed by this re-sync.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        308 |
+| Covered             |        311 |
 | Missing             |          0 |
 | Excluded            |        116 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        424 |
+| Total               |        427 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -54,10 +76,9 @@ successful live call.
 Revision `2259a1fd` adds the project event stream. `Client.events.stream`
 covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
 resume, and `Client.events.acknowledgeStream` covers its manual
-acknowledgement route. The Platform `PlatformAccessEventStreamFrame`
-discriminator mapping at this revision points at unprefixed schema names
-(`EventStreamReadyFrame` and so on) that the document does not define; the
-snapshot keeps the source bytes unchanged. The same revision adds
+acknowledgement route. Its `PlatformAccessEventStreamFrame` discriminator
+mapping pointed at unprefixed schema names that the document did not define;
+revision `4b755348` corrects it. The same revision adds
 `conversationTtlSeconds` to client rules, turns `recipientMode` into an enum,
 and sets a minimum of 0 on `rateLimit` and `maxDaily`; the client-rules types
 follow.
