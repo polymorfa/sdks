@@ -1745,6 +1745,45 @@ Fixture senders must be existing simulated numbers in that project. Test-number
 entitlements and history consent still apply; uploading a fixture does not enable
 hosted message storage.
 
+### Trigger test events
+
+Fire a named, signed test event for a Test number. The event reaches your
+webhooks and event history with `source: "test"` and does not change the Test
+number. Real numbers are refused with a `PolymorfaValidationError`, and each
+project can trigger 30 test events per minute (`PolymorfaRateLimitError`).
+
+```ts
+import { TEST_EVENT_FIXTURES } from "@polymorfa/sdk";
+
+const result = await messaging.testing.triggerEvent(projectId, {
+  session: "my-test-number",
+  event: "message.received", // one of TEST_EVENT_FIXTURES
+  overrides: { text: "hi", from: "+15550100001" },
+});
+console.log(result.data.eventId);
+
+// Rare events: failed delivery, ban warning, incoming call, template rejection.
+await messaging.testing.triggerEvent(projectId, {
+  session: "my-test-number",
+  event: "template.status",
+  overrides: { templateStatus: "REJECTED", reason: "INVALID_FORMAT" },
+});
+
+const { data } = await messaging.testing.listEventFixtures(projectId);
+```
+
+Set `fromSession` on a `message.received` request to send a simulated text
+from another connected Test number in the same project instead; the response
+has `delivery: "simulated"` and the event arrives as ordinary Test number
+activity. Both methods require an organization API key or project token with
+`sandbox:write` (trigger) or `sandbox:read` (list) and Test numbers access.
+
+Pass `{ idempotencyKey }` as the third argument to `triggerEvent` to retry
+safely. Repeating the request with the same key and body reuses the same event
+ID, so a retry after an uncertain response never creates a second event or
+duplicate webhook deliveries. With a key, the SDK also retries network and
+5xx failures.
+
 Trusted servers continue an issued Meta Cloud API invitation with
 `messaging.cloudOnboarding.advance({ quicklinkId, projectId, result })`.
 `result` contains the Embedded Signup authorization code, selected WABA and phone

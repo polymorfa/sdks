@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added `MessagingClient.testing.triggerEvent()` and
+  `MessagingClient.testing.listEventFixtures()` to fire signed test events for
+  Test numbers, with typed fixture names (`TestEventFixture`,
+  `TEST_EVENT_FIXTURES`), per-fixture `TestEventOverrides`, and the
+  `fromSession` simulated-message option. `triggerEvent()` accepts an optional
+  `idempotencyKey` so a retried trigger reuses the same event.
 - `PolymorfaError` exposes `requestLogUrl`, `docUrl`, and `rateLimitReason`,
   and `requestId` now prefers the error body's `request_id` over the
   `X-Request-Id` header. `code` is typed as `PolymorfaErrorCode`, a union of

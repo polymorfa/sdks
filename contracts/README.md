@@ -16,17 +16,19 @@ operations were added or removed by this re-sync.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        304 |
+| Covered             |        306 |
 | Missing             |          0 |
-| Excluded            |        118 |
+| Excluded            |        116 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
 | Total               |        422 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
-(`GET /messaging/testing/{projectId}/events/fixtures`). Neither has a typed
-SDK method at this revision, so both are excluded.
+(`GET /messaging/testing/{projectId}/events/fixtures`), covered by
+`MessagingClient.testing.triggerEvent` (with the optional `Idempotency-Key`
+header through `options.idempotencyKey`) and
+`MessagingClient.testing.listEventFixtures`.
 
 An earlier revision added app-reported call diagnostics
 (`POST /messaging/voip/calls/{id}/reports`, covered by

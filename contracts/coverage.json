@@ -4654,8 +4654,8 @@
       "operationId": "listTestEventFixtures",
       "fingerprint": "78ac2d5501c33dcedf556cf8df8136775ed6d8433c5d729a63a7f523ecc96a2c",
       "typescript": {
-        "status": "excluded",
-        "reason": "Test event fixture listing has no typed SDK method in this revision; the CLI trigger command lands separately."
+        "status": "covered",
+        "method": "MessagingClient.testing.listEventFixtures"
       }
     },
     {
@@ -4665,8 +4665,8 @@
       "operationId": "triggerTestEvent",
       "fingerprint": "8aaf01017aab4175f0c57fd5420394cfc3b867bd38a9ce1ff38a7a03dd10f2b1",
       "typescript": {
-        "status": "excluded",
-        "reason": "Test event triggering has no typed SDK method in this revision; the CLI trigger command lands separately."
+        "status": "covered",
+        "method": "MessagingClient.testing.triggerEvent"
       }
     }
   ]
