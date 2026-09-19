@@ -24,13 +24,13 @@ this SDK's initial scope.
 | `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
 | `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
 
-The non-server packages are complete development artifacts on `dev`. They
+The public packages are complete development artifacts on `dev`. They
 publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
 Polymorfa npm organization. No mobile-native binding is part of this milestone.
 
 ## TypeScript development install
 
-Each merge to `dev` publishes the public packages to npm under the `dev`
+Each push to `dev` publishes the public packages to npm under the `dev`
 dist-tag, with versions such as `0.1.0-dev.20260919094454`:
 
 ```bash
