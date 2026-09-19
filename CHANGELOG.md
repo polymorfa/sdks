@@ -16,6 +16,27 @@
   `decrypt`, and `redact` options. Message content is stored on the device.
   The Polymorfa client-token event stream is planned and not available yet.
   See the [store guide](packages/store/README.md).
+- Added streaming media downloads to `MessagingClient.media`.
+  `downloadStream()` returns an unbuffered body with `contentType`,
+  `contentLength`, `filename` and `requestId`. `downloadBlob()` returns a
+  typed `Blob`. `downloadUrl()` returns the short-lived signed storage URL
+  without following it. When the SDK follows a storage redirect, it never
+  sends the Polymorfa credential to the storage host. `download()` keeps its
+  existing behavior.
+- Added direct WhatsApp media downloads.
+  `MessagingClient.media.downloadFromWhatsApp()` and
+  `downloadWhatsAppMedia()` fetch the encrypted file named by a message
+  webhook's `media` field from `*.whatsapp.net`, then verify and decrypt it
+  locally. `decodeWhatsAppMedia()`, `deriveWhatsAppMediaKeys()` and
+  `decryptWhatsAppMedia()` are exported for custom fetching. Integrity and
+  size failures raise the new `PolymorfaMediaIntegrityError`.
+- Added the `@polymorfa/sdk/node` entry point. It provides
+  `downloadMediaToFile()`, `downloadWhatsAppMediaToFile()`,
+  `writeStreamToFile()` (temporary file, then rename) and `nodeMediaCrypto`
+  for streaming decryption.
+- `@polymorfa/nextjs` adds `createMediaDownloadRoute()` with `redirect`,
+  `proxy` and `whatsapp` modes, a required fail-closed `authorize` callback,
+  and safe response headers.
 - Packaging: `@polymorfa/browser` depends on `@polymorfa/sdk` and uses its
   Calls client (`@polymorfa/sdk/calls`) instead of a separate package, so
   there is one copy of the Calls classes: `instanceof CallsDisabledError`
@@ -259,6 +280,18 @@
   Component list part `message-list` moved to the same wrapper. Web
   Components now share one adopted stylesheet instead of a `<style>` element
   per render, and default dark-theme danger buttons use dark text.
+- Added `examples/full-platform`, Acme Support: a multi-agent WhatsApp help
+  desk built with Next.js on every Polymorfa SDK surface. It has a ticket inbox
+  with queues, assignment, transfer, tags, private notes, quick replies,
+  templates, interactive messages, voice notes, calls, contacts, campaigns,
+  connections, a dashboard, admin pages, and light and dark themes from 360px
+  wide up. Without credentials it runs on built-in demo data. History comes
+  from the app's own webhook-fed store, live changes arrive as
+  webhook-shaped server-sent events, and an opt-in IndexedDB cache opens chats
+  instantly. QuickLink appears only as a created hosted `url`. The example
+  checks the request origin on state-changing routes, rejects replayed
+  webhooks, and serves media with download-safe headers. It needs the
+  `ComposeBox` and `mountDevAssistant` options added in this release.
 
 - Breaking: removed the embedded QuickLink UI. `@polymorfa/browser` no longer
   exports `QuickLinkController` or its transport types, `@polymorfa/elements`

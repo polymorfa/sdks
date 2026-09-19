@@ -40,6 +40,8 @@ describe("npm package", () => {
     expect(paths).toContain("dist/calls/index.js");
     expect(paths).toContain("dist/calls/index.d.ts");
     expect(paths).toContain("dist/calls/internal.js");
+    expect(paths).toContain("dist/node.js");
+    expect(paths).toContain("dist/node.d.ts");
     expect(paths).toContain("package.json");
     expect(
       paths.some((path) => path.includes("/src/") || path.includes("/test/")),
@@ -134,6 +136,35 @@ describe("npm package", () => {
       listenerApiExported: false,
       memberInvite: "undefined",
       organizationUpdate: "undefined",
+    });
+
+    const nodeConsumer = join(directory, "node-consumer.mjs");
+    writeFileSync(
+      nodeConsumer,
+      [
+        'import * as node from "@polymorfa/sdk/node";',
+        'import { MessagingClient, decodeWhatsAppMedia } from "@polymorfa/sdk";',
+        'const messaging = new MessagingClient({ credential: { type: "apiKey", value: "pmfa_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" } });',
+        "console.log(JSON.stringify({ exports: Object.keys(node).sort(), stream: typeof messaging.media.downloadStream, url: typeof messaging.media.downloadUrl, blob: typeof messaging.media.downloadBlob, whatsapp: typeof messaging.media.downloadFromWhatsApp, decode: typeof decodeWhatsAppMedia }));",
+      ].join("\n"),
+    );
+    const nodeImported = spawnSync(process.execPath, [nodeConsumer], {
+      cwd: directory,
+      encoding: "utf8",
+    });
+    expect(nodeImported.status, nodeImported.stderr).toBe(0);
+    expect(JSON.parse(nodeImported.stdout)).toEqual({
+      exports: [
+        "downloadMediaToFile",
+        "downloadWhatsAppMediaToFile",
+        "nodeMediaCrypto",
+        "writeStreamToFile",
+      ],
+      stream: "function",
+      url: "function",
+      blob: "function",
+      whatsapp: "function",
+      decode: "function",
     });
 
     const callsConsumer = join(directory, "calls-consumer.mjs");
