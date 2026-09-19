@@ -1405,7 +1405,11 @@ export type ClientAction =
 
 /** Rules as returned by `GET /platform/sessions/{session}/client-rules`. */
 export interface ClientRules {
-  readonly recipientMode: ClientRecipientMode | "";
+  /**
+   * Who client tokens may send to. Rules saved before `verified` was retired
+   * may still return `verified`; it cannot be set.
+   */
+  readonly recipientMode: ClientRecipientMode | "verified";
   /** Comma-separated {@link ClientAction} list. */
   readonly allowedActions: string;
   /** Requests per minute per ephemeral id (0 = unlimited). */
@@ -1414,6 +1418,11 @@ export interface ClientRules {
   readonly maxDaily: number;
   /** Comma-separated browser origins allowed to use the token. */
   readonly allowedOrigins: string;
+  /**
+   * Seconds a sender stays replyable in `conversation` mode after their latest
+   * inbound message (300 to 604800).
+   */
+  readonly conversationTtlSeconds: number;
   /** Calls: max distinct in-flight calls per token (0 = unlimited). */
   readonly maxConcurrency: number;
   /** Polymorfa Calls: call setups per minute per ephemeral id (0 = platform default of 10). */
@@ -1429,10 +1438,18 @@ export interface SetClientRulesRequest {
   readonly recipientMode: ClientRecipientMode;
   /** Comma-separated {@link ClientAction} list. */
   readonly allowedActions?: string;
+  /** Requests per minute per ephemeral id; 0 or more (0 = unlimited). */
   readonly rateLimit?: number;
+  /** Sends per day per ephemeral id; 0 or more (0 = unlimited). */
   readonly maxDaily?: number;
   readonly allowedOrigins?: string;
   readonly enabled: boolean;
+  /**
+   * Seconds a sender stays replyable in `conversation` mode after their latest
+   * inbound message: 300 (5 minutes) to 604800 (7 days). The API default is
+   * 86400 (24 hours).
+   */
+  readonly conversationTtlSeconds?: number;
   /** Calls: max distinct in-flight calls per token (0 = unlimited). */
   readonly maxConcurrency?: number;
   /** Polymorfa Calls: call setups per minute per ephemeral id (0 = platform default). */

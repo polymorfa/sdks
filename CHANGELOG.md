@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+- Client rules: `ClientRules` and `SetClientRulesRequest` add
+  `conversationTtlSeconds`, the seconds a sender stays replyable in
+  `conversation` mode (300 to 604800; the API default is 86400).
+  `ClientRules.recipientMode` is now `conversation`, `any`, `none`, or the
+  legacy `verified` that older saved rules may return, instead of allowing an
+  empty string. `rateLimit` and `maxDaily` must be 0 or more.
+- `PolymorfaErrorCode` adds `feature_unavailable`,
+  `stream_connection_limit_reached`, `stream_cursor_expired`, and
+  `stream_cursor_invalid`.
+- Added `Client.events.stream()`, an async iterator over a project's
+  server-sent event stream with type filters, resume from a cursor, automatic
+  reconnect with backoff, heartbeat supervision, and retention-gap reporting.
+  `Client.events.acknowledgeStream()` confirms progress on manual-ack streams,
+  and `Client.events.liveSource()` adapts the stream for `@polymorfa/store`.
+  The API route is a beta that requires `events:listen` and team enrollment.
+- `CreateProjectRequest.defaultTier` is typed as `"free" | "standard" | "pro"`,
+  and `ProductionEnrollmentResult` includes `billingMode: "payg"`.
 - Drop-in components. `createPolymorfaHandler()` in `@polymorfa/nextjs`
   serves the token, webhook, media, history, events, connect and template
   routes from one catch-all route, with `toExpress()` and `toHono()`

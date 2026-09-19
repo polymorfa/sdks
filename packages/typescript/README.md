@@ -1478,11 +1478,58 @@ console.log(replay.data.operationId);
 
 List methods return `CursorPage<T>`. Mutations return owner-specific typed
 receipts and preserve response metadata, request IDs, and idempotency receipts.
-The SDK has no operation inspection, cancellation, or event listener transport.
+The SDK has no operation inspection or cancellation methods.
 
 Console and staff routes remain absent from the server client and its raw
-guidance. The CLI listener protocol is separate from the durable events API;
-the SDK exposes no connection, cursor, reconnect, gap, or forwarding methods.
+guidance. The CLI listener protocol stays private to the CLI.
+
+### Stream events in real time
+
+`events.stream()` follows a project's server-sent event stream. It needs a
+credential with `events:listen` and a team enrolled in the Event streams beta;
+without enrollment the iterator throws `PolymorfaAuthorizationError` with code
+`feature_unavailable`. Organization clients pass `projectId`.
+
+```ts
+const controller = new AbortController();
+const stream = client.project(projectId).events.stream({
+  types: ["message.*", "session.connected"],
+  since: savedCursor, // optional: resume after this cursor
+  signal: controller.signal,
+  onGap: (gap) => console.warn(`${gap.missedEvents} events expired`),
+});
+
+for await (const item of stream) {
+  if (item.webhook) handle(item.webhook); // the exact webhook body
+  await saveCursor(item.cursor);
+}
+```
+
+Each item carries the event metadata (`item.event`, the same fields as
+`events.retrieve`), the decoded webhook body (`item.webhook`, or `null` when
+hosted message storage did not keep it), and its `cursor`. The iterator
+reconnects with exponential backoff and jitter after a dropped connection, an
+`expiry`, a missed heartbeat, `429`, `5xx`, or a recoverable gap, resuming from
+the last delivered cursor. It ends with an error on an invalid or expired
+cursor, an authentication or authorization failure, or a `revoked` stream.
+Aborting `signal` or leaving the loop ends it without an error.
+
+Pass `ack: "manual"` to have the server wait for your processing, and confirm
+progress with
+`events.acknowledgeStream(item.streamId, { cursor: item.cursor, sequence: item.sequence })`.
+
+`events.liveSource()` returns a `LiveEventSource` for `@polymorfa/store`:
+
+```ts
+connectEventSource(
+  store,
+  client.project(projectId).events.liveSource({ types: ["message.*"] }),
+);
+```
+
+It passes webhook bodies to the store with their cursors and skips events whose
+body was not kept. Use it on a server or trusted worker; server credentials must
+not reach a browser.
 
 ## Platform automation
 

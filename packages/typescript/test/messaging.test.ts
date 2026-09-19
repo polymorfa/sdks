@@ -2,7 +2,11 @@ import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { MessagingClient } from "../src/messaging/client.js";
-import type { MintClientTokenRequest } from "../src/messaging/types.js";
+import type {
+  ClientRules,
+  MintClientTokenRequest,
+  SetClientRulesRequest,
+} from "../src/messaging/types.js";
 import { PolymorfaConfigurationError } from "../src/errors.js";
 import {
   startTestServer,
@@ -209,6 +213,82 @@ describe("MessagingClient client tokens", () => {
     );
     expect(requests[2]?.body).toBe(
       '{"recipientMode":"conversation","allowedActions":"send_message,send_reaction","rateLimit":20,"maxDaily":200,"allowedOrigins":"https://app.example.test","enabled":true}',
+    );
+  });
+});
+
+describe("MessagingClient client rules contract", () => {
+  it("sends conversationTtlSeconds when updating rules", async () => {
+    const { client, requests } = await messagingServer();
+    await client.clientTokens.updateRules("support", {
+      recipientMode: "conversation",
+      conversationTtlSeconds: 3_600,
+      enabled: true,
+    });
+    expect(JSON.parse(requests[0]!.body)).toEqual({
+      recipientMode: "conversation",
+      conversationTtlSeconds: 3_600,
+      enabled: true,
+    });
+  });
+
+  it("matches the pinned client-rules schema", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const platform = JSON.parse(
+      await readFile(
+        new URL("../../../contracts/openapi.platform.json", import.meta.url),
+        "utf8",
+      ),
+    ) as {
+      components: {
+        schemas: Record<
+          string,
+          {
+            required: string[];
+            properties: Record<string, { enum?: string[] }>;
+          }
+        >;
+      };
+    };
+    const rules = platform.components.schemas.PlatformAccessClientRules!;
+    const sample: Record<keyof ClientRules, true> = {
+      recipientMode: true,
+      allowedActions: true,
+      rateLimit: true,
+      maxDaily: true,
+      allowedOrigins: true,
+      conversationTtlSeconds: true,
+      maxConcurrency: true,
+      maxSetupsPerMinute: true,
+      allowedNumber: true,
+      enabled: true,
+    };
+    expect(Object.keys(sample).sort()).toEqual([...rules.required].sort());
+    const modes: Record<ClientRules["recipientMode"], true> = {
+      conversation: true,
+      any: true,
+      none: true,
+      verified: true,
+    };
+    expect(Object.keys(modes).sort()).toEqual(
+      [...rules.properties.recipientMode!.enum!].sort(),
+    );
+    const request =
+      platform.components.schemas.PlatformAccessSetClientRulesRequest!;
+    const requestKeys: Record<keyof SetClientRulesRequest, true> = {
+      recipientMode: true,
+      allowedActions: true,
+      rateLimit: true,
+      maxDaily: true,
+      allowedOrigins: true,
+      enabled: true,
+      maxConcurrency: true,
+      maxSetupsPerMinute: true,
+      allowedNumber: true,
+      conversationTtlSeconds: true,
+    };
+    expect(Object.keys(requestKeys).sort()).toEqual(
+      Object.keys(request.properties).sort(),
     );
   });
 });

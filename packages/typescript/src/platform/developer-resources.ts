@@ -1,3 +1,4 @@
+import { PolymorfaConfigurationError } from "../errors.js";
 import { CursorPage } from "../pagination.js";
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
@@ -41,6 +42,15 @@ import type {
   UpdateProjectWebhookInput,
 } from "./developer-types.js";
 import {
+  EventStream,
+  eventStreamSource,
+  type EventStreamAcknowledgement,
+  type EventStreamAcknowledgementReceipt,
+  type EventStreamParams,
+  type LiveEventSourceAdapter,
+  type OrganizationEventStreamParams,
+} from "./event-stream.js";
+import {
   decodeCursorPage,
   type DataEnvelope,
   unwrapResponse,
@@ -49,6 +59,9 @@ import {
 type EventFor<O extends ClientOwner> = O extends "project"
   ? ProjectEvent
   : OrganizationEvent;
+type EventStreamParamsFor<O extends ClientOwner> = O extends "project"
+  ? EventStreamParams
+  : OrganizationEventStreamParams;
 type EventReplayFor<O extends ClientOwner> = O extends "project"
   ? ProjectEventReplayReceipt
   : OrganizationEventReplayReceipt;
@@ -172,6 +185,64 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
       input,
       options,
     );
+  }
+  /**
+   * Streams a project's events over server-sent events with automatic
+   * reconnect and resume. Requires `events:listen` and the Event streams
+   * beta. Organization clients pass `projectId`.
+   */
+  stream(
+    params: EventStreamParamsFor<O> = {} as EventStreamParamsFor<O>,
+  ): EventStream {
+    return new EventStream(this.transport, this.streamPath(params), params);
+  }
+  /**
+   * Acknowledges every event up to `sequence` on a stream opened with
+   * `ack: "manual"`. Use the same credential that opened the stream.
+   */
+  acknowledgeStream(
+    streamId: string,
+    input: EventStreamAcknowledgement &
+      (O extends "project" ? object : { readonly projectId: string }),
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<EventStreamAcknowledgementReceipt>> {
+    const body = { cursor: input.cursor, sequence: input.sequence };
+    const base = this.streamPath(input as never);
+    return this.transport
+      .request<DataEnvelope<EventStreamAcknowledgementReceipt>>({
+        method: "POST",
+        path: `${base}/${encodeURIComponent(streamId)}/ack`,
+        body,
+        ...options,
+      })
+      .then(unwrapResponse);
+  }
+  /** A `@polymorfa/store` live source over `stream()`; see `eventStreamSource`. */
+  liveSource(
+    params: Omit<EventStreamParamsFor<O>, "since" | "signal"> = {} as Omit<
+      EventStreamParamsFor<O>,
+      "since" | "signal"
+    >,
+  ): LiveEventSourceAdapter {
+    return eventStreamSource(
+      (next) => this.stream({ ...params, ...next } as EventStreamParamsFor<O>),
+      params,
+    );
+  }
+  private streamPath(
+    params: EventStreamParams | OrganizationEventStreamParams,
+  ): string {
+    if (this.prefix.startsWith("/platform/projects/"))
+      return this.path("/events/stream");
+    const projectId = (params as Partial<OrganizationEventStreamParams>)
+      .projectId;
+    if (typeof projectId !== "string" || projectId.trim() === "") {
+      throw new PolymorfaConfigurationError(
+        "Organization clients must pass projectId to stream events.",
+        "projectId",
+      );
+    }
+    return `/platform/projects/${encodeURIComponent(projectId)}/events/stream`;
   }
 }
 

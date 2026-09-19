@@ -2,7 +2,7 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`51026bfebe611c8f710ed9c1413a65ed16a0e01b` on monorepo `dev`. `source.json` records the
+`2259a1fd331c6ddbc8ad56a04333100ebfce7c2e` on monorepo `dev`. `source.json` records the
 original paths and SHA-256 hashes. `coverage.json` uses the same source
 revision.
 
@@ -16,12 +16,12 @@ operations were added or removed by this re-sync.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        306 |
+| Covered             |        308 |
 | Missing             |          0 |
 | Excluded            |        116 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        422 |
+| Total               |        424 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -50,6 +50,17 @@ It does not claim coverage in other languages, package publication, or a
 successful live call.
 
 ## Reconciliation
+
+Revision `2259a1fd` adds the project event stream. `Client.events.stream`
+covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
+resume, and `Client.events.acknowledgeStream` covers its manual
+acknowledgement route. The Platform `PlatformAccessEventStreamFrame`
+discriminator mapping at this revision points at unprefixed schema names
+(`EventStreamReadyFrame` and so on) that the document does not define; the
+snapshot keeps the source bytes unchanged. The same revision adds
+`conversationTtlSeconds` to client rules, turns `recipientMode` into an enum,
+and sets a minimum of 0 on `rateLimit` and `maxDaily`; the client-rules types
+follow.
 
 Revision `51026bfe` adds the optional `Idempotency-Key` header and its `409`
 outcomes to seven Messaging writes, and four `idempotency_*` public error
@@ -113,7 +124,7 @@ The unified `Client` owns organization control-plane resources and creates
 immutable project views with `client.project(projectId)`. QuickLink management
 uses `Client.quickLinkSettings`; obsolete `/v1/widget` mappings are gone.
 Credential-free service probes use `SystemClient`, project-token Bridge route
-discovery uses `BridgeClient`, and listener transport remains CLI-only.
+discovery uses `BridgeClient`, and the CLI listener protocol stays CLI-only; the public event stream is a separate SDK method.
 
 ## Updating the ledger
 

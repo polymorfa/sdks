@@ -530,6 +530,7 @@ describe("VoipResource", () => {
       maxConcurrency: 2,
       maxSetupsPerMinute: 0,
       allowedNumber: "",
+      conversationTtlSeconds: 86_400,
       enabled: true,
     };
     const update: SetClientRulesRequest = {

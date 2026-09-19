@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "51026bfebe611c8f710ed9c1413a65ed16a0e01b",
+  "commit": "2259a1fd331c6ddbc8ad56a04333100ebfce7c2e",
   "branch": "dev",
   "published": true,
-  "note": "Merged commit on monorepo dev (merge of PR #197, Messaging idempotency).",
+  "note": "Merged commit on monorepo dev (merge of PR #200, project event streams).",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "3c130c2a7b2d314a309a8d0a2759e41fb17b4adfbee1f6e8fa21690b2b3ceeed"
+      "sha256": "d9b9764b8e3bd88f18f10026a35bdc02b03506d8758ad282017d022eb4e800c6"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "dae2b8bd22eea862247b13aa78d9ca7fc9623815f5eda3f2436b1fd3ec3d8fdb"
+      "sha256": "d5877ef1499330083e5b4d63053d9d364ff34d52be24cd630d7283692e027975"
     }
   }
 }

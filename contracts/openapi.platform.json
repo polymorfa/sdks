@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (159 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (85 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (161 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (85 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -287,6 +287,302 @@
             "description": "Configuration unavailable"
           }
         }
+      }
+    },
+    "/platform/projects/{projectId}/events/stream": {
+      "get": {
+        "operationId": "streamProjectEvents",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Stream project events",
+        "description": "**Required scope:** `events:listen`\n\nOpens a server-sent event (SSE) stream of this project's events. Every event frame carries the same event object as the events API and the exact webhook body when it is available.\n\nSend `Accept: text/event-stream`. Resume after a disconnect by sending the last received `cursor` as `Last-Event-ID` or `cursor`. Cursors are valid for 24 hours and are bound to the organization, project and `types` filter.\n\nWith `ack=auto` (default), each event is released as soon as it is written. With `ack=manual`, at most `maxInFlight` events are outstanding until you acknowledge them; unacknowledged events produce a `backpressure` frame and then a `dropped` frame.\n\nThe stream sends a `heartbeat` frame every `heartbeatIntervalMs`. It closes with `revoked` within one heartbeat after the credential, project or feature access ends, and with `expiry` at `connectionExpiresAt` or after `idleTimeoutMs` without an event. Reconnect from the last cursor after `expiry`, `dropped` or a recoverable `gap`.\n\nRequires `events:listen` and the Event streams beta. Organization API keys and project tokens are accepted; client tokens are rejected.",
+        "x-required-scope": "events:listen",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated event types to include, or repeat the parameter. A trailing `*` matches a prefix, such as `message.*`. Omit for every type. At most 32 filters.",
+              "example": "message.*,session.connected"
+            },
+            "required": false,
+            "name": "types",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 4096,
+              "description": "Resume after this cursor. Equivalent to `Last-Event-ID`; if both are sent they must match."
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "manual"
+              ],
+              "description": "`auto` (default) releases events once written. `manual` holds them until acknowledged."
+            },
+            "required": false,
+            "name": "ack",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 4096,
+              "description": "Resume cursor sent automatically by SSE clients after a reconnect."
+            },
+            "required": false,
+            "name": "Last-Event-ID",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An SSE stream. The first frame is `ready`. `revoked`, `expiry`, `dropped` and `gap` frames end the connection, except a `gap` with reason `retention_exceeded`, which reports skipped events and the stream continues.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache, no-transform"
+                }
+              }
+            },
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessEventStreamFrame"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameter, or `stream_cursor_invalid` when the cursor belongs to another project or filter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`missing_scope`, `permission_denied`, or `feature_unavailable` when Event streams is not enabled for the team.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "The request did not accept `text/event-stream`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "`stream_cursor_expired`: the cursor is older than 24 hours. Reconnect without a cursor and read missed events from the events API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`stream_connection_limit_reached` or `rate_limit_exceeded`. Follow `Retry-After`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A required service is unavailable. Retry with backoff.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">events:listen</Badge>"
+        },
+        "x-audience": "public"
+      }
+    },
+    "/platform/projects/{projectId}/events/stream/{streamId}/ack": {
+      "post": {
+        "operationId": "acknowledgeProjectEventStream",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Acknowledge streamed events",
+        "description": "**Required scope:** `events:listen`\n\nAcknowledges every event up to and including `sequence` on a stream opened with `ack=manual`. Acknowledgements are cumulative and idempotent. Use the same credential that opened the stream.",
+        "x-required-scope": "events:listen",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "streamId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessEventStreamAckRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Acknowledged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessEventStreamAckResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid acknowledgement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`missing_scope` or `permission_denied`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The stream is not open for this credential and project.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`state_conflict`: the stream closed or the acknowledgement regressed or is ahead of delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`rate_limit_exceeded`. Follow `Retry-After`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A required service is unavailable. Retry with backoff.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">events:listen</Badge>"
+        },
+        "x-audience": "public"
       }
     },
     "/platform/client-tokens": {
@@ -31372,6 +31668,750 @@
           "success"
         ]
       },
+      "PlatformAccessEventStreamReadyFrame": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "streamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Frame counter for this connection. It restarts at 1 on every connection."
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "ready"
+            ]
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "connectionExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "heartbeatIntervalMs": {
+            "type": "integer"
+          },
+          "maxInFlight": {
+            "type": "integer"
+          },
+          "ack": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "manual"
+            ]
+          },
+          "types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "idleTimeoutMs": {
+            "type": "integer"
+          },
+          "resume": {
+            "type": "object",
+            "properties": {
+              "startPosition": {
+                "type": "string",
+                "enum": [
+                  "now",
+                  "resume"
+                ]
+              },
+              "acceptedCursor": {
+                "type": "string",
+                "nullable": true
+              },
+              "oldestAvailableCursor": {
+                "type": "string",
+                "nullable": true
+              },
+              "cursorExpiresAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "startPosition",
+              "acceptedCursor",
+              "oldestAvailableCursor",
+              "cursorExpiresAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "v",
+          "streamId",
+          "sequence",
+          "sentAt",
+          "type",
+          "projectId",
+          "connectionExpiresAt",
+          "heartbeatIntervalMs",
+          "maxInFlight",
+          "ack",
+          "types",
+          "idleTimeoutMs",
+          "resume"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformAccessStreamedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "runtime",
+              "platform",
+              "test"
+            ]
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "development",
+              "production"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "payloadAvailability": {
+            "type": "string",
+            "enum": [
+              "available",
+              "not_retained",
+              "unavailable"
+            ],
+            "description": "`available` when `payload` is present. `not_retained` when hosted message storage did not keep the body. `unavailable` when the body is too large or its storage authority has ended."
+          },
+          "payload": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "encoding": {
+                "type": "string",
+                "enum": [
+                  "base64"
+                ]
+              },
+              "contentType": {
+                "type": "string",
+                "enum": [
+                  "application/json"
+                ]
+              },
+              "data": {
+                "type": "string",
+                "format": "byte",
+                "description": "Base64 of the exact webhook body for this event."
+              }
+            },
+            "required": [
+              "encoding",
+              "contentType",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "replayableUntil": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "metadataExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "projectId",
+          "type",
+          "source",
+          "environment",
+          "createdAt",
+          "payloadAvailability",
+          "payload",
+          "replayableUntil",
+          "metadataExpiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformAccessEventStreamEventFrame": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "streamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Frame counter for this connection. It restarts at 1 on every connection."
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Resume position after this event. Also sent as the SSE `id`."
+          },
+          "event": {
+            "$ref": "#/components/schemas/PlatformAccessStreamedEvent"
+          }
+        },
+        "required": [
+          "v",
+          "streamId",
+          "sequence",
+          "sentAt",
+          "type",
+          "cursor",
+          "event"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformAccessEventStreamHeartbeatFrame": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "streamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Frame counter for this connection. It restarts at 1 on every connection."
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "heartbeat"
+            ]
+          },
+          "serverTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "v",
+          "streamId",
+          "sequence",
+          "sentAt",
+          "type",
+          "serverTime",
+          "lastCursor"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformAccessEventStreamCheckpointFrame": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "streamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Frame counter for this connection. It restarts at 1 on every connection."
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "checkpoint"
+            ]
+          },
+          "cursor": {
+            "type": "string"
+          },
+          "cursorExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "v",
+          "streamId",
+          "sequence",
+          "sentAt",
+          "type",
+          "cursor",
+          "cursorExpiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformAccessEventStreamBackpressureFrame": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "streamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Frame counter for this connection. It restarts at 1 on every connection."
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "backpressure"
+            ]
+          },
+          "inFlight": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "graceMs": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "v",
+          "streamId",
+          "sequence",
+          "sentAt",
+          "type",
+          "inFlight",
+          "limit",
+          "graceMs"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformAccessEventStreamGapFrame": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "streamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Frame counter for this connection. It restarts at 1 on every connection."
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "gap"
+            ]
+          },
+          "requestedCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "oldestAvailableCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "cursorExpiresAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "recoverable": {
+            "type": "boolean",
+            "description": "True when reconnecting from `requestedCursor` can deliver the events. False when events were removed by retention."
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "source_unavailable",
+              "state_unavailable",
+              "stream_unavailable",
+              "retention_exceeded"
+            ]
+          },
+          "missedEvents": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "v",
+          "streamId",
+          "sequence",
+          "sentAt",
+          "type",
+          "requestedCursor",
+          "oldestAvailableCursor",
+          "cursorExpiresAt",
+          "recoverable",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformAccessEventStreamDroppedFrame": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "streamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Frame counter for this connection. It restarts at 1 on every connection."
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "dropped"
+            ]
+          },
+          "count": {
+            "type": "integer"
+          },
+          "fromCursor": {
+            "type": "string"
+          },
+          "toCursor": {
+            "type": "string"
+          },
+          "recoverable": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "ack_timeout"
+            ]
+          }
+        },
+        "required": [
+          "v",
+          "streamId",
+          "sequence",
+          "sentAt",
+          "type",
+          "count",
+          "fromCursor",
+          "toCursor",
+          "recoverable",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformAccessEventStreamExpiryFrame": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "streamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Frame counter for this connection. It restarts at 1 on every connection."
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "expiry"
+            ]
+          },
+          "expiredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "connection_expired",
+              "idle_timeout"
+            ]
+          }
+        },
+        "required": [
+          "v",
+          "streamId",
+          "sequence",
+          "sentAt",
+          "type",
+          "expiredAt",
+          "lastCursor",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformAccessEventStreamRevokedFrame": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "streamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Frame counter for this connection. It restarts at 1 on every connection."
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "revoked"
+            ]
+          },
+          "lastCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "principal_revoked"
+            ]
+          }
+        },
+        "required": [
+          "v",
+          "streamId",
+          "sequence",
+          "sentAt",
+          "type",
+          "lastCursor",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformAccessEventStreamFrame": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/PlatformAccessEventStreamReadyFrame"
+          },
+          {
+            "$ref": "#/components/schemas/PlatformAccessEventStreamEventFrame"
+          },
+          {
+            "$ref": "#/components/schemas/PlatformAccessEventStreamHeartbeatFrame"
+          },
+          {
+            "$ref": "#/components/schemas/PlatformAccessEventStreamCheckpointFrame"
+          },
+          {
+            "$ref": "#/components/schemas/PlatformAccessEventStreamBackpressureFrame"
+          },
+          {
+            "$ref": "#/components/schemas/PlatformAccessEventStreamGapFrame"
+          },
+          {
+            "$ref": "#/components/schemas/PlatformAccessEventStreamDroppedFrame"
+          },
+          {
+            "$ref": "#/components/schemas/PlatformAccessEventStreamExpiryFrame"
+          },
+          {
+            "$ref": "#/components/schemas/PlatformAccessEventStreamRevokedFrame"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "ready": "#/components/schemas/EventStreamReadyFrame",
+            "event": "#/components/schemas/EventStreamEventFrame",
+            "heartbeat": "#/components/schemas/EventStreamHeartbeatFrame",
+            "checkpoint": "#/components/schemas/EventStreamCheckpointFrame",
+            "backpressure": "#/components/schemas/EventStreamBackpressureFrame",
+            "gap": "#/components/schemas/EventStreamGapFrame",
+            "dropped": "#/components/schemas/EventStreamDroppedFrame",
+            "expiry": "#/components/schemas/EventStreamExpiryFrame",
+            "revoked": "#/components/schemas/EventStreamRevokedFrame"
+          }
+        },
+        "description": "JSON carried in the `data` field of one SSE message. The SSE `event` field repeats `type`."
+      },
+      "PlatformAccessEventStreamAckResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "streamId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "acknowledgedCursor": {
+                "type": "string"
+              },
+              "sequence": {
+                "type": "integer"
+              },
+              "replayed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "streamId",
+              "acknowledgedCursor",
+              "sequence",
+              "replayed"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformAccessEventStreamAckRequest": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "cursor",
+          "sequence"
+        ],
+        "additionalProperties": false
+      },
       "PlatformAccessClientToken": {
         "type": "object",
         "properties": {
@@ -31454,32 +32494,71 @@
       "PlatformAccessClientRules": {
         "type": "object",
         "properties": {
-          "actions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
           "recipientMode": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "conversation",
+              "any",
+              "none",
+              "verified"
+            ],
+            "description": "Who client tokens may send to: `conversation`, `any`, or `none`. Rules saved before `verified` was retired may still return `verified`."
           },
-          "rateLimits": {
-            "type": "object",
-            "properties": {
-              "perMinute": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "perDay": {
-                "type": "integer",
-                "minimum": 0
-              }
-            }
+          "allowedActions": {
+            "type": "string",
+            "description": "Comma-separated actions client tokens may perform."
+          },
+          "rateLimit": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Requests per minute per ephemeral ID. 0 means no per-minute limit."
+          },
+          "maxDaily": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Messages per day per ephemeral ID. 0 means no daily limit."
+          },
+          "allowedOrigins": {
+            "type": "string",
+            "description": "Comma-separated browser origins allowed to use client tokens."
+          },
+          "maxConcurrency": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Maximum simultaneous calls per ephemeral ID. 0 means no limit."
+          },
+          "allowedNumber": {
+            "type": "string",
+            "description": "Comma-separated E.164 numbers client tokens may call. Empty allows any number."
+          },
+          "maxSetupsPerMinute": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 600,
+            "description": "Call setups per minute per ephemeral ID. 0 applies the default of 10."
+          },
+          "conversationTtlSeconds": {
+            "type": "integer",
+            "minimum": 300,
+            "maximum": 604800,
+            "description": "How long, in seconds, a sender remains replyable in `conversation` mode after their latest inbound message."
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether client tokens are accepted for this session."
           }
         },
         "required": [
-          "actions",
-          "recipientMode"
+          "recipientMode",
+          "allowedActions",
+          "rateLimit",
+          "maxDaily",
+          "allowedOrigins",
+          "maxConcurrency",
+          "allowedNumber",
+          "maxSetupsPerMinute",
+          "conversationTtlSeconds",
+          "enabled"
         ]
       },
       "PlatformAccessGetClientRulesResponse": {
@@ -31508,18 +32587,22 @@
           },
           "allowedActions": {
             "type": "string",
+            "maxLength": 1024,
             "default": ""
           },
           "rateLimit": {
             "type": "integer",
+            "minimum": 0,
             "default": 0
           },
           "maxDaily": {
             "type": "integer",
+            "minimum": 0,
             "default": 0
           },
           "allowedOrigins": {
             "type": "string",
+            "maxLength": 8192,
             "default": ""
           },
           "enabled": {
@@ -31532,6 +32615,7 @@
           },
           "allowedNumber": {
             "type": "string",
+            "maxLength": 8192,
             "default": ""
           },
           "maxSetupsPerMinute": {
@@ -31539,6 +32623,13 @@
             "minimum": 0,
             "maximum": 600,
             "default": 0
+          },
+          "conversationTtlSeconds": {
+            "type": "integer",
+            "minimum": 300,
+            "maximum": 604800,
+            "default": 86400,
+            "description": "How long, in seconds, a sender remains replyable in `conversation` mode after their latest inbound message. Must be between 300 (5 minutes) and 604800 (7 days). Defaults to 86400 (24 hours)."
           }
         },
         "required": [
@@ -33268,6 +34359,10 @@
                   "resource_not_found",
                   "media_fetch_failed",
                   "resource_gone",
+                  "feature_unavailable",
+                  "stream_cursor_invalid",
+                  "stream_cursor_expired",
+                  "stream_connection_limit_reached",
                   "state_conflict",
                   "idempotency_conflict",
                   "idempotency_in_progress",

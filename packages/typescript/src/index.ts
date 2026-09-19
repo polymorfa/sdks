@@ -24,6 +24,19 @@ export {
 } from "./client.js";
 export type * from "./platform/developer-types.js";
 export {
+  EventStream,
+  eventStreamSource,
+  type EventStreamAcknowledgement,
+  type EventStreamAcknowledgementReceipt,
+  type EventStreamGap,
+  type EventStreamItem,
+  type EventStreamParams,
+  type LiveEventSourceAdapter,
+  type OrganizationEventStreamParams,
+  type StreamedEvent,
+  type WebhookEnvelope,
+} from "./platform/event-stream.js";
+export {
   PolymorfaAuthenticationError,
   PolymorfaAuthorizationError,
   PolymorfaCancelledError,
