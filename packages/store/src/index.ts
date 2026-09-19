@@ -52,6 +52,8 @@ export {
 } from "./reducers.js";
 export {
   DEFAULT_SSE_EVENT_TYPES,
+  DEFAULT_SSE_MAX_LINE_LENGTH,
+  MIN_EVENT_STREAM_RETRY_MS,
   SseParser,
   connectEventSource,
   eventsFromFrame,
@@ -59,6 +61,7 @@ export {
   fromEventStream,
   fromIterable,
   fromWebSocket,
+  readProjectStreamFrame,
   type ConnectEventSourceOptions,
   type EventSourceConnection,
   type EventSourceLike,
@@ -69,6 +72,7 @@ export {
   type LiveEventMeta,
   type LiveEventSource,
   type LiveEventSubscribeOptions,
+  type ProjectStreamFrame,
   type SseFrame,
   type WebSocketLike,
 } from "./sources.js";

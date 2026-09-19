@@ -45,6 +45,7 @@ export function toConversationMessage(row: StoredMessage): ConversationMessage {
     direction: row.fromMe ? "outbound" : "inbound",
     status:
       row.status === "pending" || row.status === "failed" ? row.status : "sent",
+    ...(row.replyTo === undefined ? {} : { replyTo: row.replyTo }),
     ...(row.attachments === undefined || row.attachments.length === 0
       ? {}
       : { attachments: row.attachments }),
@@ -63,6 +64,7 @@ function toInput(
     text: message.text,
     status: message.status,
     ...(message.clientId === undefined ? {} : { clientId: message.clientId }),
+    ...(message.replyTo === undefined ? {} : { replyTo: message.replyTo }),
     ...(message.attachments === undefined
       ? {}
       : { attachments: message.attachments }),
@@ -85,6 +87,7 @@ export function createStoreConversationSource(
   let reconcile: Promise<string | undefined> | undefined;
   const listeners = new Set<(event: ConversationEvent) => void>();
   let buffered: ConversationEvent[] = [];
+  let storeUnsubscribe: (() => void) | undefined;
 
   const emit = (event: ConversationEvent) => {
     if (listeners.size === 0) buffered.push(event);
@@ -105,17 +108,19 @@ export function createStoreConversationSource(
   };
 
   const localPage = async (
-    before: number | undefined,
+    before: { readonly at: number; readonly id?: string } | undefined,
   ): Promise<ConversationPage> => {
     const rows = await store.messages.list({
       conversationId,
       limit: pageSize,
-      ...(before === undefined ? {} : { before }),
+      ...(before === undefined ? {} : { before: before.at }),
+      ...(before?.id === undefined ? {} : { beforeId: before.id }),
     });
     const oldest = rows.at(-1);
+    // The ID breaks ties between messages that share a timestamp.
     const nextCursor =
       rows.length === pageSize && oldest !== undefined
-        ? `${LOCAL}${oldest.createdAt}`
+        ? `${LOCAL}${oldest.createdAt}:${encodeURIComponent(oldest.id)}`
         : options.load === undefined
           ? undefined
           : REMOTE;
@@ -153,8 +158,16 @@ export function createStoreConversationSource(
         return local;
       }
       if (cursor.startsWith(LOCAL)) {
-        const local = await localPage(Number(cursor.slice(LOCAL.length)));
-        return local;
+        const value = cursor.slice(LOCAL.length);
+        const split = value.indexOf(":");
+        return localPage(
+          split === -1
+            ? { at: Number(value) }
+            : {
+                at: Number(value.slice(0, split)),
+                id: decodeURIComponent(value.slice(split + 1)),
+              },
+        );
       }
       if (cursor === REMOTE) {
         const next = await (reconcile ?? Promise.resolve(undefined)).catch(
@@ -170,7 +183,8 @@ export function createStoreConversationSource(
       const pending = buffered;
       buffered = [];
       for (const event of pending) listener(event);
-      const unsubscribe = store.subscribe("messages", (change) => {
+      // One store subscription fans out to every listener.
+      storeUnsubscribe ??= store.subscribe("messages", (change) => {
         for (const messageId of change.deleted)
           emit({ type: "delete", messageId });
         if (change.keys.length === 0) return;
@@ -190,7 +204,10 @@ export function createStoreConversationSource(
       });
       return () => {
         listeners.delete(listener);
-        unsubscribe();
+        if (listeners.size === 0) {
+          storeUnsubscribe?.();
+          storeUnsubscribe = undefined;
+        }
       };
     },
 

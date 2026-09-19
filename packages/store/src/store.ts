@@ -163,6 +163,12 @@ export interface MessageListQuery {
   readonly conversationId: string;
   /** Only messages created before this epoch-millisecond time. */
   readonly before?: number;
+  /**
+   * With `before`, also returns messages created exactly at `before` whose
+   * ID sorts before this one. Pass the oldest row of the previous page to
+   * page through messages that share a timestamp.
+   */
+  readonly beforeId?: string;
   readonly limit?: number;
   /** Include deleted and revoked messages. */
   readonly includeDeleted?: boolean;
@@ -175,6 +181,8 @@ export interface MessageInput {
   readonly fromMe: boolean;
   readonly text?: string;
   readonly clientId?: string;
+  /** ID of the message this one replies to. */
+  readonly replyTo?: string;
   readonly status?: StoredMessageStatus;
   readonly attachments?: readonly StoredAttachment[];
 }
@@ -796,11 +804,15 @@ export async function createPolymorfaStore(
           range: {
             lower: [query.conversationId, -Infinity],
             upper: [query.conversationId, query.before ?? Infinity],
-            upperOpen: query.before !== undefined,
+            upperOpen:
+              query.before !== undefined && query.beforeId === undefined,
           },
           limit: query.limit ?? 50,
           filter: (row) =>
             row.stub !== true &&
+            (query.beforeId === undefined ||
+              row.createdAt !== query.before ||
+              (row.id as string) < query.beforeId) &&
             (query.includeDeleted === true || row.deleted !== true),
         }),
       upsert: (messages, upsertOptions = {}) =>
@@ -819,6 +831,7 @@ export async function createPolymorfaStore(
                 fromMe: message.fromMe,
                 text: message.text,
                 clientId: message.clientId,
+                replyTo: message.replyTo,
                 attachments: message.attachments,
               }),
               // History reads are older than any live event for the message.

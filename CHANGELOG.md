@@ -9,7 +9,9 @@
   Ingest skips repeated event IDs and never replaces newer state with older
   state. `connectEventSource()` follows `fromEventSource()`,
   `fromEventStream()`, `fromWebSocket()`, or `fromIterable()` sources and
-  saves a resume cursor. `createStoreConversationSource()` backs
+  saves a resume cursor. `fromEventStream({ format: "project" })` reads the
+  project event stream frames through a backend relay.
+  `createStoreConversationSource()` backs
   `ConversationController`, and `@polymorfa/store/react` adds
   `usePolymorfaStoreQuery()`. Stores sync across tabs, apply retention, fall
   back to memory when IndexedDB is unavailable, and accept `encrypt`,

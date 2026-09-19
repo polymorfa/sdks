@@ -29,7 +29,10 @@ export function usePolymorfaStoreQuery<T>(
   const names = (typeof stores === "string" ? [stores] : stores).join(",");
 
   useEffect(() => {
-    if (store === undefined) return;
+    if (store === undefined) {
+      setState({ data: undefined, error: undefined, loading: false });
+      return;
+    }
     let active = true;
     let generation = 0;
     const run = () => {

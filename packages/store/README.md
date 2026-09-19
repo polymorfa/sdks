@@ -98,7 +98,21 @@ data: {"id":"evt_123","session":"support","timestamp":"2026-09-01T10:00:00Z","ev
 parameter on a new page load. `EventSource` cannot send headers; use
 `fromEventStream()` when your endpoint needs an `Authorization` header.
 `headers` runs before every connection, and the store never saves what it
-returns.
+returns. Reconnects wait at least 250 ms, even when the server sends a
+shorter `retry`. A line longer than 1 MiB drops the connection.
+
+If a write fails, `connectEventSource()` reports the error through
+`onError`, keeps the checkpoint before the failed batch, and stores nothing
+more. Close the connection and connect again to resume from the checkpoint.
+
+Pass `format: "project"` to read frames in the Polymorfa project event stream
+format. The adapter decodes the base64 webhook body in each `event` frame and
+saves the frame's `cursor` as the checkpoint. It skips events without a
+retained body, but still resumes after them. It ignores `ready` and
+`heartbeat` frames. It reconnects after `expiry`, `dropped`, or a `gap` that
+is not `retention_exceeded`. After `revoked`, it stops and reports an error.
+The project stream requires a server credential, so relay it through your
+backend. Never send a server credential to a browser.
 
 ### Chat components
 
@@ -263,37 +277,37 @@ store.registerReducer("campaign.completed", async (event, context) => {
 
 ### `PolymorfaStore`
 
-| Member                                                                | Description                                                                      |
-| --------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `mode`, `fallbackReason`                                              | Storage mode and the reason for a memory fallback.                               |
-| `ingest(event \| events)`                                             | Returns `{ accepted, duplicates, ignored }`.                                     |
-| `registerReducer(type, reducer)`                                      | Returns a function that removes the reducer.                                     |
-| `conversations.list({ limit?, unreadOnly? })`                         | Most recent activity first; deleted conversations are omitted.                   |
-| `conversations.get(id)`                                               | One conversation.                                                                |
-| `messages.list({ conversationId, before?, limit?, includeDeleted? })` | Newest first. `before` is epoch milliseconds, exclusive. `limit` defaults to 50. |
-| `messages.get(id)`                                                    | One message, including tombstones.                                               |
-| `messages.upsert(messages, { session? })`                             | Writes backend history. Live events for the same message win.                    |
-| `contacts`, `presence`, `calls`, `labels`, `sessions`, `templates`    | `get(id)` and `list({ limit? })`, most recently updated first.                   |
-| `events.list({ types?, since?, limit? })`                             | The event log, oldest first. `since` is epoch milliseconds, inclusive.           |
-| `custom.list({ types?, since?, limit? })`                             | Events without a reducer.                                                        |
-| `checkpoints.get(id)`, `checkpoints.set(id, cursor)`                  | Resume positions.                                                                |
-| `subscribe(store \| "*", listener)`                                   | Receives `{ store, keys, deleted, cleared?, origin }`.                           |
-| `sweep()`                                                             | Applies retention now.                                                           |
-| `clear()`                                                             | Removes every row, including checkpoints.                                        |
-| `close()`                                                             | Stops the sweep timer and tab sync, then closes the database.                    |
-| `estimateUsage()`, `persist()`                                        | Storage quota helpers.                                                           |
+| Member                                                                           | Description                                                                                                                                                                                                                         |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mode`, `fallbackReason`                                                         | Storage mode and the reason for a memory fallback.                                                                                                                                                                                  |
+| `ingest(event \| events)`                                                        | Returns `{ accepted, duplicates, ignored }`.                                                                                                                                                                                        |
+| `registerReducer(type, reducer)`                                                 | Returns a function that removes the reducer.                                                                                                                                                                                        |
+| `conversations.list({ limit?, unreadOnly? })`                                    | Most recent activity first; deleted conversations are omitted.                                                                                                                                                                      |
+| `conversations.get(id)`                                                          | One conversation.                                                                                                                                                                                                                   |
+| `messages.list({ conversationId, before?, beforeId?, limit?, includeDeleted? })` | Newest first. `before` is epoch milliseconds, exclusive. With `beforeId`, messages created exactly at `before` whose ID sorts before `beforeId` are included too, so pages with shared timestamps continue. `limit` defaults to 50. |
+| `messages.get(id)`                                                               | One message, including tombstones.                                                                                                                                                                                                  |
+| `messages.upsert(messages, { session? })`                                        | Writes backend history. Live events for the same message win.                                                                                                                                                                       |
+| `contacts`, `presence`, `calls`, `labels`, `sessions`, `templates`               | `get(id)` and `list({ limit? })`, most recently updated first.                                                                                                                                                                      |
+| `events.list({ types?, since?, limit? })`                                        | The event log, oldest first. `since` is epoch milliseconds, inclusive.                                                                                                                                                              |
+| `custom.list({ types?, since?, limit? })`                                        | Events without a reducer.                                                                                                                                                                                                           |
+| `checkpoints.get(id)`, `checkpoints.set(id, cursor)`                             | Resume positions.                                                                                                                                                                                                                   |
+| `subscribe(store \| "*", listener)`                                              | Receives `{ store, keys, deleted, cleared?, origin }`.                                                                                                                                                                              |
+| `sweep()`                                                                        | Applies retention now.                                                                                                                                                                                                              |
+| `clear()`                                                                        | Removes every row, including checkpoints.                                                                                                                                                                                           |
+| `close()`                                                                        | Stops the sweep timer and tab sync, then closes the database.                                                                                                                                                                       |
+| `estimateUsage()`, `persist()`                                                   | Storage quota helpers.                                                                                                                                                                                                              |
 
 ### Sources
 
-| Export                                                               | Description                                                                                                                                                                               |
-| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `LiveEventSource`                                                    | `{ subscribe(listener, { cursor?, onError? }) => unsubscribe }`.                                                                                                                          |
-| `connectEventSource(store, source, options?)`                        | Resumes from checkpoint `options.checkpoint` (default `default`), batches writes (`maxBatch`, default 500), and saves the cursor after each batch. Returns `{ idle(), cursor, close() }`. |
-| `fromEventSource(url \| eventSource, options?)`                      | Uses `EventSource`. `eventTypes` lists named events to follow (default `DEFAULT_SSE_EVENT_TYPES`); `resumeParam` names the cursor query parameter.                                        |
-| `fromEventStream({ url, headers?, fetch?, credentials?, retryMs? })` | Uses `fetch`, sends `Last-Event-ID`, and reconnects.                                                                                                                                      |
-| `fromWebSocket(url \| socket, options?)`                             | JSON text frames; the last event ID is the cursor.                                                                                                                                        |
-| `fromIterable(events, { batchSize? })`                               | Replays an array or async iterable. `completed` resolves after delivery.                                                                                                                  |
-| `SseParser`, `eventsFromFrame(frame)`                                | The `text/event-stream` parser and frame decoder.                                                                                                                                         |
+| Export                                                                                        | Description                                                                                                                                                                               |
+| --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LiveEventSource`                                                                             | `{ subscribe(listener, { cursor?, onError? }) => unsubscribe }`.                                                                                                                          |
+| `connectEventSource(store, source, options?)`                                                 | Resumes from checkpoint `options.checkpoint` (default `default`), batches writes (`maxBatch`, default 500), and saves the cursor after each batch. Returns `{ idle(), cursor, close() }`. |
+| `fromEventSource(url \| eventSource, options?)`                                               | Uses `EventSource`. `eventTypes` lists named events to follow (default `DEFAULT_SSE_EVENT_TYPES`, every type a built-in reducer handles); `resumeParam` names the cursor query parameter. |
+| `fromEventStream({ url, headers?, fetch?, credentials?, retryMs?, format?, maxLineLength? })` | Uses `fetch`, sends `Last-Event-ID`, and reconnects. `format: "project"` reads the project event stream frames.                                                                           |
+| `fromWebSocket(url \| socket, options?)`                                                      | JSON text frames; the last event ID is the cursor.                                                                                                                                        |
+| `fromIterable(events, { batchSize? })`                                                        | Replays an array or async iterable. `completed` resolves after delivery.                                                                                                                  |
+| `SseParser`, `eventsFromFrame(frame)`, `readProjectStreamFrame(data)`                         | The `text/event-stream` parser, the envelope frame decoder, and the project stream frame decoder.                                                                                         |
 
 ### Chat integration
 

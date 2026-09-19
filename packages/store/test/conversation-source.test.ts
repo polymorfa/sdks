@@ -200,6 +200,94 @@ describe("createStoreConversationSource with ConversationController", () => {
     store.close();
   });
 
+  it("keeps replyTo through the store round trip", async () => {
+    const store = await openStore();
+    const source = createStoreConversationSource(store, {
+      conversationId: "chat_1",
+      load: async () => ({
+        messages: [{ ...remote("r2", 2_000), replyTo: "r1" }],
+      }),
+      send: async (message) => ({
+        id: "srv_1",
+        clientId: message.clientId,
+        text: message.text,
+        createdAt: at(3_000),
+        direction: "outbound",
+        status: "sent",
+        ...(message.replyTo === undefined ? {} : { replyTo: message.replyTo }),
+      }),
+    });
+    await source.load();
+    await source.send({ clientId: "c1", text: "hi", replyTo: "r2" });
+    expect((await store.messages.get("r2"))?.replyTo).toBe("r1");
+    expect((await store.messages.get("srv_1"))?.replyTo).toBe("r2");
+    const fresh = createStoreConversationSource(store, {
+      conversationId: "chat_1",
+      send: vi.fn(),
+    });
+    const page = await fresh.load();
+    expect(page.messages.map(({ id, replyTo }) => ({ id, replyTo }))).toEqual([
+      { id: "srv_1", replyTo: "r2" },
+      { id: "r2", replyTo: "r1" },
+    ]);
+    store.close();
+  });
+
+  it("pages through messages that share a timestamp", async () => {
+    for (const indexedDB of [undefined, null] as const) {
+      const store = await openStore(
+        indexedDB === undefined ? {} : { indexedDB },
+      );
+      await store.messages.upsert(
+        ["a", "b", "c", "d", "e"].map((id) => ({
+          id,
+          conversationId: "chat_1",
+          createdAt: at(1_000),
+          fromMe: false,
+          text: id,
+        })),
+      );
+      const source = createStoreConversationSource(store, {
+        conversationId: "chat_1",
+        pageSize: 2,
+        send: vi.fn(),
+      });
+      const seen: string[] = [];
+      let page = await source.load();
+      for (let guard = 0; guard < 10; guard += 1) {
+        seen.push(...page.messages.map(({ id }) => id));
+        if (page.nextCursor === undefined) break;
+        page = await source.load(page.nextCursor);
+      }
+      expect(seen).toEqual(["e", "d", "c", "b", "a"]);
+      store.close();
+    }
+  });
+
+  it("delivers each store change once to each listener", async () => {
+    const store = await openStore();
+    const source = createStoreConversationSource(store, {
+      conversationId: "chat_1",
+      send: vi.fn(),
+    });
+    const first = vi.fn();
+    const second = vi.fn();
+    const stopFirst = source.subscribe(first);
+    const stopSecond = source.subscribe(second);
+    await store.ingest(received("m1", "one", { at: 1_000 }));
+    await vi.waitFor(() => expect(first).toHaveBeenCalled());
+    await vi.waitFor(() => expect(second).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledTimes(1);
+    stopFirst();
+    await store.ingest(received("m2", "two", { at: 2_000 }));
+    await vi.waitFor(() => expect(second).toHaveBeenCalledTimes(2));
+    expect(first).toHaveBeenCalledTimes(1);
+    stopSecond();
+    store.close();
+  });
+
   it("reports a failed background reconcile", async () => {
     const store = await seeded();
     const onError = vi.fn();

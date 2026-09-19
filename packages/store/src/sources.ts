@@ -1,3 +1,4 @@
+import { BUILT_IN_REDUCERS } from "./reducers.js";
 import type { PolymorfaStore } from "./store.js";
 import type { PolymorfaEvent } from "./types.js";
 
@@ -26,7 +27,11 @@ export interface LiveEventSource {
 }
 
 export interface EventSourceConnection {
-  /** Resolves when every event received so far has been stored. */
+  /**
+   * Resolves when every event received so far has been stored, or when a
+   * write failed. After a failed write the connection stores nothing more;
+   * close it and connect again to resume from the saved checkpoint.
+   */
   idle(): Promise<void>;
   /** The last cursor saved to the checkpoint store. */
   readonly cursor: string | undefined;
@@ -58,15 +63,24 @@ export function connectEventSource(
   let unsubscribe: (() => void) | undefined;
   let draining: Promise<void> = Promise.resolve();
   let running = false;
+  // A failed write stops the connection so the checkpoint never moves past
+  // events that were not stored. Close and reconnect to resume from it.
+  let failed = false;
 
   const report = (error: unknown) => options.onError?.(error);
 
   const drain = async () => {
     running = true;
     try {
-      while (pending.length > 0 && !closed) {
+      while (pending.length > 0 && !closed && !failed) {
         const batch = pending.splice(0, maxBatch);
-        await store.ingest(batch.map(({ event }) => event));
+        try {
+          await store.ingest(batch.map(({ event }) => event));
+        } catch (error) {
+          failed = true;
+          pending.unshift(...batch);
+          throw error;
+        }
         let last: string | undefined;
         for (const entry of batch) last = entry.cursor ?? last;
         if (last !== undefined && !closed) {
@@ -82,7 +96,7 @@ export function connectEventSource(
   };
 
   const listener: LiveEventListener = (events, meta) => {
-    if (closed) return;
+    if (closed || failed) return;
     const list: readonly PolymorfaEvent[] = Array.isArray(events)
       ? events
       : [events as PolymorfaEvent];
@@ -112,7 +126,7 @@ export function connectEventSource(
   return {
     async idle() {
       await started;
-      while (running || pending.length > 0) {
+      while (running || (pending.length > 0 && !failed)) {
         if (!running) draining = drain();
         await draining;
       }
@@ -135,8 +149,12 @@ export interface SseFrame {
   readonly retry?: number;
 }
 
+/** Longest line `SseParser` accepts by default: 1 MiB of characters. */
+export const DEFAULT_SSE_MAX_LINE_LENGTH = 1024 * 1024;
+
 /** Incremental `text/event-stream` parser. */
 export class SseParser {
+  readonly #maxLineLength: number;
   #buffer = "";
   #event = "";
   #data: string[] = [];
@@ -147,7 +165,14 @@ export class SseParser {
   /** The last event ID seen, kept across frames as the spec requires. */
   lastEventId: string | undefined;
 
-  /** Parses `chunk` and returns every frame it completes. */
+  constructor(options: { readonly maxLineLength?: number } = {}) {
+    this.#maxLineLength = options.maxLineLength ?? DEFAULT_SSE_MAX_LINE_LENGTH;
+  }
+
+  /**
+   * Parses `chunk` and returns every frame it completes. Throws when one
+   * line grows past `maxLineLength`; the parser is then reset.
+   */
   feed(chunk: string): SseFrame[] {
     if (this.#pendingCarriageReturn && chunk.startsWith("\n"))
       chunk = chunk.slice(1);
@@ -162,6 +187,19 @@ export class SseParser {
     // The last piece is an unterminated line; `\r\n` split across chunks
     // is handled by `#pendingCarriageReturn`.
     this.#buffer = lines.pop() ?? "";
+    if (
+      this.#buffer.length > this.#maxLineLength ||
+      lines.some((line) => line.length > this.#maxLineLength)
+    ) {
+      this.#buffer = "";
+      this.#event = "";
+      this.#data = [];
+      this.#id = undefined;
+      this.#retry = undefined;
+      throw new Error(
+        `An event stream line exceeded ${this.#maxLineLength} characters.`,
+      );
+    }
     for (const line of lines) {
       const frame = this.#line(line);
       if (frame !== undefined) frames.push(frame);
@@ -267,36 +305,12 @@ export interface FromEventSourceOptions {
   ) => EventSourceLike;
 }
 
-/** Common event types; pass `eventTypes` to follow others by name. */
-export const DEFAULT_SSE_EVENT_TYPES: readonly string[] = [
-  "message.received",
-  "message.sent",
-  "message.ack",
-  "message.update",
-  "message.edited",
-  "message.delete",
-  "message.revoked",
-  "message.reaction",
-  "message.vote",
-  "message.failed",
-  "chat.read",
-  "chat.archive",
-  "chat.mute",
-  "chat.clear",
-  "chat.delete",
-  "contact.update",
-  "presence.update",
-  "call.received",
-  "call.accepted",
-  "call.rejected",
-  "call.missed",
-  "call.ended",
-  "labels.update",
-  "session.status",
-  "session.connected",
-  "session.logged_out",
-  "template.status",
-];
+/**
+ * Every event type a built-in reducer handles; pass `eventTypes` to follow
+ * others by name.
+ */
+export const DEFAULT_SSE_EVENT_TYPES: readonly string[] =
+  Object.keys(BUILT_IN_REDUCERS);
 
 /**
  * Follows a server-sent event stream. The browser's `EventSource` resumes
@@ -372,9 +386,89 @@ export interface FromEventStreamOptions {
    */
   readonly headers?: () => HeadersInit | Promise<HeadersInit>;
   readonly credentials?: RequestCredentials;
-  /** Reconnect delay in milliseconds unless the server sends `retry`. */
+  /**
+   * Reconnect delay in milliseconds unless the server sends `retry`. Never
+   * less than `MIN_EVENT_STREAM_RETRY_MS`.
+   */
   readonly retryMs?: number;
+  /**
+   * `envelope` (default): each `data` payload is a webhook envelope or an
+   * array of them. `project`: the Polymorfa project event stream, whose
+   * `event` frames carry the webhook body base64-encoded next to a resume
+   * `cursor` and which also sends control frames.
+   */
+  readonly format?: "envelope" | "project";
+  /** Longest line accepted before the connection is dropped. */
+  readonly maxLineLength?: number;
 }
+
+/** Shortest delay between reconnect attempts, whatever the server sends. */
+export const MIN_EVENT_STREAM_RETRY_MS = 250;
+
+/** Result of reading one project event stream frame. */
+export type ProjectStreamFrame =
+  | {
+      readonly kind: "event";
+      /** Empty when the webhook body was not kept. */
+      readonly events: PolymorfaEvent[];
+      readonly cursor: string;
+    }
+  | { readonly kind: "reconnect"; readonly reason: string }
+  | { readonly kind: "revoked" }
+  | { readonly kind: "ignore" };
+
+function decodeBase64Json(data: string): unknown {
+  const bytes = Uint8Array.from(atob(data), (char) => char.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+/**
+ * Reads one `data` payload from the Polymorfa project event stream. `event`
+ * frames yield the decoded webhook body and the cursor to resume after it;
+ * `expiry`, `dropped`, and a non-retention `gap` ask for a reconnect;
+ * `revoked` ends the stream; `ready`, `heartbeat`, and unknown frames are
+ * ignored.
+ */
+export function readProjectStreamFrame(data: string): ProjectStreamFrame {
+  const frame: unknown = JSON.parse(data);
+  if (typeof frame !== "object" || frame === null)
+    throw new TypeError("An event stream frame must be a JSON object.");
+  const record = frame as Record<string, unknown>;
+  switch (record.type) {
+    case "event": {
+      if (typeof record.cursor !== "string")
+        throw new TypeError("An event frame must carry a cursor.");
+      const event = record.event as
+        { payload?: { encoding?: unknown; data?: unknown } | null } | undefined;
+      const payload = event?.payload;
+      if (payload === null || payload === undefined)
+        return { kind: "event", events: [], cursor: record.cursor };
+      if (payload.encoding !== "base64" || typeof payload.data !== "string")
+        throw new TypeError("An event payload must be base64 encoded.");
+      return {
+        kind: "event",
+        events: eventsFromFrame({
+          event: "message",
+          data: JSON.stringify(decodeBase64Json(payload.data)),
+        }),
+        cursor: record.cursor,
+      };
+    }
+    case "gap":
+      return record.reason === "retention_exceeded"
+        ? { kind: "ignore" }
+        : { kind: "reconnect", reason: `gap_${String(record.reason)}` };
+    case "expiry":
+    case "dropped":
+      return { kind: "reconnect", reason: record.type };
+    case "revoked":
+      return { kind: "revoked" };
+    default:
+      return { kind: "ignore" };
+  }
+}
+
+class ReconnectRequested extends Error {}
 
 /**
  * Follows an event stream with `fetch`, which can send headers that
@@ -383,6 +477,7 @@ export interface FromEventStreamOptions {
 export function fromEventStream(
   options: FromEventStreamOptions,
 ): LiveEventSource {
+  const project = options.format === "project";
   return {
     subscribe(listener, subscribeOptions = {}) {
       const controller = new AbortController();
@@ -408,13 +503,44 @@ export function fromEventStream(
             `Event stream request failed with status ${response.status}.`,
           );
         if (response.body === null) return;
-        const parser = new SseParser();
+        const parser = new SseParser(
+          options.maxLineLength === undefined
+            ? {}
+            : { maxLineLength: options.maxLineLength },
+        );
         const reader = response.body
           .pipeThrough(new TextDecoderStream())
           .getReader();
+        const deliverProject = (frame: SseFrame) => {
+          let result: ProjectStreamFrame;
+          try {
+            result = readProjectStreamFrame(frame.data);
+          } catch (error) {
+            subscribeOptions.onError?.(error);
+            return;
+          }
+          if (result.kind === "reconnect")
+            throw new ReconnectRequested(result.reason);
+          if (result.kind === "revoked") {
+            controller.abort();
+            subscribeOptions.onError?.(
+              new Error("The event stream was revoked."),
+            );
+            return;
+          }
+          if (result.kind !== "event") return;
+          lastEventId = result.cursor;
+          if (result.events.length > 0)
+            listener(result.events, { cursor: result.cursor });
+        };
         const deliver = (frames: SseFrame[]) => {
           for (const frame of frames) {
+            if (controller.signal.aborted) return;
             if (frame.retry !== undefined) retry = frame.retry;
+            if (project) {
+              deliverProject(frame);
+              continue;
+            }
             if (frame.id !== undefined) lastEventId = frame.id;
             try {
               listener(
@@ -426,13 +552,28 @@ export function fromEventStream(
             }
           }
         };
-        for (;;) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          deliver(parser.feed(value));
+        try {
+          for (;;) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            deliver(parser.feed(value));
+          }
+          deliver(parser.end());
+        } finally {
+          void reader.cancel().catch(() => undefined);
         }
-        deliver(parser.end());
       };
+
+      const wait = (ms: number) =>
+        new Promise<void>((resolve) => {
+          const finish = () => {
+            clearTimeout(timer);
+            controller.signal.removeEventListener("abort", finish);
+            resolve();
+          };
+          const timer = setTimeout(finish, ms);
+          controller.signal.addEventListener("abort", finish, { once: true });
+        });
 
       void (async () => {
         while (!controller.signal.aborted) {
@@ -440,10 +581,11 @@ export function fromEventStream(
             await connect();
           } catch (error) {
             if (controller.signal.aborted) return;
-            subscribeOptions.onError?.(error);
+            if (!(error instanceof ReconnectRequested))
+              subscribeOptions.onError?.(error);
           }
           if (controller.signal.aborted) return;
-          await new Promise((resolve) => setTimeout(resolve, retry));
+          await wait(Math.max(MIN_EVENT_STREAM_RETRY_MS, retry));
         }
       })();
       return () => controller.abort();

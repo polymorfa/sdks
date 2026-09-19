@@ -400,6 +400,26 @@ describe("idempotency and ordering", () => {
     store.close();
   });
 
+  it("keeps a message written after a clear in the same batch", async () => {
+    for (const indexedDB of [new IDBFactory(), null] as const) {
+      const store = await openStore({ indexedDB });
+      await store.ingest(received("before", "before", { at: 1_000 }));
+      const changes: StoreChange[] = [];
+      store.subscribe("messages", (change) => changes.push(change));
+      await store.ingest([
+        event("chat.clear", { from: chat }, { at: 6_000 }),
+        received("after", "after", { at: 7_000 }),
+      ]);
+      expect(
+        (await store.messages.list({ conversationId: "chat_1" })).map(
+          ({ id }) => id,
+        ),
+      ).toEqual(["after"]);
+      expect(changes.flatMap(({ deleted }) => deleted)).not.toContain("after");
+      store.close();
+    }
+  });
+
   it("writes large backfills in bounded batches", async () => {
     const store = await openStore({ batchSize: 50 });
     const events = Array.from({ length: 180 }, (_, index) =>

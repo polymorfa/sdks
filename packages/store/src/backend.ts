@@ -371,7 +371,10 @@ export class IndexedDbBackend implements StoreBackend {
     const stores = [...new Set(ops.map(({ store }) => store))];
     const transaction = this.#database.transaction(stores, "readwrite");
     const completion = done(transaction);
-    const ranges: Promise<void>[] = [];
+    // Surface an abort even while a range walk is pending.
+    completion.catch(() => undefined);
+    // Apply ops strictly in order: a range walk sees rows put by this
+    // transaction, so a later put must not be issued until the walk ends.
     for (const op of ops) {
       const objectStore = transaction.objectStore(op.store);
       if (op.kind === "put") objectStore.put(op.row);
@@ -379,21 +382,19 @@ export class IndexedDbBackend implements StoreBackend {
       else {
         const keys = removed.get(op.store) ?? [];
         removed.set(op.store, keys);
-        ranges.push(
-          walk(
-            objectStore.index(op.index),
-            toRange(op.range),
-            "next",
-            (cursor) => {
-              keys.push((cursor.value as Row).id);
-              cursor.delete();
-              return true;
-            },
-          ),
+        await walk(
+          objectStore.index(op.index),
+          toRange(op.range),
+          "next",
+          (cursor) => {
+            keys.push((cursor.value as Row).id);
+            cursor.delete();
+            return true;
+          },
         );
       }
     }
-    await Promise.all([...ranges, completion]);
+    await completion;
     return removed;
   }
 

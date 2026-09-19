@@ -39,6 +39,19 @@ describe("webhook contract", () => {
     );
   });
 
+  it("follows every reduced event type by default", () => {
+    expect([...DEFAULT_SSE_EVENT_TYPES].sort()).toEqual(
+      Object.keys(BUILT_IN_REDUCERS).sort(),
+    );
+    expect(DEFAULT_SSE_EVENT_TYPES).toEqual(
+      expect.arrayContaining([
+        "group.update",
+        "blocklist.update",
+        "session.phone_offline",
+      ]),
+    );
+  });
+
   it("accepts a typed SDK event at runtime", async () => {
     const store = await openStore({ indexedDB: null });
     const webhook: KnownWebhookEvent = {

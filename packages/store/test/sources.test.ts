@@ -8,6 +8,8 @@ import {
   fromEventStream,
   fromIterable,
   fromWebSocket,
+  MIN_EVENT_STREAM_RETRY_MS,
+  readProjectStreamFrame,
   type EventSourceLike,
   type LiveEventListener,
   type LiveEventSource,
@@ -35,6 +37,15 @@ describe("SseParser", () => {
     expect(parser.feed("id\ndata: z\n\n")).toEqual([
       { event: "message", data: "z", id: "" },
     ]);
+  });
+
+  it("rejects a line longer than the limit and recovers", () => {
+    const parser = new SseParser({ maxLineLength: 8 });
+    expect(() => parser.feed("data: 0123456789")).toThrow(/exceeded 8/);
+    expect(parser.feed("data: ok\n\n")).toEqual([
+      { event: "message", data: "ok" },
+    ]);
+    expect(() => parser.feed("data: 0123456789\n\n")).toThrow(/exceeded 8/);
   });
 
   it("ignores frames without data and strips a byte-order mark", () => {
@@ -158,6 +169,31 @@ describe("fromEventSource and connectEventSource", () => {
     expect(existing.closed).toBe(false);
   });
 
+  it("keeps the checkpoint behind events whose write failed", async () => {
+    const store = await openStore();
+    const onError = vi.fn();
+    vi.spyOn(store, "ingest").mockRejectedValueOnce(new Error("quota"));
+    let push: LiveEventListener = () => undefined;
+    const source: LiveEventSource = {
+      subscribe(listener) {
+        push = listener;
+        return () => undefined;
+      },
+    };
+    const connection = connectEventSource(store, source, { onError });
+    await connection.idle();
+    push(received("a", "a"), { cursor: "1" });
+    await connection.idle();
+    expect(onError).toHaveBeenCalledWith(new Error("quota"));
+    push(received("b", "b"), { cursor: "2" });
+    await connection.idle();
+    expect(connection.cursor).toBeUndefined();
+    expect(await store.checkpoints.get("default")).toBeUndefined();
+    expect(await store.messages.get("b")).toBeUndefined();
+    connection.close();
+    store.close();
+  });
+
   it("batches pushes that arrive while a write is in flight", async () => {
     const store = await openStore();
     const ingest = vi.spyOn(store, "ingest");
@@ -207,6 +243,7 @@ describe("fromEventStream", () => {
       );
     });
     const store = await openStore();
+    await store.checkpoints.set("default", "4");
     const connection = connectEventSource(
       store,
       fromEventStream({
@@ -216,15 +253,122 @@ describe("fromEventStream", () => {
         retryMs: 1,
       }),
     );
-    await store.checkpoints.set("default", "4");
     await connection.idle();
     await vi.waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
     await connection.idle();
     const first = new Headers(fetcher.mock.calls[0]?.[1]?.headers);
     const second = new Headers(fetcher.mock.calls[1]?.[1]?.headers);
     expect(first.get("authorization")).toBe("Bearer pmfa_ct_fixture");
+    expect(first.get("last-event-id")).toBe("4");
     expect(second.get("last-event-id")).toBe("5");
     expect(await store.messages.get("m1")).toBeDefined();
+    connection.close();
+    store.close();
+  });
+
+  it("waits at least the minimum delay and stops waiting on unsubscribe", async () => {
+    vi.useFakeTimers();
+    try {
+      const fetcher = vi.fn(async () => {
+        throw new Error("offline");
+      });
+      const stop = fromEventStream({
+        url: "https://example.test/events",
+        fetch: fetcher as unknown as typeof fetch,
+        retryMs: 0,
+      }).subscribe(() => undefined, { onError: () => undefined });
+      await vi.advanceTimersByTimeAsync(MIN_EVENT_STREAM_RETRY_MS - 1);
+      expect(fetcher).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(fetcher).toHaveBeenCalledTimes(2);
+      stop();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("reads the project event stream format", async () => {
+    const encoder = new TextEncoder();
+    const envelope = received("m1", "hi");
+    const base64 = btoa(
+      String.fromCharCode(...encoder.encode(JSON.stringify(envelope))),
+    );
+    const frame = (value: unknown) => `data: ${JSON.stringify(value)}\n\n`;
+    const bodies = [
+      frame({ type: "ready", heartbeatIntervalMs: 15_000 }) +
+        frame({ type: "heartbeat" }) +
+        frame({
+          type: "event",
+          cursor: "c1",
+          streamId: "s",
+          sequence: 1,
+          event: { id: "e1", payload: { encoding: "base64", data: base64 } },
+        }) +
+        frame({
+          type: "event",
+          cursor: "c2",
+          streamId: "s",
+          sequence: 2,
+          event: { id: "e2", payload: null },
+        }) +
+        frame({ type: "expiry" }) +
+        frame({ type: "heartbeat", after: "expiry" }),
+      frame({ type: "revoked" }),
+    ];
+    const fetcher = vi.fn(async (_url: string, init?: RequestInit) => {
+      const body = bodies.shift();
+      if (body === undefined)
+        return new Promise<Response>((_, reject) =>
+          init?.signal?.addEventListener("abort", () =>
+            reject(new Error("aborted")),
+          ),
+        );
+      return new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode(body));
+            controller.close();
+          },
+        }),
+        { headers: { "content-type": "text/event-stream" } },
+      );
+    });
+    const onError = vi.fn();
+    const store = await openStore();
+    const connection = connectEventSource(
+      store,
+      fromEventStream({
+        url: "https://example.test/events",
+        fetch: fetcher as unknown as typeof fetch,
+        format: "project",
+        retryMs: 1,
+      }),
+      { onError },
+    );
+    await vi.waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() =>
+      expect(onError).toHaveBeenCalledWith(
+        new Error("The event stream was revoked."),
+      ),
+    );
+    await connection.idle();
+    expect(await store.messages.get("m1")).toMatchObject({ text: "hi" });
+    expect(connection.cursor).toBe("c1");
+    // Resumes after the body-less event too.
+    expect(
+      new Headers(fetcher.mock.calls[1]?.[1]?.headers).get("last-event-id"),
+    ).toBe("c2");
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(readProjectStreamFrame('{"type":"gap","reason":"x"}')).toEqual({
+      kind: "reconnect",
+      reason: "gap_x",
+    });
+    expect(
+      readProjectStreamFrame('{"type":"gap","reason":"retention_exceeded"}'),
+    ).toEqual({ kind: "ignore" });
     connection.close();
     store.close();
   });

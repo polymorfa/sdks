@@ -37,4 +37,26 @@ describe("usePolymorfaStoreQuery", () => {
     await act(async () => root.unmount());
     store.close();
   });
+
+  it("clears the previous result when the store becomes undefined", async () => {
+    const store = await openStore({ indexedDB: null });
+    await store.ingest(received("m1", "hi"));
+    function Maybe({ current }: { current: PolymorfaStore | undefined }) {
+      const { data, loading } = usePolymorfaStoreQuery(
+        current,
+        "conversations",
+        (value) => value.conversations.list({ limit: 10 }),
+      );
+      return <p>{`${String(loading)}|${data?.length ?? "none"}`}</p>;
+    }
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    await act(async () => root.render(<Maybe current={store} />));
+    await act(async () => undefined);
+    expect(container.textContent).toBe("false|1");
+    await act(async () => root.render(<Maybe current={undefined} />));
+    expect(container.textContent).toBe("false|none");
+    await act(async () => root.unmount());
+    store.close();
+  });
 });

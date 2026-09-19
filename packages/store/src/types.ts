@@ -89,6 +89,8 @@ export interface StoredMessage extends StoredRow {
   readonly mediaUrl?: string;
   readonly attachments?: readonly StoredAttachment[];
   readonly clientId?: string;
+  /** ID of the message this one replies to. */
+  readonly replyTo?: string;
   readonly status: StoredMessageStatus;
   /** Last acknowledgement type as reported, when it was not recognised. */
   readonly ackType?: string;
