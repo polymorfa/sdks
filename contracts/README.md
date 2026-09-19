@@ -2,28 +2,39 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`2259a1fd331c6ddbc8ad56a04333100ebfce7c2e` on monorepo `dev`. `source.json` records the
-original paths and SHA-256 hashes. `coverage.json` uses the same source
-revision.
+`8a7caf47985cd1e7a946320a28e229148715160c` on monorepo branch
+`t3code/calls-sip-address`, a coordinated PR dependency that is not yet merged
+to `dev`. `source.json` records the original paths and SHA-256 hashes.
+`coverage.json` uses the same source revision.
 
-Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
-`MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
-merged monorepo `dev`, the Calls diagnostics route
-(`voipReportCallDiagnostics`) is back with a refreshed fingerprint; the SDK
-keeps `MessagingClient.voip.report` covering it. The Console-only `getCall`
-response also picked up a refreshed fingerprint (still excluded). No
-operations were added or removed by this re-sync.
+Revision `8a7caf47` adds the environment's SIP address
+(`GET /platform/sip/endpoint`, `getSipEndpoint`), covered by
+`Client.sipTrunks.endpoint`, and its Console-only counterpart
+(`getConsoleSipEndpoint`, excluded). It also carries monorepo `dev` changes
+since `2259a1fd`: the SIP trunk operations drop the beta enrollment wording and
+move the `targetUri` transport description into an `allOf` wrapper (eight public
+and Console SIP trunk fingerprints; request and response fields are
+unchanged), and the `PlatformAccessEventStreamFrame` discriminator mapping now
+points at the prefixed schema names the document defines (`streamProjectEvents`
+fingerprint). The Messaging document adds the `bansafe.risk_changed` and
+`bansafe.health_changed` webhooks, typed as `BanSafeRiskChangedPayload` and
+`BanSafeHealthChangedPayload`; webhooks are not ledger operations.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        308 |
+| Covered             |        309 |
 | Missing             |          0 |
-| Excluded            |        116 |
+| Excluded            |        117 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        424 |
+| Total               |        426 |
 
-This revision adds test event triggering
+Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
+`MessagingClient.clientTokens.mint`). An earlier re-sync restored the Calls
+diagnostics route (`voipReportCallDiagnostics`), covered by
+`MessagingClient.voip.report`.
+
+An earlier revision added test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
 (`GET /messaging/testing/{projectId}/events/fixtures`), covered by
 `MessagingClient.testing.triggerEvent` (with the optional `Idempotency-Key`
@@ -55,9 +66,9 @@ Revision `2259a1fd` adds the project event stream. `Client.events.stream`
 covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
 resume, and `Client.events.acknowledgeStream` covers its manual
 acknowledgement route. The Platform `PlatformAccessEventStreamFrame`
-discriminator mapping at this revision points at unprefixed schema names
-(`EventStreamReadyFrame` and so on) that the document does not define; the
-snapshot keeps the source bytes unchanged. The same revision adds
+discriminator mapping at that revision pointed at unprefixed schema names
+(`EventStreamReadyFrame` and so on) that the document did not define; revision
+`8a7caf47` corrects the mapping. The same revision adds
 `conversationTtlSeconds` to client rules, turns `recipientMode` into an enum,
 and sets a minimum of 0 on `rateLimit` and `maxDaily`; the client-rules types
 follow.

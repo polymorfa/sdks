@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- `Client.sipTrunks.endpoint()` returns the SIP address your PBX points at
+  (`SipEndpoint`: `status`, `host`, `transports` as `SipEndpointTransport`
+  with port and SRTP policy, and the `rtp` port range). It is available on
+  team and project clients, takes no project, and needs `sessions:read`.
+  Environments without a SIP address return `status: "sip_not_hosted"` with
+  `host` and `rtp` set to `null`.
+- Webhook types add `bansafe.risk_changed` (`BanSafeRiskChangedPayload`: risk
+  level, score, ban forecast, and contributing factors) and
+  `bansafe.health_changed` (`BanSafeHealthChangedPayload`: health, band,
+  penalties, and findings).
 - Client rules: `ClientRules` and `SetClientRulesRequest` add
   `conversationTtlSeconds`, the seconds a sender stays replyable in
   `conversation` mode (300 to 604800; the API default is 86400).
