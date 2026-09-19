@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- Voice Automation (beta, `calls.voice-automation`; enrolled teams only):
+  `Client.voice.audio` manages a project's audio library with `list`,
+  `createUpload`, `upload` (creates the asset, sends the file to its upload
+  URL without your credential, and completes it), `complete`, `synthesize`
+  (ElevenLabs or OpenAI text-to-speech), `retrieve`, `update`, `delete`,
+  `previewUrl` and `waitUntilReady`. `Client.voice.providerCredentials`
+  stores your own ElevenLabs and OpenAI keys with `list`, `create`,
+  `retrieve`, `verify` and `delete`; keys are write-only. Webhook types add
+  `voice.asset_ready` and `voice.asset_failed`. `PolymorfaErrorCode` adds
+  `voice_not_enabled`, `gate_limit_reached`, `provider_credential_invalid`,
+  `provider_unavailable`, `asset_not_ready`, `voice_asset_in_use`,
+  `voice_asset_revision_conflict` and `voice_unavailable`. The resources
+  need the `voice:read` and `voice:manage` scopes.
+- `constructWebhookEvent` accepts project-scoped deliveries with an empty
+  `session`, such as `customer.*` and `voice.*` events, which it previously
+  rejected as invalid envelopes.
 - Client rules: `ClientRules` and `SetClientRulesRequest` add
   `conversationTtlSeconds`, the seconds a sender stays replyable in
   `conversation` mode (300 to 604800; the API default is 86400).

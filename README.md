@@ -239,6 +239,11 @@ The organization view also exposes these management resources:
 - `projectTokens`: list token metadata for an explicit project
 - `sipTrunks`: list, create, retrieve, update, delete, and rotate the
   credentials of a project's SIP trunks (also on project clients)
+- `voice`: Voice Automation beta, for enrolled teams only. `voice.audio`
+  lists, uploads, synthesizes (text-to-speech), retrieves, updates, deletes,
+  and previews a project's audio assets; `voice.providerCredentials` lists,
+  creates, retrieves, verifies, and deletes ElevenLabs and OpenAI keys (also
+  on project clients)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
@@ -356,7 +361,7 @@ try {
 `PolymorfaErrorCode` lists the documented codes, including
 `recipient_not_on_whatsapp`, `conversation_window_closed`,
 `template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
-`new_chat_limit_reached`, `whatsapp_account_restricted`, the BanSafe codes, and the Calls and SIP trunk codes,
+`new_chat_limit_reached`, `whatsapp_account_restricted`, the BanSafe codes, the Calls and SIP trunk codes, and the Voice Automation codes,
 and still accepts codes a newer API adds. `POLYMORFA_ERROR_CODES` and
 `isKnownPolymorfaErrorCode()` are exported. `requestLogUrl` is absent for
 client tokens and for requests the API did not log. `BrowserError` exposes
