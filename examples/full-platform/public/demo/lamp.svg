@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#ecfeff"/>
+  <circle cx="300" cy="70" r="90" fill="#cffafe"/>
+  <rect x="120" y="250" width="160" height="16" rx="8" fill="#0f766e"/>
+  <path d="M196 250l14-110 60-40" stroke="#134e4a" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M236 70l70 20-30 60z" fill="#14b8a6"/>
+  <circle cx="276" cy="130" r="14" fill="#fde68a"/>
+  <path d="M276 150l-40 90h80z" fill="#fef9c3" opacity=".6"/>
+  <text x="24" y="40" font-family="system-ui" font-weight="700" font-size="22" fill="#134e4a">Enigma lamp</text>
+  <text x="24" y="66" font-family="system-ui" font-size="16" fill="#0f766e">$129 · In stock</text>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e7e5e4"/><stop offset="1" stop-color="#a8a29e"/></linearGradient></defs>
+  <rect width="400" height="300" fill="url(#bg)"/>
+  <rect y="210" width="400" height="90" fill="#78716c"/>
+  <path d="M110 110 200 70l90 40v110l-90 40-90-40z" fill="#c8a36a"/>
+  <path d="M110 110l90 40 90-40-90-40z" fill="#dcb97e"/>
+  <path d="M200 150v110l-90-40V110z" fill="#b78d52"/>
+  <path d="M235 95l-45 60 20 8 12-28 25 18z" fill="#8b6a3b"/>
+  <path d="M150 128l30 13-6 40-24-10z" fill="#e5e7eb" opacity=".85"/>
+  <path d="M232 150l30-18 6 22-18 30-12-6z" fill="#57534e" opacity=".5"/>
+  <text x="20" y="36" font-family="system-ui" font-size="16" fill="#44403c">Order A-1042</text>
+</svg>
