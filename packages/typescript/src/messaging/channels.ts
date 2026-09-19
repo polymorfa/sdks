@@ -1,4 +1,5 @@
 import { HttpTransport } from "../transport/http.js";
+import { withIdempotencyKey } from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   ChannelActionResponse,
@@ -134,7 +135,7 @@ export class ChannelsResource {
       messageId,
       "reaction",
       body,
-      options,
+      withIdempotencyKey(options),
     );
   }
 

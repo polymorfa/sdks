@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "669f81ac3ce1bb6cf4e7a66700c2eb694bbd0883",
-  "branch": "t3code/sip-trunks-standard",
-  "published": false,
-  "note": "Coordinated PR dependency: monorepo branch t3code/sip-trunks-standard (SIP trunks become a standard Calls feature; descriptions only). Re-pin to the merge commit on dev after it merges.",
+  "commit": "51026bfebe611c8f710ed9c1413a65ed16a0e01b",
+  "branch": "dev",
+  "published": true,
+  "note": "Merged commit on monorepo dev (merge of PR #197, Messaging idempotency).",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "fc3d0f209951d04f4e6dbd6b10c86be1e648019cc092c77b117bdaf779d444dc"
+      "sha256": "3c130c2a7b2d314a309a8d0a2759e41fb17b4adfbee1f6e8fa21690b2b3ceeed"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "feca7691710e8ab66f2e6cc4d30db37e46aa99d79eeb7e325ae99f983c2a2ec0"
+      "sha256": "dae2b8bd22eea862247b13aa78d9ca7fc9623815f5eda3f2436b1fd3ec3d8fdb"
     }
   }
 }

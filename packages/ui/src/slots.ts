@@ -44,6 +44,22 @@ export const COMPONENT_SLOTS = [
   "button",
   "preview",
   "error",
+  "inbox",
+  "conversationList",
+  "conversationSearch",
+  "conversationItem",
+  "avatar",
+  "unreadBadge",
+  "thread",
+  "threadHeader",
+  "backButton",
+  "contactPanel",
+  "connectButton",
+  "sessionStatus",
+  "callButton",
+  "templateManager",
+  "templateList",
+  "templateItem",
 ] as const;
 
 export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];

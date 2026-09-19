@@ -371,9 +371,17 @@ export interface ProjectWithStats {
 
 export type ProjectDefaultTier = "free" | "standard" | "pro";
 
+/** Icon accepted by `projects.create`. */
+export interface ProjectIconInput {
+  readonly type: "emoji" | "icon" | "image";
+  readonly value: string;
+  readonly color?: string;
+  readonly storageId?: string;
+}
+
 export interface CreateProjectRequest {
   readonly name: string;
-  readonly icon?: ProjectIcon;
+  readonly icon?: ProjectIconInput;
   readonly defaultTier?: ProjectDefaultTier;
 }
 
@@ -408,7 +416,7 @@ export interface ProductionEnrollmentResult {
   readonly operationId: string;
   readonly enrollmentStatus:
     "requested" | "approval_required" | "provisioning" | "ready";
-  /** The team's billing mode after the request. Always Pay-As-You-Go. */
+  /** The team's billing mode after the request; enrollment upgrades it. */
   readonly billingMode: "payg";
 }
 

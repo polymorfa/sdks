@@ -2,6 +2,46 @@
 
 ## Unreleased
 
+- Drop-in components. `createPolymorfaHandler()` in `@polymorfa/nextjs`
+  serves the token, webhook, media, history, events, connect and template
+  routes from one catch-all route, with `toExpress()` and `toHono()`
+  adapters. Its required `mint()` callback returns an explicit grant
+  (session or Customer, conversations, `allow`, TTL); nothing is granted by
+  default. `<PolymorfaProvider tokenEndpoint>` fetches and refreshes client
+  tokens with backoff and exposes `usePolymorfaClient()` and
+  `usePermissions()`. New React components: `<Inbox/>`,
+  `<ConversationList/>`, `<ContactPanel/>`, `<ConnectWhatsAppButton/>`
+  (opens the hosted QuickLink page), `<SessionStatus/>`, `<CallButton/>` and
+  `<TemplateManager/>`. Controls the token lacks are hidden, with one
+  development warning. `@polymorfa/elements` adds `definePolymorfa()`,
+  `<pmfa-inbox>`, `<pmfa-connect-whatsapp>` and `<pmfa-session-status>`.
+  `@polymorfa/store` adds `createStoreInboxSource()`. `ComposeBox` gains an
+  `attachments` prop. See `examples/five-minute-inbox`.
+- Message writes are safe to retry. `messages.send`, `messages.react`,
+  `chats.editMessage`, `chats.deleteMessage`, `channels.reactToMessage`, and
+  Messaging `campaigns.create` and `campaigns.launch` generate an
+  `Idempotency-Key` when you don't pass `idempotencyKey`, and their automatic
+  retries reuse it. The browser client's `messages.send` and `react` do the
+  same. A response with `Idempotent-Replayed: true` is final and is not
+  retried, in both the server and browser transports. A caller-supplied key
+  still wins. `PolymorfaErrorCode` adds `idempotency_completed`,
+  `idempotency_conflict`, `idempotency_in_progress`, and
+  `idempotency_outcome_unknown`.
+- `CreateProjectRequest.icon` is typed as `ProjectIconInput`, whose `type` is
+  `emoji`, `icon`, or `image`, matching what the API accepts.
+- Dev prereleases of `@polymorfa/sdk`, `@polymorfa/browser`, `@polymorfa/ui`,
+  `@polymorfa/elements`, `@polymorfa/react`, `@polymorfa/store`,
+  `@polymorfa/nextjs` and `@polymorfa/devtools` publish to npm under the
+  `dev` dist-tag on each push to `dev`. Versions follow
+  `0.1.0-dev.<UTC timestamp>`, internal dependencies are pinned to the same
+  version, and each release carries npm provenance. Install with
+  `npm install @polymorfa/sdk@dev`. See [releasing](docs/releasing.md).
+- Added `MessagingClient.testing.triggerEvent()` and
+  `MessagingClient.testing.listEventFixtures()` to fire signed test events for
+  Test numbers, with typed fixture names (`TestEventFixture`,
+  `TEST_EVENT_FIXTURES`), per-fixture `TestEventOverrides`, and the
+  `fromSession` simulated-message option. `triggerEvent()` accepts an optional
+  `idempotencyKey` so a retried trigger reuses the same event.
 - `PolymorfaError` exposes `requestLogUrl`, `docUrl`, and `rateLimitReason`,
   and `requestId` now prefers the error body's `request_id` over the
   `X-Request-Id` header. `code` is typed as `PolymorfaErrorCode`, a union of

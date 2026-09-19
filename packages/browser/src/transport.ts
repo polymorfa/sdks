@@ -154,7 +154,8 @@ export class BrowserTransport {
         if (
           retryableMethod &&
           attempt <= retries &&
-          isRetryableStatus(response.status)
+          isRetryableStatus(response.status) &&
+          !isIdempotentReplay(response)
         ) {
           await this.#sleep(
             retryDelay(response, attempt, this.#random),
@@ -404,6 +405,14 @@ function classifyFailure(
       cause,
     },
   );
+}
+
+/**
+ * A replayed Idempotency-Key result is final: retrying returns the same
+ * recorded response, so a replayed failure is surfaced immediately.
+ */
+function isIdempotentReplay(response: Response): boolean {
+  return response.headers.get("idempotent-replayed") === "true";
 }
 
 function isRetryableStatus(status: number): boolean {

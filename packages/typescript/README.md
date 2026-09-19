@@ -596,6 +596,44 @@ are not Messages routes: they remain `MessagingClient.chats.editMessage` and
 `deleteMessage`, require `chats:manage` with a server key, and are not in the
 client-token allowlist.
 
+### Idempotent sends
+
+These methods send an `Idempotency-Key` on every call:
+
+- `messages.send` and `messages.react`
+- `chats.editMessage` and `chats.deleteMessage`
+- `channels.reactToMessage`
+- `campaigns.create` and `campaigns.launch`
+
+If you don't pass `idempotencyKey`, the SDK generates a random UUID for the
+call. Every automatic retry of that call reuses the key, so the API never
+runs the write twice. If the first attempt succeeded but its response was lost,
+the retry fails with `PolymorfaConflictError` (`idempotency_completed`) instead
+of sending the message again. Pass your own key, such as
+an order event ID, to deduplicate across processes or restarts:
+
+```ts
+await messaging.messages.send(
+  "support",
+  {
+    conversation: { phoneNumber: "+15551234567" },
+    content: { text: "Shipped" },
+  },
+  { idempotencyKey: `order-${orderId}-shipped` },
+);
+```
+
+The API keeps each key for 24 hours per credential. Reusing a key for a
+different request fails with `PolymorfaConflictError` (`idempotency_conflict`).
+A retry that arrives while the first request is still running receives
+`idempotency_in_progress`, and the SDK retries it after `Retry-After`. When a
+response carries `Idempotent-Replayed: true`, the SDK treats it as final and
+does not retry. A replayed `result_unknown`, or `idempotency_outcome_unknown`,
+means the first attempt's outcome is unknown, so check message events before
+you send again with a new key.
+
+`BrowserMessagingClient.messages.send` and `react` generate keys the same way.
+
 ## Messaging media
 
 `MessagingClient.media` is distinct from `Client.media`. It covers the
@@ -1283,12 +1321,13 @@ omits several JSON repository fields and leaves analytics untyped. The SDK
 exports the exact live analytics counters and preserves the extra campaign
 fields as optional `unknown` values rather than asserting undocumented shapes.
 
-The transport retries these mutations only when an idempotency key is
-provided, but the pinned handlers do not persist that header. A create retry
-after an unseen success can create another campaign. Repeating a lifecycle
-command can conflict with the resulting state or append another intent;
-repeating requeue normally reports zero after the matching recipients have
-already moved. The live API reports entitlement failures as `402` and invalid
+`create` and `launch` send an `Idempotency-Key` on every call, and the API
+records it for 24 hours, so a retry after an unseen success never creates a
+second campaign or launches twice (see [Idempotent sends](#idempotent-sends)).
+The other lifecycle commands are retried only when you pass an idempotency
+key, and the API does not persist that header for them. Repeating one can
+conflict with the resulting state or append another intent; repeating requeue
+normally reports zero after the matching recipients have already moved. The live API reports entitlement failures as `402` and invalid
 lifecycle state conflicts as `400`, rather than the more specific statuses
 suggested by their semantics.
 
@@ -1744,6 +1783,45 @@ const invitation = await messaging.quickLinks.create({
 Fixture senders must be existing simulated numbers in that project. Test-number
 entitlements and history consent still apply; uploading a fixture does not enable
 hosted message storage.
+
+### Trigger test events
+
+Fire a named, signed test event for a Test number. The event reaches your
+webhooks and event history with `source: "test"` and does not change the Test
+number. Real numbers are refused with a `PolymorfaValidationError`, and each
+project can trigger 30 test events per minute (`PolymorfaRateLimitError`).
+
+```ts
+import { TEST_EVENT_FIXTURES } from "@polymorfa/sdk";
+
+const result = await messaging.testing.triggerEvent(projectId, {
+  session: "my-test-number",
+  event: "message.received", // one of TEST_EVENT_FIXTURES
+  overrides: { text: "hi", from: "+15550100001" },
+});
+console.log(result.data.eventId);
+
+// Rare events: failed delivery, ban warning, incoming call, template rejection.
+await messaging.testing.triggerEvent(projectId, {
+  session: "my-test-number",
+  event: "template.status",
+  overrides: { templateStatus: "REJECTED", reason: "INVALID_FORMAT" },
+});
+
+const { data } = await messaging.testing.listEventFixtures(projectId);
+```
+
+Set `fromSession` on a `message.received` request to send a simulated text
+from another connected Test number in the same project instead; the response
+has `delivery: "simulated"` and the event arrives as ordinary Test number
+activity. Both methods require an organization API key or project token with
+`sandbox:write` (trigger) or `sandbox:read` (list) and Test numbers access.
+
+Pass `{ idempotencyKey }` as the third argument to `triggerEvent` to retry
+safely. Repeating the request with the same key and body reuses the same event
+ID, so a retry after an uncertain response never creates a second event or
+duplicate webhook deliveries. With a key, the SDK also retries network and
+5xx failures.
 
 Trusted servers continue an issued Meta Cloud API invitation with
 `messaging.cloudOnboarding.advance({ quicklinkId, projectId, result })`.

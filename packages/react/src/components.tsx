@@ -84,7 +84,7 @@ interface SlotProps {
   readonly style?: CSSProperties;
   readonly "data-slot": ComponentSlot;
 }
-type Slots = (slot: ComponentSlot, base: string) => SlotProps;
+export type Slots = (slot: ComponentSlot, base: string) => SlotProps;
 
 // Runs before paint in the browser, and quietly on the server.
 const useIsomorphicLayoutEffect =
@@ -122,7 +122,7 @@ function createSlots(
 }
 
 /** Slot resolver that keeps its identity while the inputs are unchanged. */
-function useSlots(classNames: SlotClassNames | undefined): Slots {
+export function useSlots(classNames: SlotClassNames | undefined): Slots {
   const { appearance } = usePolymorfa();
   const key = classNames === undefined ? "" : JSON.stringify(classNames);
   // `key` stands in for `classNames`, which callers usually pass inline.
@@ -137,7 +137,7 @@ function useStyles(appearance: Appearance): void {
 }
 
 /** Root props: theme classes, direction, CSS variables, and the slot. */
-function useShell(
+export function useShell(
   slots: Slots,
   slot: ComponentSlot,
   base: string,
@@ -180,7 +180,7 @@ function useShell(
   };
 }
 
-function text(
+export function text(
   configuration: Configuration,
   key: MessageKey,
   values: Readonly<Record<string, string>> = {},
@@ -192,7 +192,7 @@ function text(
   );
 }
 
-function Icon({
+export function Icon({
   name,
   className = "pmfa-icon",
 }: {
@@ -1202,6 +1202,11 @@ export interface ComposeBoxProps extends ControllerProps<MessageComposerControll
   readonly onSent?: () => void;
   readonly className?: string;
   readonly classNames?: SlotClassNames;
+  /**
+   * Offer file attachments: the attach button, drop and paste. Defaults to
+   * `true`. Turn it off when the composer's actions have no upload adapter.
+   */
+  readonly attachments?: boolean;
   /** File types the attach button offers, as for `<input accept>`. */
   readonly accept?: string;
   /** Allow picking several files at once. Defaults to `true`. */
@@ -1238,6 +1243,7 @@ export function ComposeBox({
   onSent,
   className,
   classNames,
+  attachments = true,
   accept,
   multiple = true,
   conversation,
@@ -1483,12 +1489,12 @@ export function ComposeBox({
         submit();
       }}
       onDragEnter={(event) => {
-        if (!hasFiles(event)) return;
+        if (!attachments || !hasFiles(event)) return;
         event.preventDefault();
         setDragging(true);
       }}
       onDragOver={(event) => {
-        if (!hasFiles(event)) return;
+        if (!attachments || !hasFiles(event)) return;
         event.preventDefault();
         if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
       }}
@@ -1497,7 +1503,7 @@ export function ComposeBox({
           setDragging(false);
       }}
       onDrop={(event) => {
-        if (!hasFiles(event)) return;
+        if (!attachments || !hasFiles(event)) return;
         event.preventDefault();
         setDragging(false);
         addFiles(event.dataTransfer.files);
@@ -1627,28 +1633,35 @@ export function ComposeBox({
             <Icon name="smiley" />
           </button>
         )}
-        <button
-          type="button"
-          {...slots("composerAttach", "pmfa-btn pmfa-btn-ghost pmfa-btn-icon")}
-          aria-label={text(configuration, "composer.attach")}
-          title={text(configuration, "composer.attach")}
-          onClick={() => fileRef.current?.click()}
-        >
-          <Icon name="attach" />
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          className="pmfa-sr"
-          tabIndex={-1}
-          aria-hidden="true"
-          accept={accept}
-          multiple={multiple}
-          onChange={(event) => {
-            addFiles(event.currentTarget.files);
-            event.currentTarget.value = "";
-          }}
-        />
+        {attachments && (
+          <>
+            <button
+              type="button"
+              {...slots(
+                "composerAttach",
+                "pmfa-btn pmfa-btn-ghost pmfa-btn-icon",
+              )}
+              aria-label={text(configuration, "composer.attach")}
+              title={text(configuration, "composer.attach")}
+              onClick={() => fileRef.current?.click()}
+            >
+              <Icon name="attach" />
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              className="pmfa-sr"
+              tabIndex={-1}
+              aria-hidden="true"
+              accept={accept}
+              multiple={multiple}
+              onChange={(event) => {
+                addFiles(event.currentTarget.files);
+                event.currentTarget.value = "";
+              }}
+            />
+          </>
+        )}
         <textarea
           ref={inputRef}
           {...inputSlot}
@@ -1673,7 +1686,8 @@ export function ComposeBox({
           onSelect={(event) => setCaret(event.currentTarget.selectionStart)}
           onPaste={(event: ClipboardEvent<HTMLTextAreaElement>) => {
             const files = event.clipboardData?.files;
-            if (files === undefined || files.length === 0) return;
+            if (!attachments || files === undefined || files.length === 0)
+              return;
             event.preventDefault();
             addFiles(files);
           }}

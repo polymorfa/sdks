@@ -2,16 +2,9 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`669f81ac3ce1bb6cf4e7a66700c2eb694bbd0883` on monorepo branch
-`t3code/sip-trunks-standard` (a coordinated PR dependency, not yet merged to
-`dev`). `source.json` records the original paths and SHA-256 hashes.
-`coverage.json` uses the same source revision.
-
-Revision `669f81ac` makes SIP trunks a standard Calls feature: the Platform
-descriptions of `createSipTrunk`, `updateSipTrunk`,
-`rotateSipTrunkCredentials` and the call settings `inboundRoute` field no
-longer mention beta enrollment. Descriptions are not fingerprinted, so no
-fingerprint, operation or count changed.
+`51026bfebe611c8f710ed9c1413a65ed16a0e01b` on monorepo `dev`. `source.json` records the
+original paths and SHA-256 hashes. `coverage.json` uses the same source
+revision.
 
 Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
 `MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
@@ -23,17 +16,19 @@ operations were added or removed by this re-sync.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        304 |
+| Covered             |        306 |
 | Missing             |          0 |
-| Excluded            |        118 |
+| Excluded            |        116 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
 | Total               |        422 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
-(`GET /messaging/testing/{projectId}/events/fixtures`). Neither has a typed
-SDK method at this revision, so both are excluded.
+(`GET /messaging/testing/{projectId}/events/fixtures`), covered by
+`MessagingClient.testing.triggerEvent` (with the optional `Idempotency-Key`
+header through `options.idempotencyKey`) and
+`MessagingClient.testing.listEventFixtures`.
 
 An earlier revision added app-reported call diagnostics
 (`POST /messaging/voip/calls/{id}/reports`, covered by
@@ -55,6 +50,11 @@ It does not claim coverage in other languages, package publication, or a
 successful live call.
 
 ## Reconciliation
+
+Revision `51026bfe` adds the optional `Idempotency-Key` header and its `409`
+outcomes to seven Messaging writes, and four `idempotency_*` public error
+codes to the shared error schema. That schema change moves the fingerprint of every Messaging
+operation that references it; each keeps its existing typed method.
 
 This revision adds `request_id` (required) and `request_log_url` to every
 error object, and extends the `PublicError` code enum with the WhatsApp codes

@@ -140,6 +140,10 @@ conversation, it waits for the backend. After the local pages run out, the
 controller pages through your backend and the results are stored.
 Store changes from live events reach the controller as upserts and deletes.
 
+`createStoreInboxSource(store, { backend })` backs `<Inbox/>`: it lists
+conversations from the store, falls back to `backend` while the store is
+empty, and follows store changes.
+
 ### React
 
 ```tsx
