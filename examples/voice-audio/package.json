@@ -1,0 +1,16 @@
+{
+  "name": "@polymorfa/example-voice-audio",
+  "version": "0.1.0-dev.0",
+  "private": true,
+  "description": "Upload audio, render text-to-speech and store a provider key with the Voice Automation beta",
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-strip-types index.ts"
+  },
+  "dependencies": {
+    "@polymorfa/sdk": "0.1.0-dev.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0"
+  }
+}
