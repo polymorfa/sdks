@@ -81,3 +81,7 @@ export {
   toConversationMessage,
   type StoreConversationSourceOptions,
 } from "./conversation-source.js";
+export {
+  createStoreInboxSource,
+  type StoreInboxSourceOptions,
+} from "./inbox-source.js";

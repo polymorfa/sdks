@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- Drop-in components. `createPolymorfaHandler()` in `@polymorfa/nextjs`
+  serves the token, webhook, media, history, events, connect and template
+  routes from one catch-all route, with `toExpress()` and `toHono()`
+  adapters. Its required `mint()` callback returns an explicit grant
+  (session or Customer, conversations, `allow`, TTL); nothing is granted by
+  default. `<PolymorfaProvider tokenEndpoint>` fetches and refreshes client
+  tokens with backoff and exposes `usePolymorfaClient()` and
+  `usePermissions()`. New React components: `<Inbox/>`,
+  `<ConversationList/>`, `<ContactPanel/>`, `<ConnectWhatsAppButton/>`
+  (opens the hosted QuickLink page), `<SessionStatus/>`, `<CallButton/>` and
+  `<TemplateManager/>`. Controls the token lacks are hidden, with one
+  development warning. `@polymorfa/elements` adds `definePolymorfa()`,
+  `<pmfa-inbox>`, `<pmfa-connect-whatsapp>` and `<pmfa-session-status>`.
+  `@polymorfa/store` adds `createStoreInboxSource()`. `ComposeBox` gains an
+  `attachments` prop. See `examples/five-minute-inbox`.
 - Message writes are safe to retry. `messages.send`, `messages.react`,
   `chats.editMessage`, `chats.deleteMessage`, `channels.reactToMessage`, and
   Messaging `campaigns.create` and `campaigns.launch` generate an

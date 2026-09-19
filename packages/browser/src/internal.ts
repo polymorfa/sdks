@@ -9,3 +9,4 @@ export * from "./index.js";
 export * from "./calls/internal.js";
 // The public entry exports the controller as a type; internals need the class.
 export { CallsController } from "./calls/controller.js";
+export { resetPermissionWarnings } from "./dropin/permissions.js";

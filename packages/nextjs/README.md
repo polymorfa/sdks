@@ -3,6 +3,85 @@
 Server-only helpers for Next.js App Router handlers. The package uses the Web
 `Request` and `Response` APIs, so it does not add Next.js as a runtime dependency.
 
+## Drop-in handler
+
+`createPolymorfaHandler` serves every drop-in route from one catch-all
+route, `app/api/polymorfa/[...route]/route.ts`:
+
+```ts
+import { MessagingClient, constructWebhookEvent } from "@polymorfa/sdk";
+import { createPolymorfaHandler } from "@polymorfa/nextjs";
+
+export const { GET, POST } = createPolymorfaHandler({
+  polymorfa: new MessagingClient({
+    credential: { type: "apiKey", value: process.env.POLYMORFA_API_KEY! },
+  }),
+  authenticate: (request) => currentUser(request), // your auth; null → 401
+  mint: (user) => ({
+    session: "support",
+    conversations: user.assignedConversationIds, // or "all"
+    allow: ["read_messages", "subscribe_events", "send_message"],
+    ttlSeconds: 600,
+  }),
+  webhooks: {
+    secret: process.env.POLYMORFA_WEBHOOK_SECRET!,
+    constructEvent: constructWebhookEvent,
+    onEvent: saveEvent,
+  },
+  history: { conversations: listConversations, messages: listMessages },
+  events: streamEvents,
+});
+```
+
+`mint` is required and is the only place permissions are chosen. It returns
+`null` to refuse (`403`). There is no default that grants everything: `allow`
+and `conversations` must be explicit. The handler calls `authenticate` and
+`mint` on every request, so revoked access takes effect on the next call. The
+browser never sends permissions, and the API key never leaves the server.
+
+| Route                                | Method | Needs                               | Purpose                                                   |
+| ------------------------------------ | ------ | ----------------------------------- | --------------------------------------------------------- |
+| `token`                              | POST   | signed-in user                      | Mints a client token and returns it with the grant        |
+| `webhooks`                           | POST   | signature                           | Verifies the raw body, then calls `onEvent`               |
+| `media/:id`                          | GET    | `read_messages` + `media.authorize` | Reuses `createMediaDownloadRoute` modes                   |
+| `history/conversations`              | GET    | `read_messages`                     | Your list, filtered to the grant                          |
+| `history/conversations/:id/messages` | GET    | `read_messages`                     | `404` outside the grant                                   |
+| `history/conversations/:id/contact`  | GET    | `read_contact`                      | Contact panel data                                        |
+| `events`                             | GET    | `subscribe_events`                  | Server-sent events, filtered by session and conversations |
+| `connect`                            | POST   | `connect_whatsapp`                  | Creates a QuickLink; the browser gets only the hosted URL |
+| `templates`                          | POST   | `manage_templates`                  | The template builder route plus `list`                    |
+
+Enforcement: the Polymorfa API enforces the client-token actions (`send_*`,
+`read_presence`, `subscribe_presence`, `read_contact`, `voip_*`). Session
+tokens carry the session's client rules; `allow` narrows them in the API only
+for Customer tokens (`customer`, beta), where the handler forwards the API
+actions in `allow`. The handler enforces `read_messages`,
+`subscribe_events`, `connect_whatsapp`, `manage_templates` and
+`conversations` on its own routes. A Customer grant with no API action is
+refused rather than minted with the session rules. For Customer grants your
+`events` source must return only that Customer's events.
+
+`createDevelopmentInboxStore()` keeps webhook events in memory and serves
+them as `history` and `events`, so `<Inbox/>` works before you build
+storage. It is lost on restart and not shared between instances; replace it
+with your database before production.
+
+### Express and Hono
+
+The handler uses Fetch `Request` and `Response`, so other servers need only an
+adapter:
+
+```ts
+import { toExpress } from "@polymorfa/nextjs/express";
+app.use("/api/polymorfa", toExpress(handler)); // before express.json()
+
+import { toHono } from "@polymorfa/nextjs/hono";
+app.all("/api/polymorfa/*", toHono(handler));
+```
+
+Mount `toExpress` before `express.json()`: webhook signatures are checked
+against the raw body.
+
 `createClientTokenRoute` requires an application-owned authorization callback.
 `createMessagingClientTokenMint` adapts the real server SDK response to the
 browser claim shape. Never send a server API key or messaging credential to the

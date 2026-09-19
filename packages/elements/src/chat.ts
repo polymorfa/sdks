@@ -827,6 +827,7 @@ interface ComposerOptions {
   readonly multiple: () => boolean;
   readonly messages: () => readonly ConversationMessage[] | undefined;
   readonly emoji: () => boolean;
+  readonly attachments: () => boolean;
   readonly voiceNotes: () => boolean;
   readonly voiceNoteAutoSend: () => boolean;
   readonly placeholder: () => string | undefined;
@@ -867,6 +868,7 @@ class ComposerView {
   readonly #send: HTMLButtonElement;
   readonly #mic: HTMLButtonElement;
   readonly #emojiButton: HTMLButtonElement;
+  readonly #attach: HTMLButtonElement;
   readonly #file: HTMLInputElement;
   readonly #chips: HTMLUListElement;
   readonly #banner: HTMLDivElement;
@@ -967,6 +969,7 @@ class ComposerView {
       ),
       "composerAttach",
     );
+    this.#attach = attach;
     this.#file = document.createElement("input");
     this.#file.type = "file";
     this.#file.className = "pmfa-sr";
@@ -1002,7 +1005,12 @@ class ComposerView {
     this.input.addEventListener("keydown", (event) => this.#onKey(event));
     this.input.addEventListener("paste", (event) => {
       const files = event.clipboardData?.files;
-      if (files === undefined || files.length === 0) return;
+      if (
+        !this.options.attachments() ||
+        files === undefined ||
+        files.length === 0
+      )
+        return;
       event.preventDefault();
       this.#addFiles(files);
     });
@@ -1090,6 +1098,7 @@ class ComposerView {
       this.#submit();
     });
     const hasFiles = (event: DragEvent) =>
+      this.options.attachments() &&
       [...(event.dataTransfer?.types ?? [])].includes("Files");
     this.form.addEventListener("dragenter", (event) => {
       if (!hasFiles(event)) return;
@@ -1131,6 +1140,7 @@ class ComposerView {
     )
       this.input.style.setProperty("--pmfa-composer-max-rows", maxRows);
     this.#emojiButton.hidden = !this.options.emoji();
+    this.#attach.hidden = !this.options.attachments();
     if (this.#emojiButton.hidden) this.#closeEmoji(false);
 
     const text = snapshot?.text ?? "";
@@ -1654,6 +1664,7 @@ class ComposerView {
 
 /** Attributes both composing elements read. */
 const COMPOSER_ATTRIBUTES = [
+  "attachments",
   "accept",
   "multiple",
   "emoji",
@@ -1861,6 +1872,7 @@ function composerOptions(
     accept: () => node.getAttribute("accept") ?? undefined,
     multiple: () => multipleAttribute(node),
     emoji: () => flagAttribute(node, "emoji", true),
+    attachments: () => flagAttribute(node, "attachments", true),
     voiceNotes: () => flagAttribute(node, "voice-notes", true),
     voiceNoteAutoSend: () => flagAttribute(node, "voice-note-auto-send", true),
     placeholder: () => node.getAttribute("placeholder") ?? undefined,

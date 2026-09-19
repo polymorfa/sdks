@@ -2,6 +2,16 @@
 
 Framework-neutral browser transport and product controllers for Polymorfa.
 
+## Drop-in client
+
+`PolymorfaClient` (`createPolymorfaClient({ tokenEndpoint })`) fetches client
+tokens from your `createPolymorfaHandler` route, refreshes them before expiry
+with backoff, and reports the grant through `can(permission)`. It never sends
+or chooses permissions. `InboxController` with `createHandlerInboxSource()`
+drives an inbox from the handler's `history` and `events` routes, and
+`connectWhatsApp(client)` asks the handler for a QuickLink and opens the
+hosted URL. The React and Web Component drop-ins are built on these.
+
 `@polymorfa/browser` depends on `@polymorfa/sdk` for the Calls client
 (`@polymorfa/sdk/calls`). It imports nothing else from that package, so no
 server code reaches the browser, and call errors such as `CallsDisabledError`
