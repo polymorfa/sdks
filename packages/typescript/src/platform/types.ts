@@ -347,6 +347,11 @@ export interface Project {
   readonly stage: "development" | "production";
 }
 
+/** A project as returned by creation; new projects always start in development. */
+export interface CreatedProject extends Project {
+  readonly stage: "development";
+}
+
 export interface ProjectWithStats {
   readonly _id: string;
   readonly _creationTime: number;
@@ -403,7 +408,7 @@ export interface ProductionEnrollmentResult {
   readonly operationId: string;
   readonly enrollmentStatus:
     "requested" | "approval_required" | "provisioning" | "ready";
-  /** The team's billing mode after the request; enrollment upgrades it. */
+  /** The team's billing mode after the request. Always Pay-As-You-Go. */
   readonly billingMode: "payg";
 }
 

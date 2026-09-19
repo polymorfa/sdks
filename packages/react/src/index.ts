@@ -17,8 +17,10 @@ export {
   type ChatDrawerProps,
   type ComposeBoxProps,
   type MessageListProps,
+  type RenderAttachment,
   type TemplateBuilderProps,
 } from "./components.js";
+export type { QuickReplyOption } from "@polymorfa/ui";
 export {
   CALLS_STYLES,
   CallControls,
@@ -26,6 +28,8 @@ export {
   CallSurface,
   DialPad,
   IncomingCallCard,
+  ParticipantList,
+  ParticipantVideoGrid,
   formatDuration,
   injectCallsStyles,
   useCallDuration,
@@ -37,4 +41,6 @@ export {
   type CallSurfaceProps,
   type DialPadProps,
   type IncomingCallCardProps,
+  type ParticipantListProps,
+  type ParticipantVideoGridProps,
 } from "./calls.js";

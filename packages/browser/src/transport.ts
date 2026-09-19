@@ -100,6 +100,16 @@ export class BrowserTransport {
     this.#onDiagnostic = options.onDiagnostic;
   }
 
+  /**
+   * The client token requests use, for authenticating sockets. `refresh: true`
+   * asks the token provider for a new token.
+   */
+  token(
+    options: { readonly refresh?: boolean } = {},
+  ): Promise<{ readonly value: string; readonly expiresAt?: number }> {
+    return this.#tokens.token(options);
+  }
+
   async request<T = unknown>(
     request: BrowserRequest,
   ): Promise<BrowserResponse<T>> {

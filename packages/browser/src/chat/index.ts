@@ -13,6 +13,8 @@ export {
 } from "./conversation.js";
 export {
   MessageComposerController,
+  createConversationComposerActions,
+  localAttachmentFromFile,
   type ComposerActions,
   type ComposerAttachment,
   type ComposerDraft,
@@ -20,3 +22,12 @@ export {
   type MessageComposerOptions,
   type MessageComposerSnapshot,
 } from "./composer.js";
+export {
+  VoiceNoteRecorder,
+  voiceNoteName,
+  type MediaRecorderConstructor,
+  type VoiceNoteError,
+  type VoiceNoteRecorderOptions,
+  type VoiceNoteRecorderSnapshot,
+  type VoiceNoteStatus,
+} from "./voice-recorder.js";

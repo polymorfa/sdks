@@ -2,17 +2,37 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`8480b165d509df072ad74c3a1a976895f7676ff2`. `source.json` records their original
-paths and SHA-256 hashes. `coverage.json` uses the same source revision.
+`078af1889c2adb4020f7a4fc41384058a4234da1` on monorepo `dev`. `source.json` records the original paths and
+SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        297 |
+| Covered             |        304 |
 | Missing             |          0 |
-| Excluded            |        106 |
+| Excluded            |        118 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        403 |
+| Total               |        422 |
+
+This revision adds test event triggering
+(`POST /messaging/testing/{projectId}/events`) and fixture listing
+(`GET /messaging/testing/{projectId}/events/fixtures`). Neither has a typed
+SDK method at this revision, so both are excluded.
+
+This revision adds app-reported call diagnostics
+(`POST /messaging/voip/calls/{id}/reports`, covered by
+`MessagingClient.voip.report`, and sent automatically by the browser and
+Calls clients), replaces `includeSelfAudio` with `conferenceMode` in session
+call settings, and moves Console call detail from `clientReports` to
+`appReports` (excluded, Console-only). Earlier revisions added
+`hostCloudApiCalls` to session call settings, a `sip`
+connection transport in Console call detail, and the SIP trunk operations, covered by `Client.sipTrunks`,
+and the calling switch, routing and revision fields of session call settings. The SIP error codes and
+`calls_disabled` added to the shared public error enum changed the fingerprint of every
+operation that references it; those operations were reviewed and only the
+error enum differs. The Console SIP trunk and call operations are excluded.
+`createProject` and `requestProductionEnrollment` match `CreatedProject` and
+the `billingMode` field of the production enrollment result.
 
 Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
@@ -63,9 +83,15 @@ handler returns those fields, so `BanSafeNumberDetail` keeps them. Console,
 staff, browser-owned onboarding, and capability-token routes have explicit
 exclusion reasons. No whole-contract parity or package release is claimed.
 
-`HttpCallsApi.place`, `accept`, `reject`, `addParticipant`, and `setMode` cover
-the five Calls operations. Request tests invoke these methods and check the
-HTTP method, encoded path, body, authentication, and response handling.
+`MessagingClient.voip` covers the Calls place, accept, reject, leave
+(`voipLeaveCall`), end, and add-participant operations and the session call
+settings (`getCallSettings`, `updateCallSettings`). Request tests invoke these
+methods and check the HTTP method, encoded path, body, authentication, and
+response handling. Calls contract revision 1 removed the mode, socket-ticket,
+agent-token, and browser-token routes. It also added three call-state codes
+to the shared `PublicError` enum, which changes the fingerprint of every
+Messaging operation that returns it. The Console-only
+`/console/call-settings/{sessionId}` routes are excluded.
 
 The unified `Client` owns organization control-plane resources and creates
 immutable project views with `client.project(projectId)`. QuickLink management

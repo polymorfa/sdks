@@ -153,27 +153,44 @@ describe("error codes", () => {
     expect(isKnownPolymorfaErrorCode("not_a_code")).toBe(false);
   });
 
-  it("matches the pinned contract's PublicError code enum", async () => {
+  it("matches the pinned Messaging and Platform error code contracts", async () => {
     const { readFile } = await import("node:fs/promises");
-    const contract = JSON.parse(
-      await readFile(
-        new URL("../../../contracts/openapi.messaging.json", import.meta.url),
-        "utf8",
-      ),
-    ) as {
-      components: {
-        schemas: {
-          PublicError: {
-            properties: {
-              error: { properties: { code: { enum: string[] } } };
-            };
-          };
+    const read = async (name: string) =>
+      JSON.parse(
+        await readFile(
+          new URL(`../../../contracts/${name}`, import.meta.url),
+          "utf8",
+        ),
+      ) as {
+        components: {
+          schemas: Record<
+            string,
+            {
+              properties: {
+                error: { properties: { code: { enum: string[] } } };
+              };
+            }
+          >;
         };
       };
-    };
-    const published =
-      contract.components.schemas.PublicError.properties.error.properties.code
-        .enum;
+    const messaging = await read("openapi.messaging.json");
+    const platform = await read("openapi.platform.json");
+    const platformText = await readFile(
+      new URL("../../../contracts/openapi.platform.json", import.meta.url),
+      "utf8",
+    );
+    // Platform operations document these codes in prose rather than an enum.
+    const documentedInProse = ["payg_required", "premium_required"];
+    for (const code of documentedInProse) {
+      expect(platformText).toContain(`code \`${code}\``);
+    }
+    const published = new Set([
+      ...messaging.components.schemas.PublicError!.properties.error.properties
+        .code.enum,
+      ...platform.components.schemas.PlatformAccessPublicError!.properties.error
+        .properties.code.enum,
+      ...documentedInProse,
+    ]);
     expect([...POLYMORFA_ERROR_CODES].sort()).toEqual([...published].sort());
   });
 

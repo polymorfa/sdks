@@ -1,4 +1,8 @@
-import type { PhonePlatform, WhatsAppAccountType } from "../messaging/types.js";
+import type {
+  MessagingConnection,
+  PhonePlatform,
+  WhatsAppAccountType,
+} from "../messaging/types.js";
 
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
@@ -9,6 +13,8 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "blocklist.update",
   "business.quick_reply.update",
   "call.accepted",
+  "call.connection_joined",
+  "call.connection_left",
   "call.ended",
   "call.missed",
   "call.participant_joined",
@@ -288,17 +294,43 @@ export interface ChatDeletePayload {
   readonly from: IdentityReference;
 }
 
+/** What a call supports, as reported by the session that carries it. */
+export interface WebhookCallCapabilities {
+  readonly video: boolean;
+  /** Other parties can be invited, turning the call into a group call. */
+  readonly invite: boolean;
+}
+
 export interface CallReceivedPayload {
   readonly from: IdentityReference;
   readonly callId: string;
+  readonly hasVideo: boolean;
+  /** How the session is connected to WhatsApp. */
+  readonly sessionConnection?: MessagingConnection;
+  readonly capabilities?: WebhookCallCapabilities;
 }
 
-export interface CallMissedPayload extends CallReceivedPayload {
+export interface CallMissedPayload {
+  readonly from: IdentityReference;
+  readonly callId: string;
   readonly reason: string;
 }
 
-export type CallAcceptedPayload = CallReceivedPayload;
-export type CallRejectedPayload = CallReceivedPayload;
+export interface CallAcceptedPayload {
+  readonly from: IdentityReference;
+  readonly callId: string;
+  /** Participant reference that answered first, when known. */
+  readonly answeredBy?: string;
+  /** The answer claimed the call: other participants stopped ringing. */
+  readonly exclusive?: boolean;
+  readonly sessionConnection?: MessagingConnection;
+  readonly capabilities?: WebhookCallCapabilities;
+}
+
+export interface CallRejectedPayload {
+  readonly from: IdentityReference;
+  readonly callId: string;
+}
 
 export interface CallEndedPayload {
   /** Null when the media host disappeared before reporting caller identity. */
@@ -309,6 +341,7 @@ export interface CallEndedPayload {
   readonly reason: string;
   readonly direction: "inbound" | "outbound";
   readonly hadVideo: boolean;
+  readonly sessionConnection?: MessagingConnection;
 }
 
 export interface CallTelemetryPayload {
@@ -346,6 +379,41 @@ export interface CallParticipantLeftPayload {
   readonly callId: string;
   readonly participantId: string;
   readonly reason?: string;
+}
+
+/** One media connection to a call: a browser, app, server, or SIP trunk. */
+export interface CallConnection {
+  readonly id: string;
+  /** `client:<id>` for a client token, `server:<id>` for a server credential. */
+  readonly participant: string;
+  readonly transport: "webrtc" | "socket" | "sip";
+}
+
+export interface CallConnectionJoinedPayload {
+  readonly callId: string;
+  readonly connection: CallConnection;
+}
+
+/**
+ * Why a connection left. A SIP trunk that never joined reports a `sip_*`
+ * reason, `claimed`, or `call_ended`, with no joined event before it.
+ */
+export type CallConnectionLeftReason =
+  | "left"
+  | "replaced"
+  | "claimed"
+  | "call_ended"
+  | "sip_busy"
+  | "sip_declined"
+  | "sip_no_answer"
+  | "sip_unavailable"
+  | "sip_auth_failed";
+
+export interface CallConnectionLeftPayload {
+  readonly callId: string;
+  readonly connectionId: string;
+  readonly participant: string;
+  readonly reason: CallConnectionLeftReason;
 }
 
 export interface NewsletterUpdatePayload {
@@ -743,6 +811,8 @@ export interface WebhookPayloadMap {
   readonly "blocklist.update": BlocklistUpdatePayload;
   readonly "business.quick_reply.update": BusinessQuickReplyUpdatePayload;
   readonly "call.accepted": CallAcceptedPayload;
+  readonly "call.connection_joined": CallConnectionJoinedPayload;
+  readonly "call.connection_left": CallConnectionLeftPayload;
   readonly "call.ended": CallEndedPayload;
   readonly "call.missed": CallMissedPayload;
   readonly "call.participant_joined": CallParticipantPayload;

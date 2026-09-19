@@ -37,9 +37,23 @@ export interface ElementAppearance {
   readonly styles?: Readonly<Record<string, string>>;
 }
 
+/** The color variables, which the dark palette can override one by one. */
+export type AppearanceColorVariable = Extract<
+  keyof AppearanceVariables,
+  `color${string}`
+>;
+
 export interface Appearance {
   readonly theme: Theme;
   readonly variables: AppearanceVariables;
+  /**
+   * Colors for the dark theme (`theme: "dark"`, or `"system"` when the system
+   * prefers dark). Only color keys apply; unset keys use the built-in dark
+   * palette.
+   */
+  readonly darkVariables?: Partial<AppearanceVariables>;
+  /** Skip the bundled stylesheet; components still render their classes and parts. */
+  readonly unstyled?: boolean;
   readonly layout: AppearanceLayout;
   readonly elements: Readonly<Record<string, ElementAppearance>>;
 }
@@ -47,6 +61,8 @@ export interface Appearance {
 export interface AppearanceInput {
   readonly theme?: Theme;
   readonly variables?: Partial<AppearanceVariables>;
+  readonly darkVariables?: Partial<AppearanceVariables>;
+  readonly unstyled?: boolean;
   readonly layout?: Partial<AppearanceLayout>;
   readonly elements?: Readonly<Record<string, ElementAppearance>>;
 }
@@ -110,9 +126,16 @@ export function mergeAppearance(
         : { styles: { ...baseElement?.styles, ...overrideElement?.styles } }),
     };
   }
+  const darkVariables =
+    base.darkVariables === undefined && override.darkVariables === undefined
+      ? undefined
+      : { ...base.darkVariables, ...override.darkVariables };
+  const unstyled = override.unstyled ?? base.unstyled;
   return deepFreeze({
     theme: override.theme ?? base.theme ?? DEFAULT_APPEARANCE.theme,
     variables: { ...baseVariables, ...override.variables },
+    ...(darkVariables === undefined ? {} : { darkVariables }),
+    ...(unstyled === undefined ? {} : { unstyled }),
     layout: { ...baseLayout, ...override.layout },
     elements,
   });
@@ -138,18 +161,34 @@ const CSS_VARIABLES: Readonly<Record<keyof AppearanceVariables, string>> = {
   motion: "--pmfa-motion",
 };
 
+/**
+ * CSS custom properties for an appearance. Dark colors that are set also
+ * emit `--pmfa-dark-color-*`, which the stylesheet reads in the dark theme.
+ */
 export function appearanceToCssVariables(
   appearance: Appearance,
 ): Readonly<Record<string, string>> {
-  const entries = Object.entries(CSS_VARIABLES)
-    .map(
-      ([key, cssName]) =>
-        [
-          cssName,
-          appearance.variables[key as keyof AppearanceVariables],
-        ] as const,
-    )
-    .sort(([left], [right]) => left.localeCompare(right));
+  const light = Object.entries(CSS_VARIABLES).map(
+    ([key, cssName]) =>
+      [
+        cssName,
+        appearance.variables[key as keyof AppearanceVariables],
+      ] as const,
+  );
+  const dark = Object.entries(CSS_VARIABLES).flatMap(([key, cssName]) => {
+    const value = appearance.darkVariables?.[key as keyof AppearanceVariables];
+    return key.startsWith("color") && value !== undefined
+      ? [
+          [
+            cssName.replace("--pmfa-color-", "--pmfa-dark-color-"),
+            value,
+          ] as const,
+        ]
+      : [];
+  });
+  const entries = [...light, ...dark].sort(([left], [right]) =>
+    left < right ? -1 : left > right ? 1 : 0,
+  );
   return Object.freeze(Object.fromEntries(entries));
 }
 

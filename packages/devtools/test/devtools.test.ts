@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DevAssistant,
   createSimulatedFetch,
@@ -38,8 +38,102 @@ describe("DevAssistant", () => {
       "secret",
     );
     const mounted = mountDevAssistant(assistant);
-    expect(mounted?.element.textContent).toContain("Polymorfa dev mode");
+    expect(mounted?.element.shadowRoot?.textContent).toContain(
+      "Polymorfa dev mode",
+    );
     mounted?.dispose();
+  });
+});
+
+describe("mountDevAssistant", () => {
+  const enabled = () =>
+    new DevAssistant({
+      environment: "development",
+      tokenEnvironment: "development",
+    });
+
+  beforeEach(() => sessionStorage.clear());
+
+  it("starts collapsed in the bottom-left corner and toggles the panel", () => {
+    const assistant = enabled();
+    const mounted = mountDevAssistant(assistant)!;
+    const root = mounted.element.shadowRoot!;
+    const launcher = root.querySelector<HTMLButtonElement>(
+      'button[aria-label="Polymorfa dev mode"]',
+    )!;
+    const panel = root.querySelector<HTMLElement>('[role="dialog"]')!;
+    expect(mounted.element.style.left).toBe("16px");
+    expect(mounted.element.style.bottom).toBe("16px");
+    expect(launcher.getAttribute("aria-expanded")).toBe("false");
+    expect(launcher.getAttribute("aria-controls")).toBe(panel.id);
+    expect(panel.hidden).toBe(true);
+    expect(panel.getAttribute("aria-label")).toBeTruthy();
+
+    launcher.click();
+    expect(panel.hidden).toBe(false);
+    expect(launcher.getAttribute("aria-expanded")).toBe("true");
+    expect(root.activeElement).toBe(
+      panel.querySelector("input:checked, select, button"),
+    );
+    expect(sessionStorage.getItem("polymorfa:devtools:open")).toBe("1");
+
+    root
+      .querySelector<HTMLInputElement>('input[value="dark"]')!
+      .dispatchEvent(new Event("change"));
+    expect(assistant.getSnapshot().appearance.theme).toBe("system");
+    const dark = root.querySelector<HTMLInputElement>('input[value="dark"]')!;
+    dark.checked = true;
+    dark.dispatchEvent(new Event("change"));
+    expect(assistant.getSnapshot().appearance.theme).toBe("dark");
+
+    panel.querySelector("select")!.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "Escape",
+        bubbles: true,
+        composed: true,
+      }),
+    );
+    expect(panel.hidden).toBe(true);
+    expect(root.activeElement).toBe(launcher);
+    launcher.click();
+    expect(panel.contains(root.activeElement)).toBe(true);
+    launcher.click();
+    expect(mounted.isOpen).toBe(false);
+    expect(root.activeElement).toBe(launcher);
+    mounted.dispose();
+    expect(mounted.element.isConnected).toBe(false);
+  });
+
+  it("honours position, offset, defaultOpen, and the remembered state", () => {
+    const first = mountDevAssistant(enabled(), {
+      position: "top-right",
+      offset: { x: 4, y: 8 },
+      defaultOpen: true,
+    })!;
+    expect(first.element.style.top).toBe("8px");
+    expect(first.element.style.right).toBe("4px");
+    expect(first.isOpen).toBe(true);
+    first.close();
+    first.dispose();
+    const second = mountDevAssistant(enabled(), { defaultOpen: true })!;
+    expect(second.isOpen).toBe(false);
+    second.dispose();
+  });
+
+  it("still accepts a parent element and survives blocked storage", () => {
+    const parent = document.createElement("div");
+    document.body.append(parent);
+    const getItem = vi
+      .spyOn(Storage.prototype, "getItem")
+      .mockImplementation(() => {
+        throw new Error("blocked");
+      });
+    const mounted = mountDevAssistant(enabled(), parent)!;
+    expect(mounted.element.parentElement).toBe(parent);
+    expect(mounted.isOpen).toBe(false);
+    getItem.mockRestore();
+    mounted.dispose();
+    parent.remove();
   });
 });
 

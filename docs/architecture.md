@@ -37,5 +37,13 @@ public implementations rather than copying their visual design or API names.
   itself from a query string or inspect secret material.
 - Mobile-native packages are deferred. The browser and server contracts avoid
   assuming React Native so a future binding can reuse the controller protocol.
-- Calls match the available `voip-v2` signaling and WebRTC behavior. Missing
-  group-call features are not invented for API symmetry.
+- Calls follow Calls contract revision 1: no session answer modes and no
+  calling tickets. Clients authenticate REST calls and both call sockets with
+  the existing token (a client token in browsers). Applications choose per
+  answer whether to claim a call; components default to not claiming and never
+  decline a call on their own. Audio is merged per participant; video stays
+  one stream per participant.
+- Calls packages export neutral calling operations only. Signaling, WebRTC
+  negotiation, sockets and media framing are internal modules; sibling
+  packages reach them through a package-private `./internal` subpath that
+  applications must not import.

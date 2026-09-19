@@ -6,7 +6,6 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 import { describe, expect, it } from "vitest";
-import { HttpCallsApi } from "../../calls/src/index.js";
 import { BrowserMessagingClient } from "../../browser/src/index.js";
 import {
   BridgeClient,
@@ -174,12 +173,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "8480b165d509df072ad74c3a1a976895f7676ff2",
-      total: 403,
-      covered: 297,
+      sourceCommit: "078af1889c2adb4020f7a4fc41384058a4234da1",
+      total: 422,
+      covered: 304,
       partial: 0,
       missing: 0,
-      excluded: 106,
+      excluded: 118,
       changed: 0,
       resolutions: [],
     });
@@ -302,7 +301,6 @@ describe("coverage checker", () => {
           value: PROJECT_TOKEN,
         },
       }),
-      HttpCallsApi: new HttpCallsApi({ apiKey: "pmfa_calls" }),
       BrowserMessagingClient: new BrowserMessagingClient({
         session: "coverage",
         getClientToken: async () => "pmfa_ct_coverage",

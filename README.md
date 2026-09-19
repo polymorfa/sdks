@@ -6,20 +6,22 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`8480b165d509df072ad74c3a1a976895f7676ff2`. Graph-compatible APIs are outside
+`078af1889c2adb4020f7a4fc41384058a4234da1` (monorepo `dev`). Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
 
-| Package               | Runtime             | Responsibility                                                                    |
-| --------------------- | ------------------- | --------------------------------------------------------------------------------- |
-| `@polymorfa/sdk`      | Node.js 20+         | Messaging, management, system, and Bridge server clients                          |
-| `@polymorfa/browser`  | Browser             | Client-token transport and framework-neutral product controllers                  |
-| `@polymorfa/ui`       | Isomorphic          | Appearance, locale, direction, motion, and diagnostic contracts                   |
-| `@polymorfa/elements` | Browser             | Portable custom elements for React-free, Vue, Svelte, and plain HTML applications |
-| `@polymorfa/react`    | Browser             | React bindings over the same controllers                                          |
-| `@polymorfa/nextjs`   | Server              | App Router-compatible client-token and webhook helpers                            |
-| `@polymorfa/devtools` | Development browser | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
+| Package                | Runtime              | Responsibility                                                                    |
+| ---------------------- | -------------------- | --------------------------------------------------------------------------------- |
+| `@polymorfa/sdk`       | Node.js 20+          | Messaging, management, system, and Bridge server clients                          |
+| `@polymorfa/sdk/calls` | Node.js 22+, Browser | Calls lifecycle, answer/join/leave, and programmatic media sockets                |
+| `@polymorfa/browser`   | Browser              | Client-token transport and framework-neutral product controllers                  |
+| `@polymorfa/ui`        | Isomorphic           | Appearance, locale, direction, motion, and diagnostic contracts                   |
+| `@polymorfa/elements`  | Browser              | Portable custom elements for React-free, Vue, Svelte, and plain HTML applications |
+| `@polymorfa/react`     | Browser              | React bindings over the same controllers                                          |
+| `@polymorfa/store`     | Browser              | Opt-in IndexedDB store for webhook-shaped events, with live sources and chat data |
+| `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
+| `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
 
 The non-server packages are complete development artifacts on `dev`, but have
 not been published. Their names are the intended public identities in the
@@ -27,15 +29,23 @@ Polymorfa npm organization. No mobile-native binding is part of this milestone.
 
 ## TypeScript development install
 
-The package has not been published to npm. Install the verified development
-branch directly from GitHub:
+The packages have not been published to npm. Build them from a clone of the
+development branch and install the packed tarballs:
 
 ```bash
-npm install github:polymorfa/sdks#dev
+git clone --branch dev https://github.com/polymorfa/sdks.git
+cd sdks
+npm ci
+npm run build:workspaces
+npm pack -w @polymorfa/sdk           # add -w @polymorfa/browser for browser apps
+npm install /path/to/sdks/polymorfa-sdk-0.1.0-dev.0.tgz   # from your application
 ```
 
-The Git install runs the package build through `prepare`. The published package
-name and root import are already stable:
+`npm install github:polymorfa/sdks#dev` no longer installs the SDK: the
+repository root is a private workspace, and `@polymorfa/sdk` lives in
+`packages/typescript`.
+
+The published package name and root import are already stable:
 
 ```ts
 import {
@@ -47,6 +57,19 @@ import {
 ```
 
 Node.js 20 or newer is required. The package has no runtime dependencies.
+
+The programmatic Calls client ships inside the same package as the
+`@polymorfa/sdk/calls` subpath; there is no separate Calls package to install.
+`@polymorfa/browser` depends on `@polymorfa/sdk` and uses this same Calls
+client, so errors raised by browser calls are the classes exported from
+`@polymorfa/sdk/calls`:
+
+```ts
+import { CallsClient } from "@polymorfa/sdk/calls";
+```
+
+`@polymorfa/sdk/calls` needs Node.js 22 or newer for its built-in `WebSocket`.
+On older runtimes, pass a `WebSocket` implementation to `CallsClient`.
 
 ## Messaging client
 
@@ -94,7 +117,8 @@ The handwritten Messaging resources in this milestone are:
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call
-- `voip`: mint the browser call token used by `@polymorfa/browser` signaling
+- `voip`: place, accept, reject, leave, and end Polymorfa Calls, add
+  participants, and read or update a session's call settings
 - `campaigns`: list, create, retrieve, inspect analytics, launch, pause, resume,
   stop, and requeue project campaigns through the Messaging control plane
 - `messages`: send every contract-defined message kind through one typed send
@@ -174,7 +198,7 @@ project fails before transport. `Client` also rejects browser client tokens and
 the CLI-only `pmfa_ls_` listener credential before transport. Organization
 keys must use the single v1 form `pmfa_` plus 72 unpadded base64url characters;
 project tokens must use `pmfa_pt_` plus 94. The SDK validates that grammar
-without decoding the credential. Call-agent tickets, socket tickets, and
+without decoding the credential. Retired call-agent and socket tickets and
 simulated-device capabilities are also rejected before transport.
 
 Both organization and project views expose owner-bound resources:
@@ -200,6 +224,8 @@ The organization view also exposes these management resources:
 - `sessionBans`: list all or active session bans
 - `securityIncidents`: list and acknowledge leaked-credential incidents
 - `projectTokens`: list token metadata for an explicit project
+- `sipTrunks`: list, create, retrieve, update, delete, and rotate the
+  credentials of a project's SIP trunks (also on project clients)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
@@ -317,7 +343,7 @@ try {
 `PolymorfaErrorCode` lists the documented codes, including
 `recipient_not_on_whatsapp`, `conversation_window_closed`,
 `template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
-`new_chat_limit_reached`, `whatsapp_account_restricted`, and the BanSafe codes,
+`new_chat_limit_reached`, `whatsapp_account_restricted`, the BanSafe codes, and the Calls and SIP trunk codes,
 and still accepts codes a newer API adds. `POLYMORFA_ERROR_CODES` and
 `isKnownPolymorfaErrorCode()` are exported. `requestLogUrl` is absent for
 client tokens and for requests the API did not log. `BrowserError` exposes
@@ -443,7 +469,7 @@ allowlist. `hideWatermark: true` requires Premium team access.
 Browser code accepts only short-lived `pmfa_ct_` tokens returned by an
 application callback. It rejects server credentials and absolute request URLs.
 The framework-neutral controllers cover conversations, composing,
-template building, and one-to-one calls. They expose immutable snapshots through
+template building, and one-to-one and group calls. They expose immutable snapshots through
 `getSnapshot()` and `subscribe()`; React and Web Components render those same
 objects rather than reimplementing product state.
 
@@ -490,7 +516,7 @@ controller lifecycles.
 
 ### Calls
 
-`createBrowserCalls` connects the shared `@polymorfa/calls` model to the
+`createBrowserCalls` connects the shared `@polymorfa/sdk/calls` model to the
 existing browser controller and WebRTC media. It places calls directly with a
 short-lived client token, receives lifecycle events, and exposes the active
 model as `controller.call`. Pass its controller to React or Web Components.
@@ -505,26 +531,55 @@ await calls.controller.place("+15550100");
 await calls.dispose();
 ```
 
-The token needs `voip_place`, `voip_answer` and `voip_signal` actions. Requests
-use its bound session. Connecting claims `browser` mode, which auto-answers
-remotely; the widget's Answer action attaches local media and Reject hangs up.
-Direct placement supports linked devices. Custom signaling backends and
-application-fed lifecycle channels remain available.
+The token needs `voip_place`, `voip_answer` and `voip_signal` actions. Your
+server mints it with `POST /platform/client-tokens`; the browser uses it
+directly for REST calls and for the first frame of each call socket. No
+calling ticket is involved. Requests use the token's bound session.
 
-Calls carry a `line`: `linkedDevice` (a paired WhatsApp device session, audio
-and video) or `cloudApi` (the WhatsApp Business Calling API, audio only). Every
-component gates on the snapshot's `capabilities`, never on the line name. The
+Incoming calls ring until a participant answers or declines them. Several
+calls can ring at once, and the widget never declines one for you. Answer
+takes an `exclusive` choice: `false` (the default) leaves other participants
+ringing so they can join, and `true` claims the call. A call another
+participant answered without a claim offers Join; a claimed call shows as
+answered elsewhere. Leave closes only this browser's connection; hang-up ends
+the call for everyone. A call you placed offers only hang-up until it
+connects, and a microphone failure while it rings ends it. Each remote participant's video arrives as its own
+stream in `controller.remoteVideos`; call audio is merged. Signaling, media
+negotiation and socket transports are internal to the SDK; the packages export
+only these calling operations.
+
+Each call reports its `capabilities` (`video`, `invite`, `mute`), and every
+component gates its controls on them. A placed call starts with video and
+invitations allowed and takes the platform's report when the callee answers.
+The
 controller also owns capture/playback device choice (`setPreferredDevices`,
 `switchDevice`, `refreshDevices`) so a microphone or camera swap mid-call is a
 track replacement, not a renegotiation. The shared call model supports
 participant invitations. Browser WebRTC calls receive live participant joins,
 state changes, and departures through the lifecycle stream.
 
+The browser and Calls clients send call diagnostics for their own media
+connections (quality figures and error codes, no personal data) so the Console
+can show why a call sounded bad or failed. Pass `diagnostics: false` to turn
+this off; `MessagingClient.voip.report()` sends your own.
+
 `@polymorfa/react` ships the complete call UI: `CallSurface` (incoming card,
 stage, control dock, and a pop-out window), plus `IncomingCallCard`,
-`CallStage`, `CallControls`, and `DialPad` for composition. The design mirrors
+`CallStage`, `CallControls`, `ParticipantVideoGrid`, `ParticipantList`, and
+`DialPad` for composition. The design mirrors
 the official WhatsApp desktop call windows in a monochrome Material-3 voice;
 colors derive from the shared appearance variables.
+
+### Local event store
+
+`@polymorfa/store` keeps an opt-in IndexedDB copy of webhook-shaped events for
+applications that store messages themselves. Your backend receives webhooks
+and streams them to the browser; the store files messages, conversations,
+contacts, presence, calls, labels, sessions, templates, and other events into
+separate stores and feeds `ConversationController` through
+`createStoreConversationSource()`. Message content is written to the device;
+see the [store guide](packages/store/README.md#privacy) for encryption,
+redaction, and retention.
 
 ## Next.js and dev mode
 
@@ -559,6 +614,10 @@ not establish API parity. Raw requests never count as typed coverage. See the
 rules.
 
 ## Development
+
+The repository is an npm workspace: `packages/typescript` is `@polymorfa/sdk`,
+and `packages/calls` is a private workspace compiled into
+`@polymorfa/sdk/calls`.
 
 ```bash
 npm install

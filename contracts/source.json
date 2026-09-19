@@ -1,16 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "8480b165d509df072ad74c3a1a976895f7676ff2",
+  "commit": "078af1889c2adb4020f7a4fc41384058a4234da1",
+  "branch": "t3code/calls-unified-5-client-diagnostics",
+  "published": false,
+  "note": "Pushed commit on the monorepo branch, not yet merged. Re-pin to the merged commit before release; the repository field names the remote it will land in.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "f67187412fd658a55272c40cc185e1e99f5b4e2b5d1b3055d4907c18f37ce77a"
+      "sha256": "fc3d0f209951d04f4e6dbd6b10c86be1e648019cc092c77b117bdaf779d444dc"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "ca50be3e2fd388ec3ccf6ade474a4325bc952888c44b16eb610dc54228b64949"
+      "sha256": "071ce1f129c07b509d2fb3223e2f800fe64f91cc61d67c75a19f20f892efbda1"
     }
   }
 }

@@ -41,6 +41,19 @@ export const POLYMORFA_ERROR_CODES = [
   "bansafe_accounting_unavailable",
   "bansafe_send_outcome_unknown",
   "campaigns_not_entitled",
+  "payg_required",
+  "premium_required",
+  "call_claimed",
+  "call_not_ringing",
+  "call_permission_required",
+  "calls_disabled",
+  "connection_limit",
+  "invalid_sip_trunk",
+  "sip_trunk_in_use",
+  "sip_trunk_limit",
+  "sip_trunk_revision_conflict",
+  "sip_unavailable",
+  "unsupported_for_connection",
 ] as const;
 
 export type KnownPolymorfaErrorCode = (typeof POLYMORFA_ERROR_CODES)[number];
@@ -134,3 +147,22 @@ export class PolymorfaServerError extends PolymorfaError {}
 export class PolymorfaConnectionError extends PolymorfaError {}
 export class PolymorfaTimeoutError extends PolymorfaError {}
 export class PolymorfaCancelledError extends PolymorfaError {}
+
+export type MediaIntegrityErrorCode =
+  | "media_invalid_descriptor"
+  | "media_too_short"
+  | "media_too_large"
+  | "media_invalid_ciphertext"
+  | "media_enc_hash_mismatch"
+  | "media_mac_mismatch"
+  | "media_invalid_padding"
+  | "media_hash_mismatch";
+
+/** Raised when WhatsApp media fails validation, authentication, or size limits. */
+export class PolymorfaMediaIntegrityError extends PolymorfaError {
+  declare readonly code: MediaIntegrityErrorCode;
+
+  constructor(message: string, code: MediaIntegrityErrorCode) {
+    super(message, { code });
+  }
+}
