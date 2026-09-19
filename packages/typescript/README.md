@@ -228,6 +228,32 @@ every action that the session rules can delegate to the browser token.
 `clientTokens.mint` (`POST /platform/client-tokens`) is the only token issuer,
 including for Calls; there are no call-specific tokens or tickets.
 
+### Customer-scoped tokens (beta)
+
+Pass a Polymorfa Customer ID in `customer` instead of `session` to mint one
+token for the numbers a Customer owns. The issuing key also needs
+`customers:read`, and the team must be enrolled in the Customer-scoped client
+tokens beta.
+
+```ts
+const { data } = await messaging.clientTokens.mint({
+  customer: "0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10",
+  ephemeralId: "user_42",
+  allow: ["send_message", "read_presence"],
+  ttlSeconds: 900,
+});
+```
+
+The token covers the numbers the Customer owns at mint time. A number moved
+to another Customer stops working with the token on the next request; a
+number moved to this Customer needs a new token. Each request is still
+limited by that session's client rules, and `allow` (typed as
+`CustomerClientTokenAction`) narrows it further. Customer-scoped tokens can't
+use Calls or MCP. Never pass your own external ID as `customer`; look up the
+Customer on your server first. The SDK throws `PolymorfaConfigurationError`
+before sending if both or neither of `session` and `customer` are set, or if
+`allow` is set without `customer`.
+
 ## Session connection lifecycle
 
 Session administration uses Platform routes and requires a server credential.

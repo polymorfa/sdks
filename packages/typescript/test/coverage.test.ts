@@ -180,8 +180,14 @@ describe("coverage checker", () => {
       missing: 0,
       excluded: 118,
       changed: 0,
-      resolutions: [],
     });
+    // Monorepo dev now carries the merged Calls diagnostics route the SDK
+    // already implements, so there is no unresolved removal left.
+    const resolutions = (result.report?.resolutions ?? []) as Array<{
+      operationId: string;
+      status: string;
+    }>;
+    expect(resolutions).toEqual([]);
   });
 
   it("maps the complete Customers contract to the Platform resource", () => {

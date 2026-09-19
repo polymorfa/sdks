@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
   "commit": "078af1889c2adb4020f7a4fc41384058a4234da1",
-  "branch": "t3code/calls-unified-5-client-diagnostics",
-  "published": false,
-  "note": "Pushed commit on the monorepo branch, not yet merged. Re-pin to the merged commit before release; the repository field names the remote it will land in.",
+  "branch": "dev",
+  "published": true,
+  "note": "Merged commit on monorepo dev (merge of PR #198, error bodies).",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",

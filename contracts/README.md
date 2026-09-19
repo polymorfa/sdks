@@ -2,8 +2,17 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`078af1889c2adb4020f7a4fc41384058a4234da1` on monorepo `dev`. `source.json` records the original paths and
-SHA-256 hashes. `coverage.json` uses the same source revision.
+`078af1889c2adb4020f7a4fc41384058a4234da1` on monorepo `dev`. `source.json` records the
+original paths and SHA-256 hashes. `coverage.json` uses the same source
+revision.
+
+Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
+`MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
+merged monorepo `dev`, the Calls diagnostics route
+(`voipReportCallDiagnostics`) is back with a refreshed fingerprint; the SDK
+keeps `MessagingClient.voip.report` covering it. The Console-only `getCall`
+response also picked up a refreshed fingerprint (still excluded). No
+operations were added or removed by this re-sync.
 
 | Status              | Operations |
 | ------------------- | ---------: |
@@ -19,7 +28,7 @@ This revision adds test event triggering
 (`GET /messaging/testing/{projectId}/events/fixtures`). Neither has a typed
 SDK method at this revision, so both are excluded.
 
-This revision adds app-reported call diagnostics
+An earlier revision added app-reported call diagnostics
 (`POST /messaging/voip/calls/{id}/reports`, covered by
 `MessagingClient.voip.report`, and sent automatically by the browser and
 Calls clients), replaces `includeSelfAudio` with `conferenceMode` in session
