@@ -4,6 +4,11 @@
   "branch": "dev",
   "published": true,
   "note": "Merged commit on monorepo dev (merge of PR #200, project event streams).",
+  "pendingOverlay": {
+    "branch": "t3code/calls-retention",
+    "commit": "5b47f245fa8e6509c9d9fca5460af961ab38e916",
+    "note": "The Platform snapshot adds GET and PUT /platform/call-retention, transcribed from the route definitions at this commit because its generated management spec does not publish them yet. Re-sync both snapshots byte-identically once the monorepo spec includes these operations; do not release before then."
+  },
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +18,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "d5877ef1499330083e5b4d63053d9d364ff34d52be24cd630d7283692e027975"
+      "sha256": "b2342c081f7e48f92c2522d28b3918e159f43c300c0e79457aa9bec94a8e741d"
     }
   }
 }

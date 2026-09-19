@@ -1,0 +1,89 @@
+import { HttpTransport } from "../transport/http.js";
+import type { ApiResponse, RequestOptions } from "../transport/types.js";
+import { type DataEnvelope, unwrapResponse } from "./response.js";
+
+/**
+ * How long Polymorfa keeps a team's call data: `short` (7 days), `standard`
+ * (30 days), `extended` (90 days, the default), `compliance` (365 days), or
+ * `custom` (the number of days in `retentionDays`).
+ */
+export type CallRetentionPolicy =
+  "short" | "standard" | "extended" | "compliance" | "custom";
+
+/** A team's call data retention. */
+export interface CallRetention {
+  readonly policy: CallRetentionPolicy;
+  /**
+   * Days Polymorfa keeps the team's call data, from 1 to 2555. Call data is
+   * deleted within 24 hours after it becomes older than this. Defaults to 90.
+   */
+  readonly retentionDays: number;
+  /**
+   * The call data the period applies to, such as `call_records`,
+   * `call_events`, and `client_reports`. New kinds of call data are added to
+   * this list and follow the same period.
+   */
+  readonly appliesTo: readonly string[];
+  /** Increases on every change; 0 while the team uses the default. */
+  readonly revision: number;
+  /** When the setting last changed, or `null` while the team uses the default. */
+  readonly updatedAt: string | null;
+}
+
+export interface UpdateCallRetentionRequest {
+  /** A named policy sets its own period; `custom` uses `retentionDays`. */
+  readonly policy: CallRetentionPolicy;
+  /**
+   * Required for `custom`: a whole number of days from 1 to 2555. With a named
+   * policy, omit it or send that policy's period; any other value fails with
+   * `invalid_parameter`.
+   */
+  readonly retentionDays?: number;
+  /**
+   * Apply the update only if the setting still has this `revision` (0 for a
+   * team on the default). Otherwise the update fails with `state_conflict`.
+   */
+  readonly expectedRevision?: number;
+}
+
+const PATH = "/platform/call-retention";
+
+/**
+ * The team's call data retention. It is one setting per team: project clients
+ * read the same value as their team. Changing it requires a team API key.
+ */
+export class CallRetentionResource {
+  constructor(private readonly transport: HttpTransport) {}
+
+  /** Returns the saved setting, or the default when the team never saved one. */
+  retrieve(options: RequestOptions = {}): Promise<ApiResponse<CallRetention>> {
+    return this.transport
+      .request<DataEnvelope<CallRetention>>({
+        method: "GET",
+        path: PATH,
+        ...options,
+      })
+      .then(unwrapResponse);
+  }
+
+  /**
+   * Replaces the team's call data retention. Requires a team API key; project
+   * tokens receive `PolymorfaAuthorizationError`.
+   *
+   * A shorter period also applies to call data already stored: data older
+   * than the new period is deleted within 24 hours and cannot be recovered.
+   */
+  update(
+    input: UpdateCallRetentionRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CallRetention>> {
+    return this.transport
+      .request<DataEnvelope<CallRetention>>({
+        method: "PUT",
+        path: PATH,
+        body: input,
+        ...options,
+      })
+      .then(unwrapResponse);
+  }
+}

@@ -437,6 +437,40 @@ of another project with `PolymorfaNotFoundError`. Conflicts raise
 `PolymorfaConflictError` with `code` `sip_trunk_in_use`,
 `sip_trunk_revision_conflict`, `sip_trunk_limit`, or `state_conflict`.
 
+## Call data retention
+
+`Client.callRetention` reads and changes how long Polymorfa keeps your team's
+call data. It is one setting for the whole team, so a project client reads the
+same value as its team. Changing it requires a team API key; a project token
+receives `PolymorfaAuthorizationError`.
+
+```ts
+const { data: current } = await platform.callRetention.retrieve();
+// { policy: "extended", retentionDays: 90, appliesTo: [...], revision: 0, updatedAt: null }
+
+await platform.callRetention.update({
+  policy: "custom",
+  retentionDays: 45,
+  expectedRevision: current.revision,
+});
+```
+
+`policy` is `short` (7 days), `standard` (30 days), `extended` (90 days, the
+default), `compliance` (365 days), or `custom`. `custom` requires
+`retentionDays` (1 to 2555). With a named policy, omit `retentionDays` or send
+exactly that policy's period; any other value raises
+`PolymorfaValidationError` with `code` `invalid_parameter`. When
+`expectedRevision` no longer matches the stored revision (0 for a team on the
+default), the update raises `PolymorfaConflictError` with `code`
+`state_conflict`.
+
+Polymorfa deletes call data within 24 hours after it becomes older than
+`retentionDays`. A shorter period also applies to call data already stored:
+older data is deleted within 24 hours and cannot be recovered. `appliesTo`
+lists the kinds of call data the period covers (`call_records`,
+`call_events`, and `client_reports`); new kinds are added to the list and
+follow the same period, so treat it as an open list of strings.
+
 ## Calls and stable user identity
 
 The `calls`, `identities`, and `users` resources use public Polymorfa user IDs.

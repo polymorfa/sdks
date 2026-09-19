@@ -239,6 +239,8 @@ The organization view also exposes these management resources:
 - `projectTokens`: list token metadata for an explicit project
 - `sipTrunks`: list, create, retrieve, update, delete, and rotate the
   credentials of a project's SIP trunks (also on project clients)
+- `callRetention`: retrieve and update how long Polymorfa keeps the team's
+  call data (also readable on project clients; changes need a team API key)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,

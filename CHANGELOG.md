@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added `Client.callRetention` with `retrieve()` and `update()` for the
+  team's call data retention (`GET` and `PUT /platform/call-retention`), and
+  the `CallRetention`, `CallRetentionPolicy`, and `UpdateCallRetentionRequest`
+  types. Team API keys and project tokens can read the setting; only team API
+  keys can change it. A shorter period also deletes call data already older
+  than it within 24 hours, and that data cannot be recovered.
 - Client rules: `ClientRules` and `SetClientRulesRequest` add
   `conversationTtlSeconds`, the seconds a sender stays replyable in
   `conversation` mode (300 to 604800; the API default is 86400).

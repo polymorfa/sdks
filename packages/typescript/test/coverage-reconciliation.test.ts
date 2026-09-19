@@ -269,6 +269,38 @@ describe("reconciled coverage evidence", () => {
     });
   });
 
+  it("covers team call retention through the exact Platform route", async () => {
+    const fetch = vi.fn(async () => Response.json({ data: {} }));
+    const client = new Client({
+      credential: {
+        type: "organizationApiKey",
+        value: ORGANIZATION_API_KEY,
+      },
+      fetch,
+    });
+    await client.callRetention.retrieve();
+    await client.callRetention.update({ policy: "extended" });
+    const methods = fetch.mock.calls.map((call) => {
+      const [url, init] = call as unknown as [string, RequestInit];
+      expect(new URL(url).pathname).toBe("/platform/call-retention");
+      return init.method;
+    });
+    expect(methods).toEqual(["GET", "PUT"]);
+    expect(entry("getCallRetention")).toMatchObject({
+      method: "GET",
+      path: "/platform/call-retention",
+      typescript: {
+        status: "covered",
+        method: "Client.callRetention.retrieve",
+      },
+    });
+    expect(entry("updateCallRetention")).toMatchObject({
+      method: "PUT",
+      path: "/platform/call-retention",
+      typescript: { status: "covered", method: "Client.callRetention.update" },
+    });
+  });
+
   it("covers every durable Platform developer resource", () => {
     const operations = ledger.operations.filter(
       ({ family, path, operationId }) =>
