@@ -1,4 +1,5 @@
 import { HttpTransport } from "../transport/http.js";
+import { withIdempotencyKey } from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   DisappearingTimerRequest,
@@ -20,7 +21,7 @@ export class ChatsResource {
       method: "PUT",
       path: chatMessagePath(session, chatId, messageId),
       body,
-      ...options,
+      ...withIdempotencyKey(options),
     });
   }
 
@@ -33,7 +34,7 @@ export class ChatsResource {
     return this.transport.request({
       method: "DELETE",
       path: chatMessagePath(session, chatId, messageId),
-      ...options,
+      ...withIdempotencyKey(options),
     });
   }
 

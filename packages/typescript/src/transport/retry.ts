@@ -17,6 +17,14 @@ export function isRetryableStatus(status: number): boolean {
   return RETRYABLE_STATUSES.has(status) || status >= 500;
 }
 
+/**
+ * A replayed Idempotency-Key result is final: retrying returns the same
+ * recorded response, so a replayed failure is surfaced immediately.
+ */
+export function isIdempotentReplay(response: Response): boolean {
+  return response.headers.get("idempotent-replayed") === "true";
+}
+
 export function retryDelayMs(
   response: Response | undefined,
   attempt: number,

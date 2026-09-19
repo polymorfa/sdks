@@ -2,11 +2,18 @@
 
 The handwritten Polymorfa server SDK for TypeScript and Node.js.
 
-Install the development branch:
+This package has not been published to npm. Build it from a clone of the
+development branch and install the packed tarball:
 
 ```bash
-npm install github:polymorfa/sdks#dev
+npm ci
+npm run build:workspaces
+npm pack -w @polymorfa/sdk
 ```
+
+The Calls client is part of this package as `@polymorfa/sdk/calls`.
+`@polymorfa/sdk/calls/internal` exists for the Polymorfa browser package;
+applications must not import it.
 
 Import the management and Messaging clients, errors, response metadata,
 request options, pagination, webhook utilities, and public request/response
@@ -75,8 +82,8 @@ a project token is exactly `pmfa_pt_` plus 94. The SDK checks only this public
 v1 grammar and never decodes or decrypts the credential.
 
 The SDK rejects `pmfa_ct_` browser tokens and CLI-only `pmfa_ls_` listener
-credentials before a management request. It also rejects call-agent
-`pmfa_at_` tickets, socket `pmfa_wst_` tickets, and simulated-device `pmfa_sd_`
+credentials before a management request. It also rejects retired call-agent
+`pmfa_at_` and socket `pmfa_wst_` tickets and simulated-device `pmfa_sd_`
 capabilities as server API keys. It does not expose a listener,
 `AsyncIterable`, event emitter, or forwarding API. Live forwarding belongs to
 `polymorfa listen`.
@@ -216,9 +223,36 @@ Next.js-compatible route adapter lives in `@polymorfa/nextjs`.
 
 Minting a client token and updating its session rules require all six client
 delegation scopes: `sessions:manage`, `messages:write`, `contacts:read`,
-`presence:read`, `presence:observe`, and `mcp`. The same requirement applies to
-`MessagingClient.voip.token`; the issuing key must cover every action that the
-session rules can delegate to the browser token.
+`presence:read`, `presence:observe`, and `mcp`. The issuing key must cover
+every action that the session rules can delegate to the browser token.
+`clientTokens.mint` (`POST /platform/client-tokens`) is the only token issuer,
+including for Calls; there are no call-specific tokens or tickets.
+
+### Customer-scoped tokens (beta)
+
+Pass a Polymorfa Customer ID in `customer` instead of `session` to mint one
+token for the numbers a Customer owns. The issuing key also needs
+`customers:read`, and the team must be enrolled in the Customer-scoped client
+tokens beta.
+
+```ts
+const { data } = await messaging.clientTokens.mint({
+  customer: "0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10",
+  ephemeralId: "user_42",
+  allow: ["send_message", "read_presence"],
+  ttlSeconds: 900,
+});
+```
+
+The token covers the numbers the Customer owns at mint time. A number moved
+to another Customer stops working with the token on the next request; a
+number moved to this Customer needs a new token. Each request is still
+limited by that session's client rules, and `allow` (typed as
+`CustomerClientTokenAction`) narrows it further. Customer-scoped tokens can't
+use Calls or MCP. Never pass your own external ID as `customer`; look up the
+Customer on your server first. The SDK throws `PolymorfaConfigurationError`
+before sending if both or neither of `session` and `customer` are set, or if
+`allow` is set without `customer`.
 
 ## Session connection lifecycle
 
@@ -301,6 +335,108 @@ The resource also provides `retrieve`, `picture`, `info`, `devices`,
 `businessProfile`, `blocklist`, and `unblock`. Contact operations are not
 available for Cloud API sessions.
 
+## Polymorfa Calls
+
+`MessagingClient.voip` controls calls from a server. Every incoming call rings
+until a participant accepts or rejects it; nothing answers automatically.
+
+```ts
+const placed = await messaging.voip.place(
+  { session: "support", to: "+15551234567", participant: "agent-7" },
+  { idempotencyKey: "place-order-1042" },
+);
+
+const accepted = await messaging.voip.accept(incomingCallId, {
+  exclusive: true,
+  participant: "agent-7",
+});
+console.log(accepted.data.data.answeredBy); // "server:agent-7"
+
+await messaging.voip.addParticipant(placed.data.data.callId, {
+  to: "+15557654321",
+});
+await messaging.voip.leave(incomingCallId, { connectionId: "conn_desk_1" });
+await messaging.voip.end(placed.data.data.callId);
+```
+
+- `place` requires `session` with a server credential and accepts `video`,
+  `exclusive`, and `participant`. Send an idempotency key to retry safely.
+- `accept` answers a ringing call. Later accepts from other participants join
+  the call unless a participant claimed it with `exclusive: true`; those
+  requests fail with `409 call_claimed` (`PolymorfaConflictError`). Repeating
+  an accept as the same participant has no further effect.
+- `reject` declines a ringing call and fails with `409 call_not_ringing`
+  otherwise.
+- `leave` closes one media connection. `end` ends the call for everyone.
+- `addParticipant` invites another WhatsApp user and returns a
+  `VoipParticipant`.
+
+A server credential acts as `server:<participant>`; `participant` matches
+`[A-Za-z0-9._:@-]{1,128}` and defaults to `default`. A client token acts as its
+own participant, so the SDK rejects `participant` for client tokens. The SDK
+checks `participant` and `connectionId` (`[A-Za-z0-9_-]{8,64}`) before sending.
+
+`voip.retrieveCallSettings(session)` and `voip.updateCallSettings(session,
+{ conferenceMode, inboundRoute, sipTrunkId, sipClaim, hostCloudApiCalls })` read and change the
+session's call settings through `/platform/sessions/{session}/call-settings`.
+`callsEnabled: false` turns calling off for the session: placing, answering,
+joining, inviting and media fail with `PolymorfaAuthorizationError`
+(`calls_disabled`), incoming calls are declined, and calls in progress
+continue. `conferenceMode` (default `true`) lets every participant you connect
+to a call (browser, app and server connections, and SIP trunk callers) hear
+the WhatsApp party and each other; with `false`, each hears only the WhatsApp
+party. The WhatsApp party always hears all of your participants, and nobody
+hears their own audio in either mode. `inboundRoute` is `clients` (the default) or
+`sip_trunk`, which also sends incoming calls to `sipTrunkId`; `sipClaim`
+(default `true`) makes the trunk's answer claim the call. On a Cloud API
+session, `hostCloudApiCalls: true` has Polymorfa Calls answer incoming calls;
+with the default `false`, your Graph API integration answers them. An update changes
+only the settings you send. Pass the `revision` you read as
+`expectedRevision` to fail with `PolymorfaConflictError` (`state_conflict`) if
+the settings changed meanwhile.
+These methods require a server credential.
+
+`voip.report(callId, report)` sends diagnostics your app measured for one of
+its media connections: `{ kind: "quality", connectionId, quality }` with at
+least one of `rttMs`, `jitterMs`, `packetsLost`, `packetsReceived`,
+`audioCodec`, `videoCodec`, `candidateType` and `reconnects`, or
+`{ kind: "error", connectionId, error: { code } }`. `client` optionally names
+the SDK (`sdk`, `version`, `platform`). The SDK rejects fields the platform
+does not accept before sending. The platform accepts one quality report per
+connection every 5 seconds and 20 error reports per minute, while the call is
+live and for 10 minutes after it ends. Treat reports as best-effort: do not
+retry a `4xx`, and drop reports refused with `429` or `503`. Client tokens
+need the `voip_signal` action and cannot send `participant`. The browser and
+Calls clients send these reports for you.
+
+## SIP trunks
+
+`Client.sipTrunks` manages the SIP trunks that connect a PBX to a project's
+calls. SIP trunks are a beta: changes return `403` until your team is enrolled.
+Team clients name the project on `list` and `create`; project clients use their
+own project.
+
+```ts
+const project = platform.project("018f0000-0000-7000-8000-000000000002");
+const { data } = await project.sipTrunks.create({
+  name: "Head office PBX",
+  direction: "both",
+  outbound: { targetUri: "sips:pbx.example.com", transport: "tls" },
+  inbound: { session: "support", allowedAddresses: ["203.0.113.10"] },
+});
+// Store data.inboundCredentials now; the password is not returned again.
+await project.sipTrunks.update(data.trunk.id, {
+  enabled: false,
+  expectedRevision: data.trunk.revision,
+});
+```
+
+`retrieve`, `update`, `delete`, and `rotateCredentials` take a trunk ID. A
+project client built from a team key reads the trunk first and refuses a trunk
+of another project with `PolymorfaNotFoundError`. Conflicts raise
+`PolymorfaConflictError` with `code` `sip_trunk_in_use`,
+`sip_trunk_revision_conflict`, `sip_trunk_limit`, or `state_conflict`.
+
 ## Calls and stable user identity
 
 The `calls`, `identities`, and `users` resources use public Polymorfa user IDs.
@@ -334,8 +470,8 @@ characters and the JSON `from` field must contain the incoming caller's
 public Polymorfa user ID or E.164 phone number. Path identifiers are URL-encoded.
 The SDK sends an idempotency key
 when supplied and only permits automatic retries of this POST when that key is
-nonempty. The source exposes no call list, retrieve, accept, history, watch,
-stream, or outgoing-call operation.
+nonempty. This session-scoped route is separate from the Polymorfa Calls
+routes on `MessagingClient.voip`.
 
 The pinned OpenAPI declares a generic synchronous `SuccessResponse` for call
 rejection. The live runner returns
@@ -460,40 +596,221 @@ are not Messages routes: they remain `MessagingClient.chats.editMessage` and
 `deleteMessage`, require `chats:manage` with a server key, and are not in the
 client-token allowlist.
 
-## Messaging media
+### Idempotent sends
 
-`MessagingClient.media` is distinct from `Client.media`. It exposes all
-three operations in the Messaging Media tag for Linked Device sessions:
+These methods send an `Idempotency-Key` on every call:
 
-- `download(mediaId)` returns `ApiResponse<ArrayBuffer>` and requires
-  `media:read`.
-- `retrieve(mediaId)` returns `MessagingMediaInfo` and requires `media:read`.
-- `persist(mediaId)` asks the server to download and save the object to the
-  tenant's configured object storage and requires `media:manage`.
+- `messages.send` and `messages.react`
+- `chats.editMessage` and `chats.deleteMessage`
+- `channels.reactToMessage`
+- `campaigns.create` and `campaigns.launch`
+
+If you don't pass `idempotencyKey`, the SDK generates a random UUID for the
+call. Every automatic retry of that call reuses the key, so the API never
+runs the write twice. If the first attempt succeeded but its response was lost,
+the retry fails with `PolymorfaConflictError` (`idempotency_completed`) instead
+of sending the message again. Pass your own key, such as
+an order event ID, to deduplicate across processes or restarts:
 
 ```ts
-const info = await messaging.media.retrieve("media-id");
-const downloaded = await messaging.media.download("media-id", {
-  timeoutMs: 30_000,
-});
-
-await writeFile("attachment.bin", new Uint8Array(downloaded.data));
-console.log(info.data.data.mimeType, downloaded.metadata.requestId);
+await messaging.messages.send(
+  "support",
+  {
+    conversation: { phoneNumber: "+15551234567" },
+    content: { text: "Shipped" },
+  },
+  { idempotencyKey: `order-${orderId}-shipped` },
+);
 ```
 
-The API can stream bytes directly or redirect to object storage. The SDK
-follows the platform fetch implementation's redirect behavior and buffers the
-successful response into an `ArrayBuffer`; it does not represent the result as
-JSON or claim streaming semantics. Timeout and cancellation remain active
-while the body is buffered. Content type, content length, and content
-disposition remain available in `response.metadata.headers`.
+The API keeps each key for 24 hours per credential. Reusing a key for a
+different request fails with `PolymorfaConflictError` (`idempotency_conflict`).
+A retry that arrives while the first request is still running receives
+`idempotency_in_progress`, and the SDK retries it after `Retry-After`. When a
+response carries `Idempotent-Replayed: true`, the SDK treats it as final and
+does not retry. A replayed `result_unknown`, or `idempotency_outcome_unknown`,
+means the first attempt's outcome is unknown, so check message events before
+you send again with a new key.
+
+`BrowserMessagingClient.messages.send` and `react` generate keys the same way.
+
+## Messaging media
+
+`MessagingClient.media` is distinct from `Client.media`. It covers the
+Messaging Media tag for Linked Device sessions. Every download method requires
+a server credential with `media:read`; client tokens cannot call media routes.
+
+| Method                             | Result                                                                                                            |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `downloadStream(mediaId, options)` | `{ body: ReadableStream<Uint8Array>, contentType?, contentLength?, filename?, requestId?, redirected, metadata }` |
+| `downloadBlob(mediaId, options)`   | `{ blob, filename?, requestId? }`, with `blob.type` set from `Content-Type`                                       |
+| `downloadUrl(mediaId, options)`    | `{ streamed: false, url, expiresAt? }` or `{ streamed: true, url: undefined }`                                    |
+| `download(mediaId, options)`       | `ApiResponse<ArrayBuffer>` (buffers the whole file)                                                               |
+| `retrieve(mediaId)`                | `MessagingMediaInfo`                                                                                              |
+| `persist(mediaId)`                 | Saves the object to the tenant's object storage; requires `media:manage`                                          |
+
+The API either streams the file or answers `302` with a fresh signed storage
+URL. `downloadStream`, `downloadBlob` and `downloadUrl` send requests with
+`redirect: "manual"`. When the SDK follows a redirect, it requests the storage
+URL without the `Authorization` header, custom headers or cookies.
+
+```ts
+import { Readable } from "node:stream";
+
+const download = await messaging.media.downloadStream("media-id", {
+  signal: request.signal,
+});
+console.log(download.contentType, download.filename, download.requestId);
+Readable.fromWeb(download.body).pipe(response);
+```
+
+- `downloadStream` retries only before it returns the body. After that, a
+  failed read errors the stream with `PolymorfaConnectionError`, or with
+  `PolymorfaCancelledError` if the caller aborted it. `timeoutMs` applies until
+  response headers arrive. `signal` also cancels a body that is still being
+  read.
+- `filename` comes from `Content-Disposition`. The SDK prefers the RFC 6266
+  `filename*` value and keeps only the last path segment. Treat it as a
+  display name, not as a path.
+- `downloadUrl` does not follow the redirect. It returns the signed URL, so
+  your app can hand a browser a direct link instead of proxying the bytes.
+  The URL is short-lived and acts as a bearer credential: never log or store
+  it, and give it only to a user you have already authorized for this media.
+  `expiresAt` is derived from SigV4 or `Expires` query parameters when they
+  are present. When the API streams the file instead, `downloadUrl` cancels
+  the body and returns `{ streamed: true }`.
+- API errors keep the existing error classes, such as
+  `PolymorfaNotFoundError` for 404 and `PolymorfaAuthorizationError` for 403.
+  A failed storage request raises `PolymorfaError` with code
+  `media_storage_error`. A redirect to anything other than HTTPS raises code
+  `invalid_redirect`.
+
+`download()` buffers the response into an `ArrayBuffer` and keeps its existing
+behavior. Timeout and cancellation stay active while the body is buffered.
+`response.metadata.headers` keeps `Content-Type`. Credentialed clients send
+`download()` requests with `redirect: "error"`, so `download()` fails when the
+API answers with a storage redirect. Use `downloadStream` or `downloadBlob`
+when media may be served from object storage.
+
+### Write media to a file (Node.js)
+
+`@polymorfa/sdk/node` contains the Node-only helpers, which import `node:fs`
+and `node:crypto`. The main entry does not import `node:fs`.
+
+```ts
+import { downloadMediaToFile } from "@polymorfa/sdk/node";
+
+await downloadMediaToFile(messaging.media, "media-id", "./attachment.bin", {
+  signal,
+});
+```
+
+The helper writes to a sibling temporary file (`.<name>.<uuid>.partial`,
+mode `0600`) and renames it into place when the download finishes. If the
+download fails or is aborted, the helper deletes the temporary file and leaves
+any existing file at the destination unchanged. With `overwrite: false`, the
+final step is an atomic link that fails with `PolymorfaConflictError` (code
+`file_exists`) when the destination exists. `maxBytes` stops the download with
+`media_too_large`, either from `Content-Length` before any bytes are read or
+once too many bytes arrive. `writeStreamToFile(body, path, options)` applies
+the same steps to any web stream.
+
+### Download media directly from WhatsApp
+
+When a project does not persist media, image, video, audio, document and
+sticker message webhooks include `media`. This field is a base64 protobuf of
+the WhatsApp attachment, including its CDN URL, `directPath`, hashes and
+`mediaKey`. The SDK can fetch the encrypted file directly from the WhatsApp
+CDN and decrypt it locally. This makes no Polymorfa API call and sends no
+Polymorfa credential.
+
+```ts
+import { constructWebhookEvent, isEvent } from "@polymorfa/sdk";
+import {
+  downloadWhatsAppMediaToFile,
+  nodeMediaCrypto,
+} from "@polymorfa/sdk/node";
+
+const event = await constructWebhookEvent(rawBody, signature, secret);
+if (
+  isEvent(event, "message.received") &&
+  typeof event.payload.media === "string"
+) {
+  // Buffered, verified before any byte is released (default).
+  const media = await messaging.media.downloadFromWhatsApp(event.payload, {
+    maxBytes: 50 * 1024 * 1024,
+  });
+  const blob = await media.blob(); // typed with media.mimetype
+
+  // Streamed to disk; renamed into place only after verification.
+  await downloadWhatsAppMediaToFile(event.payload, "./incoming.bin");
+
+  // Streamed to a consumer that can discard partial output on error.
+  const live = await messaging.media.downloadFromWhatsApp(event.payload, {
+    crypto: nodeMediaCrypto,
+    verify: "streaming",
+  });
+}
+```
+
+`downloadWhatsAppMedia(input, options)` is the standalone form.
+`decodeWhatsAppMedia(base64, messageType)` returns the decoded descriptor.
+`deriveWhatsAppMediaKeys` and `decryptWhatsAppMedia(bytesOrStream, keys,
+options)` cover apps that fetch the encrypted bytes themselves.
+
+Verification follows the WhatsApp client order:
+
+1. HKDF-SHA256 expands `mediaKey` to 112 bytes with the per-type info string.
+   Stickers use the image string. The first 80 bytes give the IV, cipher key
+   and MAC key.
+2. The encrypted file is `ciphertext || mac10`. The SDK checks its SHA-256
+   against `fileEncSha256` when that hash is present.
+3. The SDK compares the HMAC-SHA256 of `iv || ciphertext`, truncated to 10
+   bytes, in constant time.
+4. The SDK decrypts with AES-256-CBC and strict PKCS#7 unpadding, then checks
+   the plaintext SHA-256 against `fileSha256`. A descriptor without
+   `fileSha256` is rejected.
+
+A failure raises `PolymorfaMediaIntegrityError`. Its `code` is one of
+`media_invalid_descriptor`, `media_too_short`, `media_too_large`,
+`media_invalid_ciphertext`, `media_enc_hash_mismatch`, `media_mac_mismatch`,
+`media_invalid_padding` or `media_hash_mismatch`.
+
+- **Verification modes.** The default WebCrypto backend buffers the file and
+  releases plaintext only after every check passes. `nodeMediaCrypto`
+  decrypts incrementally and supports `verify: "streaming"`, which emits
+  plaintext before the MAC is verified. If verification then fails, the
+  stream errors and consumers must discard everything they received. Asking
+  for `streaming` without an incremental backend raises
+  `PolymorfaConfigurationError`.
+- **Limits.** `maxBytes` defaults to 256 MiB and applies to the plaintext.
+  The SDK also caps the encrypted size at the padded `fileLength` from the
+  descriptor. It rejects an oversized `Content-Length` before reading the
+  body. The descriptor input is limited to 1 MiB of base64. The decoder
+  interprets only varint and length-delimited fields, and rejects wrong key
+  or hash lengths.
+- **Hosts.** The SDK tries the descriptor `url` first. It then tries
+  `https://mmg.whatsapp.net` with `directPath` and the `hash`, `mms-type` and
+  `__wa-mms` parameters. Every URL, including redirect targets, must be HTTPS
+  on `*.whatsapp.net` with the default port.
+- **Browsers.** `mmg.whatsapp.net` returned `access-control-allow-origin: *`
+  to an unauthenticated probe on 2026-09-17. This was checked only on error
+  responses, not on a real object. Even if a browser can fetch the file,
+  decrypting there means giving the browser the `mediaKey`. Keep the
+  descriptor on the server and use the `whatsapp` mode of
+  `createMediaDownloadRoute` from `@polymorfa/nextjs`.
+- **Privacy.** `media` contains a decryption key. Treat stored webhook
+  payloads as secrets, never log them, and delete them when your retention
+  period ends. The CDN URL expires, and once WhatsApp removes the object the
+  file can no longer be downloaded. Messages with `mediaUrl` (persisted media)
+  have no `media` field, so use the Media API for them.
 
 The pinned source specifies no maximum download size. Retrieve metadata first
 when an application must enforce its own memory limit. It exposes no Messaging
 media upload, deletion, resumable upload, range-download, or list endpoint.
 Message-send `url` and `base64` fields are send inputs, not media-upload APIs.
-Media routes are absent from the client-token allowlist, so all three methods
-require a server API key. `persist` accepts an idempotency key through the
+Media routes are absent from the client-token allowlist, so every API method
+requires a server API key. `persist` accepts an idempotency key through the
 standard `RequestOptions`.
 
 `MessagingMediaInfo.s3Url` includes `null` because the API returns a null value
@@ -1004,12 +1321,13 @@ omits several JSON repository fields and leaves analytics untyped. The SDK
 exports the exact live analytics counters and preserves the extra campaign
 fields as optional `unknown` values rather than asserting undocumented shapes.
 
-The transport retries these mutations only when an idempotency key is
-provided, but the pinned handlers do not persist that header. A create retry
-after an unseen success can create another campaign. Repeating a lifecycle
-command can conflict with the resulting state or append another intent;
-repeating requeue normally reports zero after the matching recipients have
-already moved. The live API reports entitlement failures as `402` and invalid
+`create` and `launch` send an `Idempotency-Key` on every call, and the API
+records it for 24 hours, so a retry after an unseen success never creates a
+second campaign or launches twice (see [Idempotent sends](#idempotent-sends)).
+The other lifecycle commands are retried only when you pass an idempotency
+key, and the API does not persist that header for them. Repeating one can
+conflict with the resulting state or append another intent; repeating requeue
+normally reports zero after the matching recipients have already moved. The live API reports entitlement failures as `402` and invalid
 lifecycle state conflicts as `400`, rather than the more specific statuses
 suggested by their semantics.
 
@@ -1073,7 +1391,14 @@ if (isEvent(event, "history.sync")) {
 } else if (isEvent(event, "message.echo")) {
   console.log(event.payload.source, event.externalId);
 } else if (isEvent(event, "call.received")) {
-  console.log(event.payload.callId, event.payload.from.id);
+  console.log(
+    event.payload.callId,
+    event.payload.from.id,
+    event.payload.hasVideo,
+  );
+} else if (isEvent(event, "call.accepted")) {
+  // answeredBy and exclusive say who answered and whether they claimed it.
+  console.log(event.payload.answeredBy, event.payload.exclusive === true);
 } else if (isEvent(event, "message.failed")) {
   if (event.payload.error === "blocked_by_safety") {
     console.log(event.payload.code, event.payload.retryAfter);
@@ -1505,6 +1830,45 @@ const invitation = await messaging.quickLinks.create({
 Fixture senders must be existing simulated numbers in that project. Test-number
 entitlements and history consent still apply; uploading a fixture does not enable
 hosted message storage.
+
+### Trigger test events
+
+Fire a named, signed test event for a Test number. The event reaches your
+webhooks and event history with `source: "test"` and does not change the Test
+number. Real numbers are refused with a `PolymorfaValidationError`, and each
+project can trigger 30 test events per minute (`PolymorfaRateLimitError`).
+
+```ts
+import { TEST_EVENT_FIXTURES } from "@polymorfa/sdk";
+
+const result = await messaging.testing.triggerEvent(projectId, {
+  session: "my-test-number",
+  event: "message.received", // one of TEST_EVENT_FIXTURES
+  overrides: { text: "hi", from: "+15550100001" },
+});
+console.log(result.data.eventId);
+
+// Rare events: failed delivery, ban warning, incoming call, template rejection.
+await messaging.testing.triggerEvent(projectId, {
+  session: "my-test-number",
+  event: "template.status",
+  overrides: { templateStatus: "REJECTED", reason: "INVALID_FORMAT" },
+});
+
+const { data } = await messaging.testing.listEventFixtures(projectId);
+```
+
+Set `fromSession` on a `message.received` request to send a simulated text
+from another connected Test number in the same project instead; the response
+has `delivery: "simulated"` and the event arrives as ordinary Test number
+activity. Both methods require an organization API key or project token with
+`sandbox:write` (trigger) or `sandbox:read` (list) and Test numbers access.
+
+Pass `{ idempotencyKey }` as the third argument to `triggerEvent` to retry
+safely. Repeating the request with the same key and body reuses the same event
+ID, so a retry after an uncertain response never creates a second event or
+duplicate webhook deliveries. With a key, the SDK also retries network and
+5xx failures.
 
 Trusted servers continue an issued Meta Cloud API invitation with
 `messaging.cloudOnboarding.advance({ quicklinkId, projectId, result })`.

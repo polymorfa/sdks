@@ -1,4 +1,5 @@
 import { HttpTransport } from "../transport/http.js";
+import { withIdempotencyKey } from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   CampaignAnalyticsResponse,
@@ -36,7 +37,7 @@ export class MessagingCampaignsResource {
       method: "POST",
       path: campaignsPath(projectSlug),
       body,
-      ...options,
+      ...withIdempotencyKey(options),
     });
   }
 
@@ -74,7 +75,7 @@ export class MessagingCampaignsResource {
       method: "POST",
       path: `${campaignPath(projectSlug, campaignId)}/launch`,
       body,
-      ...options,
+      ...withIdempotencyKey(options),
     });
   }
 

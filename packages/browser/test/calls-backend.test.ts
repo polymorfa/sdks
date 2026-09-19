@@ -1,21 +1,49 @@
 import { describe, expect, it, vi } from "vitest";
+import { CallClaimedError } from "@polymorfa/sdk/calls";
 import {
   CallsController,
   IncomingCallRelay,
-  capabilitiesFor,
   createSignalingCallsBackend,
   incomingCallFromWebhook,
   type CallMediaFactory,
   type CallMediaSession,
+  type CallLifecycleEvent,
   type CallsSignaling,
-} from "../src/index.js";
+} from "../src/internal.js";
 
-function signaling(): CallsSignaling & { teardown: ReturnType<typeof vi.fn> } {
+type Fn = ReturnType<typeof vi.fn>;
+function signaling(): CallsSignaling & {
+  accept: Fn;
+  reject: Fn;
+  leave: Fn;
+  end: Fn;
+} {
   return {
     offer: vi.fn(async () => ({ sdp: "v=0", iceServers: [] })),
     candidate: vi.fn(async () => undefined),
     candidates: vi.fn(async () => []),
-    teardown: vi.fn(async () => undefined),
+    accept: vi.fn(async () => ({
+      answered: true,
+      answeredBy: "client:self",
+      exclusive: false,
+    })),
+    reject: vi.fn(async () => undefined),
+    leave: vi.fn(async () => undefined),
+    end: vi.fn(async () => undefined),
+  };
+}
+
+/** A lifecycle source the test drives with any event. */
+function feed() {
+  const listeners = new Set<(event: CallLifecycleEvent) => void>();
+  return {
+    subscribe: (listener: (event: CallLifecycleEvent) => void) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    emit: (event: CallLifecycleEvent) => {
+      for (const listener of [...listeners]) listener(event);
+    },
   };
 }
 
@@ -59,7 +87,7 @@ describe("incomingCallFromWebhook", () => {
       callId: "CALL-1",
       from: "+12025550123",
       video: true,
-      line: "linkedDevice",
+      capabilities: { video: true, invite: true },
     });
     expect(
       incomingCallFromWebhook({ callId: "c", from: { id: "739182640518203" } })
@@ -74,16 +102,18 @@ describe("incomingCallFromWebhook", () => {
       }).from,
     ).toBe("739182640518203");
     expect(
-      incomingCallFromWebhook(
-        { callId: "c", from: "+12025550123", hasVideo: true },
-        { line: "cloudApi" },
-      ).line,
-    ).toBe("cloudApi");
+      incomingCallFromWebhook({
+        callId: "c",
+        from: "+12025550123",
+        hasVideo: true,
+        capabilities: { video: false },
+      }).capabilities,
+    ).toEqual({ video: false, invite: true });
   });
 });
 
 describe("createSignalingCallsBackend", () => {
-  it("relays inbound calls, places through the hook, and tears down on reject/hangup", async () => {
+  it("relays inbound calls, places through the hook, declines on reject and ends on hangup", async () => {
     const relay = new IncomingCallRelay();
     const s = signaling();
     const backend = createSignalingCallsBackend({
@@ -102,15 +132,17 @@ describe("createSignalingCallsBackend", () => {
       capabilities: { video: true, mute: true },
     });
     await controller.reject();
-    expect(s.teardown).toHaveBeenCalledWith("CALL-1", expect.any(AbortSignal));
+    expect(s.reject).toHaveBeenCalledWith("CALL-1", expect.any(AbortSignal));
+    expect(s.end).not.toHaveBeenCalled();
     expect(controller.getSnapshot()).toMatchObject({
       status: "ended",
       endReason: "rejected",
     });
 
     await controller.place("+12025550199", { video: true });
+    // Media is open; the callee has not answered.
     expect(controller.getSnapshot()).toMatchObject({
-      status: "connecting",
+      status: "ringing",
       callId: "call-out-1",
       direction: "outgoing",
       video: true,
@@ -120,10 +152,10 @@ describe("createSignalingCallsBackend", () => {
       true,
       expect.any(Object),
       expect.any(AbortSignal),
-      { devices: {} },
+      { devices: {}, connectionId: expect.any(String) },
     );
     await controller.hangup();
-    expect(s.teardown).toHaveBeenLastCalledWith(
+    expect(s.end).toHaveBeenLastCalledWith(
       "call-out-1",
       expect.any(AbortSignal),
     );
@@ -134,6 +166,283 @@ describe("createSignalingCallsBackend", () => {
       status: "ended",
       endReason: "missed",
     });
+  });
+
+  it("tracks several invitations at once and never declines any of them", async () => {
+    const s = signaling();
+    const source = feed();
+    const m = media();
+    const controller = new CallsController(
+      createSignalingCallsBackend({ signaling: s, incoming: source }),
+      m.factory,
+    );
+    controller.initialize();
+    source.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    source.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: true },
+    });
+    source.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "incoming",
+      callId: "A",
+    });
+    expect(controller.getSnapshot().invitations.map((i) => i.callId)).toEqual([
+      "A",
+      "B",
+    ]);
+
+    // Answering the first keeps the second listed and ringing.
+    await controller.answer();
+    expect(s.accept).toHaveBeenCalledWith(
+      "A",
+      { exclusive: false, video: false },
+      expect.any(AbortSignal),
+    );
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "connecting",
+      callId: "A",
+    });
+    source.emit({
+      type: "incomingCall",
+      call: { callId: "C", from: "+15550102", video: false },
+    });
+    expect(controller.getSnapshot().invitations.map((i) => i.callId)).toEqual([
+      "B",
+      "C",
+    ]);
+    expect(s.reject).not.toHaveBeenCalled();
+    // Another invitation cannot be answered while a call is active.
+    await expect(controller.answer({ callId: "B" })).rejects.toThrow(
+      /active call/,
+    );
+
+    // An invitation that ends elsewhere drops out of the list.
+    source.emit({ type: "ended", callId: "C", reason: "missed" });
+    expect(controller.getSnapshot().invitations.map((i) => i.callId)).toEqual([
+      "B",
+    ]);
+
+    // Leaving the active call closes this connection only, then the waiting
+    // invitation is shown.
+    await controller.leave();
+    expect(m.session.close).toHaveBeenCalledWith({ leave: true });
+    expect(s.end).not.toHaveBeenCalled();
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "incoming",
+      callId: "B",
+      video: true,
+    });
+    // Dismissing hides it locally without declining.
+    controller.dismiss();
+    expect(controller.getSnapshot().status).toBe("ready");
+    expect(controller.getSnapshot().invitations).toEqual([]);
+    expect(s.reject).not.toHaveBeenCalled();
+    controller.dispose();
+  });
+
+  it("answers exclusively only when asked", async () => {
+    const s = signaling();
+    s.accept.mockResolvedValueOnce({
+      answered: true,
+      answeredBy: "client:self",
+      exclusive: true,
+    });
+    const source = feed();
+    const controller = new CallsController(
+      createSignalingCallsBackend({ signaling: s, incoming: source }),
+      media().factory,
+    );
+    controller.initialize();
+    source.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: true },
+    });
+    await controller.answer({ exclusive: true, video: false });
+    expect(s.accept).toHaveBeenCalledWith(
+      "A",
+      { exclusive: true, video: false },
+      expect.any(AbortSignal),
+    );
+    expect(controller.getSnapshot()).toMatchObject({
+      exclusive: true,
+      answeredBy: "client:self",
+      video: false,
+    });
+    // Our own accepted echo is not a claim by someone else.
+    source.emit({
+      type: "accepted",
+      callId: "A",
+      answeredBy: "client:self",
+      exclusive: true,
+    });
+    expect(controller.getSnapshot().claimedByOther).toBe(false);
+    controller.dispose();
+  });
+
+  it("shows claimedByOther for a call another participant claimed, and canJoin for a shared one", async () => {
+    const s = signaling();
+    const source = feed();
+    const controller = new CallsController(
+      createSignalingCallsBackend({ signaling: s, incoming: source }),
+      media().factory,
+    );
+    controller.initialize();
+    source.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    source.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    source.emit({
+      type: "accepted",
+      callId: "A",
+      answeredBy: "client:other",
+      exclusive: true,
+    });
+    source.emit({ type: "accepted", callId: "B", answeredBy: "client:other" });
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "incoming",
+      callId: "A",
+      claimedByOther: true,
+      canJoin: false,
+      answeredBy: "client:other",
+    });
+    const [a, b] = controller.getSnapshot().invitations;
+    expect(a).toMatchObject({ claimedByOther: true, canJoin: false });
+    expect(b).toMatchObject({ claimedByOther: false, canJoin: true });
+    await expect(controller.answer()).rejects.toBeInstanceOf(CallClaimedError);
+    await expect(controller.join()).rejects.toBeInstanceOf(CallClaimedError);
+    await expect(controller.reject()).rejects.toThrow(/already answered/);
+    expect(s.accept).not.toHaveBeenCalled();
+    expect(s.reject).not.toHaveBeenCalled();
+
+    // Dismissing the claimed call shows the joinable one.
+    controller.dismiss("A");
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "incoming",
+      callId: "B",
+      canJoin: true,
+    });
+    await controller.join();
+    expect(s.accept).toHaveBeenCalledWith(
+      "B",
+      { exclusive: false, video: false },
+      expect.any(AbortSignal),
+    );
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "connecting",
+      callId: "B",
+    });
+    controller.dispose();
+  });
+
+  it("keeps a call visible as claimed when the answer is refused with call_claimed", async () => {
+    const s = signaling();
+    s.accept.mockRejectedValueOnce(new CallClaimedError());
+    const source = feed();
+    const m = media();
+    const controller = new CallsController(
+      createSignalingCallsBackend({ signaling: s, incoming: source }),
+      m.factory,
+    );
+    controller.initialize();
+    source.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    await controller.answer();
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "incoming",
+      claimedByOther: true,
+      error: { code: "call_claimed", recoverable: false },
+    });
+    expect(m.factory.open).not.toHaveBeenCalled();
+    expect(s.reject).not.toHaveBeenCalled();
+    controller.dispose();
+  });
+
+  it("updates the participant list for the displayed call", () => {
+    const source = feed();
+    const controller = new CallsController(
+      createSignalingCallsBackend({ signaling: signaling(), incoming: source }),
+      media().factory,
+    );
+    controller.initialize();
+    source.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    const participant = {
+      id: "p1",
+      phoneNumber: "+15550101",
+      audioMuted: false,
+      video: false,
+      state: "ringing" as const,
+    };
+    source.emit({ type: "participant", callId: "A", participant });
+    source.emit({
+      type: "participant",
+      callId: "A",
+      participant: { ...participant, state: "connected" },
+    });
+    source.emit({ type: "participant", callId: "OTHER", participant });
+    expect(controller.getSnapshot().participants).toEqual([
+      { ...participant, state: "connected" },
+    ]);
+    source.emit({ type: "participantLeft", callId: "A", participantId: "p1" });
+    expect(controller.getSnapshot().participants).toEqual([]);
+    controller.dispose();
+  });
+
+  it("relays call.accepted claims from an application channel", () => {
+    const relay = new IncomingCallRelay();
+    const controller = new CallsController(
+      createSignalingCallsBackend({ signaling: signaling(), incoming: relay }),
+      media().factory,
+    );
+    controller.initialize();
+    relay.receive({ callId: "A", from: "+15550100", video: false });
+    relay.accepted("A", { answeredBy: "client:other", exclusive: true });
+    expect(controller.getSnapshot()).toMatchObject({
+      claimedByOther: true,
+      answeredBy: "client:other",
+    });
+    controller.dispose();
+  });
+
+  it("relays capabilities reported with call.accepted", async () => {
+    const relay = new IncomingCallRelay();
+    const controller = new CallsController(
+      createSignalingCallsBackend({
+        signaling: signaling(),
+        incoming: relay,
+        place: async () => "call-out",
+      }),
+      media().factory,
+    );
+    controller.initialize();
+    await controller.place("+12025550199", { video: true });
+    relay.accepted("call-out", { capabilities: { invite: false } });
+    expect(controller.getSnapshot()).toMatchObject({
+      capabilities: { video: true, invite: false, mute: true },
+      video: true,
+    });
+    // A partial report changes only what it reports.
+    relay.accepted("call-out", { capabilities: { video: false } });
+    expect(controller.getSnapshot()).toMatchObject({
+      capabilities: { video: false, invite: false, mute: true },
+      video: false,
+    });
+    controller.dispose();
   });
 
   it("carries the destination to the place hook and adopts its call id", async () => {
@@ -153,13 +462,12 @@ describe("createSignalingCallsBackend", () => {
       {
         to: "+12025550199",
         video: true,
-        line: "linkedDevice",
         idempotencyKey: expect.any(String),
       },
       expect.any(AbortSignal),
     );
     expect(controller.getSnapshot()).toMatchObject({
-      status: "connecting",
+      status: "ringing",
       callId: "server-call-9",
       peer: "+12025550199",
     });
@@ -291,6 +599,61 @@ describe("createSignalingCallsBackend", () => {
     controller.dispose();
   });
 
+  describe("restoring the device in use after overlapping switches fail", () => {
+    async function live() {
+      const m = media();
+      const controller = new CallsController(
+        createSignalingCallsBackend({
+          signaling: signaling(),
+          incoming: new IncomingCallRelay(),
+          place: async () => "call-dev",
+        }),
+        m.factory,
+      );
+      controller.initialize();
+      controller.setPreferredDevices({ audioInput: "mic-1" });
+      await controller.place("+12025550123");
+      // Media sessions run switches of one kind in order.
+      const settle: ((error?: Error) => void)[] = [];
+      m.session.switchInput.mockImplementation(
+        () =>
+          new Promise<void>((resolve, reject) => {
+            settle.push((error) => (error ? reject(error) : resolve()));
+          }),
+      );
+      return { m, controller, settle };
+    }
+
+    it("goes back to the live device when two switches fail", async () => {
+      const { controller, settle } = await live();
+      const first = controller.switchDevice("audioInput", "mic-2");
+      const second = controller.switchDevice("audioInput", "mic-3");
+      settle[0]!(new Error("device in use"));
+      await first;
+      settle[1]!(new Error("device in use"));
+      await second;
+      // Neither mic-2 nor mic-3 was ever applied.
+      expect(controller.getSnapshot().selectedDevices).toEqual({
+        audioInput: "mic-1",
+      });
+      controller.dispose();
+    });
+
+    it("goes back to the device a superseded switch applied", async () => {
+      const { controller, settle } = await live();
+      const first = controller.switchDevice("audioInput", "mic-2");
+      const second = controller.switchDevice("audioInput", "mic-3");
+      settle[0]!();
+      await first;
+      settle[1]!(new Error("device in use"));
+      await second;
+      expect(controller.getSnapshot().selectedDevices).toEqual({
+        audioInput: "mic-2",
+      });
+      controller.dispose();
+    });
+  });
+
   it("ignores a device selection made after disposal", async () => {
     const m = media();
     const controller = new CallsController(
@@ -350,18 +713,15 @@ describe("createSignalingCallsBackend", () => {
     const m = media();
     const controller = new CallsController(backend, m.factory);
     controller.initialize();
-    expect(capabilitiesFor("cloudApi")).toEqual({ video: false, mute: true });
-
     relay.receive({
       callId: "CALL-3",
       from: "+12025550123",
       video: true,
-      line: "cloudApi",
+      capabilities: { video: false, invite: false },
     });
     expect(controller.getSnapshot()).toMatchObject({
-      line: "cloudApi",
       video: false,
-      capabilities: { video: false },
+      capabilities: { video: false, invite: false, mute: true },
     });
     await controller.answer({ video: true });
     expect(m.factory.open).toHaveBeenCalledWith(
@@ -369,7 +729,7 @@ describe("createSignalingCallsBackend", () => {
       false,
       expect.any(Object),
       expect.any(AbortSignal),
-      { devices: {} },
+      { devices: {}, connectionId: expect.any(String) },
     );
   });
 
@@ -395,7 +755,10 @@ describe("createSignalingCallsBackend", () => {
       false,
       expect.any(Object),
       expect.any(AbortSignal),
-      { devices: { audioInput: "mic-1", audioOutput: "spk" } },
+      {
+        devices: { audioInput: "mic-1", audioOutput: "spk" },
+        connectionId: expect.any(String),
+      },
     );
     await controller.switchDevice("audioInput", "mic-2");
     expect(m.session.switchInput).toHaveBeenCalledWith(

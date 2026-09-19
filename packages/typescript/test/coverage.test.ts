@@ -6,7 +6,6 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 import { describe, expect, it } from "vitest";
-import { HttpCallsApi } from "../../calls/src/index.js";
 import { BrowserMessagingClient } from "../../browser/src/index.js";
 import {
   BridgeClient,
@@ -174,15 +173,21 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "09b8342c0d75817eb2c92035e17635061986e35f",
-      total: 405,
-      covered: 299,
+      sourceCommit: "2259a1fd331c6ddbc8ad56a04333100ebfce7c2e",
+      total: 424,
+      covered: 308,
       partial: 0,
       missing: 0,
-      excluded: 106,
+      excluded: 116,
       changed: 0,
-      resolutions: [],
     });
+    // Monorepo dev now carries the merged Calls diagnostics route the SDK
+    // already implements, so there is no unresolved removal left.
+    const resolutions = (result.report?.resolutions ?? []) as Array<{
+      operationId: string;
+      status: string;
+    }>;
+    expect(resolutions).toEqual([]);
   });
 
   it("maps the complete Customers contract to the Platform resource", () => {
@@ -302,7 +307,6 @@ describe("coverage checker", () => {
           value: PROJECT_TOKEN,
         },
       }),
-      HttpCallsApi: new HttpCallsApi({ apiKey: "pmfa_calls" }),
       BrowserMessagingClient: new BrowserMessagingClient({
         session: "coverage",
         getClientToken: async () => "pmfa_ct_coverage",

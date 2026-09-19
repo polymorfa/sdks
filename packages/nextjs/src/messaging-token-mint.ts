@@ -4,11 +4,36 @@ import type {
   ClientTokenSubject,
 } from "./token-route.js";
 
-export interface MessagingClientTokenMintRequest {
-  readonly session: string;
-  readonly ephemeralId: string;
-  readonly ttlSeconds?: number;
-}
+/** Actions a Customer-scoped client token can carry in `allow`. */
+export type CustomerClientTokenAction =
+  | "send_message"
+  | "send_reaction"
+  | "send_typing"
+  | "send_seen"
+  | "read_presence"
+  | "subscribe_presence"
+  | "read_contact";
+
+/**
+ * What `resolve` returns: a token for one `session`, or (beta) for the
+ * numbers one `customer` owns, optionally narrowed by `allow`.
+ */
+export type MessagingClientTokenMintRequest =
+  | {
+      readonly session: string;
+      readonly ephemeralId: string;
+      readonly ttlSeconds?: number;
+      readonly customer?: never;
+      readonly allow?: never;
+    }
+  | {
+      /** Polymorfa Customer ID. Never pass your own external ID. */
+      readonly customer: string;
+      readonly allow?: readonly CustomerClientTokenAction[];
+      readonly ephemeralId: string;
+      readonly ttlSeconds?: number;
+      readonly session?: never;
+    };
 
 export interface MessagingClientTokenMintResource {
   mint(
@@ -74,14 +99,22 @@ export function createMessagingClientTokenMint(
 }
 
 function validateInput(input: MessagingClientTokenMintRequest): void {
+  const hasSession =
+    typeof input.session === "string" && input.session.length > 0;
+  const hasCustomer =
+    typeof input.customer === "string" && input.customer.length > 0;
   if (
-    typeof input.session !== "string" ||
-    input.session.length === 0 ||
+    hasSession === hasCustomer ||
     typeof input.ephemeralId !== "string" ||
     input.ephemeralId.length === 0
   ) {
     throw new TypeError(
-      "session and ephemeralId are required to mint a client token.",
+      "Exactly one of session or customer, and an ephemeralId, are required to mint a client token.",
+    );
+  }
+  if (input.allow !== undefined && !hasCustomer) {
+    throw new TypeError(
+      "allow is only supported for Customer-scoped client tokens.",
     );
   }
 }

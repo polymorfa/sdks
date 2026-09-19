@@ -2,11 +2,11 @@ import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   CreateProjectRequest,
+  CreatedProject,
   DataEnvelope,
   ProductionEnrollmentCommandResult,
   ProductionEnrollmentRequest,
   ProductionEnrollmentResult,
-  Project,
   ProjectWithStats,
   ProjectHealthPolicy,
   ProjectInsuranceEvidence,
@@ -34,7 +34,7 @@ export class ProjectsResource {
   create(
     body: CreateProjectRequest,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<Project>>> {
+  ): Promise<ApiResponse<DataEnvelope<CreatedProject>>> {
     return this.transport.request({
       method: "POST",
       path: "/platform/projects",

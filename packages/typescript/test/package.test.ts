@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 
 const repositoryRoot = new URL("../../../", import.meta.url).pathname;
+const packageRoot = new URL("../", import.meta.url).pathname;
 
 describe("npm package", () => {
   it("packs and imports in a clean consumer without runtime dependencies", () => {
@@ -24,7 +25,7 @@ describe("npm package", () => {
     const packed = spawnSync(
       "npm",
       ["pack", "--json", "--ignore-scripts", "--pack-destination", directory],
-      { cwd: repositoryRoot, encoding: "utf8", env: environment },
+      { cwd: packageRoot, encoding: "utf8", env: environment },
     );
     expect(packed.status, packed.stderr).toBe(0);
     const metadata = JSON.parse(packed.stdout) as Array<{
@@ -34,8 +35,14 @@ describe("npm package", () => {
     const paths = metadata[0]?.files.map(({ path }) => path) ?? [];
     expect(paths).toContain("LICENSE");
     expect(paths).toContain("README.md");
-    expect(paths).toContain("packages/typescript/README.md");
-    expect(paths).toContain("packages/typescript/dist/index.js");
+    expect(paths).toContain("dist/index.js");
+    // The Calls client is compiled into this package, not a dependency.
+    expect(paths).toContain("dist/calls/index.js");
+    expect(paths).toContain("dist/calls/index.d.ts");
+    expect(paths).toContain("dist/calls/internal.js");
+    expect(paths).toContain("dist/node.js");
+    expect(paths).toContain("dist/node.d.ts");
+    expect(paths).toContain("package.json");
     expect(
       paths.some((path) => path.includes("/src/") || path.includes("/test/")),
     ).toBe(false);
@@ -129,6 +136,51 @@ describe("npm package", () => {
       listenerApiExported: false,
       memberInvite: "undefined",
       organizationUpdate: "undefined",
+    });
+
+    const nodeConsumer = join(directory, "node-consumer.mjs");
+    writeFileSync(
+      nodeConsumer,
+      [
+        'import * as node from "@polymorfa/sdk/node";',
+        'import { MessagingClient, decodeWhatsAppMedia } from "@polymorfa/sdk";',
+        'const messaging = new MessagingClient({ credential: { type: "apiKey", value: "pmfa_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" } });',
+        "console.log(JSON.stringify({ exports: Object.keys(node).sort(), stream: typeof messaging.media.downloadStream, url: typeof messaging.media.downloadUrl, blob: typeof messaging.media.downloadBlob, whatsapp: typeof messaging.media.downloadFromWhatsApp, decode: typeof decodeWhatsAppMedia }));",
+      ].join("\n"),
+    );
+    const nodeImported = spawnSync(process.execPath, [nodeConsumer], {
+      cwd: directory,
+      encoding: "utf8",
+    });
+    expect(nodeImported.status, nodeImported.stderr).toBe(0);
+    expect(JSON.parse(nodeImported.stdout)).toEqual({
+      exports: [
+        "downloadMediaToFile",
+        "downloadWhatsAppMediaToFile",
+        "nodeMediaCrypto",
+        "writeStreamToFile",
+      ],
+      stream: "function",
+      url: "function",
+      blob: "function",
+      whatsapp: "function",
+      decode: "function",
+    });
+
+    const callsConsumer = join(directory, "calls-consumer.mjs");
+    writeFileSync(
+      callsConsumer,
+      'import * as calls from "@polymorfa/sdk/calls"; console.log(JSON.stringify({ client: typeof calls.CallsClient, disabled: typeof calls.CallsDisabledError, sampleRate: typeof calls.DEFAULT_SAMPLE_RATE }));',
+    );
+    const importedCalls = spawnSync(process.execPath, [callsConsumer], {
+      cwd: directory,
+      encoding: "utf8",
+    });
+    expect(importedCalls.status, importedCalls.stderr).toBe(0);
+    expect(JSON.parse(importedCalls.stdout)).toEqual({
+      client: "function",
+      disabled: "function",
+      sampleRate: "number",
     });
 
     const installedManifest = JSON.parse(

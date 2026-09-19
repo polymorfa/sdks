@@ -2,17 +2,48 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`09b8342c0d75817eb2c92035e17635061986e35f`. `source.json` records their original
-paths and SHA-256 hashes. `coverage.json` uses the same source revision.
+`2259a1fd331c6ddbc8ad56a04333100ebfce7c2e` on monorepo `dev`. `source.json` records the
+original paths and SHA-256 hashes. `coverage.json` uses the same source
+revision.
+
+Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
+`MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
+merged monorepo `dev`, the Calls diagnostics route
+(`voipReportCallDiagnostics`) is back with a refreshed fingerprint; the SDK
+keeps `MessagingClient.voip.report` covering it. The Console-only `getCall`
+response also picked up a refreshed fingerprint (still excluded). No
+operations were added or removed by this re-sync.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        299 |
+| Covered             |        308 |
 | Missing             |          0 |
-| Excluded            |        106 |
+| Excluded            |        116 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        405 |
+| Total               |        424 |
+
+This revision adds test event triggering
+(`POST /messaging/testing/{projectId}/events`) and fixture listing
+(`GET /messaging/testing/{projectId}/events/fixtures`), covered by
+`MessagingClient.testing.triggerEvent` (with the optional `Idempotency-Key`
+header through `options.idempotencyKey`) and
+`MessagingClient.testing.listEventFixtures`.
+
+An earlier revision added app-reported call diagnostics
+(`POST /messaging/voip/calls/{id}/reports`, covered by
+`MessagingClient.voip.report`, and sent automatically by the browser and
+Calls clients), replaces `includeSelfAudio` with `conferenceMode` in session
+call settings, and moves Console call detail from `clientReports` to
+`appReports` (excluded, Console-only). Earlier revisions added
+`hostCloudApiCalls` to session call settings, a `sip`
+connection transport in Console call detail, and the SIP trunk operations, covered by `Client.sipTrunks`,
+and the calling switch, routing and revision fields of session call settings. The SIP error codes and
+`calls_disabled` added to the shared public error enum changed the fingerprint of every
+operation that references it; those operations were reviewed and only the
+error enum differs. The Console SIP trunk and call operations are excluded.
+`createProject` and `requestProductionEnrollment` match `CreatedProject` and
+the `billingMode` field of the production enrollment result.
 
 Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
@@ -20,14 +51,32 @@ successful live call.
 
 ## Reconciliation
 
-This revision adds the project event stream. `Client.events.stream` covers
-`GET /platform/projects/{projectId}/events/stream` with reconnect and resume,
-and `Client.events.acknowledgeStream` covers its manual acknowledgement route.
-The same revision types the project create request and response and adds
-`billingMode` to the production enrollment result; `Client.projects.create` and
-`Client.projects.requestProductionEnrollment` keep their paths. The source
-commit is on the coordinated monorepo branch `codex/event-streams`, not yet
-merged to `dev`.
+Revision `2259a1fd` adds the project event stream. `Client.events.stream`
+covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
+resume, and `Client.events.acknowledgeStream` covers its manual
+acknowledgement route. The Platform `PlatformAccessEventStreamFrame`
+discriminator mapping at this revision points at unprefixed schema names
+(`EventStreamReadyFrame` and so on) that the document does not define; the
+snapshot keeps the source bytes unchanged. The same revision adds
+`conversationTtlSeconds` to client rules, turns `recipientMode` into an enum,
+and sets a minimum of 0 on `rateLimit` and `maxDaily`; the client-rules types
+follow.
+
+Revision `51026bfe` adds the optional `Idempotency-Key` header and its `409`
+outcomes to seven Messaging writes, and four `idempotency_*` public error
+codes to the shared error schema. That schema change moves the fingerprint of every Messaging
+operation that references it; each keeps its existing typed method.
+
+This revision adds `request_id` (required) and `request_log_url` to every
+error object, and extends the `PublicError` code enum with the WhatsApp codes
+(`recipient_not_on_whatsapp`, `conversation_window_closed`,
+`template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
+`new_chat_limit_reached`, `whatsapp_account_restricted`) and the BanSafe codes
+the API now delivers. That moved 384 fingerprints; each was reviewed, and all
+but three changed only in error responses. The other three are `createProject`
+and `requestProductionEnrollment` (upstream Pay-As-You-Go changes, now typed as
+`CreatedProject` and `ProductionEnrollmentResult.billingMode`), and the
+excluded console logs read. `PolymorfaError` exposes the new fields.
 
 This revision replaces raw account platform codes with `phonePlatform` and
 `accountType` on the session account, profile, and `session.connected`
@@ -61,9 +110,15 @@ handler returns those fields, so `BanSafeNumberDetail` keeps them. Console,
 staff, browser-owned onboarding, and capability-token routes have explicit
 exclusion reasons. No whole-contract parity or package release is claimed.
 
-`HttpCallsApi.place`, `accept`, `reject`, `addParticipant`, and `setMode` cover
-the five Calls operations. Request tests invoke these methods and check the
-HTTP method, encoded path, body, authentication, and response handling.
+`MessagingClient.voip` covers the Calls place, accept, reject, leave
+(`voipLeaveCall`), end, and add-participant operations and the session call
+settings (`getCallSettings`, `updateCallSettings`). Request tests invoke these
+methods and check the HTTP method, encoded path, body, authentication, and
+response handling. Calls contract revision 1 removed the mode, socket-ticket,
+agent-token, and browser-token routes. It also added three call-state codes
+to the shared `PublicError` enum, which changes the fingerprint of every
+Messaging operation that returns it. The Console-only
+`/console/call-settings/{sessionId}` routes are excluded.
 
 The unified `Client` owns organization control-plane resources and creates
 immutable project views with `client.project(projectId)`. QuickLink management
