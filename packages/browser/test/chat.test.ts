@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   ConversationController,
   MessageComposerController,
+  createConversationComposerActions,
+  localAttachmentFromFile,
   type ConversationDataSource,
   type ConversationEvent,
 } from "../src/index.js";
@@ -181,6 +183,10 @@ describe("MessageComposerController", () => {
     );
     controller.setText("long");
     await expect(controller.submit()).rejects.toThrow("3 characters");
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "error",
+      error: "Message text cannot exceed 3 characters.",
+    });
     const pending = controller.addAttachment({
       id: "local-1",
       name: "a.txt",
@@ -190,5 +196,116 @@ describe("MessageComposerController", () => {
     controller.cancelAttachment("local-1");
     await pending;
     expect(controller.getSnapshot().attachments).toEqual([]);
+  });
+});
+
+describe("composer and conversation wiring", () => {
+  it("describes a file as a local attachment that keeps its bytes", () => {
+    const file = new File(["hello"], "note.txt", { type: "text/plain" });
+    const attachment = localAttachmentFromFile(file, () => "local-1");
+    expect(attachment).toEqual({
+      id: "local-1",
+      name: "note.txt",
+      size: 5,
+      contentType: "text/plain",
+      file,
+    });
+    const untyped = localAttachmentFromFile(new File(["x"], "blob"));
+    expect(untyped.contentType).toBe("application/octet-stream");
+    expect(typeof untyped.id).toBe("string");
+  });
+
+  it("sends composer drafts through the shared conversation", async () => {
+    const fixture = fixtureSource();
+    const conversation = new ConversationController(fixture.source, {
+      createClientId: () => "client-1",
+    });
+    await conversation.load();
+    const upload = vi.fn(async (local: { id: string; file?: Blob }) => ({
+      id: `up-${local.id}`,
+      name: "photo.png",
+      size: 3,
+      contentType: "image/png",
+      url: "https://cdn.example/photo.png",
+    }));
+    const composer = new MessageComposerController(
+      createConversationComposerActions(conversation, upload),
+    );
+    const file = new File(["abc"], "photo.png", { type: "image/png" });
+    await composer.addAttachment(localAttachmentFromFile(file, () => "a1"));
+    expect(upload.mock.calls[0]?.[0].file).toBe(file);
+    composer.setText("look");
+    composer.setReplyTo("older");
+    await composer.submit();
+    expect(fixture.source.send).toHaveBeenCalledWith(
+      {
+        clientId: "client-1",
+        text: "look",
+        replyTo: "older",
+        attachments: [
+          {
+            id: "up-a1",
+            name: "photo.png",
+            size: 3,
+            contentType: "image/png",
+            url: "https://cdn.example/photo.png",
+          },
+        ],
+      },
+      expect.anything(),
+    );
+    expect(conversation.getSnapshot().messages[0]).toMatchObject({
+      clientId: "client-1",
+      status: "sent",
+    });
+    expect(composer.getSnapshot()).toMatchObject({ text: "", attachments: [] });
+  });
+
+  it("omits empty reply and attachment fields", async () => {
+    const fixture = fixtureSource();
+    const conversation = new ConversationController(fixture.source, {
+      createClientId: () => "client-2",
+    });
+    await conversation.load();
+    const actions = createConversationComposerActions(conversation, vi.fn());
+    await actions.send(
+      { text: "plain", attachments: [] },
+      new AbortController().signal,
+    );
+    expect(fixture.source.send).toHaveBeenCalledWith(
+      { clientId: "client-2", text: "plain" },
+      expect.anything(),
+    );
+  });
+
+  it("forwards composer cancellation to the conversation request", async () => {
+    const fixture = fixtureSource();
+    let received: AbortSignal | undefined;
+    fixture.source.send = vi.fn(
+      (_draft, signal?: AbortSignal) =>
+        new Promise<never>((_resolve, reject) => {
+          received = signal;
+          signal?.addEventListener("abort", () => reject(new Error("aborted")));
+        }),
+    );
+    const conversation = new ConversationController(fixture.source, {
+      createClientId: () => "client-3",
+    });
+    await conversation.load();
+    const composer = new MessageComposerController(
+      createConversationComposerActions(conversation, vi.fn()),
+    );
+    composer.setText("stop me");
+    const sending = composer.submit();
+    await Promise.resolve();
+    expect(received?.aborted).toBe(false);
+    composer.cancelSend();
+    expect(received?.aborted).toBe(true);
+    await sending;
+    expect(conversation.getSnapshot().messages[0]).toMatchObject({
+      clientId: "client-3",
+      status: "failed",
+      error: "Message send was cancelled.",
+    });
   });
 });

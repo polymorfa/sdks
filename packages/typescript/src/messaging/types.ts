@@ -1331,11 +1331,43 @@ export interface Operation {
 
 export type GetOperationResponse = SuccessEnvelope<Operation>;
 
-export interface MintClientTokenRequest {
-  readonly session: string;
+/** Actions a Customer-scoped client token can carry in `allow`. */
+export type CustomerClientTokenAction =
+  | "send_message"
+  | "send_reaction"
+  | "send_typing"
+  | "send_seen"
+  | "read_presence"
+  | "subscribe_presence"
+  | "read_contact";
+
+interface MintClientTokenBase {
   readonly ephemeralId: string;
   readonly ttlSeconds?: number;
 }
+
+/** A token limited to one session. */
+export interface MintSessionClientTokenRequest extends MintClientTokenBase {
+  readonly session: string;
+  readonly customer?: never;
+  readonly allow?: never;
+}
+
+/**
+ * A token covering the numbers one Customer owns when it is minted (beta).
+ * Each request also requires that the Customer still owns the number and
+ * passes that session's client rules. Requires `customers:read`.
+ */
+export interface MintCustomerClientTokenRequest extends MintClientTokenBase {
+  /** Polymorfa Customer ID. Never pass your own external ID. */
+  readonly customer: string;
+  /** Narrows the token's actions further; omit to use session rules alone. */
+  readonly allow?: readonly CustomerClientTokenAction[];
+  readonly session?: never;
+}
+
+export type MintClientTokenRequest =
+  MintSessionClientTokenRequest | MintCustomerClientTokenRequest;
 
 export interface ClientTokenValue {
   readonly token: string;
@@ -1349,8 +1381,9 @@ export type ClientRecipientMode = "conversation" | "any" | "none";
 
 /**
  * Client-token actions (comma-separated in `allowedActions`). The `voip_*`
- * actions gate the browser call signaling routes: `voip_place` and
- * `voip_answer` establish media, `voip_signal` covers trickle ICE and teardown.
+ * actions gate the Calls routes for client tokens: `voip_place` places calls
+ * and adds participants, `voip_answer` accepts or declines, and `voip_signal`
+ * covers ICE candidates, renegotiation, ending a call, and the lifecycle socket.
  */
 export type ClientAction =
   | "mcp"
@@ -1409,55 +1442,228 @@ export interface SetClientRulesRequest {
 }
 
 /**
- * Body for `POST /messaging/voip/token`: the same claims as
- * {@link MintClientTokenRequest}, minting the browser token that
- * `@polymorfa/browser` call signaling runs on.
+ * Who acts in a call when a server credential calls a Calls route. Matches
+ * `[A-Za-z0-9._:@-]{1,128}`; the API uses `default` when omitted. Client
+ * tokens act as their own participant and cannot set this field.
  */
-export interface VoipTokenRequest {
+export type VoipParticipantReference = string;
+
+/** Body for `POST /messaging/voip/calls`. */
+export interface VoipPlaceCallRequest {
+  /** Phone number in E.164 form or a WhatsApp user ID. */
+  readonly to: string;
+  /** Session that places the call. Required with a server credential. */
+  readonly session?: string;
+  readonly video?: boolean;
+  /** Claim the call for the placing participant. */
+  readonly exclusive?: boolean;
+  readonly participant?: VoipParticipantReference;
+}
+
+export interface VoipPlaceCallResult {
+  readonly callId: string;
   readonly session: string;
-  readonly ephemeralId: string;
-  readonly ttlSeconds?: number;
+  readonly video: boolean;
 }
 
-export interface VoipTokenValue {
-  readonly token: string;
-  /** Unix epoch milliseconds. */
-  readonly expiresAt: number;
+export type VoipPlaceCallResponse = SuccessEnvelope<VoipPlaceCallResult>;
+
+/** Body for `POST /messaging/voip/calls/{callId}/accept`. */
+export interface VoipAcceptCallRequest {
+  /**
+   * Claim the call. Other participants then receive `409 call_claimed` and
+   * their connections close. Without a claim, later accepts join the call.
+   */
+  readonly exclusive?: boolean;
+  readonly video?: boolean;
+  readonly participant?: VoipParticipantReference;
 }
 
-export type VoipTokenResponse = SuccessEnvelope<VoipTokenValue>;
+export interface VoipAcceptCallResult {
+  /** `true` once the call is answered, including when this accept joined it. */
+  readonly answered: boolean;
+  /** Participant reference that answered the call. */
+  readonly answeredBy: string;
+  /** Whether a participant holds an exclusive claim on the call. */
+  readonly exclusive: boolean;
+}
+
+export type VoipAcceptCallResponse = SuccessEnvelope<VoipAcceptCallResult>;
+
+/** Body for `POST /messaging/voip/calls/{callId}/leave`. */
+export interface VoipLeaveCallRequest {
+  /** Media connection to close. Matches `[A-Za-z0-9_-]{8,64}`. */
+  readonly connectionId: string;
+  /** Server credentials only: the participant that owns the connection. */
+  readonly participant?: VoipParticipantReference;
+}
+
+/** SDK that sent a call report. */
+export interface VoipCallReportClient {
+  /** Package name. Matches `[a-z0-9@/._-]{1,32}`. */
+  readonly sdk: string;
+  /** `MAJOR.MINOR.PATCH` with an optional `-` or `+` suffix, at most 32 characters. */
+  readonly version: string;
+  readonly platform: "browser" | "node" | "other";
+}
 
 /**
- * Body for `POST /messaging/voip/ws-ticket`. Required here because this client
- * authenticates with a server key, and the route answers 400 when one of
- * those does not name a session. (The wire contract leaves it optional for
- * client tokens, which are already bound to theirs.)
+ * Figures an app measured for one connection. Omit what you did not
+ * measure; send at least one.
  */
-export interface VoipSocketTicketRequest {
-  readonly session: string;
+export interface VoipCallQuality {
+  /** Round-trip time in milliseconds, 0–60000. */
+  readonly rttMs?: number;
+  /** Receive jitter in milliseconds, 0–60000. */
+  readonly jitterMs?: number;
+  /** Packets lost since the connection started. */
+  readonly packetsLost?: number;
+  /** Packets received since the connection started. */
+  readonly packetsReceived?: number;
+  /** Negotiated audio codec, for example `audio/opus`. */
+  readonly audioCodec?: string;
+  readonly videoCodec?: string;
+  /** Local ICE candidate type in use; `relay` means a TURN relay. */
+  readonly candidateType?: "host" | "srflx" | "prflx" | "relay";
+  /** Times this connection reconnected so far, 0–1000. */
+  readonly reconnects?: number;
 }
-/** A single-use, 60-second ticket that opens the calls WebSocket. */
-export interface VoipSocketTicketValue {
-  readonly ticket: string;
-  /** Unix epoch milliseconds. */
-  readonly expiresAt: number;
-  /** Root-relative WebSocket URL, ticket included. */
-  readonly url: string;
-}
-export type VoipSocketTicketResponse = SuccessEnvelope<VoipSocketTicketValue>;
 
-/** Body for `POST /messaging/voip/calls/{id}/agent-token`. */
-export interface VoipAgentTokenRequest {
-  /** Ticket lifetime in seconds (default 300, max 3600). */
-  readonly ttlSeconds?: number;
+export type VoipCallErrorCode =
+  | "media_permission_denied"
+  | "device_not_found"
+  | "device_in_use"
+  | "ice_failed"
+  | "negotiation_failed"
+  | "media_timeout"
+  | "reconnect_exhausted"
+  | "token_refresh_failed"
+  | "unsupported_browser"
+  | "other";
+
+interface VoipCallReportBase {
+  /** The connection the report is about. Matches `[A-Za-z0-9_-]{8,64}`. */
+  readonly connectionId: string;
+  /** Server credentials only: the participant that owns the connection. */
+  readonly participant?: VoipParticipantReference;
+  readonly client?: VoipCallReportClient;
 }
-/** A per-call ticket a voice agent presents to the voip pod's PCM WebSocket. */
-export interface VoipAgentTokenValue {
-  readonly token: string;
-  /** Unix epoch milliseconds. */
-  readonly expiresAt: number;
+
+export interface VoipCallQualityReport extends VoipCallReportBase {
+  readonly kind: "quality";
+  readonly quality: VoipCallQuality;
 }
-export type VoipAgentTokenResponse = SuccessEnvelope<VoipAgentTokenValue>;
+
+export interface VoipCallErrorReport extends VoipCallReportBase {
+  readonly kind: "error";
+  readonly error: { readonly code: VoipCallErrorCode };
+}
+
+/** Body for `POST /messaging/voip/calls/{callId}/reports`. */
+export type VoipCallReportRequest = VoipCallQualityReport | VoipCallErrorReport;
+
+/** Body for `POST /messaging/voip/calls/{callId}/reject`. */
+export interface VoipRejectCallRequest {
+  /** Server credentials only: the participant declining the call. */
+  readonly participant?: VoipParticipantReference;
+}
+
+/** Body for `POST /messaging/voip/calls/{callId}/participants`. */
+export interface VoipAddParticipantRequest {
+  /** Phone number in E.164 form or a WhatsApp user ID. */
+  readonly to: string;
+}
+
+export type VoipParticipantState = "invited" | "ringing" | "connected" | "left";
+
+export interface VoipParticipant {
+  readonly id: string;
+  readonly phoneNumber?: string;
+  readonly bsuid?: string;
+  readonly username?: string;
+  readonly audioMuted: boolean;
+  readonly video: boolean;
+  readonly state: VoipParticipantState;
+}
+
+export type VoipAddParticipantResponse = SuccessEnvelope<VoipParticipant>;
+
+/** Call settings for one session (`/platform/sessions/{session}/call-settings`). */
+export interface SessionCallSettings {
+  /**
+   * Whether the session can place, answer and receive calls. While `false`,
+   * those actions fail with `calls_disabled`, incoming calls are declined and
+   * SIP trunks cannot call through the session. Calls in progress continue.
+   */
+  readonly callsEnabled: boolean;
+  /**
+   * Conference mode, `true` by default. When `true`, every participant you
+   * connect to a call (browser, app and server connections, and SIP trunk
+   * callers) hears the WhatsApp party and each other. When `false`, each
+   * hears only the WhatsApp party. The WhatsApp party always hears all of
+   * your participants, and nobody hears their own audio, including from
+   * their other connections.
+   */
+  readonly conferenceMode: boolean;
+  /**
+   * Where incoming WhatsApp calls ring. `clients` rings your connected
+   * participants; `sip_trunk` also sends each call to `sipTrunkId`.
+   */
+  readonly inboundRoute: CallInboundRoute;
+  /** The SIP trunk that receives incoming calls, or `null` when `inboundRoute` is `clients`. */
+  readonly sipTrunkId: string | null;
+  /** Whether an answer from the SIP trunk claims the call. `true` by default. */
+  readonly sipClaim: boolean;
+  /**
+   * On a Cloud API session, whether Polymorfa Calls answers incoming calls.
+   * `false` by default: your Graph API integration answers them. Sessions on a
+   * linked device ignore it.
+   */
+  readonly hostCloudApiCalls: boolean;
+  /**
+   * Increases on every change; `0` while the session uses the defaults. Send
+   * it as `expectedRevision` so an update cannot overwrite another change.
+   */
+  readonly revision: number;
+  /** ISO 8601 timestamp of the last change, or `null` while the session uses the defaults. */
+  readonly updatedAt: string | null;
+}
+
+export type CallInboundRoute = "clients" | "sip_trunk";
+
+/**
+ * Changes the settings you send; omitted settings keep their values. Send at
+ * least one setting.
+ */
+export interface UpdateSessionCallSettingsRequest {
+  /** `false` turns calling off for the session; `true` turns it back on. */
+  readonly callsEnabled?: boolean;
+  /**
+   * `true` lets the participants you connect hear each other as well as the
+   * WhatsApp party; `false` lets each hear only the WhatsApp party.
+   */
+  readonly conferenceMode?: boolean;
+  /**
+   * Routing to a different trunk requires the SIP trunks beta. `clients`
+   * clears the trunk.
+   */
+  readonly inboundRoute?: CallInboundRoute;
+  /**
+   * A trunk of the session's project with direction `outbound` or `both`.
+   * Required when switching to `sip_trunk`; omit it to keep the stored trunk.
+   */
+  readonly sipTrunkId?: string | null;
+  readonly sipClaim?: boolean;
+  /** `true` has Polymorfa Calls answer a Cloud API session's incoming calls. */
+  readonly hostCloudApiCalls?: boolean;
+  /**
+   * Apply the update only if the settings still have this `revision`;
+   * otherwise it fails with `PolymorfaConflictError` (`state_conflict`).
+   */
+  readonly expectedRevision?: number;
+}
+
+export type SessionCallSettingsResponse = SuccessEnvelope<SessionCallSettings>;
 
 export type ListSessionsResponse = SuccessEnvelope<readonly Session[]>;
 export type GetSessionResponse = SuccessEnvelope<Session>;

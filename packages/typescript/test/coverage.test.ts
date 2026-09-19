@@ -6,7 +6,6 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 import { describe, expect, it } from "vitest";
-import { HttpCallsApi } from "../../calls/src/index.js";
 import { BrowserMessagingClient } from "../../browser/src/index.js";
 import {
   BridgeClient,
@@ -174,22 +173,21 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "3d20ec3f6d326f74fb6d2e90b92402ccd3b9ac14",
-      total: 406,
-      covered: 290,
+      sourceCommit: "078af1889c2adb4020f7a4fc41384058a4234da1",
+      total: 422,
+      covered: 306,
       partial: 0,
-      missing: 5,
-      excluded: 103,
-      changed: 8,
+      missing: 0,
+      excluded: 116,
+      changed: 0,
     });
-    // Operations removed by the unified Calls revision; reconciled by the SDK Calls PR.
-    const resolutions = (
-      result.report as { resolutions: Array<{ path: string; status: string }> }
-    ).resolutions;
-    for (const resolution of resolutions) {
-      expect(resolution.status).toBe("removed");
-      expect(resolution.path).toMatch(/^\/messaging\/voip\//);
-    }
+    // Monorepo dev now carries the merged Calls diagnostics route the SDK
+    // already implements, so there is no unresolved removal left.
+    const resolutions = (result.report?.resolutions ?? []) as Array<{
+      operationId: string;
+      status: string;
+    }>;
+    expect(resolutions).toEqual([]);
   });
 
   it("maps the complete Customers contract to the Platform resource", () => {
@@ -309,7 +307,6 @@ describe("coverage checker", () => {
           value: PROJECT_TOKEN,
         },
       }),
-      HttpCallsApi: new HttpCallsApi({ apiKey: "pmfa_calls" }),
       BrowserMessagingClient: new BrowserMessagingClient({
         session: "coverage",
         getClientToken: async () => "pmfa_ct_coverage",

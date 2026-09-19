@@ -347,6 +347,11 @@ export interface Project {
   readonly stage: "development" | "production";
 }
 
+/** A project as returned by creation; new projects always start in development. */
+export interface CreatedProject extends Project {
+  readonly stage: "development";
+}
+
 export interface ProjectWithStats {
   readonly _id: string;
   readonly _creationTime: number;
@@ -364,10 +369,24 @@ export interface ProjectWithStats {
   readonly iconUrl: string | null;
 }
 
+export type ProjectDefaultTier = "free" | "standard" | "pro";
+
 export interface CreateProjectRequest {
   readonly name: string;
   readonly icon?: ProjectIcon;
-  readonly defaultTier?: string;
+  readonly defaultTier?: ProjectDefaultTier;
+}
+
+/** The project returned by `projects.create`, always in development. */
+export interface CreatedProject {
+  readonly id: string;
+  readonly orgId: string;
+  readonly name: string;
+  readonly slug: string;
+  readonly icon: ProjectIcon;
+  readonly defaultTier: ProjectDefaultTier;
+  readonly isActive: boolean;
+  readonly stage: "development";
 }
 
 export interface ProductionBusiness {
@@ -389,6 +408,8 @@ export interface ProductionEnrollmentResult {
   readonly operationId: string;
   readonly enrollmentStatus:
     "requested" | "approval_required" | "provisioning" | "ready";
+  /** The team's billing mode after the request. Always Pay-As-You-Go. */
+  readonly billingMode: "payg";
 }
 
 export interface ProductionEnrollmentCommandResult {

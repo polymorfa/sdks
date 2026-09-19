@@ -5,6 +5,7 @@ export {
   mergeAppearance,
   resolveMotionPreference,
   type Appearance,
+  type AppearanceColorVariable,
   type AppearanceInput,
   type AppearanceLayout,
   type AppearanceVariables,
@@ -21,3 +22,59 @@ export {
   type MessageKey,
 } from "./locale.js";
 export { redactDiagnostic } from "./redaction.js";
+export {
+  COMPONENT_STYLES,
+  injectComponentStyles,
+  themeClassName,
+} from "./styles.js";
+export {
+  COMPONENT_SLOTS,
+  slotClassName,
+  slotPartName,
+  slotStyleEntries,
+  type ComponentSlot,
+  type SlotClassNames,
+} from "./slots.js";
+export {
+  applyQuickReply,
+  filterQuickReplies,
+  findQuickReplyQuery,
+  formatElapsed,
+  insertText,
+  placePopover,
+  quickReplyLabel,
+  type PopoverPlacement,
+  type PopoverRect,
+  type QuickReplyOption,
+  type QuickReplyQuery,
+  type TextEdit,
+} from "./composer.js";
+export {
+  EMOJI_CATEGORIES,
+  EMOJI_CATEGORY_ICONS,
+  EMOJI_PICKER_CATEGORIES,
+  emojiInCategory,
+  emojiList,
+  findEmoji,
+  readRecentEmoji,
+  recentEmojiEntries,
+  recordRecentEmoji,
+  searchEmoji,
+  type EmojiCategory,
+  type EmojiEntry,
+  type EmojiPickerCategory,
+} from "./emoji.js";
+export {
+  CHAT_ICONS,
+  compareMessageTime,
+  formatDayLabel,
+  formatFileSize,
+  formatMessageTime,
+  isImageAttachment,
+  layoutMessages,
+  messageDayKey,
+  safeAttachmentUrl,
+  type ChatIconName,
+  type ChatLayoutEntry,
+  type ChatLayoutMessage,
+} from "./chat.js";

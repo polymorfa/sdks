@@ -7,14 +7,14 @@
 // the incoming card once it carries a camera preview — is always dark, like an
 // OS call screen. Widgets are fluid and never resize when a panel opens;
 // device panels overlay them. Every affordance gates on the snapshot's
-// `capabilities`, never on the line name.
+// reported `capabilities`.
 
 import {
-  capabilitiesFor,
   type CallDevice,
-  type CallLine,
+  type CallParticipant,
   type CallsController,
   type CallsSnapshot,
+  type RemoteVideoInfo,
 } from "@polymorfa/browser";
 import { appearanceToCssVariables, type Locale } from "@polymorfa/ui";
 import {
@@ -52,6 +52,14 @@ function ignoreDisposed(run: () => void): void {
     // Disposed controller — no snapshot left to change.
   }
 }
+
+/** A call this client answered or joined that has not ended. */
+const ANSWERED_STATUSES = new Set<CallsSnapshot["status"]>([
+  "accepted",
+  "connecting",
+  "connected",
+  "reconnecting",
+]);
 
 const ACTIVE_STATUSES = new Set<CallsSnapshot["status"]>([
   "ringing",
@@ -147,6 +155,21 @@ const ChevronDownIcon = (p: IconProps) => (
   </Icon>
 );
 
+const CloseIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </Icon>
+);
+
+const LeaveIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </Icon>
+);
+
 const MoreIcon = (p: IconProps) => (
   <Icon {...p}>
     <circle cx="12" cy="12" r="1" />
@@ -189,7 +212,10 @@ function useCallsRoot(): {
   readonly locale: Locale;
 } {
   const configuration = usePolymorfa();
-  useEffect(() => injectCallsStyles(), []);
+  const unstyled = configuration.appearance.unstyled === true;
+  useEffect(() => {
+    if (!unstyled) injectCallsStyles();
+  }, [unstyled]);
   const call = configuration.appearance.elements["call"];
   const theme = configuration.appearance.theme;
   const className = [
@@ -484,14 +510,27 @@ export interface IncomingCallCardProps extends ControllerProps {
   readonly avatarUrl?: string;
   readonly resolveAvatar?: AvatarResolver;
   readonly className?: string;
+  /**
+   * Claim the call when Answer is pressed, so other participants stop
+   * ringing and cannot join. Default `false`: others keep ringing and can
+   * join the answered call.
+   */
+  readonly exclusive?: boolean;
+  /** Name for another waiting call in the "Other incoming calls" list. */
+  readonly resolveName?: (peer: string) => string | undefined;
 }
 
 /**
  * The incoming-call window: name, "WhatsApp audio/video call" subtitle, the
  * media middle (avatar for audio; a mirrored self-preview with camera/mic
- * toggles and a ⋯ device menu for video), then Decline / Accept. Answering a
+ * toggles and a ⋯ device menu for video), then Reject / Answer. Answering a
  * video offer with the camera toggled off still acquires video muted, so the
  * in-call camera toggle can enable it later.
+ *
+ * A call another participant answered without claiming shows Join instead of
+ * Answer. A call another participant claimed shows only Dismiss: declining it
+ * would end it for the participant who answered. Other waiting calls are
+ * listed below; the card never declines them.
  */
 export function IncomingCallCard({
   controller,
@@ -500,13 +539,20 @@ export function IncomingCallCard({
   avatarUrl,
   resolveAvatar,
   className,
+  exclusive = false,
+  resolveName,
 }: IncomingCallCardProps) {
   const resolved = useResolvedController(controller, createController);
   const snapshot = useController(resolved);
   const root = useCallsRoot();
   const { locale } = root;
   const incoming = snapshot.status === "incoming";
-  const offersVideo = incoming && snapshot.video && snapshot.capabilities.video;
+  // A claimed call is not answered here, so it opens no camera preview.
+  const offersVideo =
+    incoming &&
+    !snapshot.claimedByOther &&
+    snapshot.video &&
+    snapshot.capabilities.video;
   const [cameraOn, setCameraOn] = useState(true);
   const [preMuted, setPreMuted] = useState(false);
   // The card returns null between calls instead of unmounting, so these
@@ -536,16 +582,47 @@ export function IncomingCallCard({
   // A remote hang-up between the click and the call reaching the controller
   // makes both of these reject: the call is no longer incoming. The snapshot
   // already shows the call ended, so the rejection only needs absorbing.
+  const claimed = snapshot.claimedByOther;
+  const joinable = !claimed && snapshot.canJoin;
+  // An answer or join is in flight (possibly for another listed call): the
+  // controller refuses these until it settles.
+  const busy = snapshot.answering === true;
+  // A failed answer: this call's own (still ringing), or a previous call's
+  // that gave way to this one.
+  const failure = snapshot.error;
+  const failureKey =
+    failure === undefined ||
+    failure.code === "call_control_failed" ||
+    failure.code === "call_claimed"
+      ? undefined
+      : failure.callId === undefined || failure.callId === snapshot.callId
+        ? ("calls.answerFailed" as const)
+        : ("calls.previousFailed" as const);
+  const answeredId = snapshot.callId;
+  const applyPreToggles = () => {
+    // The answer can settle without this call becoming active: it ended, was
+    // dismissed, or another call is displayed now. Those choices belong to
+    // this call only.
+    const now = resolved.getSnapshot();
+    if (now.callId !== answeredId || !ANSWERED_STATUSES.has(now.status)) return;
+    if (preMuted || (offersVideo && !cameraOn))
+      resolved.setMuted({
+        ...(preMuted ? { audio: true } : {}),
+        ...(offersVideo && !cameraOn ? { video: true } : {}),
+      });
+  };
+  const join = () =>
+    void resolved
+      .join({ video: offersVideo })
+      .then(applyPreToggles)
+      .catch(() => undefined);
+  const others = (snapshot.invitations ?? []).filter(
+    (invitation) => invitation.callId !== snapshot.callId,
+  );
   const accept = () =>
     void resolved
-      .answer({ video: offersVideo })
-      .then(() => {
-        if (preMuted || (offersVideo && !cameraOn))
-          resolved.setMuted({
-            ...(preMuted ? { audio: true } : {}),
-            ...(offersVideo && !cameraOn ? { video: true } : {}),
-          });
-      })
+      .answer({ video: offersVideo, exclusive })
+      .then(applyPreToggles)
       .catch(() => undefined);
 
   const micToggle = (
@@ -553,6 +630,8 @@ export function IncomingCallCard({
       type="button"
       className={`pmfa-calls-btn pmfa-calls-mini${preMuted ? " pmfa-calls-on" : ""}`}
       onClick={() => setPreMuted((v) => !v)}
+      // The pending answer applies the value from when it was pressed.
+      disabled={busy}
       aria-label={t(
         locale,
         preMuted ? "calls.answerUnmuted" : "calls.answerMuted",
@@ -579,7 +658,10 @@ export function IncomingCallCard({
         <div
           className="pmfa-calls-subtitle"
           role={
-            snapshot.error?.code === "call_control_failed"
+            snapshot.error?.code === "call_control_failed" ||
+            failureKey !== undefined ||
+            claimed ||
+            joinable
               ? "status"
               : undefined
           }
@@ -588,9 +670,15 @@ export function IncomingCallCard({
             locale,
             snapshot.error?.code === "call_control_failed"
               ? "calls.controlFailed"
-              : offersVideo
-                ? "calls.videoCall"
-                : "calls.audioCall",
+              : failureKey !== undefined
+                ? failureKey
+                : claimed
+                  ? "calls.answeredElsewhere"
+                  : joinable
+                    ? "calls.joinable"
+                    : offersVideo
+                      ? "calls.videoCall"
+                      : "calls.audioCall",
           )}
         </div>
 
@@ -621,6 +709,7 @@ export function IncomingCallCard({
                 type="button"
                 className={`pmfa-calls-btn pmfa-calls-mini${cameraOn ? "" : " pmfa-calls-on"}`}
                 onClick={() => setCameraOn((v) => !v)}
+                disabled={busy}
                 aria-label={t(
                   locale,
                   cameraOn
@@ -660,29 +749,97 @@ export function IncomingCallCard({
         )}
 
         <div className="pmfa-calls-actions">
-          <div className="pmfa-calls-action">
-            <button
-              type="button"
-              className="pmfa-calls-btn pmfa-calls-btn-decline"
-              onClick={() => void resolved.reject().catch(() => undefined)}
-              aria-label={t(locale, "calls.reject")}
-            >
-              <HangupIcon />
-            </button>
-            {t(locale, "calls.reject")}
-          </div>
-          <div className="pmfa-calls-action">
-            <button
-              type="button"
-              className="pmfa-calls-btn pmfa-calls-btn-answer"
-              onClick={accept}
-              aria-label={t(locale, "calls.answer")}
-            >
-              {offersVideo && cameraOn ? <VideoIcon /> : <PhoneIcon />}
-            </button>
-            {t(locale, "calls.answer")}
-          </div>
+          {claimed || joinable ? (
+            <div className="pmfa-calls-action">
+              <button
+                type="button"
+                className="pmfa-calls-btn pmfa-calls-btn-dismiss"
+                onClick={() => ignoreDisposed(() => resolved.dismiss())}
+                aria-label={t(locale, "calls.dismiss")}
+              >
+                <CloseIcon />
+              </button>
+              {t(locale, "calls.dismiss")}
+            </div>
+          ) : (
+            <div className="pmfa-calls-action">
+              <button
+                type="button"
+                className="pmfa-calls-btn pmfa-calls-btn-decline"
+                onClick={() => void resolved.reject().catch(() => undefined)}
+                disabled={busy}
+                aria-label={t(locale, "calls.reject")}
+              >
+                <HangupIcon />
+              </button>
+              {t(locale, "calls.reject")}
+            </div>
+          )}
+          {joinable ? (
+            <div className="pmfa-calls-action">
+              <button
+                type="button"
+                className="pmfa-calls-btn pmfa-calls-btn-answer"
+                onClick={join}
+                disabled={busy}
+                aria-label={t(locale, "calls.join")}
+              >
+                {offersVideo && cameraOn ? <VideoIcon /> : <PhoneIcon />}
+              </button>
+              {t(locale, "calls.join")}
+            </div>
+          ) : claimed ? null : (
+            <div className="pmfa-calls-action">
+              <button
+                type="button"
+                className="pmfa-calls-btn pmfa-calls-btn-answer"
+                onClick={accept}
+                disabled={busy}
+                aria-label={t(locale, "calls.answer")}
+              >
+                {offersVideo && cameraOn ? <VideoIcon /> : <PhoneIcon />}
+              </button>
+              {t(locale, "calls.answer")}
+            </div>
+          )}
         </div>
+        {others.length > 0 && (
+          <div className="pmfa-calls-others">
+            <div className="pmfa-calls-others-title">
+              {t(locale, "calls.otherIncoming")}
+            </div>
+            <ul aria-label={t(locale, "calls.otherIncoming")}>
+              {others.map((invitation) => (
+                <li key={invitation.callId}>
+                  <span>
+                    {resolveName?.(invitation.from) ?? invitation.from}
+                  </span>
+                  <span className="pmfa-calls-others-state">
+                    {invitation.claimedByOther
+                      ? t(locale, "calls.answeredElsewhere")
+                      : invitation.canJoin
+                        ? t(locale, "calls.join")
+                        : t(
+                            locale,
+                            invitation.video
+                              ? "calls.videoCall"
+                              : "calls.audioCall",
+                          )}
+                  </span>
+                  <button
+                    type="button"
+                    className="pmfa-calls-chip"
+                    onClick={() =>
+                      ignoreDisposed(() => resolved.select(invitation.callId))
+                    }
+                  >
+                    {t(locale, "calls.show")}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -785,18 +942,29 @@ export interface CallStageProps extends ControllerProps {
   readonly avatarUrl?: string;
   readonly resolveAvatar?: AvatarResolver;
   readonly className?: string;
-  /** Replace the media region (remote/local streams) without forking state. */
+  /** Label for a remote video tile; see {@link ParticipantVideoGridProps}. */
+  readonly labelVideo?: ParticipantVideoGridProps["labelVideo"];
+  /**
+   * Replace the media region without forking state. `remote` is the merged
+   * call audio; `videos` holds one stream per remote participant.
+   */
   readonly renderMedia?: (streams: {
     readonly local?: MediaStream;
     readonly remote?: MediaStream;
+    readonly videos: readonly {
+      readonly key: string;
+      readonly info: RemoteVideoInfo;
+      readonly stream: MediaStream;
+    }[];
   }) => ReactNode;
 }
 
 /**
- * The in-call stage: remote video full-bleed when the far side sends video,
- * the centered avatar hero otherwise, the local preview as a
+ * The in-call stage: one tile per remote participant video when anyone sends
+ * video, the centered avatar hero otherwise, the local preview as a
  * picture-in-picture tile, and the identity (name + flashing number/duration
- * line). Always dark by design.
+ * line). The merged call audio plays through a hidden element. Always dark by
+ * design.
  */
 export function CallStage({
   controller,
@@ -805,6 +973,7 @@ export function CallStage({
   avatarUrl,
   resolveAvatar,
   className,
+  labelVideo,
   renderMedia,
 }: CallStageProps) {
   const resolved = useResolvedController(controller, createController);
@@ -813,7 +982,9 @@ export function CallStage({
   const { locale } = root;
   const remoteRef = useRef<HTMLVideoElement | null>(null);
   const localRef = useRef<HTMLVideoElement | null>(null);
-  const [remoteHasVideo, setRemoteHasVideo] = useState(false);
+  // Snapshots from custom controllers may omit the newer arrays.
+  const remoteVideos = snapshot.remoteVideos ?? [];
+  const remoteHasVideo = remoteVideos.length > 0;
   const seconds = useCallDuration(snapshot);
   const peerAvatar = usePeerAvatar(snapshot.peer, resolveAvatar, avatarUrl);
   const live = snapshot.status === "connected";
@@ -830,19 +1001,10 @@ export function CallStage({
     return () => clearInterval(timer);
   }, [live]);
 
-  useEffect(() => {
-    attach(remoteRef.current, remoteStream);
-    if (remoteStream === undefined) return;
-    const update = () =>
-      setRemoteHasVideo(remoteStream.getVideoTracks().length > 0);
-    update();
-    remoteStream.addEventListener("addtrack", update);
-    remoteStream.addEventListener("removetrack", update);
-    return () => {
-      remoteStream.removeEventListener("addtrack", update);
-      remoteStream.removeEventListener("removetrack", update);
-    };
-  }, [remoteStream, snapshot.revision]);
+  useEffect(
+    () => attach(remoteRef.current, remoteStream),
+    [remoteStream, snapshot.revision],
+  );
 
   useEffect(
     () => attach(localRef.current, localStream),
@@ -868,7 +1030,8 @@ export function CallStage({
   const ringingLine =
     snapshot.status === "reconnecting"
       ? `${t(locale, "calls.reconnecting")}…`
-      : !live && snapshot.direction === "outgoing"
+      : // A placed call rings until the controller reports the answer.
+        snapshot.status === "ringing" && snapshot.direction === "outgoing"
         ? t(locale, "calls.ringingTo", { peer })
         : null;
   const identity = (
@@ -901,16 +1064,31 @@ export function CallStage({
           renderMedia({
             ...(localStream === undefined ? {} : { local: localStream }),
             ...(remoteStream === undefined ? {} : { remote: remoteStream }),
+            videos: remoteVideos.flatMap((info) => {
+              const stream = resolved.remoteVideos.find(
+                (video) => video.key === info.key,
+              )?.stream;
+              return stream === undefined
+                ? []
+                : [{ key: info.key, info, stream }];
+            }),
           })
         ) : (
           <>
+            {/* Merged call audio; video arrives per participant below. */}
             <video
               ref={remoteRef}
-              className="pmfa-calls-video-remote"
+              className="pmfa-calls-audio-sink"
               autoPlay
               playsInline
-              style={remoteHasVideo ? undefined : { visibility: "hidden" }}
+              aria-hidden="true"
             />
+            {remoteHasVideo && (
+              <ParticipantVideoGrid
+                controller={resolved}
+                {...(labelVideo === undefined ? {} : { labelVideo })}
+              />
+            )}
             {!remoteHasVideo ? (
               preAccept ? (
                 <div className="pmfa-calls-hero-preview">
@@ -950,12 +1128,181 @@ export function CallStage({
   );
 }
 
+// ── Participant video and list ───────────────────────────────────────
+
+export interface ParticipantVideoGridProps extends ControllerProps {
+  readonly className?: string;
+  /**
+   * Label for a tile. Defaults to the participant's number or ID, then the
+   * participant reference of another app connection, then "Participant".
+   */
+  readonly labelVideo?: (video: RemoteVideoInfo) => string | undefined;
+}
+
+function defaultVideoLabel(video: RemoteVideoInfo, locale: Locale): string {
+  return (
+    video.participant?.phoneNumber ??
+    video.participant?.id ??
+    video.connectionParticipant ??
+    t(locale, "calls.participant")
+  );
+}
+
+function VideoTile({
+  stream,
+  label,
+  locale,
+}: {
+  readonly stream: MediaStream | undefined;
+  readonly label: string;
+  readonly locale: Locale;
+}) {
+  const ref = useRef<HTMLVideoElement | null>(null);
+  useEffect(() => attach(ref.current, stream), [stream]);
+  return (
+    <li className="pmfa-calls-tile">
+      <video
+        ref={ref}
+        autoPlay
+        playsInline
+        // Audio is the merged call stream; tiles carry video only.
+        muted
+        aria-label={t(locale, "calls.videoFrom", { name: label })}
+      />
+      <span className="pmfa-calls-tile-label">{label}</span>
+    </li>
+  );
+}
+
+/**
+ * One tile per remote participant video, keyed by participant or
+ * connection so a tile survives source changes. Videos are separate
+ * streams; nothing is composed. Renders nothing without remote video.
+ */
+export function ParticipantVideoGrid({
+  controller,
+  createController,
+  className,
+  labelVideo,
+}: ParticipantVideoGridProps) {
+  const resolved = useResolvedController(controller, createController);
+  const snapshot = useController(resolved);
+  const root = useCallsRoot();
+  const { locale } = root;
+  const videos = snapshot.remoteVideos ?? [];
+  if (videos.length === 0) return null;
+  const count = videos.length;
+  return (
+    <ul
+      className={`pmfa-calls-grid${className === undefined ? "" : ` ${className}`}`}
+      data-count={count > 4 ? "many" : String(count)}
+      aria-label={t(locale, "calls.participantVideos")}
+    >
+      {videos.map((video) => (
+        <VideoTile
+          key={video.key}
+          stream={
+            resolved.remoteVideos.find((remote) => remote.key === video.key)
+              ?.stream
+          }
+          label={labelVideo?.(video) ?? defaultVideoLabel(video, locale)}
+          locale={locale}
+        />
+      ))}
+    </ul>
+  );
+}
+
+export interface ParticipantListProps extends ControllerProps {
+  readonly className?: string;
+  /** Display name for a participant, when the application knows one. */
+  readonly resolveName?: (participant: CallParticipant) => string | undefined;
+}
+
+const PARTICIPANT_STATE: Record<
+  CallParticipant["state"],
+  keyof Locale["messages"] | undefined
+> = {
+  invited: "calls.participantInvited",
+  ringing: "calls.participantRinging",
+  connected: "calls.participantConnected",
+  left: undefined,
+};
+
+/** The displayed call's WhatsApp participants and their state. */
+export function ParticipantList({
+  controller,
+  createController,
+  className,
+  resolveName,
+}: ParticipantListProps) {
+  const resolved = useResolvedController(controller, createController);
+  const snapshot = useController(resolved);
+  const root = useCallsRoot();
+  const { locale } = root;
+  const participants = (snapshot.participants ?? []).filter(
+    (p) => p.state !== "left",
+  );
+  if (participants.length === 0) return null;
+  return (
+    <div
+      className={root.className}
+      style={root.style}
+      dir={root.dir}
+      data-pmfa="call"
+    >
+      <div
+        className={`pmfa-calls-card pmfa-calls-people${className === undefined ? "" : ` ${className}`}`}
+      >
+        <div
+          className="pmfa-calls-others-title"
+          id={`pmfa-people-${snapshot.callId ?? ""}`}
+        >
+          {t(locale, "calls.participants")}
+        </div>
+        <ul aria-labelledby={`pmfa-people-${snapshot.callId ?? ""}`}>
+          {participants.map((participant) => {
+            const state = PARTICIPANT_STATE[participant.state];
+            return (
+              <li key={participant.id}>
+                <span>
+                  {resolveName?.(participant) ??
+                    participant.phoneNumber ??
+                    participant.id}
+                </span>
+                <span className="pmfa-calls-others-state">
+                  {[
+                    state === undefined ? undefined : t(locale, state),
+                    participant.audioMuted
+                      ? t(locale, "calls.participantMuted")
+                      : undefined,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 // ── CallControls ──────────────────────────────────────────────────────
 
 export interface CallControlsProps extends ControllerProps {
   readonly className?: string;
-  /** Force-hide the camera control even when the line could carry video. */
+  /** Hide the camera control even when the call can carry video. */
   readonly disableVideo?: boolean;
+  /**
+   * Show a Leave button that closes only this connection. Defaults to
+   * showing it on calls nobody claimed, where others can stay in the call.
+   * Never shown on a call this client placed that has not connected: nobody
+   * else is on it, so the red button ends it. The red button always ends the
+   * call for everyone.
+   */
+  readonly showLeave?: boolean;
 }
 
 /**
@@ -972,6 +1319,7 @@ export function CallControls({
   createController,
   className,
   disableVideo,
+  showLeave,
 }: CallControlsProps) {
   const resolved = useResolvedController(controller, createController);
   const snapshot = useController(resolved);
@@ -981,6 +1329,13 @@ export function CallControls({
   if (!ACTIVE_STATUSES.has(snapshot.status)) return null;
 
   const live = snapshot.status === "connected";
+  // Leaving a call this client placed before it connected would keep the
+  // callee ringing; only ending it is offered.
+  const placing =
+    snapshot.direction === "outgoing" &&
+    !live &&
+    snapshot.connectedAt === undefined;
+  const leaveShown = !placing && (showLeave ?? !snapshot.exclusive);
   const showCamera = snapshot.capabilities.video && disableVideo !== true;
   // The affordance stays visible on an audio call (the settled design) and is
   // disabled until it can act: connected, and either already a video call or
@@ -1099,6 +1454,17 @@ export function CallControls({
               </button>
             </div>
           )}
+          {leaveShown && (
+            <button
+              type="button"
+              className="pmfa-calls-btn pmfa-calls-btn-ctrl pmfa-calls-btn-leave"
+              onClick={() => void resolved.leave().catch(() => undefined)}
+              aria-label={t(locale, "calls.leave")}
+              title={t(locale, "calls.leave")}
+            >
+              <LeaveIcon />
+            </button>
+          )}
           <button
             type="button"
             className="pmfa-calls-btn pmfa-calls-btn-hangup"
@@ -1106,7 +1472,8 @@ export function CallControls({
             // holding an application-supplied one can still be clicked
             // against; the call is over either way.
             onClick={() => void resolved.hangup().catch(() => undefined)}
-            aria-label={t(locale, "calls.hangup")}
+            aria-label={t(locale, leaveShown ? "calls.end" : "calls.hangup")}
+            title={t(locale, leaveShown ? "calls.end" : "calls.hangup")}
           >
             <HangupIcon />
           </button>
@@ -1136,8 +1503,11 @@ const KEYS = [
 export interface DialPadProps extends ControllerProps {
   /** Prefill the number field. */
   readonly defaultValue?: string;
-  /** Calling line the call is placed over. Defaults to `linkedDevice`. */
-  readonly line?: CallLine;
+  /**
+   * Offer a video-call button. Default `true`. Set it to `false` for numbers
+   * whose calls cannot carry video.
+   */
+  readonly allowVideo?: boolean;
   /** Called once the call is actually placed, not when a placement fails. */
   readonly onPlaced?: (to: string) => void;
   readonly className?: string;
@@ -1145,14 +1515,13 @@ export interface DialPadProps extends ControllerProps {
 
 /**
  * A dial pad card: E.164 entry plus place-call buttons — audio always, and a
- * video-call button when the line can carry video (linked device; the
- * Business Calling API line is audio-only, so the button never renders there).
+ * video-call button unless `allowVideo` is false.
  */
 export function DialPad({
   controller,
   createController,
   defaultValue = "",
-  line = "linkedDevice",
+  allowVideo = true,
   onPlaced,
   className,
 }: DialPadProps) {
@@ -1163,7 +1532,7 @@ export function DialPad({
   const [value, setValue] = useState(defaultValue);
   const busy =
     snapshot.status === "incoming" || ACTIVE_STATUSES.has(snapshot.status);
-  const canVideo = capabilitiesFor(line).video;
+  const canVideo = allowVideo;
   const dial = (video: boolean) => {
     const to = value.trim();
     // The buttons are disabled while a call is up, but the input keeps focus
@@ -1174,7 +1543,7 @@ export function DialPad({
     // reports that through the snapshot — so the snapshot is what says
     // whether there is now a call to announce.
     void resolved
-      .place(to, { video, line })
+      .place(to, { video })
       .then(() => {
         if (ACTIVE_STATUSES.has(resolved.getSnapshot().status)) onPlaced?.(to);
       })
@@ -1331,12 +1700,23 @@ export interface CallSurfaceProps extends ControllerProps {
   readonly resolveName?: (peer: string) => string | undefined;
   /** Resolve an avatar URL for a number (sync or async). */
   readonly resolveAvatar?: AvatarResolver;
-  /** Force-hide the camera control even when the line could carry video. */
+  /** Hide the camera control even when the call can carry video. */
   readonly disableVideo?: boolean;
   /** Offer the ↗ pop-out window button. Defaults to true. */
   readonly popout?: boolean;
   /** Replace the stage's media region without forking state. */
   readonly renderMedia?: CallStageProps["renderMedia"];
+  /**
+   * Claim calls answered from this surface. Default `false`: other
+   * participants keep ringing and can join.
+   */
+  readonly exclusive?: boolean;
+  /** Show the participant list during a call. Defaults to true. */
+  readonly showParticipants?: boolean;
+  /** Show the Leave button; see {@link CallControlsProps.showLeave}. */
+  readonly showLeave?: boolean;
+  /** Label for a remote video tile. */
+  readonly labelVideo?: ParticipantVideoGridProps["labelVideo"];
 }
 
 /**
@@ -1353,6 +1733,10 @@ export function CallSurface({
   disableVideo,
   popout: allowPopout = true,
   renderMedia,
+  exclusive = false,
+  showParticipants = true,
+  showLeave,
+  labelVideo,
 }: CallSurfaceProps) {
   const resolved = useResolvedController(controller, createController);
   const snapshot = useController(resolved);
@@ -1388,6 +1772,7 @@ export function CallSurface({
     ...(displayName === undefined ? {} : { displayName }),
     ...(resolveAvatar === undefined ? {} : { resolveAvatar }),
     ...(renderMedia === undefined ? {} : { renderMedia }),
+    ...(labelVideo === undefined ? {} : { labelVideo }),
   };
   const callUi = (
     <>
@@ -1395,7 +1780,9 @@ export function CallSurface({
       <CallControls
         controller={resolved}
         {...(disableVideo === undefined ? {} : { disableVideo })}
+        {...(showLeave === undefined ? {} : { showLeave })}
       />
+      {showParticipants && <ParticipantList controller={resolved} />}
     </>
   );
 
@@ -1403,8 +1790,10 @@ export function CallSurface({
     <div style={overlay} data-pmfa="call-surface">
       <IncomingCallCard
         controller={resolved}
+        exclusive={exclusive}
         {...(displayName === undefined ? {} : { displayName })}
         {...(resolveAvatar === undefined ? {} : { resolveAvatar })}
+        {...(resolveName === undefined ? {} : { resolveName })}
       />
       {active &&
         (popout.popped && popout.container !== null ? (
@@ -1460,12 +1849,14 @@ export function CallSurface({
 
 /**
  * One injected `<style>` tag, scoped under `.pmfa-calls` so nothing leaks into
- * the host app. Colors derive from the shared `--pmfa-*` appearance variables
+ * the host app, inside the `polymorfa` cascade layer so unlayered host CSS
+ * wins. Colors derive from the shared `--pmfa-*` appearance variables
  * with the monochrome Material-3 palette as fallbacks; the verbs use
  * `--pmfa-color-success` / `--pmfa-color-danger`. All motion is disabled under
  * `prefers-reduced-motion: reduce`.
  */
 export const CALLS_STYLES = `
+@layer polymorfa {
 .pmfa-calls {
   --pmfa-calls-accent: var(--pmfa-color-foreground, oklch(0.15 0 0));
   --pmfa-calls-accent-soft: oklch(0.96 0 0);
@@ -1565,7 +1956,27 @@ export const CALLS_STYLES = `
 .pmfa-calls-select:focus { outline: none; border-color: var(--pmfa-calls-accent); }
 .pmfa-calls-select option { color: initial; background: initial; }
 .pmfa-calls-stage { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: var(--pmfa-calls-radius); overflow: hidden; background: radial-gradient(130% 90% at 50% 0%, oklch(1 0 0 / 0.06) 0%, transparent 62%), var(--pmfa-calls-stage); color: var(--pmfa-calls-stage-fg); }
-.pmfa-calls-video-remote { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--pmfa-calls-stage); }
+.pmfa-calls-audio-sink { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.pmfa-calls-grid { position: absolute; inset: 0; margin: 0; padding: 4px; list-style: none; display: grid; gap: 4px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr)); grid-auto-rows: 1fr; background: var(--pmfa-calls-stage); }
+.pmfa-calls-grid[data-count="1"] { grid-template-columns: 1fr; padding: 0; }
+.pmfa-calls-tile { position: relative; min-height: 0; overflow: hidden; border-radius: var(--pmfa-calls-radius); background: oklch(0.08 0 0); }
+.pmfa-calls-grid[data-count="1"] .pmfa-calls-tile { border-radius: 0; }
+.pmfa-calls-tile video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pmfa-calls-tile-label { position: absolute; left: 6px; bottom: 6px; max-width: calc(100% - 12px); padding: 2px 6px; border-radius: 4px; font-size: 11.5px; color: var(--pmfa-calls-stage-fg); background: oklch(0.1 0 0 / 0.6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pmfa-calls-btn-dismiss { width: 56px; height: 56px; background: oklch(1 0 0 / 0.14); }
+.pmfa-calls-btn-dismiss:hover { background: oklch(1 0 0 / 0.22); }
+.pmfa-calls-btn-leave { width: 46px; }
+.pmfa-calls-others, .pmfa-calls-people { width: 100%; margin-top: 14px; text-align: left; }
+.pmfa-calls-people { margin-top: 0; padding: 12px 14px; }
+.pmfa-calls-others ul, .pmfa-calls-people ul { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.pmfa-calls-others li, .pmfa-calls-people li { display: flex; align-items: center; gap: 8px; font-size: 13px; min-width: 0; }
+.pmfa-calls-others li > span:first-child, .pmfa-calls-people li > span:first-child { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pmfa-calls-others-title { font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: var(--pmfa-calls-muted); }
+.pmfa-calls-incoming .pmfa-calls-others-title, .pmfa-calls-others-state { color: var(--pmfa-calls-stage-muted); }
+.pmfa-calls-people .pmfa-calls-others-state { color: var(--pmfa-calls-muted); }
+.pmfa-calls-others-state { font-size: 12px; white-space: nowrap; }
+.pmfa-calls-chip { appearance: none; border: 1px solid var(--pmfa-calls-stage-line); background: transparent; color: inherit; font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 999px; cursor: pointer; }
+.pmfa-calls-chip:hover { background: oklch(1 0 0 / 0.12); }
 .pmfa-calls-audio-hero { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; }
 .pmfa-calls-audio-hero .pmfa-calls-name { font-size: 19px; }
 .pmfa-calls-audio-hero .pmfa-calls-peer { color: var(--pmfa-calls-stage-muted); }
@@ -1612,5 +2023,6 @@ export const CALLS_STYLES = `
 @keyframes pmfa-calls-rise { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @media (prefers-reduced-motion: reduce) {
   .pmfa-calls *, .pmfa-calls *::before, .pmfa-calls *::after { animation: none !important; transition: none !important; }
+}
 }
 `;

@@ -33,11 +33,14 @@ export function PolymorfaProvider({
   );
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
+// One shared default keeps memoized components stable without a provider.
+let defaultConfiguration: PolymorfaReactConfiguration | undefined;
 export function usePolymorfa(): PolymorfaReactConfiguration {
-  return (
-    useContext(Context) ?? {
-      appearance: defineAppearance(),
-      locale: createLocale("en"),
-    }
-  );
+  const value = useContext(Context);
+  if (value !== undefined) return value;
+  defaultConfiguration ??= {
+    appearance: defineAppearance(),
+    locale: createLocale("en"),
+  };
+  return defaultConfiguration;
 }

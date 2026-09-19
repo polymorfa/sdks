@@ -37,7 +37,14 @@ export {
   PolymorfaServerError,
   PolymorfaTimeoutError,
   PolymorfaValidationError,
+  POLYMORFA_ERROR_CODES,
+  isKnownPolymorfaErrorCode,
+  type KnownPolymorfaErrorCode,
+  type PolymorfaErrorCode,
+  PolymorfaMediaIntegrityError,
+  type MediaIntegrityErrorCode,
   type PolymorfaErrorOptions,
+  type PolymorfaRateLimitReason,
 } from "./errors.js";
 export { MessagingClient } from "./messaging/client.js";
 export {
@@ -150,7 +157,36 @@ export { ContactsResource } from "./messaging/contacts.js";
 export { GroupsResource } from "./messaging/groups.js";
 export { LabelsResource } from "./messaging/labels.js";
 export { IdentitiesResource } from "./messaging/identities.js";
-export { MessagingMediaResource } from "./messaging/media.js";
+export {
+  MessagingMediaResource,
+  signedUrlExpiry,
+  type MediaDownloadBlob,
+  type MediaDownloadRedirectUrl,
+  type MediaDownloadStream,
+  type MediaDownloadStreamedUrl,
+  type MediaDownloadUrl,
+} from "./messaging/media.js";
+export {
+  DEFAULT_WHATSAPP_MEDIA_MAX_BYTES,
+  decodeWhatsAppMedia,
+  decryptWhatsAppMedia,
+  deriveWhatsAppMediaKeys,
+  downloadWhatsAppMedia,
+  isWhatsAppMediaUrl,
+  webCryptoMediaCrypto,
+  type ResolvedDecryptOptions,
+  type WhatsAppMediaCrypto,
+  type WhatsAppMediaDecryptOptions,
+  type WhatsAppMediaDescriptor,
+  type WhatsAppMediaDownload,
+  type WhatsAppMediaDownloadOptions,
+  type WhatsAppMediaInput,
+  type WhatsAppMediaKeys,
+  type WhatsAppMediaKind,
+  type WhatsAppMediaMessage,
+  type WhatsAppMediaVerifyMode,
+} from "./media/whatsapp.js";
+export { parseContentDispositionFilename } from "./transport/content-disposition.js";
 export { MessagesResource } from "./messaging/messages.js";
 export { MessagingBanSafeResource } from "./messaging/bansafe.js";
 export { ObservationPoliciesResource } from "./messaging/observation-policies.js";
@@ -216,15 +252,29 @@ export type {
   ClientRules,
   ClientRecipientMode,
   ClientAction,
-  VoipAgentTokenRequest,
-  VoipAgentTokenResponse,
-  VoipAgentTokenValue,
-  VoipSocketTicketRequest,
-  VoipSocketTicketResponse,
-  VoipSocketTicketValue,
-  VoipTokenRequest,
-  VoipTokenResponse,
-  VoipTokenValue,
+  CallInboundRoute,
+  SessionCallSettings,
+  SessionCallSettingsResponse,
+  UpdateSessionCallSettingsRequest,
+  VoipAcceptCallRequest,
+  VoipAcceptCallResponse,
+  VoipAcceptCallResult,
+  VoipAddParticipantRequest,
+  VoipAddParticipantResponse,
+  VoipLeaveCallRequest,
+  VoipCallErrorCode,
+  VoipCallErrorReport,
+  VoipCallQuality,
+  VoipCallQualityReport,
+  VoipCallReportClient,
+  VoipCallReportRequest,
+  VoipRejectCallRequest,
+  VoipParticipant,
+  VoipParticipantReference,
+  VoipParticipantState,
+  VoipPlaceCallRequest,
+  VoipPlaceCallResponse,
+  VoipPlaceCallResult,
   ClientTokenValue,
   Contact,
   ContactBlocklist,
@@ -322,6 +372,9 @@ export type {
   MessageSendContext,
   MessageTemplateSend,
   MintClientTokenRequest,
+  MintSessionClientTokenRequest,
+  MintCustomerClientTokenRequest,
+  CustomerClientTokenAction,
   MintClientTokenResponse,
   MessagingConnection,
   MuteChannelResponse,
@@ -482,6 +535,22 @@ export { ProjectsResource } from "./platform/projects.js";
 export { SecurityIncidentsResource } from "./platform/security-incidents.js";
 export { SessionBansResource } from "./platform/session-bans.js";
 export { PlatformSessionsResource } from "./platform/sessions.js";
+export { SipTrunksResource } from "./platform/sip-trunks.js";
+export type {
+  CreateSipTrunkInput,
+  SipCodec,
+  SipTransport,
+  SipTrunk,
+  SipTrunkCreated,
+  SipTrunkCredentials,
+  SipTrunkDeleted,
+  SipTrunkDirection,
+  SipTrunkInbound,
+  SipTrunkInboundInput,
+  SipTrunkOutbound,
+  SipTrunkOutboundInput,
+  UpdateSipTrunkInput,
+} from "./platform/sip-trunks.js";
 export type {
   ApiKey,
   ApiKeyDeactivation,
@@ -526,7 +595,9 @@ export type {
   ProductionEnrollmentCommandResult,
   ProductionEnrollmentRequest,
   ProductionEnrollmentResult,
+  CreatedProject,
   Project,
+  ProjectDefaultTier,
   ProjectIcon,
   ProjectToken,
   ProjectWithStats,
@@ -645,6 +716,8 @@ export type {
   RawRequest,
   RequestOptions,
   ResponseMetadata,
+  StreamRedirect,
+  StreamResponse,
 } from "./transport/types.js";
 export { SDK_VERSION } from "./version.js";
 export {
@@ -667,6 +740,10 @@ export {
   type BlocklistUpdatePayload,
   type BusinessQuickReplyUpdatePayload,
   type CallAcceptedPayload,
+  type CallConnection,
+  type CallConnectionJoinedPayload,
+  type CallConnectionLeftPayload,
+  type CallConnectionLeftReason,
   type CallEndedPayload,
   type CallMissedPayload,
   type CallParticipant,
@@ -675,6 +752,7 @@ export {
   type CallReceivedPayload,
   type CallRejectedPayload,
   type CallTelemetryPayload,
+  type WebhookCallCapabilities,
   type ChatArchivePayload,
   type ChatClearPayload,
   type ChatDeletePayload,

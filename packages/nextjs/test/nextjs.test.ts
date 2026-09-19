@@ -45,6 +45,69 @@ describe("createClientTokenRoute", () => {
 });
 
 describe("createMessagingClientTokenMint", () => {
+  it("passes a Customer-scoped request through to the server SDK", async () => {
+    const mint = vi.fn(async () => ({
+      data: {
+        success: true as const,
+        data: {
+          token: "pmfa_ct_fixture",
+          expiresAt: "2026-08-19T20:00:00.000Z",
+        },
+      },
+    }));
+    const adapter = createMessagingClientTokenMint({
+      clientTokens: { mint },
+      resolve: () => ({
+        customer: "0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10",
+        ephemeralId: "user-1-tab-1",
+        allow: ["read_presence"],
+      }),
+    });
+    const request = new Request("https://app.test/token", { method: "POST" });
+    await expect(adapter({ userId: "user-1" }, request)).resolves.toMatchObject(
+      {
+        value: "pmfa_ct_fixture",
+      },
+    );
+    expect(mint).toHaveBeenCalledWith(
+      {
+        customer: "0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10",
+        ephemeralId: "user-1-tab-1",
+        allow: ["read_presence"],
+      },
+      { signal: request.signal },
+    );
+  });
+
+  it.each([
+    [
+      "both session and customer",
+      {
+        session: "support",
+        customer: "0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10",
+        ephemeralId: "u",
+      },
+    ],
+    ["neither session nor customer", { ephemeralId: "u" }],
+    [
+      "allow on a session token",
+      { session: "support", ephemeralId: "u", allow: ["send_message"] },
+    ],
+  ])("refuses %s before minting", async (_label, input) => {
+    const mint = vi.fn();
+    const adapter = createMessagingClientTokenMint({
+      clientTokens: { mint },
+      resolve: () => input as never,
+    });
+    await expect(
+      adapter(
+        { userId: "user-1" },
+        new Request("https://app.test/token", { method: "POST" }),
+      ),
+    ).rejects.toBeInstanceOf(TypeError);
+    expect(mint).not.toHaveBeenCalled();
+  });
+
   it("maps the server SDK envelope to normalized browser claims", async () => {
     const mint = vi.fn(async () => ({
       data: {
@@ -107,6 +170,54 @@ describe("createMessagingClientTokenMint", () => {
         new Request("https://app.test/token", { method: "POST" }),
       ),
     ).rejects.toThrow("invalid client token response");
+  });
+
+  it("mints browser and Calls tokens through the Platform client-token route", async () => {
+    const fetch = vi.fn(async () =>
+      Response.json({
+        success: true,
+        data: {
+          token: "pmfa_ct_calls",
+          expiresAt: "2099-01-01T00:00:00.000Z",
+        },
+      }),
+    );
+    const messaging = new MessagingClient({
+      credential: { type: "apiKey", value: `pmfa_${"A".repeat(72)}` },
+      baseUrl: "https://api.example.com",
+      fetch,
+    });
+    expect(
+      (messaging.voip as unknown as Record<string, unknown>).token,
+    ).toBeUndefined();
+    const route = createClientTokenRoute({
+      authorize: () => ({ userId: "user-1" }),
+      mint: createMessagingClientTokenMint({
+        clientTokens: messaging.clientTokens,
+        resolve: (subject) => ({
+          session: "support",
+          ephemeralId: subject.userId,
+        }),
+      }),
+    });
+
+    const response = await route(
+      new Request("https://app.test/api/polymorfa/token", { method: "POST" }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      value: "pmfa_ct_calls",
+      audience: "browser",
+      expiresAt: Date.parse("2099-01-01T00:00:00.000Z"),
+    });
+    const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(new URL(url).pathname).toBe("/platform/client-tokens");
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body as string)).toEqual({
+      session: "support",
+      ephemeralId: "user-1",
+    });
   });
 });
 

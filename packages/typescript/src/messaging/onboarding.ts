@@ -68,7 +68,10 @@ export class TestingResource {
    * Fire a named, signed test event for a Test number. Generated events reach
    * webhooks and event history with `source: "test"`. With `fromSession`, a
    * `message.received` request sends a simulated message from another Test
-   * number instead. Real numbers are refused with a 400 error.
+   * number instead. Real numbers are refused with a 400 error. Pass
+   * `options.idempotencyKey` to make retries safe: repeating the request with
+   * the same key and body reuses the same event ID, and the SDK then retries
+   * network and 5xx failures.
    */
   triggerEvent(
     projectId: string,

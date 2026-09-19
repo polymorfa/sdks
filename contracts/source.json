@@ -1,16 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "3d20ec3f6d326f74fb6d2e90b92402ccd3b9ac14",
+  "commit": "078af1889c2adb4020f7a4fc41384058a4234da1",
+  "branch": "dev",
+  "published": true,
+  "note": "Merged commit on monorepo dev (merge of PR #198, error bodies).",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "2b9d10f29b8ae4a29b487ac7e121a8dc250c153193e6239396f57f393b5d8520"
+      "sha256": "fc3d0f209951d04f4e6dbd6b10c86be1e648019cc092c77b117bdaf779d444dc"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "66a0c7105bf0be1d3efa721c9bf27591fc84b5f6e46589ae440548f8127b2d09"
+      "sha256": "071ce1f129c07b509d2fb3223e2f800fe64f91cc61d67c75a19f20f892efbda1"
     }
   }
 }

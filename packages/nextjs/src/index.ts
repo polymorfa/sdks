@@ -9,6 +9,7 @@ export {
   createMessagingClientTokenMint,
   type MessagingClientTokenMintOptions,
   type MessagingClientTokenMintRequest,
+  type CustomerClientTokenAction,
   type MessagingClientTokenMintResource,
 } from "./messaging-token-mint.js";
 export {
@@ -26,3 +27,12 @@ export {
   type TemplateRouteResource,
   type TemplateRouteSubject,
 } from "./template-builder-route.js";
+export {
+  createMediaDownloadRoute,
+  INLINE_MEDIA_TYPES,
+  mediaTypeEssence,
+  safeMediaHeaders,
+  type MediaDownloadGrant,
+  type MediaDownloadRouteOptions,
+  type MediaDownloadRouteResource,
+} from "./media-route.js";
