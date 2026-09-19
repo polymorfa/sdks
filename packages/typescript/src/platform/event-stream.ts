@@ -53,12 +53,10 @@ export interface EventStreamAcknowledgement {
 }
 
 export interface EventStreamAcknowledgementReceipt {
-  readonly data: {
-    readonly streamId: string;
-    readonly acknowledgedCursor: string;
-    readonly sequence: number;
-    readonly replayed: boolean;
-  };
+  readonly streamId: string;
+  readonly acknowledgedCursor: string;
+  readonly sequence: number;
+  readonly replayed: boolean;
 }
 
 export interface EventStreamGap {
@@ -168,20 +166,42 @@ class ReconnectSignal extends Error {
 }
 
 function decodeWebhook(
-  payload: EncodedEventPayload | null,
+  payload: EncodedEventPayload | null | undefined,
 ): WebhookEnvelope | null {
-  if (payload === null) return null;
+  if (payload === null || payload === undefined) return null;
   const bytes = Uint8Array.from(atob(payload.data), (char) =>
     char.charCodeAt(0),
   );
   return JSON.parse(new TextDecoder().decode(bytes)) as WebhookEnvelope;
 }
 
-function retryAfterMs(error: PolymorfaError): number | undefined {
-  const header = error.metadata?.headers["retry-after"];
-  if (header === undefined) return undefined;
-  const seconds = Number(header);
-  return Number.isFinite(seconds) && seconds >= 0 ? seconds * 1_000 : undefined;
+/** Parses `Retry-After` as delta-seconds or an HTTP-date. Blank values are ignored. */
+function retryAfterMs(
+  error: PolymorfaError,
+  now: number = Date.now(),
+): number | undefined {
+  const header = error.metadata?.headers["retry-after"]?.trim();
+  if (header === undefined || header === "") return undefined;
+  if (/^\d+$/.test(header)) return Number(header) * 1_000;
+  const date = Date.parse(header);
+  return Number.isFinite(date) ? Math.max(0, date - now) : undefined;
+}
+
+/** Waits `delayMs`, ending early when `signal` aborts. Never leaves a listener behind. */
+function waitForReconnect(
+  delayMs: number,
+  signal: AbortSignal | undefined,
+): Promise<void> {
+  if (signal?.aborted === true) return Promise.resolve();
+  return new Promise<void>((resolve) => {
+    const finish = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", finish);
+      resolve();
+    };
+    const timer = setTimeout(finish, delayMs);
+    signal?.addEventListener("abort", finish, { once: true });
+  });
 }
 
 /** Errors that no reconnect can fix end the iterator; everything else retries. */
@@ -243,6 +263,7 @@ export class EventStream implements AsyncIterable<EventStreamItem> {
           attempt = 0;
           yield item;
         }
+        if (stopped()) return;
         failure = new ReconnectSignal("closed", false);
       } catch (error) {
         if (stopped()) return;
@@ -256,20 +277,13 @@ export class EventStream implements AsyncIterable<EventStreamItem> {
       }
       const ceiling = Math.min(maxDelay, initialDelay * 2 ** attempt);
       const delay =
-        serverDelay ?? Math.round(ceiling / 2 + Math.random() * (ceiling / 2));
+        serverDelay === undefined
+          ? Math.round(ceiling / 2 + Math.random() * (ceiling / 2))
+          : Math.min(serverDelay, maxDelay);
       attempt += 1;
       this.params.onReconnect?.(failure, delay);
-      await new Promise<void>((resolve) => {
-        const timer = setTimeout(resolve, delay);
-        outer?.addEventListener(
-          "abort",
-          () => {
-            clearTimeout(timer);
-            resolve();
-          },
-          { once: true },
-        );
-      });
+      if (stopped()) return;
+      await waitForReconnect(delay, outer);
     }
   }
 
@@ -353,6 +367,11 @@ export class EventStream implements AsyncIterable<EventStreamItem> {
               });
               break;
             }
+            case "checkpoint":
+              // Checkpoints advance the resume position on quiet or filtered
+              // streams, so a reconnect does not replay from an older cursor.
+              if (typeof frame.cursor === "string") this.#cursor = frame.cursor;
+              break;
             case "gap":
               if (frame.reason === "retention_exceeded") {
                 this.params.onGap?.({

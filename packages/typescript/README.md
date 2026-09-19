@@ -1190,7 +1190,8 @@ cursor, an authentication or authorization failure, or a `revoked` stream.
 Aborting `signal` or leaving the loop ends it without an error.
 
 Pass `ack: "manual"` to have the server wait for your processing, and confirm
-progress with `events.acknowledgeStream(item.streamId, { cursor, sequence })`.
+progress with
+`events.acknowledgeStream(item.streamId, { cursor: item.cursor, sequence: item.sequence })`.
 
 `events.liveSource()` returns a `LiveEventSource` for `@polymorfa/store`:
 

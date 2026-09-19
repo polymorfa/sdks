@@ -208,12 +208,14 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
   ): Promise<ApiResponse<EventStreamAcknowledgementReceipt>> {
     const body = { cursor: input.cursor, sequence: input.sequence };
     const base = this.streamPath(input as never);
-    return this.transport.request<EventStreamAcknowledgementReceipt>({
-      method: "POST",
-      path: `${base}/${encodeURIComponent(streamId)}/ack`,
-      body,
-      ...options,
-    });
+    return this.transport
+      .request<DataEnvelope<EventStreamAcknowledgementReceipt>>({
+        method: "POST",
+        path: `${base}/${encodeURIComponent(streamId)}/ack`,
+        body,
+        ...options,
+      })
+      .then(unwrapResponse);
   }
   /** A `@polymorfa/store` live source over `stream()`; see `eventStreamSource`. */
   liveSource(

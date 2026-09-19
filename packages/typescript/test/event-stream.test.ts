@@ -408,6 +408,170 @@ describe("events.stream", () => {
   });
 });
 
+describe("events.stream review fixes", () => {
+  it("advances the resume cursor on checkpoint frames", async () => {
+    const lastEventIds: Array<string | null> = [];
+    let call = 0;
+    const fetcher = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      lastEventIds.push(new Request(input, init).headers.get("last-event-id"));
+      call += 1;
+      return call === 1
+        ? sse([
+            ready,
+            {
+              event: "checkpoint",
+              data: { v: 1, type: "checkpoint", cursor: "k1" },
+            },
+          ])
+        : sse([ready, eventFrame(2, "e1", "c1")]);
+    }) as typeof fetch;
+    const stream = projectClient(fetcher).events.stream({
+      since: "c0",
+      reconnect: { initialDelayMs: 1, maxDelayMs: 2 },
+    });
+    const items = await collect(stream, 1);
+    expect(lastEventIds).toEqual(["c0", "k1"]);
+    expect(items[0]!.cursor).toBe("c1");
+  });
+
+  it("honors an HTTP-date Retry-After, clamped to maxDelayMs", async () => {
+    let call = 0;
+    const fetcher = (async () => {
+      call += 1;
+      if (call === 1)
+        return jsonError(429, "rate_limit_exceeded", {
+          "retry-after": new Date(Date.now() + 3_600_000).toUTCString(),
+        });
+      if (call === 2)
+        return jsonError(429, "rate_limit_exceeded", {
+          "retry-after": new Date(Date.now() - 60_000).toUTCString(),
+        });
+      return sse([ready, eventFrame(2, "e1", "c1")]);
+    }) as typeof fetch;
+    const onReconnect = vi.fn();
+    await collect(
+      projectClient(fetcher).events.stream({
+        reconnect: { initialDelayMs: 1, maxDelayMs: 5 },
+        onReconnect,
+      }),
+      1,
+    );
+    expect(onReconnect.mock.calls.map((args) => args[1])).toEqual([5, 0]);
+  });
+
+  it("ignores a blank Retry-After and uses backoff", async () => {
+    let call = 0;
+    const fetcher = (async () => {
+      call += 1;
+      return call === 1
+        ? jsonError(429, "rate_limit_exceeded", { "retry-after": " " })
+        : sse([ready, eventFrame(2, "e1", "c1")]);
+    }) as typeof fetch;
+    const onReconnect = vi.fn();
+    await collect(
+      projectClient(fetcher).events.stream({
+        reconnect: { initialDelayMs: 4, maxDelayMs: 8 },
+        onReconnect,
+      }),
+      1,
+    );
+    const delay = onReconnect.mock.calls[0]![1] as number;
+    expect(delay).toBeGreaterThanOrEqual(2);
+    expect(delay).toBeLessThanOrEqual(4);
+  });
+
+  it("stops without waiting when onReconnect aborts", async () => {
+    const controller = new AbortController();
+    const fetcher = (async () =>
+      jsonError(503, "service_unavailable", {
+        "retry-after": "60",
+      })) as typeof fetch;
+    const started = Date.now();
+    const items = await collect(
+      projectClient(fetcher).events.stream({
+        signal: controller.signal,
+        reconnect: { initialDelayMs: 60_000, maxDelayMs: 60_000 },
+        onReconnect: () => controller.abort(),
+      }),
+      1,
+    );
+    expect(items).toEqual([]);
+    expect(Date.now() - started).toBeLessThan(1_000);
+  });
+
+  it("does not reconnect after an abort that closes the connection normally", async () => {
+    const controller = new AbortController();
+    const onReconnect = vi.fn();
+    const fetcher = (async () => sse([ready], true)) as typeof fetch;
+    const stream = projectClient(fetcher).events.stream({
+      signal: controller.signal,
+      reconnect: { initialDelayMs: 60_000, maxDelayMs: 60_000 },
+      onReconnect,
+    });
+    const iterator = stream[Symbol.asyncIterator]();
+    const next = iterator.next();
+    setTimeout(() => controller.abort(), 10);
+    await expect(next).resolves.toEqual({ done: true, value: undefined });
+    expect(onReconnect).not.toHaveBeenCalled();
+  });
+
+  it("removes each reconnect abort listener once its delay ends", async () => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    let active = 0;
+    const add = signal.addEventListener.bind(signal);
+    const remove = signal.removeEventListener.bind(signal);
+    const listeners = new Set<unknown>();
+    signal.addEventListener = ((
+      type: string,
+      listener: unknown,
+      options?: boolean | AddEventListenerOptions,
+    ) => {
+      if (type === "abort" && !listeners.has(listener)) {
+        listeners.add(listener);
+        active += 1;
+      }
+      add(type, listener as EventListener, options);
+    }) as typeof signal.addEventListener;
+    signal.removeEventListener = ((
+      type: string,
+      listener: unknown,
+      options?: boolean | EventListenerOptions,
+    ) => {
+      if (type === "abort" && listeners.delete(listener)) active -= 1;
+      remove(type, listener as EventListener, options);
+    }) as typeof signal.removeEventListener;
+    let call = 0;
+    const fetcher = (async () => {
+      call += 1;
+      if (call <= 5) throw new TypeError("socket hang up");
+      return sse([ready, eventFrame(2, "e1", "c1")]);
+    }) as typeof fetch;
+    await collect(
+      projectClient(fetcher).events.stream({
+        signal,
+        reconnect: { initialDelayMs: 1, maxDelayMs: 1 },
+      }),
+      1,
+    );
+    expect(call).toBe(6);
+    expect(active).toBe(0);
+  });
+
+  it("treats an event without a payload field as having no webhook body", async () => {
+    const frame = eventFrame(2, "e1", "c1");
+    const event: Record<string, unknown> = { ...frame.data.event };
+    delete event.payload;
+    const fetcher = (async () =>
+      sse([
+        ready,
+        { ...frame, data: { ...frame.data, event } },
+      ])) as typeof fetch;
+    const [item] = await collect(projectClient(fetcher).events.stream(), 1);
+    expect(item!.webhook).toBeNull();
+  });
+});
+
 describe("events.acknowledgeStream", () => {
   it("opens a manual stream and acknowledges with the delivered stream position", async () => {
     const requests: Request[] = [];
@@ -439,7 +603,7 @@ describe("events.acknowledgeStream", () => {
       cursor: item!.cursor,
       sequence: item!.sequence,
     });
-    expect(receipt.data.data).toEqual({
+    expect(receipt.data).toEqual({
       streamId: "s",
       acknowledgedCursor: "c1",
       sequence: 2,
