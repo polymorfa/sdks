@@ -349,7 +349,16 @@ export interface ListOperationsParams {
   readonly limit?: number;
   readonly cursor?: string;
 }
-export type ListOrganizationOperationsParams = ListOperationsParams;
+/** Organization clients may narrow the list to one project. */
+export interface ListOrganizationOperationsParams extends ListOperationsParams {
+  readonly projectId?: string;
+}
+export interface RetrieveOperationParams {
+  /** Hold the request up to this many seconds (0-30) while the operation is not terminal. */
+  readonly wait?: number;
+  /** With `wait`, return as soon as the operation's sequence exceeds this value. */
+  readonly afterSequence?: number;
+}
 export type ListOperationTransitionsParams =
   | {
       readonly afterSequence?: number;
@@ -382,11 +391,15 @@ interface OperationCancellationReceipt<T> {
   readonly idempotency: IdempotencyReceipt;
 }
 export type OrganizationOperationCancellationReceipt =
-  OperationCancellationReceipt<OrganizationOperation>;
+  OperationCancellationReceipt<ManagementOperation>;
 export type ProjectOperationCancellationReceipt =
   OperationCancellationReceipt<ProjectOperation>;
 export interface WaitForOperationOptions {
+  /** Total time to wait before returning the current state. Default 5 minutes. */
   readonly maxWaitMs?: number;
+  /** Return as soon as the operation's sequence exceeds this value. */
+  readonly afterSequence?: number;
+  /** Deprecated: the API long-polls, so polling intervals are ignored. */
   readonly pollIntervalMs?: number;
   readonly requestOptions?: Omit<RequestOptions, "signal">;
   readonly signal?: AbortSignal;

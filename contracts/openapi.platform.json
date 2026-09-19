@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (161 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (85 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (169 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (77 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -1674,7 +1674,7 @@
           "SIP Trunks"
         ],
         "summary": "Create a SIP trunk",
-        "description": "**Required scope:** `sessions:manage`\n\nConnects a PBX or SIP trunk to WhatsApp calls. An `outbound` trunk receives the incoming WhatsApp calls of sessions whose call settings route to it. An `inbound` trunk lets your PBX place WhatsApp calls through a session. For trunks that accept calls from your PBX, the response contains the digest credentials once. SIP trunks are a beta: creating, changing and rotating credentials return `403` unless your team is enrolled. Listing, reading and deleting trunks remain available after withdrawal.",
+        "description": "**Required scope:** `sessions:manage`\n\nConnects a PBX or SIP trunk to WhatsApp calls. An `outbound` trunk receives the incoming WhatsApp calls of sessions whose call settings route to it. An `inbound` trunk lets your PBX place WhatsApp calls through a session. For trunks that accept calls from your PBX, the response contains the digest credentials once.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -2009,7 +2009,7 @@
           "SIP Trunks"
         ],
         "summary": "Update a SIP trunk",
-        "description": "**Required scope:** `sessions:manage`\n\nChanges the fields you send and keeps the others. Send `expectedRevision` to refuse the change with `409 sip_trunk_revision_conflict` when the trunk changed since you read it. Changes apply to new calls within about a minute; calls in progress continue. Requires enrollment in the SIP trunks beta.",
+        "description": "**Required scope:** `sessions:manage`\n\nChanges the fields you send and keeps the others. Send `expectedRevision` to refuse the change with `409 sip_trunk_revision_conflict` when the trunk changed since you read it. Changes apply to new calls within about a minute; calls in progress continue.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -2376,7 +2376,7 @@
           "SIP Trunks"
         ],
         "summary": "Rotate SIP trunk credentials",
-        "description": "**Required scope:** `sessions:manage`\n\nReplaces the password your PBX uses to place calls. The previous password stops working within about a minute. Returns `409 state_conflict` for `outbound` trunks. Requires enrollment in the SIP trunks beta.",
+        "description": "**Required scope:** `sessions:manage`\n\nReplaces the password your PBX uses to place calls. The previous password stops working within about a minute. Returns `409 state_conflict` for `outbound` trunks.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -15261,24 +15261,37 @@
         }
       }
     },
-    "/console/operations": {
+    "/platform/operations": {
       "get": {
-        "operationId": "listOrganizationOperations",
+        "operationId": "listPlatformOperations",
         "tags": [
           "operations"
         ],
-        "summary": "List team operations",
-        "description": "Lists only team-owned asynchronous operations. Project-owned operations are excluded.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
-        "x-audience": "console",
-        "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": true,
-        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
+        "summary": "List operations",
+        "description": "Lists asynchronous operations visible to the credential, newest first. Team keys and dashboard members see team-owned operations and every project's operations; supply projectId to return one project's operations. Project tokens see only their own project. Filter by status, kind, resource (resourceType and resourceId together), and creation time. A cursor carries the filters of the page that issued it and cannot be combined with new filters.\n\nRequires `operations:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "operations:read",
         "security": [
+          {
+            "ApiKeyAuth": []
+          },
           {
             "ConsoleSession": []
           }
         ],
         "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Return only this project's operations. Project tokens may pass only their own project."
+            }
+          },
           {
             "name": "status",
             "in": "query",
@@ -15396,7 +15409,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/OrganizationOperation"
+                        "$ref": "#/components/schemas/Operation"
                       }
                     },
                     "page": {
@@ -15419,23 +15432,29 @@
           },
           "403": {
             "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
     },
-    "/console/operations/{operationId}": {
+    "/platform/operations/{operationId}": {
       "get": {
-        "operationId": "getOrganizationOperation",
+        "operationId": "getPlatformOperation",
         "tags": [
           "operations"
         ],
-        "summary": "Get an team operation",
-        "description": "Returns one team-owned asynchronous operation.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
-        "x-audience": "console",
-        "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": true,
-        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
+        "summary": "Get an operation",
+        "description": "Returns one asynchronous operation. Supply wait (1-30 seconds) to hold the request until the operation reaches a terminal status (succeeded, failed, or cancelled), its sequence exceeds afterSequence, or the wait expires. The response is the operation's state at that moment; a 200 after an expired wait does not mean the operation finished. Operations outside the credential's team or project return 404.\n\nRequires `operations:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "operations:read",
         "security": [
+          {
+            "ApiKeyAuth": []
+          },
           {
             "ConsoleSession": []
           }
@@ -15448,6 +15467,39 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Return only this project's operations. Project tokens may pass only their own project."
+            }
+          },
+          {
+            "name": "wait",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30,
+              "default": 0,
+              "description": "Seconds to hold the request while the operation is not terminal. 0 returns immediately."
+            }
+          },
+          {
+            "name": "afterSequence",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "description": "With wait, return as soon as the operation's sequence is greater than this value."
             }
           }
         ],
@@ -15475,7 +15527,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationOperation"
+                      "$ref": "#/components/schemas/Operation"
                     }
                   },
                   "required": [
@@ -15500,19 +15552,22 @@
         }
       }
     },
-    "/console/operations/{operationId}/transitions": {
+    "/platform/operations/{operationId}/transitions": {
       "get": {
-        "operationId": "listOrganizationOperationTransitions",
+        "operationId": "listPlatformOperationTransitions",
         "tags": [
           "operations"
         ],
-        "summary": "List team operation transitions",
-        "description": "Lists immutable transitions for one team-owned operation in ascending sequence.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
-        "x-audience": "console",
-        "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": true,
-        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
+        "summary": "List operation transitions",
+        "description": "Lists immutable status transitions for one operation in ascending sequence.\n\nRequires `operations:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "operations:read",
         "security": [
+          {
+            "ApiKeyAuth": []
+          },
           {
             "ConsoleSession": []
           }
@@ -15525,6 +15580,16 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Return only this project's operations. Project tokens may pass only their own project."
             }
           },
           {
@@ -15613,19 +15678,22 @@
         }
       }
     },
-    "/console/operations/{operationId}/cancel": {
+    "/platform/operations/{operationId}/cancel": {
       "post": {
-        "operationId": "cancelOrganizationOperation",
+        "operationId": "cancelPlatformOperation",
         "tags": [
           "operations"
         ],
-        "summary": "Cancel an team operation",
-        "description": "Requests cancellation after transactionally rechecking that the operation is cancellable.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
-        "x-audience": "console",
-        "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": true,
-        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
+        "summary": "Cancel an operation",
+        "description": "Requests cancellation after transactionally rechecking that the operation is cancellable. Only operations whose capabilities.cancellable is true accept cancellation: running or action-required campaign and production-enrollment operations. The operation moves to cancelling and later settles as cancelled or another terminal status. Other operations return 409 operation_conflict with the current operation. Retrying with the same Idempotency-Key replays the original receipt.\n\nRequires `operations:cancel`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "operations:cancel",
         "security": [
+          {
+            "ApiKeyAuth": []
+          },
           {
             "ConsoleSession": []
           }
@@ -15675,7 +15743,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationOperationCancellationReceipt"
+                      "$ref": "#/components/schemas/OperationCancellationReceipt"
                     }
                   },
                   "required": [
@@ -15703,19 +15771,22 @@
         }
       }
     },
-    "/console/projects/{projectId}/operations": {
+    "/platform/projects/{projectId}/operations": {
       "get": {
         "operationId": "listProjectOperations",
         "tags": [
           "operations"
         ],
         "summary": "List project operations",
-        "description": "Lists asynchronous operations owned by the exact project in the route.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
-        "x-audience": "console",
+        "description": "Lists asynchronous operations owned by the exact project in the route.\n\nRequires `operations:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
-        "x-excluded-from-public": true,
-        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
+        "x-excluded-from-public": false,
+        "x-required-scope": "operations:read",
         "security": [
+          {
+            "ApiKeyAuth": []
+          },
           {
             "ConsoleSession": []
           }
@@ -15877,19 +15948,22 @@
         }
       }
     },
-    "/console/projects/{projectId}/operations/{operationId}": {
+    "/platform/projects/{projectId}/operations/{operationId}": {
       "get": {
         "operationId": "getProjectOperation",
         "tags": [
           "operations"
         ],
         "summary": "Get a project operation",
-        "description": "Returns one asynchronous operation owned by the exact project in the route.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
-        "x-audience": "console",
+        "description": "Returns one asynchronous operation owned by the exact project in the route. Supply wait (1-30 seconds) to hold the request until the operation reaches a terminal status, its sequence exceeds afterSequence, or the wait expires.\n\nRequires `operations:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
-        "x-excluded-from-public": true,
-        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
+        "x-excluded-from-public": false,
+        "x-required-scope": "operations:read",
         "security": [
+          {
+            "ApiKeyAuth": []
+          },
           {
             "ConsoleSession": []
           }
@@ -15911,6 +15985,29 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "wait",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30,
+              "default": 0,
+              "description": "Seconds to hold the request while the operation is not terminal. 0 returns immediately."
+            }
+          },
+          {
+            "name": "afterSequence",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "description": "With wait, return as soon as the operation's sequence is greater than this value."
             }
           }
         ],
@@ -15963,19 +16060,22 @@
         }
       }
     },
-    "/console/projects/{projectId}/operations/{operationId}/transitions": {
+    "/platform/projects/{projectId}/operations/{operationId}/transitions": {
       "get": {
         "operationId": "listProjectOperationTransitions",
         "tags": [
           "operations"
         ],
         "summary": "List project operation transitions",
-        "description": "Lists immutable transitions for one project-owned operation in ascending sequence.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
-        "x-audience": "console",
+        "description": "Lists immutable transitions for one project-owned operation in ascending sequence.\n\nRequires `operations:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
-        "x-excluded-from-public": true,
-        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
+        "x-excluded-from-public": false,
+        "x-required-scope": "operations:read",
         "security": [
+          {
+            "ApiKeyAuth": []
+          },
           {
             "ConsoleSession": []
           }
@@ -16085,19 +16185,22 @@
         }
       }
     },
-    "/console/projects/{projectId}/operations/{operationId}/cancel": {
+    "/platform/projects/{projectId}/operations/{operationId}/cancel": {
       "post": {
         "operationId": "cancelProjectOperation",
         "tags": [
           "operations"
         ],
         "summary": "Cancel a project operation",
-        "description": "Requests cancellation for an operation in the exact project after transactionally rechecking that it is cancellable.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
-        "x-audience": "console",
+        "description": "Requests cancellation for an operation in the exact project after transactionally rechecking that it is cancellable.\n\nRequires `operations:cancel`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
-        "x-excluded-from-public": true,
-        "x-exclusion-reason": "Dashboard operation bookkeeping; unavailable to machine credentials.",
+        "x-excluded-from-public": false,
+        "x-required-scope": "operations:cancel",
         "security": [
+          {
+            "ApiKeyAuth": []
+          },
           {
             "ConsoleSession": []
           }
@@ -30940,7 +31043,7 @@
           "details"
         ]
       },
-      "OrganizationOperation": {
+      "Operation": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -30954,10 +31057,9 @@
           },
           "projectId": {
             "type": "string",
+            "format": "uuid",
             "nullable": true,
-            "enum": [
-              null
-            ]
+            "description": "Owning project. `null` for a team-owned operation."
           },
           "kind": {
             "type": "string",
@@ -31547,12 +31649,12 @@
           "idempotency"
         ]
       },
-      "OrganizationOperationCancellationReceipt": {
+      "OperationCancellationReceipt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "operation": {
-            "$ref": "#/components/schemas/OrganizationOperation"
+            "$ref": "#/components/schemas/Operation"
           },
           "operationId": {
             "type": "string",
@@ -31606,12 +31708,9 @@
             ]
           },
           "operation": {
-            "oneOf": [
+            "allOf": [
               {
-                "$ref": "#/components/schemas/OrganizationOperation"
-              },
-              {
-                "$ref": "#/components/schemas/ProjectOperation"
+                "$ref": "#/components/schemas/Operation"
               }
             ]
           }
@@ -32345,15 +32444,15 @@
         "discriminator": {
           "propertyName": "type",
           "mapping": {
-            "ready": "#/components/schemas/EventStreamReadyFrame",
-            "event": "#/components/schemas/EventStreamEventFrame",
-            "heartbeat": "#/components/schemas/EventStreamHeartbeatFrame",
-            "checkpoint": "#/components/schemas/EventStreamCheckpointFrame",
-            "backpressure": "#/components/schemas/EventStreamBackpressureFrame",
-            "gap": "#/components/schemas/EventStreamGapFrame",
-            "dropped": "#/components/schemas/EventStreamDroppedFrame",
-            "expiry": "#/components/schemas/EventStreamExpiryFrame",
-            "revoked": "#/components/schemas/EventStreamRevokedFrame"
+            "ready": "#/components/schemas/PlatformAccessEventStreamReadyFrame",
+            "event": "#/components/schemas/PlatformAccessEventStreamEventFrame",
+            "heartbeat": "#/components/schemas/PlatformAccessEventStreamHeartbeatFrame",
+            "checkpoint": "#/components/schemas/PlatformAccessEventStreamCheckpointFrame",
+            "backpressure": "#/components/schemas/PlatformAccessEventStreamBackpressureFrame",
+            "gap": "#/components/schemas/PlatformAccessEventStreamGapFrame",
+            "dropped": "#/components/schemas/PlatformAccessEventStreamDroppedFrame",
+            "expiry": "#/components/schemas/PlatformAccessEventStreamExpiryFrame",
+            "revoked": "#/components/schemas/PlatformAccessEventStreamRevokedFrame"
           }
         },
         "description": "JSON carried in the `data` field of one SSE message. The SSE `event` field repeats `type`."
@@ -32750,7 +32849,7 @@
                 "$ref": "#/components/schemas/PlatformAccessCallInboundRoute"
               },
               {
-                "description": "Where incoming WhatsApp calls ring. Routing to a different SIP trunk requires enrollment in the SIP trunks beta; `clients`, and keeping the stored trunk while changing other settings, are always accepted."
+                "description": "Where incoming WhatsApp calls ring."
               }
             ]
           },

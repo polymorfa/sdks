@@ -3,12 +3,23 @@ import { CursorPage } from "../pagination.js";
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
+import { withIdempotencyKey } from "../transport/idempotency.js";
 import type {
   ClientOwner,
   CreateOrganizationWebhookInput,
   CreateProjectWebhookInput,
   ListDeliveryAttemptsParams,
   ListEventsParams,
+  ListOperationsParams,
+  ListOperationTransitionsParams,
+  ListOrganizationOperationsParams,
+  ManagementOperation,
+  OperationTransition,
+  OrganizationOperationCancellationReceipt,
+  ProjectOperation,
+  ProjectOperationCancellationReceipt,
+  RetrieveOperationParams,
+  WaitForOperationOptions,
   ListWebhookDeliveriesParams,
   ListWebhooksParams,
   OrganizationEvent,
@@ -371,5 +382,139 @@ export class WebhookDeliveriesResource<
       input,
       options,
     );
+  }
+}
+
+type OperationFor<O extends ClientOwner> = O extends "project"
+  ? ProjectOperation
+  : ManagementOperation;
+type ListOperationsFor<O extends ClientOwner> = O extends "project"
+  ? ListOperationsParams
+  : ListOrganizationOperationsParams;
+type OperationCancellationFor<O extends ClientOwner> = O extends "project"
+  ? ProjectOperationCancellationReceipt
+  : OrganizationOperationCancellationReceipt;
+
+const TERMINAL_OPERATION_STATUSES = new Set([
+  "succeeded",
+  "failed",
+  "cancelled",
+]);
+/** Longest server-side wait for one request, in seconds. */
+export const OPERATION_WAIT_MAX_SECONDS = 30;
+
+/**
+ * Asynchronous operations (campaign sends, production enrollments, and other
+ * durable work). Organization clients see team and project operations;
+ * project clients see only their project. Requires `operations:read`;
+ * `cancel` requires `operations:cancel`.
+ */
+export class OperationsResource<O extends ClientOwner> extends ResourceBase {
+  list(
+    params: ListOperationsFor<O> = {} as ListOperationsFor<O>,
+    options: RequestOptions = {},
+  ): Promise<CursorPage<OperationFor<O>>> {
+    return this.page(this.path("/operations"), { ...params }, options);
+  }
+  /** Gets one operation. `params.wait` long-polls for up to 30 seconds. */
+  get(
+    operationId: string,
+    params: RetrieveOperationParams = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<OperationFor<O>>> {
+    if (
+      params.wait !== undefined &&
+      (!Number.isInteger(params.wait) ||
+        params.wait < 0 ||
+        params.wait > OPERATION_WAIT_MAX_SECONDS)
+    ) {
+      throw new PolymorfaConfigurationError(
+        `wait must be an integer between 0 and ${OPERATION_WAIT_MAX_SECONDS}.`,
+        "wait",
+      );
+    }
+    const wait = params.wait ?? 0;
+    return this.transport
+      .request<DataEnvelope<OperationFor<O>>>({
+        method: "GET",
+        path: this.path(`/operations/${encodeURIComponent(operationId)}`),
+        query: { ...params } as Readonly<Record<string, never>>,
+        ...options,
+        // The request stays open for the wait; leave headroom for the response.
+        ...(wait > 0 && options.timeoutMs === undefined
+          ? { timeoutMs: (wait + 15) * 1000 }
+          : {}),
+      })
+      .then(unwrapResponse);
+  }
+  listTransitions(
+    operationId: string,
+    params: ListOperationTransitionsParams = {},
+    options: RequestOptions = {},
+  ): Promise<CursorPage<OperationTransition>> {
+    return this.page(
+      this.path(`/operations/${encodeURIComponent(operationId)}/transitions`),
+      { ...params },
+      options,
+    );
+  }
+  /**
+   * Requests cancellation. Only operations whose `capabilities.cancellable`
+   * is true accept it; others fail with 409 `operation_conflict`. An
+   * Idempotency-Key is generated when `options.idempotencyKey` is omitted.
+   */
+  cancel(
+    operationId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<OperationCancellationFor<O>>> {
+    return this.mutate(
+      "POST",
+      this.path(`/operations/${encodeURIComponent(operationId)}/cancel`),
+      undefined,
+      withIdempotencyKey(options),
+    );
+  }
+  /**
+   * Waits until the operation is terminal (`succeeded`, `failed`,
+   * `cancelled`), its sequence passes `afterSequence`, or `maxWaitMs`
+   * (default 5 minutes) elapses, using server long-polls. Returns the latest
+   * state; check `status`, because the wait can end first.
+   */
+  async wait(
+    operationId: string,
+    options: WaitForOperationOptions = {},
+  ): Promise<ApiResponse<OperationFor<O>>> {
+    const deadline = Date.now() + (options.maxWaitMs ?? 5 * 60_000);
+    for (;;) {
+      options.signal?.throwIfAborted();
+      const remaining = Math.max(0, deadline - Date.now());
+      const wait = Math.min(
+        OPERATION_WAIT_MAX_SECONDS,
+        Math.floor(remaining / 1000),
+      );
+      const response = await this.get(
+        operationId,
+        {
+          wait,
+          ...(options.afterSequence === undefined
+            ? {}
+            : { afterSequence: options.afterSequence }),
+        },
+        {
+          ...options.requestOptions,
+          ...(options.signal === undefined ? {} : { signal: options.signal }),
+        },
+      );
+      const operation = response.data;
+      if (
+        TERMINAL_OPERATION_STATUSES.has(operation.status) ||
+        (options.afterSequence !== undefined &&
+          operation.sequence > options.afterSequence) ||
+        wait === 0 ||
+        Date.now() >= deadline
+      ) {
+        return response;
+      }
+    }
   }
 }
