@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "1681cdaa96c2625220c32fc3a912b380179fa9ee",
+  "sourceCommit": "129d58aeb0eb6b9c6efadf3f07ade127834287d0",
   "excludedContracts": [
     {
       "family": "graph",
@@ -1500,7 +1500,7 @@
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/reports",
       "operationId": "voipReportCallDiagnostics",
-      "fingerprint": "3da69f9be50a1f51973ebddfa24eaa4d4a91a657077ccb02e38f3c04825f3248",
+      "fingerprint": "a1174614d079b22d6431adb4ae950c05d44c479ba0f8cedbfa8d6c2f06366e5a",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.report"
@@ -3898,7 +3898,7 @@
       "method": "POST",
       "path": "/platform/client-tokens",
       "operationId": "mintClientToken",
-      "fingerprint": "5b61983d5b6cdc9b418906dfdd0231d1270b20f33a49f873a4e1fe510ab97265",
+      "fingerprint": "82babe060adf06a7ba6b3c7d8e39cf711d92b93f81185d9af1216912c6973ad4",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.clientTokens.mint"

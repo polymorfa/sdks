@@ -2,10 +2,18 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`1681cdaa96c2625220c32fc3a912b380179fa9ee` on branch
-`t3code/calls-unified-5-client-diagnostics`. That commit is pushed but not merged; re-pin to
-the merged commit before release. `source.json` records the original paths and
-SHA-256 hashes. `coverage.json` uses the same source revision.
+`129d58aeb0eb6b9c6efadf3f07ade127834287d0` on branch `dev` (the merge commit
+for PR #207, Customer-scoped client tokens). `source.json` records the
+original paths and SHA-256 hashes. `coverage.json` uses the same source
+revision.
+
+This revision adds `customer` and `allow` to `mintClientToken` (covered by
+`MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
+merged monorepo `dev`, the Calls diagnostics route
+(`voipReportCallDiagnostics`) is back with a refreshed fingerprint; the SDK
+keeps `MessagingClient.voip.report` covering it. The Console-only `getCall`
+response also picked up a refreshed fingerprint (still excluded). No
+operations were added or removed by this re-sync.
 
 | Status              | Operations |
 | ------------------- | ---------: |
@@ -16,7 +24,7 @@ SHA-256 hashes. `coverage.json` uses the same source revision.
 | Changed fingerprint |          0 |
 | Total               |        420 |
 
-This revision adds app-reported call diagnostics
+An earlier revision added app-reported call diagnostics
 (`POST /messaging/voip/calls/{id}/reports`, covered by
 `MessagingClient.voip.report`, and sent automatically by the browser and
 Calls clients), replaces `includeSelfAudio` with `conferenceMode` in session

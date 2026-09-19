@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- `MessagingClient.clientTokens.mint` accepts `customer` (a Polymorfa
+  Customer ID) instead of `session`, with an optional `allow` list, to mint a
+  Customer-scoped client token (beta). The token covers the numbers the
+  Customer owns when it is minted; the API re-checks ownership on every
+  request. `MintClientTokenRequest` is now a union of
+  `MintSessionClientTokenRequest` and `MintCustomerClientTokenRequest`, and
+  `CustomerClientTokenAction` lists the allowed actions. The SDK throws
+  `PolymorfaConfigurationError` before sending when both or neither of
+  `session` and `customer` are set, or when `allow` is set without
+  `customer`. `@polymorfa/nextjs` `createMessagingClientTokenMint` accepts
+  the same `customer` and `allow` from `resolve`.
 - New opt-in package `@polymorfa/store` keeps a local IndexedDB copy of
   webhook-shaped events. `createPolymorfaStore()` files messages,
   conversations, contacts, presence, calls, labels, sessions, and templates

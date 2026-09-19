@@ -2441,7 +2441,7 @@
               "sip_unavailable",
               "sip_auth_failed"
             ],
-            "description": "`left`: the connection left. `replaced`: a reconnect reused the connection id. `claimed`: another participant claimed the call. `sip_busy`, `sip_declined`, `sip_no_answer`, `sip_unavailable` and `sip_auth_failed`: a SIP trunk did not join the call. `call_ended`: the call ended while a SIP trunk was still ringing. A SIP trunk that never joined reports only this event, with no `call.connection_joined` before it. Connections still open when the call ends are closed by `call.ended` without a separate event.",
+            "description": "`left`: the connection left. `replaced`: a reconnect reused the connection id. `claimed`: another participant claimed the call. `sip_busy`, `sip_declined`, `sip_no_answer`, `sip_unavailable` and `sip_auth_failed`: a SIP trunk did not join the call. `call_ended`: the call ended while a SIP trunk was still ringing. A SIP trunk that never joined the call (one of the `sip_*` reasons, or `call_ended` while it was still ringing) reports only `call.connection_left`, with no `call.connection_joined` before it. Connections still open when the call ends are closed by `call.ended` without a separate event.",
             "example": "left"
           }
         },
@@ -8318,7 +8318,8 @@
           }
         },
         "additionalProperties": false,
-        "description": "Omit figures you did not measure. Send at least one."
+        "description": "Omit figures you did not measure. Send at least one.",
+        "minProperties": 1
       },
       "VoipCallQualityReport": {
         "type": "object",
@@ -19511,7 +19512,7 @@
           "VoIP"
         ],
         "summary": "Report call diagnostics from your app",
-        "description": "**Required scope:** `sessions:manage`\n\nRecords quality figures or an error that your app measured for one of its connections. The Console shows the latest quality report and the reported errors of each connection on the call. Reports are optional and are accepted while the call is live and for 10 minutes after it ends. Each connection can send one quality report every 5 seconds and 20 error reports per minute. At most 200 reports are kept per call: at that limit a quality report replaces the connection's oldest quality report, and other reports are not stored.",
+        "description": "**Required scope:** `sessions:manage`\n\nRecords quality figures or an error that your app measured for one of its connections. The Console shows the latest quality report and the reported errors of each connection on the call. Reports are optional and are accepted while the call is live and for 10 minutes after it ends. Each connection can send one quality report every 5 seconds and 20 error reports per minute. At most 200 reports are kept per call: at that limit a quality report replaces the same connection's oldest quality report. A quality report from a connection with no stored quality report, and every error report, is accepted but not stored.",
         "security": [
           {
             "BearerAuth": []

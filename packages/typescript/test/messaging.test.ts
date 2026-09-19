@@ -2,6 +2,8 @@ import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { MessagingClient } from "../src/messaging/client.js";
+import type { MintClientTokenRequest } from "../src/messaging/types.js";
+import { PolymorfaConfigurationError } from "../src/errors.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -208,6 +210,48 @@ describe("MessagingClient client tokens", () => {
     expect(requests[2]?.body).toBe(
       '{"recipientMode":"conversation","allowedActions":"send_message,send_reaction","rateLimit":20,"maxDaily":200,"allowedOrigins":"https://app.example.test","enabled":true}',
     );
+  });
+});
+
+describe("MessagingClient Customer-scoped client tokens", () => {
+  it("sends customer and allow instead of session", async () => {
+    const { client, requests } = await messagingServer();
+
+    await client.clientTokens.mint({
+      customer: "0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10",
+      ephemeralId: "user-1-tab-2",
+      allow: ["send_message", "read_presence"],
+      ttlSeconds: 300,
+    });
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "POST /platform/client-tokens",
+    ]);
+    expect(requests[0]?.body).toBe(
+      '{"customer":"0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10","ephemeralId":"user-1-tab-2","allow":["send_message","read_presence"],"ttlSeconds":300}',
+    );
+  });
+
+  it.each([
+    [
+      "both session and customer",
+      {
+        session: "support",
+        customer: "0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10",
+        ephemeralId: "u",
+      },
+    ],
+    ["neither session nor customer", { ephemeralId: "u" }],
+    [
+      "allow without customer",
+      { session: "support", ephemeralId: "u", allow: ["send_message"] },
+    ],
+  ])("rejects %s before transport", async (_label, body) => {
+    const { client, requests } = await messagingServer();
+    expect(() =>
+      client.clientTokens.mint(body as unknown as MintClientTokenRequest),
+    ).toThrow(PolymorfaConfigurationError);
+    expect(requests).toEqual([]);
   });
 });
 
