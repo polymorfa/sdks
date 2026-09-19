@@ -1,3 +1,4 @@
+import { CallClaimedError } from "@polymorfa/sdk/calls";
 import { describe, expect, it, vi } from "vitest";
 import {
   BrowserTransport,
@@ -7,7 +8,7 @@ import {
   type CallMediaFactory,
   type CallMediaSession,
   type CallsBackend,
-} from "../src/index.js";
+} from "../src/internal.js";
 
 function fixture() {
   let emit: ((event: CallLifecycleEvent) => void) | undefined;
@@ -100,9 +101,11 @@ describe("CallsController (voip-v2 contract)", () => {
       video: true,
     });
     await controller.answer();
+    // The default answer leaves the call open for other participants.
     expect(f.backend.answer).toHaveBeenCalledWith(
       "call-1",
       expect.any(AbortSignal),
+      { exclusive: false, video: true },
     );
     expect(controller.getSnapshot().status).toBe("connecting");
     f.connect("connected");
@@ -120,7 +123,6 @@ describe("CallsController (voip-v2 contract)", () => {
       {
         to: "+12025550123",
         video: true,
-        line: "linkedDevice",
         idempotencyKey: "idem-1",
       },
       expect.any(AbortSignal),
@@ -189,64 +191,140 @@ describe("CallsController (voip-v2 contract)", () => {
 });
 
 describe("CallsSignalingClient", () => {
-  it("uses the voip-v2 REST offer, ICE, polling, and teardown paths", async () => {
+  function client(responses: Record<string, unknown> = {}) {
     const fetch = vi.fn(async (input: string | URL | Request) => {
       const url = String(input);
-      const body = url.endsWith("/offer")
-        ? { data: { sdp: "answer", iceServers: [] } }
-        : url.endsWith("/candidates")
-          ? { data: { candidates: [] } }
-          : { success: true };
+      const suffix = Object.keys(responses).find((key) => url.includes(key));
+      const body =
+        suffix !== undefined
+          ? responses[suffix]
+          : url.includes("/offer") || url.includes("/renegotiate")
+            ? { data: { sdp: "answer", iceServers: [] } }
+            : url.includes("/candidates")
+              ? { data: { candidates: [] } }
+              : url.endsWith("/accept")
+                ? {
+                    success: true,
+                    data: {
+                      answered: true,
+                      answeredBy: "client:e1",
+                      exclusive: false,
+                    },
+                  }
+                : { success: true };
+      const status =
+        (body as { status?: number } | undefined)?.status ??
+        (url.endsWith("/candidate") ? 202 : 200);
       return new Response(JSON.stringify(body), {
-        status: url.endsWith("/candidate") ? 202 : 200,
+        status,
         headers: { "content-type": "application/json" },
       });
     });
     const transport = new BrowserTransport({
       baseUrl: "https://api.polymorfa.test",
-      getClientToken: async () => "pmfa_ct_test",
+      getClientToken: async () => ({
+        value: "pmfa_ct_test",
+        audience: "browser",
+        expiresAt: Date.now() + 600_000,
+      }),
       fetch,
       maxNetworkRetries: 0,
     });
-    const signaling = new CallsSignalingClient(transport);
-    await signaling.offer("call/1", "offer");
-    await signaling.candidate("call/1", { candidate: "ice" });
+    return { fetch, signaling: new CallsSignalingClient(transport) };
+  }
+  const bodies = (fetch: ReturnType<typeof vi.fn>) =>
+    (fetch.mock.calls as unknown as [string, RequestInit][]).map(
+      ([input, init]) => [
+        init.method,
+        String(input),
+        init.body === undefined ? undefined : JSON.parse(String(init.body)),
+      ],
+    );
+
+  it("sends the connection id with offers, candidates and leave", async () => {
+    const { fetch, signaling } = client();
+    await signaling.offer("call/1", {
+      sdp: "offer",
+      connectionId: "conn-0001",
+    });
+    await signaling.renegotiate("call/1", {
+      sdp: "offer2",
+      connectionId: "conn-0001",
+    });
+    await signaling.candidate(
+      "call/1",
+      { candidate: "ice", sdpMid: "0" },
+      "conn-0001",
+    );
     await signaling.candidates("call/1");
-    await signaling.teardown("call/1");
-    expect(fetch.mock.calls.map(([input]) => String(input))).toEqual([
-      "https://api.polymorfa.test/messaging/voip/calls/call%2F1/offer",
-      "https://api.polymorfa.test/messaging/voip/calls/call%2F1/candidate",
-      "https://api.polymorfa.test/messaging/voip/calls/call%2F1/candidates",
-      "https://api.polymorfa.test/messaging/voip/calls/call%2F1",
+    await signaling.leave("call/1", "conn-0001");
+    await signaling.end("call/1");
+    const base = "https://api.polymorfa.test/messaging/voip/calls/call%2F1";
+    expect(bodies(fetch)).toEqual([
+      ["POST", `${base}/offer`, { sdp: "offer", connectionId: "conn-0001" }],
+      [
+        "POST",
+        `${base}/renegotiate`,
+        { sdp: "offer2", connectionId: "conn-0001" },
+      ],
+      [
+        "POST",
+        `${base}/candidate`,
+        { candidate: "ice", sdpMid: "0", connectionId: "conn-0001" },
+      ],
+      ["GET", `${base}/candidates`, undefined],
+      ["POST", `${base}/leave`, { connectionId: "conn-0001" }],
+      ["DELETE", base, undefined],
     ]);
   });
-});
 
-describe("CallsSignalingClient socket tickets", () => {
-  it("never names a session: the client token is already bound to one", async () => {
-    const fetch = vi.fn(
-      async () =>
-        new Response(
-          JSON.stringify({
-            data: { ticket: "pmfa_wst_a", expiresAt: 1, url: "/voip/ws?t=a" },
-          }),
-          { status: 200, headers: { "content-type": "application/json" } },
-        ),
+  it("accepts with an explicit claim choice and declines with an empty body", async () => {
+    const { fetch, signaling } = client();
+    await expect(
+      signaling.accept("c1", { exclusive: true, video: false }),
+    ).resolves.toEqual({
+      answered: true,
+      answeredBy: "client:e1",
+      exclusive: false,
+    });
+    await signaling.accept("c1", {});
+    await signaling.reject("c1");
+    const base = "https://api.polymorfa.test/messaging/voip/calls/c1";
+    expect(bodies(fetch)).toEqual([
+      ["POST", `${base}/accept`, { exclusive: true, video: false }],
+      ["POST", `${base}/accept`, { exclusive: false }],
+      ["POST", `${base}/reject`, undefined],
+    ]);
+  });
+
+  it("turns 409 call_claimed into CallClaimedError", async () => {
+    const { signaling } = client({
+      "/accept": {
+        status: 409,
+        success: false,
+        error: { code: "call_claimed", message: "Claimed." },
+        code: "call_claimed",
+      },
+    });
+    await expect(signaling.accept("c1", {})).rejects.toBeInstanceOf(
+      CallClaimedError,
     );
-    const client = new CallsSignalingClient(
-      new BrowserTransport({
-        baseUrl: "https://api.example",
-        getClientToken: async () => "pmfa_ct_x",
-        fetch: fetch as unknown as typeof globalThis.fetch,
-      }),
+  });
+
+  it("authenticates sockets with the client token and never puts it in the URL", async () => {
+    const { fetch, signaling } = client();
+    await expect(signaling.token()).resolves.toMatchObject({
+      value: "pmfa_ct_test",
+      expiresAt: expect.any(Number),
+    });
+    expect(signaling.socketUrl("/voip/ws")).toBe(
+      "wss://api.polymorfa.test/voip/ws",
     );
-    await client.socketTicket("support");
-    // The API answers 403 "client token cannot follow another session" when a
-    // client token names one, so the bound session must be left implicit.
-    const [, init] = (
-      fetch.mock.calls as unknown as [string, RequestInit][]
-    )[0] ?? ["", {}];
-    expect(JSON.parse(String(init.body))).toEqual({});
+    expect(signaling.socketUrl("/voip/calls/c1/media")).toBe(
+      "wss://api.polymorfa.test/voip/calls/c1/media",
+    );
+    // No ticket or mode request is made.
+    expect(fetch).not.toHaveBeenCalled();
   });
 });
 
@@ -355,8 +433,9 @@ describe("CallsController resumption and terminal offers", () => {
     controller.initialize();
     await controller.place("+12025550123");
     ice?.("connected");
-    // The connection state machine, not ICE, marks connected.
-    expect(controller.getSnapshot().status).toBe("connecting");
+    // The connection state machine, not ICE, marks connected; the callee has
+    // not answered, so the placed call is still ringing.
+    expect(controller.getSnapshot().status).toBe("ringing");
     ice?.("disconnected");
     expect(controller.getSnapshot().status).toBe("reconnecting");
     t.fire(2_000);
@@ -364,16 +443,16 @@ describe("CallsController resumption and terminal offers", () => {
     ice?.("connected");
     // A flap that never moved `connectionState` still has to end: recovery
     // restores the call itself rather than waiting for a state change that
-    // may never come. This one flapped during setup, so it recovers to
-    // `connecting` — reporting `connected` here would start the duration
-    // counter on a call whose media never came up.
-    expect(controller.getSnapshot().status).toBe("connecting");
+    // may never come. This one flapped during setup, so it recovers to the
+    // status it had (`ringing`) — reporting `connected` here would start the
+    // duration counter on a call whose media never came up.
+    expect(controller.getSnapshot().status).toBe("ringing");
     expect(controller.getSnapshot().connectedAt).toBeUndefined();
     // ICE recovery must cancel the give-up timer, or the call would still be
     // dropped mid-conversation once the window elapsed.
     expect(t.pending()).toBe(0);
     t.fire(15_000);
-    expect(controller.getSnapshot().status).toBe("connecting");
+    expect(controller.getSnapshot().status).toBe("ringing");
     controller.dispose();
     expect(t.pending()).toBe(0);
   });
@@ -707,4 +786,445 @@ describe("continuing after a refused reject", () => {
     expect(controller.getSnapshot().error).toBeUndefined();
     controller.dispose();
   });
+});
+
+describe("leaving an outgoing call before it connects", () => {
+  it("ends the call instead of leaving the callee ringing", async () => {
+    const f = fixture();
+    const leave = vi.fn(async () => undefined);
+    const controller = new CallsController({ ...f.backend, leave }, f.media);
+    controller.initialize();
+    await controller.place("+15550100");
+    await controller.leave();
+    expect(f.backend.hangup).toHaveBeenCalledWith(
+      "call-1",
+      expect.any(AbortSignal),
+    );
+    expect(leave).not.toHaveBeenCalled();
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ended",
+      endReason: "hangup",
+    });
+    controller.dispose();
+  });
+
+  it("still leaves an outgoing call once it connected", async () => {
+    const f = fixture();
+    const leave = vi.fn(async () => undefined);
+    const controller = new CallsController({ ...f.backend, leave }, f.media);
+    controller.initialize();
+    await controller.place("+15550100");
+    f.emit({ type: "connected", callId: "call-1" });
+    await controller.leave();
+    expect(leave).toHaveBeenCalledOnce();
+    expect(f.backend.hangup).not.toHaveBeenCalled();
+    expect(controller.getSnapshot().endReason).toBe("left");
+    controller.dispose();
+  });
+});
+
+describe("waiting invitations and call history", () => {
+  it("keeps a waiting call's roster current and shows it when selected", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    const participant = (id: string) => ({
+      id,
+      phoneNumber: `+1555010${id.slice(-1)}`,
+      audioMuted: false,
+      video: false,
+      state: "connected" as const,
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    expect(controller.getSnapshot().callId).toBe("A");
+    f.emit({
+      type: "participant",
+      callId: "B",
+      participant: participant("p1"),
+    });
+    f.emit({
+      type: "participant",
+      callId: "B",
+      participant: participant("p2"),
+    });
+    f.emit({ type: "participantLeft", callId: "B", participantId: "p1" });
+    // The displayed call's roster is untouched by B's events.
+    expect(controller.getSnapshot().participants).toEqual([]);
+    controller.select("B");
+    expect(controller.getSnapshot()).toMatchObject({
+      callId: "B",
+      participants: [participant("p2")],
+    });
+    // A keeps its own (empty) roster when it is shown again.
+    controller.select("A");
+    expect(controller.getSnapshot().participants).toEqual([]);
+    controller.dispose();
+  });
+
+  it("remembers only a bounded number of placed calls", async () => {
+    const f = fixture();
+    let next = 0;
+    vi.mocked(f.backend.place).mockImplementation(async () => ({
+      callId: `call-${next++}`,
+    }));
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    for (let i = 0; i < 201; i += 1) {
+      await controller.place("+15550100");
+      f.emit({ type: "ended", callId: `call-${i}`, reason: "remote_hangup" });
+    }
+    // A replayed invitation for a recent placed call is still ignored...
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "call-200", from: "+15550100", video: false },
+    });
+    expect(controller.getSnapshot().invitations).toEqual([]);
+    // ...while the oldest id has been dropped from the history.
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "call-0", from: "+15550100", video: false },
+    });
+    expect(controller.getSnapshot().invitations.map((i) => i.callId)).toEqual([
+      "call-0",
+    ]);
+    controller.dispose();
+  });
+});
+
+describe("changing the displayed invitation while an answer is in flight", () => {
+  function pending() {
+    const f = fixture();
+    let finish!: () => void;
+    let fail!: (cause: unknown) => void;
+    vi.mocked(f.backend.answer).mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          finish = resolve;
+          fail = reject;
+        }),
+    );
+    const leave = vi.fn(async () => undefined);
+    const controller = new CallsController({ ...f.backend, leave }, f.media);
+    controller.initialize();
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    return {
+      ...f,
+      leave,
+      controller,
+      finish: () => finish(),
+      fail: (cause: unknown) => fail(cause),
+    };
+  }
+
+  it("shows the answered call with its controls after another invitation was selected", async () => {
+    const h = pending();
+    const answering = h.controller.answer();
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "A",
+      status: "incoming",
+      answering: true,
+    });
+    h.controller.select("B");
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "B",
+      status: "incoming",
+      answering: true,
+    });
+    // Nothing else can start while the answer is in flight.
+    await expect(h.controller.answer()).rejects.toThrow(
+      "An answer is in progress",
+    );
+    await expect(h.controller.reject()).rejects.toThrow(
+      "An answer is in progress",
+    );
+    await expect(h.controller.place("+15550102")).rejects.toThrow(
+      "An answer is in progress",
+    );
+    h.finish();
+    await answering;
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "A",
+      peer: "+15550100",
+      status: "connecting",
+      answering: false,
+    });
+    expect(h.media.open).toHaveBeenCalledWith(
+      "A",
+      false,
+      expect.any(Object),
+      expect.any(AbortSignal),
+      expect.any(Object),
+    );
+    // Media callbacks reach the displayed call.
+    h.connect("connected");
+    expect(h.controller.getSnapshot().status).toBe("connected");
+    // B is still waiting.
+    expect(h.controller.getSnapshot().invitations.map((i) => i.callId)).toEqual(
+      ["B"],
+    );
+    expect(h.leave).not.toHaveBeenCalled();
+    expect(h.backend.hangup).not.toHaveBeenCalled();
+    h.controller.dispose();
+  });
+
+  it("keeps the displayed invitation intact when the answer for another fails", async () => {
+    const h = pending();
+    const answering = h.controller.answer();
+    h.controller.select("B");
+    h.fail(new Error("network down"));
+    await answering;
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "B",
+      status: "incoming",
+      answering: false,
+    });
+    expect(h.controller.getSnapshot().error).toBeUndefined();
+    expect(h.media.open).not.toHaveBeenCalled();
+    h.controller.dispose();
+  });
+
+  it.each([
+    [false, "leaves"],
+    [true, "ends"],
+  ] as const)(
+    "dismissing an answer in flight (exclusive: %s) %s the call once answered",
+    async (exclusive, outcome) => {
+      expect(outcome).toBe(exclusive ? "ends" : "leaves");
+      const h = pending();
+      const answering = h.controller.answer({ exclusive });
+      h.controller.dismiss("A");
+      // The next waiting call is shown; the answer still completes.
+      expect(h.controller.getSnapshot()).toMatchObject({
+        callId: "B",
+        status: "incoming",
+        answering: true,
+      });
+      h.finish();
+      await answering;
+      if (exclusive) {
+        expect(h.backend.hangup).toHaveBeenCalledWith(
+          "A",
+          expect.any(AbortSignal),
+        );
+        expect(h.leave).not.toHaveBeenCalled();
+      } else {
+        expect(h.leave).toHaveBeenCalledWith(
+          "A",
+          undefined,
+          expect.any(AbortSignal),
+        );
+        expect(h.backend.hangup).not.toHaveBeenCalled();
+      }
+      expect(h.media.open).not.toHaveBeenCalled();
+      expect(h.controller.getSnapshot()).toMatchObject({
+        callId: "B",
+        status: "incoming",
+        answering: false,
+      });
+      expect(
+        h.controller.getSnapshot().invitations.map((i) => i.callId),
+      ).toEqual(["B"]);
+      h.controller.dispose();
+    },
+  );
+});
+
+describe("an answer in flight is bound to its own call", () => {
+  function waiting() {
+    const f = fixture();
+    let finish!: () => void;
+    vi.mocked(f.backend.answer).mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const leave = vi.fn(async () => undefined);
+    const controller = new CallsController({ ...f.backend, leave }, f.media);
+    controller.initialize();
+    for (const [callId, from] of [
+      ["A", "+15550100"],
+      ["B", "+15550101"],
+      ["C", "+15550102"],
+    ] as const)
+      f.emit({
+        type: "incomingCall",
+        call: { callId, from, video: false },
+      });
+    return { ...f, leave, controller, finish: () => finish() };
+  }
+
+  it("still shows and connects the answered call after the selected call ends", async () => {
+    const h = waiting();
+    const answering = h.controller.answer();
+    h.controller.select("B");
+    // B's end advances the display; it must not invalidate A's answer.
+    h.emit({ type: "ended", callId: "B", reason: "remote_hangup" });
+    h.finish();
+    await answering;
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "A",
+      status: "connecting",
+      answering: false,
+    });
+    expect(h.media.open).toHaveBeenCalledOnce();
+    h.connect("connected");
+    expect(h.controller.getSnapshot().status).toBe("connected");
+    expect(h.leave).not.toHaveBeenCalled();
+    expect(h.backend.hangup).not.toHaveBeenCalled();
+    h.controller.dispose();
+  });
+
+  it("does not show or connect a call that ended while its answer was in flight", async () => {
+    const h = waiting();
+    const answering = h.controller.answer();
+    h.controller.select("B");
+    h.emit({ type: "ended", callId: "A", reason: "remote_hangup" });
+    h.finish();
+    await answering;
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "B",
+      status: "incoming",
+      answering: false,
+    });
+    expect(h.media.open).not.toHaveBeenCalled();
+    h.controller.dispose();
+  });
+
+  it("refuses to end another call while an answer is in flight", async () => {
+    const h = waiting();
+    const answering = h.controller.answer();
+    h.controller.select("B");
+    await expect(h.controller.end()).rejects.toThrow(
+      "An answer is in progress",
+    );
+    expect(h.backend.hangup).not.toHaveBeenCalled();
+    h.finish();
+    await answering;
+    expect(h.controller.getSnapshot().callId).toBe("A");
+    h.controller.dispose();
+  });
+});
+
+describe("a failed answer while other calls wait", () => {
+  function two(openMedia?: () => Promise<CallMediaSession>) {
+    const f = fixture();
+    if (openMedia) vi.mocked(f.media.open).mockImplementationOnce(openMedia);
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    const seen: string[] = [];
+    controller.subscribe(() => {
+      const s = controller.getSnapshot();
+      seen.push(`${s.callId}:${s.status}`);
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "A", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "B", from: "+15550101", video: false },
+    });
+    return { ...f, controller, seen };
+  }
+
+  it("reports a media failure, then shows the waiting call with it", async () => {
+    const h = two(async () => {
+      throw new Error("Microphone permission denied");
+    });
+    await h.controller.answer();
+    // A's failure is published before B is shown.
+    expect(h.seen).toContain("A:error");
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "B",
+      status: "incoming",
+      error: { code: "answer_failed", callId: "A", recoverable: true },
+    });
+    expect(h.controller.getSnapshot().invitations.map((i) => i.callId)).toEqual(
+      ["B"],
+    );
+    h.controller.dispose();
+  });
+
+  it("publishes a terminal offer before showing the waiting call", async () => {
+    const h = two(async () => {
+      throw Object.assign(new Error("Capacity"), { status: 503 });
+    });
+    await h.controller.answer();
+    expect(h.seen).toContain("A:ended");
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "B",
+      status: "incoming",
+    });
+    expect(h.controller.getSnapshot().error).toBeUndefined();
+    h.controller.dispose();
+  });
+
+  it("keeps a refused answer's call displayed and ringing so it can be retried", async () => {
+    const h = two();
+    vi.mocked(h.backend.answer).mockRejectedValueOnce(new Error("offline"));
+    await h.controller.answer();
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "A",
+      status: "incoming",
+      answering: false,
+      error: { code: "answer_failed", callId: "A", message: "offline" },
+    });
+    await h.controller.answer();
+    expect(h.controller.getSnapshot()).toMatchObject({
+      callId: "A",
+      status: "connecting",
+    });
+    expect(h.controller.getSnapshot().error).toBeUndefined();
+    h.controller.dispose();
+  });
+});
+
+describe("an end that arrives before its invitation", () => {
+  it.each([undefined, "missed", "rejected"] as const)(
+    "does not list the late invitation (reason: %s)",
+    async (reason) => {
+      const f = fixture();
+      const controller = new CallsController(f.backend, f.media);
+      controller.initialize();
+      f.emit(
+        reason === undefined
+          ? { type: "ended", callId: "LATE" }
+          : { type: "ended", callId: "LATE", reason },
+      );
+      f.emit({
+        type: "incomingCall",
+        call: { callId: "LATE", from: "+15550100", video: false },
+      });
+      expect(controller.getSnapshot()).toMatchObject({
+        status: "ready",
+        invitations: [],
+      });
+      expect(controller.getSnapshot().callId).toBeUndefined();
+      // Other calls still ring.
+      f.emit({
+        type: "incomingCall",
+        call: { callId: "NEXT", from: "+15550101", video: false },
+      });
+      expect(controller.getSnapshot()).toMatchObject({
+        status: "incoming",
+        callId: "NEXT",
+      });
+      controller.dispose();
+    },
+  );
 });

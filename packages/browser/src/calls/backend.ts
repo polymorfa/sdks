@@ -1,7 +1,10 @@
+import {
+  capabilitiesFrom,
+  type CallReport,
+} from "@polymorfa/sdk/calls/internal";
 import type {
   CallEndReason,
   CallLifecycleEvent,
-  CallLine,
   CallsBackend,
   IncomingCall,
   PlaceCallInput,
@@ -24,6 +27,10 @@ export interface CallReceivedWebhookPayload {
         readonly username?: string;
       };
   readonly hasVideo?: boolean;
+  readonly capabilities?: {
+    readonly video?: boolean;
+    readonly invite?: boolean;
+  };
 }
 
 /**
@@ -34,7 +41,6 @@ export interface CallReceivedWebhookPayload {
  */
 export function incomingCallFromWebhook(
   payload: CallReceivedWebhookPayload,
-  options: { readonly line?: CallLine } = {},
 ): IncomingCall {
   // Empty strings fall through like absent fields, matching `peerFrom` on the
   // socket path — the two inbound routes must agree on the same payload.
@@ -46,13 +52,13 @@ export function incomingCallFromWebhook(
     callId: payload.callId,
     from,
     video: payload.hasVideo === true,
-    line: options.line ?? "linkedDevice",
+    capabilities: capabilitiesFrom(payload.capabilities),
   };
 }
 
 /**
  * Application-fed source of inbound call notifications for deployments that
- * relay `call.received` (and optionally `call.ended`) webhook events over
+ * relay `call.received`, `call.accepted`, and `call.ended` webhook events over
  * their own realtime channel. {@link CallsSocket} is the push alternative:
  * it subscribes to the same lifecycle stream directly from the API.
  */
@@ -62,6 +68,47 @@ export class IncomingCallRelay {
   /** Announce an inbound call; the controller moves to `incoming`. */
   receive(call: IncomingCall): void {
     this.#emit({ type: "incomingCall", call });
+  }
+
+  /**
+   * Announce that a call was answered (from `call.accepted`). Pass its
+   * `answeredBy` and `exclusive` so other browsers stop ringing for a claimed
+   * call or offer Join for a shared one.
+   */
+  accepted(
+    callId: string,
+    claim: {
+      readonly answeredBy?: string;
+      readonly exclusive?: boolean;
+      /** The webhook's `capabilities`, when present. */
+      readonly capabilities?: {
+        readonly video?: boolean;
+        readonly invite?: boolean;
+      };
+    } = {},
+  ): void {
+    this.#emit({
+      type: "accepted",
+      callId,
+      ...(claim.answeredBy === undefined
+        ? {}
+        : { answeredBy: claim.answeredBy }),
+      exclusive: claim.exclusive === true,
+      // Reported fields only; the controller merges them with the call's
+      // current capabilities.
+      ...(claim.capabilities === undefined
+        ? {}
+        : {
+            capabilities: {
+              ...(typeof claim.capabilities.video === "boolean"
+                ? { video: claim.capabilities.video }
+                : {}),
+              ...(typeof claim.capabilities.invite === "boolean"
+                ? { invite: claim.capabilities.invite }
+                : {}),
+            },
+          }),
+    });
   }
 
   /** Announce that the remote side ended a call (from `call.ended`). */
@@ -104,10 +151,10 @@ export interface SignalingCallsBackendOptions {
 
 /**
  * A {@link CallsBackend} over the REST signaling surface alone. Answering an
- * inbound call posts an SDP offer for the announced call id (the media factory
- * does that); reject and hang-up release the pod's session with the idempotent
- * teardown route. No server API key is involved: everything the browser does
- * runs on the client token.
+ * inbound call accepts it (claiming it only when the caller asks for
+ * `exclusive`), then the media factory offers SDP for its connection. Reject
+ * declines a ringing call and hang-up ends the call for everyone; leaving
+ * closes only this browser's connection. Everything runs on the client token.
  *
  * Supply place for custom outbound placement. createBrowserCalls provides
  * direct client-token placement through the shared Calls client.
@@ -137,13 +184,35 @@ export function createSignalingCallsBackend(
         throw new Error("`place` resolved without a call id.");
       return { callId };
     },
-    answer: async (_callId: string, signal: AbortSignal) => {
+    answer: async (callId, signal, input) => {
       throwIfAborted(signal);
+      const accept = options.signaling.accept;
+      if (accept === undefined)
+        throw new Error("This signaling client cannot answer calls.");
+      return accept.call(
+        options.signaling,
+        callId,
+        {
+          exclusive: input?.exclusive === true,
+          ...(input === undefined ? {} : { video: input.video }),
+        },
+        signal,
+      );
     },
-    reject: (callId: string, signal: AbortSignal) =>
-      options.signaling.teardown(callId, signal),
+    reject: async (callId: string, signal: AbortSignal) => {
+      const reject = options.signaling.reject;
+      if (reject === undefined)
+        throw new Error("This signaling client cannot decline calls.");
+      await reject.call(options.signaling, callId, signal);
+    },
     hangup: (callId: string, signal: AbortSignal) =>
-      options.signaling.teardown(callId, signal),
+      options.signaling.end(callId, signal),
+    ...(options.signaling.report === undefined
+      ? {}
+      : {
+          report: (callId: string, report: CallReport) =>
+            options.signaling.report!(callId, report),
+        }),
   };
 }
 

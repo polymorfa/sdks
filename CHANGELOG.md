@@ -16,6 +16,174 @@
   `decrypt`, and `redact` options. Message content is stored on the device.
   The Polymorfa client-token event stream is planned and not available yet.
   See the [store guide](packages/store/README.md).
+- Packaging: `@polymorfa/browser` depends on `@polymorfa/sdk` and uses its
+  Calls client (`@polymorfa/sdk/calls`) instead of a separate package, so
+  there is one copy of the Calls classes: `instanceof CallsDisabledError`
+  (and the other Calls errors) with the class from `@polymorfa/sdk/calls`
+  works for errors raised by browser calls. The SDK now lives in the
+  `packages/typescript` workspace; installing from the GitHub repository root
+  (`npm install github:polymorfa/sdks#dev`) no longer installs it. Install the
+  packed `@polymorfa/sdk` tarball instead.
+- `@polymorfa/sdk/calls`: a placed call records the answer in `call.claim`
+  (`answered`, `answeredBy`, `exclusive`) and emits `claim` when the callee
+  picks up. `disconnect()` and `leave()` wait for an answer still in flight
+  and leave the call if it succeeds. Concurrent token requests share one
+  provider call without sharing cancellation: cancelling one request no
+  longer fails the others, and the provider call is cancelled only when
+  every waiting request is.
+- Call diagnostics. `MessagingClient.voip.report()` sends quality figures or
+  an error code for one of your media connections
+  (`POST /messaging/voip/calls/{id}/reports`), with the new
+  `VoipCallReportRequest` types. `createBrowserCalls` reports each
+  connection's round-trip time, jitter, packet counts, codecs, ICE candidate
+  type and reconnect count every 15 seconds and when it closes, plus error
+  codes for denied or missing devices, ICE and negotiation failures, stalled
+  media, reconnection give-up and unsupported browsers. `@polymorfa/sdk/calls`
+  reports media timeouts, token failures and reconnection give-up, and each
+  connection's reconnect count. Reports carry no personal data, are
+  best-effort, and never affect the call. Turn them off with
+  `diagnostics: false` on `createBrowserCalls`, the `CallsController` options
+  or `CallsClient`.
+- The programmatic Calls client ships inside `@polymorfa/sdk` as the
+  `@polymorfa/sdk/calls` subpath. Import `CallsClient` and the Calls error
+  classes from `@polymorfa/sdk/calls`; there is no separate `@polymorfa/calls`
+  package to install.
+- `@polymorfa/sdk/calls` on Node.js 22: a lifecycle or media socket whose
+  handshake fails (connection refused or reset, or a non-WebSocket reply) now
+  settles like a dropped socket. `connect()` resolves and retries with backoff,
+  and a media `connect()` rejects, instead of waiting indefinitely.
+- Breaking: the `includeSelfAudio` call setting is replaced by
+  `conferenceMode` (default `true`) in `SessionCallSettings`,
+  `UpdateSessionCallSettingsRequest` and `MessagingClient.voip`
+  `retrieveCallSettings` / `updateCallSettings`. With conference mode on,
+  every participant you connect to a call (browser, app and server
+  connections, and SIP trunk callers) hears the WhatsApp party and each
+  other; with it off, each hears only the WhatsApp party. The WhatsApp party
+  always hears all of your participants, and nobody hears their own audio in
+  either mode. The platform rejects `includeSelfAudio`, and the SDK fails
+  before sending it with a `PolymorfaValidationError` that names
+  `conferenceMode`.
+- `Client.sipTrunks` manages SIP trunks (beta). Session call settings add
+  `callsEnabled` (turn calling off for a session; refusals use
+  `calls_disabled`, raised as `CallsDisabledError` by `@polymorfa/sdk/calls` and
+  the browser client), `inboundRoute`, `sipTrunkId`, `sipClaim`, `hostCloudApiCalls` (whether
+  Polymorfa Calls answers a Cloud API session's calls), and `revision`. An update changes
+  only the settings you send (`conferenceMode` is optional) and accepts
+  `expectedRevision`. Webhook types add `call.connection_joined` and
+  `call.connection_left`, including the SIP trunk departure reasons.
+- Call webhook payload types match the contract. `CallReceivedPayload` adds
+  `hasVideo`, and optional `sessionConnection` and `capabilities`
+  (`WebhookCallCapabilities`). `CallAcceptedPayload` is its own type with
+  optional `answeredBy`, `exclusive`, `sessionConnection` and `capabilities`.
+  `CallEndedPayload` adds optional `sessionConnection`. `CallMissedPayload` and
+  `CallRejectedPayload` no longer extend or alias `CallReceivedPayload`.
+- `@polymorfa/sdk/calls`: when media fails after an answer, join or remote
+  pickup, or is lost for good, the call is released on the platform before it
+  ends locally: ended when this client claimed it (exclusive answer or
+  placement), otherwise left. `answer()` and `join()` reject after the
+  release, which waits at most 5 seconds.
+- `Call.leave()` ends a placed call that is still ringing, and a failed leave
+  request keeps the call live so it can be retried. A placed call's
+  controller status stays `ringing` until the callee answers, for every
+  backend, and the React stage shows "Ringing" only in that state. A partial
+  capability report changes only the flags it reports, and a placed call the
+  answer reports as audio-only opens no camera.
+- Capabilities reported with `call.accepted` now apply: `Call.capabilities`
+  and `Call.hasVideo` update (new `capabilities` event on `Call`), and the
+  browser controller refreshes `snapshot.capabilities` for the displayed call
+  and for waiting invitations. `IncomingCallRelay.accepted()` accepts the
+  webhook's `capabilities`.
+- Browser calls: when a microphone or camera switch fails,
+  `snapshot.selectedDevices` goes back to the device the capture is using,
+  also after several quick switches.
+- Browser calls: when media fails on a call this browser claimed (an
+  exclusive answer or placement), the call is ended rather than left, so the
+  other party is not left on an answered call. The React incoming card
+  applies its pre-answer microphone and camera choices only to the call that
+  was answered.
+- Browser calls: a group video slot request whose re-offer failed is offered
+  again on the next report, so participants beyond the initial slots become
+  visible; participants and an answer reported before an outbound placement
+  returned are shown on the placed call. With `createBrowserCalls`, a placed
+  call stays `ringing` while its media opens until the callee answers, then
+  moves to `connecting`; the React stage shows "Ringing" only until then.
+- `CallsClient` no longer emits `incoming` for a call whose `call.ended`,
+  `call.missed` or `call.rejected` event arrived before `call.received`; the
+  call is reported through `ended` only. The browser `CallsController` also
+  ignores an invitation that arrives after its call was reported ended.
+- `ClientTokenManager` (browser) and `CallsTokenSource` (`@polymorfa/sdk/calls`)
+  never reuse or cache a provider call that started before a forced refresh
+  or `invalidate()`, so a reconnect after a revoked token asks for a new one.
+- Breaking: Calls use one neutral calling API. Session answer modes and
+  calling tickets are gone; the token your server issues authenticates
+  everything, and group audio and per-participant video are supported.
+  Upgrade steps:
+  - Mint browser tokens on your server with `POST /platform/client-tokens`
+    (`clientTokens.mint`, or `@polymorfa/nextjs` helpers). `MessagingClient.voip`
+    no longer has `token()`, `socketTicket()` or `agentToken()`; it has
+    `place`, `accept`, `reject`, `leave`, `end`, `addParticipant`,
+    `retrieveCallSettings` and `updateCallSettings` (`conferenceMode`,
+    `updatedAt` is `null` until changed). `reject` and `leave` accept
+    `participant` for server credentials.
+  - Signaling, media negotiation, sockets and media framing are internal. The
+    package entry points no longer export `HttpCallsApi`, `LifecycleSocket`,
+    `MediaSocket`, frame encoders and parsers, `VideoCodec`,
+    `CallsSignalingClient`, `BrowserCallsApi`, `createSignalingCallsBackend`,
+    `CallsSocket`, `IncomingCallRelay`, `incomingCallFromWebhook`,
+    `WebRtcMediaFactory`, or SDP, candidate and ticket types. Use
+    `CallsClient` on servers and `createBrowserCalls` in browsers.
+    `CallsController` is exported as a type; create it with
+    `createBrowserCalls`. `BrowserCallsOptions` no longer takes `media` or
+    `mediaFactory`, and `CallsClientOptions` no longer takes `api` or
+    `mediaMode`.
+  - `@polymorfa/sdk/calls`: pass `token` (string or provider) and, for server
+    credentials, `participant`. `Call.hangup()` is now `Call.end()` (ends the
+    call for everyone). New: `answer({ exclusive })`, `join()`, `leave()`,
+    `claim`, `claimedByOther`, `canJoin`, `connectionId`, the `claim` event,
+    the `reconnecting` state, `CallsAuthError`, and `CallClaimedError`.
+    `call.video` is always present; use `call.hasVideo` for the offer.
+    Received frames are `CallVideoFrame` (`source`, `keyframe`,
+    `timestampUs`, `data`); `write()` takes `OutgoingVideoFrame`;
+    `video.sources` maps `CallVideoSource` (`id`, `label`, `participant` or
+    `connectionId` and `connectionParticipant`).
+  - Calls report their own `capabilities` (`video`, `invite`; the browser
+    snapshot adds `mute`). `CallLine`, `capabilitiesFor`, the `line` options
+    and the React `DialPad` `line` prop are removed; use
+    `DialPad allowVideo={false}` for numbers whose calls cannot carry video.
+    `Call.capabilities` is new in `@polymorfa/sdk/calls`.
+  - `@polymorfa/browser`: incoming calls are never declined for you.
+    `CallsController` tracks every invitation (`snapshot.invitations`) and
+    adds `join()`, `leave()`, `end()`, `dismiss()`, `select()`,
+    `answer({ exclusive, callId })`, and snapshot fields `claimedByOther`,
+    `canJoin`, `answeredBy`, `exclusive`, `participants` and `remoteVideos`.
+    `controller.remoteVideos` holds a `ParticipantVideo` (`key`, `label`,
+    owner, `MediaStream`) per remote participant, and `remoteStream` carries
+    the merged call audio. An expired or revoked token reaches `onError` as
+    `unauthorized` and is replaced on reconnect.
+  - `@polymorfa/react`: new `ParticipantVideoGrid` and `ParticipantList`;
+    `CallSurface` and `IncomingCallCard` take `exclusive` (default `false`);
+    the card shows Join or Dismiss for calls answered elsewhere; `CallControls`
+    adds Leave (`showLeave`). `renderMedia` also receives `videos`, and
+    `labelVideo` receives `RemoteVideoInfo` with a `label`.
+  - `@polymorfa/elements`: `pmfa-call` accepts the `exclusive` attribute and
+    renders Join, Dismiss, Leave, waiting calls and participants.
+  - `CallsSnapshot.answering` is `true` while an answer or join is in flight;
+    the controller then refuses `answer()`, `join()`, `reject()` and
+    `place()`, and the React and element incoming controls are disabled. An
+    answer completes for the call it started on, even if another invitation
+    was selected meanwhile; a call dismissed during its answer is left, or
+    ended when the answer claimed it. The React card also disables its
+    pre-answer camera and microphone choices while answering.
+  - A refused answer keeps the call displayed as `incoming` with
+    `snapshot.error`. When media fails after answering, the next waiting
+    call is displayed and keeps the failure; `snapshot.error.callId` names
+    the failed call. The React card and `pmfa-call` (`failure` part) show a
+    notice (`calls.answerFailed`, `calls.previousFailed`).
+  - A call you placed offers only Hang up until it connects;
+    `controller.leave()` ends it in that state, and a local media failure
+    (such as a denied microphone) while it rings ends it rather than leaving
+    the callee ringing. A second `answer()` or `join()` while one is in
+    progress settles with the first, once media connects or fails.
 - `ComposeBox` and `pmfa-compose-box` gain a WhatsApp-style toolbar: an emoji
   picker with search, recent emoji, and categories; voice notes with a
   recording bar, timer, and level meter; and "/" quick replies with

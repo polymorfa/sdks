@@ -1,3 +1,10 @@
+import {
+  createConnectionId,
+  isConnectionId,
+  isParticipant,
+  isSourceHandle,
+  type Participant,
+} from "@polymorfa/sdk/calls/internal";
 import type {
   CallsSignaling,
   SdpAnswer,
@@ -5,11 +12,114 @@ import type {
 } from "./signaling.js";
 import type { CallDevice, SelectedCallDevices } from "./controller.js";
 
+/** Label and id of the control data channel, negotiated out of band. */
+export const CALLS_DATA_CHANNEL = { label: "pmfa.calls", id: 0 } as const;
+/** Receive-only video transceivers offered up front. */
+export const DEFAULT_VIDEO_SLOTS = 3;
+/** Upper bound on video transceivers per connection (camera included). */
+export const MAX_VIDEO_SLOTS = 32;
+
+/** One remote participant's video, delivered on its own transceiver. */
+export interface RemoteVideo {
+  /**
+   * Stable key for rendering: `connection:<id>` for another media connection,
+   * `participant:<id>` for a WhatsApp participant.
+   */
+  readonly key: string;
+  /** Platform source handle. */
+  readonly source: number;
+  readonly mid: string;
+  readonly connectionId?: string;
+  /** Participant reference of that connection (`client:<id>` or `server:<name>`), when known. */
+  readonly connectionParticipant?: string;
+  readonly participant?: Participant;
+  readonly stream: MediaStream;
+}
+
+/** Data-channel messages the platform sends. */
+export type CallsDataChannelMessage =
+  | ({
+      readonly type: "video_source";
+      readonly source: number;
+      readonly mid: string;
+    } & (
+      | {
+          readonly connectionId: string;
+          readonly connectionParticipant?: string;
+          readonly participant?: undefined;
+        }
+      | {
+          readonly participant: Participant;
+          readonly connectionId?: undefined;
+          readonly connectionParticipant?: undefined;
+        }
+    ))
+  | {
+      readonly type: "video_source_removed";
+      readonly source: number;
+      readonly mid: string;
+    }
+  | {
+      readonly type: "video_slots_exhausted";
+      readonly slots: number;
+      readonly needed: number;
+    }
+  | { readonly type: "pong" };
+
+/** Validate one data-channel message; malformed messages yield `undefined`. */
+export function parseDataChannelMessage(
+  data: unknown,
+): CallsDataChannelMessage | undefined {
+  if (typeof data !== "string" || data.length > 4096) return undefined;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    return undefined;
+  }
+  if (parsed === null || typeof parsed !== "object") return undefined;
+  const m = parsed as Record<string, unknown>;
+  const mid = typeof m["mid"] === "string" && m["mid"].length > 0;
+  switch (m["type"]) {
+    case "video_source": {
+      if (!isSourceHandle(m["source"]) || !mid) return undefined;
+      const connectionParticipant = m["connectionParticipant"];
+      const byConnection =
+        isConnectionId(m["connectionId"]) &&
+        (connectionParticipant === undefined ||
+          typeof connectionParticipant === "string") &&
+        m["participant"] === undefined;
+      const byParticipant =
+        isParticipant(m["participant"]) &&
+        m["connectionId"] === undefined &&
+        connectionParticipant === undefined;
+      return byConnection || byParticipant
+        ? (parsed as CallsDataChannelMessage)
+        : undefined;
+    }
+    case "video_source_removed":
+      return isSourceHandle(m["source"]) && mid
+        ? (parsed as CallsDataChannelMessage)
+        : undefined;
+    case "video_slots_exhausted":
+      return Number.isInteger(m["slots"]) && Number.isInteger(m["needed"])
+        ? (parsed as CallsDataChannelMessage)
+        : undefined;
+    case "pong":
+      return parsed as CallsDataChannelMessage;
+    default:
+      return undefined;
+  }
+}
+
 export interface CallMediaCallbacks {
   readonly onConnectionState: (state: RTCPeerConnectionState) => void;
+  /** The merged call audio (and nothing else) arrived or changed. */
   readonly onRemoteStream: (stream: MediaStream) => void;
   /** ICE connection state (drives the resumption window). Optional. */
   readonly onIceConnectionState?: (state: RTCIceConnectionState) => void;
+  /** Remote participant videos changed. Optional. */
+  readonly onRemoteVideos?: (videos: readonly RemoteVideo[]) => void;
 }
 
 /**
@@ -20,26 +130,40 @@ export interface CallMediaCallbacks {
  */
 export interface CandidateTransport {
   readonly connected: boolean;
-  sendCandidate(callId: string, candidate: TrickleCandidate): boolean;
+  sendCandidate(
+    callId: string,
+    candidate: TrickleCandidate,
+    connectionId: string,
+  ): boolean;
   onCandidate(
-    listener: (callId: string, candidate: TrickleCandidate) => void,
+    listener: (
+      callId: string,
+      candidate: TrickleCandidate,
+      connectionId?: string,
+    ) => void,
   ): () => void;
 }
 export interface CallMediaSession {
+  /** This connection's id; reused for reconnects and sent with `leave`. */
+  readonly connectionId?: string;
   readonly localStream: MediaStream;
+  /** Merged call audio. */
   readonly remoteStream: MediaStream;
+  /** One entry per remote video source. Optional for fakes. */
+  readonly remoteVideos?: readonly RemoteVideo[];
   setMuted(muted: { readonly audio?: boolean; readonly video?: boolean }): void;
   audioEnabled(): boolean;
   videoEnabled(): boolean;
   /**
-   * Add an outgoing camera track to an audio call and renegotiate on the
-   * same connection. Optional for fakes and for signaling without
-   * `renegotiate`.
+   * Start sending the camera on an audio call and renegotiate on the same
+   * connection. Optional for fakes and for signaling without `renegotiate`.
    */
   enableVideo?(
     signal: AbortSignal,
     devices?: SelectedCallDevices,
   ): Promise<void>;
+  /** The connection's WebRTC statistics, for diagnostics. Optional for fakes. */
+  getStats?(): Promise<RTCStatsReport>;
   /** Re-offer with fresh ICE credentials after a network change. Optional for fakes. */
   restartIce?(signal: AbortSignal): Promise<void>;
   /**
@@ -51,10 +175,16 @@ export interface CallMediaSession {
     deviceId: string,
     signal: AbortSignal,
   ): Promise<void>;
-  close(): Promise<void>;
+  /**
+   * Stop local media. With `leave` (the default) the connection is also left
+   * on the platform; the call continues for everyone else.
+   */
+  close(options?: { readonly leave?: boolean }): Promise<void>;
 }
 export interface CallMediaPreferences {
   readonly devices?: SelectedCallDevices;
+  /** Connection id to use; generated when omitted. */
+  readonly connectionId?: string;
 }
 export interface CallMediaFactory {
   open(
@@ -76,6 +206,13 @@ export interface WebRtcMediaFactoryOptions {
     configuration?: RTCConfiguration,
   ) => RTCPeerConnection;
   readonly pollIntervalMs?: number;
+  /** Receive-only video transceivers offered up front. Default 3. */
+  readonly videoSlots?: number;
+  /**
+   * Most video transceivers one connection may hold, camera included,
+   * when the platform asks for more. Default 32.
+   */
+  readonly maxVideoSlots?: number;
   readonly setInterval?: typeof globalThis.setInterval;
   readonly clearInterval?: typeof globalThis.clearInterval;
 }
@@ -86,6 +223,8 @@ export class WebRtcMediaFactory implements CallMediaFactory {
   readonly #mediaDevices: MediaDevices;
   readonly #createPeer: (configuration?: RTCConfiguration) => RTCPeerConnection;
   readonly #pollIntervalMs: number;
+  readonly #videoSlots: number;
+  readonly #maxVideoSlots: number;
   readonly #setInterval: typeof globalThis.setInterval;
   readonly #clearInterval: typeof globalThis.clearInterval;
 
@@ -95,8 +234,26 @@ export class WebRtcMediaFactory implements CallMediaFactory {
     this.#mediaDevices = options.mediaDevices ?? navigator.mediaDevices;
     this.#createPeer =
       options.createPeerConnection ??
-      ((configuration) => new RTCPeerConnection(configuration));
+      ((configuration) => {
+        if (typeof RTCPeerConnection === "undefined")
+          throw unsupported("This browser does not support WebRTC calls.");
+        return new RTCPeerConnection(configuration);
+      });
     this.#pollIntervalMs = options.pollIntervalMs ?? 1_000;
+    this.#maxVideoSlots = Math.max(
+      1,
+      Math.min(
+        MAX_VIDEO_SLOTS,
+        Math.floor(options.maxVideoSlots ?? MAX_VIDEO_SLOTS),
+      ),
+    );
+    this.#videoSlots = Math.max(
+      0,
+      Math.min(
+        this.#maxVideoSlots - 1,
+        Math.floor(options.videoSlots ?? DEFAULT_VIDEO_SLOTS),
+      ),
+    );
     this.#setInterval =
       options.setInterval ?? globalThis.setInterval.bind(globalThis);
     this.#clearInterval =
@@ -124,6 +281,13 @@ export class WebRtcMediaFactory implements CallMediaFactory {
     preferences: CallMediaPreferences = {},
   ): Promise<CallMediaSession> {
     throwIfAborted(signal);
+    const connectionId = preferences.connectionId ?? createConnectionId();
+    if (!isConnectionId(connectionId))
+      throw new Error(
+        "connectionId must be 8–64 characters of A–Z, a–z, 0–9, _ or -.",
+      );
+    if (typeof this.#mediaDevices?.getUserMedia !== "function")
+      throw unsupported("This browser cannot capture a microphone or camera.");
     const local = await this.#mediaDevices.getUserMedia(
       constraintsFor(video, preferences.devices),
     );
@@ -133,31 +297,52 @@ export class WebRtcMediaFactory implements CallMediaFactory {
     }
     const peer = this.#createPeer();
     const remote = new MediaStream();
-    for (const track of local.getTracks()) peer.addTrack(track, local);
+    // Transceiver order is part of the contract: audio, then the camera
+    // (sendrecv, also a receive slot), then receive-only video slots.
+    const control = peer.createDataChannel(CALLS_DATA_CHANNEL.label, {
+      negotiated: true,
+      id: CALLS_DATA_CHANNEL.id,
+    });
+    peer.addTransceiver(local.getAudioTracks()[0] ?? "audio", {
+      direction: "sendrecv",
+      streams: [local],
+    });
+    const camera = peer.addTransceiver(local.getVideoTracks()[0] ?? "video", {
+      direction: "sendrecv",
+      streams: [local],
+    });
+    for (let i = 0; i < this.#videoSlots; i += 1)
+      peer.addTransceiver("video", { direction: "recvonly" });
+
     const transport = this.#candidateTransport;
     peer.onicecandidate = (event) => {
       if (event.candidate === null) return;
       const candidate = candidateFrom(event.candidate.toJSON());
-      if (transport?.sendCandidate(callId, candidate) === true) return;
+      if (transport?.sendCandidate(callId, candidate, connectionId) === true)
+        return;
       void this.#signaling
-        .candidate(callId, candidate, signal)
+        .candidate(callId, candidate, connectionId, signal)
         .catch(() => undefined);
     };
-    // The transport is subscribed before the answer arrives so no pushed
-    // candidate is missed, but `addIceCandidate` rejects until the remote
-    // description exists — and REST polling stands down while the socket is
-    // up, so a rejected candidate would never be retried. Hold them instead.
+    // Pushed candidates can arrive before the answer; addIceCandidate rejects
+    // until the remote description exists, so hold them.
     let remoteDescribed = false;
     const pendingCandidates: TrickleCandidate[] = [];
-    const unsubscribeCandidates = transport?.onCandidate((id, candidate) => {
-      if (id !== callId) return;
-      if (!remoteDescribed) {
-        pendingCandidates.push(candidate);
-        return;
-      }
-      void peer.addIceCandidate(candidate).catch(() => undefined);
-    });
+    const unsubscribeCandidates = transport?.onCandidate(
+      (id, candidate, forConnection) => {
+        if (id !== callId) return;
+        if (forConnection !== undefined && forConnection !== connectionId)
+          return;
+        if (!remoteDescribed) {
+          pendingCandidates.push(candidate);
+          return;
+        }
+        void peer.addIceCandidate(candidate).catch(() => undefined);
+      },
+    );
     peer.ontrack = (event) => {
+      // Video tracks are exposed per source once the platform maps them.
+      if (event.track.kind !== "audio") return;
       remote.addTrack(event.track);
       callbacks.onRemoteStream(remote);
     };
@@ -165,25 +350,28 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       callbacks.onConnectionState(peer.connectionState);
     peer.oniceconnectionstatechange = () =>
       callbacks.onIceConnectionState?.(peer.iceConnectionState);
-    try {
-      const offer = await peer.createOffer();
-      await peer.setLocalDescription(offer);
-      const answer = await this.#signaling.offer(
-        callId,
-        peer.localDescription?.sdp ?? offer.sdp ?? "",
-        signal,
-      );
-      applyIceServers(peer, answer);
-      await peer.setRemoteDescription({ type: "answer", sdp: answer.sdp });
-      remoteDescribed = true;
-      for (const candidate of pendingCandidates.splice(0))
-        void peer.addIceCandidate(candidate).catch(() => undefined);
-    } catch (cause) {
-      unsubscribeCandidates?.();
-      closePeer(peer, local);
-      throw cause;
-    }
+
     let closed = false;
+    const videos = new Map<number, RemoteVideo>();
+    const publishVideos = () => {
+      if (!closed) callbacks.onRemoteVideos?.([...videos.values()]);
+    };
+    const videoTransceivers = () =>
+      peer
+        .getTransceivers()
+        .filter(
+          (t) =>
+            t.receiver.track?.kind === "video" &&
+            t.currentDirection !== "stopped",
+        );
+    const keyFor = (source: number, base: string) =>
+      [...videos.values()].some((v) => v.key === base && v.source !== source)
+        ? `${base}:${source}`
+        : base;
+
+    // Video receive slots the remote side has agreed to. Transceivers added
+    // for a re-offer that failed are not counted until one succeeds.
+    let negotiatedSlots = 0;
     let negotiating: Promise<void> = Promise.resolve();
     const renegotiate = (
       options: RTCOfferOptions,
@@ -194,21 +382,24 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         if (renegotiateWith === undefined)
           throw new Error("Signaling does not support renegotiation.");
         throwIfAborted(renegotiateSignal);
+        const offered = videoTransceivers().length;
         const offer = await peer.createOffer(options);
         await peer.setLocalDescription(offer);
         try {
           const answer = await renegotiateWith.call(
             this.#signaling,
             callId,
-            peer.localDescription?.sdp ?? offer.sdp ?? "",
+            {
+              sdp: peer.localDescription?.sdp ?? offer.sdp ?? "",
+              connectionId,
+            },
             renegotiateSignal,
           );
           if (closed) return;
           await peer.setRemoteDescription({ type: "answer", sdp: answer.sdp });
+          negotiatedSlots = offered;
         } catch (cause) {
-          // Without this the peer is stranded in `have-local-offer`, and every
-          // later upgrade or ICE restart fails on the leftover offer rather
-          // than on its own merits.
+          // Without this the peer is stranded in `have-local-offer`.
           if (!closed)
             await peer
               .setLocalDescription({ type: "rollback" })
@@ -219,6 +410,109 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       negotiating = negotiating.catch(() => undefined).then(run);
       return negotiating;
     };
+
+    // The platform found more video sources than receive slots. Offer more,
+    // up to the bound, so every participant can be seen. Only a successful
+    // re-offer counts: after a failed one, the next report offers the
+    // already-added slots again. One slot re-offer runs at a time; a report
+    // that arrives meanwhile is handled when it settles.
+    let slotsWanted = 0;
+    let growing = false;
+    const growSlots = (needed: number) => {
+      if (this.#signaling.renegotiate === undefined || closed) return;
+      slotsWanted = Math.max(
+        slotsWanted,
+        Math.min(this.#maxVideoSlots, Math.floor(needed)),
+      );
+      if (growing || slotsWanted <= negotiatedSlots) return;
+      const add = slotsWanted - videoTransceivers().length;
+      for (let i = 0; i < add; i += 1)
+        peer.addTransceiver("video", { direction: "recvonly" });
+      growing = true;
+      void renegotiate({}, signal).then(
+        () => {
+          growing = false;
+          // A larger report arrived while this re-offer ran.
+          if (slotsWanted > negotiatedSlots) growSlots(slotsWanted);
+        },
+        () => {
+          // Transient failure: wait for the platform to report again.
+          growing = false;
+          slotsWanted = negotiatedSlots;
+        },
+      );
+    };
+
+    control.onmessage = (event: MessageEvent) => {
+      const message = parseDataChannelMessage(event.data);
+      if (message === undefined || closed) return;
+      switch (message.type) {
+        case "video_source": {
+          const transceiver = peer
+            .getTransceivers()
+            .find((t) => t.mid === message.mid);
+          const track = transceiver?.receiver.track;
+          if (track === undefined || track.kind !== "video") return;
+          for (const [handle, existing] of videos)
+            if (existing.mid === message.mid && handle !== message.source)
+              videos.delete(handle);
+          const base =
+            message.connectionId !== undefined
+              ? `connection:${message.connectionId}`
+              : `participant:${message.participant.id}`;
+          videos.set(message.source, {
+            key: keyFor(message.source, base),
+            source: message.source,
+            mid: message.mid,
+            ...(message.connectionId !== undefined
+              ? {
+                  connectionId: message.connectionId,
+                  ...(message.connectionParticipant === undefined
+                    ? {}
+                    : {
+                        connectionParticipant: message.connectionParticipant,
+                      }),
+                }
+              : { participant: message.participant }),
+            stream: new MediaStream([track]),
+          });
+          publishVideos();
+          return;
+        }
+        case "video_source_removed": {
+          const existing = videos.get(message.source);
+          if (existing === undefined || existing.mid !== message.mid) return;
+          videos.delete(message.source);
+          publishVideos();
+          return;
+        }
+        case "video_slots_exhausted":
+          growSlots(message.needed);
+          return;
+        default:
+          return;
+      }
+    };
+
+    try {
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription(offer);
+      const answer = await this.#signaling.offer(
+        callId,
+        { sdp: peer.localDescription?.sdp ?? offer.sdp ?? "", connectionId },
+        signal,
+      );
+      applyIceServers(peer, answer);
+      await peer.setRemoteDescription({ type: "answer", sdp: answer.sdp });
+      negotiatedSlots = videoTransceivers().length;
+      remoteDescribed = true;
+      for (const candidate of pendingCandidates.splice(0))
+        void peer.addIceCandidate(candidate).catch(() => undefined);
+    } catch (cause) {
+      unsubscribeCandidates?.();
+      closePeer(peer, local, control);
+      throw cause;
+    }
     const switching = new Map<"audio" | "video", Promise<void>>();
     const swap = async (
       kind: "audio" | "video",
@@ -226,12 +520,17 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       switchSignal: AbortSignal,
     ): Promise<void> => {
       throwIfAborted(switchSignal);
+      const old = local.getTracks().find((t) => t.kind === kind);
+      if (old === undefined) {
+        // Nothing of this kind is being sent — an audio-only call asked to
+        // switch camera. enableVideo() starts the camera instead.
+        return;
+      }
       const stream = await this.#mediaDevices.getUserMedia(
         kind === "audio"
           ? { audio: { deviceId: { ideal: deviceId } } }
           : { video: { deviceId: { ideal: deviceId } } },
       );
-      // The call may have ended while the device was being acquired.
       if (closed || switchSignal.aborted) {
         stopTracks(stream);
         return;
@@ -244,17 +543,8 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         stopTracks(stream);
         return;
       }
-      const old = local.getTracks().find((t) => t.kind === kind);
-      const sender = peer.getSenders().find((s) => s.track?.kind === kind);
-      if (sender === undefined && old === undefined) {
-        // Nothing of this kind is negotiated — an audio-only call being
-        // asked to switch camera. Keeping the track would satisfy
-        // `enableVideo`'s "already have video" guard and permanently block
-        // the upgrade that would actually negotiate it.
-        stopTracks(stream);
-        return;
-      }
-      if (old !== undefined) track.enabled = old.enabled;
+      track.enabled = old.enabled;
+      const sender = peer.getSenders().find((s) => s.track === old);
       if (sender !== undefined) {
         try {
           await sender.replaceTrack(track);
@@ -262,17 +552,13 @@ export class WebRtcMediaFactory implements CallMediaFactory {
           stopTracks(stream);
           throw cause;
         }
-        // `close()` can land during the replacement; adopting the track now
-        // would add it to a stream `closePeer` has already emptied.
         if (closed || switchSignal.aborted) {
           stopTracks(stream);
           return;
         }
       }
-      if (old !== undefined) {
-        old.stop();
-        local.removeTrack(old);
-      }
+      old.stop();
+      local.removeTrack(old);
       local.addTrack(track);
     };
 
@@ -283,9 +569,6 @@ export class WebRtcMediaFactory implements CallMediaFactory {
     ): Promise<void> => {
       throwIfAborted(enableSignal);
       if (local.getVideoTracks().length > 0) return;
-      // `preferences` was captured when the call opened. A camera chosen
-      // since then lives on the controller, so it is passed in here — an
-      // audio-only call has no video sender for `switchInput` to swap.
       const stream = await this.#mediaDevices.getUserMedia(
         constraintsFor(true, devices ?? preferences.devices, {
           audio: false,
@@ -301,17 +584,14 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         return;
       }
       local.addTrack(track);
-      const sender = peer.addTrack(track, local);
+      // The camera transceiver already exists; attach the track to it and
+      // re-offer so the platform learns the new stream.
       try {
+        await camera.sender.replaceTrack(track);
+        camera.sender.setStreams?.(local);
         await renegotiate({}, enableSignal);
       } catch (cause) {
-        // Leaving the track behind would trip the guard above and make the
-        // upgrade unretryable, so undo it before surfacing the failure.
-        try {
-          peer.removeTrack(sender);
-        } catch {
-          // The connection may already be closed; the track still goes.
-        }
+        await camera.sender.replaceTrack(null).catch(() => undefined);
         local.removeTrack(track);
         track.stop();
         throw cause;
@@ -324,20 +604,22 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       void drainCandidates(this.#signaling, callId, peer, signal);
     }, this.#pollIntervalMs);
     return {
+      connectionId,
       localStream: local,
       remoteStream: remote,
+      get remoteVideos() {
+        return [...videos.values()];
+      },
       setMuted: (muted) => {
         if (muted.audio !== undefined)
           setTracks(local.getAudioTracks(), !muted.audio);
         if (muted.video !== undefined)
           setTracks(local.getVideoTracks(), !muted.video);
       },
+      getStats: () => peer.getStats(),
       audioEnabled: () => local.getAudioTracks().some(({ enabled }) => enabled),
       videoEnabled: () => local.getVideoTracks().some(({ enabled }) => enabled),
-      // Same-kind switches run one at a time. Concurrently, an older
-      // acquisition could finish after a newer one and replace the live track
-      // with the device the user moved away from, leaving the capture behind
-      // the preference that names it. Serialized, the last request wins.
+      // Same-kind switches run one at a time so the last request wins.
       switchInput: (kind, deviceId, switchSignal) => {
         const run = (switching.get(kind) ?? Promise.resolve()).then(() =>
           swap(kind, deviceId, switchSignal),
@@ -348,14 +630,8 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         );
         return run;
       },
-      // Serialized like switchInput: the "already have video" guard sits
-      // before the getUserMedia await, so two overlapping calls both passed it
-      // and left the connection with two camera tracks and two senders. Queued,
-      // the second re-checks the guard after the first has added its track.
       // Both need a re-offer, so signaling that cannot renegotiate does not
-      // get them at all. Present but failing, they left the controller's
-      // optional-method guards satisfied and the operations rejecting into
-      // handlers that swallow the reason — a dead camera button.
+      // get them at all.
       ...(this.#signaling.renegotiate === undefined
         ? {}
         : {
@@ -370,16 +646,18 @@ export class WebRtcMediaFactory implements CallMediaFactory {
             restartIce: (restartSignal: AbortSignal) =>
               renegotiate({ iceRestart: true }, restartSignal),
           }),
-      close: async () => {
+      close: async (options = {}) => {
         if (closed) return;
         closed = true;
         this.#clearInterval(poll);
         unsubscribeCandidates?.();
-        closePeer(peer, local);
+        videos.clear();
+        closePeer(peer, local, control);
+        if (options.leave === false) return;
         try {
-          await this.#signaling.teardown(callId);
+          await this.#signaling.leave(callId, connectionId);
         } catch {
-          // Local media teardown must complete even when remote teardown fails.
+          // Local media teardown must complete even when leave fails.
         }
       },
     };
@@ -417,6 +695,13 @@ function candidateFrom(candidate: RTCIceCandidateInit): TrickleCandidate {
       : { sdpMLineIndex: candidate.sdpMLineIndex }),
   };
 }
+/** A missing browser capability; reported as `unsupported_browser`. */
+function unsupported(message: string): Error {
+  const error = new Error(message);
+  error.name = "NotSupportedError";
+  return error;
+}
+
 function applyIceServers(peer: RTCPeerConnection, answer: SdpAnswer): void {
   peer.setConfiguration({
     iceServers: answer.iceServers.map((server) => ({
@@ -452,11 +737,16 @@ function setTracks(
 ): void {
   for (const track of tracks) track.enabled = enabled;
 }
-function closePeer(peer: RTCPeerConnection, stream: MediaStream): void {
+function closePeer(
+  peer: RTCPeerConnection,
+  stream: MediaStream,
+  control: RTCDataChannel,
+): void {
   peer.onicecandidate = null;
   peer.ontrack = null;
   peer.onconnectionstatechange = null;
   peer.oniceconnectionstatechange = null;
+  control.onmessage = null;
   for (const track of stream.getTracks()) track.stop();
   peer.close();
 }
