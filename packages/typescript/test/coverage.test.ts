@@ -173,15 +173,23 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "1681cdaa96c2625220c32fc3a912b380179fa9ee",
-      total: 420,
-      covered: 304,
+      sourceCommit: "331700f93fb3e858c7269a116820d8d4bec67aa8",
+      total: 419,
+      covered: 303,
       partial: 0,
       missing: 0,
       excluded: 116,
       changed: 0,
-      resolutions: [],
     });
+    // Monorepo dev does not yet carry the unmerged Calls diagnostics route
+    // the SDK already implements; it is the only unresolved removal.
+    const resolutions = (result.report?.resolutions ?? []) as Array<{
+      operationId: string;
+      status: string;
+    }>;
+    expect(
+      resolutions.map((entry) => `${entry.operationId}:${entry.status}`),
+    ).toEqual(["voipReportCallDiagnostics:removed"]);
   });
 
   it("maps the complete Customers contract to the Platform resource", () => {

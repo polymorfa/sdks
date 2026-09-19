@@ -9,6 +9,7 @@ export {
   createMessagingClientTokenMint,
   type MessagingClientTokenMintOptions,
   type MessagingClientTokenMintRequest,
+  type CustomerClientTokenAction,
   type MessagingClientTokenMintResource,
 } from "./messaging-token-mint.js";
 export {

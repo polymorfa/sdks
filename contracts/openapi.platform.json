@@ -23827,7 +23827,7 @@
           "revision": {
             "type": "integer",
             "minimum": 0,
-            "description": "Increases on every change; 0 while the session uses the defaults."
+            "description": "Increases on every change; 0 while the session uses the defaults. Send it as `expectedRevision` to refuse an update that would overwrite someone else's change."
           },
           "updatedAt": {
             "type": "string",
@@ -24253,6 +24253,11 @@
               "sentKbps": {
                 "type": "number",
                 "nullable": true
+              },
+              "clientReports": {
+                "type": "object",
+                "nullable": true,
+                "description": "Always null: client-side reports are not collected."
               }
             },
             "required": [
@@ -24265,181 +24270,8 @@
               "packetsLost",
               "rttMs",
               "receivedKbps",
-              "sentKbps"
-            ]
-          },
-          "appReports": {
-            "type": "object",
-            "additionalProperties": false,
-            "description": "Diagnostics your app sent with `POST /messaging/voip/calls/{id}/reports`, by connection. Figures the app did not report are null.",
-            "properties": {
-              "status": {
-                "type": "string",
-                "enum": [
-                  "reported",
-                  "none"
-                ],
-                "description": "`none` when the app sent no report for the call."
-              },
-              "connections": {
-                "type": "array",
-                "maxItems": 200,
-                "items": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "connectionId": {
-                      "type": "string",
-                      "pattern": "^[A-Za-z0-9_-]{8,64}$"
-                    },
-                    "participant": {
-                      "type": "string",
-                      "pattern": "^(client|server):[A-Za-z0-9._:@-]{1,128}$"
-                    },
-                    "client": {
-                      "type": "object",
-                      "nullable": true,
-                      "additionalProperties": false,
-                      "description": "The SDK named by the connection's most recent report. Null when that report named none.",
-                      "properties": {
-                        "sdk": {
-                          "type": "string",
-                          "pattern": "^[a-z0-9@/._-]{1,32}$"
-                        },
-                        "version": {
-                          "type": "string",
-                          "maxLength": 32
-                        },
-                        "platform": {
-                          "type": "string",
-                          "enum": [
-                            "browser",
-                            "node",
-                            "other"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "sdk",
-                        "version",
-                        "platform"
-                      ]
-                    },
-                    "quality": {
-                      "type": "object",
-                      "nullable": true,
-                      "additionalProperties": false,
-                      "description": "The connection's latest quality report. Null when it sent none.",
-                      "properties": {
-                        "reportedAt": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "rttMs": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "jitterMs": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "packetsLost": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "packetsReceived": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "audioCodec": {
-                          "type": "string",
-                          "nullable": true
-                        },
-                        "videoCodec": {
-                          "type": "string",
-                          "nullable": true
-                        },
-                        "candidateType": {
-                          "type": "string",
-                          "enum": [
-                            "host",
-                            "srflx",
-                            "prflx",
-                            "relay",
-                            null
-                          ],
-                          "nullable": true
-                        },
-                        "reconnects": {
-                          "type": "integer",
-                          "nullable": true
-                        }
-                      },
-                      "required": [
-                        "reportedAt",
-                        "rttMs",
-                        "jitterMs",
-                        "packetsLost",
-                        "packetsReceived",
-                        "audioCodec",
-                        "videoCodec",
-                        "candidateType",
-                        "reconnects"
-                      ]
-                    },
-                    "errors": {
-                      "type": "array",
-                      "maxItems": 50,
-                      "description": "Reported errors, newest first.",
-                      "items": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                          "code": {
-                            "type": "string",
-                            "enum": [
-                              "media_permission_denied",
-                              "device_not_found",
-                              "device_in_use",
-                              "ice_failed",
-                              "negotiation_failed",
-                              "media_timeout",
-                              "reconnect_exhausted",
-                              "token_refresh_failed",
-                              "unsupported_browser",
-                              "other"
-                            ]
-                          },
-                          "reportedAt": {
-                            "type": "string",
-                            "format": "date-time"
-                          }
-                        },
-                        "required": [
-                          "code",
-                          "reportedAt"
-                        ]
-                      }
-                    }
-                  },
-                  "required": [
-                    "connectionId",
-                    "participant",
-                    "client",
-                    "quality",
-                    "errors"
-                  ]
-                }
-              },
-              "truncated": {
-                "type": "boolean",
-                "description": "True when the call reached its limit of 200 stored reports or older errors are not shown."
-              }
-            },
-            "required": [
-              "status",
-              "connections",
-              "truncated"
+              "sentKbps",
+              "clientReports"
             ]
           },
           "webhookDeliveries": {
@@ -24605,7 +24437,6 @@
           "participants",
           "connections",
           "telemetry",
-          "appReports",
           "webhookDeliveries",
           "history",
           "correlation"
@@ -31276,7 +31107,30 @@
           "session": {
             "type": "string",
             "minLength": 1,
-            "description": "ID of the session this token can access."
+            "description": "ID of the session this token can access. Provide exactly one of `session` or `customer`."
+          },
+          "customer": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Polymorfa Customer ID. The token covers the numbers this Customer owns when it is minted, and only while the Customer still owns each one. Provide exactly one of `session` or `customer`. Requires the `customers:read` scope and enrollment in the Customer-scoped client tokens beta."
+          },
+          "allow": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "send_message",
+                "send_reaction",
+                "send_typing",
+                "send_seen",
+                "read_presence",
+                "subscribe_presence",
+                "read_contact"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 7,
+            "description": "Actions this Customer-scoped token may use. Each request is also limited by the session's client rules. Omit to use the client rules alone. Only valid with `customer`."
           },
           "ephemeralId": {
             "type": "string",
@@ -31289,7 +31143,6 @@
           }
         },
         "required": [
-          "session",
           "ephemeralId"
         ]
       },

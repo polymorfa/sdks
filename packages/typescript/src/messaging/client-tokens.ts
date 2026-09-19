@@ -21,6 +21,7 @@ export class ClientTokensResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<MintClientTokenResponse>> {
     this.assertServerCredential();
+    assertMintTarget(body);
     return this.transport.request({
       method: "POST",
       path: "/platform/client-tokens",
@@ -73,6 +74,25 @@ export class ClientTokensResource {
         "credential",
       );
     }
+  }
+}
+
+function assertMintTarget(body: MintClientTokenRequest): void {
+  const hasSession =
+    typeof body.session === "string" && body.session.length > 0;
+  const hasCustomer =
+    typeof body.customer === "string" && body.customer.length > 0;
+  if (hasSession === hasCustomer) {
+    throw new PolymorfaConfigurationError(
+      "Provide exactly one of session or customer to mint a client token.",
+      hasSession ? "customer" : "session",
+    );
+  }
+  if (body.allow !== undefined && !hasCustomer) {
+    throw new PolymorfaConfigurationError(
+      "allow is only supported for Customer-scoped client tokens.",
+      "allow",
+    );
   }
 }
 

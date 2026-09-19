@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "1681cdaa96c2625220c32fc3a912b380179fa9ee",
+  "sourceCommit": "331700f93fb3e858c7269a116820d8d4bec67aa8",
   "excludedContracts": [
     {
       "family": "graph",
@@ -2242,7 +2242,7 @@
       "method": "GET",
       "path": "/console/calls/{callId}",
       "operationId": "getCall",
-      "fingerprint": "0b0a7493860975fbdaf4140ee02ebede9ffa2b4c7453edc5b0dad1b2b1d29b10",
+      "fingerprint": "f47295fdb5063d34fa471002a46553a031942cd32bafda5135eb90462955c804",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -3898,7 +3898,7 @@
       "method": "POST",
       "path": "/platform/client-tokens",
       "operationId": "mintClientToken",
-      "fingerprint": "5b61983d5b6cdc9b418906dfdd0231d1270b20f33a49f873a4e1fe510ab97265",
+      "fingerprint": "82babe060adf06a7ba6b3c7d8e39cf711d92b93f81185d9af1216912c6973ad4",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.clientTokens.mint"
