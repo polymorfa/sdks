@@ -6,7 +6,8 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`2259a1fd331c6ddbc8ad56a04333100ebfce7c2e` (monorepo `dev`). Graph-compatible APIs are outside
+`4b75534812dc25e839fda3c2ba231e46afe39534` (monorepo branch
+`t3code/calls-analytics`, not yet merged to `dev`). Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -239,6 +240,8 @@ The organization view also exposes these management resources:
 - `projectTokens`: list token metadata for an explicit project
 - `sipTrunks`: list, create, retrieve, update, delete, and rotate the
   credentials of a project's SIP trunks (also on project clients)
+- `calls`: call statistics, paginated call detail records, and CSV or NDJSON
+  export of call records for the team or one project (also on project clients)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,

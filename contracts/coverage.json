@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "2259a1fd331c6ddbc8ad56a04333100ebfce7c2e",
+  "sourceCommit": "4b75534812dc25e839fda3c2ba231e46afe39534",
   "excludedContracts": [
     {
       "family": "graph",
@@ -2257,6 +2257,39 @@
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls",
+      "operationId": "listCallRecords",
+      "fingerprint": "1740444c3df90e22a3e5002d7dd35526f2b371c124d144039298f8598575ca31",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.calls.list"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls/export",
+      "operationId": "exportCallRecords",
+      "fingerprint": "49661a96eb60e958e88dac7f8e64cb8402622ad970cb6007f792c655217e9507",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.calls.export"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls/stats",
+      "operationId": "getCallStats",
+      "fingerprint": "abfb53c1e1c2ecae09b3f891cd43ccda995f0729631167c83ebb1f77f4829dbd",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.calls.stats"
       }
     },
     {
@@ -4674,7 +4707,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/events/stream",
       "operationId": "streamProjectEvents",
-      "fingerprint": "8d2bfdeed5af657c7f47e9db3b05092218fe9e90a2b0128ed643b584e98222ca",
+      "fingerprint": "4fa73ba811616cc3a579454bd263ad91aa99be66486bcd6b3b96ccc956016b8f",
       "typescript": {
         "status": "covered",
         "method": "Client.events.stream"

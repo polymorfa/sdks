@@ -548,6 +548,28 @@ export { ProjectsResource } from "./platform/projects.js";
 export { SecurityIncidentsResource } from "./platform/security-incidents.js";
 export { SessionBansResource } from "./platform/session-bans.js";
 export { PlatformSessionsResource } from "./platform/sessions.js";
+export { PlatformCallsResource } from "./platform/calls.js";
+export type {
+  CallDirection,
+  CallExportFormat,
+  CallFilters,
+  CallOutcome,
+  CallRecord,
+  CallRecordExportPage,
+  CallRecordState,
+  CallStats,
+  CallStatsGroup,
+  CallStatsGroupBy,
+  CallStatsHeatmapCell,
+  CallStatsMetrics,
+  CallStatsParams,
+  CallStatsParamsFor,
+  CallUpstream,
+  ExportCallRecordsParams,
+  ExportCallRecordsParamsFor,
+  ListCallRecordsParams,
+  ListCallRecordsParamsFor,
+} from "./platform/calls.js";
 export { SipTrunksResource } from "./platform/sip-trunks.js";
 export type {
   CreateSipTrunkInput,
@@ -819,10 +841,18 @@ export {
   type BanSafeClaimPayload,
   type BanSafeEnforcementPayload,
   type BanSafeEventRung,
+  type BanSafeForecast,
+  type BanSafeHealthChangedPayload,
+  type BanSafeHealthFinding,
+  type BanSafeHealthPenalties,
   type BanSafeHealthThresholdPayload,
   type BanSafeIncidentEventKind,
   type BanSafeIncidentPayload,
+  type BanSafeModelRef,
   type BanSafeRequiredFinding,
+  type BanSafeRiskChangedPayload,
+  type BanSafeRiskFactor,
+  type BanSafeRiskLevel,
   type CampaignCapReachedPayload,
   type CampaignColdBlockedPayload,
   type CampaignCompletedPayload,

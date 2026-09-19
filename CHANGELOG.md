@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Added `Client.calls` for call analytics and call detail records (needs
+  `sessions:read`; also on project clients). `stats()` returns totals,
+  per-day, per-hour, per-number or per-outcome groups, and a 168-cell
+  hour-of-week heatmap in an IANA time zone. `list()` returns a
+  `CursorPage<CallRecord>`. `export()` returns one CSV or NDJSON page of up to
+  1,000 records with its `nextCursor`, and `exportAll()` yields every page,
+  dropping repeated CSV header rows. Filters: `projectId` (team clients),
+  `sessionId`, `direction`, `upstream`, `outcome`, `since` and `until`. Call
+  records identify the other party only by the pseudonymous `peerRef`.
+  Response metadata now keeps the `polymorfa-next-cursor` header.
+- Webhooks: added `bansafe.health_changed` and `bansafe.risk_changed` to
+  `KNOWN_WEBHOOK_EVENT_TYPES`, typed as `BanSafeHealthChangedPayload` and
+  `BanSafeRiskChangedPayload`.
 - Client rules: `ClientRules` and `SetClientRulesRequest` add
   `conversationTtlSeconds`, the seconds a sender stays replyable in
   `conversation` mode (300 to 604800; the API default is 86400).

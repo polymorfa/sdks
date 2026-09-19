@@ -173,9 +173,9 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "2259a1fd331c6ddbc8ad56a04333100ebfce7c2e",
-      total: 424,
-      covered: 308,
+      sourceCommit: "4b75534812dc25e839fda3c2ba231e46afe39534",
+      total: 427,
+      covered: 311,
       partial: 0,
       missing: 0,
       excluded: 116,
@@ -219,6 +219,26 @@ describe("coverage checker", () => {
       revokeCustomerPairingLink: "Client.customers.revokePairingLink",
       transferCustomerNumber: "Client.customers.transferNumber",
       updateCustomer: "Client.customers.update",
+    });
+  });
+
+  it("maps the Platform call analytics and export routes", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        path: string;
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const mappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ path }) => path.startsWith("/platform/calls"))
+        .map(({ operationId, typescript }) => [operationId, typescript]),
+    );
+    expect(mappings).toEqual({
+      exportCallRecords: { status: "covered", method: "Client.calls.export" },
+      getCallStats: { status: "covered", method: "Client.calls.stats" },
+      listCallRecords: { status: "covered", method: "Client.calls.list" },
     });
   });
 
