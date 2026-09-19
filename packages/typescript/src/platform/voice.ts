@@ -28,12 +28,10 @@ export const VOICE_AUDIO_STATUSES = [
   "failed",
 ] as const;
 export type KnownVoiceAudioStatus = (typeof VOICE_AUDIO_STATUSES)[number];
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type VoiceAudioStatus = KnownVoiceAudioStatus | (string & {});
 
 export const VOICE_AUDIO_SOURCES = ["upload", "tts"] as const;
 export type KnownVoiceAudioSource = (typeof VOICE_AUDIO_SOURCES)[number];
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type VoiceAudioSource = KnownVoiceAudioSource | (string & {});
 
 export const VOICE_AUDIO_FAILURE_REASONS = [
@@ -48,25 +46,20 @@ export const VOICE_AUDIO_FAILURE_REASONS = [
 export type KnownVoiceAudioFailureReason =
   (typeof VOICE_AUDIO_FAILURE_REASONS)[number];
 export type VoiceAudioFailureReason =
-  | KnownVoiceAudioFailureReason
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  | (string & {});
+  KnownVoiceAudioFailureReason | (string & {});
 
 /** Container of the original upload. */
 export const VOICE_AUDIO_FORMATS = ["mp3", "wav", "ogg", "m4a"] as const;
 export type KnownVoiceAudioFormat = (typeof VOICE_AUDIO_FORMATS)[number];
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type VoiceAudioFormat = KnownVoiceAudioFormat | (string & {});
 
 export const VOICE_PROVIDERS = ["elevenlabs", "openai"] as const;
 export type KnownVoiceProvider = (typeof VOICE_PROVIDERS)[number];
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type VoiceProvider = KnownVoiceProvider | (string & {});
 
 /** Whose provider key produced a TTS asset. */
 export const VOICE_KEY_SOURCES = ["managed", "customer"] as const;
 export type KnownVoiceKeySource = (typeof VOICE_KEY_SOURCES)[number];
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type VoiceKeySource = KnownVoiceKeySource | (string & {});
 
 export const VOICE_PROVIDER_CREDENTIAL_STATUSES = [
@@ -77,9 +70,7 @@ export const VOICE_PROVIDER_CREDENTIAL_STATUSES = [
 export type KnownVoiceProviderCredentialStatus =
   (typeof VOICE_PROVIDER_CREDENTIAL_STATUSES)[number];
 export type VoiceProviderCredentialStatus =
-  | KnownVoiceProviderCredentialStatus
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  | (string & {});
+  KnownVoiceProviderCredentialStatus | (string & {});
 
 export const VOICE_PROVIDER_CREDENTIAL_ERRORS = [
   "unauthorized",
@@ -90,9 +81,7 @@ export const VOICE_PROVIDER_CREDENTIAL_ERRORS = [
 export type KnownVoiceProviderCredentialError =
   (typeof VOICE_PROVIDER_CREDENTIAL_ERRORS)[number];
 export type VoiceProviderCredentialError =
-  | KnownVoiceProviderCredentialError
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  | (string & {});
+  KnownVoiceProviderCredentialError | (string & {});
 
 export const VOICE_AUDIO_UPLOAD_CONTENT_TYPES = [
   "audio/mpeg",
@@ -105,9 +94,7 @@ export const VOICE_AUDIO_UPLOAD_CONTENT_TYPES = [
 export type KnownVoiceAudioUploadContentType =
   (typeof VOICE_AUDIO_UPLOAD_CONTENT_TYPES)[number];
 export type VoiceAudioUploadContentType =
-  | KnownVoiceAudioUploadContentType
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  | (string & {});
+  KnownVoiceAudioUploadContentType | (string & {});
 
 /** ElevenLabs models. `eleven_multilingual_v2` is the default. */
 export const ELEVENLABS_TTS_MODELS = [
@@ -116,16 +103,15 @@ export const ELEVENLABS_TTS_MODELS = [
   "eleven_turbo_v2_5",
 ] as const;
 export type ElevenLabsTtsModel =
-  | (typeof ELEVENLABS_TTS_MODELS)[number]
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  | (string & {});
+  (typeof ELEVENLABS_TTS_MODELS)[number] | (string & {});
 
 /** OpenAI models. `gpt-4o-mini-tts` is the default. */
-export const OPENAI_TTS_MODELS = ["gpt-4o-mini-tts", "tts-1", "tts-1-hd"] as const;
-export type OpenAiTtsModel =
-  | (typeof OPENAI_TTS_MODELS)[number]
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  | (string & {});
+export const OPENAI_TTS_MODELS = [
+  "gpt-4o-mini-tts",
+  "tts-1",
+  "tts-1-hd",
+] as const;
+export type OpenAiTtsModel = (typeof OPENAI_TTS_MODELS)[number] | (string & {});
 
 export const OPENAI_TTS_VOICES = [
   "alloy",
@@ -140,10 +126,7 @@ export const OPENAI_TTS_VOICES = [
   "shimmer",
   "verse",
 ] as const;
-export type OpenAiTtsVoice =
-  | (typeof OPENAI_TTS_VOICES)[number]
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  | (string & {});
+export type OpenAiTtsVoice = (typeof OPENAI_TTS_VOICES)[number] | (string & {});
 
 /** Largest upload the API accepts: 16 MiB. */
 export const VOICE_AUDIO_MAX_UPLOAD_BYTES = 16_777_216;
@@ -246,10 +229,7 @@ export interface CreateVoiceAudioUploadInput {
 }
 
 export type VoiceAudioBody =
-  | Blob
-  | ArrayBuffer
-  | ArrayBufferView
-  | ReadableStream<Uint8Array>;
+  Blob | ArrayBuffer | ArrayBufferView | ReadableStream<Uint8Array>;
 
 export interface UploadVoiceAudioInput {
   readonly name: string;
@@ -719,10 +699,7 @@ export class VoiceProviderCredentialsResource<O extends ClientOwner> {
       readonly projectId?: string | null;
     };
     if (typeof fields.apiKey !== "string" || fields.apiKey.length === 0) {
-      throw new PolymorfaConfigurationError(
-        "An apiKey is required.",
-        "apiKey",
-      );
+      throw new PolymorfaConfigurationError("An apiKey is required.", "apiKey");
     }
     const body: Record<string, unknown> = {
       provider: fields.provider,

@@ -85,7 +85,9 @@ export class HttpTransport {
    * retried (a stream body cannot be replayed). Redirects are refused.
    * Error messages never include the URL.
    */
-  async sendToUploadUrl(request: UploadUrlRequest): Promise<ApiResponse<unknown>> {
+  async sendToUploadUrl(
+    request: UploadUrlRequest,
+  ): Promise<ApiResponse<unknown>> {
     const url = uploadUrl(this.#baseUrl, request.url);
     const headers = new Headers();
     for (const [name, value] of Object.entries(request.headers)) {

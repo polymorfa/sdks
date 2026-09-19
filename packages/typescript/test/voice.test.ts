@@ -230,7 +230,11 @@ describe("voice audio library", () => {
     const fetch = uploadFlow();
     const pool = Buffer.from("xxAUDIOyy");
     const result = await projectClient(fetch).voice.audio.upload(
-      { name: "Greeting", contentType: "audio/mpeg", body: pool.subarray(2, 7) },
+      {
+        name: "Greeting",
+        contentType: "audio/mpeg",
+        body: pool.subarray(2, 7),
+      },
       { idempotencyKey: "upload-2", headers: { "x-trace": "t1" } },
     );
     expect(result.data.status).toBe("transcoding");
@@ -254,9 +258,9 @@ describe("voice audio library", () => {
     expect(upload.headers.get("idempotency-key")).toBeNull();
     expect(upload.headers.get("x-trace")).toBeNull();
     expect(upload.init.redirect).toBe("error");
-    expect(
-      new TextDecoder().decode(upload.init.body as ArrayBuffer),
-    ).toBe("AUDIO");
+    expect(new TextDecoder().decode(upload.init.body as ArrayBuffer)).toBe(
+      "AUDIO",
+    );
 
     const complete = sent(fetch, 2);
     expect(complete.url.pathname).toBe(
@@ -501,7 +505,11 @@ describe("voice audio library", () => {
   });
 
   it("waits until the asset is ready or failed", async () => {
-    const statuses: VoiceAudioStatus[] = ["transcoding", "transcoding", "ready"];
+    const statuses: VoiceAudioStatus[] = [
+      "transcoding",
+      "transcoding",
+      "ready",
+    ];
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       ok(asset({ status: statuses.shift() ?? "ready" })),
     );
@@ -535,9 +543,9 @@ describe("voice audio library", () => {
     );
     const { data } = await projectClient(fetch).voice.audio.retrieve(ASSET_ID);
     expect(data.status).toBe("archived");
-    expect((VOICE_AUDIO_STATUSES as readonly string[]).includes(data.status)).toBe(
-      false,
-    );
+    expect(
+      (VOICE_AUDIO_STATUSES as readonly string[]).includes(data.status),
+    ).toBe(false);
     expect(data.source).toBe("recording");
     expect(data.failureReason).toBe("future_reason");
     expectTypeOf<"archived">().toExtend<VoiceAudioStatus>();
@@ -625,8 +633,8 @@ describe("voice provider credentials", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       ok(credential({ projectId: null })),
     );
-    const scoped = organizationClient(fetch).project(PROJECT).voice
-      .providerCredentials;
+    const scoped =
+      organizationClient(fetch).project(PROJECT).voice.providerCredentials;
     await expect(scoped.retrieve(CREDENTIAL_ID)).resolves.toBeDefined();
     await expect(scoped.verify(CREDENTIAL_ID)).rejects.toBeInstanceOf(
       PolymorfaAuthorizationError,

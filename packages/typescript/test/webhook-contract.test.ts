@@ -178,10 +178,9 @@ const campaign = { campaignId: "cmp_1" } as const;
 
 type P = WebhookPayloadMap;
 const PAYLOADS: {
-  readonly [K in Exclude<
-    KnownWebhookEventType,
-    LegacyEventType | PendingWebhookEvent
-  >]: Shape<P[K]>;
+  readonly [
+    K in Exclude<KnownWebhookEventType, LegacyEventType | PendingWebhookEvent>
+  ]: Shape<P[K]>;
 } = {
   "customer.created": shape<P["customer.created"]>()(
     customer,
