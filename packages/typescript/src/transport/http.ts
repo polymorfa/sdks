@@ -79,6 +79,76 @@ export class HttpTransport {
   }
 
   /**
+   * Sends a body to an upload URL the API returned. The URL is the
+   * capability: the request carries only the given headers, never the
+   * client's `Authorization`, API version or idempotency key, and it is not
+   * retried (a stream body cannot be replayed). Redirects are refused.
+   * Error messages never include the URL.
+   */
+  async sendToUploadUrl(
+    request: UploadUrlRequest,
+  ): Promise<ApiResponse<unknown>> {
+    const url = uploadUrl(this.#baseUrl, request.url);
+    const headers = new Headers();
+    for (const [name, value] of Object.entries(request.headers)) {
+      if (name.toLowerCase() === "authorization") continue;
+      headers.set(name, value);
+    }
+    headers.set("user-agent", `polymorfa-node/${SDK_VERSION}`);
+    const timeoutMs = assertNonNegativeInteger(
+      request.timeoutMs ?? this.#timeoutMs,
+      "timeoutMs",
+      false,
+    );
+    const controller = new AbortController();
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutMs);
+    const cancel = () => controller.abort(request.signal?.reason);
+    if (request.signal?.aborted === true) cancel();
+    else request.signal?.addEventListener("abort", cancel, { once: true });
+    const streaming = request.body instanceof ReadableStream;
+    let response: Response;
+    let data: unknown;
+    try {
+      response = await this.#fetch(url, {
+        method: request.method,
+        headers,
+        body: request.body,
+        redirect: "error",
+        signal: controller.signal,
+        ...(streaming ? { duplex: "half" } : {}),
+      } as RequestInit);
+      data = await decodeResponseBody(response);
+    } catch (error) {
+      if (request.signal?.aborted === true) {
+        throw new PolymorfaCancelledError(
+          "The upload was cancelled by the caller.",
+          { code: "request_cancelled", cause: error },
+        );
+      }
+      if (timedOut) {
+        throw new PolymorfaTimeoutError(
+          `The upload did not finish within ${timeoutMs}ms.`,
+          { code: "request_timeout", cause: error },
+        );
+      }
+      throw new PolymorfaConnectionError(
+        "The upload could not reach the upload URL.",
+        { code: "connection_error", cause: error },
+      );
+    } finally {
+      clearTimeout(timer);
+      request.signal?.removeEventListener("abort", cancel);
+    }
+    const metadata = responseMetadata(response, 1);
+    if (!response.ok) throw apiError(response, data, metadata);
+    return Object.freeze({ data, metadata });
+  }
+
+  /**
    * Returns a successful response body as an unbuffered stream.
    *
    * Retries apply only before a body is handed to the caller. `timeoutMs`
@@ -727,6 +797,42 @@ function validateBaseUrl(
     );
   }
   return value.replace(/\/+$/, "");
+}
+
+export interface UploadUrlRequest {
+  /** Absolute URL, or a path relative to the client's base URL. */
+  readonly url: string;
+  readonly method: "POST" | "PUT";
+  readonly headers: Readonly<Record<string, string>>;
+  readonly body: BodyInit;
+  readonly signal?: AbortSignal;
+  readonly timeoutMs?: number;
+}
+
+function uploadUrl(baseUrl: string, value: string): URL {
+  let url: URL;
+  try {
+    url = new URL(value, `${baseUrl}/`);
+  } catch {
+    throw new PolymorfaValidationError("The upload URL is not a valid URL.", {
+      code: "invalid_upload_url",
+    });
+  }
+  const loopback =
+    url.hostname === "localhost" ||
+    url.hostname === "127.0.0.1" ||
+    url.hostname === "[::1]";
+  if (
+    url.username !== "" ||
+    url.password !== "" ||
+    !(url.protocol === "https:" || (url.protocol === "http:" && loopback))
+  ) {
+    throw new PolymorfaValidationError(
+      "The upload URL must use HTTPS and must not contain credentials.",
+      { code: "invalid_upload_url" },
+    );
+  }
+  return url;
 }
 
 class RequestTimeout extends Error {

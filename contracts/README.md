@@ -49,7 +49,20 @@ Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
 successful live call.
 
-## Reconciliation
+## Pending contract: Voice Automation audio (`voice-audio-v1`)
+
+`Client.voice` implements contract revision `voice-audio-v1` from
+polymorfa/polymorfa branch `t3code/voice-audio-library` (based on `dev`
+`91444480e`). That branch had not published its OpenAPI files when the SDK side
+was written, so the snapshots, `source.json` and `coverage.json` above do not
+contain the 13 `/platform/voice/*` operations, the two `voice.*` webhook events
+or the eight voice error codes. The ledger does not count those operations as
+covered. `packages/typescript/test/support/pending-contract.ts` lists the codes
+and events the SDK types ahead of the snapshot; the parity tests add them
+explicitly and fail once a re-synced snapshot contains one. The next re-sync
+must copy the published files, add ledger rows mapping the operations to
+`Client.voice.audio` and `Client.voice.providerCredentials`, and empty that
+list. Other languages have no voice resources.
 
 Revision `2259a1fd` adds the project event stream. `Client.events.stream`
 covers `GET /platform/projects/{projectId}/events/stream` with reconnect and

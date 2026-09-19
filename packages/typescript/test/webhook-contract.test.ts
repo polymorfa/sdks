@@ -12,6 +12,10 @@ import {
   type OrganizationWebhookDeliveryAttempt,
   type WebhookPayloadMap,
 } from "../src/index.js";
+import {
+  PENDING_WEBHOOK_EVENTS,
+  type PendingWebhookEvent,
+} from "./support/pending-contract.js";
 
 interface Schema {
   readonly $ref?: string;
@@ -174,7 +178,9 @@ const campaign = { campaignId: "cmp_1" } as const;
 
 type P = WebhookPayloadMap;
 const PAYLOADS: {
-  readonly [K in Exclude<KnownWebhookEventType, LegacyEventType>]: Shape<P[K]>;
+  readonly [
+    K in Exclude<KnownWebhookEventType, LegacyEventType | PendingWebhookEvent>
+  ]: Shape<P[K]>;
 } = {
   "customer.created": shape<P["customer.created"]>()(
     customer,
@@ -559,7 +565,12 @@ const sign = (body: Buffer) =>
 
 describe("webhook catalog contract", () => {
   it("lists exactly the events the pinned Messaging contract defines", () => {
-    expect([...specEvents().keys()].sort()).toEqual(
+    const spec = [...specEvents().keys()];
+    for (const type of PENDING_WEBHOOK_EVENTS) {
+      // Remove the event from pending-contract.ts once a snapshot publishes it.
+      expect(spec, type).not.toContain(type);
+    }
+    expect([...spec, ...PENDING_WEBHOOK_EVENTS].sort()).toEqual(
       [...KNOWN_WEBHOOK_EVENT_TYPES].sort(),
     );
   });

@@ -1,4 +1,9 @@
 import type {
+  VoiceAudioFailureReason,
+  VoiceAudioFormat,
+  VoiceAudioSource,
+} from "../platform/voice.js";
+import type {
   MessagingConnection,
   PhonePlatform,
   WhatsAppAccountType,
@@ -77,6 +82,8 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "session.phone_offline",
   "session.status",
   "template.status",
+  "voice.asset_failed",
+  "voice.asset_ready",
 ] as const;
 
 export type KnownWebhookEventType = (typeof KNOWN_WEBHOOK_EVENT_TYPES)[number];
@@ -802,6 +809,30 @@ export interface CampaignColdBlockedPayload {
   readonly at: number;
 }
 
+/** Fields shared by the Voice Automation (beta) audio asset webhooks. */
+export interface VoiceAssetEventPayload {
+  readonly eventId: string;
+  readonly occurredAt: string;
+  readonly organizationId: string;
+  readonly projectId: string;
+  readonly assetId: string;
+  readonly name: string;
+  readonly source: VoiceAudioSource;
+}
+
+/** An audio asset finished transcoding and can be used in calls. */
+export interface VoiceAssetReadyPayload extends VoiceAssetEventPayload {
+  readonly durationMs: number;
+  /** Hex SHA-256 of the canonical 16 kHz mono PCM. */
+  readonly contentSha256: string;
+  readonly originalFormat: VoiceAudioFormat;
+}
+
+/** An audio asset could not be processed. */
+export interface VoiceAssetFailedPayload extends VoiceAssetEventPayload {
+  readonly failureReason: VoiceAudioFailureReason;
+}
+
 export interface WebhookPayloadMap {
   readonly "bansafe.action": BanSafeActionPayload;
   readonly "bansafe.claim": BanSafeClaimPayload;
@@ -875,10 +906,13 @@ export interface WebhookPayloadMap {
   readonly "session.phone_offline": SessionPhoneOfflinePayload;
   readonly "session.status": SessionStatusPayload;
   readonly "template.status": TemplateStatusPayload;
+  readonly "voice.asset_failed": VoiceAssetFailedPayload;
+  readonly "voice.asset_ready": VoiceAssetReadyPayload;
 }
 
 export interface WebhookEventOf<TEvent extends string, TPayload> {
   readonly id: string;
+  /** Session name. Empty for project-scoped events such as `customer.*` and `voice.*`. */
   readonly session: string;
   /** Integrator reference from the QuickLink that created the session, when supplied. */
   readonly externalId?: string;
