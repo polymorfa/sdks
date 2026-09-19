@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "129d58aeb0eb6b9c6efadf3f07ade127834287d0",
+  "commit": "078af1889c2adb4020f7a4fc41384058a4234da1",
   "branch": "dev",
   "published": true,
-  "note": "Merged commit on monorepo dev (merge of PR #207, Customer-scoped client tokens).",
+  "note": "Merged commit on monorepo dev (merge of PR #198, error bodies).",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "35bfcb79cca0776a24fdaa72a741c0a3722a78016c69f0a488f21214b10a7054"
+      "sha256": "fc3d0f209951d04f4e6dbd6b10c86be1e648019cc092c77b117bdaf779d444dc"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "bb7b3e9f43929fea9272b780e4b8b5f6f603861873a40027019c14a836fb2279"
+      "sha256": "071ce1f129c07b509d2fb3223e2f800fe64f91cc61d67c75a19f20f892efbda1"
     }
   }
 }

@@ -19,6 +19,7 @@ export interface BrowserErrorOptions {
   readonly code?: string;
   readonly status?: number;
   readonly requestId?: string;
+  readonly docUrl?: string;
   readonly details?: unknown;
   readonly metadata?: BrowserResponseMetadata;
   readonly cause?: unknown;
@@ -28,7 +29,10 @@ export class BrowserError extends Error {
   readonly category: BrowserErrorCategory;
   readonly code: string | undefined;
   readonly status: number | undefined;
+  /** `error.request_id` from the body, else the `X-Request-Id` header. */
   readonly requestId: string | undefined;
+  /** Documentation for `code` (the body's `docs` link). */
+  readonly docUrl: string | undefined;
   readonly details: unknown;
   readonly metadata: BrowserResponseMetadata | undefined;
 
@@ -42,6 +46,7 @@ export class BrowserError extends Error {
     this.code = options.code;
     this.status = options.status;
     this.requestId = options.requestId;
+    this.docUrl = options.docUrl;
     this.details = options.details;
     this.metadata = options.metadata;
   }

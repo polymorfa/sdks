@@ -141,4 +141,38 @@ describe("BrowserTransport", () => {
     expect(getClientToken).toHaveBeenCalledTimes(1);
     expect(fetch).not.toHaveBeenCalled();
   });
+
+  it("reads the code, request ID, and doc link from an error body without the header", async () => {
+    const transport = new BrowserTransport({
+      getClientToken: async () => "pmfa_ct_fixture",
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            error: {
+              type: "rate_limit_error",
+              code: "whatsapp_rate_limited",
+              message: "WhatsApp is limiting requests from this number.",
+              param: null,
+              request_id: "req_body_only",
+            },
+            data: null,
+            docs: "https://docs.polymorfa.com/api/errors#whatsapp-rate-limited",
+          }),
+          { status: 429, headers: { "content-type": "application/json" } },
+        ),
+      maxNetworkRetries: 0,
+      sleep: async () => undefined,
+    });
+    const failure = await transport
+      .request({ method: "GET", path: "/client/state" })
+      .catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(BrowserHttpError);
+    expect(failure).toMatchObject({
+      category: "rate_limit",
+      code: "whatsapp_rate_limited",
+      requestId: "req_body_only",
+      docUrl: "https://docs.polymorfa.com/api/errors#whatsapp-rate-limited",
+      message: "WhatsApp is limiting requests from this number.",
+    });
+  });
 });

@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- `PolymorfaError` exposes `requestLogUrl`, `docUrl`, and `rateLimitReason`,
+  and `requestId` now prefers the error body's `request_id` over the
+  `X-Request-Id` header. `code` is typed as `PolymorfaErrorCode`, a union of
+  the documented codes (including the new WhatsApp codes
+  `recipient_not_on_whatsapp`, `conversation_window_closed`,
+  `template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
+  `new_chat_limit_reached`, and `whatsapp_account_restricted`; the Calls and SIP trunk codes; and the Platform `payg_required` and `premium_required` codes) that still
+  accepts any string. A `413` now throws `PolymorfaValidationError`.
+  `BrowserError` gains `docUrl` and reads `code`, `requestId`, and the message
+  from the error object. The `polymorfa-ratelimit-reason` header is kept in
+  response metadata.
+- Breaking (types only): `Client.projects.create` returns `CreatedProject`, and
+  `CreateProjectRequest.defaultTier` is `ProjectDefaultTier`.
+  `ProductionEnrollmentResult` adds `billingMode: "payg"`.
 - `MessagingClient.clientTokens.mint` accepts `customer` (a Polymorfa
   Customer ID) instead of `session`, with an optional `allow` list, to mint a
   Customer-scoped client token (beta). The token covers the numbers the

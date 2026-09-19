@@ -723,6 +723,7 @@ const SAFE_RESPONSE_HEADERS = [
   "retry-after",
   "x-ratelimit-limit",
   "x-ratelimit-remaining",
+  "polymorfa-ratelimit-reason",
 ] as const;
 
 function apiError(
@@ -730,17 +731,28 @@ function apiError(
   body: unknown,
   metadata: ResponseMetadata,
 ): PolymorfaError {
+  const fields = errorFields(body);
+  const requestId = fields.requestId ?? metadata.requestId;
+  const rateLimitReason =
+    response.headers.get("polymorfa-ratelimit-reason") ?? undefined;
   const options: PolymorfaErrorOptions = {
     status: response.status,
-    ...(metadata.requestId === undefined
+    ...(requestId === undefined ? {} : { requestId }),
+    ...(fields.requestLogUrl === undefined
       ? {}
-      : { requestId: metadata.requestId }),
+      : { requestLogUrl: fields.requestLogUrl }),
+    ...(fields.docUrl === undefined ? {} : { docUrl: fields.docUrl }),
+    ...(rateLimitReason === undefined ? {} : { rateLimitReason }),
     details: body,
     metadata,
-    ...errorCode(body),
+    ...(fields.code === undefined ? {} : { code: fields.code }),
   };
   const message = errorMessage(body, response.status);
-  if (response.status === 400 || response.status === 422)
+  if (
+    response.status === 400 ||
+    response.status === 413 ||
+    response.status === 422
+  )
     return new PolymorfaValidationError(message, options);
   if (response.status === 401)
     return new PolymorfaAuthenticationError(message, options);
@@ -772,16 +784,36 @@ function errorMessage(body: unknown, status: number): string {
   return `Polymorfa API request failed with status ${status}.`;
 }
 
-function errorCode(body: unknown): Pick<PolymorfaErrorOptions, "code"> {
-  if (typeof body === "object" && body !== null) {
-    const record = body as Record<string, unknown>;
-    const code =
-      typeof record.error === "object" && record.error !== null
-        ? (record.error as Record<string, unknown>).code
-        : record.code;
-    if (typeof code === "string") return { code };
-  }
-  return {};
+interface ErrorFields {
+  readonly code?: string;
+  readonly requestId?: string;
+  readonly requestLogUrl?: string;
+  readonly docUrl?: string;
+}
+
+/**
+ * Reads the documented error object, `{ error: { code, request_id,
+ * request_log_url }, docs }`, and the older `{ error, code }` shape.
+ */
+function errorFields(body: unknown): ErrorFields {
+  if (typeof body !== "object" || body === null) return {};
+  const record = body as Record<string, unknown>;
+  const error =
+    typeof record.error === "object" && record.error !== null
+      ? (record.error as Record<string, unknown>)
+      : undefined;
+  const text = (value: unknown) =>
+    typeof value === "string" && value.length > 0 ? value : undefined;
+  const code = text(error ? error.code : record.code);
+  const requestId = text(error?.request_id);
+  const requestLogUrl = text(error?.request_log_url);
+  const docUrl = text(record.docs);
+  return {
+    ...(code === undefined ? {} : { code }),
+    ...(requestId === undefined ? {} : { requestId }),
+    ...(requestLogUrl === undefined ? {} : { requestLogUrl }),
+    ...(docUrl === undefined ? {} : { docUrl }),
+  };
 }
 
 function assertNonNegativeInteger(

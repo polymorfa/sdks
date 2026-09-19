@@ -2,12 +2,11 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`129d58aeb0eb6b9c6efadf3f07ade127834287d0` on branch `dev` (the merge commit
-for PR #207, Customer-scoped client tokens). `source.json` records the
+`078af1889c2adb4020f7a4fc41384058a4234da1` on monorepo `dev`. `source.json` records the
 original paths and SHA-256 hashes. `coverage.json` uses the same source
 revision.
 
-This revision adds `customer` and `allow` to `mintClientToken` (covered by
+Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
 `MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
 merged monorepo `dev`, the Calls diagnostics route
 (`voipReportCallDiagnostics`) is back with a refreshed fingerprint; the SDK
@@ -19,10 +18,15 @@ operations were added or removed by this re-sync.
 | ------------------- | ---------: |
 | Covered             |        304 |
 | Missing             |          0 |
-| Excluded            |        116 |
+| Excluded            |        118 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        420 |
+| Total               |        422 |
+
+This revision adds test event triggering
+(`POST /messaging/testing/{projectId}/events`) and fixture listing
+(`GET /messaging/testing/{projectId}/events/fixtures`). Neither has a typed
+SDK method at this revision, so both are excluded.
 
 An earlier revision added app-reported call diagnostics
 (`POST /messaging/voip/calls/{id}/reports`, covered by
@@ -44,6 +48,17 @@ It does not claim coverage in other languages, package publication, or a
 successful live call.
 
 ## Reconciliation
+
+This revision adds `request_id` (required) and `request_log_url` to every
+error object, and extends the `PublicError` code enum with the WhatsApp codes
+(`recipient_not_on_whatsapp`, `conversation_window_closed`,
+`template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
+`new_chat_limit_reached`, `whatsapp_account_restricted`) and the BanSafe codes
+the API now delivers. That moved 384 fingerprints; each was reviewed, and all
+but three changed only in error responses. The other three are `createProject`
+and `requestProductionEnrollment` (upstream Pay-As-You-Go changes, now typed as
+`CreatedProject` and `ProductionEnrollmentResult.billingMode`), and the
+excluded console logs read. `PolymorfaError` exposes the new fields.
 
 This revision replaces raw account platform codes with `phonePlatform` and
 `accountType` on the session account, profile, and `session.connected`
