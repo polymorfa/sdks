@@ -50,3 +50,22 @@ export class PolymorfaServerError extends PolymorfaError {}
 export class PolymorfaConnectionError extends PolymorfaError {}
 export class PolymorfaTimeoutError extends PolymorfaError {}
 export class PolymorfaCancelledError extends PolymorfaError {}
+
+export type MediaIntegrityErrorCode =
+  | "media_invalid_descriptor"
+  | "media_too_short"
+  | "media_too_large"
+  | "media_invalid_ciphertext"
+  | "media_enc_hash_mismatch"
+  | "media_mac_mismatch"
+  | "media_invalid_padding"
+  | "media_hash_mismatch";
+
+/** Raised when WhatsApp media fails validation, authentication, or size limits. */
+export class PolymorfaMediaIntegrityError extends PolymorfaError {
+  declare readonly code: MediaIntegrityErrorCode;
+
+  constructor(message: string, code: MediaIntegrityErrorCode) {
+    super(message, { code });
+  }
+}
