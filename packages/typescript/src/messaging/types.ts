@@ -1643,10 +1643,7 @@ export interface UpdateSessionCallSettingsRequest {
    * WhatsApp party; `false` lets each hear only the WhatsApp party.
    */
   readonly conferenceMode?: boolean;
-  /**
-   * Routing to a different trunk requires the SIP trunks beta. `clients`
-   * clears the trunk.
-   */
+  /** Where incoming WhatsApp calls ring. `clients` clears the trunk. */
   readonly inboundRoute?: CallInboundRoute;
   /**
    * A trunk of the session's project with direction `outbound` or `both`.

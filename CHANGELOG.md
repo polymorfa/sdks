@@ -111,7 +111,8 @@
   either mode. The platform rejects `includeSelfAudio`, and the SDK fails
   before sending it with a `PolymorfaValidationError` that names
   `conferenceMode`.
-- `Client.sipTrunks` manages SIP trunks (beta). Session call settings add
+- `Client.sipTrunks` manages SIP trunks (a standard Calls feature; no
+  enrollment). Session call settings add
   `callsEnabled` (turn calling off for a session; refusals use
   `calls_disabled`, raised as `CallsDisabledError` by `@polymorfa/sdk/calls` and
   the browser client), `inboundRoute`, `sipTrunkId`, `sipClaim`, `hostCloudApiCalls` (whether

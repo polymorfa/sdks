@@ -2,9 +2,16 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`078af1889c2adb4020f7a4fc41384058a4234da1` on monorepo `dev`. `source.json` records the
-original paths and SHA-256 hashes. `coverage.json` uses the same source
-revision.
+`669f81ac3ce1bb6cf4e7a66700c2eb694bbd0883` on monorepo branch
+`t3code/sip-trunks-standard` (a coordinated PR dependency, not yet merged to
+`dev`). `source.json` records the original paths and SHA-256 hashes.
+`coverage.json` uses the same source revision.
+
+Revision `669f81ac` makes SIP trunks a standard Calls feature: the Platform
+descriptions of `createSipTrunk`, `updateSipTrunk`,
+`rotateSipTrunkCredentials` and the call settings `inboundRoute` field no
+longer mention beta enrollment. Descriptions are not fingerprinted, so no
+fingerprint, operation or count changed.
 
 Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
 `MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
