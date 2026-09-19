@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "2259a1fd331c6ddbc8ad56a04333100ebfce7c2e",
+  "sourceCommit": "8a7caf47985cd1e7a946320a28e229148715160c",
   "excludedContracts": [
     {
       "family": "graph",
@@ -4542,7 +4542,7 @@
       "method": "GET",
       "path": "/console/sip-trunks",
       "operationId": "listConsoleSipTrunks",
-      "fingerprint": "c822dc665b2799969c70cb0c7187ab200ef5619e2b9c64d15a795f44e780fb4e",
+      "fingerprint": "1c65b7a4695e98c95b57a0e8016e971a1cc8e6c60bb30da53e7bb503fc8197ec",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -4553,7 +4553,18 @@
       "method": "GET",
       "path": "/console/sip-trunks/{trunkId}",
       "operationId": "getConsoleSipTrunk",
-      "fingerprint": "192c5cdcdf26cc2d7b1ac0976c21f8e549e850db4486670136232e35743d5a6d",
+      "fingerprint": "11545eb8527a12732f83182d7ac7ec8b4c5fdc8efc93c17747b6ff1a837fd192",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sip/endpoint",
+      "operationId": "getConsoleSipEndpoint",
+      "fingerprint": "8c11a2dd8835d935e27c2ee1f0c2dba7a6a99b27201015af935ba9794979ede5",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -4564,7 +4575,7 @@
       "method": "GET",
       "path": "/platform/sip-trunks",
       "operationId": "listSipTrunks",
-      "fingerprint": "054184f82b9e5f1ecaad80a9eb0e1dfb5609880f18bd7eb4cef9757fe22c3b65",
+      "fingerprint": "119bc02663ffe95fe36e3b7ee65232319d63e2fe3bbc5b499caf656c2184ea09",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.list"
@@ -4575,7 +4586,7 @@
       "method": "GET",
       "path": "/platform/sip-trunks/{trunkId}",
       "operationId": "getSipTrunk",
-      "fingerprint": "13cf2590313bac03e80a423517a1fd588a5bb7aee4575b0f624a0201ab78a0b1",
+      "fingerprint": "385b146e6232508028ab6ea9fdf64df4980caa54cf36787414e572a7acd006dc",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.retrieve"
@@ -4583,10 +4594,21 @@
     },
     {
       "family": "platform",
+      "method": "GET",
+      "path": "/platform/sip/endpoint",
+      "operationId": "getSipEndpoint",
+      "fingerprint": "a4361d3e1a0a1e0abdfc5b63b8a8b911e96523c2f1ebbb20f11158eeaf2f6bee",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.sipTrunks.endpoint"
+      }
+    },
+    {
+      "family": "platform",
       "method": "PATCH",
       "path": "/console/sip-trunks/{trunkId}",
       "operationId": "updateConsoleSipTrunk",
-      "fingerprint": "a39a163d94a487094c703c91280d4c5a6de279ed79db3be8bc9937ba7af5b703",
+      "fingerprint": "04ae1768c0d1e1f8094bf30f3f789073bac2a18495e07acca034147526f4ef3f",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -4597,7 +4619,7 @@
       "method": "PATCH",
       "path": "/platform/sip-trunks/{trunkId}",
       "operationId": "updateSipTrunk",
-      "fingerprint": "d8be37b4c7078b3fe888bee574a0f2fcce4e9ef868bf00ede64771e3ad09e23c",
+      "fingerprint": "b1aa23a365b958a437036a17b66223c5532eb5a1024b129b9dc9d8be36361165",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.update"
@@ -4608,7 +4630,7 @@
       "method": "POST",
       "path": "/console/sip-trunks",
       "operationId": "createConsoleSipTrunk",
-      "fingerprint": "97b39b7441a0ae316f19de93649075f7d7bbe38ade3e35a857e90ce880f79ff5",
+      "fingerprint": "bd5b94fa39edcfceda00a6dc382f256c6dcde7d222496a07890b382534773a85",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -4630,7 +4652,7 @@
       "method": "POST",
       "path": "/platform/sip-trunks",
       "operationId": "createSipTrunk",
-      "fingerprint": "d6dbacaf9e9414b604591fa23ed35f3901daeea17505069df4f15d7303f02a10",
+      "fingerprint": "b2fdd8e0358630aa804cbd2a6f7ff9d20b7b7b6d1cd39384c8707dc4d43e3362",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.create"
@@ -4674,7 +4696,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/events/stream",
       "operationId": "streamProjectEvents",
-      "fingerprint": "8d2bfdeed5af657c7f47e9db3b05092218fe9e90a2b0128ed643b584e98222ca",
+      "fingerprint": "4fa73ba811616cc3a579454bd263ad91aa99be66486bcd6b3b96ccc956016b8f",
       "typescript": {
         "status": "covered",
         "method": "Client.events.stream"

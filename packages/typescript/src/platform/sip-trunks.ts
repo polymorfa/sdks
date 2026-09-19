@@ -62,6 +62,39 @@ export interface SipTrunkCreated {
   readonly inboundCredentials?: SipTrunkCredentials;
 }
 
+/** A SIP transport your PBX can use, with its port on `SipEndpoint.host`. */
+export interface SipEndpointTransport {
+  readonly transport: SipTransport;
+  readonly port: number;
+  /**
+   * `required`: calls on this transport must use SRTP (SDES) media.
+   * `not_supported`: calls use plain RTP; offers with SRTP are refused.
+   */
+  readonly srtp: "required" | "not_supported";
+}
+
+/**
+ * The environment's SIP address: where your PBX sends SIP and which addresses
+ * and ports to allow in your firewall. It is the same for every project and
+ * trunk.
+ */
+export interface SipEndpoint {
+  /**
+   * `hosted`: the environment accepts SIP at `host`. `sip_not_hosted`: it has
+   * no SIP address; `host` and `rtp` are `null` and `transports` is empty.
+   */
+  readonly status: "hosted" | "sip_not_hosted";
+  /** Host name your PBX sends SIP to. Allow its addresses for SIP and RTP. */
+  readonly host: string | null;
+  readonly transports: readonly SipEndpointTransport[];
+  /** UDP port range, inclusive, that call audio uses. Allow it in both directions. */
+  readonly rtp: {
+    readonly protocol: "udp";
+    readonly portMin: number;
+    readonly portMax: number;
+  } | null;
+}
+
 export interface SipTrunkDeleted {
   readonly id: string;
   readonly deleted: true;
@@ -153,6 +186,21 @@ export class SipTrunksResource<O extends ClientOwner> {
         method: "GET",
         path: "/platform/sip-trunks",
         query: { projectId },
+        ...options,
+      })
+      .then(unwrapResponse);
+  }
+
+  /**
+   * Returns the SIP address your PBX points at. `status` is `sip_not_hosted`,
+   * not an error, when the environment has no SIP address. Needs
+   * `sessions:read`; client tokens are refused.
+   */
+  endpoint(options: RequestOptions = {}): Promise<ApiResponse<SipEndpoint>> {
+    return this.transport
+      .request<DataEnvelope<SipEndpoint>>({
+        method: "GET",
+        path: "/platform/sip/endpoint",
         ...options,
       })
       .then(unwrapResponse);

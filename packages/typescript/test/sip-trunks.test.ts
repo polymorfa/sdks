@@ -4,6 +4,7 @@ import {
   PolymorfaConfigurationError,
   PolymorfaConflictError,
   PolymorfaNotFoundError,
+  type SipEndpoint,
   type SipTrunk,
 } from "../src/index.js";
 import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
@@ -216,5 +217,66 @@ describe("SIP trunks", () => {
       .catch((cause: unknown) => cause);
     expect(error).toBeInstanceOf(PolymorfaConflictError);
     expect((error as PolymorfaConflictError).code).toBe("sip_trunk_in_use");
+  });
+});
+
+describe("SIP address", () => {
+  const hosted: SipEndpoint = {
+    status: "hosted",
+    host: "sip.example.test",
+    transports: [
+      { transport: "udp", port: 5060, srtp: "not_supported" },
+      { transport: "tcp", port: 5060, srtp: "not_supported" },
+      { transport: "tls", port: 5061, srtp: "required" },
+    ],
+    rtp: { protocol: "udp", portMin: 20000, portMax: 20999 },
+  };
+
+  it("reads the hosted address without a project", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ success: true, data: hosted }),
+    );
+    const response = await organizationClient(fetch).sipTrunks.endpoint();
+    expect(response.data).toEqual(hosted);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const sent = request(fetch, 0);
+    expect(sent.method).toBe("GET");
+    expect(sent.url.pathname).toBe("/platform/sip/endpoint");
+    expect([...sent.url.searchParams.keys()]).toEqual([]);
+    expect(sent.body).toBeUndefined();
+  });
+
+  it("returns sip_not_hosted as data on project clients", async () => {
+    const notHosted: SipEndpoint = {
+      status: "sip_not_hosted",
+      host: null,
+      transports: [],
+      rtp: null,
+    };
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ success: true, data: notHosted }),
+    );
+    const client = new Client({
+      credential: { type: "projectToken", value: PROJECT_TOKEN },
+      projectId: "project-a",
+      fetch,
+      maxNetworkRetries: 0,
+    });
+    const response = await client.sipTrunks.endpoint();
+    expect(response.data).toEqual(notHosted);
+    const sent = request(fetch, 0);
+    expect(sent.method).toBe("GET");
+    expect(sent.url.pathname).toBe("/platform/sip/endpoint");
+    expect([...sent.url.searchParams.keys()]).toEqual([]);
+  });
+
+  it("is the same call on a project view of a team client", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ success: true, data: hosted }),
+    );
+    const project = organizationClient(fetch).project("project-a");
+    await project.sipTrunks.endpoint();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(request(fetch, 0).url.pathname).toBe("/platform/sip/endpoint");
   });
 });
