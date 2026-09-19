@@ -8,4 +8,9 @@ export {
   type ViewportPreset,
 } from "./model.js";
 export { createSimulatedFetch, type SimulatedFetchOptions } from "./network.js";
-export { mountDevAssistant, type MountedDevAssistant } from "./panel.js";
+export {
+  mountDevAssistant,
+  type DevAssistantPosition,
+  type MountDevAssistantOptions,
+  type MountedDevAssistant,
+} from "./panel.js";

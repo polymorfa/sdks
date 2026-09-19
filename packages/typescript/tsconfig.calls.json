@@ -1,0 +1,9 @@
+{
+  "extends": "../calls/tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist/calls",
+    "rootDir": "../calls/src"
+  },
+  "include": ["../calls/src/**/*.ts"],
+  "exclude": ["../calls/test/**/*.ts"]
+}

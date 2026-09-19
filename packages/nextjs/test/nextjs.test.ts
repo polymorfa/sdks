@@ -108,6 +108,54 @@ describe("createMessagingClientTokenMint", () => {
       ),
     ).rejects.toThrow("invalid client token response");
   });
+
+  it("mints browser and Calls tokens through the Platform client-token route", async () => {
+    const fetch = vi.fn(async () =>
+      Response.json({
+        success: true,
+        data: {
+          token: "pmfa_ct_calls",
+          expiresAt: "2099-01-01T00:00:00.000Z",
+        },
+      }),
+    );
+    const messaging = new MessagingClient({
+      credential: { type: "apiKey", value: `pmfa_${"A".repeat(72)}` },
+      baseUrl: "https://api.example.com",
+      fetch,
+    });
+    expect(
+      (messaging.voip as unknown as Record<string, unknown>).token,
+    ).toBeUndefined();
+    const route = createClientTokenRoute({
+      authorize: () => ({ userId: "user-1" }),
+      mint: createMessagingClientTokenMint({
+        clientTokens: messaging.clientTokens,
+        resolve: (subject) => ({
+          session: "support",
+          ephemeralId: subject.userId,
+        }),
+      }),
+    });
+
+    const response = await route(
+      new Request("https://app.test/api/polymorfa/token", { method: "POST" }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      value: "pmfa_ct_calls",
+      audience: "browser",
+      expiresAt: Date.parse("2099-01-01T00:00:00.000Z"),
+    });
+    const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(new URL(url).pathname).toBe("/platform/client-tokens");
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body as string)).toEqual({
+      session: "support",
+      ephemeralId: "user-1",
+    });
+  });
 });
 
 describe("createTemplateBuilderRoute", () => {
