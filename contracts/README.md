@@ -2,7 +2,7 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`078af1889c2adb4020f7a4fc41384058a4234da1` on monorepo `dev`. `source.json` records the
+`51026bfebe611c8f710ed9c1413a65ed16a0e01b` on monorepo `dev`. `source.json` records the
 original paths and SHA-256 hashes. `coverage.json` uses the same source
 revision.
 
@@ -50,6 +50,11 @@ It does not claim coverage in other languages, package publication, or a
 successful live call.
 
 ## Reconciliation
+
+Revision `51026bfe` adds the optional `Idempotency-Key` header and its `409`
+outcomes to seven Messaging writes, and four `idempotency_*` public error
+codes to the shared error schema. That schema change moves the fingerprint of every Messaging
+operation that references it; each keeps its existing typed method.
 
 This revision adds `request_id` (required) and `request_log_url` to every
 error object, and extends the `PublicError` code enum with the WhatsApp codes

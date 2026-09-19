@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Message writes are safe to retry. `messages.send`, `messages.react`,
+  `chats.editMessage`, `chats.deleteMessage`, `channels.reactToMessage`, and
+  Messaging `campaigns.create` and `campaigns.launch` generate an
+  `Idempotency-Key` when you don't pass `idempotencyKey`, and their automatic
+  retries reuse it. The browser client's `messages.send` and `react` do the
+  same. A response with `Idempotent-Replayed: true` is final and is not
+  retried, in both the server and browser transports. A caller-supplied key
+  still wins. `PolymorfaErrorCode` adds `idempotency_completed`,
+  `idempotency_conflict`, `idempotency_in_progress`, and
+  `idempotency_outcome_unknown`.
+- `CreateProjectRequest.icon` is typed as `ProjectIconInput`, whose `type` is
+  `emoji`, `icon`, or `image`, matching what the API accepts.
 - Dev prereleases of `@polymorfa/sdk`, `@polymorfa/browser`, `@polymorfa/ui`,
   `@polymorfa/elements`, `@polymorfa/react`, `@polymorfa/store`,
   `@polymorfa/nextjs` and `@polymorfa/devtools` publish to npm under the

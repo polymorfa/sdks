@@ -80,6 +80,37 @@ describe("BrowserTransport", () => {
     expect(postFetch).toHaveBeenCalledTimes(1);
   });
 
+  it("surfaces a replayed idempotent failure without retrying", async () => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(
+      async () =>
+        new Response(
+          '{"error":{"code":"result_unknown","message":"unknown"}}',
+          {
+            status: 503,
+            headers: {
+              "content-type": "application/json",
+              "idempotent-replayed": "true",
+            },
+          },
+        ),
+    );
+    const transport = new BrowserTransport({
+      getClientToken: async () => "pmfa_ct_fixture",
+      fetch: fetcher,
+      maxNetworkRetries: 2,
+      sleep: async () => undefined,
+    });
+    await expect(
+      transport.request({
+        method: "POST",
+        path: "/client/send",
+        body: {},
+        idempotencyKey: "send-1",
+      }),
+    ).rejects.toBeInstanceOf(BrowserHttpError);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
   it("distinguishes caller cancellation from timeout", async () => {
     const pendingFetch: typeof fetch = async (_url, init) =>
       new Promise((_resolve, reject) =>

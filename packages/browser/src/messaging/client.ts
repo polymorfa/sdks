@@ -64,7 +64,7 @@ export class BrowserMessagesResource {
   ): Promise<
     BrowserActionResponse<BrowserSuccessEnvelope<BrowserMessageResult>>
   > {
-    return this.post("send", body, options);
+    return this.post("send", body, withIdempotencyKey(options));
   }
 
   markSeen(
@@ -91,7 +91,7 @@ export class BrowserMessagesResource {
   ): Promise<
     BrowserActionResponse<BrowserSuccessEnvelope<BrowserMessageReceipt>>
   > {
-    return this.post("react", body, options);
+    return this.post("react", body, withIdempotencyKey(options));
   }
 
   star(
@@ -264,4 +264,12 @@ export class BrowserWidgetResource {
 
 function sessionRoot(session: string): string {
   return `/messaging/${encodeURIComponent(session)}`;
+}
+
+/** One key per call; automatic retries reuse it so the API never repeats the write. */
+function withIdempotencyKey(
+  options: BrowserActionOptions,
+): BrowserActionOptions {
+  if (options.idempotencyKey !== undefined) return options;
+  return { ...options, idempotencyKey: globalThis.crypto.randomUUID() };
 }

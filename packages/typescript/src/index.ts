@@ -599,6 +599,7 @@ export type {
   Project,
   ProjectDefaultTier,
   ProjectIcon,
+  ProjectIconInput,
   ProjectToken,
   ProjectWithStats,
   SecurityIncident,
