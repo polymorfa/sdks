@@ -1,15 +1,19 @@
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
+  AddPlatformCampaignRecipientsRequest,
+  AddPlatformCampaignRecipientsResult,
   DataEnvelope,
   ListCampaignsParams,
+  ListPlatformCampaignRecipientsParams,
+  PlatformCampaignRecipientsEnvelope,
   PlatformPayload,
 } from "./types.js";
 
 type CampaignResponse = Promise<ApiResponse<DataEnvelope<PlatformPayload>>>;
 type CampaignAction =
   "launch" | "pause" | "resume" | "stop" | "archive" | "duplicate" | "requeue";
-type CampaignRead = "analytics" | "events" | "recipients";
+type CampaignRead = "analytics" | "events";
 
 export class CampaignsResource {
   constructor(private readonly transport: HttpTransport) {}
@@ -129,11 +133,44 @@ export class CampaignsResource {
     return this.read(campaignId, "events", options);
   }
 
+  /**
+   * One cursor page of a campaign's recipients in queue order.
+   *
+   * This replaces the earlier bare array: the response is now
+   * `{ data, page }`, and each recipient carries its own delivery timestamps.
+   */
   recipients(
     campaignId: string,
+    params: ListPlatformCampaignRecipientsParams = {},
     options: RequestOptions = {},
-  ): CampaignResponse {
-    return this.read(campaignId, "recipients", options);
+  ): Promise<ApiResponse<PlatformCampaignRecipientsEnvelope>> {
+    return this.transport.request({
+      method: "GET",
+      path: recipientsPath(campaignId),
+      query: {
+        ...(params.projectId === undefined
+          ? {}
+          : { projectId: params.projectId }),
+        ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
+        ...(params.limit === undefined ? {} : { limit: params.limit }),
+      },
+      ...options,
+    });
+  }
+
+  /** Add up to 1,000 recipients to a campaign that has not started sending. */
+  addRecipients(
+    campaignId: string,
+    body: AddPlatformCampaignRecipientsRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<AddPlatformCampaignRecipientsResult>>> {
+    return this.transport.request({
+      method: "POST",
+      path: recipientsPath(campaignId),
+      body,
+      ...options,
+    });
   }
 
   private action(
@@ -179,4 +216,8 @@ export class CampaignsResource {
 
 function campaignPath(campaignId: string): string {
   return `/platform/campaigns/${encodeURIComponent(campaignId)}`;
+}
+
+function recipientsPath(campaignId: string): string {
+  return `${campaignPath(campaignId)}/recipients`;
 }

@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (161 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (85 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (167 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (85 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -1674,7 +1674,7 @@
           "SIP Trunks"
         ],
         "summary": "Create a SIP trunk",
-        "description": "**Required scope:** `sessions:manage`\n\nConnects a PBX or SIP trunk to WhatsApp calls. An `outbound` trunk receives the incoming WhatsApp calls of sessions whose call settings route to it. An `inbound` trunk lets your PBX place WhatsApp calls through a session. For trunks that accept calls from your PBX, the response contains the digest credentials once. SIP trunks are a beta: creating, changing and rotating credentials return `403` unless your team is enrolled. Listing, reading and deleting trunks remain available after withdrawal.",
+        "description": "**Required scope:** `sessions:manage`\n\nConnects a PBX or SIP trunk to WhatsApp calls. An `outbound` trunk receives the incoming WhatsApp calls of sessions whose call settings route to it. An `inbound` trunk lets your PBX place WhatsApp calls through a session. For trunks that accept calls from your PBX, the response contains the digest credentials once.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -2009,7 +2009,7 @@
           "SIP Trunks"
         ],
         "summary": "Update a SIP trunk",
-        "description": "**Required scope:** `sessions:manage`\n\nChanges the fields you send and keeps the others. Send `expectedRevision` to refuse the change with `409 sip_trunk_revision_conflict` when the trunk changed since you read it. Changes apply to new calls within about a minute; calls in progress continue. Requires enrollment in the SIP trunks beta.",
+        "description": "**Required scope:** `sessions:manage`\n\nChanges the fields you send and keeps the others. Send `expectedRevision` to refuse the change with `409 sip_trunk_revision_conflict` when the trunk changed since you read it. Changes apply to new calls within about a minute; calls in progress continue.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -2376,7 +2376,7 @@
           "SIP Trunks"
         ],
         "summary": "Rotate SIP trunk credentials",
-        "description": "**Required scope:** `sessions:manage`\n\nReplaces the password your PBX uses to place calls. The previous password stops working within about a minute. Returns `409 state_conflict` for `outbound` trunks. Requires enrollment in the SIP trunks beta.",
+        "description": "**Required scope:** `sessions:manage`\n\nReplaces the password your PBX uses to place calls. The previous password stops working within about a minute. Returns `409 state_conflict` for `outbound` trunks.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -8490,7 +8490,7 @@
           "campaigns"
         ],
         "summary": "Create campaign",
-        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Creates a draft campaign. It is refused with `403 bansafe_org_suspended` while the team is suspended, `402 campaigns_not_entitled` when no number the campaign can send from is on a plan that includes Campaigns, and `400 campaign_throughput_capped` when a requested throughput is above its safety ceiling.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -8534,19 +8534,35 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
           },
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -8623,7 +8639,7 @@
           "campaigns"
         ],
         "summary": "Update campaign",
-        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Updates a campaign. A new `senderConfig` passes the same Campaigns plan and throughput checks as create.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -8677,19 +8693,35 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
           },
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       },
@@ -8699,7 +8731,7 @@
           "campaigns"
         ],
         "summary": "Delete campaign",
-        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Deletes a draft, completed, cancelled or archived campaign. Any other campaign is refused with `409`; stop it first.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -8742,7 +8774,28 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "removed"
+                      ],
+                      "properties": {
+                        "removed": {
+                          "type": "boolean",
+                          "enum": [
+                            true
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
@@ -8753,8 +8806,11 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -8766,7 +8822,7 @@
           "campaigns"
         ],
         "summary": "Launch campaign",
-        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Starts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. The launch passes the same suspension, Campaigns plan and throughput checks as create, against the campaign's stored settings. `409` means the campaign is not a draft or is already launched and waiting for its start time.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -8786,6 +8842,17 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again: it returns `409 idempotency_completed` when the original succeeded, or the original server error. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
             }
           }
         ],
@@ -8820,19 +8887,67 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "required": [
+                        "id",
+                        "status",
+                        "operationId"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "draft",
+                            "running",
+                            "paused",
+                            "cancelling",
+                            "cancelled",
+                            "completed",
+                            "failed",
+                            "archived"
+                          ]
+                        },
+                        "operationId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "The operation that carries this lifecycle action."
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
           },
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -8844,7 +8959,7 @@
           "campaigns"
         ],
         "summary": "Pause campaign",
-        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Pauses a running campaign. Sends already in progress can still finish. `409` means the campaign is not running or has no active delivery run to pause.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -8864,6 +8979,17 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again: it returns `409 idempotency_completed` when the original succeeded, or the original server error. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
             }
           }
         ],
@@ -8898,7 +9024,46 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "required": [
+                        "id",
+                        "status",
+                        "operationId"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "draft",
+                            "running",
+                            "paused",
+                            "cancelling",
+                            "cancelled",
+                            "completed",
+                            "failed",
+                            "archived"
+                          ]
+                        },
+                        "operationId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "The operation that carries this lifecycle action."
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
@@ -8909,8 +9074,11 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -8922,7 +9090,7 @@
           "campaigns"
         ],
         "summary": "Resume campaign",
-        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Resumes a paused campaign. Its remaining recipients are sent after the same checks as before the pause. `409` means the campaign is not paused or has no active delivery run to resume.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -8942,6 +9110,17 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again: it returns `409 idempotency_completed` when the original succeeded, or the original server error. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
             }
           }
         ],
@@ -8976,7 +9155,46 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "required": [
+                        "id",
+                        "status",
+                        "operationId"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "draft",
+                            "running",
+                            "paused",
+                            "cancelling",
+                            "cancelled",
+                            "completed",
+                            "failed",
+                            "archived"
+                          ]
+                        },
+                        "operationId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "The operation that carries this lifecycle action."
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
@@ -8987,8 +9205,11 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -9000,7 +9221,7 @@
           "campaigns"
         ],
         "summary": "Stop campaign",
-        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Cancels a draft, running or paused campaign. Recipients not yet sent are not sent. The campaign moves to `cancelling` and then to `cancelled` once sends already in progress finish; a campaign with no active delivery run is `cancelled` immediately and `operationId` is null. `409` means the campaign is already finished or cancelled.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -9020,6 +9241,17 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again: it returns `409 idempotency_completed` when the original succeeded, or the original server error. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
             }
           }
         ],
@@ -9054,7 +9286,47 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "required": [
+                        "id",
+                        "status",
+                        "operationId"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "draft",
+                            "running",
+                            "paused",
+                            "cancelling",
+                            "cancelled",
+                            "completed",
+                            "failed",
+                            "archived"
+                          ]
+                        },
+                        "operationId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "The operation that stops the campaign. Null when the campaign had no active delivery run and was cancelled immediately."
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
@@ -9065,8 +9337,11 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -9446,7 +9721,7 @@
           "campaigns"
         ],
         "summary": "List campaign recipients",
-        "description": "Public Management API. Requires `campaigns:read`. Project tokens only access resources in their own project.",
+        "description": "Lists a campaign's recipients in queue order with cursor pagination. Filter by `status`; a recipient skipped because the number opted out has `status` `skipped` and `lastError` `opted_out`.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -9466,6 +9741,54 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Project that owns the campaign. Required for team API keys; a project token is bound to its own project."
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "queued",
+                "sending",
+                "sent",
+                "delivered",
+                "read",
+                "failed",
+                "skipped"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
             }
           }
         ],
@@ -9489,10 +9812,29 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CampaignRecipient"
+                      }
+                    },
+                    "page": {
+                      "$ref": "#/components/schemas/CursorPageMetadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "page"
+                  ]
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -9500,8 +9842,117 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post": {
+        "operationId": "addCampaignRecipients",
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Add recipients to a draft campaign",
+        "description": "Adds up to 1,000 recipients to a campaign that has not been launched. A number already on the campaign is skipped. Invalid entries are reported, not added. A campaign that has been launched answers `409`. Send `projectId` in the body when using a team API key.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "projectId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "recipients": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 1000,
+                    "description": "At most 1,000 recipients per request.",
+                    "items": {
+                      "$ref": "#/components/schemas/RecipientInput"
+                    }
+                  }
+                },
+                "required": [
+                  "recipients"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CampaignRecipientAppendResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -9567,8 +10018,8 @@
         "tags": [
           "audiences"
         ],
-        "summary": "Create audience",
-        "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
+        "summary": "Create an audience",
+        "description": "Creates an audience from inline `members` (at most 1,000) or from an uploaded CSV file (`fileId` + `mapping`). Numbers are normalized to E.164 and repeated numbers are kept once. A file import accepts at most 100,000 data rows; a larger file is refused with `413` and must be split. The response reports how many rows were invalid, with up to 20 samples. `recipientCount` is the number of stored members; any client-supplied count is ignored.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -9582,12 +10033,11 @@
           }
         ],
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "additionalProperties": true
+                "$ref": "#/components/schemas/CreateAudienceRequest"
               }
             }
           }
@@ -9612,10 +10062,22 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AudienceImportResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -9623,8 +10085,11 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
           }
         }
       }
@@ -9825,6 +10290,328 @@
           },
           "501": {
             "$ref": "#/components/responses/NotImplemented"
+          }
+        }
+      }
+    },
+    "/platform/audiences/{listId}/members": {
+      "post": {
+        "operationId": "addAudienceMembers",
+        "tags": [
+          "audiences"
+        ],
+        "summary": "Add audience members",
+        "description": "Adds up to 1,000 members to an audience. A number already in the audience is skipped. Invalid entries are reported, not added.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "listId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "members": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 1000,
+                    "description": "At most 1,000 members per request.",
+                    "items": {
+                      "$ref": "#/components/schemas/RecipientInput"
+                    }
+                  }
+                },
+                "required": [
+                  "members"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AudienceMemberAppendResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "get": {
+        "operationId": "listAudienceMembers",
+        "tags": [
+          "audiences"
+        ],
+        "summary": "List audience members",
+        "description": "Lists an audience's members in the order they were added, with cursor pagination.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "listId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AudienceMember"
+                      }
+                    },
+                    "page": {
+                      "$ref": "#/components/schemas/CursorPageMetadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "page"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/platform/audiences/{listId}/members/{phone}": {
+      "delete": {
+        "operationId": "deleteAudienceMember",
+        "tags": [
+          "audiences"
+        ],
+        "summary": "Remove an audience member",
+        "description": "Removes one member by phone number. The number is normalized the same way as on import. Campaigns that already launched keep the recipients they copied.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "listId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "phone",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "removed": {
+                          "type": "boolean",
+                          "enum": [
+                            true
+                          ]
+                        },
+                        "listId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "phone": {
+                          "type": "string"
+                        },
+                        "recipientCount": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "removed",
+                        "listId",
+                        "phone",
+                        "recipientCount"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -10936,6 +11723,146 @@
           },
           "501": {
             "$ref": "#/components/responses/NotImplemented"
+          }
+        }
+      }
+    },
+    "/platform/optouts/settings": {
+      "get": {
+        "operationId": "getOptOutSettings",
+        "tags": [
+          "optouts"
+        ],
+        "summary": "Get opt-out keyword settings",
+        "description": "Returns whether keyword opt-out capture is enabled for the team and the opt-out and opt-in keyword lists. A team that never saved settings receives the defaults: enabled, opt-out keywords `STOP`, `STOPALL`, `UNSUBSCRIBE`, `CANCEL`, `END`, `QUIT`, `PARAR`, `SAIR`, `CANCELAR`, `DESCADASTRAR`, `BAJA`, and opt-in keywords `START`, `UNSTOP`. `updatedAt` is null while the defaults apply.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OptOutSettings"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateOptOutSettings",
+        "tags": [
+          "optouts"
+        ],
+        "summary": "Update opt-out keyword settings",
+        "description": "Replaces the team's keyword opt-out settings. When enabled, a direct text reply whose whole body matches an opt-out keyword, from a number that received a campaign message from the team in the last 30 days, adds that number to the opt-out list with source `stop-keyword` and emits `contact.opted_out`. Matching ignores letter case and surrounding punctuation and whitespace. An opt-in keyword removes only an opt-out created this way and emits `contact.opted_in`; opt-outs added manually, by file or through the API are never removed by a reply. Each list holds at most 50 keywords of 1 to 32 characters, the opt-out list needs at least one keyword, and the two lists must not share a keyword. Keywords are stored in upper case. Changes apply to replies within 30 seconds.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOptOutSettingsInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OptOutSettings"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       }
@@ -26697,6 +27624,408 @@
           "accepted"
         ]
       },
+      "RecipientInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "phone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Number in international format, for example `+14155550100`. Spaces, dots, hyphens and parentheses are ignored; a leading `00` is read as `+`; digits without `+` are read as including the country code."
+          },
+          "variables": {
+            "type": "object",
+            "maxProperties": 50,
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1024
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "description": "Template variables. Names use letters, digits, `_`, `.` or `-` (at most 64 characters). Values are stored as strings."
+          }
+        },
+        "required": [
+          "phone"
+        ]
+      },
+      "InvalidRecipientRow": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "row": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "1-based entry position for inline input; spreadsheet row number for a file, where the header is row 1."
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "missing_phone",
+              "invalid_phone",
+              "invalid_variables",
+              "invalid_entry"
+            ]
+          }
+        },
+        "required": [
+          "row",
+          "reason"
+        ]
+      },
+      "CreateAudienceRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Send either `members` or `fileId` with `mapping`, not both.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "manual",
+              "api"
+            ],
+            "description": "Defaults to `csv` with `fileId`, otherwise `manual`."
+          },
+          "members": {
+            "type": "array",
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/RecipientInput"
+            }
+          },
+          "fileId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "File id returned by the audience upload URL. UTF-8 CSV with a header row; comma, semicolon or tab separated."
+          },
+          "mapping": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "phone": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Header of the phone column."
+              },
+              "variables": {
+                "type": "object",
+                "maxProperties": 50,
+                "additionalProperties": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": "Variable name to column header."
+              }
+            },
+            "required": [
+              "phone"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "AudienceImportResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "manual",
+              "api"
+            ]
+          },
+          "recipientCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "fileId": {
+            "type": "string",
+            "nullable": true
+          },
+          "columns": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "sampleRow": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "mapping": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "createdAt": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "integer"
+          },
+          "duplicateCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Valid rows skipped because the number appeared earlier."
+          },
+          "invalidCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "invalidRows": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/InvalidRecipientRow"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "source",
+          "recipientCount",
+          "fileId",
+          "columns",
+          "sampleRow",
+          "mapping",
+          "createdAt",
+          "updatedAt",
+          "duplicateCount",
+          "invalidCount",
+          "invalidRows"
+        ]
+      },
+      "AudienceMember": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "variables": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "phone",
+          "variables",
+          "createdAt"
+        ]
+      },
+      "AudienceMemberAppendResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "listId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "added": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "recipientCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "duplicateCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Valid entries skipped because the number was repeated or is already in the audience."
+          },
+          "invalidCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "invalidRows": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/InvalidRecipientRow"
+            }
+          }
+        },
+        "required": [
+          "listId",
+          "added",
+          "recipientCount",
+          "duplicateCount",
+          "invalidCount",
+          "invalidRows"
+        ]
+      },
+      "CampaignRecipient": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "variables": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "variantKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "sending",
+              "sent",
+              "delivered",
+              "read",
+              "failed",
+              "skipped"
+            ]
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lastError": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why the recipient failed or was skipped. `opted_out` means the number is on the team's opt-out list."
+          },
+          "externalMessageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "queuedAt": {
+            "type": "integer"
+          },
+          "sentAt": {
+            "type": "integer",
+            "nullable": true
+          },
+          "deliveredAt": {
+            "type": "integer",
+            "nullable": true
+          },
+          "readAt": {
+            "type": "integer",
+            "nullable": true
+          },
+          "failedAt": {
+            "type": "integer",
+            "nullable": true
+          },
+          "respondedAt": {
+            "type": "integer",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "phone",
+          "variables",
+          "variantKey",
+          "status",
+          "attempts",
+          "lastError",
+          "externalMessageId",
+          "queuedAt",
+          "sentAt",
+          "deliveredAt",
+          "readAt",
+          "failedAt",
+          "respondedAt"
+        ]
+      },
+      "CampaignRecipientAppendResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "added": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "recipientCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "duplicateCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Valid entries skipped because the number was repeated or is already on the campaign."
+          },
+          "invalidCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "invalidRows": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/InvalidRecipientRow"
+            }
+          }
+        },
+        "required": [
+          "campaignId",
+          "added",
+          "recipientCount",
+          "duplicateCount",
+          "invalidCount",
+          "invalidRows"
+        ]
+      },
       "CursorPageMetadata": {
         "type": "object",
         "additionalProperties": false,
@@ -27968,6 +29297,80 @@
           "sentToday",
           "resetsAt",
           "curve"
+        ]
+      },
+      "OptOutSettings": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether keyword replies change the opt-out list."
+          },
+          "optOutKeywords": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "minItems": 1,
+            "maxItems": 50
+          },
+          "optInKeywords": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "maxItems": 50
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Unix time in milliseconds of the last change; null while the defaults apply."
+          }
+        },
+        "required": [
+          "enabled",
+          "optOutKeywords",
+          "optInKeywords",
+          "updatedAt"
+        ]
+      },
+      "UpdateOptOutSettingsInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "optOutKeywords": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "minItems": 1,
+            "maxItems": 50
+          },
+          "optInKeywords": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "maxItems": 50
+          }
+        },
+        "required": [
+          "enabled",
+          "optOutKeywords",
+          "optInKeywords"
         ]
       },
       "ProjectInsuranceEvidence": {
@@ -32345,15 +33748,15 @@
         "discriminator": {
           "propertyName": "type",
           "mapping": {
-            "ready": "#/components/schemas/EventStreamReadyFrame",
-            "event": "#/components/schemas/EventStreamEventFrame",
-            "heartbeat": "#/components/schemas/EventStreamHeartbeatFrame",
-            "checkpoint": "#/components/schemas/EventStreamCheckpointFrame",
-            "backpressure": "#/components/schemas/EventStreamBackpressureFrame",
-            "gap": "#/components/schemas/EventStreamGapFrame",
-            "dropped": "#/components/schemas/EventStreamDroppedFrame",
-            "expiry": "#/components/schemas/EventStreamExpiryFrame",
-            "revoked": "#/components/schemas/EventStreamRevokedFrame"
+            "ready": "#/components/schemas/PlatformAccessEventStreamReadyFrame",
+            "event": "#/components/schemas/PlatformAccessEventStreamEventFrame",
+            "heartbeat": "#/components/schemas/PlatformAccessEventStreamHeartbeatFrame",
+            "checkpoint": "#/components/schemas/PlatformAccessEventStreamCheckpointFrame",
+            "backpressure": "#/components/schemas/PlatformAccessEventStreamBackpressureFrame",
+            "gap": "#/components/schemas/PlatformAccessEventStreamGapFrame",
+            "dropped": "#/components/schemas/PlatformAccessEventStreamDroppedFrame",
+            "expiry": "#/components/schemas/PlatformAccessEventStreamExpiryFrame",
+            "revoked": "#/components/schemas/PlatformAccessEventStreamRevokedFrame"
           }
         },
         "description": "JSON carried in the `data` field of one SSE message. The SSE `event` field repeats `type`."
@@ -32750,7 +34153,7 @@
                 "$ref": "#/components/schemas/PlatformAccessCallInboundRoute"
               },
               {
-                "description": "Where incoming WhatsApp calls ring. Routing to a different SIP trunk requires enrollment in the SIP trunks beta; `clients`, and keeping the stored trunk while changing other settings, are always accepted."
+                "description": "Where incoming WhatsApp calls ring."
               }
             ]
           },

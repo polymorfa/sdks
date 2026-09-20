@@ -1363,6 +1363,119 @@
           "payload"
         ]
       },
+      "ContactOptPayload": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "description": "Contact phone number in E.164 format",
+            "example": "+14155550123"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "stop-keyword"
+            ],
+            "description": "How the suppression list changed. Keyword replies always report `stop-keyword`."
+          },
+          "keyword": {
+            "type": "string",
+            "description": "The configured keyword the reply matched, in upper case. The message itself is never included.",
+            "example": "STOP"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session name of the number that received the reply",
+            "example": "sales-1"
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Project that owns the receiving number, when known"
+          }
+        },
+        "required": [
+          "phone",
+          "source",
+          "keyword",
+          "session"
+        ]
+      },
+      "ContactOptedOutEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "contact.opted_out"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ContactOptPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "ContactOptedInEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "contact.opted_in"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ContactOptPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
       "ChatArchivePayload": {
         "type": "object",
         "properties": {
@@ -4531,6 +4644,477 @@
         ],
         "additionalProperties": false
       },
+      "BanSafeForecast": {
+        "type": "object",
+        "properties": {
+          "days7": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Probability (0-1) of a temporary or permanent ban within 7 days.",
+            "example": 0.02
+          },
+          "days14": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Probability (0-1) of a temporary or permanent ban within 14 days.",
+            "example": 0.06
+          },
+          "days30": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Probability (0-1) of a temporary or permanent ban within 30 days.",
+            "example": 0.11
+          }
+        },
+        "required": [
+          "days7",
+          "days14",
+          "days30"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeRiskFactor": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^(?:group:)?[a-z0-9_]{1,64}$",
+            "description": "Stable factor identifier: a feature key, or \"group:<groupId>\".",
+            "example": "cold_send_ratio"
+          },
+          "group": {
+            "type": "string",
+            "enum": [
+              "volume",
+              "cold_outreach",
+              "restrictions",
+              "engagement",
+              "send_errors",
+              "pattern",
+              "traffic_mix",
+              "number_age",
+              "connection",
+              "ban_history",
+              "account",
+              "workspace",
+              "climate",
+              "conversation",
+              "solicitation",
+              "reputation"
+            ],
+            "description": "Factor group this factor belongs to.",
+            "example": "cold_outreach"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Customer-facing factor label in WhatsApp vocabulary.",
+            "example": "Share of messages sent to people who never messaged you"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "raises",
+              "lowers"
+            ],
+            "description": "Whether the factor raises or lowers the risk."
+          },
+          "strength": {
+            "type": "string",
+            "enum": [
+              "strong",
+              "moderate",
+              "slight"
+            ],
+            "description": "How strongly this factor moves the score."
+          },
+          "impact": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "This factor's share, as a whole percentage, of the raising (or lowering) total.",
+            "example": 42
+          },
+          "sentence": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240,
+            "description": "Evidence sentence built from observed numbers.",
+            "example": "38 of the 51 people you messaged had never messaged this number"
+          },
+          "hint": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 240,
+            "description": "Action to take. Null for lowering factors and hint-less groups."
+          }
+        },
+        "required": [
+          "key",
+          "group",
+          "label",
+          "direction",
+          "strength",
+          "impact",
+          "sentence",
+          "hint"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeModelRef": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Version of the forecast model that produced the evaluation.",
+            "example": "prior-v0"
+          },
+          "reliability": {
+            "type": "string",
+            "enum": [
+              "prior",
+              "early",
+              "calibrated"
+            ],
+            "description": "Reliability statement: prior (expert prior, no training data), early (trained on a small corpus), calibrated (trained and calibrated on the ledger)."
+          }
+        },
+        "required": [
+          "version",
+          "reliability"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeRiskChangedPayload": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{1,14}$",
+            "description": "The customer's own number in E.164 format.",
+            "example": "+15551234567"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "low",
+              "elevated",
+              "high",
+              "critical"
+            ],
+            "description": "Current risk level."
+          },
+          "previousLevel": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "low",
+              "elevated",
+              "high",
+              "critical",
+              null
+            ],
+            "description": "Previous risk level, or null for the first evaluation of the number."
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Risk score from 0 (lowest) to 100 (highest).",
+            "example": 37
+          },
+          "forecast": {
+            "$ref": "#/components/schemas/BanSafeForecast"
+          },
+          "factors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanSafeRiskFactor"
+            },
+            "maxItems": 5,
+            "description": "Up to five contributing factors, ordered by impact."
+          },
+          "model": {
+            "$ref": "#/components/schemas/BanSafeModelRef"
+          },
+          "evaluatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp of the evaluation that produced this event.",
+            "example": "2026-09-06T14:00:00.000Z"
+          }
+        },
+        "required": [
+          "phoneNumber",
+          "level",
+          "previousLevel",
+          "score",
+          "forecast",
+          "factors",
+          "model",
+          "evaluatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeRiskChangedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "bansafe.risk_changed"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/BanSafeRiskChangedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeHealthPenalties": {
+        "type": "object",
+        "properties": {
+          "conduct": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "restriction": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "connection": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "conduct",
+          "restriction",
+          "connection"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeHealthFinding": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,64}$",
+            "description": "Stable finding identifier.",
+            "example": "unsolicited_outreach"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Customer-facing finding title.",
+            "example": "Messaging people who never wrote to you"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warning",
+              "critical"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "acknowledged",
+              "not_measured"
+            ],
+            "description": "not_measured means the signal could not be measured for this number; it is never reported as clean."
+          },
+          "points": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 25,
+            "description": "Health points this finding costs.",
+            "example": 8
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "severity",
+          "status",
+          "points"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeHealthChangedPayload": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{1,14}$",
+            "description": "The customer's own number in E.164 format.",
+            "example": "+15551234567"
+          },
+          "health": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Measured health from 0 (worst) to 100 (best), or null when not measured.",
+            "example": 62
+          },
+          "band": {
+            "type": "string",
+            "enum": [
+              "good",
+              "fair",
+              "poor",
+              "failing",
+              "unknown"
+            ],
+            "description": "Health band matching health."
+          },
+          "previousBand": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 32,
+            "description": "Previous band, or null for the first evaluation of the number.",
+            "example": "good"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "measured",
+              "partial",
+              "measuring",
+              "restricted",
+              "banned"
+            ],
+            "description": "Data sufficiency of this evaluation."
+          },
+          "penalties": {
+            "$ref": "#/components/schemas/BanSafeHealthPenalties"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanSafeHealthFinding"
+            },
+            "maxItems": 50,
+            "description": "Findings behind the score, with the points each one costs."
+          },
+          "measuredChecks": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 200,
+            "description": "Catalogue checks that could be measured for this number.",
+            "example": 14
+          },
+          "totalChecks": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 200,
+            "description": "Catalogue checks in total.",
+            "example": 18
+          },
+          "allowance": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "description": "Messages this number may send today under the project's warm-up plan, recomputed for the new health band. Null or absent when the project has no warm-up plan.",
+            "example": 240
+          },
+          "evaluatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp of the evaluation that produced this event.",
+            "example": "2026-09-06T14:00:00.000Z"
+          }
+        },
+        "required": [
+          "phoneNumber",
+          "health",
+          "band",
+          "previousBand",
+          "state",
+          "penalties",
+          "findings",
+          "measuredChecks",
+          "totalChecks",
+          "evaluatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeHealthChangedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "bansafe.health_changed"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/BanSafeHealthChangedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ],
+        "additionalProperties": false
+      },
       "BanSafeEnforcementPayload": {
         "type": "object",
         "properties": {
@@ -6551,7 +7135,8 @@
                   "bansafe_daily_allowance_reached",
                   "bansafe_accounting_unavailable",
                   "bansafe_send_outcome_unknown",
-                  "campaigns_not_entitled"
+                  "campaigns_not_entitled",
+                  "campaign_throughput_capped"
                 ]
               },
               "message": {
@@ -13846,6 +14431,37 @@
           "data"
         ]
       },
+      "CampaignRecipientInput": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Phone number in international format, for example `+14155550100`. Spaces, dots, hyphens and parentheses are ignored; a leading `00` is read as `+`."
+          },
+          "variables": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "description": "Template variables for this recipient. At most 50; names use letters, digits, `_`, `.` or `-`; values are stored as strings of at most 1,024 characters."
+          }
+        },
+        "required": [
+          "phone"
+        ]
+      },
       "CreateCampaignRequest": {
         "type": "object",
         "properties": {
@@ -13865,6 +14481,14 @@
           },
           "scheduledAt": {
             "type": "number"
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignRecipientInput"
+            },
+            "maxItems": 1000,
+            "description": "Recipients to add inline, at most 1,000. Every entry must be valid or the campaign is not created; a repeated phone is kept once. Combine with `recipientListId` to add an audience at launch; add more with the add-recipients endpoint while the campaign is a draft."
           }
         },
         "required": [
@@ -13952,6 +14576,27 @@
           "data"
         ]
       },
+      "CampaignStopOperation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Campaign"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "operationId": {
+                "type": "string",
+                "nullable": true,
+                "format": "uuid",
+                "description": "The operation that stops the campaign. Null when the campaign had no active delivery run: it was cancelled immediately and none of its remaining recipients are sent."
+              }
+            },
+            "required": [
+              "operationId"
+            ]
+          }
+        ]
+      },
       "StopCampaignResponse": {
         "type": "object",
         "properties": {
@@ -13962,7 +14607,7 @@
             ]
           },
           "data": {
-            "$ref": "#/components/schemas/CampaignOperation"
+            "$ref": "#/components/schemas/CampaignStopOperation"
           }
         },
         "required": [
@@ -13996,6 +14641,225 @@
             "type": "boolean"
           }
         }
+      },
+      "CampaignRecipient": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "variables": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "variantKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "sending",
+              "sent",
+              "delivered",
+              "read",
+              "failed",
+              "skipped"
+            ]
+          },
+          "attempts": {
+            "type": "integer"
+          },
+          "lastError": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why the recipient failed or was skipped. `opted_out` means the phone is on the organization's opt-out list."
+          },
+          "externalMessageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "queuedAt": {
+            "type": "number"
+          },
+          "sentAt": {
+            "type": "number",
+            "nullable": true
+          },
+          "deliveredAt": {
+            "type": "number",
+            "nullable": true
+          },
+          "readAt": {
+            "type": "number",
+            "nullable": true
+          },
+          "failedAt": {
+            "type": "number",
+            "nullable": true
+          },
+          "respondedAt": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "phone",
+          "variables",
+          "variantKey",
+          "status",
+          "attempts",
+          "lastError",
+          "externalMessageId",
+          "queuedAt",
+          "sentAt",
+          "deliveredAt",
+          "readAt",
+          "failedAt",
+          "respondedAt"
+        ]
+      },
+      "CampaignRecipientPageInfo": {
+        "type": "object",
+        "properties": {
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "nextCursor",
+          "hasMore"
+        ]
+      },
+      "ListCampaignRecipientsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignRecipient"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/CampaignRecipientPageInfo"
+          }
+        },
+        "required": [
+          "success",
+          "data",
+          "page"
+        ]
+      },
+      "InvalidRecipientRow": {
+        "type": "object",
+        "properties": {
+          "row": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "1-based position of the entry in the request (or spreadsheet row number for a file import, where the header is row 1)."
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "missing_phone",
+              "invalid_phone",
+              "invalid_variables",
+              "invalid_entry"
+            ]
+          }
+        },
+        "required": [
+          "row",
+          "reason"
+        ]
+      },
+      "AddCampaignRecipientsResult": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          },
+          "added": {
+            "type": "integer",
+            "description": "Recipients added by this request."
+          },
+          "recipientCount": {
+            "type": "integer",
+            "description": "Recipients on the campaign after this request."
+          },
+          "duplicateCount": {
+            "type": "integer",
+            "description": "Valid entries skipped because the phone was repeated in the request or is already on the campaign."
+          },
+          "invalidCount": {
+            "type": "integer"
+          },
+          "invalidRows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvalidRecipientRow"
+            },
+            "maxItems": 20,
+            "description": "Up to 20 invalid entries."
+          }
+        },
+        "required": [
+          "campaignId",
+          "added",
+          "recipientCount",
+          "duplicateCount",
+          "invalidCount",
+          "invalidRows"
+        ]
+      },
+      "AddCampaignRecipientsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/AddCampaignRecipientsResult"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "AddCampaignRecipientsRequest": {
+        "type": "object",
+        "properties": {
+          "recipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignRecipientInput"
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "recipients"
+        ]
       },
       "QuickLink": {
         "type": "object",
@@ -40930,6 +41794,7 @@
           "Campaigns"
         ],
         "summary": "Launch a campaign",
+        "description": "**Required scope:** `campaigns:manage`\n\nStarts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. The response returns the campaign as it was when the launch was accepted.",
         "security": [
           {
             "BearerAuth": []
@@ -41091,7 +41956,25 @@
             }
           },
           "409": {
-            "description": "The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`state_conflict`: The campaign is not a draft, or it is already launched and waiting for its start time. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            },
             "headers": {
               "Retry-After": {
                 "description": "Seconds to wait before retrying `idempotency_in_progress`.",
@@ -41107,23 +41990,6 @@
                   "enum": [
                     "true"
                   ]
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "conflict_error",
-                    "code": "idempotency_conflict",
-                    "message": "This Idempotency-Key was already used with a different request. Use a new key for a different request.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#idempotency-conflict"
                 }
               }
             }
@@ -41152,8 +42018,7 @@
         },
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
-        },
-        "description": "**Required scope:** `campaigns:manage`"
+        }
       }
     },
     "/messaging/projects/{projectSlug}/campaigns/{id}/pause": {
@@ -41163,6 +42028,7 @@
           "Campaigns"
         ],
         "summary": "Pause a campaign",
+        "description": "**Required scope:** `campaigns:manage`\n\nPauses a running campaign. Sends already in progress can still finish.",
         "security": [
           {
             "BearerAuth": []
@@ -41185,6 +42051,17 @@
             "required": true,
             "name": "id",
             "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again: it returns `409 idempotency_completed` when the original succeeded, or the original server error, with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "responses": {
@@ -41303,6 +42180,45 @@
               }
             }
           },
+          "409": {
+            "description": "`state_conflict`: The campaign is not running, or it has no active delivery run to pause. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response reports the recorded outcome of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
             "content": {
@@ -41327,8 +42243,7 @@
         },
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
-        },
-        "description": "**Required scope:** `campaigns:manage`"
+        }
       }
     },
     "/messaging/projects/{projectSlug}/campaigns/{id}/resume": {
@@ -41338,6 +42253,7 @@
           "Campaigns"
         ],
         "summary": "Resume a campaign",
+        "description": "**Required scope:** `campaigns:manage`\n\nResumes a paused campaign. Its remaining recipients are sent after the same checks as before the pause.",
         "security": [
           {
             "BearerAuth": []
@@ -41360,6 +42276,17 @@
             "required": true,
             "name": "id",
             "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again: it returns `409 idempotency_completed` when the original succeeded, or the original server error, with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "responses": {
@@ -41478,6 +42405,45 @@
               }
             }
           },
+          "409": {
+            "description": "`state_conflict`: The campaign is not paused, or it has no active delivery run to resume. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response reports the recorded outcome of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
             "content": {
@@ -41502,8 +42468,7 @@
         },
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
-        },
-        "description": "**Required scope:** `campaigns:manage`"
+        }
       }
     },
     "/messaging/projects/{projectSlug}/campaigns/{id}/stop": {
@@ -41513,6 +42478,7 @@
           "Campaigns"
         ],
         "summary": "Stop a campaign",
+        "description": "**Required scope:** `campaigns:manage`\n\nCancels a draft, running, or paused campaign. Recipients not yet sent are not sent. The campaign moves to `cancelling` and then to `cancelled` once sends already in progress finish; a campaign with no active delivery run is `cancelled` immediately.",
         "security": [
           {
             "BearerAuth": []
@@ -41535,6 +42501,17 @@
             "required": true,
             "name": "id",
             "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again: it returns `409 idempotency_completed` when the original succeeded, or the original server error, with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "responses": {
@@ -41653,6 +42630,45 @@
               }
             }
           },
+          "409": {
+            "description": "`state_conflict`: The campaign is already finished or cancelled. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response reports the recorded outcome of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
             "content": {
@@ -41677,8 +42693,7 @@
         },
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
-        },
-        "description": "**Required scope:** `campaigns:manage`"
+        }
       }
     },
     "/messaging/projects/{projectSlug}/campaigns/{id}/requeue": {
@@ -41863,6 +42878,379 @@
           "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
         },
         "description": "**Required scope:** `campaigns:manage`"
+      }
+    },
+    "/messaging/projects/{projectSlug}/campaigns/{id}/recipients": {
+      "get": {
+        "operationId": "listProjectCampaignRecipients",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "List campaign recipients",
+        "description": "**Required scope:** `campaigns:read`\n\nLists a campaign's recipients in queue order with cursor pagination. Filter by `status` to find, for example, recipients skipped because they opted out.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "campaigns:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectSlug",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "queued",
+                "sending",
+                "sent",
+                "delivered",
+                "read",
+                "failed",
+                "skipped"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Page size, default 25."
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListCampaignRecipientsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:read</Badge>"
+        }
+      },
+      "post": {
+        "operationId": "addProjectCampaignRecipients",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Add recipients to a draft campaign",
+        "description": "**Required scope:** `campaigns:manage`\n\nAdds up to 1,000 recipients to a campaign that has not started sending. A phone already on the campaign is skipped. Invalid entries are reported and not added.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "campaigns:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectSlug",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddCampaignRecipientsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddCampaignRecipientsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The campaign has started sending and no longer accepts recipients",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
+        }
       }
     },
     "/messaging/quicklinks": {
@@ -45078,6 +46466,54 @@
         }
       }
     },
+    "contact.opted_out": {
+      "post": {
+        "operationId": "onContactOptedOut",
+        "summary": "A contact opted out of campaigns by replying with an opt-out keyword",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactOptedOutEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "contact.opted_in": {
+      "post": {
+        "operationId": "onContactOptedIn",
+        "summary": "A contact reversed a keyword opt-out by replying with an opt-in keyword",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactOptedInEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
     "chat.archive": {
       "post": {
         "operationId": "onChatArchive",
@@ -46003,6 +47439,54 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CustomerNumberDisconnectedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "bansafe.risk_changed": {
+      "post": {
+        "operationId": "onBansafeRiskChanged",
+        "summary": "A number's forecast risk level changed",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanSafeRiskChangedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "bansafe.health_changed": {
+      "post": {
+        "operationId": "onBansafeHealthChanged",
+        "summary": "A number's measured health band changed",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanSafeHealthChangedEvent"
               }
             }
           }

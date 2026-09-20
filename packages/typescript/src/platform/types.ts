@@ -1,3 +1,10 @@
+import type {
+  CampaignRecipient,
+  CampaignRecipientInput,
+  CampaignRecipientStatus,
+  InvalidRecipientRow,
+} from "../messaging/types.js";
+
 export interface DataEnvelope<T> {
   readonly data: T;
 }
@@ -168,6 +175,125 @@ export interface TransferCustomerNumberRequest {
 export interface ListCampaignsParams {
   readonly projectId: string;
   readonly projectSlug?: string;
+}
+
+export interface ListPlatformCampaignRecipientsParams {
+  /** Required unless the credential is already bound to one project. */
+  readonly projectId?: string;
+  readonly status?: CampaignRecipientStatus;
+  readonly cursor?: string;
+  /** 1 to 100; the API defaults to 25. */
+  readonly limit?: number;
+}
+
+export type PlatformCampaignRecipientsEnvelope =
+  CursorEnvelope<CampaignRecipient>;
+
+export interface AddPlatformCampaignRecipientsRequest {
+  readonly projectId?: string;
+  readonly recipients: readonly CampaignRecipientInput[];
+}
+
+export interface AddPlatformCampaignRecipientsResult {
+  readonly campaignId: string;
+  readonly added: number;
+  readonly recipientCount: number;
+  readonly duplicateCount: number;
+  readonly invalidCount: number;
+  readonly invalidRows: readonly InvalidRecipientRow[];
+}
+
+export type AudienceSource = "csv" | "manual" | "api";
+
+/** Column names in an uploaded spreadsheet, mapped onto recipient fields. */
+export interface AudienceImportMapping {
+  readonly phone: string;
+  readonly variables?: Readonly<Record<string, string>>;
+}
+
+export interface CreateAudienceRequest {
+  readonly name: string;
+  readonly source?: AudienceSource;
+  /** Up to 1,000 members. Send either `members` or `fileId`, never both. */
+  readonly members?: readonly CampaignRecipientInput[];
+  /** Storage ID returned by `audiences.createUpload`. */
+  readonly fileId?: string;
+  /** Required with `fileId`. */
+  readonly mapping?: AudienceImportMapping;
+}
+
+export interface Audience {
+  readonly id: string;
+  readonly name: string;
+  readonly source: AudienceSource;
+  readonly recipientCount: number;
+  readonly fileId: string | null;
+  readonly columns: readonly string[] | null;
+  readonly sampleRow: Readonly<Record<string, string>> | null;
+  readonly mapping: Readonly<Record<string, unknown>> | null;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+}
+
+/** An audience plus the counts of the import that created it. */
+export interface AudienceImportResult extends Audience {
+  readonly duplicateCount: number;
+  readonly invalidCount: number;
+  /** At most 20 rejected entries. */
+  readonly invalidRows: readonly InvalidRecipientRow[];
+}
+
+export interface AudienceMember {
+  readonly id: string;
+  readonly phone: string;
+  readonly variables: Readonly<Record<string, string>>;
+  readonly createdAt: number;
+}
+
+export interface ListAudienceMembersParams {
+  readonly cursor?: string;
+  /** 1 to 100; the API defaults to 25. */
+  readonly limit?: number;
+}
+
+export type AudienceMembersEnvelope = CursorEnvelope<AudienceMember>;
+
+export interface AddAudienceMembersRequest {
+  readonly members: readonly CampaignRecipientInput[];
+}
+
+export interface AddAudienceMembersResult {
+  readonly listId: string;
+  readonly added: number;
+  readonly recipientCount: number;
+  readonly duplicateCount: number;
+  readonly invalidCount: number;
+  readonly invalidRows: readonly InvalidRecipientRow[];
+}
+
+export interface DeleteAudienceMemberResult {
+  readonly removed: true;
+  readonly listId: string;
+  readonly phone: string;
+  readonly recipientCount: number;
+}
+
+/**
+ * Organization keyword capture. When enabled, a reply matching an opt-out
+ * keyword suppresses the contact and emits `contact.opted_out`.
+ */
+export interface OptOutSettings {
+  readonly enabled: boolean;
+  /** At least one keyword, at most 50, each at most 32 characters. */
+  readonly optOutKeywords: readonly string[];
+  readonly optInKeywords: readonly string[];
+  readonly updatedAt: number | null;
+}
+
+export interface UpdateOptOutSettingsRequest {
+  readonly enabled: boolean;
+  readonly optOutKeywords: readonly string[];
+  readonly optInKeywords: readonly string[];
 }
 
 export interface Organization {
