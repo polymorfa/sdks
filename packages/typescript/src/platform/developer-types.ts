@@ -359,6 +359,14 @@ export interface RetrieveOperationParams {
   /** With `wait`, return as soon as the operation's sequence exceeds this value. */
   readonly afterSequence?: number;
 }
+
+/**
+ * Organization clients may narrow the read to one project. The project route
+ * takes its project from the path, so it has no such parameter.
+ */
+export interface RetrieveOrganizationOperationParams extends RetrieveOperationParams {
+  readonly projectId?: string;
+}
 export type ListOperationTransitionsParams =
   | {
       readonly afterSequence?: number;
@@ -395,6 +403,8 @@ export type OrganizationOperationCancellationReceipt =
 export type ProjectOperationCancellationReceipt =
   OperationCancellationReceipt<ProjectOperation>;
 export interface WaitForOperationOptions {
+  /** Read only this project (organization clients). */
+  readonly projectId?: string;
   /** Total time to wait before returning the current state. Default 5 minutes. */
   readonly maxWaitMs?: number;
   /** Return as soon as the operation's sequence exceeds this value. */

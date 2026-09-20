@@ -19,6 +19,7 @@ import type {
   ProjectOperation,
   ProjectOperationCancellationReceipt,
   RetrieveOperationParams,
+  RetrieveOrganizationOperationParams,
   WaitForOperationOptions,
   ListWebhookDeliveriesParams,
   ListWebhooksParams,
@@ -391,6 +392,9 @@ type OperationFor<O extends ClientOwner> = O extends "project"
 type ListOperationsFor<O extends ClientOwner> = O extends "project"
   ? ListOperationsParams
   : ListOrganizationOperationsParams;
+type RetrieveOperationParamsFor<O extends ClientOwner> = O extends "project"
+  ? RetrieveOperationParams
+  : RetrieveOrganizationOperationParams;
 type OperationCancellationFor<O extends ClientOwner> = O extends "project"
   ? ProjectOperationCancellationReceipt
   : OrganizationOperationCancellationReceipt;
@@ -419,7 +423,7 @@ export class OperationsResource<O extends ClientOwner> extends ResourceBase {
   /** Gets one operation. `params.wait` long-polls for up to 30 seconds. */
   get(
     operationId: string,
-    params: RetrieveOperationParams = {},
+    params: RetrieveOperationParamsFor<O> = {} as RetrieveOperationParamsFor<O>,
     options: RequestOptions = {},
   ): Promise<ApiResponse<OperationFor<O>>> {
     if (
@@ -485,6 +489,7 @@ export class OperationsResource<O extends ClientOwner> extends ResourceBase {
     options: WaitForOperationOptions = {},
   ): Promise<ApiResponse<OperationFor<O>>> {
     const deadline = Date.now() + (options.maxWaitMs ?? 5 * 60_000);
+    let latest: ApiResponse<OperationFor<O>> | undefined;
     for (;;) {
       options.signal?.throwIfAborted();
       const remaining = Math.max(0, deadline - Date.now());
@@ -492,19 +497,43 @@ export class OperationsResource<O extends ClientOwner> extends ResourceBase {
         OPERATION_WAIT_MAX_SECONDS,
         Math.floor(remaining / 1000),
       );
-      const response = await this.get(
-        operationId,
-        {
-          wait,
-          ...(options.afterSequence === undefined
-            ? {}
-            : { afterSequence: options.afterSequence }),
-        },
-        {
-          ...options.requestOptions,
-          ...(options.signal === undefined ? {} : { signal: options.signal }),
-        },
+      // Bound the request itself by what is left of the budget, so a server
+      // that holds the connection open cannot extend the wait. The last read
+      // still gets a second to answer, so a spent budget returns real state
+      // instead of an abort.
+      const budget = new AbortController();
+      const timer = setTimeout(
+        () => budget.abort(),
+        Math.max(remaining, 1_000),
       );
+      const abortBudget = () => budget.abort(options.signal?.reason);
+      options.signal?.addEventListener("abort", abortBudget, { once: true });
+      let response: ApiResponse<OperationFor<O>>;
+      try {
+        response = await this.get(
+          operationId,
+          {
+            wait,
+            ...(options.projectId === undefined
+              ? {}
+              : { projectId: options.projectId }),
+            ...(options.afterSequence === undefined
+              ? {}
+              : { afterSequence: options.afterSequence }),
+          } as RetrieveOperationParamsFor<O>,
+          { ...options.requestOptions, signal: budget.signal },
+        );
+      } catch (error) {
+        // The caller's own abort always propagates. A budget abort returns the
+        // last state this wait observed, and only fails when it has none.
+        options.signal?.throwIfAborted();
+        if (!budget.signal.aborted || latest === undefined) throw error;
+        return latest;
+      } finally {
+        clearTimeout(timer);
+        options.signal?.removeEventListener("abort", abortBudget);
+      }
+      latest = response;
       const operation = response.data;
       if (
         TERMINAL_OPERATION_STATUSES.has(operation.status) ||

@@ -182,6 +182,44 @@ describe("operations", () => {
     ]);
   });
 
+  it("stops waiting at the budget and keeps the last state it read", async () => {
+    const server = await serve((_request, index) => ({
+      ...json({ data: operation("running", 2 + index) }),
+      // The second read outlives the caller's remaining budget.
+      ...(index === 1 ? { delayMs: 3_000 } : {}),
+    }));
+    const client = new Client({
+      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: server.url,
+      maxNetworkRetries: 0,
+    });
+    const started = Date.now();
+    const result = await client.operations.wait(OPERATION_ID, {
+      maxWaitMs: 1_000,
+    });
+    expect(result.data.status).toBe("running");
+    expect(Date.now() - started).toBeLessThan(2_500);
+  });
+
+  it("propagates the caller's abort", async () => {
+    const server = await serve(() => ({
+      ...json({ data: operation("running", 2) }),
+      delayMs: 2_000,
+    }));
+    const client = new Client({
+      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: server.url,
+      maxNetworkRetries: 0,
+    });
+    const controller = new AbortController();
+    const pending = client.operations.wait(OPERATION_ID, {
+      maxWaitMs: 60_000,
+      signal: controller.signal,
+    });
+    controller.abort();
+    await expect(pending).rejects.toThrow();
+  });
+
   it("rejects an out-of-range wait before sending", async () => {
     const client = new Client({
       credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
