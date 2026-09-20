@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Webhooks: `KNOWN_WEBHOOK_EVENT_TYPES` and `WebhookPayloadMap` add
+  `bansafe.risk_changed` and `bansafe.health_changed`, with the
+  `BanSafeRiskChangedPayload` and `BanSafeHealthChangedPayload` types and
+  their `BanSafeForecast`, `BanSafeRiskFactor`, `BanSafeModelRef`,
+  `BanSafeHealthPenalties`, and `BanSafeHealthFinding` members.
+
 - Added `Client.operations` on organization and project clients: `list`
   (filter by `projectId`, status, kind, resource, and time), `get` with an
   optional server long-poll (`wait`, 0 to 30 seconds), `listTransitions`,

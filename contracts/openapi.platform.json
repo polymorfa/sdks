@@ -15446,7 +15446,7 @@
           "operations"
         ],
         "summary": "Get an operation",
-        "description": "Returns one asynchronous operation. Supply wait (1-30 seconds) to hold the request until the operation reaches a terminal status (succeeded, failed, or cancelled), its sequence exceeds afterSequence, or the wait expires. The response is the operation's state at that moment; a 200 after an expired wait does not mean the operation finished. Operations outside the credential's team or project return 404.\n\nRequires `operations:read`. Project tokens only access resources in their own project.",
+        "description": "Returns one asynchronous operation. Supply wait (0-30 seconds; 0 returns immediately) to hold the request until the operation reaches a terminal status (succeeded, failed, or cancelled), its sequence exceeds afterSequence, or the wait expires. The response is the operation's state at that moment; a 200 after an expired wait does not mean the operation finished. Operations outside the credential's team or project return 404.\n\nRequires `operations:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -15955,7 +15955,7 @@
           "operations"
         ],
         "summary": "Get a project operation",
-        "description": "Returns one asynchronous operation owned by the exact project in the route. Supply wait (1-30 seconds) to hold the request until the operation reaches a terminal status, its sequence exceeds afterSequence, or the wait expires.\n\nRequires `operations:read`. Project tokens only access resources in their own project.",
+        "description": "Returns one asynchronous operation owned by the exact project in the route. Supply wait (0-30 seconds; 0 returns immediately) to hold the request until the operation reaches a terminal status, its sequence exceeds afterSequence, or the wait expires.\n\nRequires `operations:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,

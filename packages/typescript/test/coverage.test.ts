@@ -173,12 +173,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "2259a1fd331c6ddbc8ad56a04333100ebfce7c2e",
+      sourceCommit: "ad1b01be04614c5e6ff5dfee8d44d5bab5170cf8",
       total: 424,
-      covered: 308,
+      covered: 316,
       partial: 0,
       missing: 0,
-      excluded: 116,
+      excluded: 108,
       changed: 0,
     });
     // Monorepo dev now carries the merged Calls diagnostics route the SDK
@@ -591,7 +591,7 @@ describe("coverage checker", () => {
       "listActiveSessionBans",
       "listSecurityIncidents",
       "acknowledgeSecurityIncident",
-      "getOrganizationOperation",
+      "getPlatformOperation",
       "listPolymorfaTokens",
       "inviteMember",
       "updateMemberRole",
@@ -636,8 +636,9 @@ describe("coverage checker", () => {
         status: "covered",
         method: "Client.securityIncidents.acknowledge",
       },
-      getOrganizationOperation: {
-        status: "excluded",
+      getPlatformOperation: {
+        status: "covered",
+        method: "Client.operations.get",
       },
       listPolymorfaTokens: {
         status: "covered",

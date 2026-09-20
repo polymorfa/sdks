@@ -2,17 +2,20 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`2259a1fd331c6ddbc8ad56a04333100ebfce7c2e` on monorepo `dev`. `source.json` records the
-original paths and SHA-256 hashes. `coverage.json` uses the same source
-revision.
+`ad1b01be04614c5e6ff5dfee8d44d5bab5170cf8` on the operations branch merged from monorepo `dev`. `source.json`
+records the original paths and SHA-256 hashes. `coverage.json` uses the same
+source revision.
 
-Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
-`MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
-merged monorepo `dev`, the Calls diagnostics route
-(`voipReportCallDiagnostics`) is back with a refreshed fingerprint; the SDK
-keeps `MessagingClient.voip.report` covering it. The Console-only `getCall`
-response also picked up a refreshed fingerprint (still excluded). No
-operations were added or removed by this re-sync.
+This revision publishes the operations lifecycle on the Platform API. The eight
+operation routes moved from `/console` to `/platform`, so their ledger rows
+move from `excluded` (console-only) to `covered` by `Client.operations` and
+`Client.project(projectId).operations`. The organization-wide reads accept a
+`projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
+and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
+contract. `/platform/projects/{projectId}/events/stream` keeps a refreshed
+fingerprint from the upstream frame `$ref` fix; only its discriminator mapping
+changed. The same re-sync picks up the management MCP work on `dev`, which does
+not change any published operation this SDK covers.
 
 | Status              | Operations |
 | ------------------- | ---------: |
