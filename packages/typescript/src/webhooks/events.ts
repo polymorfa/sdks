@@ -3,6 +3,8 @@ import type {
   PhonePlatform,
   WhatsAppAccountType,
 } from "../messaging/types.js";
+// The health band is one vocabulary across the Platform API and this webhook.
+import type { BanSafeHealthBand } from "../platform/types.js";
 
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
@@ -629,10 +631,6 @@ export type BanSafeIncidentEventKind =
 
 export type BanSafeEventRung =
   "none" | "notify" | "throttle" | "block_cold" | "suspend";
-
-/** Health band matching a health score. */
-export type BanSafeHealthBand =
-  "good" | "fair" | "poor" | "failing" | "unknown";
 
 /** Risk level of a number's ban forecast. */
 export type BanSafeRiskLevel = "low" | "elevated" | "high" | "critical";

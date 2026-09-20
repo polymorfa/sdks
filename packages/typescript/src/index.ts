@@ -802,7 +802,6 @@ export {
   type PresenceUpdatePayload,
   type SessionConnectedPayload,
   type BanSafeForecast,
-  type BanSafeHealthBand,
   type BanSafeHealthChangedPayload,
   type BanSafeHealthFinding,
   type BanSafeHealthPenalties,
