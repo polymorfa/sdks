@@ -27,10 +27,10 @@ The Platform snapshot is not byte-identical to the pinned revision. It adds
 `getCallRetention` and `updateCallRetention` (`GET` and `PUT
 /platform/call-retention`), covered by `Client.callRetention.retrieve` and
 `Client.callRetention.update`, with the `PlatformAccessCallRetention*`
-schemas. They are transcribed from the route definitions on monorepo branch
-`t3code/calls-retention` at commit
-`5b47f245fa8e6509c9d9fca5460af961ab38e916`, whose generated management spec
-does not publish them yet. `source.json` records this under `pendingOverlay`
+schemas. They are copied verbatim from the generated management spec on monorepo
+branch `t3code/calls-retention` at commit
+`bd0bf5f3c254782c120182a89f4635cd5df9a615`. A full re-sync to that commit also
+brings newer `dev` webhook events the SDK does not cover yet `source.json` records this under `pendingOverlay`
 and hashes the edited file. Re-sync both snapshots byte-identically once the
 monorepo spec includes these operations, and do not release before then.
 

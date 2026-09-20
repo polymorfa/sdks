@@ -2737,7 +2737,7 @@
       "method": "GET",
       "path": "/platform/call-retention",
       "operationId": "getCallRetention",
-      "fingerprint": "18d796737434ac61999425bc07004e49dfdd5c1f507bc4556044c11e41e04212",
+      "fingerprint": "1ccf422a338bda3de1aefc2eb10e6cc55862ca3ba2dbdb3d834552ba8abd152d",
       "typescript": {
         "status": "covered",
         "method": "Client.callRetention.retrieve"
@@ -4421,7 +4421,7 @@
       "method": "PUT",
       "path": "/platform/call-retention",
       "operationId": "updateCallRetention",
-      "fingerprint": "e1de317ce1d558be88ccf18d7d903d47b292bb1f43b4fd53f1c2a86b73a0c3aa",
+      "fingerprint": "b62903d7eda5563aa851f917a9bd94c71b5bf6a92c917735aaa2a1b09e7b73df",
       "typescript": {
         "status": "covered",
         "method": "Client.callRetention.update"

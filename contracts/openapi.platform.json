@@ -26158,7 +26158,7 @@
               "amountCents": {
                 "type": "number",
                 "minimum": 0,
-                "multipleOf": 0.000001,
+                "multipleOf": 1e-06,
                 "description": "Credits charged on application, with up to six decimal places."
               },
               "priceVersion": {
@@ -29014,19 +29014,19 @@
           "measuredCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001,
+            "multipleOf": 1e-06,
             "description": "Credit quantity this number consumed inside the window, with up to six decimal places."
           },
           "capCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001,
+            "multipleOf": 1e-06,
             "description": "Maximum credit quantity this claim can return, with up to six decimal places."
           },
           "amountCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001,
+            "multipleOf": 1e-06,
             "description": "Credit quantity this claim returns, with up to six decimal places."
           },
           "evidence": {
@@ -32948,20 +32948,14 @@
           "extended",
           "compliance",
           "custom"
-        ]
+        ],
+        "description": "The retention policy: `short` (7 days), `standard` (30 days), `extended` (90 days), `compliance` (365 days), or `custom` (the number of days in `retentionDays`). Defaults to `extended`."
       },
       "PlatformAccessCallRetention": {
         "type": "object",
         "properties": {
           "policy": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PlatformAccessCallRetentionPolicy"
-              },
-              {
-                "description": "The retention policy: `short` (7 days), `standard` (30 days), `extended` (90 days), `compliance` (365 days), or `custom` (the number of days in `retentionDays`). Defaults to `extended`."
-              }
-            ]
+            "$ref": "#/components/schemas/PlatformAccessCallRetentionPolicy"
           },
           "retentionDays": {
             "type": "integer",
