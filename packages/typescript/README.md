@@ -262,7 +262,8 @@ Start an existing Linked Device session, then retrieve its connection status wit
 `sessions.retrieve`. The standard pairing flow is QuickLink. Direct JSON QR and phone
 pairing-code routes require `sessions:manage` plus an explicit organization
 entitlement; without it, the API returns `403` and the application must create
-a QuickLink. Operation inspection is console-only.
+a QuickLink. Follow a returned operation ID with `Client.operations.get` or
+`Client.operations.wait`.
 
 ```ts
 const started = await messaging.sessions.start("support", {
@@ -1292,9 +1293,10 @@ console.log(launched.data.data.operationId, launched.metadata.requestId);
 
 Launch, pause, resume, and stop append durable lifecycle commands and return the
 campaign's current persisted state plus an `operationId`. They do not wait for
-the campaign state to change. Read the campaign resource to inspect its status;
-operation inspection is console-only. The API does not expose a campaign
-watcher, stream, or command-cancellation route. Launch accepts an optional
+the campaign state to change. Read the campaign resource to inspect its status,
+or follow the returned operation with `Client.operations.wait(operationId)` and
+stop it with `Client.operations.cancel(operationId)`. The API exposes no
+campaign watcher or stream route of its own. Launch accepts an optional
 epoch-millisecond schedule. Pause requires a running campaign, resume requires
 a paused campaign, and stop accepts draft, running, or paused campaigns.
 
@@ -1447,6 +1449,7 @@ organization and project scope:
   `rotateSecret`
 - `webhookDeliveries.list`, `retrieve`, `listAttempts`, `retrieveAttempt`, and
   `retry`
+- `operations.list`, `get`, `listTransitions`, `cancel`, and `wait`
 
 ```ts
 const deliveries = await project.webhookDeliveries.list({
