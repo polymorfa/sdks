@@ -220,6 +220,18 @@ describe("operations", () => {
     await expect(pending).rejects.toThrow();
   });
 
+  it("rejects an invalid wait budget before sending", async () => {
+    const client = new Client({
+      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: "http://127.0.0.1:9",
+    });
+    for (const maxWaitMs of [-1, Number.POSITIVE_INFINITY, Number.NaN]) {
+      await expect(
+        client.operations.wait(OPERATION_ID, { maxWaitMs }),
+      ).rejects.toThrow(/maxWaitMs/);
+    }
+  });
+
   it("rejects an out-of-range wait before sending", async () => {
     const client = new Client({
       credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },

@@ -21,6 +21,7 @@ import type {
   RetrieveOperationParams,
   RetrieveOrganizationOperationParams,
   WaitForOperationOptions,
+  WaitForOrganizationOperationOptions,
   ListWebhookDeliveriesParams,
   ListWebhooksParams,
   OrganizationEvent,
@@ -395,6 +396,9 @@ type ListOperationsFor<O extends ClientOwner> = O extends "project"
 type RetrieveOperationParamsFor<O extends ClientOwner> = O extends "project"
   ? RetrieveOperationParams
   : RetrieveOrganizationOperationParams;
+type WaitOptionsFor<O extends ClientOwner> = O extends "project"
+  ? WaitForOperationOptions
+  : WaitForOrganizationOperationOptions;
 type OperationCancellationFor<O extends ClientOwner> = O extends "project"
   ? ProjectOperationCancellationReceipt
   : OrganizationOperationCancellationReceipt;
@@ -486,9 +490,16 @@ export class OperationsResource<O extends ClientOwner> extends ResourceBase {
    */
   async wait(
     operationId: string,
-    options: WaitForOperationOptions = {},
+    options: WaitOptionsFor<O> = {} as WaitOptionsFor<O>,
   ): Promise<ApiResponse<OperationFor<O>>> {
-    const deadline = Date.now() + (options.maxWaitMs ?? 5 * 60_000);
+    const maxWaitMs = options.maxWaitMs ?? 5 * 60_000;
+    if (!Number.isFinite(maxWaitMs) || maxWaitMs < 0) {
+      throw new PolymorfaConfigurationError(
+        "maxWaitMs must be a finite, non-negative number of milliseconds.",
+        "maxWaitMs",
+      );
+    }
+    const deadline = Date.now() + maxWaitMs;
     let latest: ApiResponse<OperationFor<O>> | undefined;
     for (;;) {
       options.signal?.throwIfAborted();
@@ -514,9 +525,13 @@ export class OperationsResource<O extends ClientOwner> extends ResourceBase {
           operationId,
           {
             wait,
-            ...(options.projectId === undefined
+            ...((options as WaitForOrganizationOperationOptions).projectId ===
+            undefined
               ? {}
-              : { projectId: options.projectId }),
+              : {
+                  projectId: (options as WaitForOrganizationOperationOptions)
+                    .projectId,
+                }),
             ...(options.afterSequence === undefined
               ? {}
               : { afterSequence: options.afterSequence }),

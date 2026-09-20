@@ -403,8 +403,6 @@ export type OrganizationOperationCancellationReceipt =
 export type ProjectOperationCancellationReceipt =
   OperationCancellationReceipt<ProjectOperation>;
 export interface WaitForOperationOptions {
-  /** Read only this project (organization clients). */
-  readonly projectId?: string;
   /** Total time to wait before returning the current state. Default 5 minutes. */
   readonly maxWaitMs?: number;
   /** Return as soon as the operation's sequence exceeds this value. */
@@ -413,4 +411,9 @@ export interface WaitForOperationOptions {
   readonly pollIntervalMs?: number;
   readonly requestOptions?: Omit<RequestOptions, "signal">;
   readonly signal?: AbortSignal;
+}
+
+/** Organization clients may narrow the wait to one project. */
+export interface WaitForOrganizationOperationOptions extends WaitForOperationOptions {
+  readonly projectId?: string;
 }
