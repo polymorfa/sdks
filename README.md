@@ -241,6 +241,9 @@ The organization view also exposes these management resources:
   credentials of a project's SIP trunks (also on project clients)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
+- `usage`: read metered call usage for a month, list or iterate usage records
+  for a call or number, and read usage gate modes, limits and decisions (also on
+  project clients). Usage is measured, not charged.
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
   restrictions, incidents, claims, and Health action history; report and retract
   customer incidents

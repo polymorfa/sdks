@@ -8,8 +8,10 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
   "bansafe.claim",
   "bansafe.enforcement",
+  "bansafe.health_changed",
   "bansafe.health_threshold",
   "bansafe.incident",
+  "bansafe.risk_changed",
   "blocklist.update",
   "business.quick_reply.update",
   "call.accepted",
@@ -77,6 +79,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "session.phone_offline",
   "session.status",
   "template.status",
+  "usage.recorded",
 ] as const;
 
 export type KnownWebhookEventType = (typeof KNOWN_WEBHOOK_EVENT_TYPES)[number];
@@ -802,12 +805,109 @@ export interface CampaignColdBlockedPayload {
   readonly at: number;
 }
 
+/** Predicted probability of a ban in the next 7, 14 and 30 days, from 0 to 1. */
+export interface BanSafeForecast {
+  readonly days7: number;
+  readonly days14: number;
+  readonly days30: number;
+}
+
+/** One contributing factor behind a risk level. */
+export interface BanSafeRiskFactor {
+  readonly key: string;
+  readonly group: string;
+  readonly label: string;
+  readonly direction: "raises" | "lowers";
+  readonly strength: "strong" | "moderate" | "slight";
+  readonly impact: number;
+  readonly sentence: string;
+  readonly hint: string | null;
+}
+
+export interface BanSafeModelRef {
+  readonly version: string;
+  readonly reliability: "prior" | "early" | "calibrated";
+}
+
+/** Payload for `bansafe.risk_changed`: the number's risk level or score moved. */
+export interface BanSafeRiskChangedPayload {
+  readonly phoneNumber: string;
+  readonly level: "low" | "elevated" | "high" | "critical";
+  /** Null for the first evaluation of the number. */
+  readonly previousLevel: "low" | "elevated" | "high" | "critical" | null;
+  readonly score: number;
+  readonly forecast: BanSafeForecast;
+  readonly factors: readonly BanSafeRiskFactor[];
+  readonly model: BanSafeModelRef;
+  readonly evaluatedAt: string;
+}
+
+export interface BanSafeHealthPenalties {
+  readonly conduct: number;
+  readonly restriction: number;
+  readonly connection: number;
+}
+
+export interface BanSafeHealthFinding {
+  readonly key: string;
+  readonly title: string;
+  readonly severity: "info" | "warning" | "critical";
+  readonly status: "open" | "acknowledged" | "not_measured";
+  readonly points: number;
+}
+
+/** Payload for `bansafe.health_changed`: the number's measured health band moved. */
+export interface BanSafeHealthChangedPayload {
+  readonly phoneNumber: string;
+  /** Null when health could not be measured. */
+  readonly health: number | null;
+  readonly band: "good" | "fair" | "poor" | "failing" | "unknown";
+  readonly previousBand: string | null;
+  readonly state:
+    "measured" | "partial" | "measuring" | "restricted" | "banned";
+  readonly penalties: BanSafeHealthPenalties;
+  readonly findings: readonly BanSafeHealthFinding[];
+  readonly measuredChecks: number;
+  readonly totalChecks: number;
+  /** Messages allowed today under the project's warm-up plan, or null. */
+  readonly allowance?: number | null;
+  readonly evaluatedAt: string;
+}
+
+/**
+ * Payload for `usage.recorded`: one usage record, emitted when it is created
+ * and again, with a higher `revision`, when a later observation corrects it.
+ * Usage is measured, not charged: `pricingState` is `unpriced`.
+ */
+export interface UsageRecordedPayload {
+  readonly id: string;
+  readonly meter: string;
+  readonly quantity: number;
+  readonly unit: string;
+  readonly dimensions: Readonly<Record<string, string | number | boolean>>;
+  readonly keySource: "none" | "managed" | "customer";
+  readonly sourceKind:
+    "call" | "attempt" | "flow_run" | "conversation" | "asset" | "team";
+  /** The call id for call meters. */
+  readonly sourceId: string;
+  readonly projectId: string | null;
+  readonly session: string | null;
+  readonly occurredAt: string;
+  readonly recordedAt: string;
+  readonly revision: number;
+  readonly pricingState: "unpriced" | "priced" | "waived" | "settled";
+  readonly rateCard: { readonly id: string; readonly version: number } | null;
+  readonly pricedCredits: number | null;
+}
+
 export interface WebhookPayloadMap {
   readonly "bansafe.action": BanSafeActionPayload;
   readonly "bansafe.claim": BanSafeClaimPayload;
   readonly "bansafe.enforcement": BanSafeEnforcementPayload;
+  readonly "bansafe.health_changed": BanSafeHealthChangedPayload;
   readonly "bansafe.health_threshold": BanSafeHealthThresholdPayload;
   readonly "bansafe.incident": BanSafeIncidentPayload;
+  readonly "bansafe.risk_changed": BanSafeRiskChangedPayload;
   readonly "blocklist.update": BlocklistUpdatePayload;
   readonly "business.quick_reply.update": BusinessQuickReplyUpdatePayload;
   readonly "call.accepted": CallAcceptedPayload;
@@ -875,6 +975,7 @@ export interface WebhookPayloadMap {
   readonly "session.phone_offline": SessionPhoneOfflinePayload;
   readonly "session.status": SessionStatusPayload;
   readonly "template.status": TemplateStatusPayload;
+  readonly "usage.recorded": UsageRecordedPayload;
 }
 
 export interface WebhookEventOf<TEvent extends string, TPayload> {

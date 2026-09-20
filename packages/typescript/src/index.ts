@@ -525,6 +525,26 @@ export { AudiencesResource } from "./platform/audiences.js";
 export { ApiKeysResource } from "./platform/api-keys.js";
 export { AuditLogsResource } from "./platform/audit-logs.js";
 export { BillingResource } from "./platform/billing.js";
+export { UsageResource } from "./platform/usage.js";
+export type {
+  CallUsageDimensions,
+  UsageGate,
+  UsageGateKey,
+  UsageGateList,
+  UsageGateMode,
+  UsageGateParams,
+  UsageKeySource,
+  UsageMeter,
+  UsageMeterTotal,
+  UsagePricingState,
+  UsageRecord,
+  UsageRecordPage,
+  UsageRecordParams,
+  UsageSourceKind,
+  UsageSummary,
+  UsageSummaryParams,
+  UsageUnit,
+} from "./platform/usage.js";
 export { BanSafeResource } from "./platform/bansafe.js";
 export { CampaignsResource } from "./platform/campaigns.js";
 export { CustomersResource } from "./platform/customers.js";
@@ -750,6 +770,13 @@ export {
   isEvent,
   webhooks,
   verifyWebhookSignature,
+  type BanSafeForecast,
+  type BanSafeHealthChangedPayload,
+  type BanSafeHealthFinding,
+  type BanSafeHealthPenalties,
+  type BanSafeModelRef,
+  type BanSafeRiskChangedPayload,
+  type BanSafeRiskFactor,
   type BlocklistChange,
   type BlocklistUpdatePayload,
   type BusinessQuickReplyUpdatePayload,
@@ -814,6 +841,7 @@ export {
   type CreateWebhookFixtureInput,
   type WebhookEvent,
   type WebhookEventOf,
+  type UsageRecordedPayload,
   type WebhookPayloadMap,
   type BanSafeActionPayload,
   type BanSafeClaimPayload,

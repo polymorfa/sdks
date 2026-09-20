@@ -1,8 +1,9 @@
 # Contract coverage
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` commit
-`2259a1fd331c6ddbc8ad56a04333100ebfce7c2e` on monorepo `dev`. `source.json` records the
+files at `polymorfa/polymorfa` commit `256ded50` on branch
+`t3code/voice-p1-gates-metering` (pull request #228). Re-pin to the merge commit
+on monorepo `dev` before release. `source.json` records the
 original paths and SHA-256 hashes. `coverage.json` uses the same source
 revision.
 
@@ -16,14 +17,22 @@ operations were added or removed by this re-sync.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        308 |
+| Covered             |        311 |
 | Missing             |          0 |
 | Excluded            |        116 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        424 |
+| Total               |        427 |
 
-This revision adds test event triggering
+This revision adds usage metering and usage gates: `GET /platform/usage`,
+`GET /platform/usage/records` and `GET /platform/gates`, covered by
+`Client.usage.summary`, `Client.usage.listRecords` (with `Client.usage.iterateRecords`
+for paging) and `Client.usage.listGates`. It also carries the `usage.recorded`
+webhook payload and refreshes the `streamProjectEvents` fingerprint from the
+monorepo's event-stream index change; that operation is unchanged for the SDK and
+stays covered by `Client.events.stream`.
+
+An earlier revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
 (`GET /messaging/testing/{projectId}/events/fixtures`), covered by
 `MessagingClient.testing.triggerEvent` (with the optional `Idempotency-Key`

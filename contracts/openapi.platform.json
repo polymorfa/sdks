@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (161 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (85 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (164 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (85 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -1674,7 +1674,7 @@
           "SIP Trunks"
         ],
         "summary": "Create a SIP trunk",
-        "description": "**Required scope:** `sessions:manage`\n\nConnects a PBX or SIP trunk to WhatsApp calls. An `outbound` trunk receives the incoming WhatsApp calls of sessions whose call settings route to it. An `inbound` trunk lets your PBX place WhatsApp calls through a session. For trunks that accept calls from your PBX, the response contains the digest credentials once. SIP trunks are a beta: creating, changing and rotating credentials return `403` unless your team is enrolled. Listing, reading and deleting trunks remain available after withdrawal.",
+        "description": "**Required scope:** `sessions:manage`\n\nConnects a PBX or SIP trunk to WhatsApp calls. An `outbound` trunk receives the incoming WhatsApp calls of sessions whose call settings route to it. An `inbound` trunk lets your PBX place WhatsApp calls through a session. For trunks that accept calls from your PBX, the response contains the digest credentials once.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -2009,7 +2009,7 @@
           "SIP Trunks"
         ],
         "summary": "Update a SIP trunk",
-        "description": "**Required scope:** `sessions:manage`\n\nChanges the fields you send and keeps the others. Send `expectedRevision` to refuse the change with `409 sip_trunk_revision_conflict` when the trunk changed since you read it. Changes apply to new calls within about a minute; calls in progress continue. Requires enrollment in the SIP trunks beta.",
+        "description": "**Required scope:** `sessions:manage`\n\nChanges the fields you send and keeps the others. Send `expectedRevision` to refuse the change with `409 sip_trunk_revision_conflict` when the trunk changed since you read it. Changes apply to new calls within about a minute; calls in progress continue.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -2376,7 +2376,7 @@
           "SIP Trunks"
         ],
         "summary": "Rotate SIP trunk credentials",
-        "description": "**Required scope:** `sessions:manage`\n\nReplaces the password your PBX uses to place calls. The previous password stops working within about a minute. Returns `409 state_conflict` for `outbound` trunks. Requires enrollment in the SIP trunks beta.",
+        "description": "**Required scope:** `sessions:manage`\n\nReplaces the password your PBX uses to place calls. The previous password stops working within about a minute. Returns `409 state_conflict` for `outbound` trunks.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -11164,6 +11164,333 @@
           },
           "501": {
             "$ref": "#/components/responses/NotImplemented"
+          }
+        }
+      }
+    },
+    "/platform/usage": {
+      "get": {
+        "operationId": "getUsageSummary",
+        "tags": [
+          "usage"
+        ],
+        "summary": "Get usage",
+        "description": "Returns metered usage for one calendar month (UTC), by meter and by number. Omit `period` for the current month. Usage is measured, not charged: `billingEnabled` is false and no credits are deducted for it. A project token reads its own project; `session` narrows to one number.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "session",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Number (session name)."
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+              "description": "Calendar month in UTC, `YYYY-MM`. Defaults to the current month."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/UsageSummary"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/platform/usage/records": {
+      "get": {
+        "operationId": "listUsageRecords",
+        "tags": [
+          "usage"
+        ],
+        "summary": "List usage records",
+        "description": "Lists usage records, newest first. Filter by project, number (`session`), call (`callId`), meter or calendar month. A call has one `call.duration` record, and an outgoing Cloud API call also a `call.cloud_pulses` record. Pass `nextCursor` as `cursor` to read the next page with the same filters.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "session",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Number (session name)."
+            }
+          },
+          {
+            "name": "callId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[\\x21-\\x7e]+$"
+            }
+          },
+          {
+            "name": "meter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/UsageMeter"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+              "description": "Calendar month in UTC, `YYYY-MM`. Defaults to the current month."
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/UsageRecordPage"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/platform/gates": {
+      "get": {
+        "operationId": "listUsageGates",
+        "tags": [
+          "usage"
+        ],
+        "summary": "List usage gates",
+        "description": "Returns every usage gate with its mode, limit, current usage and decisions in the last 30 days. Pass `session` to include limits that apply per number. In `record` mode a gate never refuses an action; in `enforce` mode an action over the limit fails with `gate_limit_reached` (402).\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "session",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Number (session name)."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/UsageGateList"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -24403,6 +24730,462 @@
           "endReason"
         ]
       },
+      "UsageMeter": {
+        "type": "string",
+        "enum": [
+          "call.duration",
+          "call.cloud_pulses",
+          "campaign.call",
+          "tts.characters",
+          "tts.seconds",
+          "stt.seconds",
+          "agent.seconds",
+          "agent.tokens",
+          "agent.provider_cost",
+          "channels.peak",
+          "storage.byte_days"
+        ],
+        "description": "What was measured. Calls record `call.duration` (seconds) and, for outgoing Cloud API calls, `call.cloud_pulses` (6-second pulses). The other meters belong to voice automation and have no records yet."
+      },
+      "UsageUnit": {
+        "type": "string",
+        "enum": [
+          "second",
+          "pulse",
+          "call",
+          "character",
+          "token",
+          "provider_unit",
+          "channel",
+          "byte_day"
+        ]
+      },
+      "UsageKeySource": {
+        "type": "string",
+        "enum": [
+          "none",
+          "managed",
+          "customer"
+        ],
+        "description": "Whose provider key produced the usage. `none` for usage without a provider key, such as calls."
+      },
+      "UsageRecord": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "meter": {
+            "$ref": "#/components/schemas/UsageMeter"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0
+          },
+          "unit": {
+            "$ref": "#/components/schemas/UsageUnit"
+          },
+          "dimensions": {
+            "type": "object",
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "description": "Closed, per-meter attributes. Call meters carry `direction`, `upstream` (`linked_device` or `cloud_api`), `origin`, `participants`, `connections`, `sipLegs` and `video`."
+          },
+          "keySource": {
+            "$ref": "#/components/schemas/UsageKeySource"
+          },
+          "sourceKind": {
+            "type": "string",
+            "enum": [
+              "call",
+              "attempt",
+              "flow_run",
+              "conversation",
+              "asset",
+              "team"
+            ]
+          },
+          "sourceId": {
+            "type": "string",
+            "description": "The call id for call meters."
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "session": {
+            "type": "string",
+            "nullable": true,
+            "description": "The number (session name) the usage belongs to."
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the usage happened. For calls, when the call ended."
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Increases when a later observation corrects the record, for example a call end reported after a lost connection."
+          },
+          "pricingState": {
+            "type": "string",
+            "enum": [
+              "unpriced",
+              "priced",
+              "waived",
+              "settled"
+            ],
+            "description": "`unpriced` while usage is measured but not charged."
+          },
+          "rateCard": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "id",
+              "version"
+            ],
+            "description": "The rate card that applied when the usage was recorded. Null while no rate card exists."
+          },
+          "pricedCredits": {
+            "type": "number",
+            "nullable": true,
+            "description": "Credits charged for the record. Null until the record is priced."
+          }
+        },
+        "required": [
+          "id",
+          "meter",
+          "quantity",
+          "unit",
+          "dimensions",
+          "keySource",
+          "sourceKind",
+          "sourceId",
+          "projectId",
+          "session",
+          "occurredAt",
+          "recordedAt",
+          "revision",
+          "pricingState",
+          "rateCard",
+          "pricedCredits"
+        ]
+      },
+      "UsageRecordPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "records": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/UsageRecord"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Pass as `cursor` for the next page; null on the last page."
+          }
+        },
+        "required": [
+          "records",
+          "nextCursor"
+        ]
+      },
+      "UsageMeterTotal": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "meter": {
+            "$ref": "#/components/schemas/UsageMeter"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/UsageUnit"
+          },
+          "keySource": {
+            "$ref": "#/components/schemas/UsageKeySource"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0
+          },
+          "records": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "meter",
+          "unit",
+          "keySource",
+          "quantity",
+          "records"
+        ]
+      },
+      "UsageSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "period": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}$",
+            "description": "Calendar month in UTC."
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "session": {
+            "type": "string",
+            "nullable": true
+          },
+          "billingEnabled": {
+            "type": "boolean",
+            "description": "Always false while usage is measured but not charged."
+          },
+          "meters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageMeterTotal"
+            }
+          },
+          "numbers": {
+            "type": "array",
+            "maxItems": 100,
+            "description": "Totals per number, most call time first.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "session": {
+                  "type": "string"
+                },
+                "projectId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "nullable": true
+                },
+                "meters": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsageMeterTotal"
+                  }
+                }
+              },
+              "required": [
+                "session",
+                "projectId",
+                "meters"
+              ]
+            }
+          },
+          "numbersTruncated": {
+            "type": "boolean",
+            "description": "True when more than 100 numbers had usage."
+          }
+        },
+        "required": [
+          "period",
+          "start",
+          "end",
+          "projectId",
+          "session",
+          "billingEnabled",
+          "meters",
+          "numbers",
+          "numbersTruncated"
+        ]
+      },
+      "UsageGate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "calls.outbound_monthly",
+              "voice.campaigns",
+              "voice.campaigns.recipients",
+              "voice.campaigns.calls_monthly",
+              "voice.channels.concurrent",
+              "voice.audio_library",
+              "voice.audio_library.assets",
+              "voice.flows",
+              "voice.agents.elevenlabs",
+              "voice.agents.openai_realtime",
+              "voice.providers.managed",
+              "voice.providers.customer_key",
+              "voice.agent_minutes_monthly",
+              "voice.tts_characters_monthly",
+              "voice.stt_minutes_monthly",
+              "voice.storage.recordings",
+              "voice.storage.transcripts"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "capability",
+              "quota",
+              "limit",
+              "concurrency"
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "enum": [
+              "team",
+              "number",
+              "project",
+              "campaign"
+            ],
+            "description": "What the limit applies to."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "off",
+              "record",
+              "enforce"
+            ],
+            "description": "`record` counts actions over the limit without refusing them. `enforce` refuses them with `gate_limit_reached`. `off` does not check."
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether an action checks this gate today. Voice automation gates are inactive until those features ship."
+          },
+          "limit": {
+            "type": "number",
+            "nullable": true,
+            "description": "For capability gates, 1 when included and 0 when not. Otherwise the limit, or -1 for no limit. Null when the limit applies per number and no `session` was given."
+          },
+          "used": {
+            "type": "number",
+            "nullable": true,
+            "description": "Usage this calendar month (UTC) counted against a quota."
+          },
+          "unit": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "second",
+              "pulse",
+              "call",
+              "character",
+              "token",
+              "provider_unit",
+              "channel",
+              "byte_day",
+              "count",
+              "minute",
+              null
+            ]
+          },
+          "overLimit": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether the next action would exceed the limit."
+          },
+          "decisions": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Checks over the limit in the last 30 days (UTC).",
+            "properties": {
+              "wouldBlock": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Allowed because the gate records only."
+              },
+              "blocked": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Refused because the gate enforces."
+              },
+              "evaluationError": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Could not be evaluated."
+              }
+            },
+            "required": [
+              "wouldBlock",
+              "blocked",
+              "evaluationError"
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "kind",
+          "subject",
+          "mode",
+          "active",
+          "limit",
+          "used",
+          "unit",
+          "overLimit",
+          "decisions"
+        ]
+      },
+      "UsageGateList": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "session": {
+            "type": "string",
+            "nullable": true
+          },
+          "gates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageGate"
+            }
+          }
+        },
+        "required": [
+          "session",
+          "gates"
+        ]
+      },
       "ConsoleCallList": {
         "type": "object",
         "additionalProperties": false,
@@ -32345,15 +33128,15 @@
         "discriminator": {
           "propertyName": "type",
           "mapping": {
-            "ready": "#/components/schemas/EventStreamReadyFrame",
-            "event": "#/components/schemas/EventStreamEventFrame",
-            "heartbeat": "#/components/schemas/EventStreamHeartbeatFrame",
-            "checkpoint": "#/components/schemas/EventStreamCheckpointFrame",
-            "backpressure": "#/components/schemas/EventStreamBackpressureFrame",
-            "gap": "#/components/schemas/EventStreamGapFrame",
-            "dropped": "#/components/schemas/EventStreamDroppedFrame",
-            "expiry": "#/components/schemas/EventStreamExpiryFrame",
-            "revoked": "#/components/schemas/EventStreamRevokedFrame"
+            "ready": "#/components/schemas/PlatformAccessEventStreamReadyFrame",
+            "event": "#/components/schemas/PlatformAccessEventStreamEventFrame",
+            "heartbeat": "#/components/schemas/PlatformAccessEventStreamHeartbeatFrame",
+            "checkpoint": "#/components/schemas/PlatformAccessEventStreamCheckpointFrame",
+            "backpressure": "#/components/schemas/PlatformAccessEventStreamBackpressureFrame",
+            "gap": "#/components/schemas/PlatformAccessEventStreamGapFrame",
+            "dropped": "#/components/schemas/PlatformAccessEventStreamDroppedFrame",
+            "expiry": "#/components/schemas/PlatformAccessEventStreamExpiryFrame",
+            "revoked": "#/components/schemas/PlatformAccessEventStreamRevokedFrame"
           }
         },
         "description": "JSON carried in the `data` field of one SSE message. The SSE `event` field repeats `type`."
@@ -32750,7 +33533,7 @@
                 "$ref": "#/components/schemas/PlatformAccessCallInboundRoute"
               },
               {
-                "description": "Where incoming WhatsApp calls ring. Routing to a different SIP trunk requires enrollment in the SIP trunks beta; `clients`, and keeping the stored trunk while changing other settings, are always accepted."
+                "description": "Where incoming WhatsApp calls ring."
               }
             ]
           },

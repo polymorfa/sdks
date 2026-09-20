@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "2259a1fd331c6ddbc8ad56a04333100ebfce7c2e",
-  "branch": "dev",
-  "published": true,
-  "note": "Merged commit on monorepo dev (merge of PR #200, project event streams).",
+  "commit": "256ded50de727c3d978a8bfc73bc67b3c35454e2",
+  "branch": "t3code/voice-p1-gates-metering",
+  "published": false,
+  "note": "Branch head for polymorfa/polymorfa#228 (usage metering and usage gates). Re-pin to the merge commit on dev before release.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "d9b9764b8e3bd88f18f10026a35bdc02b03506d8758ad282017d022eb4e800c6"
+      "sha256": "74dd90636845b0c7872da44d50a361be9222c89663e796c9e054a4b8fb0d0478"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "d5877ef1499330083e5b4d63053d9d364ff34d52be24cd630d7283692e027975"
+      "sha256": "e8da1569e3d2ef57f1f2c009c0c7e25261a6f2631cd998bea33d8645127b45c9"
     }
   }
 }
