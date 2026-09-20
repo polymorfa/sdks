@@ -28,8 +28,8 @@
   `recipientListId` (string or null), which points an unlaunched draft at
   another audience or detaches it, and keeps an index signature because the
   contract still declares the body as an open object. The API refuses the
-  change once the campaign has launched or its audience has been copied into
-  recipients.
+  change with `409` once the campaign has launched or its audience has been
+  copied into recipients; the SDK raises `PolymorfaConflictError`.
 
 - Added campaign recipients on both surfaces.
   `MessagingClient.campaigns.listRecipients` and `addRecipients`, and

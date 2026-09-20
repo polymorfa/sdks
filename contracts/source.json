@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "d48b43c6e24a52175eba3880c1eefda1e07a3bf0",
+  "commit": "ef1653e3c4fc7a98b9da56fffae5f2184b7e4574",
   "branch": "t3code/campaigns-exploration",
   "published": true,
   "note": "Coordinated PR dependency: polymorfa/polymorfa#232 (Campaigns P0). Pushed to origin, not yet merged to monorepo dev.",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "e25ffeaee3343e250c265de64e90783a3972d02a21fca549c2676aa4d6b96dfe"
+      "sha256": "ed9b8dfba616602e1a309796d10c1d5438b4f646a135d42713adfc6ff723dc40"
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "d48b43c6e24a52175eba3880c1eefda1e07a3bf0",
+  "sourceCommit": "ef1653e3c4fc7a98b9da56fffae5f2184b7e4574",
   "excludedContracts": [
     {
       "family": "graph",
@@ -3522,7 +3522,7 @@
       "method": "PATCH",
       "path": "/platform/campaigns/{campaignId}",
       "operationId": "updateCampaign",
-      "fingerprint": "e9fedba0eb70a5425d47bea9e6d74224287d8047289a3a0addfadeb9b273377d",
+      "fingerprint": "90baf7ea126eaea6a4bd8fddc729b24806db837492366c8d8798469545ef1214",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.update"

@@ -2,7 +2,7 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`d48b43c6e24a52175eba3880c1eefda1e07a3bf0` on branch
+`ef1653e3c4fc7a98b9da56fffae5f2184b7e4574` on branch
 `t3code/campaigns-exploration`. That commit is a coordinated PR dependency
 (polymorfa/polymorfa#232, Campaigns P0): it is pushed to origin and is not yet
 merged to monorepo `dev`. `source.json` records the original paths and SHA-256
@@ -26,12 +26,14 @@ active delivery run and was cancelled immediately;
 `MessagingClient.campaigns.stop` no longer shares `CampaignOperationResponse`.
 Campaign create on both surfaces accepts inline `recipients`.
 
-This revision also declares `projectId` as an optional query parameter on the
+This revision also declares `projectId` as a query parameter on the
 single-campaign Platform operations: `GET`, `PATCH` and `DELETE`
-`/platform/campaigns/{campaignId}`, plus `/analytics` and `/events`. A team API
-key is not bound to one project and has always had to name the owning project;
-the contract now says so. `Client.campaigns.retrieve`, `update`, `delete`,
-`analytics` and `events` take a `PlatformCampaignParams` argument for it.
+`/platform/campaigns/{campaignId}`, plus `/analytics`, `/events` and
+`/recipients`. It is deliberately `required: false`: a team API key is not
+bound to one project and must name the owning project, while a project token is
+bound to its own project and must omit it. `Client.campaigns.retrieve`,
+`update`, `delete`, `analytics` and `events` take a `PlatformCampaignParams`
+argument for it, and `recipients` carries it in its existing params.
 
 `PATCH /platform/campaigns/{campaignId}` accepts `recipientListId`, a string or
 null, which points an unlaunched draft at another audience or detaches it. The
@@ -39,9 +41,8 @@ API refuses the change once the campaign has launched or its audience has been
 copied into recipients. The contract still declares this request body as an
 open object, so the SDK does not close it: `UpdatePlatformCampaignRequest`
 names `recipientListId` and keeps an index signature for every other field.
-The declared responses for this operation do not include 409, although the
-handler refuses a launched campaign with one; the SDK maps status to an error
-class and is unaffected.
+The operation declares `409` for the refusal after launch, which the transport
+already maps to `PolymorfaConflictError`; no SDK change was needed for it.
 
 The shared public error enum grew again with the campaign refusal codes, so 180
 operations have a refreshed fingerprint. Every success-path change was
@@ -50,6 +51,10 @@ seventeenth is `GET /platform/projects/{projectId}/events/stream`, where the
 frame schemas were renamed from `EventStream*Frame` to
 `PlatformAccessEventStream*Frame` with no change to the frames themselves. No
 operation was removed.
+
+The final re-sync of this branch added only the `409` above. The `projectId`
+descriptions and the update summary that came with it are documentation, which
+the fingerprint deliberately ignores, so exactly one operation changed.
 
 The webhook catalog adds `contact.opted_out` and `contact.opted_in` with the
 exported `ContactOptPayload`. `bansafe.health_changed` and

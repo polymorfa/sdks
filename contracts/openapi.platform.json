@@ -8600,6 +8600,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
+            "description": "Project the campaign belongs to. Required with a team API key; a project token is bound to its own project and omits it.",
             "schema": {
               "type": "string"
             }
@@ -8647,7 +8648,7 @@
           "campaigns"
         ],
         "summary": "Update campaign",
-        "description": "Updates a campaign. A new `senderConfig` passes the same Campaigns plan and throughput checks as create.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Updates a campaign. A new `senderConfig` passes the same Campaigns plan and throughput checks as create. `recipientListId` points the campaign at another audience while it is still an unlaunched draft; after launch it answers `409`.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -8673,6 +8674,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
+            "description": "Project the campaign belongs to. Required with a team API key; a project token is bound to its own project and omits it.",
             "schema": {
               "type": "string"
             }
@@ -8738,6 +8740,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       },
@@ -8773,6 +8778,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
+            "description": "Project the campaign belongs to. Required with a team API key; a project token is bound to its own project and omits it.",
             "schema": {
               "type": "string"
             }
@@ -9637,6 +9643,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
+            "description": "Project the campaign belongs to. Required with a team API key; a project token is bound to its own project and omits it.",
             "schema": {
               "type": "string"
             }
@@ -9712,6 +9719,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
+            "description": "Project the campaign belongs to. Required with a team API key; a project token is bound to its own project and omits it.",
             "schema": {
               "type": "string"
             }
@@ -9787,6 +9795,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
+            "description": "Project the campaign belongs to. Required with a team API key; a project token is bound to its own project and omits it.",
             "schema": {
               "type": "string",
               "format": "uuid",
