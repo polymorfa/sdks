@@ -271,6 +271,97 @@ const PAYLOADS: {
       "actionId",
     ],
   ),
+  "bansafe.risk_changed": shape<P["bansafe.risk_changed"]>()(
+    {
+      phoneNumber: "+15551234567",
+      level: "elevated",
+      previousLevel: "low",
+      score: 37,
+      forecast: { days7: 0.02, days14: 0.06, days30: 0.11 },
+      factors: [
+        {
+          key: "cold_send_ratio",
+          group: "cold_outreach",
+          label: "Share of messages sent to people who never messaged you",
+          direction: "raises",
+          strength: "strong",
+          impact: 42,
+          sentence:
+            "38 of the 51 people you messaged had never messaged this number",
+          hint: "Message people who wrote to you first",
+        },
+      ],
+      model: { version: "prior-v0", reliability: "prior" },
+      evaluatedAt: AT,
+    },
+    [
+      "phoneNumber",
+      "level",
+      "previousLevel",
+      "score",
+      "forecast",
+      "factors",
+      "model",
+      "evaluatedAt",
+    ],
+  ),
+  "bansafe.health_changed": shape<P["bansafe.health_changed"]>()(
+    {
+      phoneNumber: "+15551234567",
+      health: 62,
+      band: "fair",
+      previousBand: "good",
+      state: "measured",
+      penalties: { conduct: 8, restriction: 0, connection: 2 },
+      findings: [
+        {
+          key: "unsolicited_outreach",
+          title: "Messaging people who never wrote to you",
+          severity: "warning",
+          status: "open",
+          points: 8,
+        },
+      ],
+      measuredChecks: 14,
+      totalChecks: 18,
+      allowance: 240,
+      evaluatedAt: AT,
+    },
+    [
+      "phoneNumber",
+      "health",
+      "band",
+      "previousBand",
+      "state",
+      "penalties",
+      "findings",
+      "measuredChecks",
+      "totalChecks",
+      "evaluatedAt",
+    ],
+  ),
+  "call.permission_changed": shape<P["call.permission_changed"]>()(
+    {
+      conversation: {
+        id: "739182640518203",
+        phoneNumber: "+15551234567",
+        bsuid: "US.13491208655302741918",
+      },
+      status: "temporary",
+      previousStatus: "none",
+      expiresAt: "2026-09-23T00:00:00.000Z",
+      source: "user_action",
+      changedAt: AT,
+    },
+    [
+      "conversation",
+      "status",
+      "previousStatus",
+      "expiresAt",
+      "source",
+      "changedAt",
+    ],
+  ),
   "bansafe.enforcement": shape<P["bansafe.enforcement"]>()(
     {
       phoneNumber: "+15551234567",
@@ -538,6 +629,7 @@ type LegacyEventType = Exclude<
   | `customer.${string}`
   | `bansafe.${string}`
   | `campaign.${string}`
+  | "call.permission_changed"
   | "message.failed"
   | "template.status"
 >;

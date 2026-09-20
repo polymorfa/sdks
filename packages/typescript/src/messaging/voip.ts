@@ -6,9 +6,12 @@ import {
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
+  CallPermissionResponse,
   SessionCallSettingsResponse,
   SuccessResponse,
   UpdateSessionCallSettingsRequest,
+  VoipCheckCallRequest,
+  VoipCheckCallResponse,
   VoipCallReportRequest,
   VoipAcceptCallRequest,
   VoipAcceptCallResponse,
@@ -186,12 +189,79 @@ export class VoipResource {
     });
   }
 
+  /**
+   * Reads whether a person has given this Cloud API number permission to call
+   * them. `to` is a user ID or a phone number in E.164 format. WhatsApp is
+   * asked during the request: `fresh` is `false` when it could not be reached
+   * and the stored state is returned instead. Linked-device numbers answer
+   * `409 unsupported_for_connection`. Requires a server credential with
+   * `sessions:read`.
+   */
+  retrieveCallPermission(
+    session: string,
+    to: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CallPermissionResponse>> {
+    this.assertServerCredential("Call permissions");
+    if (!nonEmpty(session)) {
+      throw new PolymorfaConfigurationError(
+        "A session is required to read a call permission.",
+        "session",
+      );
+    }
+    if (!nonEmpty(to)) {
+      throw new PolymorfaConfigurationError(
+        "A user ID or E.164 phone number is required.",
+        "to",
+      );
+    }
+    return this.transport.request({
+      method: "GET",
+      path: `/messaging/${encodeURIComponent(session)}/call-permissions/${encodeURIComponent(to)}`,
+      ...options,
+    });
+  }
+
+  /**
+   * Runs the checks a placement runs, without placing a call or reserving
+   * anything. `refusal` names the first reason the call would fail: the team's
+   * call policy (`call_recipient_opted_out`, `call_destination_blocked`), the
+   * session's calling switch (`calls_disabled`), or WhatsApp
+   * (`call_permission_required`, `call_limit_reached`). Requires a server
+   * credential.
+   */
+  check(
+    body: VoipCheckCallRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<VoipCheckCallResponse>> {
+    this.assertServerCredential("Call checks");
+    if (typeof body !== "object" || body === null) {
+      throw new PolymorfaValidationError("A call check must be an object.");
+    }
+    if (!nonEmpty(body.session)) {
+      throw new PolymorfaValidationError(
+        "session names the number that would place the call.",
+      );
+    }
+    if (!nonEmpty(body.to)) {
+      throw new PolymorfaValidationError(
+        "to must be a user ID or an E.164 phone number.",
+      );
+    }
+    return this.transport.request({
+      method: "POST",
+      path: "/messaging/voip/calls/check",
+      body,
+      ...options,
+    });
+  }
+
   /** Reads a session's call settings. Requires a server credential. */
   retrieveCallSettings(
     session: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SessionCallSettingsResponse>> {
-    this.assertServerCredential();
+    this.assertServerCredential("Session call settings");
     return this.transport.request({
       method: "GET",
       path: callSettingsPath(session),
@@ -208,7 +278,7 @@ export class VoipResource {
     body: UpdateSessionCallSettingsRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SessionCallSettingsResponse>> {
-    this.assertServerCredential();
+    this.assertServerCredential("Session call settings");
     if (typeof body !== "object" || body === null) {
       throw new PolymorfaValidationError("Call settings must be an object.");
     }
@@ -292,10 +362,10 @@ export class VoipResource {
     }
   }
 
-  private assertServerCredential(): void {
+  private assertServerCredential(subject: string): void {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "Session call settings require a server API key.",
+        `${subject} require a server API key.`,
         "credential",
       );
     }

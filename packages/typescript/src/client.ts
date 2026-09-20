@@ -18,6 +18,10 @@ import { AudiencesResource } from "./platform/audiences.js";
 import { AuditLogsResource } from "./platform/audit-logs.js";
 import { BillingResource } from "./platform/billing.js";
 import { BanSafeResource } from "./platform/bansafe.js";
+import {
+  CallOptOutsResource,
+  CallPolicyResource,
+} from "./platform/call-consent.js";
 import { CampaignsResource } from "./platform/campaigns.js";
 import { CustomersResource } from "./platform/customers.js";
 import {
@@ -65,6 +69,10 @@ export interface OrganizationControlPlaneResources {
   readonly auditLogs: AuditLogsResource;
   readonly billing: BillingResource;
   readonly banSafe: BanSafeResource;
+  /** Team-wide blocked country codes for calls. */
+  readonly callPolicy: CallPolicyResource;
+  /** The team's do-not-call list. */
+  readonly callOptOuts: CallOptOutsResource;
   readonly campaigns: CampaignsResource;
   readonly customers: CustomersResource;
   readonly members: MembersResource;
@@ -162,6 +170,8 @@ class ClientImplementation implements ClientBase<ClientOwner> {
         auditLogs: new AuditLogsResource(this.#transport),
         billing: new BillingResource(this.#transport),
         banSafe: new BanSafeResource(this.#transport),
+        callPolicy: new CallPolicyResource(this.#transport),
+        callOptOuts: new CallOptOutsResource(this.#transport),
         campaigns: new CampaignsResource(this.#transport),
         customers: new CustomersResource(this.#transport),
         members: new MembersResource(this.#transport),

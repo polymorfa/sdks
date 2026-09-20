@@ -2,9 +2,28 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`2259a1fd331c6ddbc8ad56a04333100ebfce7c2e` on monorepo `dev`. `source.json` records the
-original paths and SHA-256 hashes. `coverage.json` uses the same source
-revision.
+`16f46606643ecac877dfb826d6119173ccc231d0` on the unmerged branch
+`t3code/calls-consent`. `source.json` records the original paths and SHA-256
+hashes. `coverage.json` uses the same source revision. This is a coordinated PR
+dependency: re-sync to the merged monorepo `dev` commit before this SDK change
+merges.
+
+This revision adds call consent. The team call policy and do-not-call list
+(`getCallPolicy`, `updateCallPolicy`, `listCallOptOuts`, `createCallOptOut`,
+`importCallOptOuts`, `deleteCallOptOut`) are covered by `Client.callPolicy` and
+`Client.callOptOuts`; they take organization credentials only, so no project
+view exposes them. The Cloud API permission read (`getCallPermission`) and the
+pre-dial check (`checkCall`) are covered by
+`MessagingClient.voip.retrieveCallPermission` and `MessagingClient.voip.check`.
+The `callPermissionRequest` message content joins the typed
+`SendMessageRequest` union, and `call.permission_changed`,
+`bansafe.health_changed` and `bansafe.risk_changed` join the webhook catalog
+with typed payloads. Five call consent codes and the
+`call_permission_request` rate-limit reason join the shared error enums, which
+moves the fingerprint of every operation referencing them; those operations
+were reviewed and differ only in their error enum. The six Console call consent
+routes (`/console/call-policy`, `/console/call-opt-outs*`) are excluded: they
+require dashboard identity.
 
 Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
 `MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
@@ -16,12 +35,12 @@ operations were added or removed by this re-sync.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        308 |
+| Covered             |        316 |
 | Missing             |          0 |
-| Excluded            |        116 |
+| Excluded            |        122 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        424 |
+| Total               |        438 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

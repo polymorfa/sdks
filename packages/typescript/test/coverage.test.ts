@@ -173,12 +173,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "2259a1fd331c6ddbc8ad56a04333100ebfce7c2e",
-      total: 424,
-      covered: 308,
+      sourceCommit: "16f46606643ecac877dfb826d6119173ccc231d0",
+      total: 438,
+      covered: 316,
       partial: 0,
       missing: 0,
-      excluded: 116,
+      excluded: 122,
       changed: 0,
     });
     // Monorepo dev now carries the merged Calls diagnostics route the SDK
@@ -510,9 +510,13 @@ describe("coverage checker", () => {
     const mappings = Object.fromEntries(
       ledger.operations
         .filter(({ operationId }) =>
-          ["rejectCall", "resolveIdentity", "getUserSecurityCode"].includes(
-            operationId,
-          ),
+          [
+            "checkCall",
+            "getCallPermission",
+            "rejectCall",
+            "resolveIdentity",
+            "getUserSecurityCode",
+          ].includes(operationId),
         )
         .map(({ operationId, typescript }) => [operationId, typescript.method]),
     );
@@ -564,11 +568,15 @@ describe("coverage checker", () => {
       .sort();
 
     expect(contractOperationIds).toEqual([
+      "checkCall",
+      "getCallPermission",
       "getUserSecurityCode",
       "rejectCall",
       "resolveIdentity",
     ]);
     expect(mappings).toEqual({
+      checkCall: "MessagingClient.voip.check",
+      getCallPermission: "MessagingClient.voip.retrieveCallPermission",
       getUserSecurityCode: "MessagingClient.users.getSecurityCode",
       rejectCall: "MessagingClient.calls.reject",
       resolveIdentity: "MessagingClient.identities.resolve",

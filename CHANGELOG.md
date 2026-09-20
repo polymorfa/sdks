@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+- Call consent. `Client.callPolicy` (`retrieve`, `update`) reads and replaces
+  the team's blocked country codes with an optional `expectedRevision` guard,
+  and `Client.callOptOuts` (`list`, `create`, `import`, `delete`) manages the
+  team's do-not-call list. Both need an organization key. `list` returns a
+  `CursorPage` that follows `page.nextCursor`; `create` answers `201` for a new
+  entry and `200` for one already listed, told apart by `metadata.status`.
+  `MessagingClient.voip.retrieveCallPermission()` reads a person's call
+  permission on a Cloud API Number, and `MessagingClient.voip.check()` runs a
+  placement's checks without placing a call. Message content adds
+  `callPermissionRequest: { body }`. The `call.permission_changed` webhook
+  event narrows to `CallPermissionChangedPayload`. `PolymorfaErrorCode` adds
+  `call_recipient_opted_out`, `call_destination_blocked`,
+  `call_permission_request_limited`, `call_permission_granted` and
+  `call_opt_out_limit`, and `PolymorfaRateLimitReason` adds
+  `call_permission_request`.
+- The `bansafe.health_changed` and `bansafe.risk_changed` webhook events narrow
+  to `BanSafeHealthChangedPayload` and `BanSafeRiskChangedPayload`.
 - Client rules: `ClientRules` and `SetClientRulesRequest` add
   `conversationTtlSeconds`, the seconds a sender stays replyable in
   `conversation` mode (300 to 604800; the API default is 86400).

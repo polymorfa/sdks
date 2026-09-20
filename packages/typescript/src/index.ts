@@ -266,6 +266,14 @@ export type {
   ClientRecipientMode,
   ClientAction,
   CallInboundRoute,
+  CallPermission,
+  CallPermissionAction,
+  CallPermissionLimit,
+  CallPermissionRequestMessageContent,
+  CallPermissionResponse,
+  CallPermissionSource,
+  CallPermissionState,
+  CallPermissionStatus,
   SessionCallSettings,
   SessionCallSettingsResponse,
   UpdateSessionCallSettingsRequest,
@@ -274,6 +282,10 @@ export type {
   VoipAcceptCallResult,
   VoipAddParticipantRequest,
   VoipAddParticipantResponse,
+  VoipCallCheck,
+  VoipCallRefusal,
+  VoipCheckCallRequest,
+  VoipCheckCallResponse,
   VoipLeaveCallRequest,
   VoipCallErrorCode,
   VoipCallErrorReport,
@@ -442,6 +454,7 @@ export type {
   SeenRequest,
   SendAddressMessageRequest,
   SendButtonsMessageRequest,
+  SendCallPermissionRequestMessageRequest,
   SendContactMessageRequest,
   SendFlowMessageRequest,
   SendListMessageRequest,
@@ -526,6 +539,23 @@ export { ApiKeysResource } from "./platform/api-keys.js";
 export { AuditLogsResource } from "./platform/audit-logs.js";
 export { BillingResource } from "./platform/billing.js";
 export { BanSafeResource } from "./platform/bansafe.js";
+export {
+  CallOptOutsResource,
+  CallPolicyResource,
+} from "./platform/call-consent.js";
+export type {
+  CallOptOut,
+  CallOptOutDeleted,
+  CallOptOutImportEntry,
+  CallOptOutImportResult,
+  CallOptOutRejectionReason,
+  CallOptOutSource,
+  CallPolicy,
+  CreateCallOptOutInput,
+  ImportCallOptOutsInput,
+  ListCallOptOutsParams,
+  UpdateCallPolicyInput,
+} from "./platform/call-consent.js";
 export { CampaignsResource } from "./platform/campaigns.js";
 export { CustomersResource } from "./platform/customers.js";
 export { MediaResource } from "./platform/media.js";
@@ -763,6 +793,7 @@ export {
   type CallParticipant,
   type CallParticipantLeftPayload,
   type CallParticipantPayload,
+  type CallPermissionChangedPayload,
   type CallReceivedPayload,
   type CallRejectedPayload,
   type CallTelemetryPayload,
@@ -819,6 +850,15 @@ export {
   type BanSafeClaimPayload,
   type BanSafeEnforcementPayload,
   type BanSafeEventRung,
+  type BanSafeForecast,
+  type BanSafeHealthChangedPayload,
+  type BanSafeHealthFinding,
+  type BanSafeHealthPenalties,
+  type BanSafeModelRef,
+  type BanSafeRiskChangedPayload,
+  type BanSafeRiskFactor,
+  type BanSafeRiskFactorGroup,
+  type BanSafeRiskLevel,
   type BanSafeHealthThresholdPayload,
   type BanSafeIncidentEventKind,
   type BanSafeIncidentPayload,

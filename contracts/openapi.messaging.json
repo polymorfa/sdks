@@ -2410,6 +2410,127 @@
           "payload"
         ]
       },
+      "ConversationIdentity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{1,14}$"
+          },
+          "bsuid": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}\\.[A-Za-z0-9]{1,128}$"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "CallPermissionChangedPayload": {
+        "type": "object",
+        "properties": {
+          "conversation": {
+            "$ref": "#/components/schemas/ConversationIdentity"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "none",
+              "temporary",
+              "permanent",
+              "revoked"
+            ],
+            "description": "`temporary`: granted until `expiresAt`. `permanent`: granted without expiry. `revoked`: declined or withdrawn. `none`: no permission."
+          },
+          "previousStatus": {
+            "type": "string",
+            "enum": [
+              "none",
+              "temporary",
+              "permanent",
+              "revoked"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When a temporary permission ends; null otherwise. No event is sent when it ends."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "user_action",
+              "automatic",
+              "sync",
+              "call_refused"
+            ],
+            "description": "`user_action`: the person answered a call permission request or changed it in WhatsApp. `automatic`: WhatsApp granted it when the person called you, or withdrew it after unanswered calls. `sync`: a permission read found a different state. `call_refused`: WhatsApp refused a call for lack of permission."
+          },
+          "changedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "conversation",
+          "status",
+          "previousStatus",
+          "expiresAt",
+          "source",
+          "changedAt"
+        ]
+      },
+      "CallPermissionChangedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.permission_changed"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallPermissionChangedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
       "CallConnectionLeftPayload": {
         "type": "object",
         "properties": {
@@ -4531,6 +4652,477 @@
         ],
         "additionalProperties": false
       },
+      "BanSafeForecast": {
+        "type": "object",
+        "properties": {
+          "days7": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Probability (0-1) of a temporary or permanent ban within 7 days.",
+            "example": 0.02
+          },
+          "days14": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Probability (0-1) of a temporary or permanent ban within 14 days.",
+            "example": 0.06
+          },
+          "days30": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Probability (0-1) of a temporary or permanent ban within 30 days.",
+            "example": 0.11
+          }
+        },
+        "required": [
+          "days7",
+          "days14",
+          "days30"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeRiskFactor": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^(?:group:)?[a-z0-9_]{1,64}$",
+            "description": "Stable factor identifier: a feature key, or \"group:<groupId>\".",
+            "example": "cold_send_ratio"
+          },
+          "group": {
+            "type": "string",
+            "enum": [
+              "volume",
+              "cold_outreach",
+              "restrictions",
+              "engagement",
+              "send_errors",
+              "pattern",
+              "traffic_mix",
+              "number_age",
+              "connection",
+              "ban_history",
+              "account",
+              "workspace",
+              "climate",
+              "conversation",
+              "solicitation",
+              "reputation"
+            ],
+            "description": "Factor group this factor belongs to.",
+            "example": "cold_outreach"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Customer-facing factor label in WhatsApp vocabulary.",
+            "example": "Share of messages sent to people who never messaged you"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "raises",
+              "lowers"
+            ],
+            "description": "Whether the factor raises or lowers the risk."
+          },
+          "strength": {
+            "type": "string",
+            "enum": [
+              "strong",
+              "moderate",
+              "slight"
+            ],
+            "description": "How strongly this factor moves the score."
+          },
+          "impact": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "This factor's share, as a whole percentage, of the raising (or lowering) total.",
+            "example": 42
+          },
+          "sentence": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240,
+            "description": "Evidence sentence built from observed numbers.",
+            "example": "38 of the 51 people you messaged had never messaged this number"
+          },
+          "hint": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 240,
+            "description": "Action to take. Null for lowering factors and hint-less groups."
+          }
+        },
+        "required": [
+          "key",
+          "group",
+          "label",
+          "direction",
+          "strength",
+          "impact",
+          "sentence",
+          "hint"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeModelRef": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Version of the forecast model that produced the evaluation.",
+            "example": "prior-v0"
+          },
+          "reliability": {
+            "type": "string",
+            "enum": [
+              "prior",
+              "early",
+              "calibrated"
+            ],
+            "description": "Reliability statement: prior (expert prior, no training data), early (trained on a small corpus), calibrated (trained and calibrated on the ledger)."
+          }
+        },
+        "required": [
+          "version",
+          "reliability"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeRiskChangedPayload": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{1,14}$",
+            "description": "The customer's own number in E.164 format.",
+            "example": "+15551234567"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "low",
+              "elevated",
+              "high",
+              "critical"
+            ],
+            "description": "Current risk level."
+          },
+          "previousLevel": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "low",
+              "elevated",
+              "high",
+              "critical",
+              null
+            ],
+            "description": "Previous risk level, or null for the first evaluation of the number."
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Risk score from 0 (lowest) to 100 (highest).",
+            "example": 37
+          },
+          "forecast": {
+            "$ref": "#/components/schemas/BanSafeForecast"
+          },
+          "factors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanSafeRiskFactor"
+            },
+            "maxItems": 5,
+            "description": "Up to five contributing factors, ordered by impact."
+          },
+          "model": {
+            "$ref": "#/components/schemas/BanSafeModelRef"
+          },
+          "evaluatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp of the evaluation that produced this event.",
+            "example": "2026-09-06T14:00:00.000Z"
+          }
+        },
+        "required": [
+          "phoneNumber",
+          "level",
+          "previousLevel",
+          "score",
+          "forecast",
+          "factors",
+          "model",
+          "evaluatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeRiskChangedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "bansafe.risk_changed"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/BanSafeRiskChangedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeHealthPenalties": {
+        "type": "object",
+        "properties": {
+          "conduct": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "restriction": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "connection": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "conduct",
+          "restriction",
+          "connection"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeHealthFinding": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,64}$",
+            "description": "Stable finding identifier.",
+            "example": "unsolicited_outreach"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Customer-facing finding title.",
+            "example": "Messaging people who never wrote to you"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warning",
+              "critical"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "acknowledged",
+              "not_measured"
+            ],
+            "description": "not_measured means the signal could not be measured for this number; it is never reported as clean."
+          },
+          "points": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 25,
+            "description": "Health points this finding costs.",
+            "example": 8
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "severity",
+          "status",
+          "points"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeHealthChangedPayload": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{1,14}$",
+            "description": "The customer's own number in E.164 format.",
+            "example": "+15551234567"
+          },
+          "health": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Measured health from 0 (worst) to 100 (best), or null when not measured.",
+            "example": 62
+          },
+          "band": {
+            "type": "string",
+            "enum": [
+              "good",
+              "fair",
+              "poor",
+              "failing",
+              "unknown"
+            ],
+            "description": "Health band matching health."
+          },
+          "previousBand": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 32,
+            "description": "Previous band, or null for the first evaluation of the number.",
+            "example": "good"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "measured",
+              "partial",
+              "measuring",
+              "restricted",
+              "banned"
+            ],
+            "description": "Data sufficiency of this evaluation."
+          },
+          "penalties": {
+            "$ref": "#/components/schemas/BanSafeHealthPenalties"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanSafeHealthFinding"
+            },
+            "maxItems": 50,
+            "description": "Findings behind the score, with the points each one costs."
+          },
+          "measuredChecks": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 200,
+            "description": "Catalogue checks that could be measured for this number.",
+            "example": 14
+          },
+          "totalChecks": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 200,
+            "description": "Catalogue checks in total.",
+            "example": 18
+          },
+          "allowance": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "description": "Messages this number may send today under the project's warm-up plan, recomputed for the new health band. Null or absent when the project has no warm-up plan.",
+            "example": 240
+          },
+          "evaluatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp of the evaluation that produced this event.",
+            "example": "2026-09-06T14:00:00.000Z"
+          }
+        },
+        "required": [
+          "phoneNumber",
+          "health",
+          "band",
+          "previousBand",
+          "state",
+          "penalties",
+          "findings",
+          "measuredChecks",
+          "totalChecks",
+          "evaluatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "BanSafeHealthChangedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "bansafe.health_changed"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/BanSafeHealthChangedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ],
+        "additionalProperties": false
+      },
       "BanSafeEnforcementPayload": {
         "type": "object",
         "properties": {
@@ -6359,35 +6951,6 @@
           "phone"
         ]
       },
-      "ConversationIdentity": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^[1-9][0-9]{0,18}$",
-            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
-            "example": "739182640518203"
-          },
-          "phoneNumber": {
-            "type": "string",
-            "pattern": "^\\+[1-9]\\d{1,14}$"
-          },
-          "bsuid": {
-            "type": "string",
-            "pattern": "^[A-Z]{2}\\.[A-Za-z0-9]{1,128}$"
-          },
-          "username": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 256
-          }
-        },
-        "required": [
-          "id"
-        ],
-        "additionalProperties": false,
-        "description": "The message's conversation, including its public ID and known aliases."
-      },
       "SentMessage": {
         "type": "object",
         "properties": {
@@ -6402,7 +6965,14 @@
             "minLength": 1
           },
           "conversation": {
-            "$ref": "#/components/schemas/ConversationIdentity"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConversationIdentity"
+              },
+              {
+                "description": "The message's conversation, including its public ID and known aliases."
+              }
+            ]
           },
           "timestamp": {
             "type": "string",
@@ -6523,6 +7093,11 @@
                   "call_permission_required",
                   "invalid_sip_trunk",
                   "calls_disabled",
+                  "call_recipient_opted_out",
+                  "call_destination_blocked",
+                  "call_permission_request_limited",
+                  "call_permission_granted",
+                  "call_opt_out_limit",
                   "sip_trunk_in_use",
                   "sip_trunk_revision_conflict",
                   "sip_trunk_limit",
@@ -7528,6 +8103,31 @@
           {
             "type": "object",
             "properties": {
+              "callPermissionRequest": {
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1024,
+                    "description": "Why you want to call, shown above WhatsApp's allow and decline buttons. 1 to 1,024 characters."
+                  }
+                },
+                "required": [
+                  "body"
+                ],
+                "additionalProperties": false,
+                "description": "Ask the person for permission to call them. Cloud API numbers only; WhatsApp limits how often you can ask."
+              }
+            },
+            "required": [
+              "callPermissionRequest"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
               "template": {
                 "type": "object",
                 "properties": {
@@ -7672,7 +8272,14 @@
             "minLength": 1
           },
           "conversation": {
-            "$ref": "#/components/schemas/ConversationIdentity"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConversationIdentity"
+              },
+              {
+                "description": "The message's conversation, including its public ID and known aliases."
+              }
+            ]
           },
           "timestamp": {
             "type": "string",
@@ -7815,6 +8422,318 @@
         "required": [
           "from"
         ]
+      },
+      "CallPermissionLimit": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "string",
+            "description": "ISO 8601 duration of the window, for example `PT24H` or `P7D`."
+          },
+          "maxAllowed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "used": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "resetsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When the window resets, when WhatsApp reports it."
+          }
+        },
+        "required": [
+          "period",
+          "maxAllowed",
+          "used",
+          "resetsAt"
+        ],
+        "additionalProperties": false
+      },
+      "CallPermissionAction": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "allowed": {
+            "type": "boolean",
+            "description": "Whether WhatsApp allows the action now."
+          },
+          "limits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CallPermissionLimit"
+            }
+          }
+        },
+        "required": [
+          "allowed",
+          "limits"
+        ],
+        "additionalProperties": false,
+        "description": "Whether this number can send the person a call permission request now, with WhatsApp's limits."
+      },
+      "CallPermission": {
+        "type": "object",
+        "properties": {
+          "conversation": {
+            "$ref": "#/components/schemas/ConversationIdentity"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "none",
+              "temporary",
+              "permanent",
+              "revoked"
+            ],
+            "description": "`none`: no permission. `temporary`: granted until `expiresAt`. `permanent`: granted without expiry. `revoked`: the person declined or withdrew permission, or WhatsApp withdrew it after unanswered calls."
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When a temporary permission ends; null otherwise."
+          },
+          "source": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "user_action",
+              "automatic",
+              "sync",
+              "call_refused",
+              null
+            ],
+            "description": "How the last change was learned: the person's reply (`user_action`), WhatsApp acting on its own (`automatic`), asking WhatsApp (`sync`), or a call WhatsApp refused for lack of permission (`call_refused`). Null when nothing is recorded."
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When the status last changed, or null."
+          },
+          "checkedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When WhatsApp was last asked, or null."
+          },
+          "fresh": {
+            "type": "boolean",
+            "description": "True when WhatsApp was asked during this request. False means the stored state is returned because WhatsApp could not be reached."
+          },
+          "actions": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "requestPermission": {
+                "$ref": "#/components/schemas/CallPermissionAction"
+              },
+              "startCall": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CallPermissionAction"
+                  },
+                  {
+                    "description": "Whether this number can call the person now, with WhatsApp's limits."
+                  }
+                ]
+              }
+            },
+            "required": [
+              "requestPermission",
+              "startCall"
+            ],
+            "additionalProperties": false,
+            "description": "WhatsApp's limits, present when `fresh` is true."
+          }
+        },
+        "required": [
+          "conversation",
+          "status",
+          "expiresAt",
+          "source",
+          "updatedAt",
+          "checkedAt",
+          "fresh",
+          "actions"
+        ],
+        "additionalProperties": false
+      },
+      "GetCallPermissionResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/CallPermission"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "CallCheck": {
+        "type": "object",
+        "properties": {
+          "allowed": {
+            "type": "boolean",
+            "description": "Whether a call placed now would pass every check Polymorfa and WhatsApp report."
+          },
+          "refusal": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "calls_disabled",
+              "call_recipient_opted_out",
+              "call_destination_blocked",
+              "call_permission_required",
+              "call_limit_reached",
+              null
+            ],
+            "description": "The first reason the call would be refused, or null."
+          },
+          "permission": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "temporary",
+                  "permanent",
+                  "revoked"
+                ],
+                "description": "`none`: no permission. `temporary`: granted until `expiresAt`. `permanent`: granted without expiry. `revoked`: the person declined or withdrew permission, or WhatsApp withdrew it after unanswered calls."
+              },
+              "expiresAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time",
+                "description": "When a temporary permission ends; null otherwise."
+              },
+              "source": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "user_action",
+                  "automatic",
+                  "sync",
+                  "call_refused",
+                  null
+                ],
+                "description": "How the last change was learned: the person's reply (`user_action`), WhatsApp acting on its own (`automatic`), asking WhatsApp (`sync`), or a call WhatsApp refused for lack of permission (`call_refused`). Null when nothing is recorded."
+              },
+              "updatedAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time",
+                "description": "When the status last changed, or null."
+              },
+              "checkedAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time",
+                "description": "When WhatsApp was last asked, or null."
+              },
+              "fresh": {
+                "type": "boolean",
+                "description": "True when WhatsApp was asked during this request. False means the stored state is returned because WhatsApp could not be reached."
+              },
+              "actions": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "requestPermission": {
+                    "$ref": "#/components/schemas/CallPermissionAction"
+                  },
+                  "startCall": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/CallPermissionAction"
+                      },
+                      {
+                        "description": "Whether this number can call the person now, with WhatsApp's limits."
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "requestPermission",
+                  "startCall"
+                ],
+                "additionalProperties": false,
+                "description": "WhatsApp's limits, present when `fresh` is true."
+              }
+            },
+            "required": [
+              "status",
+              "expiresAt",
+              "source",
+              "updatedAt",
+              "checkedAt",
+              "fresh",
+              "actions"
+            ],
+            "additionalProperties": false,
+            "description": "The person's call permission on a Cloud API number; null on linked-device numbers."
+          }
+        },
+        "required": [
+          "allowed",
+          "refusal",
+          "permission"
+        ],
+        "additionalProperties": false
+      },
+      "CheckCallResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/CallCheck"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "CallCheckRequest": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "The session (number) that would place the call."
+          },
+          "to": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "User ID or phone number in E.164 format."
+          }
+        },
+        "required": [
+          "session",
+          "to"
+        ],
+        "additionalProperties": false
       },
       "ICEServer": {
         "type": "object",
@@ -18048,6 +18967,331 @@
           "Linked Device API"
         ],
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `chats:manage`"
+      }
+    },
+    "/messaging/{session}/call-permissions/{to}": {
+      "get": {
+        "operationId": "getCallPermission",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Get a person's call permission",
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sessions:read`\n\nReturns whether the person has allowed this number to call them. On Cloud API numbers WhatsApp is asked on every request and the answer includes its limits on permission requests and calls. Linked-device numbers return `409 unsupported_for_connection`.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID or phone number in E.164 format (URL-encode `+` as `%2B`)."
+            },
+            "required": true,
+            "name": "to",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The call permission.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCallPermissionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`unsupported_for_connection`: the number is not a Cloud API number.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "unsupported_for_connection",
+                    "message": "The session's connection does not support this call operation.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#unsupported-for-connection"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ]
+      }
+    },
+    "/messaging/voip/calls/check": {
+      "post": {
+        "operationId": "checkCall",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Check whether a call can be placed",
+        "description": "**Required scope:** `sessions:read`\n\nRuns the checks a call placement runs, without calling: the number's calling switch, the team's do-not-call list and blocked country codes, and on Cloud API numbers the person's call permission and WhatsApp's call limits. Server credentials only.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallCheckRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Check result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckCallResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        }
       }
     },
     "/messaging/voip/calls/{id}/offer": {
@@ -45438,6 +46682,30 @@
         }
       }
     },
+    "call.permission_changed": {
+      "post": {
+        "operationId": "onCallPermissionChanged",
+        "summary": "Call permission changed",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallPermissionChangedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
     "call.connection_left": {
       "post": {
         "operationId": "onCallConnectionLeft",
@@ -46003,6 +47271,54 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CustomerNumberDisconnectedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "bansafe.risk_changed": {
+      "post": {
+        "operationId": "onBansafeRiskChanged",
+        "summary": "A number's forecast risk level changed",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanSafeRiskChangedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "bansafe.health_changed": {
+      "post": {
+        "operationId": "onBansafeHealthChanged",
+        "summary": "A number's measured health band changed",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanSafeHealthChangedEvent"
               }
             }
           }

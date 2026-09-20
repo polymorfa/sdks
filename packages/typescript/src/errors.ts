@@ -55,6 +55,11 @@ export const POLYMORFA_ERROR_CODES = [
   "call_not_ringing",
   "call_permission_required",
   "calls_disabled",
+  "call_recipient_opted_out",
+  "call_destination_blocked",
+  "call_permission_request_limited",
+  "call_permission_granted",
+  "call_opt_out_limit",
   "connection_limit",
   "invalid_sip_trunk",
   "sip_trunk_in_use",
@@ -79,6 +84,7 @@ export type PolymorfaRateLimitReason =
   | "call_rate"
   | "call_concurrency"
   | "credential_mint"
+  | "call_permission_request"
   | "unspecified"
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   | (string & {});

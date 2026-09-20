@@ -1,4 +1,7 @@
+import type { BanSafeHealthBand } from "../platform/types.js";
 import type {
+  CallPermissionSource,
+  CallPermissionStatus,
   MessagingConnection,
   PhonePlatform,
   WhatsAppAccountType,
@@ -8,8 +11,10 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
   "bansafe.claim",
   "bansafe.enforcement",
+  "bansafe.health_changed",
   "bansafe.health_threshold",
   "bansafe.incident",
+  "bansafe.risk_changed",
   "blocklist.update",
   "business.quick_reply.update",
   "call.accepted",
@@ -20,6 +25,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "call.participant_joined",
   "call.participant_left",
   "call.participant_state",
+  "call.permission_changed",
   "call.received",
   "call.rejected",
   "call.telemetry",
@@ -697,6 +703,122 @@ export interface BanSafeClaimPayload {
   readonly paidAt: string | null;
 }
 
+/** Probability of a temporary or permanent ban inside each window, from 0 to 1. */
+export interface BanSafeForecast {
+  readonly days7: number;
+  readonly days14: number;
+  readonly days30: number;
+}
+
+export type BanSafeRiskLevel = "low" | "elevated" | "high" | "critical";
+
+export type BanSafeRiskFactorGroup =
+  | "volume"
+  | "cold_outreach"
+  | "restrictions"
+  | "engagement"
+  | "send_errors"
+  | "pattern"
+  | "traffic_mix"
+  | "number_age"
+  | "connection"
+  | "ban_history"
+  | "account"
+  | "workspace"
+  | "climate"
+  | "conversation"
+  | "solicitation"
+  | "reputation";
+
+/** One contributing factor behind a risk score. */
+export interface BanSafeRiskFactor {
+  /** A feature key, or `group:<groupId>`. */
+  readonly key: string;
+  readonly group: BanSafeRiskFactorGroup;
+  readonly label: string;
+  readonly direction: "raises" | "lowers";
+  readonly strength: "strong" | "moderate" | "slight";
+  /** This factor's share, as a whole percentage, of the raising or lowering total. */
+  readonly impact: number;
+  readonly sentence: string;
+  /** Action to take. Null for lowering factors and hint-less groups. */
+  readonly hint: string | null;
+}
+
+/** The forecast model behind an evaluation. */
+export interface BanSafeModelRef {
+  readonly version: string;
+  readonly reliability: "prior" | "early" | "calibrated";
+}
+
+export interface BanSafeRiskChangedPayload {
+  readonly phoneNumber: string;
+  readonly level: BanSafeRiskLevel;
+  /** Null for the first evaluation of the number. */
+  readonly previousLevel: BanSafeRiskLevel | null;
+  /** Risk score from 0 (lowest) to 100 (highest). */
+  readonly score: number;
+  readonly forecast: BanSafeForecast;
+  /** Up to five contributing factors, ordered by impact. */
+  readonly factors: readonly BanSafeRiskFactor[];
+  readonly model: BanSafeModelRef;
+  readonly evaluatedAt: string;
+}
+
+/** Health points lost in each category. */
+export interface BanSafeHealthPenalties {
+  readonly conduct: number;
+  readonly restriction: number;
+  readonly connection: number;
+}
+
+export interface BanSafeHealthFinding {
+  readonly key: string;
+  readonly title: string;
+  readonly severity: "info" | "warning" | "critical";
+  /** `not_measured` means the signal could not be measured; it is never clean. */
+  readonly status: "open" | "acknowledged" | "not_measured";
+  /** Health points this finding costs. */
+  readonly points: number;
+}
+
+export interface BanSafeHealthChangedPayload {
+  readonly phoneNumber: string;
+  /** Health from 0 (worst) to 100 (best), or null when not measured. */
+  readonly health: number | null;
+  readonly band: BanSafeHealthBand;
+  /** Null for the first evaluation of the number. */
+  readonly previousBand: string | null;
+  /** Data sufficiency of this evaluation. */
+  readonly state:
+    "measured" | "partial" | "measuring" | "restricted" | "banned";
+  readonly penalties: BanSafeHealthPenalties;
+  readonly findings: readonly BanSafeHealthFinding[];
+  readonly measuredChecks: number;
+  readonly totalChecks: number;
+  /**
+   * Messages this number may send today under the project's warm-up plan,
+   * recomputed for the new band. Null or absent without a warm-up plan.
+   */
+  readonly allowance?: number | null;
+  readonly evaluatedAt: string;
+}
+
+/**
+ * A person's call permission on a Cloud API number changed. No event is sent
+ * when a temporary permission reaches `expiresAt`; use `expiresAt` to schedule
+ * your own follow-up.
+ */
+export interface CallPermissionChangedPayload {
+  readonly conversation: IdentityReference;
+  readonly status: CallPermissionStatus;
+  readonly previousStatus: CallPermissionStatus;
+  /** When a temporary permission ends; null otherwise. */
+  readonly expiresAt: string | null;
+  readonly source: CallPermissionSource;
+  readonly changedAt: string;
+}
+
 export type MessageFailedReason =
   | "invalid_recipient"
   | "session_not_connected"
@@ -806,8 +928,10 @@ export interface WebhookPayloadMap {
   readonly "bansafe.action": BanSafeActionPayload;
   readonly "bansafe.claim": BanSafeClaimPayload;
   readonly "bansafe.enforcement": BanSafeEnforcementPayload;
+  readonly "bansafe.health_changed": BanSafeHealthChangedPayload;
   readonly "bansafe.health_threshold": BanSafeHealthThresholdPayload;
   readonly "bansafe.incident": BanSafeIncidentPayload;
+  readonly "bansafe.risk_changed": BanSafeRiskChangedPayload;
   readonly "blocklist.update": BlocklistUpdatePayload;
   readonly "business.quick_reply.update": BusinessQuickReplyUpdatePayload;
   readonly "call.accepted": CallAcceptedPayload;
@@ -818,6 +942,7 @@ export interface WebhookPayloadMap {
   readonly "call.participant_joined": CallParticipantPayload;
   readonly "call.participant_left": CallParticipantLeftPayload;
   readonly "call.participant_state": CallParticipantPayload;
+  readonly "call.permission_changed": CallPermissionChangedPayload;
   readonly "call.received": CallReceivedPayload;
   readonly "call.rejected": CallRejectedPayload;
   readonly "call.telemetry": CallTelemetryPayload;
