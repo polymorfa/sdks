@@ -2,23 +2,23 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`4b75534812dc25e839fda3c2ba231e46afe39534` on monorepo branch
-`t3code/calls-analytics`. That branch is not merged to `dev` yet: it is a
+`5e8a148641971e44595e3a92a5d9f4241c1ebf39` on monorepo branch
+`t3code/calls-analytics` (polymorfa/polymorfa#234). That branch is not merged to `dev` yet: it is a
 coordinated PR dependency, and the snapshots must be re-synced to the merged
 `dev` commit before this SDK revision merges. `source.json` records the
 original paths and SHA-256 hashes. `coverage.json` uses the same source
 revision.
 
-Revision `4b755348` adds call analytics and call detail records:
+Revision `5e8a1486` adds call analytics and call detail records:
 `GET /platform/calls/stats` (`getCallStats`), `GET /platform/calls`
 (`listCallRecords`) and `GET /platform/calls/export` (`exportCallRecords`),
 covered by `Client.calls.stats`, `Client.calls.list` and
 `Client.calls.export` (with `Client.calls.exportAll` walking export pages).
 The export returns CSV or NDJSON rather than a JSON envelope and carries the
 next cursor in the `Polymorfa-Next-Cursor` header, which the transport now
-keeps in response metadata. The stats `503` response references the shared
-`PropagationPending` response, whose description is about stored settings;
-the SDK treats it as an ordinary `PolymorfaServerError`. The same revision
+keeps in response metadata. The stats `503` response is the dedicated
+`CallStatsTooSlow` response (`service_unavailable`); the SDK raises it as
+`PolymorfaServerError`. The same revision
 corrects the `PlatformAccessEventStreamFrame` discriminator mapping to the
 `PlatformAccessEventStream*Frame` schemas the document defines, which changes
 the `streamProjectEvents` fingerprint; `Client.events.stream` is unchanged.
@@ -78,7 +78,7 @@ covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
 resume, and `Client.events.acknowledgeStream` covers its manual
 acknowledgement route. Its `PlatformAccessEventStreamFrame` discriminator
 mapping pointed at unprefixed schema names that the document did not define;
-revision `4b755348` corrects it. The same revision adds
+revision `5e8a1486` corrects it. Revision `2259a1fd` also adds
 `conversationTtlSeconds` to client rules, turns `recipientMode` into an enum,
 and sets a minimum of 0 on `rateLimit` and `maxDaily`; the client-rules types
 follow.

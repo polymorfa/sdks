@@ -21827,7 +21827,7 @@
             "$ref": "#/components/responses/Forbidden"
           },
           "503": {
-            "$ref": "#/components/responses/PropagationPending"
+            "$ref": "#/components/responses/CallStatsTooSlow"
           }
         }
       }
@@ -35570,6 +35570,30 @@
       },
       "BillingCreditRequired": {
         "description": "The paid number could not reserve sufficient available credit. Add credit to your team before starting it.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "CallStatsTooSlow": {
+        "description": "`service_unavailable`: the statistics took too long to compute. Narrow the range or filters and retry.",
         "headers": {
           "X-Request-Id": {
             "schema": {

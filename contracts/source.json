@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "4b75534812dc25e839fda3c2ba231e46afe39534",
+  "commit": "5e8a148641971e44595e3a92a5d9f4241c1ebf39",
   "branch": "t3code/calls-analytics",
   "published": false,
-  "note": "Unmerged monorepo branch t3code/calls-analytics (call analytics and CDR export, pushed to origin). Coordinated dependency: re-sync to the merged monorepo dev commit before this SDK change merges.",
+  "note": "Unmerged monorepo branch t3code/calls-analytics (polymorfa/polymorfa#234: call analytics and CDR export). Coordinated dependency: re-sync to the merged monorepo dev commit before this SDK change merges.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "65785318fdc07b66e7adc94d35e5a0163f60ab258c3964394b1328b063366f4d"
+      "sha256": "a7475c28e3e599c377536dfc682cda032a9b119c8cc1202b8726d7d60cad0ed7"
     }
   }
 }
