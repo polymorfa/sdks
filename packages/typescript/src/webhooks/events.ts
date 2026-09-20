@@ -631,7 +631,8 @@ export type BanSafeEventRung =
   "none" | "notify" | "throttle" | "block_cold" | "suspend";
 
 /** Health band matching a health score. */
-export type BanSafeHealthBand = "good" | "fair" | "poor" | "failing" | "unknown";
+export type BanSafeHealthBand =
+  "good" | "fair" | "poor" | "failing" | "unknown";
 
 /** Risk level of a number's ban forecast. */
 export type BanSafeRiskLevel = "low" | "elevated" | "high" | "critical";
@@ -701,7 +702,8 @@ export interface BanSafeHealthChangedPayload {
   readonly health: number | null;
   readonly band: BanSafeHealthBand;
   readonly previousBand: BanSafeHealthBand | null;
-  readonly state: "measured" | "partial" | "measuring" | "restricted" | "banned";
+  readonly state:
+    "measured" | "partial" | "measuring" | "restricted" | "banned";
   readonly penalties: BanSafeHealthPenalties;
   readonly findings: readonly BanSafeHealthFinding[];
   readonly measuredChecks: number;

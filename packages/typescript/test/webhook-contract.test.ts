@@ -286,7 +286,8 @@ const PAYLOADS: {
           direction: "raises",
           strength: "strong",
           impact: 42,
-          sentence: "38 of the 51 people you messaged had never messaged this number",
+          sentence:
+            "38 of the 51 people you messaged had never messaged this number",
           hint: "Message people who wrote to you first",
         },
       ],
