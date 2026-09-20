@@ -173,11 +173,13 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "ad1b01be04614c5e6ff5dfee8d44d5bab5170cf8",
-      total: 424,
+      sourceCommit: "576176a6506a6eb20b5f9e6ded73e2fbaf3048fc",
+      total: 427,
       covered: 316,
       partial: 0,
-      missing: 0,
+      // Call analytics and call record export arrived with this re-sync;
+      // Client.calls implements them in a separate pull request.
+      missing: 3,
       excluded: 108,
       changed: 0,
     });

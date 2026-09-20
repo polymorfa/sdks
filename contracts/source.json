@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "ad1b01be04614c5e6ff5dfee8d44d5bab5170cf8",
+  "commit": "576176a6506a6eb20b5f9e6ded73e2fbaf3048fc",
   "branch": "dev",
   "published": true,
-  "note": "Merge of monorepo dev into the operations branch; publishes /platform/operations.",
+  "note": "Squash merge of the operations lifecycle PR on monorepo dev.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "4c090114ac49c172b3a565ae407da407acec6d88c567e55226570f69b5b1dd9a"
+      "sha256": "41166dd23bf3a08b14fe4d3ae50773d64852c3b61fb056ecf8fbb728bfb01e9d"
     }
   }
 }

@@ -2,7 +2,7 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`ad1b01be04614c5e6ff5dfee8d44d5bab5170cf8` on the operations branch merged from monorepo `dev`. `source.json`
+`576176a6506a6eb20b5f9e6ded73e2fbaf3048fc` on monorepo `dev`. `source.json`
 records the original paths and SHA-256 hashes. `coverage.json` uses the same
 source revision.
 
@@ -14,17 +14,20 @@ move from `excluded` (console-only) to `covered` by `Client.operations` and
 and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
 contract. `/platform/projects/{projectId}/events/stream` keeps a refreshed
 fingerprint from the upstream frame `$ref` fix; only its discriminator mapping
-changed. The same re-sync picks up the management MCP work on `dev`, which does
-not change any published operation this SDK covers.
+changed. The same re-sync picks up the management MCP tools and the call analytics work
+on `dev`. The MCP tools change no published operation this SDK covers. Call
+analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
+`/platform/calls/export`; they are recorded as `missing` here because
+`Client.calls` implements them in a separate pull request.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        308 |
-| Missing             |          0 |
-| Excluded            |        116 |
+| Covered             |        316 |
+| Missing             |          3 |
+| Excluded            |        108 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        424 |
+| Total               |        427 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
