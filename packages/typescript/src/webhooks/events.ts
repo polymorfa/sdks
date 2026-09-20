@@ -8,8 +8,10 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
   "bansafe.claim",
   "bansafe.enforcement",
+  "bansafe.health_changed",
   "bansafe.health_threshold",
   "bansafe.incident",
+  "bansafe.risk_changed",
   "blocklist.update",
   "business.quick_reply.update",
   "call.accepted",
@@ -75,6 +77,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "session.connected",
   "session.logged_out",
   "session.phone_offline",
+  "session.restriction_updated",
   "session.status",
   "template.status",
 ] as const;
@@ -218,8 +221,37 @@ export interface SessionConnectedPayload {
   readonly businessName?: string;
 }
 
+/**
+ * Why a session was logged out: `banned` (WhatsApp banned the account),
+ * `device_removed` (the linked device was removed from the phone or another
+ * device) or `unknown`.
+ */
+export type SessionLoggedOutReason = "banned" | "device_removed" | "unknown";
+
 export interface SessionLoggedOutPayload {
-  readonly reason: string;
+  readonly reason: SessionLoggedOutReason;
+  /** WhatsApp's logout code (401, 403 or 406), or 0 when none was given. */
+  readonly code: number;
+}
+
+/** A WhatsApp restriction reported by `session.restriction_updated`. */
+export type SessionRestrictionType = "reachout_timelock";
+
+/**
+ * A WhatsApp restriction on the number started, changed or ended. While
+ * `reachout_timelock` is active the number can only message or call people it
+ * has already chatted with; calls to anyone else fail with
+ * `number_restricted`.
+ */
+export interface SessionRestrictionUpdatedPayload {
+  readonly type: SessionRestrictionType;
+  readonly active: boolean;
+  /** WhatsApp's category for the restriction; null when inactive or not reported. */
+  readonly enforcementType: string | null;
+  /** When the restriction ends (ISO 8601); null when inactive or open-ended. */
+  readonly expiresAt: string | null;
+  /** When the state was observed (ISO 8601). */
+  readonly observedAt: string;
 }
 
 export interface SessionPhoneOfflinePayload {
@@ -598,6 +630,87 @@ export type BanSafeIncidentEventKind =
 export type BanSafeEventRung =
   "none" | "notify" | "throttle" | "block_cold" | "suspend";
 
+/** Health band matching a health score. */
+export type BanSafeHealthBand = "good" | "fair" | "poor" | "failing" | "unknown";
+
+/** Risk level of a number's ban forecast. */
+export type BanSafeRiskLevel = "low" | "elevated" | "high" | "critical";
+
+/** Probability (0-1) of a temporary or permanent ban within each horizon. */
+export interface BanSafeForecast {
+  readonly days7: number;
+  readonly days14: number;
+  readonly days30: number;
+}
+
+/** One contributing factor of a risk evaluation. */
+export interface BanSafeRiskFactor {
+  /** A feature key, or `group:<groupId>`. */
+  readonly key: string;
+  readonly group: string;
+  readonly label: string;
+  readonly direction: "raises" | "lowers";
+  readonly strength: "strong" | "moderate" | "slight";
+  /** Share, as a whole percentage, of the raising (or lowering) total. */
+  readonly impact: number;
+  readonly sentence: string;
+  /** Action to take; null for lowering factors and hint-less groups. */
+  readonly hint: string | null;
+}
+
+/** The forecast model behind a risk evaluation. */
+export interface BanSafeModelRef {
+  readonly version: string;
+  readonly reliability: "prior" | "early" | "calibrated";
+}
+
+/** Health points lost per penalty family. */
+export interface BanSafeHealthPenalties {
+  readonly conduct: number;
+  readonly restriction: number;
+  readonly connection: number;
+}
+
+/** One finding behind a health score, with the points it costs. */
+export interface BanSafeHealthFinding {
+  readonly key: string;
+  readonly title: string;
+  readonly severity: "info" | "warning" | "critical";
+  /** `not_measured` means the signal could not be measured; never "clean". */
+  readonly status: "open" | "acknowledged" | "not_measured";
+  readonly points: number;
+}
+
+/** The number's forecast risk level changed. */
+export interface BanSafeRiskChangedPayload {
+  readonly phoneNumber: string;
+  readonly level: BanSafeRiskLevel;
+  readonly previousLevel: BanSafeRiskLevel | null;
+  /** Risk score from 0 (lowest) to 100 (highest). */
+  readonly score: number;
+  readonly forecast: BanSafeForecast;
+  readonly factors: readonly BanSafeRiskFactor[];
+  readonly model: BanSafeModelRef;
+  readonly evaluatedAt: string;
+}
+
+/** The number's measured health band changed. */
+export interface BanSafeHealthChangedPayload {
+  readonly phoneNumber: string;
+  /** Measured health from 0 (worst) to 100 (best), or null when not measured. */
+  readonly health: number | null;
+  readonly band: BanSafeHealthBand;
+  readonly previousBand: BanSafeHealthBand | null;
+  readonly state: "measured" | "partial" | "measuring" | "restricted" | "banned";
+  readonly penalties: BanSafeHealthPenalties;
+  readonly findings: readonly BanSafeHealthFinding[];
+  readonly measuredChecks: number;
+  readonly totalChecks: number;
+  /** Messages allowed today under the project's warm-up plan; null or absent without one. */
+  readonly allowance?: number | null;
+  readonly evaluatedAt: string;
+}
+
 export interface BanSafeHealthThresholdPayload {
   readonly sessionId: string;
   readonly projectId: string;
@@ -806,8 +919,10 @@ export interface WebhookPayloadMap {
   readonly "bansafe.action": BanSafeActionPayload;
   readonly "bansafe.claim": BanSafeClaimPayload;
   readonly "bansafe.enforcement": BanSafeEnforcementPayload;
+  readonly "bansafe.health_changed": BanSafeHealthChangedPayload;
   readonly "bansafe.health_threshold": BanSafeHealthThresholdPayload;
   readonly "bansafe.incident": BanSafeIncidentPayload;
+  readonly "bansafe.risk_changed": BanSafeRiskChangedPayload;
   readonly "blocklist.update": BlocklistUpdatePayload;
   readonly "business.quick_reply.update": BusinessQuickReplyUpdatePayload;
   readonly "call.accepted": CallAcceptedPayload;
@@ -873,6 +988,7 @@ export interface WebhookPayloadMap {
   readonly "session.connected": SessionConnectedPayload;
   readonly "session.logged_out": SessionLoggedOutPayload;
   readonly "session.phone_offline": SessionPhoneOfflinePayload;
+  readonly "session.restriction_updated": SessionRestrictionUpdatedPayload;
   readonly "session.status": SessionStatusPayload;
   readonly "template.status": TemplateStatusPayload;
 }

@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "2259a1fd331c6ddbc8ad56a04333100ebfce7c2e",
-  "branch": "dev",
-  "published": true,
-  "note": "Merged commit on monorepo dev (merge of PR #200, project event streams).",
+  "commit": "dca98a4428eea96a666974929e833e06ef253593",
+  "branch": "t3code/calls-bansafe",
+  "published": false,
+  "note": "Unmerged monorepo branch t3code/calls-bansafe (BanSafe for calls: number_restricted, call_restricted, session.restriction_updated).",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "d9b9764b8e3bd88f18f10026a35bdc02b03506d8758ad282017d022eb4e800c6"
+      "sha256": "2d2af8fd2e5891ec8f0fe3d8b91c23d3395781c388c1ea8225e01c68ab702903"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "d5877ef1499330083e5b4d63053d9d364ff34d52be24cd630d7283692e027975"
+      "sha256": "08e23ba9138fd5f4812079d26e26cff74f84886ce9e60ce06eb1f179eaea1acc"
     }
   }
 }

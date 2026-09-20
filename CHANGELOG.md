@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+- Calls: `PolymorfaErrorCode` adds `number_restricted`. Placing a call or
+  inviting someone the Number has never chatted with fails with it while
+  WhatsApp restricts the Number to existing contacts; `Retry-After` carries the
+  seconds until the restriction ends when WhatsApp reports one. A call WhatsApp
+  refuses for that reason ends with `reason: "call_restricted"`.
+- Webhooks: new `session.restriction_updated` event and
+  `SessionRestrictionUpdatedPayload` (`type`, `active`, `enforcementType`,
+  `expiresAt`, `observedAt`). `SessionLoggedOutPayload.reason` is now
+  `"banned" | "device_removed" | "unknown"` with WhatsApp's `code`, instead of
+  a free-form string.
+- Webhooks: `bansafe.risk_changed` and `bansafe.health_changed` are listed in
+  `KNOWN_WEBHOOK_EVENT_TYPES` with `BanSafeRiskChangedPayload` and
+  `BanSafeHealthChangedPayload` (and the `BanSafeForecast`,
+  `BanSafeRiskFactor`, `BanSafeModelRef`, `BanSafeHealthPenalties` and
+  `BanSafeHealthFinding` types they use).
+- Test events: `TEST_EVENT_FIXTURES` adds `session.restriction_updated` with
+  the `restrictionActive` override, and `callEndReason` accepts
+  `call_restricted`.
+
 - Client rules: `ClientRules` and `SetClientRulesRequest` add
   `conversationTtlSeconds`, the seconds a sender stays replyable in
   `conversation` mode (300 to 604800; the API default is 86400).

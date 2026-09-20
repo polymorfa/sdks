@@ -39,7 +39,9 @@ import type {
   PollOption,
   PollVotePayload,
   PresenceUpdatePayload,
+  SessionLoggedOutPayload,
   SessionPhoneOfflinePayload,
+  SessionRestrictionUpdatedPayload,
   KnownWebhookEvent,
   WebhookPayloadMap,
 } from "../src/index.js";
@@ -378,6 +380,17 @@ type ExpectedPayloads = {
     readonly lastSeen: string;
     readonly action: string;
   };
+  readonly "session.logged_out": {
+    readonly reason: "banned" | "device_removed" | "unknown";
+    readonly code: number;
+  };
+  readonly "session.restriction_updated": {
+    readonly type: "reachout_timelock";
+    readonly active: boolean;
+    readonly enforcementType: string | null;
+    readonly expiresAt: string | null;
+    readonly observedAt: string;
+  };
 };
 
 type ExportedPayloads = {
@@ -416,6 +429,8 @@ type ExportedPayloads = {
   readonly "newsletter.update": NewsletterUpdatePayload;
   readonly "presence.update": PresenceUpdatePayload;
   readonly "session.phone_offline": SessionPhoneOfflinePayload;
+  readonly "session.logged_out": SessionLoggedOutPayload;
+  readonly "session.restriction_updated": SessionRestrictionUpdatedPayload;
 };
 
 describe("webhook event payload types", () => {

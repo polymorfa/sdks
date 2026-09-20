@@ -55,6 +55,7 @@ export const POLYMORFA_ERROR_CODES = [
   "call_not_ringing",
   "call_permission_required",
   "calls_disabled",
+  "number_restricted",
   "connection_limit",
   "invalid_sip_trunk",
   "sip_trunk_in_use",

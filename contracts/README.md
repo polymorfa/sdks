@@ -2,17 +2,20 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`2259a1fd331c6ddbc8ad56a04333100ebfce7c2e` on monorepo `dev`. `source.json` records the
-original paths and SHA-256 hashes. `coverage.json` uses the same source
-revision.
+`dca98a4428eea96a666974929e833e06ef253593` on the unmerged branch
+`t3code/calls-bansafe` (BanSafe for calls). `source.json` records the original
+paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
-Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
-`MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
-merged monorepo `dev`, the Calls diagnostics route
-(`voipReportCallDiagnostics`) is back with a refreshed fingerprint; the SDK
-keeps `MessagingClient.voip.report` covering it. The Console-only `getCall`
-response also picked up a refreshed fingerprint (still excluded). No
-operations were added or removed by this re-sync.
+That revision adds the `number_restricted` error code, the
+`session.restriction_updated` webhook, the enum `reason` and `code` on
+`session.logged_out`, the `call_restricted` call end reason, and the
+`session.restriction_updated` test-event fixture. It also carries the
+`bansafe.risk_changed` and `bansafe.health_changed` webhook schemas that landed
+on monorepo `dev` after the previous pin; both are now covered by
+`WebhookPayloadMap`. Adding `number_restricted` to the shared public error enum
+changed the fingerprint of every operation that references it; those operations
+were reviewed and only the error enum differs. No operations were added or
+removed.
 
 | Status              | Operations |
 | ------------------- | ---------: |

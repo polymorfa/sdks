@@ -1674,7 +1674,7 @@
           "SIP Trunks"
         ],
         "summary": "Create a SIP trunk",
-        "description": "**Required scope:** `sessions:manage`\n\nConnects a PBX or SIP trunk to WhatsApp calls. An `outbound` trunk receives the incoming WhatsApp calls of sessions whose call settings route to it. An `inbound` trunk lets your PBX place WhatsApp calls through a session. For trunks that accept calls from your PBX, the response contains the digest credentials once. SIP trunks are a beta: creating, changing and rotating credentials return `403` unless your team is enrolled. Listing, reading and deleting trunks remain available after withdrawal.",
+        "description": "**Required scope:** `sessions:manage`\n\nConnects a PBX or SIP trunk to WhatsApp calls. An `outbound` trunk receives the incoming WhatsApp calls of sessions whose call settings route to it. An `inbound` trunk lets your PBX place WhatsApp calls through a session. For trunks that accept calls from your PBX, the response contains the digest credentials once.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -2009,7 +2009,7 @@
           "SIP Trunks"
         ],
         "summary": "Update a SIP trunk",
-        "description": "**Required scope:** `sessions:manage`\n\nChanges the fields you send and keeps the others. Send `expectedRevision` to refuse the change with `409 sip_trunk_revision_conflict` when the trunk changed since you read it. Changes apply to new calls within about a minute; calls in progress continue. Requires enrollment in the SIP trunks beta.",
+        "description": "**Required scope:** `sessions:manage`\n\nChanges the fields you send and keeps the others. Send `expectedRevision` to refuse the change with `409 sip_trunk_revision_conflict` when the trunk changed since you read it. Changes apply to new calls within about a minute; calls in progress continue.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -2376,7 +2376,7 @@
           "SIP Trunks"
         ],
         "summary": "Rotate SIP trunk credentials",
-        "description": "**Required scope:** `sessions:manage`\n\nReplaces the password your PBX uses to place calls. The previous password stops working within about a minute. Returns `409 state_conflict` for `outbound` trunks. Requires enrollment in the SIP trunks beta.",
+        "description": "**Required scope:** `sessions:manage`\n\nReplaces the password your PBX uses to place calls. The previous password stops working within about a minute. Returns `409 state_conflict` for `outbound` trunks.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -32345,15 +32345,15 @@
         "discriminator": {
           "propertyName": "type",
           "mapping": {
-            "ready": "#/components/schemas/EventStreamReadyFrame",
-            "event": "#/components/schemas/EventStreamEventFrame",
-            "heartbeat": "#/components/schemas/EventStreamHeartbeatFrame",
-            "checkpoint": "#/components/schemas/EventStreamCheckpointFrame",
-            "backpressure": "#/components/schemas/EventStreamBackpressureFrame",
-            "gap": "#/components/schemas/EventStreamGapFrame",
-            "dropped": "#/components/schemas/EventStreamDroppedFrame",
-            "expiry": "#/components/schemas/EventStreamExpiryFrame",
-            "revoked": "#/components/schemas/EventStreamRevokedFrame"
+            "ready": "#/components/schemas/PlatformAccessEventStreamReadyFrame",
+            "event": "#/components/schemas/PlatformAccessEventStreamEventFrame",
+            "heartbeat": "#/components/schemas/PlatformAccessEventStreamHeartbeatFrame",
+            "checkpoint": "#/components/schemas/PlatformAccessEventStreamCheckpointFrame",
+            "backpressure": "#/components/schemas/PlatformAccessEventStreamBackpressureFrame",
+            "gap": "#/components/schemas/PlatformAccessEventStreamGapFrame",
+            "dropped": "#/components/schemas/PlatformAccessEventStreamDroppedFrame",
+            "expiry": "#/components/schemas/PlatformAccessEventStreamExpiryFrame",
+            "revoked": "#/components/schemas/PlatformAccessEventStreamRevokedFrame"
           }
         },
         "description": "JSON carried in the `data` field of one SSE message. The SSE `event` field repeats `type`."
@@ -32750,7 +32750,7 @@
                 "$ref": "#/components/schemas/PlatformAccessCallInboundRoute"
               },
               {
-                "description": "Where incoming WhatsApp calls ring. Routing to a different SIP trunk requires enrollment in the SIP trunks beta; `clients`, and keeping the stored trunk while changing other settings, are always accepted."
+                "description": "Where incoming WhatsApp calls ring."
               }
             ]
           },
