@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "a1be7b131b098aa7a7f827094b05b65cda809eb0",
+  "sourceCommit": "d48b43c6e24a52175eba3880c1eefda1e07a3bf0",
   "excludedContracts": [
     {
       "family": "graph",
@@ -2130,7 +2130,7 @@
       "method": "DELETE",
       "path": "/platform/campaigns/{campaignId}",
       "operationId": "deleteCampaign",
-      "fingerprint": "4b93132ff74f4f1a98693b6828e876e820f14579527e5f3098d20c2b6db4bb80",
+      "fingerprint": "d7d89dc438c100e4950b13fde21d7eb38de8b359c59583a4e1b9f8550c2b43f8",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.delete"
@@ -2208,7 +2208,7 @@
       "method": "DELETE",
       "path": "/platform/sessions/{session}/client-rules",
       "operationId": "deleteClientRules",
-      "fingerprint": "10937af644aca034e9b9a554ffaeabd2e4c7145d30e276ad72f48a5f07cf3a95",
+      "fingerprint": "701c9ff9ca14196c242ece312e6ee9e288abf5b77d598fbf13f09c491609238e",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.clientTokens.deleteRules"
@@ -2230,7 +2230,7 @@
       "method": "DELETE",
       "path": "/platform/sip-trunks/{trunkId}",
       "operationId": "deleteSipTrunk",
-      "fingerprint": "6487e1995dad765cb626862699458e47c40176a56518e5e8d13be6d85bffa5f9",
+      "fingerprint": "cf454bc7cc880d1bfc3f3d39438d752ac232b28e3b0892061bd13bd0a8cc25aa",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.delete"
@@ -2847,7 +2847,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}",
       "operationId": "getPlatformCampaign",
-      "fingerprint": "24a06b4936496d49ad87c3345537e9dbfe7ee1f5f1b076dfcec0d98229814f17",
+      "fingerprint": "11bee4a4bab57d0bd7ea12d0db56c9ed2023e2ffd1e24f13c688fee9104f0484",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.retrieve"
@@ -2858,7 +2858,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/analytics",
       "operationId": "getPlatformCampaignAnalytics",
-      "fingerprint": "b6950446fa440a5027011e18152c637cdfcad4603251448e5ae91e936d20d93e",
+      "fingerprint": "03910adfafc5a34a76030447cbb0b553cb6f6f67f840c838dd58e3a1f47303c0",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.analytics"
@@ -2869,7 +2869,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/events",
       "operationId": "listCampaignEvents",
-      "fingerprint": "772bb0c475725d2e4c65a07be6f1c166f0d4df6958447d5394eaf5af1cdc6aa4",
+      "fingerprint": "c94406ce4082a0e5e90499220f7b9df15e7d398c1fa3eab3f277da477ec17432",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.events"
@@ -3102,7 +3102,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/events/stream",
       "operationId": "streamProjectEvents",
-      "fingerprint": "4fa73ba811616cc3a579454bd263ad91aa99be66486bcd6b3b96ccc956016b8f",
+      "fingerprint": "0984182832a90d92645640c69e2a960a1b56e0c4a4cd7b40080aa2c59da620b0",
       "typescript": {
         "status": "covered",
         "method": "Client.events.stream"
@@ -3256,7 +3256,7 @@
       "method": "GET",
       "path": "/platform/sessions/{session}/call-settings",
       "operationId": "getCallSettings",
-      "fingerprint": "0c6c11ba02599c525198a167a29158120cd4a8d09955dca74c19b8d430721c15",
+      "fingerprint": "c27e1467d83ff681219e3582d21c3bcedb0ee6689546050b968c8fba53d530ab",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.retrieveCallSettings"
@@ -3267,7 +3267,7 @@
       "method": "GET",
       "path": "/platform/sessions/{session}/client-rules",
       "operationId": "getClientRules",
-      "fingerprint": "37b5af0108d359f705a9f797d3ce47176742a69be4056d8902a9b4bac9795839",
+      "fingerprint": "bec8c03a63cfe67d856e0dbab441af1913c66502d4e2a37da7ef245acc42acec",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.clientTokens.retrieveRules"
@@ -3278,7 +3278,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}",
       "operationId": "getSession",
-      "fingerprint": "a7ac16acad4d9d932f23bbc88aa5d47aa05615553210f13ac79cc055e9ead873",
+      "fingerprint": "4558ec26e1cdaff6a516122d64ef7235fb89b34f4db37ebd7c559f773755616b",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.retrieve"
@@ -3289,7 +3289,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/me",
       "operationId": "getSessionAccount",
-      "fingerprint": "8d4660baf65cd2084fdb62aa9f5735ff83dd03405607fe1871c700d7f2970ffb",
+      "fingerprint": "720cdf0554a7dceb6f11ec261f4e4107ed3834fed6d29fe43f2359754c151a6c",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.sessions.account"
@@ -3322,7 +3322,7 @@
       "method": "GET",
       "path": "/platform/sip-trunks",
       "operationId": "listSipTrunks",
-      "fingerprint": "054184f82b9e5f1ecaad80a9eb0e1dfb5609880f18bd7eb4cef9757fe22c3b65",
+      "fingerprint": "6f7f9450fef1937d8d46e525146de2fe031bd686df3d30445317e3da84fb8547",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.list"
@@ -3333,7 +3333,7 @@
       "method": "GET",
       "path": "/platform/sip-trunks/{trunkId}",
       "operationId": "getSipTrunk",
-      "fingerprint": "13cf2590313bac03e80a423517a1fd588a5bb7aee4575b0f624a0201ab78a0b1",
+      "fingerprint": "b1ab8498caee0b4dcd5e85af83cd0f571486018d4a1fe8a42500f00c72030bd1",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.retrieve"
@@ -3522,7 +3522,7 @@
       "method": "PATCH",
       "path": "/platform/campaigns/{campaignId}",
       "operationId": "updateCampaign",
-      "fingerprint": "80e2898c22eea9257377613611c99460501eb146ef0e68c0c6a0c247f1ae2979",
+      "fingerprint": "e9fedba0eb70a5425d47bea9e6d74224287d8047289a3a0addfadeb9b273377d",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.update"
@@ -3578,7 +3578,7 @@
       "method": "PATCH",
       "path": "/platform/sip-trunks/{trunkId}",
       "operationId": "updateSipTrunk",
-      "fingerprint": "d8be37b4c7078b3fe888bee574a0f2fcce4e9ef868bf00ede64771e3ad09e23c",
+      "fingerprint": "00ae18532e55c6d1e62b728879ada8641aa40460c0664f7c60472c9844a0ee89",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.update"
@@ -4118,7 +4118,7 @@
       "method": "POST",
       "path": "/platform/client-tokens",
       "operationId": "mintClientToken",
-      "fingerprint": "567862dab40d9572c57f82ab866315cac9fe8539afed55de656219fe81a11403",
+      "fingerprint": "aad92b9968730e1fd8c40819529ee9f1b74795dade316ebf660580340eaffb04",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.clientTokens.mint"
@@ -4284,7 +4284,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/events/stream/{streamId}/ack",
       "operationId": "acknowledgeProjectEventStream",
-      "fingerprint": "8bfae242176bcc4774ea7ae139f75a0517f8e6dbbd204afea7a5cbf2e3510492",
+      "fingerprint": "8fb920c534111a6cc0c8ef50dc2380b92c0e2a3b41258628a21b92b74d57b47f",
       "typescript": {
         "status": "covered",
         "method": "Client.events.acknowledgeStream"
@@ -4372,7 +4372,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/handoff-ack",
       "operationId": "sessionHandoffAck",
-      "fingerprint": "cf52d4aa99aaeb1fd18e633f82cb873933cf6456b0700286dbb5bdc64e80ff49",
+      "fingerprint": "f84d76145771eca6bd149b106682e7bf51ead09e6a25b486ea69649ef8d187a5",
       "typescript": {
         "status": "excluded",
         "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
@@ -4384,7 +4384,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/handoff-import",
       "operationId": "sessionHandoffImport",
-      "fingerprint": "06f99141feb6dd5322294a42bbe33d325547e33fd84add34da2e7e9ba9c5c066",
+      "fingerprint": "ecc0fb61b628fa0216b3241623ebc18ec4a11b9bd8d75bd3ad6ba47b516988ae",
       "typescript": {
         "status": "excluded",
         "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
@@ -4396,7 +4396,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/handoff-keys",
       "operationId": "sessionHandoffKeys",
-      "fingerprint": "70c2c6eccfaf89cfdb2c3b8bc7975ae6965b9143be59b791cc38e510c368a512",
+      "fingerprint": "6f9b55146faa1530fa53b97d63335b2b0e7c60043a3a6cae4e21e84f6c6ed91f",
       "typescript": {
         "status": "excluded",
         "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
@@ -4408,7 +4408,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/logout",
       "operationId": "logoutSession",
-      "fingerprint": "bb09fbcf84060af705ba320627f06d2178b490ded7b84b8981ab1d5e2ec79cef",
+      "fingerprint": "cb3f088fd9d9d4a98df9e16438f7d892339abb4d1ee466565d729eab86b761ad",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.sessions.logout"
@@ -4419,7 +4419,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/restart",
       "operationId": "restartSession",
-      "fingerprint": "acce3d1ee12a18c18396b2ad41c5529a9330736ccf92c4325f3409e9e06de378",
+      "fingerprint": "d53d3a280924199280e115c9782642bad0b48d433e9f52143f8719a808b103f2",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.sessions.restart"
@@ -4463,7 +4463,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/upload-appstate-keys",
       "operationId": "sessionUploadAppStateKeys",
-      "fingerprint": "341d8703cec52b5969435a19dd92090d74cd5d95e127bf4db8006a638f07e835",
+      "fingerprint": "83d2d06563ee69ed22f5ada074043d2125481639a6ade04de4a213274feec3ed",
       "typescript": {
         "status": "excluded",
         "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
@@ -4497,7 +4497,7 @@
       "method": "POST",
       "path": "/platform/sip-trunks",
       "operationId": "createSipTrunk",
-      "fingerprint": "d6dbacaf9e9414b604591fa23ed35f3901daeea17505069df4f15d7303f02a10",
+      "fingerprint": "a1de4f2e4704c4d0d08f4a9b8ea309b54443fa6b2d50bdbff882efae4fe48c47",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.create"
@@ -4508,7 +4508,7 @@
       "method": "POST",
       "path": "/platform/sip-trunks/{trunkId}/credentials",
       "operationId": "rotateSipTrunkCredentials",
-      "fingerprint": "901667a3a12453c8ca87039f023744691f604709a384d1cecdbb34de5e97d5dd",
+      "fingerprint": "c8b6ebefdc087072eef48dead07ac081ac59ffd834b1bbe1861c83f380a429a4",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.rotateCredentials"
@@ -4740,7 +4740,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{session}/call-settings",
       "operationId": "updateCallSettings",
-      "fingerprint": "a9fee388b6c1961e2327e018cf5c44659737850350a055e01684c5707f5b610e",
+      "fingerprint": "0643f7e1e9735da8f85afa04bc8951cd2ae91e31da1aa13729834a6764dbc3a7",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.updateCallSettings"
@@ -4751,7 +4751,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{session}/client-rules",
       "operationId": "setClientRules",
-      "fingerprint": "5e7184744f74e471ab801ab4c8e3a1682d2ebdd1c7f27e41154e56db5e8440e0",
+      "fingerprint": "0f725f3340c54cb0a2391bc628c62a3b45f30279b4e80e5f687d38960120dfed",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.clientTokens.updateRules"
@@ -4762,7 +4762,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}",
       "operationId": "updateSession",
-      "fingerprint": "08025fee90b32898c8b374c3f99649df9f4e1dbb5e7f57121a2612bcf01a0d92",
+      "fingerprint": "4d93336b90520cf7fbae5e901a3b36b9686c35b4238ea1d91b1ac58c79ec017b",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.update"

@@ -8595,6 +8595,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -8657,6 +8665,14 @@
             "name": "campaignId",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string"
             }
@@ -8749,6 +8765,14 @@
             "name": "campaignId",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string"
             }
@@ -9608,6 +9632,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -9672,6 +9704,14 @@
             "name": "campaignId",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string"
             }
@@ -35806,7 +35846,8 @@
                   "bansafe_daily_allowance_reached",
                   "bansafe_accounting_unavailable",
                   "bansafe_send_outcome_unknown",
-                  "campaigns_not_entitled"
+                  "campaigns_not_entitled",
+                  "campaign_throughput_capped"
                 ]
               },
               "message": {

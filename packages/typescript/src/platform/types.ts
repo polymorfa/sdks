@@ -177,6 +177,30 @@ export interface ListCampaignsParams {
   readonly projectSlug?: string;
 }
 
+/**
+ * Query parameters shared by the single-campaign Platform operations.
+ *
+ * A team API key is not bound to one project, so it must name the project that
+ * owns the campaign. A project-scoped credential may omit it.
+ */
+export interface PlatformCampaignParams {
+  readonly projectId?: string;
+}
+
+/**
+ * Body accepted by `campaigns.update`.
+ *
+ * The contract declares this body as an open object, so any field passes
+ * through. `recipientListId` is named because its behaviour is specified:
+ * pointing a campaign at another audience, or detaching it with null, is
+ * accepted only while the campaign is an unlaunched draft whose audience has
+ * not been copied into recipients. After that the API refuses the change.
+ */
+export interface UpdatePlatformCampaignRequest {
+  readonly recipientListId?: string | null;
+  readonly [field: string]: unknown;
+}
+
 export interface ListPlatformCampaignRecipientsParams {
   /** Required unless the credential is already bound to one project. */
   readonly projectId?: string;

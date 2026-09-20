@@ -252,7 +252,10 @@ The organization view also exposes these management resources:
   batch; review and confirm a tier change; create a testing session; and
   retrieve or update the session Safe Mode override
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
-  analytics, events, and paged or appended recipients
+  analytics, events, and paged or appended recipients. The single-campaign
+  operations take an optional `projectId`, which a team API key must supply.
+  `update` accepts `recipientListId` to point an unlaunched draft at another
+  audience, or null to detach it
 - `customers`: enable Customers for a project; create, list, retrieve, update,
   archive, and restore Customers; inspect Numbers and events; create, list,
   and revoke pairing links; and transfer Numbers between Customers

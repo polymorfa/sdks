@@ -204,15 +204,19 @@ describe("Client campaigns", () => {
       { projectId: "project/a", name: "August" },
       { idempotencyKey: "campaign-1" },
     );
-    await client.campaigns.retrieve("campaign/a");
-    await client.campaigns.update("campaign/a", { name: "September" });
+    await client.campaigns.retrieve("campaign/a", { projectId: "project/a" });
+    await client.campaigns.update(
+      "campaign/a",
+      { name: "September" },
+      { projectId: "project/a" },
+    );
     await client.campaigns.delete("campaign/a");
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "GET /platform/campaigns?projectId=project%2Fa&projectSlug=support",
       "POST /platform/campaigns",
-      "GET /platform/campaigns/campaign%2Fa",
-      "PATCH /platform/campaigns/campaign%2Fa",
+      "GET /platform/campaigns/campaign%2Fa?projectId=project%2Fa",
+      "PATCH /platform/campaigns/campaign%2Fa?projectId=project%2Fa",
       "DELETE /platform/campaigns/campaign%2Fa",
     ]);
     expect(requests[1]?.body).toBe('{"projectId":"project/a","name":"August"}');
@@ -229,7 +233,7 @@ describe("Client campaigns", () => {
     await client.campaigns.archive("campaign/a", { reason: "archive" });
     await client.campaigns.duplicate("campaign/a", { reason: "duplicate" });
     await client.campaigns.requeue("campaign/a", { reason: "requeue" });
-    await client.campaigns.analytics("campaign/a");
+    await client.campaigns.analytics("campaign/a", { projectId: "project/a" });
     await client.campaigns.events("campaign/a");
     await client.campaigns.recipients("campaign/a");
 
@@ -241,7 +245,7 @@ describe("Client campaigns", () => {
       "POST /platform/campaigns/campaign%2Fa/archive",
       "POST /platform/campaigns/campaign%2Fa/duplicate",
       "POST /platform/campaigns/campaign%2Fa/requeue",
-      "GET /platform/campaigns/campaign%2Fa/analytics",
+      "GET /platform/campaigns/campaign%2Fa/analytics?projectId=project%2Fa",
       "GET /platform/campaigns/campaign%2Fa/events",
       "GET /platform/campaigns/campaign%2Fa/recipients",
     ]);
@@ -254,6 +258,33 @@ describe("Client campaigns", () => {
       '{"reason":"duplicate"}',
       '{"reason":"requeue"}',
     ]);
+  });
+
+  it("points an unlaunched draft at another audience, or detaches it", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.update("campaign/a", { recipientListId: "list/b" });
+    await client.campaigns.update("campaign/a", { recipientListId: null });
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "PATCH /platform/campaigns/campaign%2Fa",
+      "PATCH /platform/campaigns/campaign%2Fa",
+    ]);
+    expect(requests.map(({ body }) => body)).toEqual([
+      '{"recipientListId":"list/b"}',
+      '{"recipientListId":null}',
+    ]);
+  });
+
+  it("keeps the update body open beyond the named field", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.update("campaign/a", {
+      name: "September",
+      recipientListId: "list/b",
+    });
+
+    expect(requests[0]?.body).toBe(
+      '{"name":"September","recipientListId":"list/b"}',
+    );
   });
 
   it("pages recipients and filters them by status", async () => {

@@ -18,6 +18,19 @@
   `mapping` for a spreadsheet import, and returns the audience with its import
   counts and up to 20 rejected rows.
 
+- Breaking: `Client.campaigns.retrieve`, `delete`, `analytics` and `events` take
+  an optional `PlatformCampaignParams` argument before their request options,
+  and `update` takes it after the body. The contract now declares `projectId` as
+  a query parameter on these operations; a team API key is not bound to one
+  project and must name the one that owns the campaign.
+
+- `Client.campaigns.update` takes `UpdatePlatformCampaignRequest`. It names
+  `recipientListId` (string or null), which points an unlaunched draft at
+  another audience or detaches it, and keeps an index signature because the
+  contract still declares the body as an open object. The API refuses the
+  change once the campaign has launched or its audience has been copied into
+  recipients.
+
 - Added campaign recipients on both surfaces.
   `MessagingClient.campaigns.listRecipients` and `addRecipients`, and
   `Client.campaigns.addRecipients`, append up to 1,000 recipients to a campaign

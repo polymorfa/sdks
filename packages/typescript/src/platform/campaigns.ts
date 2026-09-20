@@ -6,8 +6,10 @@ import type {
   DataEnvelope,
   ListCampaignsParams,
   ListPlatformCampaignRecipientsParams,
+  PlatformCampaignParams,
   PlatformCampaignRecipientsEnvelope,
   PlatformPayload,
+  UpdatePlatformCampaignRequest,
 } from "./types.js";
 
 type CampaignResponse = Promise<ApiResponse<DataEnvelope<PlatformPayload>>>;
@@ -42,26 +44,48 @@ export class CampaignsResource {
     return this.write("POST", "/platform/campaigns", body, options);
   }
 
-  retrieve(campaignId: string, options: RequestOptions = {}): CampaignResponse {
+  retrieve(
+    campaignId: string,
+    params: PlatformCampaignParams = {},
+    options: RequestOptions = {},
+  ): CampaignResponse {
     return this.transport.request({
       method: "GET",
       path: campaignPath(campaignId),
+      query: campaignQuery(params),
       ...options,
     });
   }
 
+  /**
+   * Change a campaign. `recipientListId` points an unlaunched draft at another
+   * audience, or detaches it with null; the API refuses the change once the
+   * campaign has launched or its audience has been copied into recipients.
+   */
   update(
     campaignId: string,
-    body?: PlatformPayload,
+    body?: UpdatePlatformCampaignRequest,
+    params: PlatformCampaignParams = {},
     options: RequestOptions = {},
   ): CampaignResponse {
-    return this.write("PATCH", campaignPath(campaignId), body, options);
+    return this.transport.request({
+      method: "PATCH",
+      path: campaignPath(campaignId),
+      query: campaignQuery(params),
+      ...(body === undefined ? {} : { body }),
+      ...options,
+    });
   }
 
-  delete(campaignId: string, options: RequestOptions = {}): CampaignResponse {
+  delete(
+    campaignId: string,
+    params: PlatformCampaignParams = {},
+    options: RequestOptions = {},
+  ): CampaignResponse {
     return this.transport.request({
       method: "DELETE",
       path: campaignPath(campaignId),
+      query: campaignQuery(params),
       ...options,
     });
   }
@@ -124,13 +148,18 @@ export class CampaignsResource {
 
   analytics(
     campaignId: string,
+    params: PlatformCampaignParams = {},
     options: RequestOptions = {},
   ): CampaignResponse {
-    return this.read(campaignId, "analytics", options);
+    return this.read(campaignId, "analytics", params, options);
   }
 
-  events(campaignId: string, options: RequestOptions = {}): CampaignResponse {
-    return this.read(campaignId, "events", options);
+  events(
+    campaignId: string,
+    params: PlatformCampaignParams = {},
+    options: RequestOptions = {},
+  ): CampaignResponse {
+    return this.read(campaignId, "events", params, options);
   }
 
   /**
@@ -190,11 +219,13 @@ export class CampaignsResource {
   private read(
     campaignId: string,
     resource: CampaignRead,
+    params: PlatformCampaignParams,
     options: RequestOptions,
   ): CampaignResponse {
     return this.transport.request({
       method: "GET",
       path: `${campaignPath(campaignId)}/${resource}`,
+      query: campaignQuery(params),
       ...options,
     });
   }
@@ -216,6 +247,12 @@ export class CampaignsResource {
 
 function campaignPath(campaignId: string): string {
   return `/platform/campaigns/${encodeURIComponent(campaignId)}`;
+}
+
+function campaignQuery(
+  params: PlatformCampaignParams,
+): Readonly<Record<string, string>> {
+  return params.projectId === undefined ? {} : { projectId: params.projectId };
 }
 
 function recipientsPath(campaignId: string): string {
