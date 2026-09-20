@@ -62,7 +62,7 @@ export interface SipTrunkCreated {
   readonly inboundCredentials?: SipTrunkCredentials;
 }
 
-/** A SIP transport your PBX can use, with its port on `SipEndpoint.host`. */
+/** A SIP transport your PBX can use, with its port on `SipEndpointHosted.host`. */
 export interface SipEndpointTransport {
   readonly transport: SipTransport;
   readonly port: number;
@@ -73,27 +73,39 @@ export interface SipEndpointTransport {
   readonly srtp: "required" | "not_supported";
 }
 
+/** UDP port range, inclusive, that call audio uses. Allow it in both directions. */
+export interface SipEndpointRtp {
+  readonly protocol: "udp";
+  readonly portMin: number;
+  readonly portMax: number;
+}
+
+/** The environment accepts SIP at `host`. */
+export interface SipEndpointHosted {
+  readonly status: "hosted";
+  /** Host name your PBX sends SIP to. Allow its addresses for SIP and RTP. */
+  readonly host: string;
+  /** The SIP transports and their ports on `host`. Never empty. */
+  readonly transports: readonly SipEndpointTransport[];
+  readonly rtp: SipEndpointRtp;
+}
+
+/** The environment has no SIP address. */
+export interface SipEndpointNotHosted {
+  readonly status: "sip_not_hosted";
+  readonly host: null;
+  readonly transports: readonly [];
+  readonly rtp: null;
+}
+
 /**
  * The environment's SIP address: where your PBX sends SIP and which addresses
  * and ports to allow in your firewall. It is the same for every project and
- * trunk.
+ * trunk. Narrow on `status`: `hosted` carries the `host`, `transports` and
+ * `rtp` range; `sip_not_hosted` carries a `null` `host` and `rtp` and no
+ * transports.
  */
-export interface SipEndpoint {
-  /**
-   * `hosted`: the environment accepts SIP at `host`. `sip_not_hosted`: it has
-   * no SIP address; `host` and `rtp` are `null` and `transports` is empty.
-   */
-  readonly status: "hosted" | "sip_not_hosted";
-  /** Host name your PBX sends SIP to. Allow its addresses for SIP and RTP. */
-  readonly host: string | null;
-  readonly transports: readonly SipEndpointTransport[];
-  /** UDP port range, inclusive, that call audio uses. Allow it in both directions. */
-  readonly rtp: {
-    readonly protocol: "udp";
-    readonly portMin: number;
-    readonly portMax: number;
-  } | null;
-}
+export type SipEndpoint = SipEndpointHosted | SipEndpointNotHosted;
 
 export interface SipTrunkDeleted {
   readonly id: string;
@@ -192,9 +204,10 @@ export class SipTrunksResource<O extends ClientOwner> {
   }
 
   /**
-   * Returns the SIP address your PBX points at. `status` is `sip_not_hosted`,
-   * not an error, when the environment has no SIP address. Needs
-   * `sessions:read`; client tokens are refused.
+   * Returns the SIP address your PBX points at. Narrow the result on `status`
+   * to read the host, transports and RTP range; `sip_not_hosted` is data, not
+   * an error, when the environment has no SIP address. Needs `sessions:read`;
+   * client tokens are refused.
    */
   endpoint(options: RequestOptions = {}): Promise<ApiResponse<SipEndpoint>> {
     return this.transport

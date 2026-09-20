@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "8a7caf47985cd1e7a946320a28e229148715160c",
+  "commit": "10a913519fa6c715d63fbe0a49aded30a676fae8",
   "branch": "t3code/calls-sip-address",
   "published": false,
   "note": "Coordinated PR dependency: monorepo branch t3code/calls-sip-address (adds GET /platform/sip/endpoint), not yet merged to dev.",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "6a0543894a94fe4caf4d0436064e2ed3c181a2a705dd707352c172d425405b17"
+      "sha256": "da656a041d07edccf6d0d9f75ae647389363437c8fe8f4c498b5210138bb64ea"
     }
   }
 }

@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`8a7caf47985cd1e7a946320a28e229148715160c` (monorepo branch
+`10a913519fa6c715d63fbe0a49aded30a676fae8` (monorepo branch
 `t3code/calls-sip-address`, pending merge to `dev`). Graph-compatible APIs are outside
 this SDK's initial scope.
 

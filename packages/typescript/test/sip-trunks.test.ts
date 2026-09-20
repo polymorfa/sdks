@@ -1,10 +1,14 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import {
   Client,
   PolymorfaConfigurationError,
   PolymorfaConflictError,
   PolymorfaNotFoundError,
   type SipEndpoint,
+  type SipEndpointHosted,
+  type SipEndpointNotHosted,
+  type SipEndpointRtp,
+  type SipEndpointTransport,
   type SipTrunk,
 } from "../src/index.js";
 import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
@@ -221,7 +225,7 @@ describe("SIP trunks", () => {
 });
 
 describe("SIP address", () => {
-  const hosted: SipEndpoint = {
+  const hosted: SipEndpointHosted = {
     status: "hosted",
     host: "sip.example.test",
     transports: [
@@ -231,6 +235,39 @@ describe("SIP address", () => {
     ],
     rtp: { protocol: "udp", portMin: 20000, portMax: 20999 },
   };
+
+  const notHosted: SipEndpointNotHosted = {
+    status: "sip_not_hosted",
+    host: null,
+    transports: [],
+    rtp: null,
+  };
+
+  it("splits the address by status", () => {
+    expectTypeOf<SipEndpoint>().toEqualTypeOf<
+      SipEndpointHosted | SipEndpointNotHosted
+    >();
+    expectTypeOf<
+      Extract<SipEndpoint, { status: "hosted" }>
+    >().toEqualTypeOf<SipEndpointHosted>();
+    expectTypeOf<
+      Extract<SipEndpoint, { status: "sip_not_hosted" }>
+    >().toEqualTypeOf<SipEndpointNotHosted>();
+    expectTypeOf<SipEndpointHosted["host"]>().toEqualTypeOf<string>();
+    expectTypeOf<SipEndpointHosted["rtp"]>().toEqualTypeOf<SipEndpointRtp>();
+    expectTypeOf<SipEndpointHosted["transports"]>().toEqualTypeOf<
+      readonly SipEndpointTransport[]
+    >();
+    expectTypeOf<SipEndpointNotHosted["host"]>().toEqualTypeOf<null>();
+    expectTypeOf<SipEndpointNotHosted["rtp"]>().toEqualTypeOf<null>();
+    expectTypeOf<SipEndpointNotHosted["transports"]>().toEqualTypeOf<
+      readonly []
+    >();
+
+    // @ts-expect-error the union has no host until `status` is narrowed
+    const unnarrowed: string = (hosted as SipEndpoint).host;
+    expect(unnarrowed).toBe("sip.example.test");
+  });
 
   it("reads the hosted address without a project", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
@@ -244,15 +281,21 @@ describe("SIP address", () => {
     expect(sent.url.pathname).toBe("/platform/sip/endpoint");
     expect([...sent.url.searchParams.keys()]).toEqual([]);
     expect(sent.body).toBeUndefined();
+
+    const address = response.data;
+    if (address.status !== "hosted") throw new Error("expected a SIP address");
+    // Narrowing alone, with no cast, gives a host and an RTP range.
+    expectTypeOf(address).toEqualTypeOf<SipEndpointHosted>();
+    expectTypeOf(address.host).toEqualTypeOf<string>();
+    expectTypeOf(address.rtp).toEqualTypeOf<SipEndpointRtp>();
+    expect(address.host.endsWith("example.test")).toBe(true);
+    expect(address.rtp.portMax - address.rtp.portMin).toBe(999);
+    expect(address.transports.map(({ port }) => port)).toEqual([
+      5060, 5060, 5061,
+    ]);
   });
 
   it("returns sip_not_hosted as data on project clients", async () => {
-    const notHosted: SipEndpoint = {
-      status: "sip_not_hosted",
-      host: null,
-      transports: [],
-      rtp: null,
-    };
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json({ success: true, data: notHosted }),
     );
@@ -268,6 +311,14 @@ describe("SIP address", () => {
     expect(sent.method).toBe("GET");
     expect(sent.url.pathname).toBe("/platform/sip/endpoint");
     expect([...sent.url.searchParams.keys()]).toEqual([]);
+
+    const address = response.data;
+    if (address.status !== "sip_not_hosted") throw new Error("expected none");
+    expectTypeOf(address).toEqualTypeOf<SipEndpointNotHosted>();
+    expectTypeOf(address.host).toEqualTypeOf<null>();
+    expect(address.host).toBeNull();
+    expect(address.rtp).toBeNull();
+    expect(address.transports).toEqual([]);
   });
 
   it("is the same call on a project view of a team client", async () => {

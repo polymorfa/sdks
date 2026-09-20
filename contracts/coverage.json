@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "8a7caf47985cd1e7a946320a28e229148715160c",
+  "sourceCommit": "10a913519fa6c715d63fbe0a49aded30a676fae8",
   "excludedContracts": [
     {
       "family": "graph",
@@ -4564,7 +4564,7 @@
       "method": "GET",
       "path": "/console/sip/endpoint",
       "operationId": "getConsoleSipEndpoint",
-      "fingerprint": "8c11a2dd8835d935e27c2ee1f0c2dba7a6a99b27201015af935ba9794979ede5",
+      "fingerprint": "f86584358958c1a02647b3368ff7df57799d54833a8b5bf9e75d0c23471b656a",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -4597,7 +4597,7 @@
       "method": "GET",
       "path": "/platform/sip/endpoint",
       "operationId": "getSipEndpoint",
-      "fingerprint": "a4361d3e1a0a1e0abdfc5b63b8a8b911e96523c2f1ebbb20f11158eeaf2f6bee",
+      "fingerprint": "e071c3c69abeb09f596978affc53f01bd7f4497e343e3f3c8bd5e195c932c802",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.endpoint"

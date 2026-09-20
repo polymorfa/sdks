@@ -432,12 +432,14 @@ await project.sipTrunks.update(data.trunk.id, {
 ```
 
 `endpoint()` returns the SIP address to configure in your PBX and allow in
-your firewall: `host`, the `transports` with their ports and SRTP policy, and
-the UDP `rtp` port range for call audio. The address is the same for every
-project and trunk, and team and project clients call it without a project.
-When the environment has no SIP address, `status` is `sip_not_hosted`, `host`
-and `rtp` are `null`, and `transports` is empty; this is a successful
-response, not an error. It needs `sessions:read`.
+your firewall. `SipEndpoint` is a union on `status`. `SipEndpointHosted`
+carries the `host`, the `transports` with their ports and SRTP policy, and the
+UDP `rtp` port range for call audio; narrowing on `status === "hosted"` gives
+them without a cast. `SipEndpointNotHosted` carries `status`
+`sip_not_hosted`, a `null` `host` and `rtp`, and no transports, which is a
+successful response, not an error. The address is the same for every project
+and trunk, team and project clients call it without a project, and it needs
+`sessions:read`.
 
 ```ts
 const { data: address } = await platform.sipTrunks.endpoint();

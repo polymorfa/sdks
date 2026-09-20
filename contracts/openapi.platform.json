@@ -33010,20 +33010,44 @@
           "srtp"
         ]
       },
-      "PlatformAccessSipEndpoint": {
+      "PlatformAccessSipEndpointRtp": {
+        "type": "object",
+        "properties": {
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "udp"
+            ]
+          },
+          "portMin": {
+            "type": "integer",
+            "description": "First port of the range."
+          },
+          "portMax": {
+            "type": "integer",
+            "description": "Last port of the range, inclusive."
+          }
+        },
+        "required": [
+          "protocol",
+          "portMin",
+          "portMax"
+        ],
+        "description": "UDP port range that call audio (RTP or SRTP) uses on Polymorfa's side. Allow it in both directions."
+      },
+      "PlatformAccessSipEndpointHosted": {
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
             "enum": [
-              "hosted",
-              "sip_not_hosted"
+              "hosted"
             ],
-            "description": "`hosted`: this environment accepts SIP at `host`. `sip_not_hosted`: it has no SIP address; `host` is null, `transports` is empty and `rtp` is null."
+            "description": "This environment accepts SIP at `host`."
           },
           "host": {
             "type": "string",
-            "nullable": true,
+            "minLength": 1,
             "description": "Host name your PBX sends SIP to. Allow the addresses it resolves to for both SIP and RTP."
           },
           "transports": {
@@ -33031,33 +33055,11 @@
             "items": {
               "$ref": "#/components/schemas/PlatformAccessSipEndpointTransport"
             },
+            "minItems": 1,
             "description": "SIP transports and their ports on `host`."
           },
           "rtp": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "protocol": {
-                "type": "string",
-                "enum": [
-                  "udp"
-                ]
-              },
-              "portMin": {
-                "type": "integer",
-                "description": "First port of the range."
-              },
-              "portMax": {
-                "type": "integer",
-                "description": "Last port of the range, inclusive."
-              }
-            },
-            "required": [
-              "protocol",
-              "portMin",
-              "portMax"
-            ],
-            "description": "UDP port range that call audio (RTP or SRTP) uses on Polymorfa's side. Allow it in both directions."
+            "$ref": "#/components/schemas/PlatformAccessSipEndpointRtp"
           }
         },
         "required": [
@@ -33066,6 +33068,64 @@
           "transports",
           "rtp"
         ]
+      },
+      "PlatformAccessSipEndpointNotHosted": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "sip_not_hosted"
+            ],
+            "description": "This environment has no SIP address."
+          },
+          "host": {
+            "type": "string",
+            "description": "Always null: there is no address.",
+            "enum": [
+              null
+            ]
+          },
+          "transports": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformAccessSipEndpointTransport"
+            },
+            "maxItems": 0,
+            "description": "Always empty."
+          },
+          "rtp": {
+            "type": "object",
+            "description": "Always null.",
+            "enum": [
+              null
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "host",
+          "transports",
+          "rtp"
+        ]
+      },
+      "PlatformAccessSipEndpoint": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/PlatformAccessSipEndpointHosted"
+          },
+          {
+            "$ref": "#/components/schemas/PlatformAccessSipEndpointNotHosted"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "status",
+          "mapping": {
+            "hosted": "#/components/schemas/PlatformAccessSipEndpointHosted",
+            "sip_not_hosted": "#/components/schemas/PlatformAccessSipEndpointNotHosted"
+          }
+        },
+        "description": "`hosted`: the host, SIP transports and RTP range PBXs use. `sip_not_hosted`: the environment has no SIP address; `host` and `rtp` are null and `transports` is empty."
       },
       "PlatformAccessGetSipEndpointResponse": {
         "type": "object",

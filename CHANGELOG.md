@@ -2,12 +2,14 @@
 
 ## Unreleased
 
-- `Client.sipTrunks.endpoint()` returns the SIP address your PBX points at
-  (`SipEndpoint`: `status`, `host`, `transports` as `SipEndpointTransport`
-  with port and SRTP policy, and the `rtp` port range). It is available on
-  team and project clients, takes no project, and needs `sessions:read`.
-  Environments without a SIP address return `status: "sip_not_hosted"` with
-  `host` and `rtp` set to `null`.
+- `Client.sipTrunks.endpoint()` returns the SIP address your PBX points at.
+  `SipEndpoint` is a union on `status`: `SipEndpointHosted` carries the
+  `host`, the `transports` (`SipEndpointTransport`, with port and SRTP
+  policy) and the `rtp` range (`SipEndpointRtp`); `SipEndpointNotHosted`
+  carries `status: "sip_not_hosted"`, a `null` `host` and `rtp`, and no
+  transports. Narrowing on `status === "hosted"` gives a `host` and an `rtp`
+  range without a cast. The method is available on team and project clients,
+  takes no project, and needs `sessions:read`.
 - Webhook types add `bansafe.risk_changed` (`BanSafeRiskChangedPayload`: risk
   level, score, ban forecast, and contributing factors) and
   `bansafe.health_changed` (`BanSafeHealthChangedPayload`: health, band,

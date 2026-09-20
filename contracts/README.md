@@ -2,15 +2,26 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`8a7caf47985cd1e7a946320a28e229148715160c` on monorepo branch
+`10a913519fa6c715d63fbe0a49aded30a676fae8` on monorepo branch
 `t3code/calls-sip-address`, a coordinated PR dependency that is not yet merged
 to `dev`. `source.json` records the original paths and SHA-256 hashes.
 `coverage.json` uses the same source revision.
 
-Revision `8a7caf47` adds the environment's SIP address
+Revision `10a91351` splits the SIP address response on `status`:
+`PlatformAccessSipEndpoint` is a `oneOf` of `PlatformAccessSipEndpointHosted`,
+which carries a non-null `host`, at least one transport and the
+`PlatformAccessSipEndpointRtp` range, and `PlatformAccessSipEndpointNotHosted`,
+which carries a null `host`, a null `rtp` and no transports. Two fingerprints
+move, `getSipEndpoint` and the excluded `getConsoleSipEndpoint`; both were
+reviewed and only that response schema differs. `SipEndpoint` follows as
+`SipEndpointHosted | SipEndpointNotHosted`, so narrowing on `status` gives a
+`host` and an `rtp` range without a cast. The Messaging document is byte
+identical to `8a7caf47`, and the reviewed counts are unchanged.
+
+Revision `8a7caf47` added the environment's SIP address
 (`GET /platform/sip/endpoint`, `getSipEndpoint`), covered by
 `Client.sipTrunks.endpoint`, and its Console-only counterpart
-(`getConsoleSipEndpoint`, excluded). It also carries monorepo `dev` changes
+(`getConsoleSipEndpoint`, excluded). It also carried monorepo `dev` changes
 since `2259a1fd`: the SIP trunk operations drop the beta enrollment wording and
 move the `targetUri` transport description into an `allOf` wrapper (eight public
 and Console SIP trunk fingerprints; request and response fields are
