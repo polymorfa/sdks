@@ -2,6 +2,42 @@
 
 ## Unreleased
 
+- Breaking: `Client.campaigns.recipients` returns a cursor page
+  (`{ data, page }`) instead of a bare array, takes `projectId`, `status`,
+  `cursor` and `limit`, and each recipient now carries `sentAt`,
+  `deliveredAt`, `readAt`, `failedAt` and `respondedAt`. Iterate
+  `response.data.data` and continue from `response.data.page.nextCursor`.
+
+- Breaking: `MessagingClient.campaigns.stop` returns `CampaignStopResponse`.
+  Its `operationId` is `string | null`: stopping a campaign with no active
+  delivery run cancels it immediately and answers with `null`. Code that read
+  `operationId` as a string must handle `null`.
+
+- Breaking: `Client.audiences.create` takes `CreateAudienceRequest` instead of
+  an open `PlatformPayload`. It accepts inline `members`, or `fileId` with
+  `mapping` for a spreadsheet import, and returns the audience with its import
+  counts and up to 20 rejected rows.
+
+- Added campaign recipients on both surfaces.
+  `MessagingClient.campaigns.listRecipients` and `addRecipients`, and
+  `Client.campaigns.addRecipients`, append up to 1,000 recipients to a campaign
+  that has not started sending and report duplicate and invalid entries.
+  `CreateCampaignRequest` accepts inline `recipients`.
+
+- Added `Client.audiences.addMembers`, `listMembers` and `deleteMember` for
+  audience membership.
+
+- Added `Client.optOuts.getSettings` and `updateSettings` for the
+  organization's STOP/START keyword capture.
+
+- Added `campaign_throughput_capped` to `POLYMORFA_ERROR_CODES`. Campaign
+  launch and resume refuse with it when the project is over its send rate.
+
+- Added the `contact.opted_out` and `contact.opted_in` webhook events with the
+  exported `ContactOptPayload`. Registered `bansafe.health_changed` and
+  `bansafe.risk_changed`, which the contract already defined, with
+  `BanSafeHealthChangedPayload` and `BanSafeRiskChangedPayload`.
+
 - Client rules: `ClientRules` and `SetClientRulesRequest` add
   `conversationTtlSeconds`, the seconds a sender stays replyable in
   `conversation` mode (300 to 604800; the API default is 86400).

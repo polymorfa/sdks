@@ -108,6 +108,24 @@ describe("Client opt-outs", () => {
     expect(requests[1]?.headers["idempotency-key"]).toBe("opt-out-1");
     expect(requests[2]?.body).toBe('{"phones":["+1 555","+44 20"]}');
   });
+
+  it("reads and replaces the organization keyword settings", async () => {
+    const { client, requests } = await platformServer();
+    await client.optOuts.getSettings();
+    await client.optOuts.updateSettings({
+      enabled: true,
+      optOutKeywords: ["STOP", "BAJA"],
+      optInKeywords: ["START"],
+    });
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /platform/optouts/settings",
+      "PUT /platform/optouts/settings",
+    ]);
+    expect(requests[1]?.body).toBe(
+      '{"enabled":true,"optOutKeywords":["STOP","BAJA"],"optInKeywords":["START"]}',
+    );
+  });
 });
 
 describe("Client audiences", () => {
@@ -132,6 +150,46 @@ describe("Client audiences", () => {
     expect(requests[1]?.body).toBe('{"name":"August"}');
     expect(requests[1]?.headers["idempotency-key"]).toBe("audience-1");
     expect(requests[4]?.body).toBe('{"filename":"audience.csv"}');
+  });
+
+  it("imports a spreadsheet through fileId and mapping", async () => {
+    const { client, requests } = await platformServer();
+    await client.audiences.create({
+      name: "August",
+      source: "csv",
+      fileId: "upload_1",
+      mapping: { phone: "Phone", variables: { firstName: "First name" } },
+    });
+
+    expect(requests[0]?.body).toBe(
+      '{"name":"August","source":"csv","fileId":"upload_1","mapping":{"phone":"Phone","variables":{"firstName":"First name"}}}',
+    );
+  });
+
+  it("appends, pages, and removes members on the encoded member routes", async () => {
+    const { client, requests } = await platformServer();
+    await client.audiences.addMembers(
+      "list/a",
+      { members: [{ phone: "+1 555", variables: { plan: "pro" } }] },
+      { idempotencyKey: "members-1" },
+    );
+    await client.audiences.listMembers("list/a", {
+      cursor: "cur/1",
+      limit: 50,
+    });
+    await client.audiences.listMembers("list/a");
+    await client.audiences.deleteMember("list/a", "+1/555");
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "POST /platform/audiences/list%2Fa/members",
+      "GET /platform/audiences/list%2Fa/members?cursor=cur%2F1&limit=50",
+      "GET /platform/audiences/list%2Fa/members",
+      "DELETE /platform/audiences/list%2Fa/members/%2B1%2F555",
+    ]);
+    expect(requests[0]?.body).toBe(
+      '{"members":[{"phone":"+1 555","variables":{"plan":"pro"}}]}',
+    );
+    expect(requests[0]?.headers["idempotency-key"]).toBe("members-1");
   });
 });
 
@@ -196,5 +254,29 @@ describe("Client campaigns", () => {
       '{"reason":"duplicate"}',
       '{"reason":"requeue"}',
     ]);
+  });
+
+  it("pages recipients and filters them by status", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.recipients("campaign/a", {
+      projectId: "project/a",
+      status: "skipped",
+      cursor: "cur/1",
+      limit: 100,
+    });
+    await client.campaigns.addRecipients(
+      "campaign/a",
+      { projectId: "project/a", recipients: [{ phone: "+1 555" }] },
+      { idempotencyKey: "recipients-1" },
+    );
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /platform/campaigns/campaign%2Fa/recipients?projectId=project%2Fa&status=skipped&cursor=cur%2F1&limit=100",
+      "POST /platform/campaigns/campaign%2Fa/recipients",
+    ]);
+    expect(requests[1]?.body).toBe(
+      '{"projectId":"project/a","recipients":[{"phone":"+1 555"}]}',
+    );
+    expect(requests[1]?.headers["idempotency-key"]).toBe("recipients-1");
   });
 });

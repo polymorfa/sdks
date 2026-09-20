@@ -2,26 +2,51 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`2259a1fd331c6ddbc8ad56a04333100ebfce7c2e` on monorepo `dev`. `source.json` records the
-original paths and SHA-256 hashes. `coverage.json` uses the same source
-revision.
+`a1be7b131b098aa7a7f827094b05b65cda809eb0` on branch
+`t3code/campaigns-exploration`. That commit is a coordinated PR dependency
+(polymorfa/polymorfa#232, Campaigns P0): it is pushed to origin and is not yet
+merged to monorepo `dev`. `source.json` records the original paths and SHA-256
+hashes. `coverage.json` uses the same source revision.
 
-Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
-`MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
-merged monorepo `dev`, the Calls diagnostics route
-(`voipReportCallDiagnostics`) is back with a refreshed fingerprint; the SDK
-keeps `MessagingClient.voip.report` covering it. The Console-only `getCall`
-response also picked up a refreshed fingerprint (still excluded). No
-operations were added or removed by this re-sync.
+This revision adds the Campaigns P0 operations. Audiences gain member
+management (`POST`/`GET /platform/audiences/{listId}/members` and
+`DELETE .../{phone}`), campaigns gain recipient append and listing on both
+surfaces, and the organization gains STOP/START keyword settings
+(`GET`/`PUT /platform/optouts/settings`). All eight are covered by
+`Client.audiences`, `Client.campaigns`, `Client.optOuts` and
+`MessagingClient.campaigns`.
+
+Two campaign contracts changed in a way callers can observe.
+`GET /platform/campaigns/{campaignId}/recipients` answers with `{ data, page }`
+and a `status` filter instead of a bare array, and each recipient carries
+`sentAt`, `deliveredAt`, `readAt`, `failedAt` and `respondedAt`;
+`Client.campaigns.recipients` was updated to match. Campaign stop answers with
+`CampaignStopOperation`, whose `operationId` is null when the campaign had no
+active delivery run and was cancelled immediately;
+`MessagingClient.campaigns.stop` no longer shares `CampaignOperationResponse`.
+Campaign create on both surfaces accepts inline `recipients`.
+
+The shared public error enum grew again with the campaign refusal codes, so 172
+operations have a refreshed fingerprint. Every success-path change was
+reviewed: thirteen are the campaign and audience operations above, and the
+fourteenth is `GET /platform/projects/{projectId}/events/stream`, where the
+frame schemas were renamed from `EventStream*Frame` to
+`PlatformAccessEventStream*Frame` with no change to the frames themselves. No
+operation was removed.
+
+The webhook catalog adds `contact.opted_out` and `contact.opted_in` with the
+exported `ContactOptPayload`. `bansafe.health_changed` and
+`bansafe.risk_changed`, which the contract already defined, are now registered
+too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        308 |
+| Covered             |        316 |
 | Missing             |          0 |
 | Excluded            |        116 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        424 |
+| Total               |        432 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

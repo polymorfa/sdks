@@ -34,10 +34,7 @@ export const POST = route("admin", async ({ body }) => {
     case "listMembers":
       return audiences.listMembers(text(body, "listId"));
     case "deleteMember":
-      return audiences.deleteMember(
-        text(body, "listId"),
-        text(body, "phone"),
-      );
+      return audiences.deleteMember(text(body, "listId"), text(body, "phone"));
     default:
       return unknownAction(action(body));
   }
