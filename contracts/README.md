@@ -2,10 +2,22 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`10a913519fa6c715d63fbe0a49aded30a676fae8` on monorepo branch
+`b2dc135afbed40e79edd91b0a1a49f702dd3e1f5` on monorepo branch
 `t3code/calls-sip-address`, a coordinated PR dependency that is not yet merged
 to `dev`. `source.json` records the original paths and SHA-256 hashes.
 `coverage.json` uses the same source revision.
+
+Revision `b2dc135a` declares the `sip_not_hosted` member's `host` and `rtp` as
+`nullable: true` beside the `enum: [null]` they already carried. That moves the
+same two fingerprints as the previous revision, `getSipEndpoint` and the
+excluded `getConsoleSipEndpoint`; both were reviewed and the resolved shapes
+differ only by those two keywords. `null` was already the single permitted
+value, so `SipEndpointNotHosted` keeps `host: null` and `rtp: null` and no SDK
+type changes. The revision also merges monorepo `dev`, which adds no Messaging
+or Platform operation: the MCP management-tools work lands in
+`apps/api/docs/mcp/tools-reference.md`, not in either OpenAPI document. The
+Messaging document is byte identical to `10a91351`, and the reviewed counts are
+unchanged.
 
 Revision `10a91351` splits the SIP address response on `status`:
 `PlatformAccessSipEndpoint` is a `oneOf` of `PlatformAccessSipEndpointHosted`,

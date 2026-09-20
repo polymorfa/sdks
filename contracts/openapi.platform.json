@@ -33084,7 +33084,8 @@
             "description": "Always null: there is no address.",
             "enum": [
               null
-            ]
+            ],
+            "nullable": true
           },
           "transports": {
             "type": "array",
@@ -33099,7 +33100,8 @@
             "description": "Always null.",
             "enum": [
               null
-            ]
+            ],
+            "nullable": true
           }
         },
         "required": [
