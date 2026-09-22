@@ -534,8 +534,9 @@ check.data.data.refusal; // null, or the first reason a call would fail
   `call_permission_required`, or `call_limit_reached`. `permission` is `null`
   on linked-device Numbers. A placement made afterwards runs the same checks
   again.
-- Both require a server credential. On a linked-device Number they fail with
-  `409 unsupported_for_connection`.
+- Both require a server credential. `retrieveCallPermission` fails with
+  `409 unsupported_for_connection` on a linked-device Number; `check` supports
+  linked-device Numbers and returns `permission: null` for them.
 
 Permission changes arrive as the `call.permission_changed` webhook event with a
 `CallPermissionChangedPayload`: the `conversation`, the new `status`, the

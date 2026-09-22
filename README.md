@@ -354,8 +354,10 @@ check.data.data.refusal; // null, or the first reason a call would fail
 `retrieveCallPermission` asks WhatsApp during the request: `fresh` is `false`
 when WhatsApp could not be reached and the stored state is returned with
 `actions: null`. `check` runs the same checks a placement runs without placing
-a call or reserving anything. Both need a server credential; linked-device
-Numbers answer `409 unsupported_for_connection`.
+a call or reserving anything. Both need a server credential.
+`retrieveCallPermission` answers `409 unsupported_for_connection` on a
+linked-device Number; `check` supports linked-device Numbers and returns
+`permission: null` for them.
 
 A send refused by WhatsApp's request limit raises `PolymorfaRateLimitError`
 with `code` `call_permission_request_limited`, `rateLimitReason`
