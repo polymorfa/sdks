@@ -1,3 +1,4 @@
+import { FunctionsResource } from "./platform/functions.js";
 import { SessionConfigurationResource } from "./platform/session-configuration.js";
 import {
   assertServerRuntime,
@@ -80,8 +81,14 @@ export interface OrganizationControlPlaneResources {
   readonly sessions: PlatformSessionsResource;
 }
 
+export interface ProjectControlPlaneResources {
+  readonly functions: FunctionsResource;
+}
+
 export type Client<O extends ClientOwner = "organization"> = ClientBase<O> &
-  (O extends "organization" ? OrganizationControlPlaneResources : object);
+  (O extends "organization"
+    ? OrganizationControlPlaneResources
+    : ProjectControlPlaneResources);
 
 export interface ClientConstructor {
   new (options: OrganizationClientOptions): Client<"organization">;
@@ -89,6 +96,8 @@ export interface ClientConstructor {
 }
 
 class ClientImplementation implements ClientBase<ClientOwner> {
+  /** Installed only for project instances; the public conditional type reflects that. */
+  declare readonly functions: FunctionsResource;
   readonly owner: ClientOwner;
   readonly projectId: string | null;
   readonly events: EventsResource<ClientOwner>;
@@ -158,6 +167,11 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       projectId === null
         ? new RawClient(this.#transport)
         : new ConfinedProjectRawClient(this.#transport, projectId);
+
+    if (projectId !== null)
+      Object.assign(this, {
+        functions: new FunctionsResource(this.#transport, projectId),
+      });
 
     if (this.owner === "organization") {
       Object.assign(this, {

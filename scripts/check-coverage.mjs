@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -28,25 +30,32 @@ const COVERAGE_STATUSES = new Set([
   "excluded",
 ]);
 
-try {
-  const args = parseArguments(process.argv.slice(2));
-  const ledger = readJson(args.ledger);
-  const actual = [
-    ...extractOperations("messaging", readJson(args.messaging)),
-    ...extractOperations("platform", readJson(args.platform)),
-  ];
-  const report = compareCoverage(actual, ledger, args.strict === true);
-  if (args.report !== undefined) {
-    writeFileSync(args.report, `${JSON.stringify(report, null, 2)}\n`);
-  } else {
-    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+function main() {
+  try {
+    const args = parseArguments(process.argv.slice(2));
+    const ledger = readJson(args.ledger);
+    const actual = [
+      ...extractOperations("messaging", readJson(args.messaging)),
+      ...extractOperations("platform", readJson(args.platform)),
+    ];
+    const report = compareCoverage(actual, ledger, args.strict === true);
+    if (args.report !== undefined) {
+      writeFileSync(args.report, `${JSON.stringify(report, null, 2)}\n`);
+    } else {
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    }
+  } catch (error) {
+    process.stderr.write(
+      `${error instanceof Error ? error.message : String(error)}\n`,
+    );
+    process.exitCode = 1;
   }
-} catch (error) {
-  process.stderr.write(
-    `${error instanceof Error ? error.message : String(error)}\n`,
-  );
-  process.exitCode = 1;
 }
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+)
+  main();
 
 function parseArguments(argv) {
   const values = {};
@@ -85,7 +94,7 @@ function readJson(path) {
   }
 }
 
-function extractOperations(family, document) {
+export function extractOperations(family, document) {
   if (
     document === null ||
     typeof document !== "object" ||
@@ -135,7 +144,7 @@ function extractOperations(family, document) {
   );
 }
 
-function compareCoverage(actual, ledger, strict) {
+export function compareCoverage(actual, ledger, strict) {
   if (
     ledger === null ||
     typeof ledger !== "object" ||

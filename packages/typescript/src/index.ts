@@ -886,3 +886,5 @@ export {
   type EmbeddedSignupRequest,
   type EmbeddedSignupResponse,
 } from "./messaging/onboarding.js";
+
+export * from "./platform/functions.js";
