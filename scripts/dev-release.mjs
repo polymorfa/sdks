@@ -12,7 +12,8 @@
 // browser client header), so pack also rewrites that literal inside each
 // package's dist/ and fails if a packed tarball still contains it. It edits
 // the package.json and dist/ files in place; run it on a disposable checkout (CI) or
-// restore them with `git checkout -- packages/*/package.json` afterwards.
+// restore them afterwards with `git checkout -- packages/*/package.json`
+// followed by `npm run build:workspaces` to rebuild dist/.
 import { execFileSync } from "node:child_process";
 import {
   existsSync,
@@ -49,7 +50,8 @@ function distFiles(dir) {
   if (!existsSync(dir)) return [];
   return readdirSync(dir, { recursive: true, withFileTypes: true })
     .filter((e) => e.isFile() && textFile.test(e.name))
-    .map((e) => join(e.parentPath, e.name));
+    // Dirent.parentPath is Node >=20.12; older Node 20 releases expose .path.
+    .map((e) => join(e.parentPath ?? e.path, e.name));
 }
 
 // Replaces every occurrence of the repository version in a package's built
