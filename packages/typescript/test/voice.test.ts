@@ -286,6 +286,20 @@ describe("voice audio library", () => {
     expect(sent(fetch, 1).init.body).toBeInstanceOf(Blob);
   });
 
+  it.each(["application/json", "audio/flac"])(
+    "refuses an unsupported Blob content type %s before creating an asset",
+    async (contentType) => {
+      const fetch = uploadFlow();
+      await expect(
+        projectClient(fetch).voice.audio.upload({
+          name: "Greeting",
+          body: new Blob(["audio"], { type: contentType }),
+        }),
+      ).rejects.toBeInstanceOf(PolymorfaValidationError);
+      expect(fetch).not.toHaveBeenCalled();
+    },
+  );
+
   it("streams a body with an explicit size", async () => {
     const fetch = uploadFlow();
     const body = new ReadableStream<Uint8Array>({

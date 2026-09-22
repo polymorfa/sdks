@@ -1,18 +1,36 @@
 # Contract coverage
 
-Current checkpoint: the Messaging and Platform snapshots are byte-identical to
-API PR #227 commit `b361dab557d43de9e1eed589d68adcfe92268e16` on
-`t3code/voice-audio-library`. `source.json` records the exact paths and hashes
-with `published: false`. This API source is not merged to monorepo `dev`.
+The Messaging and Platform snapshots byte-match pending API PR #227 commit
+`b361dab557d43de9e1eed589d68adcfe92268e16` on `t3code/voice-audio-library`.
+`source.json` records both paths and hashes with `published: false`. This
+source is not merged to monorepo `dev`.
 
-SDK `dev` at `8392f66b4df0b0fee3403e27e3d2914516b0e243` is merged into this
-branch. **Contract reconciliation is unfinished:** the coverage ledger, older
-pending-code/event helper, and parity-test expectations still describe the
-previous snapshots. Do not merge or publish this SDK checkpoint. Complete
-those checks against the exact pending source, then re-pin to the final
-monorepo `dev` merge commit after API #227 merges. SDK #282 remains the separate
-BanSafe type dependency. The counts and revision notes below describe the prior
-ledger and are historical until that reconciliation is complete.
+SDK `dev` at `8392f66b4df0b0fee3403e27e3d2914516b0e243` is merged here.
+The 13 public voice routes map to the existing `Client.voice.audio` and
+`Client.voice.providerCredentials` methods; their 13 Console counterparts
+remain excluded. The ledger, error-code checks and real webhook schema parity
+now use the exact snapshots. The obsolete pending-code/event helper is removed.
+
+| Status              | Operations |
+| ------------------- | ---------: |
+| Covered             |        330 |
+| Missing             |          5 |
+| Excluded            |        124 |
+| Partial             |          0 |
+| Changed fingerprint |          0 |
+| Total               |        459 |
+
+The accepted baseline is monorepo `63111fec` recorded in SDK #282. This
+pending source adds the voice operations, schemas and events, plus public
+error codes; existing operation fingerprints changed only through the shared
+error schemas. The five missing methods remain owned by SDK #278 (two
+retention routes) and SDK #281 (three analytics routes).
+
+SDK #282 remains a required typed BanSafe dependency. Its error-code,
+restriction-webhook and Calls-parser fixes are not duplicated here. Merge it
+through SDK `dev`, then re-pin both snapshots and the ledger to the final
+monorepo `dev` merge of API #227 before SDK merge/publication. An installed
+method does not enable the feature or establish an available audience.
 
 Revision `576176a6` publishes the operations lifecycle on the Platform API. The
 eight operation routes moved from `/console` to `/platform`, so their ledger
@@ -95,20 +113,26 @@ Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
 successful live call.
 
-## Pending contract: Voice Automation audio (`voice-audio-v1`)
+## Voice contract alignment
 
-`Client.voice` implements contract revision `voice-audio-v1` from
-polymorfa/polymorfa branch `t3code/voice-audio-library` (based on `dev`
-`91444480e`). That branch had not published its OpenAPI files when the SDK side
-was written, so the snapshots, `source.json` and `coverage.json` above do not
-contain the 13 `/platform/voice/*` operations, the two `voice.*` webhook events
-or the eight voice error codes. The ledger does not count those operations as
-covered. `packages/typescript/test/support/pending-contract.ts` lists the codes
-and events the SDK types ahead of the snapshot; the parity tests add them
-explicitly and fail once a re-synced snapshot contains one. The next re-sync
-must copy the published files, add ledger rows mapping the operations to
-`Client.voice.audio` and `Client.voice.providerCredentials`, and empty that
-list. Other languages have no voice resources.
+`Client.voice` retains the existing upload, completion, TTS, retrieval,
+update, deletion, preview and provider-credential operations. Upload requests
+and filters use closed API input enums; provider model/voice inputs follow
+the owning API's validated choices. Asset, credential and upload response
+fields are checked for required and nullable parity against these snapshots.
+The preview content type is `audio/ogg`.
+
+Response values still pass through. The API documents unknown audio statuses
+as unusable and unknown credential statuses as invalid; the SDK preserves
+those values for callers to handle. `voice.asset_ready` and
+`voice.asset_failed` use the real Messaging payload schemas in parity tests.
+No fictitious pending events or error codes are added to those schemas.
+
+The source remains an explicit pending API dependency. Keep the final
+merged-source pin, package publication, CLI migration and release audience
+checks separate from this local reconciliation. Voice resources are
+implemented in the TypeScript server SDK; no browser or other-language
+voice management resource is claimed.
 
 Revision `2259a1fd` adds the project event stream. `Client.events.stream`
 covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
@@ -152,15 +176,17 @@ The raw LID resolver is replaced by `MessagingClient.identities.resolve`.
 
 The ledger reconciles moved Messaging and Platform paths against the exact
 source revision. Component references are resolved before fingerprinting, so a
-referenced request or response change cannot pass unnoticed. Removed console-only
-operation polling and unsupported browser handoff methods are not SDK APIs.
+referenced request or response change cannot pass unnoticed. Operation polling
+uses the public Platform routes through `Client.operations`; obsolete Console
+paths and unsupported browser handoff methods remain excluded.
 
 BanSafe is reconciled against these same snapshots. `Client.banSafe`,
 `Client.projects`, and `Client.sessions` cover the 25 Platform Health,
 telemetry, findings, enforcement, incident, claim, and settings operations.
 `MessagingClient.banSafe` covers the 10 Messaging Safe Mode, warm-up, Ban
 Insurance evidence, and Health policy operations. Finding acknowledgement and
-enforcement appeals are Console-only and stay excluded. No BanSafe gap remains.
+enforcement appeals are Console-only and stay excluded. SDK #282 still owns the
+pending typed restriction-event, error-code and Calls-parser alignment.
 
 The Platform `BanSafeNumberDetail` schema at this revision lists `sessionId`,
 `session`, `phoneNumber`, `projectId`, and `enforcement` as required but omits

@@ -8,7 +8,9 @@ Next.js server helpers, and a production-gated developer assistant. It follows
 pending Messaging and Platform snapshots from API PR #227 at
 `b361dab557d43de9e1eed589d68adcfe92268e16` on
 `t3code/voice-audio-library`. This source is not merged to monorepo `dev`;
-contract reconciliation is in progress (see `contracts/README.md`).
+the typed voice methods and ledger are reconciled to this pending source.
+Final API re-pinning and SDK #282 integration remain required before merging
+or publishing this change (see `contracts/README.md`).
 Graph-compatible APIs are outside this SDK's initial scope.
 
 ## Package architecture

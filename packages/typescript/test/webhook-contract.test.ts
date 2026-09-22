@@ -12,10 +12,6 @@ import {
   type OrganizationWebhookDeliveryAttempt,
   type WebhookPayloadMap,
 } from "../src/index.js";
-import {
-  PENDING_WEBHOOK_EVENTS,
-  type PendingWebhookEvent,
-} from "./support/pending-contract.js";
 
 interface Schema {
   readonly $ref?: string;
@@ -178,10 +174,56 @@ const campaign = { campaignId: "cmp_1" } as const;
 
 type P = WebhookPayloadMap;
 const PAYLOADS: {
-  readonly [
-    K in Exclude<KnownWebhookEventType, LegacyEventType | PendingWebhookEvent>
-  ]: Shape<P[K]>;
+  readonly [K in Exclude<KnownWebhookEventType, LegacyEventType>]: Shape<P[K]>;
 } = {
+  "voice.asset_ready": shape<P["voice.asset_ready"]>()(
+    {
+      eventId: IDS.event,
+      occurredAt: AT,
+      organizationId: IDS.organization,
+      projectId: IDS.project,
+      assetId: "018f0000-0000-7000-8000-000000000001",
+      name: "Greeting",
+      source: "upload",
+      durationMs: 1000,
+      contentSha256: "a".repeat(64),
+      originalFormat: "mp3",
+    },
+    [
+      "eventId",
+      "occurredAt",
+      "organizationId",
+      "projectId",
+      "assetId",
+      "name",
+      "source",
+      "durationMs",
+      "contentSha256",
+      "originalFormat",
+    ],
+  ),
+  "voice.asset_failed": shape<P["voice.asset_failed"]>()(
+    {
+      eventId: IDS.event,
+      occurredAt: AT,
+      organizationId: IDS.organization,
+      projectId: IDS.project,
+      assetId: "018f0000-0000-7000-8000-000000000001",
+      name: "Greeting",
+      source: "upload",
+      failureReason: "too_long",
+    },
+    [
+      "eventId",
+      "occurredAt",
+      "organizationId",
+      "projectId",
+      "assetId",
+      "name",
+      "source",
+      "failureReason",
+    ],
+  ),
   "customer.created": shape<P["customer.created"]>()(
     customer,
     customerRequired,
@@ -613,6 +655,7 @@ type LegacyEventType = Exclude<
   | `customer.${string}`
   | `bansafe.${string}`
   | `campaign.${string}`
+  | `voice.${string}`
   | "message.failed"
   | "template.status"
 >;
@@ -635,13 +678,7 @@ const sign = (body: Buffer) =>
 describe("webhook catalog contract", () => {
   it("lists exactly the events the pinned Messaging contract defines", () => {
     const spec = [...specEvents().keys()];
-    for (const type of PENDING_WEBHOOK_EVENTS) {
-      // Remove the event from pending-contract.ts once a snapshot publishes it.
-      expect(spec, type).not.toContain(type);
-    }
-    expect([...spec, ...PENDING_WEBHOOK_EVENTS].sort()).toEqual(
-      [...KNOWN_WEBHOOK_EVENT_TYPES].sort(),
-    );
+    expect(spec.sort()).toEqual([...KNOWN_WEBHOOK_EVENT_TYPES].sort());
   });
 
   it.each(Object.entries(PAYLOADS))(

@@ -173,20 +173,17 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "cdc7ec09a32309ee8233d9f8a3007eea18203c6e",
-      total: 429,
-      covered: 317,
+      sourceCommit: "b361dab557d43de9e1eed589d68adcfe92268e16",
+      total: 459,
+      covered: 330,
       partial: 0,
-      // Call analytics and call record export arrived with the operations
-      // lifecycle re-sync; Client.calls implements them in a separate pull request.
-      missing: 3,
-      excluded: 109,
+      // Retention (#278) and analytics (#281) remain separate SDK dependencies.
+      missing: 5,
+      excluded: 124,
       changed: 0,
     });
-    // The eight excluded console-only operation-management routes were
-    // replaced by their public /platform equivalents (Operations in the
-    // Platform API), which the SDK does not cover yet (tracked as missing
-    // above), so there is no unresolved removal left.
+    // Operations use their covered public /platform routes; superseded
+    // Console paths have no unresolved removal left.
     const resolutions = (result.report?.resolutions ?? []) as Array<{
       operationId: string;
       status: string;

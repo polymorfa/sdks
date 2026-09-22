@@ -455,12 +455,15 @@ of another project with `PolymorfaNotFoundError`. Conflicts raise
 `PolymorfaConflictError` with `code` `sip_trunk_in_use`,
 `sip_trunk_revision_conflict`, `sip_trunk_limit`, or `state_conflict`.
 
-## Voice audio library (beta)
+## Voice audio library
 
-`Client.voice` is part of the Voice Automation beta (`calls.voice-automation`).
-Only enrolled teams can use it: other teams get `PolymorfaAuthorizationError`
-with `code` `voice_not_enabled` on every write except `delete`. Reads,
-previews and deletes keep working after a team leaves the beta. Credentials
+`Client.voice` is prepared for the pending Voice Automation API. The API
+requires `calls.voice-automation` enrollment for writes except `delete`;
+without it, writes fail with `PolymorfaAuthorizationError` and
+`code: "voice_not_enabled"`. Reads, previews and deletes remain available
+after enrollment withdrawal. These methods do not enable an audience or
+establish deployed availability. Final API re-pinning is required before
+this SDK change publishes. Credentials
 need `voice:read` to read and `voice:manage` to change anything; client tokens
 are refused. Team clients name the project on `audio.list`,
 `audio.createUpload`, `audio.upload` and `audio.synthesize`; project clients
@@ -551,9 +554,12 @@ Errors: `voice_not_enabled` (403), `gate_limit_reached` (402,
 `PolymorfaPaymentRequiredError`), `provider_credential_invalid` (422),
 `provider_unavailable` and `voice_unavailable` (503), and `asset_not_ready`,
 `voice_asset_in_use` and `voice_asset_revision_conflict` (409,
-`PolymorfaConflictError`). Status and reason fields such as
-`VoiceAudioStatus` accept values a newer API adds; treat a value missing from
-`VOICE_AUDIO_STATUSES` and the other `VOICE_*` lists as "other".
+`PolymorfaConflictError`). Input status filters, upload content types,
+provider names and TTS selections use the values accepted by the API.
+Response fields preserve unknown values: treat an unrecognized audio status
+as unusable and an unrecognized credential status as invalid. The `VOICE_*`
+lists identify the known response values. Preview responses have
+`contentType: "audio/ogg"`.
 
 The voice resources are available only in this TypeScript SDK.
 

@@ -17,9 +17,8 @@ import {
   unwrapResponse,
 } from "./response.js";
 
-// Closed API enums. The API can add values, so each public type also accepts
-// any string: treat a value missing from the matching `VOICE_*` list as
-// "other" rather than failing.
+// Response enums preserve values returned by the API. Request fields use
+// the closed known-value unions accepted by the pinned API.
 
 export const VOICE_AUDIO_STATUSES = [
   "pending_upload",
@@ -94,8 +93,7 @@ export const VOICE_AUDIO_UPLOAD_CONTENT_TYPES = [
 ] as const;
 export type KnownVoiceAudioUploadContentType =
   (typeof VOICE_AUDIO_UPLOAD_CONTENT_TYPES)[number];
-export type VoiceAudioUploadContentType =
-  KnownVoiceAudioUploadContentType | (string & {});
+export type VoiceAudioUploadContentType = KnownVoiceAudioUploadContentType;
 
 /** ElevenLabs models. `eleven_multilingual_v2` is the default. */
 export const ELEVENLABS_TTS_MODELS = [
@@ -103,8 +101,7 @@ export const ELEVENLABS_TTS_MODELS = [
   "eleven_flash_v2_5",
   "eleven_turbo_v2_5",
 ] as const;
-export type ElevenLabsTtsModel =
-  (typeof ELEVENLABS_TTS_MODELS)[number] | (string & {});
+export type ElevenLabsTtsModel = (typeof ELEVENLABS_TTS_MODELS)[number];
 
 /** OpenAI models. `gpt-4o-mini-tts` is the default. */
 export const OPENAI_TTS_MODELS = [
@@ -112,7 +109,7 @@ export const OPENAI_TTS_MODELS = [
   "tts-1",
   "tts-1-hd",
 ] as const;
-export type OpenAiTtsModel = (typeof OPENAI_TTS_MODELS)[number] | (string & {});
+export type OpenAiTtsModel = (typeof OPENAI_TTS_MODELS)[number];
 
 export const OPENAI_TTS_VOICES = [
   "alloy",
@@ -127,7 +124,7 @@ export const OPENAI_TTS_VOICES = [
   "shimmer",
   "verse",
 ] as const;
-export type OpenAiTtsVoice = (typeof OPENAI_TTS_VOICES)[number] | (string & {});
+export type OpenAiTtsVoice = (typeof OPENAI_TTS_VOICES)[number];
 
 /** Largest upload the API accepts: 16 MiB. */
 export const VOICE_AUDIO_MAX_UPLOAD_BYTES = 16_777_216;
@@ -188,7 +185,7 @@ export interface VoiceAudioUploadCreated {
 /** A short-lived link to Opus-in-Ogg audio (16 kHz mono), valid for 5 minutes. */
 export interface VoiceAudioPreview {
   readonly url: string;
-  readonly contentType: string;
+  readonly contentType: "audio/ogg";
   readonly expiresAt: string;
 }
 
@@ -214,7 +211,7 @@ export interface VoiceResourceDeleted {
 }
 
 export interface ListVoiceAudioParams {
-  readonly status?: VoiceAudioStatus;
+  readonly status?: KnownVoiceAudioStatus;
   readonly cursor?: string;
   /** 1 to 100. The API default is 50. */
   readonly limit?: number;
@@ -293,7 +290,7 @@ export interface ListVoiceProviderCredentialsParams {
 }
 
 interface CreateVoiceProviderCredentialBase {
-  readonly provider: VoiceProvider;
+  readonly provider: KnownVoiceProvider;
   /** 1 to 100 characters. */
   readonly label: string;
   /** Write-only, 1 to 512 characters. Never returned, logged or echoed in errors. */
@@ -318,9 +315,10 @@ type CredentialListArguments<O extends ClientOwner> = O extends "project"
   : [params?: ListVoiceProviderCredentialsParams, options?: RequestOptions];
 
 /**
- * Voice Automation (beta). Available only to teams enrolled in the
- * `calls.voice-automation` beta; other teams get `voice_not_enabled` on
- * writes. Reads, previews and deletes keep working after withdrawal.
+ * Prepared for the pending Voice Automation API. Writes require the
+ * `calls.voice-automation` beta; other teams get `voice_not_enabled`.
+ * Reads, previews and deletes keep working after withdrawal. An installed
+ * resource does not grant access or establish an enabled audience.
  */
 export class VoiceResource<O extends ClientOwner> {
   readonly audio: VoiceAudioResource<O>;
@@ -434,12 +432,21 @@ export class VoiceAudioResource<O extends ClientOwner> {
         "contentType",
       );
     }
+    if (
+      !(VOICE_AUDIO_UPLOAD_CONTENT_TYPES as readonly string[]).includes(
+        contentType,
+      )
+    ) {
+      throw new PolymorfaValidationError(
+        "The upload content type must be MP3, WAV, OGG or M4A audio.",
+      );
+    }
     const { body, sizeBytes } = uploadBody(input);
     const created = await this.#createUpload(
       projectId,
       {
         name: input.name,
-        contentType,
+        contentType: contentType as KnownVoiceAudioUploadContentType,
         sizeBytes,
         ...(input.retentionDays === undefined
           ? {}

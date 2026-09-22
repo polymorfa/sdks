@@ -9,7 +9,6 @@ import {
   type PolymorfaErrorCode,
 } from "../src/index.js";
 import { HttpTransport } from "../src/transport/http.js";
-import { PENDING_ERROR_CODES } from "./support/pending-contract.js";
 
 const REQUEST_ID = "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30";
 const LOG_URL = `https://www.polymorfa.com/console/acme/support-bot/logs/api?request_id=${REQUEST_ID}`;
@@ -192,13 +191,7 @@ describe("error codes", () => {
         .properties.code.enum,
       ...documentedInProse,
     ]);
-    for (const code of PENDING_ERROR_CODES) {
-      // Remove the code from pending-contract.ts once a snapshot publishes it.
-      expect(published.has(code), code).toBe(false);
-    }
-    expect([...POLYMORFA_ERROR_CODES].sort()).toEqual(
-      [...published, ...PENDING_ERROR_CODES].sort(),
-    );
+    expect([...POLYMORFA_ERROR_CODES].sort()).toEqual([...published].sort());
   });
 
   it("accepts codes added by a newer API", () => {
