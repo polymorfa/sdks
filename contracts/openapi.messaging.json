@@ -966,11 +966,24 @@
         "type": "object",
         "properties": {
           "reason": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "banned",
+              "device_removed",
+              "unknown"
+            ],
+            "description": "Why the session was logged out: `banned` when WhatsApp banned the account, `device_removed` when the linked device was removed from the phone or from another device, `unknown` otherwise (including a locked account).",
+            "example": "device_removed"
+          },
+          "code": {
+            "type": "integer",
+            "description": "WhatsApp's logout code: 401 (removed), 403 (locked) or 406 (banned); 0 when WhatsApp gave none.",
+            "example": 401
           }
         },
         "required": [
-          "reason"
+          "reason",
+          "code"
         ]
       },
       "SessionLoggedOutEvent": {
@@ -1947,7 +1960,7 @@
           },
           "reason": {
             "type": "string",
-            "description": "Termination reason: user_hangup | timeout | lost_connection | rejected | capacity | pod_lost | connection_failed | upstream_failed.",
+            "description": "Termination reason: user_hangup | timeout | lost_connection | rejected | capacity | pod_lost | connection_failed | upstream_failed | call_restricted (WhatsApp refused the call because the number is restricted to calling people it has already chatted with).",
             "example": "user_hangup"
           },
           "direction": {
@@ -5016,9 +5029,15 @@
           "previousBand": {
             "type": "string",
             "nullable": true,
-            "maxLength": 32,
-            "description": "Previous band, or null for the first evaluation of the number.",
-            "example": "good"
+            "enum": [
+              "good",
+              "fair",
+              "poor",
+              "failing",
+              "unknown",
+              null
+            ],
+            "description": "Previous band, or null for the first evaluation of the number."
           },
           "state": {
             "type": "string",
@@ -7126,7 +7145,8 @@
                   "bansafe_daily_allowance_reached",
                   "bansafe_accounting_unavailable",
                   "bansafe_send_outcome_unknown",
-                  "campaigns_not_entitled"
+                  "campaigns_not_entitled",
+                  "number_restricted"
                 ]
               },
               "message": {
@@ -15978,6 +15998,7 @@
                     "call.missed",
                     "call.ended",
                     "session.status",
+                    "session.restriction_updated",
                     "template.status",
                     "bansafe.enforcement",
                     "bansafe.risk_changed"
@@ -16018,6 +16039,7 @@
               "call.missed",
               "call.ended",
               "session.status",
+              "session.restriction_updated",
               "template.status",
               "bansafe.enforcement",
               "bansafe.risk_changed"
@@ -16123,8 +16145,12 @@
               "user_hangup",
               "timeout",
               "lost_connection",
-              "rejected"
+              "rejected",
+              "call_restricted"
             ]
+          },
+          "restrictionActive": {
+            "type": "boolean"
           },
           "status": {
             "type": "string",
@@ -16203,6 +16229,7 @@
               "call.missed",
               "call.ended",
               "session.status",
+              "session.restriction_updated",
               "template.status",
               "bansafe.enforcement",
               "bansafe.risk_changed"
@@ -16224,6 +16251,86 @@
           "event"
         ],
         "additionalProperties": false
+      },
+      "SessionRestrictionUpdatedPayload": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "reachout_timelock"
+            ],
+            "description": "The restriction. `reachout_timelock`: the number can only message or call people it has already chatted with.",
+            "example": "reachout_timelock"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "True while the restriction applies.",
+            "example": true
+          },
+          "enforcementType": {
+            "type": "string",
+            "nullable": true,
+            "description": "WhatsApp's category for the restriction; null when inactive or not reported.",
+            "example": "DEFAULT"
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the restriction ends (ISO 8601); null when inactive or WhatsApp gave no end.",
+            "example": "2026-09-20T08:00:00Z"
+          },
+          "observedAt": {
+            "type": "string",
+            "description": "When the state was observed (ISO 8601).",
+            "example": "2026-09-19T08:00:00Z"
+          }
+        },
+        "required": [
+          "type",
+          "active",
+          "enforcementType",
+          "expiresAt",
+          "observedAt"
+        ]
+      },
+      "SessionRestrictionUpdatedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "session.restriction_updated"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/SessionRestrictionUpdatedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
       }
     },
     "securitySchemes": {
@@ -18976,7 +19083,7 @@
           "Calls"
         ],
         "summary": "Get a person's call permission",
-        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sessions:read`\n\nReturns whether the person has allowed this number to call them. On Cloud API numbers WhatsApp is asked on every request and the answer includes its limits on permission requests and calls. Linked-device numbers return `409 unsupported_for_connection`.",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `sessions:read`\n\nReturns whether the person has allowed this number to call them. On Cloud API numbers WhatsApp is asked on every request and the answer includes its limits on permission requests and calls. Linked-device numbers return `409 unsupported_for_connection`.",
         "security": [
           {
             "BearerAuth": []
@@ -19141,10 +19248,10 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
         },
         "x-protocols": [
-          "Linked Device API"
+          "Meta Cloud API"
         ]
       }
     },
@@ -19837,7 +19944,7 @@
             }
           },
           "403": {
-            "description": "`call_permission_required` when the recipient has not granted this business permission to call them, or the credential is not permitted",
+            "description": "`call_permission_required` when the recipient has not granted this business permission to call them, `number_restricted` when WhatsApp restricts the number to calling people it has already chatted with and the callee is not one of them (`Retry-After` gives the seconds until the restriction ends, when known), or the credential is not permitted",
             "content": {
               "application/json": {
                 "schema": {
@@ -20781,7 +20888,7 @@
             }
           },
           "403": {
-            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "description": "`number_restricted` when WhatsApp restricts the number to calling people it has already chatted with and the invitee is not one of them (`Retry-After` gives the seconds until the restriction ends, when known), or the credential is not permitted",
             "content": {
               "application/json": {
                 "schema": {
@@ -20790,13 +20897,13 @@
                 "example": {
                   "error": {
                     "type": "permission_error",
-                    "code": "permission_denied",
-                    "message": "The credential does not have access to this resource.",
+                    "code": "number_restricted",
+                    "message": "WhatsApp restricts this number to calling people it has already chatted with. The restriction lifts on its own; follow Retry-After when supplied.",
                     "param": null,
                     "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                  "docs": "https://docs.polymorfa.com/api/errors#number-restricted"
                 }
               }
             }
@@ -47703,6 +47810,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CampaignColdBlockedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "session.restriction_updated": {
+      "post": {
+        "operationId": "onSessionRestrictionUpdated",
+        "summary": "A WhatsApp restriction on the number started, changed or ended",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionRestrictionUpdatedEvent"
               }
             }
           }

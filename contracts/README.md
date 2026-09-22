@@ -1,46 +1,61 @@
 # Contract coverage
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` commit
-`16f46606643ecac877dfb826d6119173ccc231d0` on the unmerged branch
-`t3code/calls-consent`. `source.json` records the original paths and SHA-256
-hashes. `coverage.json` uses the same source revision. This is a coordinated PR
-dependency: re-sync to the merged monorepo `dev` commit before this SDK change
-merges.
+files at pending `polymorfa/polymorfa` PR #226 commit
+`c9be7bd0471ebbbd07502a76d63443a5556b3382`, branch `t3code/calls-consent`.
+The schema-only follow-up `0e46b463` changes no OpenAPI bytes. This is an
+unmerged dependency, not the final `dev` pin. `source.json` records
+`published: false`, paths and hashes; the ledger uses the same revision.
+Copy both snapshots from the final monorepo `dev` merge before SDK publication.
 
-This revision adds call consent. The team call policy and do-not-call list
-(`getCallPolicy`, `updateCallPolicy`, `listCallOptOuts`, `createCallOptOut`,
-`importCallOptOuts`, `deleteCallOptOut`) are covered by `Client.callPolicy` and
-`Client.callOptOuts`; they take organization credentials only, so no project
-view exposes them. The Cloud API permission read (`getCallPermission`) and the
-pre-dial check (`checkCall`) are covered by
-`MessagingClient.voip.retrieveCallPermission` and `MessagingClient.voip.check`.
-The `callPermissionRequest` message content joins the typed
-`SendMessageRequest` union, and `call.permission_changed`,
-`bansafe.health_changed` and `bansafe.risk_changed` join the webhook catalog
-with typed payloads. Five call consent codes and the
-`call_permission_request` rate-limit reason join the shared error enums, which
-moves the fingerprint of every operation referencing them; those operations
-were reviewed and differ only in their error enum. The six Console call consent
-routes (`/console/call-policy`, `/console/call-opt-outs*`) are excluded: they
-require dashboard identity.
+The six team policy and opt-out routes are covered by `Client.callPolicy` and
+`Client.callOptOuts`, with organization credentials only. The two Messaging
+reads/checks are covered by `MessagingClient.voip.retrieveCallPermission`
+and `MessagingClient.voip.check`. The six Console counterparts remain excluded.
+`callPermissionRequest` content is typed in both server and browser message
+unions. Browser sends use the existing session-bound route and client-token
+`send_message` grant; API checks still enforce Cloud API support and request
+limits. Policy, opt-out and permission-read methods remain server-only.
 
-Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
-`MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
-merged monorepo `dev`, the Calls diagnostics route
-(`voipReportCallDiagnostics`) is back with a refreshed fingerprint; the SDK
-keeps `MessagingClient.voip.report` covering it. The Console-only `getCall`
-response also picked up a refreshed fingerprint (still excluded). No
-operations were added or removed by this re-sync.
+Typed BanSafe alignment remains dependent on SDK #282. Merge SDK `dev`
+after that PR lands and retain its error codes, restriction webhook and Calls
+parser changes. This branch preserves its existing closed factor group alias
+without duplicating those pending fixes.
+
+The consent source adds five error codes to both public error schemas and
+`number_restricted` to the Platform enum. Message receipts now wrap the same
+conversation identity reference in an `allOf` with a description-only member;
+no identity field changed. Message content adds the permission request branch.
+These reviewed changes refresh 199 operation fingerprints. Existing request
+and success-response shapes are otherwise unchanged.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        316 |
-| Missing             |          0 |
-| Excluded            |        122 |
+| Covered             |        325 |
+| Missing             |          5 |
+| Excluded            |        117 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        438 |
+| Total               |        447 |
+
+The refresh from `9fe6c235` adds two public call-retention operations and two
+Console-only counterparts. The public methods remain `missing` until SDK
+PR #278 lands; the Console routes are excluded because they require dashboard
+membership. Call analytics and export remain `missing` in this branch and are
+implemented by SDK PR #281.
+
+`GET /console/sip/endpoint` remains excluded (Console-only), while
+`GET /platform/sip/endpoint` is covered by `Client.sipTrunks.endpoint`.
+
+The previous revision published the operations lifecycle on the Platform API. The eight
+operation routes moved from `/console` to `/platform`, so their ledger rows
+move from `excluded` (console-only) to `covered` by `Client.operations` and
+`Client.project(projectId).operations`. The organization-wide reads accept a
+`projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
+and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
+contract. Call analytics adds `GET /platform/calls`, `/platform/calls/stats`,
+and `/platform/calls/export`; they are recorded as `missing` because
+`Client.calls` implements them in a separate pull request.
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -73,10 +88,9 @@ successful live call.
 Revision `2259a1fd` adds the project event stream. `Client.events.stream`
 covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
 resume, and `Client.events.acknowledgeStream` covers its manual
-acknowledgement route. The Platform `PlatformAccessEventStreamFrame`
-discriminator mapping at this revision points at unprefixed schema names
-(`EventStreamReadyFrame` and so on) that the document does not define; the
-snapshot keeps the source bytes unchanged. The same revision adds
+acknowledgement route. The source pinned here corrects the
+`PlatformAccessEventStreamFrame` discriminator to reference the defined,
+Platform-prefixed schemas. Revision `2259a1fd` also adds
 `conversationTtlSeconds` to client rules, turns `recipientMode` into an enum,
 and sets a minimum of 0 on `rateLimit` and `maxDaily`; the client-rules types
 follow.

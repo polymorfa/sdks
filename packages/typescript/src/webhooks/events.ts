@@ -619,6 +619,103 @@ export interface BanSafeHealthThresholdPayload {
   readonly actionId: string;
 }
 
+export type BanSafeRiskLevel = "low" | "elevated" | "high" | "critical";
+
+/** Probability (0 to 1) of a temporary or permanent ban within each window. */
+export interface BanSafeForecast {
+  readonly days7: number;
+  readonly days14: number;
+  readonly days30: number;
+}
+
+export type BanSafeRiskFactorGroup =
+  | "volume"
+  | "cold_outreach"
+  | "restrictions"
+  | "engagement"
+  | "send_errors"
+  | "pattern"
+  | "traffic_mix"
+  | "number_age"
+  | "connection"
+  | "ban_history"
+  | "account"
+  | "workspace"
+  | "climate"
+  | "conversation"
+  | "solicitation"
+  | "reputation";
+
+export interface BanSafeRiskFactor {
+  /** A feature key, or `group:<groupId>`. */
+  readonly key: string;
+  readonly group: BanSafeRiskFactorGroup;
+  readonly label: string;
+  readonly direction: "raises" | "lowers";
+  readonly strength: "strong" | "moderate" | "slight";
+  /** Whole-percentage share of the raising (or lowering) total. */
+  readonly impact: number;
+  readonly sentence: string;
+  /** Action to take; `null` for lowering factors and groups without a hint. */
+  readonly hint: string | null;
+}
+
+export interface BanSafeModelRef {
+  readonly version: string;
+  readonly reliability: "prior" | "early" | "calibrated";
+}
+
+export interface BanSafeRiskChangedPayload {
+  readonly phoneNumber: string;
+  readonly level: BanSafeRiskLevel;
+  /** `null` for the first evaluation of the number. */
+  readonly previousLevel: BanSafeRiskLevel | null;
+  /** Risk score from 0 (lowest) to 100 (highest). */
+  readonly score: number;
+  readonly forecast: BanSafeForecast;
+  /** Up to five contributing factors, ordered by impact. */
+  readonly factors: readonly BanSafeRiskFactor[];
+  readonly model: BanSafeModelRef;
+  readonly evaluatedAt: string;
+}
+
+export interface BanSafeHealthPenalties {
+  readonly conduct: number;
+  readonly restriction: number;
+  readonly connection: number;
+}
+
+export interface BanSafeHealthFinding {
+  readonly key: string;
+  readonly title: string;
+  readonly severity: "info" | "warning" | "critical";
+  /** `not_measured` means the signal could not be measured; it is never reported as clean. */
+  readonly status: "open" | "acknowledged" | "not_measured";
+  /** Health points this finding costs. */
+  readonly points: number;
+}
+
+export interface BanSafeHealthChangedPayload {
+  readonly phoneNumber: string;
+  /** Health from 0 (worst) to 100 (best), or `null` when not measured. */
+  readonly health: number | null;
+  readonly band: BanSafeHealthBand;
+  /** `null` for the first evaluation of the number. */
+  readonly previousBand: string | null;
+  readonly state:
+    "measured" | "partial" | "measuring" | "restricted" | "banned";
+  readonly penalties: BanSafeHealthPenalties;
+  readonly findings: readonly BanSafeHealthFinding[];
+  readonly measuredChecks: number;
+  readonly totalChecks: number;
+  /**
+   * Messages the number may send today under the project's warm-up plan.
+   * `null` or absent when the project has no warm-up plan.
+   */
+  readonly allowance?: number | null;
+  readonly evaluatedAt: string;
+}
+
 export interface BanSafeEnforcementPayload {
   readonly phoneNumber: string;
   readonly kind: BanSafeIncidentEventKind;
@@ -701,107 +798,6 @@ export interface BanSafeClaimPayload {
   readonly reason: string;
   readonly decidedAt: string | null;
   readonly paidAt: string | null;
-}
-
-/** Probability of a temporary or permanent ban inside each window, from 0 to 1. */
-export interface BanSafeForecast {
-  readonly days7: number;
-  readonly days14: number;
-  readonly days30: number;
-}
-
-export type BanSafeRiskLevel = "low" | "elevated" | "high" | "critical";
-
-export type BanSafeRiskFactorGroup =
-  | "volume"
-  | "cold_outreach"
-  | "restrictions"
-  | "engagement"
-  | "send_errors"
-  | "pattern"
-  | "traffic_mix"
-  | "number_age"
-  | "connection"
-  | "ban_history"
-  | "account"
-  | "workspace"
-  | "climate"
-  | "conversation"
-  | "solicitation"
-  | "reputation";
-
-/** One contributing factor behind a risk score. */
-export interface BanSafeRiskFactor {
-  /** A feature key, or `group:<groupId>`. */
-  readonly key: string;
-  readonly group: BanSafeRiskFactorGroup;
-  readonly label: string;
-  readonly direction: "raises" | "lowers";
-  readonly strength: "strong" | "moderate" | "slight";
-  /** This factor's share, as a whole percentage, of the raising or lowering total. */
-  readonly impact: number;
-  readonly sentence: string;
-  /** Action to take. Null for lowering factors and hint-less groups. */
-  readonly hint: string | null;
-}
-
-/** The forecast model behind an evaluation. */
-export interface BanSafeModelRef {
-  readonly version: string;
-  readonly reliability: "prior" | "early" | "calibrated";
-}
-
-export interface BanSafeRiskChangedPayload {
-  readonly phoneNumber: string;
-  readonly level: BanSafeRiskLevel;
-  /** Null for the first evaluation of the number. */
-  readonly previousLevel: BanSafeRiskLevel | null;
-  /** Risk score from 0 (lowest) to 100 (highest). */
-  readonly score: number;
-  readonly forecast: BanSafeForecast;
-  /** Up to five contributing factors, ordered by impact. */
-  readonly factors: readonly BanSafeRiskFactor[];
-  readonly model: BanSafeModelRef;
-  readonly evaluatedAt: string;
-}
-
-/** Health points lost in each category. */
-export interface BanSafeHealthPenalties {
-  readonly conduct: number;
-  readonly restriction: number;
-  readonly connection: number;
-}
-
-export interface BanSafeHealthFinding {
-  readonly key: string;
-  readonly title: string;
-  readonly severity: "info" | "warning" | "critical";
-  /** `not_measured` means the signal could not be measured; it is never clean. */
-  readonly status: "open" | "acknowledged" | "not_measured";
-  /** Health points this finding costs. */
-  readonly points: number;
-}
-
-export interface BanSafeHealthChangedPayload {
-  readonly phoneNumber: string;
-  /** Health from 0 (worst) to 100 (best), or null when not measured. */
-  readonly health: number | null;
-  readonly band: BanSafeHealthBand;
-  /** Null for the first evaluation of the number. */
-  readonly previousBand: string | null;
-  /** Data sufficiency of this evaluation. */
-  readonly state:
-    "measured" | "partial" | "measuring" | "restricted" | "banned";
-  readonly penalties: BanSafeHealthPenalties;
-  readonly findings: readonly BanSafeHealthFinding[];
-  readonly measuredChecks: number;
-  readonly totalChecks: number;
-  /**
-   * Messages this number may send today under the project's warm-up plan,
-   * recomputed for the new band. Null or absent without a warm-up plan.
-   */
-  readonly allowance?: number | null;
-  readonly evaluatedAt: string;
 }
 
 /**

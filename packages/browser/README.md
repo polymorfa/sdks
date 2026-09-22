@@ -53,6 +53,32 @@ message resource for text and reply sends. Supply an upload adapter and a
 `createMessage` mapping for attachments; client tokens cannot call the media
 routes directly.
 
+## Call permission requests
+
+The next SDK release types call permission request content for Cloud API
+numbers. Use the existing message send method with a client token whose
+`send_message` grant covers the destination:
+
+```ts
+await messaging.messages.send({
+  conversation: { phoneNumber: "+15551234567" },
+  content: {
+    callPermissionRequest: { body: "May we call you about order 1522?" },
+  },
+});
+```
+
+The body must contain 1 to 1,024 characters. The API refuses linked-device
+numbers with `unsupported_for_connection` (409), an existing permanent grant
+with `call_permission_granted` (409), and an exhausted request limit with
+`call_permission_request_limited` (429). Handle the error's `code`; follow
+`metadata.headers["retry-after"]` when supplied. Sending a request does not
+grant call permission. Read permission status and manage team policy or opt-outs
+through your server.
+
+This content depends on the pending consent API. Its contract must be re-pinned
+to the merged API revision before SDK publication.
+
 ## Voice notes
 
 `VoiceNoteRecorder` records from the microphone with `getUserMedia` and

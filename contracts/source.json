@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "16f46606643ecac877dfb826d6119173ccc231d0",
+  "commit": "c9be7bd0471ebbbd07502a76d63443a5556b3382",
   "branch": "t3code/calls-consent",
   "published": false,
-  "note": "Coordinated PR dependency: unmerged calls-consent branch (call policy, do-not-call list, Cloud API call permissions). The snapshots are byte-identical at this branch tip. Re-sync to the merged monorepo dev commit before this SDK change merges.",
+  "note": "Pending API PR #226 head, not merged to dev. Both snapshots are byte-identical to this branch commit; the schema-only follow-up 0e46b463 changes no OpenAPI bytes. Re-pin both to the final monorepo dev merge commit before this SDK PR merges or publishes. Typed BanSafe alignment remains dependent on SDK #282.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "864e3ad25fad938fc977165bb7b426366d78ad0e366e50f5eb47fb7adc11f00a"
+      "sha256": "56bf0f3d3f4dc2e09ef733ab988d50f94239c0595cf748a5017bb844257cc3a4"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "2ac319ac151e61f6c99fd14d6665ca9706a5bbe94f9613779e319eada158e770"
+      "sha256": "34f142d34fe9db4efaa5762ebd8f4947b13b47df6b2fc1ff577a7dcc7092cd8d"
     }
   }
 }
