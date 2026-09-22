@@ -14,8 +14,9 @@ export type CallRetentionPolicy =
 export interface CallRetention {
   readonly policy: CallRetentionPolicy;
   /**
-   * Days Polymorfa keeps the team's call data, from 1 to 2555. Call data is
-   * deleted within 24 hours after it becomes older than this. Defaults to 90.
+   * Days Polymorfa keeps the team's call data, from 1 to 2555. Deletion of
+   * older call data starts on a date Polymorfa announces; until then the
+   * setting records a choice and nothing is deleted. Defaults to 90.
    */
   readonly retentionDays: number;
   /**
@@ -70,8 +71,9 @@ export class CallRetentionResource {
    * Replaces the team's call data retention. Requires a team API key; project
    * tokens receive `PolymorfaAuthorizationError`.
    *
-   * A shorter period also applies to call data already stored: data older
-   * than the new period is deleted within 24 hours and cannot be recovered.
+   * Once deletion runs, a shorter period also applies to call data already
+   * stored, and deleted data cannot be recovered. Until Polymorfa announces
+   * that deletion has started, saving a period deletes nothing.
    */
   update(
     input: UpdateCallRetentionRequest,

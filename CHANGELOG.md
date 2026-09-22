@@ -6,8 +6,9 @@
   team's call data retention (`GET` and `PUT /platform/call-retention`), and
   the `CallRetention`, `CallRetentionPolicy`, and `UpdateCallRetentionRequest`
   types. Team API keys and project tokens can read the setting; only team API
-  keys can change it. A shorter period also deletes call data already older
-  than it within 24 hours, and that data cannot be recovered.
+  keys can change it. Deletion of call data older than the period starts on
+  a date Polymorfa announces; until then the setting records a choice and
+  nothing is deleted.
 - Client rules: `ClientRules` and `SetClientRulesRequest` add
   `conversationTtlSeconds`, the seconds a sender stays replyable in
   `conversation` mode (300 to 604800; the API default is 86400).

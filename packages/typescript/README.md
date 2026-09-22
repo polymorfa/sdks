@@ -464,9 +464,11 @@ exactly that policy's period; any other value raises
 default), the update raises `PolymorfaConflictError` with `code`
 `state_conflict`.
 
-Polymorfa deletes call data within 24 hours after it becomes older than
-`retentionDays`. A shorter period also applies to call data already stored:
-older data is deleted within 24 hours and cannot be recovered. `appliesTo`
+Deletion of call data older than `retentionDays` starts on a date Polymorfa
+announces in its changelog; until then the setting records a choice and
+nothing is deleted. Once deletion runs, Polymorfa deletes call data within 24
+hours after it becomes older than the period, and a shorter period also
+applies to call data already stored; deleted data cannot be recovered. `appliesTo`
 lists the kinds of call data the period covers (`call_records`,
 `call_events`, and `client_reports`); new kinds are added to the list and
 follow the same period, so treat it as an open list of strings.
