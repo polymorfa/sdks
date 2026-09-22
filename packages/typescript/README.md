@@ -1904,3 +1904,52 @@ Trusted servers continue an issued Meta Cloud API invitation with
 IDs, and Coexistence/history choices. This method does not create a session or
 accept Meta app secrets. Its progress response is not proof that messaging is
 ready; inspect the QuickLink status.
+
+## Functions
+
+Use a project client with `functions:read`, `functions:manage` or
+`functions:invoke`, according to the operation. Your organization must be enabled
+for Functions and the selected execution region must be available. Client tokens
+cannot access this control plane.
+
+```ts
+const functions = client.project(projectId).functions;
+const created = await functions.create({ name: "Order lookup" });
+const deployed = await functions.deployments.create(created.data.id, {
+  deploymentId: crypto.randomUUID(),
+  language: "typescript",
+  region: configuredRegion,
+  compatibilityDate: "2026-09-22",
+  source: `export default {
+    handler() { return Response.json({ status: "ok" }); }
+  };`,
+  egressOrigins: [],
+  secretVersionIds: [],
+});
+const result = await functions.invocations.create(
+  created.data.id,
+  {
+    deploymentId: deployed.data.id,
+    trigger: "test",
+    request: {
+      method: "POST",
+      url: "https://function.polymorfa.invalid/test",
+      headers: {},
+      bodyBase64: "e30=",
+    },
+  },
+  { idempotencyKey: crypto.randomUUID() },
+);
+```
+
+`deployments.promote` selects the default deployment and requires
+`expectedRevision`. `update` and `delete` also require the current revision.
+`secrets.create` returns version metadata only; pin its ID in a new deployment.
+`secrets.revoke` prevents subsequent invocations from using that version.
+
+Mutations and invocations have no automatic network retries. Keep the original
+idempotency key when checking an interrupted invocation. Replays return a receipt
+without the original response. An `unknown` outcome can mean an external effect
+occurred; reconcile it before choosing a new key. Request/response bodies and
+customer log output are not retained. List responses contain `items` and
+`nextCursor`; pass that cursor as `before` to read the next page.
