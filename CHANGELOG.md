@@ -8,7 +8,9 @@
   hour-of-week heatmap in an IANA time zone. `list()` returns a
   `CursorPage<CallRecord>`. `export()` returns one CSV or NDJSON page of up to
   1,000 records with its `nextCursor`, and `exportAll()` yields every page,
-  dropping repeated CSV header rows. Filters: `projectId` (team clients),
+  dropping repeated CSV header rows. `exportAll()` throws an
+  `invalid_response` `PolymorfaServerError`, without yielding the page, when
+  the API returns an already requested cursor. Filters: `projectId` (team clients),
   `sessionId`, `direction`, `upstream`, `outcome`, `since` and `until`. Call
   records identify the other party only by the pseudonymous `peerRef`.
   Response metadata now keeps the `polymorfa-next-cursor` header.

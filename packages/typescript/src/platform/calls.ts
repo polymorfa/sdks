@@ -318,18 +318,16 @@ export class PlatformCallsResource<O extends ClientOwner> {
   ): AsyncGenerator<string, void, undefined> {
     let cursor = (params as ExportCallRecordsParams).cursor;
     let first = true;
-    const seen = new Set<string>();
+    // Cursors already requested. A page whose next cursor is one of these is
+    // rejected before its body is yielded, so a replayed page never reaches
+    // the consumer's output.
+    const seen = new Set<string>(cursor === undefined ? [] : [cursor]);
     while (true) {
       const { data, metadata } = await this.export(
         { ...params, ...(cursor === undefined ? {} : { cursor }) },
         options,
       );
-      const body =
-        !first && data.format === "csv" ? withoutHeader(data.body) : data.body;
-      first = false;
-      if (body.length > 0) yield body;
-      if (data.nextCursor === null) return;
-      if (seen.has(data.nextCursor)) {
+      if (data.nextCursor !== null && seen.has(data.nextCursor)) {
         throw new PolymorfaServerError(
           "The Polymorfa API repeated an export cursor.",
           {
@@ -342,6 +340,11 @@ export class PlatformCallsResource<O extends ClientOwner> {
           },
         );
       }
+      const body =
+        !first && data.format === "csv" ? withoutHeader(data.body) : data.body;
+      first = false;
+      if (body.length > 0) yield body;
+      if (data.nextCursor === null) return;
       seen.add(data.nextCursor);
       cursor = data.nextCursor;
     }

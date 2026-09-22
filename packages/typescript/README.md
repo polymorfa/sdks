@@ -482,7 +482,10 @@ for await (const call of await platform.calls.list({ outcome: "missed" })) {
   record per line). Pass `nextCursor` back as `cursor` with the same filters;
   it is `null` on the last page.
 - `exportAll(params)` yields the body of every page in order. CSV pages after
-  the first drop their header row, so the chunks join into one CSV file.
+  the first drop their header row, so the chunks join into one CSV file. If
+  the API returns a cursor that was already requested, including the starting
+  `cursor`, `exportAll` throws `PolymorfaServerError` (`invalid_response`)
+  without yielding that page, so a replayed page never reaches your output.
 
 ```ts
 import { createWriteStream } from "node:fs";

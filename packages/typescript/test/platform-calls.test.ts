@@ -357,17 +357,38 @@ describe("Platform call analytics", () => {
     expect(chunks).toEqual([one, two]);
   });
 
-  it("stops when the API repeats an export cursor", async () => {
+  it("stops before yielding a page that repeats an export cursor", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       csv(["call-1,p,support"], "same"),
     );
+    const chunks: string[] = [];
     const walk = async () => {
       for await (const chunk of teamClient(fetch).calls.exportAll()) {
-        void chunk;
+        chunks.push(chunk);
       }
     };
     await expect(walk()).rejects.toBeInstanceOf(PolymorfaServerError);
     expect(fetch).toHaveBeenCalledTimes(2);
+    expect(chunks).toEqual([
+      "callId,projectId,sessionId\r\ncall-1,p,support\r\n",
+    ]);
+  });
+
+  it("treats the starting cursor as already requested", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      csv(["call-1,p,support"], "start"),
+    );
+    const chunks: string[] = [];
+    const walk = async () => {
+      for await (const chunk of teamClient(fetch).calls.exportAll({
+        cursor: "start",
+      })) {
+        chunks.push(chunk);
+      }
+    };
+    await expect(walk()).rejects.toBeInstanceOf(PolymorfaServerError);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(chunks).toEqual([]);
   });
 
   it("raises typed errors from JSON error bodies", async () => {
