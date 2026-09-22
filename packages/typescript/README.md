@@ -513,7 +513,7 @@ const permission = await messaging.voip.retrieveCallPermission(
 const state = permission.data.data;
 state.status; // "none" | "temporary" | "permanent" | "revoked"
 state.expiresAt; // when a temporary permission ends
-state.actions?.requestPermission.limits;
+state.actions?.requestPermission?.limits;
 
 const check = await messaging.voip.check({
   session: "support",

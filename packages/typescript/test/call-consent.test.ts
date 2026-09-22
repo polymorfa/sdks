@@ -468,6 +468,27 @@ describe("call permissions", () => {
     );
   });
 
+  it("reads limits safely when WhatsApp omits one action", async () => {
+    const partial = permission({
+      actions: {
+        requestPermission: null,
+        startCall: { allowed: true, limits: [] },
+      },
+    });
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ success: true, data: partial }),
+    );
+    const read = await messagingClient(fetch).voip.retrieveCallPermission(
+      "support",
+      "+14155550123",
+    );
+    const state = read.data.data;
+
+    // The README example: both `actions` and each action may be null.
+    expect(state.actions?.requestPermission?.limits).toBeUndefined();
+    expect(state.actions?.startCall?.allowed).toBe(true);
+  });
+
   it("requires a server credential and a session", () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     expect(() =>
