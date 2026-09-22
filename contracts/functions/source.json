@@ -1,0 +1,9 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "8bba27d86b5b23aac0eaf3633a56c3a0c007f73a",
+  "sourcePath": "apps/api/docs/openapi.management.json",
+  "sourceSha256": "bfcfc43e8125214588b0712a171bc050772aa297ec004a647bec9cfef4def3a8",
+  "extraction": "Paths beginning /platform/functions and their transitive component references; operation objects unchanged",
+  "sha256": "e762cfdb99d3675ac4f925641dbe057178349a708269086c0658a98f98c75d7b",
+  "published": false
+}
