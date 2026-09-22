@@ -2,9 +2,9 @@
 
 ## Message provider references
 
-The native message-reference contract overrides the older whole-API snapshot
-for send receipts, webhook message references, acknowledgements, quotes, history
-indexes, and channel messages. Its exact schema is pinned in
+The whole-API snapshot includes the native message-reference contract for send
+receipts, webhook message references, acknowledgements, quotes, history indexes,
+and channel messages. The focused identifier schema remains pinned in
 `whatsapp-message-ids.json` to monorepo task commit `6a457a0ed8a7d6cabdb1e326d7053a1e8f9c2b41`.
 This scoped revision replaces `whatsapp_id` with `whatsapp_ids`, with at least
 one of `linked_devices` or `official_api`. Both values remain exact observed
@@ -16,11 +16,30 @@ activation availability is implied by this identifier revision.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`576176a6506a6eb20b5f9e6ded73e2fbaf3048fc` on monorepo `dev`. `source.json`
+`c087e3496f3fcc8977d94fcba60904158c7550cf` on the dev-based branch
+`t3code/hybrid-link-support`. `source.json`
 records the original paths and SHA-256 hashes. `coverage.json` uses the same
-source revision.
+source revision. The source branch is published to Git; this does not establish
+package publication, deployed availability, or Hybrid Link enrollment.
 
-This revision publishes the operations lifecycle on the Platform API. The eight
+This revision adds six typed server methods: `quickLinks.availability`,
+`messages.operationStatus`, and `hybridLink.getPolicy`, `setPolicy`, `state`,
+and `setPaused`. Native sends, reactions, edits, and deletes accept transport
+selection. QuickLinks carry explicit initial or supplementary purpose and
+single or Hybrid connection goals. Graph remains outside typed API coverage;
+`graphTransportHeaders` supplies only the routing header.
+
+The snapshot also includes Calls restriction events and testing overrides.
+Their types match the contract, including `session.restriction_updated` and
+`call_restricted`. The shared error catalog includes `number_restricted` and
+the Hybrid refusal codes. The retired `premium_required` code is no longer
+listed; unrecognized API error codes remain readable as strings.
+
+Six Calls operations remain missing: record listing, statistics, export,
+retention get/update, and SIP endpoint discovery. Their ledger rows name the
+gaps. Console equivalents stay excluded because they require dashboard identity.
+
+An earlier revision published the operations lifecycle on the Platform API. The eight
 operation routes moved from `/console` to `/platform`, so their ledger rows
 move from `excluded` (console-only) to `covered` by `Client.operations` and
 `Client.project(projectId).operations`. The organization-wide reads accept a
@@ -36,14 +55,14 @@ analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        316 |
-| Missing             |          3 |
-| Excluded            |        108 |
+| Covered             |        322 |
+| Missing             |          6 |
+| Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        427 |
+| Total               |        439 |
 
-This revision adds test event triggering
+An earlier revision added test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
 (`GET /messaging/testing/{projectId}/events/fixtures`), covered by
 `MessagingClient.testing.triggerEvent` (with the optional `Idempotency-Key`
@@ -106,7 +125,7 @@ three changed operations keep their existing typed methods.
 This refresh retires direct session creation and observation-policy writes. QuickLinks supply typed configuration and test simulation. The SDK adds project history fixture upload, saved defaults, and trusted-server Meta continuation tied to an existing QuickLink.
 
 Public Number, conversation, user and message identifiers remain supported.
-Message responses retain the exact provider ID in `whatsapp_id`. Channel
+Message responses retain exact provider IDs in `whatsapp_ids`. Channel
 actions use the public message ID; call participants expose public identities;
 history events carry a public message index and a separate provider archive.
 The raw LID resolver is replaced by `MessagingClient.identities.resolve`.

@@ -682,3 +682,38 @@ keys are omitted. This replaces `whatsapp_id`; use the separate Polymorfa `id`
 for replies and actions. The server SDK exports `WhatsAppMessageIds`; the browser
 SDK exports `BrowserWhatsAppMessageIds`. See the pinned component revision in
 [contract notes](contracts/README.md#message-provider-references).
+
+### Hybrid Link contract additions
+
+The development SDK types include Hybrid Link controls. Their presence does not
+enable the private preview: the API checks live team/project enrollment, Number
+entitlement, and operational availability. Browser client tokens cannot use the
+Hybrid control or message-operation methods, and Hybrid sends through browser
+client tokens are unavailable in this preview.
+
+Use `quickLinks.availability({projectId, session})` before offering an added
+connection. Initial setup uses `quickLinks.create({connectionGoal: "hybrid"})`;
+adding a transport uses `purpose: "add_connection"`, the existing `session`, and
+`addConnection: "linked_devices" | "official_api"`. The Number and Customer stay
+the same. `configuration.connectionPreference: "both"` still chooses one transport.
+QuickLink status includes `hybridPhase` for Cloud setup, Linked pairing, repair,
+and readiness.
+
+Native send/reaction requests and edits accept `transport: "auto" |
+"linked_devices" | "official_api"`. `chats.deleteMessage` accepts the choice in
+its options. Explicit choices never fall back. Raw Graph-compatible requests can
+use `graphTransportHeaders(transport)`; Graph remains outside handwritten method
+coverage. Routing details appear in response `metadata.transport`,
+`metadata.routingReason`, and `metadata.operationId` when supplied by the API.
+
+An accepted uncertain send raises `send_outcome_unknown` with its operation ID.
+The SDK stops automatic retries when a response carries an accepted operation ID.
+Read `messages.operationStatus(session, operationId)` until the outcome is known;
+do not submit a new key or switch transports. `pending` is not permission to send
+again. Receipt reads use the original issuing server principal.
+
+`hybridLink.getPolicy(scope)` and `setPolicy(scope, body)` preserve team, project,
+or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
+`allowedTransports`; narrower policies cannot widen ancestor restrictions.
+`hybridLink.state(session)` reads connection status. `setPaused(session,
+{expectedRevision, paused})` changes routing at the exact current revision.

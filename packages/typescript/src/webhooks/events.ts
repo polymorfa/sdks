@@ -78,6 +78,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "session.connected",
   "session.logged_out",
   "session.phone_offline",
+  "session.restriction_updated",
   "session.status",
   "template.status",
 ] as const;
@@ -210,6 +211,14 @@ export interface PollVotePayload {
 export interface SessionStatusPayload {
   readonly status: string;
   readonly statusReason?: string;
+}
+
+export interface SessionRestrictionUpdatedPayload {
+  readonly type: "reachout_timelock";
+  readonly active: boolean;
+  readonly enforcementType: string | null;
+  readonly expiresAt: string | null;
+  readonly observedAt: string;
 }
 
 export interface SessionConnectedPayload {
@@ -955,6 +964,7 @@ export interface WebhookPayloadMap {
   readonly "session.connected": SessionConnectedPayload;
   readonly "session.logged_out": SessionLoggedOutPayload;
   readonly "session.phone_offline": SessionPhoneOfflinePayload;
+  readonly "session.restriction_updated": SessionRestrictionUpdatedPayload;
   readonly "session.status": SessionStatusPayload;
   readonly "template.status": TemplateStatusPayload;
 }

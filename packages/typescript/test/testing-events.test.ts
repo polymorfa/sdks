@@ -69,6 +69,32 @@ it("lists fixtures", async () => {
   expect(fetcher.mock.calls[0]![1]?.method).toBe("GET");
 });
 
+it("serializes restriction fixtures and call termination overrides", async () => {
+  const { client: messaging, fetcher } = client(
+    json({ event: "session.restriction_updated", session: "test-a" }, 202),
+  );
+  await messaging.testing.triggerEvent("project-a", {
+    session: "test-a",
+    event: "session.restriction_updated",
+    overrides: { restrictionActive: false },
+  });
+  expect(JSON.parse(String(fetcher.mock.calls[0]![1]?.body))).toEqual({
+    session: "test-a",
+    event: "session.restriction_updated",
+    overrides: { restrictionActive: false },
+  });
+  const input: TriggerTestEventRequest = {
+    session: "test-a",
+    event: "call.ended",
+    overrides: { callEndReason: "call_restricted" },
+  };
+  const call = client(json({ event: "call.ended", session: "test-a" }, 202));
+  await call.client.testing.triggerEvent("project-a", input);
+  expect(JSON.parse(String(call.fetcher.mock.calls[0]![1]?.body))).toEqual(
+    input,
+  );
+});
+
 it("surfaces a real-session refusal as an invalid request", async () => {
   const { client: messaging } = client(
     json(

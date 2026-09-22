@@ -69,7 +69,7 @@ export {
   type BridgeRoute,
   type BridgeSignal,
 } from "./bridge.js";
-export { ChatsResource } from "./messaging/chats.js";
+export { ChatsResource, type DeleteMessageOptions } from "./messaging/chats.js";
 export { ChannelsResource } from "./messaging/channels.js";
 export { BusinessResource } from "./messaging/business.js";
 export { CallsResource } from "./messaging/calls.js";
@@ -223,6 +223,13 @@ export {
   type QuickLink,
   type QuickLinkStatus,
   type QuickLinkStatusValue,
+  type QuickLinkPurpose,
+  type QuickLinkConnectionGoal,
+  type QuickLinkConnectionKind,
+  type QuickLinkHybridPhase,
+  type HybridQuickLinkAvailability,
+  type HybridQuickLinkAvailabilityRequest,
+  type HybridQuickLinkAvailabilityResponse,
 } from "./messaging/quicklinks.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
@@ -379,11 +386,16 @@ export type {
   MessagingMediaInfo,
   MessageResponse,
   MessageReceipt,
+  MessageOperation,
+  MessageOperationResponse,
   WhatsAppMessageIds,
   ConversationIdentity,
   ConversationReference,
   MessageMediaContent,
   MessageSendContext,
+  MessageTransport,
+  MessageRoutingReason,
+  MessageRoutingMetadata,
   MessageTemplateSend,
   MintClientTokenRequest,
   MintSessionClientTokenRequest,
@@ -805,6 +817,7 @@ export {
   type SessionLoggedOutPayload,
   type SessionPhoneOfflinePayload,
   type SessionStatusPayload,
+  type SessionRestrictionUpdatedPayload,
   type UnknownWebhookEvent,
   type WebhookBody,
   type WebhookFixture,
@@ -869,3 +882,15 @@ export {
   type EmbeddedSignupRequest,
   type EmbeddedSignupResponse,
 } from "./messaging/onboarding.js";
+
+export { graphTransportHeaders } from "./messaging/hybrid-routing.js";
+
+export {
+  HybridLinkResource,
+  type HybridConnectionKind,
+  type HybridRoutingPolicyScope,
+  type HybridRoutingPolicy,
+  type SetHybridRoutingPolicyRequest,
+  type HybridLinkState,
+  type SetHybridLinkPausedRequest,
+} from "./messaging/hybrid-link.js";

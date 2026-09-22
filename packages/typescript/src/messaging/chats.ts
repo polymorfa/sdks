@@ -4,8 +4,13 @@ import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   DisappearingTimerRequest,
   EditMessageRequest,
+  MessageTransport,
   SuccessResponse,
 } from "./types.js";
+
+export interface DeleteMessageOptions extends RequestOptions {
+  readonly transport?: MessageTransport;
+}
 
 export class ChatsResource {
   constructor(private readonly transport: HttpTransport) {}
@@ -29,10 +34,11 @@ export class ChatsResource {
     session: string,
     chatId: string,
     messageId: string,
-    options: RequestOptions = {},
+    options: DeleteMessageOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.transport.request({
       method: "DELETE",
+      query: { transport: options.transport },
       path: chatMessagePath(session, chatId, messageId),
       ...withIdempotencyKey(options),
     });

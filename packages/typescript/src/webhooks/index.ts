@@ -92,6 +92,7 @@ export {
   type SessionLoggedOutPayload,
   type SessionPhoneOfflinePayload,
   type SessionStatusPayload,
+  type SessionRestrictionUpdatedPayload,
   type TemplateStatusPayload,
   type UnknownWebhookEvent,
   type WebhookEvent,

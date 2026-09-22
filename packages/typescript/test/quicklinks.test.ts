@@ -112,6 +112,48 @@ describe("MessagingClient.quickLinks", () => {
     );
   });
 
+  it("serializes supplementary Hybrid setup and scoped availability without replacing the Number", async () => {
+    const server = await startTestServer(() => ({
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        success: true,
+        data: {
+          allowed: false,
+          addConnection: null,
+          connections: [],
+          resumeQuickLinkId: null,
+        },
+      }),
+    }));
+    servers.push(server);
+    const client = new MessagingClient({
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: server.url,
+    });
+    await client.quickLinks.create({
+      projectId: "project-1",
+      purpose: "add_connection",
+      connectionGoal: "hybrid",
+      session: "existing/number",
+      addConnection: "linked_devices",
+    });
+    const availability = await client.quickLinks.availability({
+      projectId: "project-1",
+      session: "existing/number",
+    });
+    expect(JSON.parse(server.requests[0]!.body)).toEqual({
+      projectId: "project-1",
+      purpose: "add_connection",
+      connectionGoal: "hybrid",
+      session: "existing/number",
+      addConnection: "linked_devices",
+    });
+    expect(server.requests[1]!.path).toBe(
+      "/messaging/quicklinks/availability?projectId=project-1&session=existing%2Fnumber",
+    );
+    expect(availability.data.data.allowed).toBe(false);
+  });
+
   it("accepts a project token as a server-only Messaging credential", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json({
@@ -173,6 +215,12 @@ describe("MessagingClient.quickLinks", () => {
     expect(() => client.quickLinks.retrieve("ql_123")).toThrow(
       PolymorfaConfigurationError,
     );
+    expect(() =>
+      client.quickLinks.availability({
+        projectId: "project-1",
+        session: "number",
+      }),
+    ).toThrow(PolymorfaConfigurationError);
     expect(fetch).not.toHaveBeenCalled();
   });
 });

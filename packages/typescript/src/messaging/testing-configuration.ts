@@ -31,6 +31,7 @@ export const TEST_EVENT_FIXTURES = [
   "call.missed",
   "call.ended",
   "session.status",
+  "session.restriction_updated",
   "template.status",
   "bansafe.enforcement",
   "bansafe.risk_changed",
@@ -67,7 +68,14 @@ export interface TestEventOverrides {
   /** call.ended: connected duration in seconds. */
   durationSeconds?: number;
   /** call.ended: termination reason. */
-  callEndReason?: "user_hangup" | "timeout" | "lost_connection" | "rejected";
+  callEndReason?:
+    | "user_hangup"
+    | "timeout"
+    | "lost_connection"
+    | "rejected"
+    | "call_restricted";
+  /** session.restriction_updated: whether the reachout restriction is active. */
+  restrictionActive?: boolean;
   /** session.status: status. */
   status?: "CONNECTING" | "CONNECTED" | "DISCONNECTED";
   /** session.status: reason. */

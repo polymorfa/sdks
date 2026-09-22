@@ -27,7 +27,18 @@ export interface QuickLinkConfiguration extends SessionConfigurationOverrides {
   };
 }
 
+export type QuickLinkPurpose = "initial" | "add_connection";
+export type QuickLinkConnectionGoal = "single" | "hybrid";
+export type QuickLinkConnectionKind = "linked_devices" | "official_api";
+export type QuickLinkHybridPhase =
+  "cloud_setup" | "linked_pairing" | "repair_linked" | "ready";
+
 export interface CreateQuickLinkRequest {
+  readonly purpose?: QuickLinkPurpose;
+  readonly connectionGoal?: QuickLinkConnectionGoal;
+  /** Existing Number session name; required when purpose is add_connection. */
+  readonly session?: string;
+  readonly addConnection?: QuickLinkConnectionKind;
   readonly projectId?: string;
   readonly customerId?: string;
   readonly externalId?: string;
@@ -35,6 +46,9 @@ export interface CreateQuickLinkRequest {
 }
 
 export interface QuickLink {
+  readonly purpose: QuickLinkPurpose;
+  readonly connectionGoal: QuickLinkConnectionGoal;
+  readonly addConnection?: QuickLinkConnectionKind;
   readonly id: string;
   readonly url: string;
   readonly session: string;
@@ -45,6 +59,19 @@ export type QuickLinkStatusValue =
   "pending" | "opened" | "linked" | "connected" | "failed" | "cancelled";
 
 export interface QuickLinkStatus {
+  readonly purpose: QuickLinkPurpose;
+  readonly connectionGoal: QuickLinkConnectionGoal;
+  readonly addConnection?: QuickLinkConnectionKind;
+  readonly hybridPhase: QuickLinkHybridPhase | null;
+  readonly onboarding?: {
+    readonly stage: string;
+    readonly connection: string | null;
+    readonly coexistence: boolean | null;
+    readonly contactsSync: string;
+    readonly historySync: string;
+    readonly historyProgress: number;
+    readonly errorCode: string | null;
+  } | null;
   readonly id: string;
   readonly status: QuickLinkStatusValue;
   readonly session: string;
@@ -70,6 +97,27 @@ export interface CancelQuickLinkResponse {
   readonly message: string;
 }
 
+export interface HybridQuickLinkAvailabilityRequest {
+  readonly projectId: string;
+  readonly session: string;
+}
+
+export interface HybridQuickLinkAvailability {
+  readonly allowed: boolean;
+  readonly addConnection: QuickLinkConnectionKind | null;
+  readonly connections: readonly {
+    readonly kind: QuickLinkConnectionKind;
+    readonly status: string;
+    readonly enabled: boolean;
+  }[];
+  readonly resumeQuickLinkId: string | null;
+}
+
+export interface HybridQuickLinkAvailabilityResponse {
+  readonly success: true;
+  readonly data: HybridQuickLinkAvailability;
+}
+
 /** Hosted QuickLink lifecycle. Client tokens are rejected before transport. */
 export class QuickLinksResource {
   constructor(
@@ -86,6 +134,19 @@ export class QuickLinksResource {
       method: "POST",
       path: "/messaging/quicklinks",
       body: input,
+      ...options,
+    });
+  }
+
+  availability(
+    input: HybridQuickLinkAvailabilityRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<HybridQuickLinkAvailabilityResponse>> {
+    this.assertServerCredential();
+    return this.transport.request({
+      method: "GET",
+      path: "/messaging/quicklinks/availability",
+      query: { projectId: input.projectId, session: input.session },
       ...options,
     });
   }

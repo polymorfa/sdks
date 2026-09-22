@@ -358,7 +358,8 @@ export class HttpTransport {
           eligible &&
           attempt <= retries &&
           isRetryableStatus(response.status) &&
-          !isIdempotentReplay(response)
+          !isIdempotentReplay(response) &&
+          !response.headers.has("x-polymorfa-operation-id")
         ) {
           await this.#sleep(
             retryDelayMs(response, attempt, this.#random),
@@ -784,17 +785,46 @@ function responseMetadata(
     response.headers.get("request-id") ??
     undefined;
   const apiVersion = response.headers.get("polymorfa-version") ?? undefined;
+  const selectedTransport = response.headers.get("x-polymorfa-transport");
+  const transport =
+    selectedTransport === "linked_devices" ||
+    selectedTransport === "official_api"
+      ? selectedTransport
+      : undefined;
+  const selectedReason = response.headers.get("x-polymorfa-routing-reason");
+  const routingReason =
+    selectedReason &&
+    [
+      "explicit_transport",
+      "template",
+      "target_reference",
+      "only_eligible_transport",
+      "session_rule",
+      "project_rule",
+      "team_rule",
+      "default_linked_devices",
+    ].includes(selectedReason)
+      ? (selectedReason as import("../messaging/types.js").MessageRoutingReason)
+      : undefined;
+  const operationId =
+    response.headers.get("x-polymorfa-operation-id") ?? undefined;
   return Object.freeze({
     status: response.status,
     ...(requestId === undefined ? {} : { requestId }),
     ...(apiVersion === undefined ? {} : { apiVersion }),
     attempts,
+    ...(transport === undefined ? {} : { transport }),
+    ...(routingReason === undefined ? {} : { routingReason }),
+    ...(operationId === undefined ? {} : { operationId }),
     headers: Object.freeze(headerRecord),
   });
 }
 
 const SAFE_RESPONSE_HEADERS = [
   "content-type",
+  "x-polymorfa-transport",
+  "x-polymorfa-routing-reason",
+  "x-polymorfa-operation-id",
   "x-request-id",
   "polymorfa-version",
   "retry-after",

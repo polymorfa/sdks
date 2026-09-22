@@ -3,6 +3,7 @@ import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
   MessagingClient,
+  graphTransportHeaders,
   type AddressMessageContent,
   type ButtonsMessageContent,
   type FlowMessageContent,
@@ -299,4 +300,109 @@ describe("MessagingClient message routes", () => {
       Array(6).fill("message-action"),
     );
   });
+});
+
+it("preserves explicit transport for send, reaction, edit, deletion and raw Graph requests", async () => {
+  const server = await startTestServer(() => ({
+    headers: {
+      "content-type": "application/json",
+      "x-polymorfa-transport": "official_api",
+      "x-polymorfa-routing-reason": "explicit_transport",
+      "x-polymorfa-operation-id": "operation-1",
+    },
+    body: JSON.stringify({ success: true, data: {} }),
+  }));
+  servers.push(server);
+  const client = new MessagingClient({
+    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    baseUrl: server.url,
+  });
+  const result = await client.messages.send("number", {
+    conversation: { phoneNumber: "+14155550123" },
+    content: { text: "Hello" },
+    transport: "official_api",
+  });
+  await client.messages.react("number", {
+    conversation: { phoneNumber: "+14155550123" },
+    id: "message-1",
+    reaction: "👍",
+    transport: "linked_devices",
+  });
+  await client.chats.editMessage("number", "chat", "message", {
+    text: "Edited",
+    transport: "linked_devices",
+  });
+  await client.chats.deleteMessage("number", "chat", "message", {
+    transport: "linked_devices",
+  });
+  await client.raw.request({
+    method: "POST",
+    path: "/graph/v23.0/phone/messages",
+    body: { type: "text" },
+    headers: graphTransportHeaders("official_api"),
+  });
+  expect(
+    server.requests
+      .slice(0, 3)
+      .map((request) => JSON.parse(request.body).transport),
+  ).toEqual(["official_api", "linked_devices", "linked_devices"]);
+  expect(server.requests[3]!.path).toBe(
+    "/messaging/number/chats/chat/messages/message?transport=linked_devices",
+  );
+  expect(server.requests[4]!.headers["x-polymorfa-transport"]).toBe(
+    "official_api",
+  );
+  expect(result.metadata).toMatchObject({
+    transport: "official_api",
+    routingReason: "explicit_transport",
+    operationId: "operation-1",
+  });
+});
+
+it("surfaces an uncertain accepted operation once and reads its status without another send", async () => {
+  const server = await startTestServer((request) =>
+    request.method === "POST"
+      ? {
+          status: 409,
+          headers: {
+            "content-type": "application/json",
+            "x-polymorfa-operation-id": "operation-1",
+          },
+          body: JSON.stringify({
+            error: {
+              code: "send_outcome_unknown",
+              message: "Outcome unknown",
+              type: "conflict_error",
+            },
+          }),
+        }
+      : {
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            success: true,
+            data: { operationId: "operation-1", status: "unknown" },
+          }),
+        },
+  );
+  servers.push(server);
+  const client = new MessagingClient({
+    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    baseUrl: server.url,
+    maxNetworkRetries: 2,
+  });
+  await expect(
+    client.messages.send("number", {
+      conversation: { phoneNumber: "+14155550123" },
+      content: { text: "Hello" },
+      transport: "official_api",
+    }),
+  ).rejects.toMatchObject({
+    code: "send_outcome_unknown",
+    metadata: { operationId: "operation-1", attempts: 1 },
+  });
+  expect(
+    (await client.messages.operationStatus("number", "operation-1")).data.data
+      .status,
+  ).toBe("unknown");
+  expect(server.requests.map((value) => value.method)).toEqual(["POST", "GET"]);
 });

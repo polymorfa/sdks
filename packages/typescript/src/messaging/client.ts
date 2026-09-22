@@ -1,3 +1,4 @@
+import { HybridLinkResource } from "./hybrid-link.js";
 import { CloudOnboardingResource, TestingResource } from "./onboarding.js";
 import {
   assertServerRuntime,
@@ -47,6 +48,7 @@ export class MessagingClient {
   readonly observationPolicies: ObservationPoliciesResource;
   readonly sessions: SessionsResource;
   readonly messages: MessagesResource;
+  readonly hybridLink: HybridLinkResource;
   readonly profile: ProfileResource;
   readonly privacy: PrivacyResource;
   readonly presence: PresenceResource;
@@ -87,7 +89,8 @@ export class MessagingClient {
     this.media = new MessagingMediaResource(transport);
     this.observationPolicies = new ObservationPoliciesResource(transport);
     this.sessions = new SessionsResource(transport, credential.type);
-    this.messages = new MessagesResource(transport);
+    this.hybridLink = new HybridLinkResource(transport, credential.type);
+    this.messages = new MessagesResource(transport, credential.type);
     this.profile = new ProfileResource(transport);
     this.privacy = new PrivacyResource(transport);
     this.presence = new PresenceResource(transport);

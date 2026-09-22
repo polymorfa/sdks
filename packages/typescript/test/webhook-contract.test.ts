@@ -176,6 +176,16 @@ type P = WebhookPayloadMap;
 const PAYLOADS: {
   readonly [K in Exclude<KnownWebhookEventType, LegacyEventType>]: Shape<P[K]>;
 } = {
+  "session.restriction_updated": shape<P["session.restriction_updated"]>()(
+    {
+      type: "reachout_timelock",
+      active: true,
+      enforcementType: "DEFAULT",
+      expiresAt: null,
+      observedAt: AT,
+    },
+    ["type", "active", "enforcementType", "expiresAt", "observedAt"],
+  ),
   "customer.created": shape<P["customer.created"]>()(
     customer,
     customerRequired,
@@ -608,6 +618,7 @@ type LegacyEventType = Exclude<
   | `bansafe.${string}`
   | `campaign.${string}`
   | "message.failed"
+  | "session.restriction_updated"
   | "template.status"
 >;
 

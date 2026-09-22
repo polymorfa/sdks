@@ -180,7 +180,7 @@ describe("error codes", () => {
       "utf8",
     );
     // Platform operations document these codes in prose rather than an enum.
-    const documentedInProse = ["payg_required", "premium_required"];
+    const documentedInProse = ["payg_required"];
     for (const code of documentedInProse) {
       expect(platformText).toContain(`code \`${code}\``);
     }

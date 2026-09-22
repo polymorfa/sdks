@@ -173,14 +173,13 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "576176a6506a6eb20b5f9e6ded73e2fbaf3048fc",
-      total: 427,
-      covered: 316,
+      sourceCommit: "c087e3496f3fcc8977d94fcba60904158c7550cf",
+      total: 439,
+      covered: 322,
       partial: 0,
-      // Call analytics and call record export arrived with this re-sync;
-      // Client.calls implements them in a separate pull request.
-      missing: 3,
-      excluded: 108,
+      // Calls records, retention, and the SIP endpoint remain explicit gaps.
+      missing: 6,
+      excluded: 111,
       changed: 0,
     });
     // Monorepo dev now carries the merged Calls diagnostics route the SDK
@@ -279,6 +278,29 @@ describe("coverage checker", () => {
       deleteSessions: "Client.sessions.deleteMany",
       stopSessions: "Client.sessions.stopMany",
     });
+  });
+
+  it("maps the six Hybrid operations to verified server methods", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const expected = {
+      getHybridLinkState: "MessagingClient.hybridLink.state",
+      setHybridLinkPaused: "MessagingClient.hybridLink.setPaused",
+      getHybridRoutingPolicy: "MessagingClient.hybridLink.getPolicy",
+      setHybridRoutingPolicy: "MessagingClient.hybridLink.setPolicy",
+      getMessageOperation: "MessagingClient.messages.operationStatus",
+      getHybridQuickLinkAvailability: "MessagingClient.quickLinks.availability",
+    };
+    for (const [id, method] of Object.entries(expected)) {
+      expect(
+        ledger.operations.find((operation) => operation.operationId === id)
+          ?.typescript,
+      ).toEqual({ status: "covered", method });
+    }
   });
 
   it("resolves every covered ledger mapping to a public client method", () => {

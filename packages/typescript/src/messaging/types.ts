@@ -1286,7 +1286,25 @@ export type GetGroupParticipantsResponse = SuccessEnvelope<
   readonly GroupParticipant[]
 >;
 
+/** Hybrid Link requires server-authorized availability on the Number. */
+export type MessageTransport = "auto" | "linked_devices" | "official_api";
+export type MessageRoutingReason =
+  | "explicit_transport"
+  | "template"
+  | "target_reference"
+  | "only_eligible_transport"
+  | "session_rule"
+  | "project_rule"
+  | "team_rule"
+  | "default_linked_devices";
+export interface MessageRoutingMetadata {
+  readonly transport?: Exclude<MessageTransport, "auto">;
+  readonly routingReason?: MessageRoutingReason;
+  readonly operationId?: string;
+}
+
 export interface EditMessageRequest {
+  readonly transport?: MessageTransport;
   readonly text: string;
 }
 
@@ -1878,6 +1896,7 @@ export type ConversationReference = Partial<ConversationIdentity> &
   );
 
 export interface MessageSendContext {
+  readonly transport?: MessageTransport;
   readonly conversation: ConversationReference;
   readonly isForwarded?: boolean;
   readonly mentions?: readonly string[];
@@ -1987,7 +2006,19 @@ export type SendMessageRequest =
   | SendFlowMessageRequest
   | SendTemplateMessageRequest;
 
-export interface MessageReceipt {
+export interface MessageOperation {
+  readonly operationId: string;
+  /** Neither pending nor unknown permits another send. Read status again. */
+  readonly status: "pending" | "unknown" | "completed";
+  readonly transport?: Exclude<MessageTransport, "auto">;
+  readonly receipt?: {
+    readonly whatsapp_ids: WhatsAppMessageIds;
+    readonly timestamp: string;
+  };
+}
+export type MessageOperationResponse = SuccessEnvelope<MessageOperation>;
+
+export interface MessageReceipt extends MessageRoutingMetadata {
   readonly id: string;
   readonly whatsapp_ids: WhatsAppMessageIds;
   readonly conversation: ConversationIdentity;
@@ -2016,6 +2047,7 @@ export interface TypingRequest {
 }
 
 export interface ReactRequest {
+  readonly transport?: MessageTransport;
   readonly conversation: ConversationReference;
   readonly id: string;
   readonly reaction: string;
