@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (172 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (77 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (173 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (78 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -1686,6 +1686,143 @@
                 "schema": {
                   "type": "string",
                   "description": "One call record JSON object per line, with the fields of List call records."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        },
+        "x-audience": "public"
+      }
+    },
+    "/platform/sip/endpoint": {
+      "get": {
+        "operationId": "getSipEndpoint",
+        "tags": [
+          "SIP Trunks"
+        ],
+        "summary": "Get the SIP address",
+        "description": "**Required scope:** `sessions:read`\n\nReturns the host and ports your PBX sends SIP to, and the RTP port range to allow for call audio. When this environment does not host SIP, `status` is `sip_not_hosted` and no address is returned. The address is the same for every trunk of every project.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "responses": {
+          "200": {
+            "description": "The SIP address, or `sip_not_hosted`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessGetSipEndpointResponse"
                 }
               }
             }
@@ -5378,6 +5515,69 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/console/sip/endpoint": {
+      "get": {
+        "operationId": "getConsoleSipEndpoint",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Get the SIP address",
+        "description": "Returns the host, ports and RTP range PBXs use for this environment, or `sip_not_hosted` when it has no SIP address.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console SIP address; requires live dashboard membership. The Platform API publishes the same address under /platform/sip/endpoint.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PlatformAccessSipEndpoint"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       }
@@ -33847,6 +34047,177 @@
         },
         "additionalProperties": false
       },
+      "PlatformAccessSipTransport": {
+        "type": "string",
+        "enum": [
+          "udp",
+          "tcp",
+          "tls"
+        ],
+        "description": "Transport your PBX uses for SIP signaling."
+      },
+      "PlatformAccessSipEndpointTransport": {
+        "type": "object",
+        "properties": {
+          "transport": {
+            "$ref": "#/components/schemas/PlatformAccessSipTransport"
+          },
+          "port": {
+            "type": "integer",
+            "description": "Port on `host` for this transport."
+          },
+          "srtp": {
+            "type": "string",
+            "enum": [
+              "required",
+              "not_supported"
+            ],
+            "description": "`required`: calls on this transport must use SRTP (SDES) media. `not_supported`: calls use plain RTP; offers with SRTP are refused."
+          }
+        },
+        "required": [
+          "transport",
+          "port",
+          "srtp"
+        ]
+      },
+      "PlatformAccessSipEndpointRtp": {
+        "type": "object",
+        "properties": {
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "udp"
+            ]
+          },
+          "portMin": {
+            "type": "integer",
+            "description": "First port of the range."
+          },
+          "portMax": {
+            "type": "integer",
+            "description": "Last port of the range, inclusive."
+          }
+        },
+        "required": [
+          "protocol",
+          "portMin",
+          "portMax"
+        ],
+        "description": "UDP port range that call audio (RTP or SRTP) uses on Polymorfa's side. Allow it in both directions."
+      },
+      "PlatformAccessSipEndpointHosted": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "hosted"
+            ],
+            "description": "This environment accepts SIP at `host`."
+          },
+          "host": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Host name your PBX sends SIP to. Allow the addresses it resolves to for both SIP and RTP."
+          },
+          "transports": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformAccessSipEndpointTransport"
+            },
+            "minItems": 1,
+            "description": "SIP transports and their ports on `host`."
+          },
+          "rtp": {
+            "$ref": "#/components/schemas/PlatformAccessSipEndpointRtp"
+          }
+        },
+        "required": [
+          "status",
+          "host",
+          "transports",
+          "rtp"
+        ]
+      },
+      "PlatformAccessSipEndpointNotHosted": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "sip_not_hosted"
+            ],
+            "description": "This environment has no SIP address."
+          },
+          "host": {
+            "type": "string",
+            "description": "Always null: there is no address.",
+            "enum": [
+              null
+            ],
+            "nullable": true
+          },
+          "transports": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformAccessSipEndpointTransport"
+            },
+            "maxItems": 0,
+            "description": "Always empty."
+          },
+          "rtp": {
+            "type": "object",
+            "description": "Always null.",
+            "enum": [
+              null
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "status",
+          "host",
+          "transports",
+          "rtp"
+        ]
+      },
+      "PlatformAccessSipEndpoint": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/PlatformAccessSipEndpointHosted"
+          },
+          {
+            "$ref": "#/components/schemas/PlatformAccessSipEndpointNotHosted"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "status",
+          "mapping": {
+            "hosted": "#/components/schemas/PlatformAccessSipEndpointHosted",
+            "sip_not_hosted": "#/components/schemas/PlatformAccessSipEndpointNotHosted"
+          }
+        },
+        "description": "`hosted`: the host, SIP transports and RTP range PBXs use. `sip_not_hosted`: the environment has no SIP address; `host` and `rtp` are null and `transports` is empty."
+      },
+      "PlatformAccessGetSipEndpointResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/PlatformAccessSipEndpoint"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
       "PlatformAccessSipTrunkDirection": {
         "type": "string",
         "enum": [
@@ -33855,15 +34226,6 @@
           "both"
         ],
         "description": "`outbound` sends incoming WhatsApp calls to your PBX. `inbound` lets your PBX place WhatsApp calls. `both` does both."
-      },
-      "PlatformAccessSipTransport": {
-        "type": "string",
-        "enum": [
-          "udp",
-          "tcp",
-          "tls"
-        ],
-        "description": "Transport used to reach `targetUri`."
       },
       "PlatformAccessSipTrunkOutbound": {
         "type": "object",
@@ -33874,7 +34236,14 @@
             "description": "SIP URI that receives incoming WhatsApp calls, for example `sip:pbx.example.com:5060`."
           },
           "transport": {
-            "$ref": "#/components/schemas/PlatformAccessSipTransport"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformAccessSipTransport"
+              },
+              {
+                "description": "Transport used to reach `targetUri`."
+              }
+            ]
           },
           "authUsername": {
             "type": "string",

@@ -2,34 +2,87 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`576176a6506a6eb20b5f9e6ded73e2fbaf3048fc` on monorepo `dev`. `source.json`
+`cdc7ec09a32309ee8233d9f8a3007eea18203c6e` on monorepo `dev`. `source.json`
 records the original paths and SHA-256 hashes. `coverage.json` uses the same
 source revision.
 
-This revision publishes the operations lifecycle on the Platform API. The eight
-operation routes moved from `/console` to `/platform`, so their ledger rows
-move from `excluded` (console-only) to `covered` by `Client.operations` and
-`Client.project(projectId).operations`. The organization-wide reads accept a
-`projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
-and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
-contract. `/platform/projects/{projectId}/events/stream` keeps a refreshed
-fingerprint from the upstream frame `$ref` fix; only its discriminator mapping
-changed. The same re-sync picks up the management MCP tools and the call analytics work
-on `dev`. The MCP tools change no published operation this SDK covers. Call
-analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
-`/platform/calls/export`; they are recorded as `missing` here because
-`Client.calls` implements them in a separate pull request.
+This revision merges PR #229 (public SIP address) into `dev`, on top of #223
+(operations lifecycle) that a parallel re-sync already reconciled. The
+Messaging document is unchanged; SIP address touches only the Platform
+document. Eight SIP-trunk and Console-SIP-trunk fingerprints shift again
+(unrelated documentation-only edits carried by `dev` since the last SIP
+re-sync); their reviewed shapes and SDK mappings are unchanged. The eleven
+operations-lifecycle and call-analytics rows already reconciled by the
+parallel re-sync keep their status: the eight operations rows are `covered` by
+`Client.operations` and `Client.project(projectId).operations`, and the three
+call-analytics rows stay `missing` pending `Client.calls` in a separate pull
+request.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        316 |
+| Covered             |        317 |
 | Missing             |          3 |
-| Excluded            |        108 |
+| Excluded            |        109 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        427 |
+| Total               |        429 |
 
-This revision adds test event triggering
+Revision `576176a6` publishes the operations lifecycle on the Platform API. The
+eight operation routes moved from `/console` to `/platform`, so their ledger
+rows move from `excluded` (console-only) to `covered` by `Client.operations`
+and `Client.project(projectId).operations`. The organization-wide reads accept
+a `projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
+and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
+contract. `/platform/projects/{projectId}/events/stream` keeps a refreshed
+fingerprint from the upstream frame `$ref` fix; only its discriminator mapping
+changed. The same re-sync picks up the management MCP tools and the call
+analytics work on `dev`. The MCP tools change no published operation this SDK
+covers. Call analytics adds `GET /platform/calls`, `/platform/calls/stats`,
+and `/platform/calls/export`; they are recorded as `missing` here because
+`Client.calls` implements them in a separate pull request.
+
+Revision `b2dc135a` declares the `sip_not_hosted` member's `host` and `rtp` as
+`nullable: true` beside the `enum: [null]` they already carried. That moves the
+same two fingerprints as the previous revision, `getSipEndpoint` and the
+excluded `getConsoleSipEndpoint`; both were reviewed and the resolved shapes
+differ only by those two keywords. `null` was already the single permitted
+value, so `SipEndpointNotHosted` keeps `host: null` and `rtp: null` and no SDK
+type changes. The revision also merges monorepo `dev`, which adds no Messaging
+or Platform operation: the MCP management-tools work lands in
+`apps/api/docs/mcp/tools-reference.md`, not in either OpenAPI document. The
+Messaging document is byte identical to `10a91351`, and the reviewed counts are
+unchanged.
+
+Revision `10a91351` splits the SIP address response on `status`:
+`PlatformAccessSipEndpoint` is a `oneOf` of `PlatformAccessSipEndpointHosted`,
+which carries a non-null `host`, at least one transport and the
+`PlatformAccessSipEndpointRtp` range, and `PlatformAccessSipEndpointNotHosted`,
+which carries a null `host`, a null `rtp` and no transports. Two fingerprints
+move, `getSipEndpoint` and the excluded `getConsoleSipEndpoint`; both were
+reviewed and only that response schema differs. `SipEndpoint` follows as
+`SipEndpointHosted | SipEndpointNotHosted`, so narrowing on `status` gives a
+`host` and an `rtp` range without a cast. The Messaging document is byte
+identical to `8a7caf47`, and the reviewed counts are unchanged.
+
+Revision `8a7caf47` added the environment's SIP address
+(`GET /platform/sip/endpoint`, `getSipEndpoint`), covered by
+`Client.sipTrunks.endpoint`, and its Console-only counterpart
+(`getConsoleSipEndpoint`, excluded). It also carried monorepo `dev` changes
+since `2259a1fd`: the SIP trunk operations drop the beta enrollment wording and
+move the `targetUri` transport description into an `allOf` wrapper (eight public
+and Console SIP trunk fingerprints; request and response fields are
+unchanged), and the `PlatformAccessEventStreamFrame` discriminator mapping now
+points at the prefixed schema names the document defines (`streamProjectEvents`
+fingerprint). The Messaging document adds the `bansafe.risk_changed` and
+`bansafe.health_changed` webhooks, typed as `BanSafeRiskChangedPayload` and
+`BanSafeHealthChangedPayload`; webhooks are not ledger operations.
+
+Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
+`MessagingClient.clientTokens.mint`). An earlier re-sync restored the Calls
+diagnostics route (`voipReportCallDiagnostics`), covered by
+`MessagingClient.voip.report`.
+
+An earlier revision added test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
 (`GET /messaging/testing/{projectId}/events/fixtures`), covered by
 `MessagingClient.testing.triggerEvent` (with the optional `Idempotency-Key`
@@ -61,9 +114,9 @@ Revision `2259a1fd` adds the project event stream. `Client.events.stream`
 covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
 resume, and `Client.events.acknowledgeStream` covers its manual
 acknowledgement route. The Platform `PlatformAccessEventStreamFrame`
-discriminator mapping at this revision points at unprefixed schema names
-(`EventStreamReadyFrame` and so on) that the document does not define; the
-snapshot keeps the source bytes unchanged. The same revision adds
+discriminator mapping at that revision pointed at unprefixed schema names
+(`EventStreamReadyFrame` and so on) that the document did not define; revision
+`8a7caf47` corrects the mapping. The same revision adds
 `conversationTtlSeconds` to client rules, turns `recipientMode` into an enum,
 and sets a minimum of 0 on `rateLimit` and `maxDaily`; the client-rules types
 follow.
