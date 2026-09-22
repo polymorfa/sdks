@@ -608,6 +608,8 @@ export type {
   AudienceMember,
   AudienceMembersEnvelope,
   AudienceSource,
+  CreateAudienceFromFile,
+  CreateAudienceFromMembers,
   CreateAudienceRequest,
   CustomerPairingMethod,
   CustomerPairingTheme,

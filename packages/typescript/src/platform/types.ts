@@ -235,16 +235,34 @@ export interface AudienceImportMapping {
   readonly variables?: Readonly<Record<string, string>>;
 }
 
-export interface CreateAudienceRequest {
+interface CreateAudienceBase {
   readonly name: string;
   readonly source?: AudienceSource;
-  /** Up to 1,000 members. Send either `members` or `fileId`, never both. */
-  readonly members?: readonly CampaignRecipientInput[];
-  /** Storage ID returned by `audiences.createUpload`. */
-  readonly fileId?: string;
-  /** Required with `fileId`. */
-  readonly mapping?: AudienceImportMapping;
 }
+
+/** Inline members, or an empty audience when `members` is omitted. */
+export interface CreateAudienceFromMembers extends CreateAudienceBase {
+  /** Up to 1,000 members. */
+  readonly members?: readonly CampaignRecipientInput[];
+  readonly fileId?: never;
+  readonly mapping?: never;
+}
+
+/** A spreadsheet already uploaded through `audiences.createUpload`. */
+export interface CreateAudienceFromFile extends CreateAudienceBase {
+  readonly members?: never;
+  /** Storage ID returned by `audiences.createUpload`. */
+  readonly fileId: string;
+  /** The API refuses a file import without a mapping. */
+  readonly mapping: AudienceImportMapping;
+}
+
+/**
+ * Send inline `members` or `fileId` with `mapping`, never both. Omitting both
+ * creates an empty audience.
+ */
+export type CreateAudienceRequest =
+  CreateAudienceFromMembers | CreateAudienceFromFile;
 
 export interface Audience {
   readonly id: string;

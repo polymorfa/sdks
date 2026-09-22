@@ -142,9 +142,11 @@ export class MessagingCampaignsResource {
    * Add up to 1,000 recipients to a campaign that has not started sending.
    * Repeated phones are skipped and invalid entries are reported, not added.
    *
-   * The API declares no idempotent replay for this append, so the SDK sends it
-   * once and never retries it automatically. After a lost response, list the
-   * recipients before appending again.
+   * The API declares no idempotent replay for this append, so by default the
+   * SDK sends it once and does not retry it. Setting both `maxNetworkRetries`
+   * and `idempotencyKey` on the request re-enables retries, and a retry can be
+   * processed as a new append. After a lost response, list the recipients before
+   * appending again.
    */
   addRecipients(
     projectSlug: string,

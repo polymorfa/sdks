@@ -4,6 +4,8 @@ import type { CreateAudienceRequest } from "@polymorfa/sdk";
 import {
   action,
   object,
+  optionalInteger,
+  optionalText,
   route,
   text,
   unknownAction,
@@ -31,8 +33,14 @@ export const POST = route("admin", async ({ body }) => {
         members: [],
         ...object(body, "payload"),
       } as Parameters<typeof audiences.addMembers>[1]);
-    case "listMembers":
-      return audiences.listMembers(text(body, "listId"));
+    case "listMembers": {
+      const cursor = optionalText(body, "cursor");
+      const limit = optionalInteger(body, "limit");
+      return audiences.listMembers(text(body, "listId"), {
+        ...(cursor === undefined ? {} : { cursor }),
+        ...(limit === undefined ? {} : { limit }),
+      });
+    }
     case "deleteMember":
       return audiences.deleteMember(text(body, "listId"), text(body, "phone"));
     default:

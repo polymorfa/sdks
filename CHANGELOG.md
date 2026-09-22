@@ -14,9 +14,11 @@
   `operationId` as a string must handle `null`.
 
 - Breaking: `Client.audiences.create` takes `CreateAudienceRequest` instead of
-  an open `PlatformPayload`. It accepts inline `members`, or `fileId` with
-  `mapping` for a spreadsheet import, and returns the audience with its import
-  counts and up to 20 rejected rows.
+  an open `PlatformPayload`. It accepts inline `members`
+  (`CreateAudienceFromMembers`), or `fileId` with the required `mapping` for a
+  spreadsheet import (`CreateAudienceFromFile`), never both; omitting both
+  creates an empty audience. It returns the audience with its import counts and
+  up to 20 rejected rows.
 
 - Breaking: `Client.campaigns.retrieve`, `delete`, `analytics` and `events` take
   an optional `PlatformCampaignParams` argument before their request options,

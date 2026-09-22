@@ -2,6 +2,7 @@ import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { Client } from "../src/client.js";
+import type { CreateAudienceRequest } from "../src/index.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -164,6 +165,26 @@ describe("Client audiences", () => {
     expect(requests[0]?.body).toBe(
       '{"name":"August","source":"csv","fileId":"upload_1","mapping":{"phone":"Phone","variables":{"firstName":"First name"}}}',
     );
+  });
+
+  it("types audience creation as members or a mapped file, never both", async () => {
+    const { client, requests } = await platformServer();
+    await client.audiences.create({ name: "Empty" });
+
+    // @ts-expect-error a file import requires a mapping
+    const unmapped: CreateAudienceRequest = { name: "A", fileId: "upload_1" };
+    // @ts-expect-error members and fileId are mutually exclusive
+    const both: CreateAudienceRequest = {
+      name: "A",
+      members: [{ phone: "+1 555" }],
+      fileId: "upload_1",
+      mapping: { phone: "Phone" },
+    };
+    // @ts-expect-error a mapping belongs to a file import
+    const stray: CreateAudienceRequest = { name: "A", mapping: { phone: "P" } };
+
+    expect([unmapped, both, stray]).toHaveLength(3);
+    expect(requests[0]?.body).toBe('{"name":"Empty"}');
   });
 
   it("appends, pages, and removes members on the encoded member routes", async () => {
