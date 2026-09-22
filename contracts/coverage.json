@@ -3134,8 +3134,8 @@
       "fingerprint": "1740444c3df90e22a3e5002d7dd35526f2b371c124d144039298f8598575ca31",
       "typescript": {
         "status": "missing",
-        "reason": "Call analytics and CDR export (monorepo #234); SDK coverage tracked in sdks#281.",
-        "milestone": "coverage-triage"
+        "reason": "Call analytics and call record export arrived with this contract re-sync; Client.calls implements them in a separate pull request.",
+        "milestone": "call-analytics"
       }
     },
     {
@@ -3146,8 +3146,8 @@
       "fingerprint": "49661a96eb60e958e88dac7f8e64cb8402622ad970cb6007f792c655217e9507",
       "typescript": {
         "status": "missing",
-        "reason": "Call analytics and CDR export (monorepo #234); SDK coverage tracked in sdks#281.",
-        "milestone": "coverage-triage"
+        "reason": "Call analytics and call record export arrived with this contract re-sync; Client.calls implements them in a separate pull request.",
+        "milestone": "call-analytics"
       }
     },
     {
@@ -3158,8 +3158,8 @@
       "fingerprint": "abfb53c1e1c2ecae09b3f891cd43ccda995f0729631167c83ebb1f77f4829dbd",
       "typescript": {
         "status": "missing",
-        "reason": "Call analytics and CDR export (monorepo #234); SDK coverage tracked in sdks#281.",
-        "milestone": "coverage-triage"
+        "reason": "Call analytics and call record export arrived with this contract re-sync; Client.calls implements them in a separate pull request.",
+        "milestone": "call-analytics"
       }
     },
     {
@@ -3658,9 +3658,8 @@
       "operationId": "listPlatformOperations",
       "fingerprint": "6b13ffbc929bf47c6907905e46e72a0356824a33ad973522904da58b712df5fd",
       "typescript": {
-        "status": "missing",
-        "reason": "Operations lifecycle in the Platform API (monorepo #223); no SDK coverage PR yet.",
-        "milestone": "coverage-triage"
+        "status": "covered",
+        "method": "Client.operations.list"
       }
     },
     {
@@ -3670,9 +3669,8 @@
       "operationId": "getPlatformOperation",
       "fingerprint": "c1f39ad33c93d1b967973f36245a7198942bfe9e791cd58fca8111213bc8af5e",
       "typescript": {
-        "status": "missing",
-        "reason": "Operations lifecycle in the Platform API (monorepo #223); no SDK coverage PR yet.",
-        "milestone": "coverage-triage"
+        "status": "covered",
+        "method": "Client.operations.get"
       }
     },
     {
@@ -3682,9 +3680,8 @@
       "operationId": "cancelPlatformOperation",
       "fingerprint": "499571da892b2f0c885c3fa619a3a1a3a3ac56ee603c992d57951acae922b811",
       "typescript": {
-        "status": "missing",
-        "reason": "Operations lifecycle in the Platform API (monorepo #223); no SDK coverage PR yet.",
-        "milestone": "coverage-triage"
+        "status": "covered",
+        "method": "Client.operations.cancel"
       }
     },
     {
@@ -3694,9 +3691,8 @@
       "operationId": "listPlatformOperationTransitions",
       "fingerprint": "da662fcbabce8f212a451895c5f0244cf4ed9b4f0a630e84df5af870211c18e2",
       "typescript": {
-        "status": "missing",
-        "reason": "Operations lifecycle in the Platform API (monorepo #223); no SDK coverage PR yet.",
-        "milestone": "coverage-triage"
+        "status": "covered",
+        "method": "Client.operations.listTransitions"
       }
     },
     {
@@ -3893,9 +3889,8 @@
       "operationId": "listProjectOperations",
       "fingerprint": "1d81fa34a7ea0c7ea877020e396a02bcc700ebb7ff6390b880861f7059b129c3",
       "typescript": {
-        "status": "missing",
-        "reason": "Operations lifecycle in the Platform API (monorepo #223); no SDK coverage PR yet.",
-        "milestone": "coverage-triage"
+        "status": "covered",
+        "method": "Client.project(projectId).operations.list"
       }
     },
     {
@@ -3905,9 +3900,8 @@
       "operationId": "getProjectOperation",
       "fingerprint": "7e8b801bb3fc2efe5548f5c597e7c88cdb75b9d4605b5bf937bd29a9fcebaaba",
       "typescript": {
-        "status": "missing",
-        "reason": "Operations lifecycle in the Platform API (monorepo #223); no SDK coverage PR yet.",
-        "milestone": "coverage-triage"
+        "status": "covered",
+        "method": "Client.project(projectId).operations.get"
       }
     },
     {
@@ -3917,9 +3911,8 @@
       "operationId": "cancelProjectOperation",
       "fingerprint": "75ece12daffaa87258a38c88dc413ef16eb793afdab7670d4e06673fea550aec",
       "typescript": {
-        "status": "missing",
-        "reason": "Operations lifecycle in the Platform API (monorepo #223); no SDK coverage PR yet.",
-        "milestone": "coverage-triage"
+        "status": "covered",
+        "method": "Client.project(projectId).operations.cancel"
       }
     },
     {
@@ -3929,9 +3922,8 @@
       "operationId": "listProjectOperationTransitions",
       "fingerprint": "17fa5f25183ee3d31600d88311646efc4cb7048b163aa5ac3c3e3eb8a4526b76",
       "typescript": {
-        "status": "missing",
-        "reason": "Operations lifecycle in the Platform API (monorepo #223); no SDK coverage PR yet.",
-        "milestone": "coverage-triage"
+        "status": "covered",
+        "method": "Client.project(projectId).operations.listTransitions"
       }
     },
     {

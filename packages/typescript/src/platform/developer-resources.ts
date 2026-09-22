@@ -3,12 +3,25 @@ import { CursorPage } from "../pagination.js";
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
+import { withIdempotencyKey } from "../transport/idempotency.js";
 import type {
   ClientOwner,
   CreateOrganizationWebhookInput,
   CreateProjectWebhookInput,
   ListDeliveryAttemptsParams,
   ListEventsParams,
+  ListOperationsParams,
+  ListOperationTransitionsParams,
+  ListOrganizationOperationsParams,
+  ManagementOperation,
+  OperationTransition,
+  OrganizationOperationCancellationReceipt,
+  ProjectOperation,
+  ProjectOperationCancellationReceipt,
+  RetrieveOperationParams,
+  RetrieveOrganizationOperationParams,
+  WaitForOperationOptions,
+  WaitForOrganizationOperationOptions,
   ListWebhookDeliveriesParams,
   ListWebhooksParams,
   OrganizationEvent,
@@ -371,5 +384,181 @@ export class WebhookDeliveriesResource<
       input,
       options,
     );
+  }
+}
+
+type OperationFor<O extends ClientOwner> = O extends "project"
+  ? ProjectOperation
+  : ManagementOperation;
+type ListOperationsFor<O extends ClientOwner> = O extends "project"
+  ? ListOperationsParams
+  : ListOrganizationOperationsParams;
+type RetrieveOperationParamsFor<O extends ClientOwner> = O extends "project"
+  ? RetrieveOperationParams
+  : RetrieveOrganizationOperationParams;
+type WaitOptionsFor<O extends ClientOwner> = O extends "project"
+  ? WaitForOperationOptions
+  : WaitForOrganizationOperationOptions;
+type OperationCancellationFor<O extends ClientOwner> = O extends "project"
+  ? ProjectOperationCancellationReceipt
+  : OrganizationOperationCancellationReceipt;
+
+const TERMINAL_OPERATION_STATUSES = new Set([
+  "succeeded",
+  "failed",
+  "cancelled",
+]);
+/** Longest server-side wait for one request, in seconds. */
+export const OPERATION_WAIT_MAX_SECONDS = 30;
+
+/**
+ * Asynchronous operations (campaign sends, production enrollments, and other
+ * durable work). Organization clients see team and project operations;
+ * project clients see only their project. Requires `operations:read`;
+ * `cancel` requires `operations:cancel`.
+ */
+export class OperationsResource<O extends ClientOwner> extends ResourceBase {
+  list(
+    params: ListOperationsFor<O> = {} as ListOperationsFor<O>,
+    options: RequestOptions = {},
+  ): Promise<CursorPage<OperationFor<O>>> {
+    return this.page(this.path("/operations"), { ...params }, options);
+  }
+  /** Gets one operation. `params.wait` long-polls for up to 30 seconds. */
+  get(
+    operationId: string,
+    params: RetrieveOperationParamsFor<O> = {} as RetrieveOperationParamsFor<O>,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<OperationFor<O>>> {
+    if (
+      params.wait !== undefined &&
+      (!Number.isInteger(params.wait) ||
+        params.wait < 0 ||
+        params.wait > OPERATION_WAIT_MAX_SECONDS)
+    ) {
+      throw new PolymorfaConfigurationError(
+        `wait must be an integer between 0 and ${OPERATION_WAIT_MAX_SECONDS}.`,
+        "wait",
+      );
+    }
+    const wait = params.wait ?? 0;
+    return this.transport
+      .request<DataEnvelope<OperationFor<O>>>({
+        method: "GET",
+        path: this.path(`/operations/${encodeURIComponent(operationId)}`),
+        query: { ...params } as Readonly<Record<string, never>>,
+        ...options,
+        // The request stays open for the wait; leave headroom for the response.
+        ...(wait > 0 && options.timeoutMs === undefined
+          ? { timeoutMs: (wait + 15) * 1000 }
+          : {}),
+      })
+      .then(unwrapResponse);
+  }
+  listTransitions(
+    operationId: string,
+    params: ListOperationTransitionsParams = {},
+    options: RequestOptions = {},
+  ): Promise<CursorPage<OperationTransition>> {
+    return this.page(
+      this.path(`/operations/${encodeURIComponent(operationId)}/transitions`),
+      { ...params },
+      options,
+    );
+  }
+  /**
+   * Requests cancellation. Only operations whose `capabilities.cancellable`
+   * is true accept it; others fail with 409 `operation_conflict`. An
+   * Idempotency-Key is generated when `options.idempotencyKey` is omitted.
+   */
+  cancel(
+    operationId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<OperationCancellationFor<O>>> {
+    return this.mutate(
+      "POST",
+      this.path(`/operations/${encodeURIComponent(operationId)}/cancel`),
+      undefined,
+      withIdempotencyKey(options),
+    );
+  }
+  /**
+   * Waits until the operation is terminal (`succeeded`, `failed`,
+   * `cancelled`), its sequence passes `afterSequence`, or `maxWaitMs`
+   * (default 5 minutes) elapses, using server long-polls. Returns the latest
+   * state; check `status`, because the wait can end first.
+   */
+  async wait(
+    operationId: string,
+    options: WaitOptionsFor<O> = {} as WaitOptionsFor<O>,
+  ): Promise<ApiResponse<OperationFor<O>>> {
+    const maxWaitMs = options.maxWaitMs ?? 5 * 60_000;
+    if (!Number.isFinite(maxWaitMs) || maxWaitMs < 0) {
+      throw new PolymorfaConfigurationError(
+        "maxWaitMs must be a finite, non-negative number of milliseconds.",
+        "maxWaitMs",
+      );
+    }
+    const deadline = Date.now() + maxWaitMs;
+    let latest: ApiResponse<OperationFor<O>> | undefined;
+    for (;;) {
+      options.signal?.throwIfAborted();
+      const remaining = Math.max(0, deadline - Date.now());
+      const wait = Math.min(
+        OPERATION_WAIT_MAX_SECONDS,
+        Math.floor(remaining / 1000),
+      );
+      // Bound the request itself by what is left of the budget, so a server
+      // that holds the connection open cannot extend the wait. The last read
+      // still gets a second to answer, so a spent budget returns real state
+      // instead of an abort.
+      const budget = new AbortController();
+      const timer = setTimeout(
+        () => budget.abort(),
+        Math.max(remaining, 1_000),
+      );
+      const abortBudget = () => budget.abort(options.signal?.reason);
+      options.signal?.addEventListener("abort", abortBudget, { once: true });
+      let response: ApiResponse<OperationFor<O>>;
+      try {
+        response = await this.get(
+          operationId,
+          {
+            wait,
+            ...((options as WaitForOrganizationOperationOptions).projectId ===
+            undefined
+              ? {}
+              : {
+                  projectId: (options as WaitForOrganizationOperationOptions)
+                    .projectId,
+                }),
+            ...(options.afterSequence === undefined
+              ? {}
+              : { afterSequence: options.afterSequence }),
+          } as RetrieveOperationParamsFor<O>,
+          { ...options.requestOptions, signal: budget.signal },
+        );
+      } catch (error) {
+        // The caller's own abort always propagates. A budget abort returns the
+        // last state this wait observed, and only fails when it has none.
+        options.signal?.throwIfAborted();
+        if (!budget.signal.aborted || latest === undefined) throw error;
+        return latest;
+      } finally {
+        clearTimeout(timer);
+        options.signal?.removeEventListener("abort", abortBudget);
+      }
+      latest = response;
+      const operation = response.data;
+      if (
+        TERMINAL_OPERATION_STATUSES.has(operation.status) ||
+        (options.afterSequence !== undefined &&
+          operation.sequence > options.afterSequence) ||
+        wait === 0 ||
+        Date.now() >= deadline
+      ) {
+        return response;
+      }
+    }
   }
 }

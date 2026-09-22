@@ -175,9 +175,11 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "cdc7ec09a32309ee8233d9f8a3007eea18203c6e",
       total: 429,
-      covered: 309,
+      covered: 317,
       partial: 0,
-      missing: 11,
+      // Call analytics and call record export arrived with the operations
+      // lifecycle re-sync; Client.calls implements them in a separate pull request.
+      missing: 3,
       excluded: 109,
       changed: 0,
     });
@@ -639,7 +641,8 @@ describe("coverage checker", () => {
         method: "Client.securityIncidents.acknowledge",
       },
       getPlatformOperation: {
-        status: "missing",
+        status: "covered",
+        method: "Client.operations.get",
       },
       listPolymorfaTokens: {
         status: "covered",

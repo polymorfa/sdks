@@ -2,10 +2,44 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`b2dc135afbed40e79edd91b0a1a49f702dd3e1f5` on monorepo branch
-`t3code/calls-sip-address`, a coordinated PR dependency that is not yet merged
-to `dev`. `source.json` records the original paths and SHA-256 hashes.
-`coverage.json` uses the same source revision.
+`cdc7ec09a32309ee8233d9f8a3007eea18203c6e` on monorepo `dev`. `source.json`
+records the original paths and SHA-256 hashes. `coverage.json` uses the same
+source revision.
+
+This revision merges PR #229 (public SIP address) into `dev`, on top of #223
+(operations lifecycle) that a parallel re-sync already reconciled. The
+Messaging document is unchanged; SIP address touches only the Platform
+document. Eight SIP-trunk and Console-SIP-trunk fingerprints shift again
+(unrelated documentation-only edits carried by `dev` since the last SIP
+re-sync); their reviewed shapes and SDK mappings are unchanged. The eleven
+operations-lifecycle and call-analytics rows already reconciled by the
+parallel re-sync keep their status: the eight operations rows are `covered` by
+`Client.operations` and `Client.project(projectId).operations`, and the three
+call-analytics rows stay `missing` pending `Client.calls` in a separate pull
+request.
+
+| Status              | Operations |
+| ------------------- | ---------: |
+| Covered             |        317 |
+| Missing             |          3 |
+| Excluded            |        109 |
+| Partial             |          0 |
+| Changed fingerprint |          0 |
+| Total               |        429 |
+
+Revision `576176a6` publishes the operations lifecycle on the Platform API. The
+eight operation routes moved from `/console` to `/platform`, so their ledger
+rows move from `excluded` (console-only) to `covered` by `Client.operations`
+and `Client.project(projectId).operations`. The organization-wide reads accept
+a `projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
+and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
+contract. `/platform/projects/{projectId}/events/stream` keeps a refreshed
+fingerprint from the upstream frame `$ref` fix; only its discriminator mapping
+changed. The same re-sync picks up the management MCP tools and the call
+analytics work on `dev`. The MCP tools change no published operation this SDK
+covers. Call analytics adds `GET /platform/calls`, `/platform/calls/stats`,
+and `/platform/calls/export`; they are recorded as `missing` here because
+`Client.calls` implements them in a separate pull request.
 
 Revision `b2dc135a` declares the `sip_not_hosted` member's `host` and `rtp` as
 `nullable: true` beside the `enum: [null]` they already carried. That moves the
@@ -42,15 +76,6 @@ points at the prefixed schema names the document defines (`streamProjectEvents`
 fingerprint). The Messaging document adds the `bansafe.risk_changed` and
 `bansafe.health_changed` webhooks, typed as `BanSafeRiskChangedPayload` and
 `BanSafeHealthChangedPayload`; webhooks are not ledger operations.
-
-| Status              | Operations |
-| ------------------- | ---------: |
-| Covered             |        309 |
-| Missing             |          0 |
-| Excluded            |        117 |
-| Partial             |          0 |
-| Changed fingerprint |          0 |
-| Total               |        426 |
 
 Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
 `MessagingClient.clientTokens.mint`). An earlier re-sync restored the Calls
