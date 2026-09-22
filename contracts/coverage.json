@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "c8798f097dda3e2f36bcb27b53921715b1f31e84",
+  "sourceCommit": "9fe6c23510acf7734a93d398a21b24f92435a873",
   "excludedContracts": [
     {
       "family": "graph",
@@ -3327,9 +3327,8 @@
       "operationId": "getSipEndpoint",
       "fingerprint": "d44e2cf6daa9de33414972f09d3153bd84746f0dd98ec69d9671101e1383d3d1",
       "typescript": {
-        "status": "missing",
-        "reason": "The SIP address route arrived with this contract re-sync; Client.sipTrunks.endpoint implements it in a separate pull request (polymorfa/sdks#277).",
-        "milestone": "sip-address"
+        "status": "covered",
+        "method": "Client.sipTrunks.endpoint"
       }
     },
     {

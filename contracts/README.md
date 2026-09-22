@@ -2,11 +2,18 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`c8798f097dda3e2f36bcb27b53921715b1f31e84` on the unmerged branch
-`t3code/calls-bansafe` (BanSafe for calls). That branch contains monorepo
-`dev` at `576176a6506a6eb20b5f9e6ded73e2fbaf3048fc`, the previous pin.
-`source.json` records the original paths and SHA-256 hashes. `coverage.json`
-uses the same source revision. Re-sync to `dev` once that pull request merges.
+`9fe6c23510acf7734a93d398a21b24f92435a873` on monorepo `dev`, the merge of PR #231 (BanSafe for calls). It also
+contains PR #229 (SIP address). `source.json` records the original paths and
+SHA-256 hashes. `coverage.json` uses the same source revision.
+
+| Status              | Operations |
+| ------------------- | ---------: |
+| Covered             |        317 |
+| Missing             |          3 |
+| Excluded            |        109 |
+| Partial             |          0 |
+| Changed fingerprint |          0 |
+| Total               |        429 |
 
 This revision adds the `number_restricted` error code, the
 `session.restriction_updated` webhook, the enum `reason` and `code` on
@@ -18,9 +25,10 @@ differs.
 
 The same re-sync picks up the SIP address routes from `dev`:
 `GET /console/sip/endpoint` is excluded (Console-only) and
-`GET /platform/sip/endpoint` is recorded as `missing` because
-`Client.sipTrunks.endpoint` implements it in a separate pull request
-(polymorfa/sdks#277).
+`GET /platform/sip/endpoint` is covered by `Client.sipTrunks.endpoint`
+(polymorfa/sdks#277). Moving the pin from the branch commit `c8798f09` to its
+merge on `dev` changes only the Messaging document's descriptions; no
+fingerprint changes.
 
 The previous revision published the operations lifecycle on the Platform API. The eight
 operation routes moved from `/console` to `/platform`, so their ledger rows
@@ -31,15 +39,6 @@ and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
 contract. Call analytics adds `GET /platform/calls`, `/platform/calls/stats`,
 and `/platform/calls/export`; they are recorded as `missing` because
 `Client.calls` implements them in a separate pull request.
-
-| Status              | Operations |
-| ------------------- | ---------: |
-| Covered             |        316 |
-| Missing             |          4 |
-| Excluded            |        109 |
-| Partial             |          0 |
-| Changed fingerprint |          0 |
-| Total               |        429 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

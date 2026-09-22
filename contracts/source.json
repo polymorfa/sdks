@@ -1,14 +1,14 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "c8798f097dda3e2f36bcb27b53921715b1f31e84",
-  "branch": "t3code/calls-bansafe",
-  "published": false,
-  "note": "Unmerged monorepo branch t3code/calls-bansafe (BanSafe for calls), which contains monorepo dev at 576176a6 (operations lifecycle).",
+  "commit": "9fe6c23510acf7734a93d398a21b24f92435a873",
+  "branch": "dev",
+  "published": true,
+  "note": "Merge of PR #231 (BanSafe for calls) on monorepo dev; also contains #229 (SIP address).",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "2d2af8fd2e5891ec8f0fe3d8b91c23d3395781c388c1ea8225e01c68ab702903"
+      "sha256": "907aa54b79a59da2a598f0358029adc106b610c51898a2592f70e74a077d9022"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",

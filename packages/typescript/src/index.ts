@@ -552,6 +552,11 @@ export { SipTrunksResource } from "./platform/sip-trunks.js";
 export type {
   CreateSipTrunkInput,
   SipCodec,
+  SipEndpoint,
+  SipEndpointHosted,
+  SipEndpointNotHosted,
+  SipEndpointRtp,
+  SipEndpointTransport,
   SipTransport,
   SipTrunk,
   SipTrunkCreated,

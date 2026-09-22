@@ -4988,9 +4988,15 @@
           "previousBand": {
             "type": "string",
             "nullable": true,
-            "maxLength": 32,
-            "description": "Previous band, or null for the first evaluation of the number.",
-            "example": "good"
+            "enum": [
+              "good",
+              "fair",
+              "poor",
+              "failing",
+              "unknown",
+              null
+            ],
+            "description": "Previous band, or null for the first evaluation of the number."
           },
           "state": {
             "type": "string",

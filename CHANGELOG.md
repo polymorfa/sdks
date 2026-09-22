@@ -18,6 +18,14 @@
 - Test events: `TEST_EVENT_FIXTURES` adds `session.restriction_updated` with
   the `restrictionActive` override, and `callEndReason` accepts
   `call_restricted`.
+- `Client.sipTrunks.endpoint()` returns the SIP address your PBX points at.
+  `SipEndpoint` is a union on `status`: `SipEndpointHosted` carries the
+  `host`, the `transports` (`SipEndpointTransport`, with port and SRTP
+  policy) and the `rtp` range (`SipEndpointRtp`); `SipEndpointNotHosted`
+  carries `status: "sip_not_hosted"`, a `null` `host` and `rtp`, and no
+  transports. Narrowing on `status === "hosted"` gives a `host` and an `rtp`
+  range without a cast. The method is available on team and project clients,
+  takes no project, and needs `sessions:read`.
 - Webhooks: `KNOWN_WEBHOOK_EVENT_TYPES` and `WebhookPayloadMap` add
   `bansafe.risk_changed` and `bansafe.health_changed`, with the
   `BanSafeRiskChangedPayload` and `BanSafeHealthChangedPayload` types and
@@ -32,7 +40,6 @@
   `cancel` (generates an `Idempotency-Key`), and `wait`, which chains
   long-polls until the operation is terminal or `maxWaitMs` ends. Requires
   `operations:read`; `cancel` requires `operations:cancel`.
-
 - Client rules: `ClientRules` and `SetClientRulesRequest` add
   `conversationTtlSeconds`, the seconds a sender stays replyable in
   `conversation` mode (300 to 604800; the API default is 86400).
