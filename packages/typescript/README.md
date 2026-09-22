@@ -1264,79 +1264,80 @@ message identifiers are URL-encoded by the SDK.
 
 ## Messaging campaigns
 
-`MessagingClient.campaigns` exposes the complete nine-operation project-slug
-campaign workflow: `list`, `create`, `retrieve`, `analytics`, `launch`,
-`pause`, `resume`, `stop`, and `requeue`. Reads require `campaigns:read`;
-creation and lifecycle changes require `campaigns:manage`.
+`MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `analytics`,
+`listRecipients`, `addRecipients`, `launch`, `pause`, `resume`, `stop`, and
+`requeue`. Reads require `campaigns:read`; writes require `campaigns:manage`.
+Pass the project's slug as the first argument. Campaigns accept organization
+API keys or project tokens; browser client tokens cannot use these methods.
 
 ```ts
 const created = await messaging.campaigns.create(
   "support",
   {
     name: "August launch",
-    templateId: "order-ready",
-    recipientListId: "active-customers",
-    scheduledAt: Date.parse("2026-08-25T09:00:00Z"),
+    templateId,
+    recipients: [{ phone: "+14155550100", variables: { firstName: "Ada" } }],
   },
   { idempotencyKey: "campaign-august-create" },
 );
 
+const appended = await messaging.campaigns.addRecipients(
+  "support",
+  created.data.data.id,
+  {
+    recipients: [{ phone: "+442071838750", variables: { firstName: "Alan" } }],
+  },
+);
+console.log(appended.data.data.added, appended.data.data.invalidRows);
+
 const launched = await messaging.campaigns.launch(
   "support",
   created.data.data.id,
-  {},
+  { scheduledAt: Date.parse("2026-08-25T09:00:00Z") },
   { idempotencyKey: "campaign-august-launch" },
 );
-
 console.log(launched.data.data.operationId, launched.metadata.requestId);
 ```
 
-Launch, pause, resume, and stop append durable lifecycle commands and return the
-campaign's current persisted state plus an `operationId`. They do not wait for
-the campaign state to change. Read the campaign resource to inspect its status,
-or follow the returned operation with `Client.operations.wait(operationId)` and
-stop it with `Client.operations.cancel(operationId)`. The API exposes no
-campaign watcher or stream route of its own. Launch accepts an optional
-epoch-millisecond schedule. Pause requires a running campaign, resume requires
-a paused campaign, and stop accepts draft, running, or paused campaigns.
+Create accepts inline recipients, an audience ID in `recipientListId`, or both.
+Each append accepts up to 1,000 recipients before launch and reports duplicates
+and invalid rows. Appends have no declared replay contract: the SDK sends them
+once by default, generates no key, and requires both `maxNetworkRetries` and
+`idempotencyKey` to opt back into retries. A retry can report rows from an unseen
+successful first attempt as duplicates. List recipients before appending again
+after a lost response.
 
-`requeue` is a direct transaction, not a durable operation. It moves failed
-recipients back to pending and can also include recipients skipped with an
-error. Its `{ requeued }` result is the number actually moved. Lists are
-complete newest-first arrays; the source exposes no cursor, page token, search,
-event history, replay, or delivery-listener endpoint.
+`listRecipients(projectSlug, campaignId, { status, cursor, limit })` returns
+`{ data, page }` inside the response's `data`. Read recipients from
+`response.data.data` and pass `response.data.page.nextCursor` into the next
+request while `page.hasMore` is true. Each recipient includes its send,
+delivery, read, failure and reply timestamps. Campaign `list` returns a complete
+array; recipient pagination does not change that method.
 
-This Messaging family is distinct from `Client.campaigns`, which maps
-the Management API's organization-key campaign model. The Messaging routes
-accept organization API keys and project tokens bound to the exact path
-project. Browser client tokens are not allowlisted for any campaign action and
-fail before the handler.
-Campaigns are project control-plane objects and have no Linked Device versus
-Cloud session-mode discriminator.
+Launch, pause and resume return the campaign state with an `operationId`.
+They accept the transition without waiting for sending to finish. Stop always
+cancels; its `operationId` is null when the campaign had no active delivery run
+and was cancelled immediately. Check for null before calling
+`Client.operations.wait(operationId)`. A launched campaign waiting for its
+scheduled start can be stopped, but its start time cannot be changed.
 
-For organization-key calls, the live list and create handlers resolve the path
-project slug. The other seven handlers currently authorize the organization
-and campaign ID but do not verify that the campaign belongs to the supplied
-slug. Callers must still supply the intended project slug; the SDK encodes it
-and does not weaken this source behavior. The pinned OpenAPI campaign schema
-omits several JSON repository fields and leaves analytics untyped. The SDK
-exports the exact live analytics counters and preserves the extra campaign
-fields as optional `unknown` values rather than asserting undocumented shapes.
+`requeue` moves eligible failed recipients, and optionally recipients skipped
+with an error, back into the queue. It returns the number moved. The API refuses
+unentitled campaigns with `402`, suspension with `403`, and invalid lifecycle
+transitions with `409`. Throughput above the eligible number pool's ceiling is
+`400 campaign_throughput_capped`.
 
-`create` and `launch` send an `Idempotency-Key` on every call, and the API
-records it for 24 hours, so a retry after an unseen success never creates a
-second campaign or launches twice (see [Idempotent sends](#idempotent-sends)).
-The other lifecycle commands are retried only when you pass an idempotency
-key, and the API does not persist that header for them. Repeating one can
-conflict with the resulting state or append another intent; repeating requeue
-normally reports zero after the matching recipients have already moved. The live API reports entitlement failures as `402` and invalid
-lifecycle state conflicts as `400`, rather than the more specific statuses
-suggested by their semantics.
+`Client.campaigns` provides the Platform campaign methods. Its single-campaign
+reads, updates and deletion take a `PlatformCampaignParams` argument: a team
+API key supplies the owning `projectId`; a project token omits it. Platform
+`recipients` uses the same cursor-page shape. `Client.audiences` manages audience
+members, and `Client.optOuts` reads and replaces team keyword settings.
 
-The source exposes no Messaging campaign update, deletion, archive, duplicate,
-recipient listing, or campaign event inspection operation. The SDK does not
-substitute similarly named Management API routes or `raw.request` calls for
-those gaps.
+`create` and `launch` generate an `Idempotency-Key` for each call. A supplied
+key is preserved across retries; see [Idempotent sends](#idempotent-sends).
+The Messaging API has no campaign update, deletion, archive, duplicate, or
+campaign event history method. The SDK does not substitute Platform routes for
+those operations.
 
 ## Chats
 
