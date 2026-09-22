@@ -416,6 +416,11 @@ timeouts, HTTP 408, 409, 429, and server failures. POST, PUT, PATCH, and DELETE
 requests retry only when the caller supplies an idempotency key. The transport
 honors `Retry-After`, then uses bounded exponential backoff with jitter.
 
+Campaign recipient and audience member appends (`campaigns.addRecipients` on
+both clients and `audiences.addMembers`) are sent once. The API does not replay
+them, so a retry after a lost response would count the first attempt's rows as
+duplicates. They retry only when you set `maxNetworkRetries` on that request.
+
 ## API versions and raw requests
 
 Set `apiVersion` on a client or a single request. The SDK sends it as the

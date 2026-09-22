@@ -1,4 +1,5 @@
 import { HttpTransport } from "../transport/http.js";
+import { withoutAutomaticRetry } from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   AddAudienceMembersRequest,
@@ -42,7 +43,13 @@ export class AudiencesResource {
     });
   }
 
-  /** Append up to 1,000 members to an existing audience. */
+  /**
+   * Append up to 1,000 members to an existing audience.
+   *
+   * The API declares no idempotent replay for this append, so the SDK sends it
+   * once and never retries it automatically. After a lost response, list the
+   * members before appending again.
+   */
   addMembers(
     listId: string,
     body: AddAudienceMembersRequest,
@@ -52,7 +59,7 @@ export class AudiencesResource {
       method: "POST",
       path: membersPath(listId),
       body,
-      ...options,
+      ...withoutAutomaticRetry(options),
     });
   }
 

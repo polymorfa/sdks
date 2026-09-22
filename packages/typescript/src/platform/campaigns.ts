@@ -1,4 +1,5 @@
 import { HttpTransport } from "../transport/http.js";
+import { withoutAutomaticRetry } from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   AddPlatformCampaignRecipientsRequest,
@@ -188,7 +189,13 @@ export class CampaignsResource {
     });
   }
 
-  /** Add up to 1,000 recipients to a campaign that has not started sending. */
+  /**
+   * Add up to 1,000 recipients to a campaign that has not started sending.
+   *
+   * The API declares no idempotent replay for this append, so the SDK sends it
+   * once and never retries it automatically. After a lost response, list the
+   * recipients before appending again.
+   */
   addRecipients(
     campaignId: string,
     body: AddPlatformCampaignRecipientsRequest,
@@ -198,7 +205,7 @@ export class CampaignsResource {
       method: "POST",
       path: recipientsPath(campaignId),
       body,
-      ...options,
+      ...withoutAutomaticRetry(options),
     });
   }
 
