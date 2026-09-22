@@ -173,12 +173,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "ef1653e3c4fc7a98b9da56fffae5f2184b7e4574",
-      total: 432,
-      covered: 316,
+      sourceCommit: "55b94b305f2e50ba498343d4b5247cd0ee756226",
+      total: 441,
+      covered: 324,
       partial: 0,
-      missing: 0,
-      excluded: 116,
+      missing: 6,
+      excluded: 111,
       changed: 0,
     });
     // Monorepo dev now carries the merged Calls diagnostics route the SDK
@@ -630,7 +630,7 @@ describe("coverage checker", () => {
       "listActiveSessionBans",
       "listSecurityIncidents",
       "acknowledgeSecurityIncident",
-      "getOrganizationOperation",
+      "getPlatformOperation",
       "listPolymorfaTokens",
       "inviteMember",
       "updateMemberRole",
@@ -675,11 +675,9 @@ describe("coverage checker", () => {
         status: "covered",
         method: "Client.securityIncidents.acknowledge",
       },
-      // The pinned revision predates the Platform operations routes, so the
-      // console read stays excluded. Re-pinning to monorepo dev after #232
-      // merges restores getPlatformOperation -> Client.operations.get.
-      getOrganizationOperation: {
-        status: "excluded",
+      getPlatformOperation: {
+        status: "covered",
+        method: "Client.operations.get",
       },
       listPolymorfaTokens: {
         status: "covered",

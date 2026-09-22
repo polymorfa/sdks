@@ -181,10 +181,10 @@ export interface ListCampaignsParams {
  * Query parameters shared by the single-campaign Platform operations.
  *
  * A team API key is not bound to one project, so it must name the project that
- * owns the campaign. A project-scoped credential may omit it.
+ * owns the campaign. This resource is exposed only on organization clients.
  */
 export interface PlatformCampaignParams {
-  readonly projectId?: string;
+  readonly projectId: string;
 }
 
 /**
@@ -202,8 +202,8 @@ export interface UpdatePlatformCampaignRequest {
 }
 
 export interface ListPlatformCampaignRecipientsParams {
-  /** Required unless the credential is already bound to one project. */
-  readonly projectId?: string;
+  /** Owning project for this organization-client request. */
+  readonly projectId: string;
   readonly status?: CampaignRecipientStatus;
   readonly cursor?: string;
   /** 1 to 100; the API defaults to 25. */
@@ -214,7 +214,7 @@ export type PlatformCampaignRecipientsEnvelope =
   CursorEnvelope<CampaignRecipient>;
 
 export interface AddPlatformCampaignRecipientsRequest {
-  readonly projectId?: string;
+  readonly projectId: string;
   readonly recipients: readonly CampaignRecipientInput[];
 }
 

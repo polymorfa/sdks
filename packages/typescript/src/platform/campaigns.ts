@@ -47,7 +47,7 @@ export class CampaignsResource {
 
   retrieve(
     campaignId: string,
-    params: PlatformCampaignParams = {},
+    params: PlatformCampaignParams,
     options: RequestOptions = {},
   ): CampaignResponse {
     return this.transport.request({
@@ -65,8 +65,8 @@ export class CampaignsResource {
    */
   update(
     campaignId: string,
-    body?: UpdatePlatformCampaignRequest,
-    params: PlatformCampaignParams = {},
+    body: UpdatePlatformCampaignRequest | undefined,
+    params: PlatformCampaignParams,
     options: RequestOptions = {},
   ): CampaignResponse {
     return this.transport.request({
@@ -80,7 +80,7 @@ export class CampaignsResource {
 
   delete(
     campaignId: string,
-    params: PlatformCampaignParams = {},
+    params: PlatformCampaignParams,
     options: RequestOptions = {},
   ): CampaignResponse {
     return this.transport.request({
@@ -149,7 +149,7 @@ export class CampaignsResource {
 
   analytics(
     campaignId: string,
-    params: PlatformCampaignParams = {},
+    params: PlatformCampaignParams,
     options: RequestOptions = {},
   ): CampaignResponse {
     return this.read(campaignId, "analytics", params, options);
@@ -157,7 +157,7 @@ export class CampaignsResource {
 
   events(
     campaignId: string,
-    params: PlatformCampaignParams = {},
+    params: PlatformCampaignParams,
     options: RequestOptions = {},
   ): CampaignResponse {
     return this.read(campaignId, "events", params, options);
@@ -171,16 +171,14 @@ export class CampaignsResource {
    */
   recipients(
     campaignId: string,
-    params: ListPlatformCampaignRecipientsParams = {},
+    params: ListPlatformCampaignRecipientsParams,
     options: RequestOptions = {},
   ): Promise<ApiResponse<PlatformCampaignRecipientsEnvelope>> {
     return this.transport.request({
       method: "GET",
       path: recipientsPath(campaignId),
       query: {
-        ...(params.projectId === undefined
-          ? {}
-          : { projectId: params.projectId }),
+        projectId: params.projectId,
         ...(params.status === undefined ? {} : { status: params.status }),
         ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
         ...(params.limit === undefined ? {} : { limit: params.limit }),
@@ -261,7 +259,7 @@ function campaignPath(campaignId: string): string {
 function campaignQuery(
   params: PlatformCampaignParams,
 ): Readonly<Record<string, string>> {
-  return params.projectId === undefined ? {} : { projectId: params.projectId };
+  return { projectId: params.projectId };
 }
 
 function recipientsPath(campaignId: string): string {

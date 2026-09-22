@@ -276,7 +276,8 @@ The organization view also exposes these management resources:
   retrieve or update the session Safe Mode override
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and paged or appended recipients. The single-campaign
-  operations take an optional `projectId`, which a team API key must supply.
+  operations require the owning `projectId`. This resource is available only
+  on organization clients.
   `update` accepts `recipientListId` to point an unlaunched draft at another
   audience, or null to detach it
 - `customers`: enable Customers for a project; create, list, retrieve, update,
@@ -533,7 +534,7 @@ Saved settings hold the project's `successCallbackUrl` and `failureCallbackUrl`
 HTTPS destinations and `allowPhoneChange`, which controls whether recipients can
 replace a prefilled number (default `false`). The API copies callback
 destinations into each link when it is issued. Settings have no redirect-URI
-allowlist. `hideWatermark: true` requires Premium team access.
+allowlist. `hideWatermark: true` requires an active Branded QuickLink add-on.
 
 ## Browser controllers and UI
 
@@ -708,3 +709,17 @@ release instruction.
 ## License
 
 MIT
+
+## Contract update notes
+
+The typed webhook catalog includes `session.restriction_updated` with
+`type`, `active`, `enforcementType`, `expiresAt`, and `observedAt`.
+`session.logged_out` requires a numeric `code` and a `reason` of `banned`,
+`device_removed`, or `unknown`. Test event requests support the restriction
+fixture with `restrictionActive` and the call-end reason `call_restricted`.
+
+Typed call analytics, call retention settings, and SIP endpoint discovery
+methods are not implemented. These six public operations remain recorded as
+missing in the contract ledger. The contract snapshot is provisional; the
+final merged API revision must be pinned before this SDK update is merged or
+published. See the repository contract notes for the exact source revision.

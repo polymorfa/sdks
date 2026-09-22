@@ -1329,7 +1329,9 @@ transitions with `409`. Throughput above the eligible number pool's ceiling is
 
 `Client.campaigns` provides the Platform campaign methods. Its single-campaign
 reads, updates and deletion take a `PlatformCampaignParams` argument: a team
-API key supplies the owning `projectId`; a project token omits it. Platform
+API key must supply the owning `projectId`. This resource is available only
+on organization clients, not project views or project-token clients. Recipient
+listing and append also require `projectId`. Platform
 `recipients` uses the same cursor-page shape. `Client.audiences` manages audience
 members, and `Client.optOuts` reads and replaces team keyword settings.
 
@@ -1719,8 +1721,8 @@ organization-key project view. Console-only logo routes are outside the SDK.
 `successCallbackUrl` and `failureCallbackUrl` are project-only HTTPS
 destinations; the API copies them into each link when it is issued, and link
 creation has no callback override. `allowPhoneChange` lets recipients replace a
-prefilled number and defaults to `false`. `hideWatermark: true` requires Premium
-team access. Saved settings have no redirect-URI allowlist. `externalId` on
+prefilled number and defaults to `false`. `hideWatermark: true` requires an active Branded QuickLink
+add-on. Saved settings have no redirect-URI allowlist. `externalId` on
 creation is an integrator correlation value copied to the resulting session; it
 can repeat across invitations and does not grant access.
 
@@ -1880,3 +1882,17 @@ Trusted servers continue an issued Meta Cloud API invitation with
 IDs, and Coexistence/history choices. This method does not create a session or
 accept Meta app secrets. Its progress response is not proof that messaging is
 ready; inspect the QuickLink status.
+
+## Contract update notes
+
+The typed webhook catalog includes `session.restriction_updated` with
+`type`, `active`, `enforcementType`, `expiresAt`, and `observedAt`.
+`session.logged_out` requires a numeric `code` and a `reason` of `banned`,
+`device_removed`, or `unknown`. Test event requests support the restriction
+fixture with `restrictionActive` and the call-end reason `call_restricted`.
+
+Typed call analytics, call retention settings, and SIP endpoint discovery
+methods are not implemented. These six public operations remain recorded as
+missing in the contract ledger. The contract snapshot is provisional; the
+final merged API revision must be pinned before this SDK update is merged or
+published. See the repository contract notes for the exact source revision.

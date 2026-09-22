@@ -1,22 +1,31 @@
 # Contract coverage
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` commit
-`ef1653e3c4fc7a98b9da56fffae5f2184b7e4574` on branch
-`t3code/campaigns-exploration`. That commit is a coordinated PR dependency
-(polymorfa/polymorfa#232, Campaigns P0): it is pushed to origin and is not yet
-merged to monorepo `dev`. `source.json` records the original paths and SHA-256
-hashes. `coverage.json` uses the same source revision.
+files at provisional `polymorfa/polymorfa` commit
+`55b94b305f2e50ba498343d4b5247cd0ee756226` for Campaigns P0 (#232).
+This integration commit is not the final merged `dev` revision. SDK merge and
+publication remain blocked until `source.json`, both snapshots, the ledger and
+revision tests are rechecked against the final merged `dev` SHA. `source.json`
+records the source paths and SHA-256 hashes.
 
-This branch also carries SDK `dev` through `0371147`, including
-`Client.operations` (sdks#280). That method family calls the `/platform`
-operations routes from monorepo `576176a6` (#223), which this pinned revision
-predates. Here the eight operation routes still live under `/console`, so their
-rows stay `excluded`, and the call analytics routes that `dev` records as
-`missing` are absent. Re-pinning to the merged monorepo `dev` commit that
-contains both #232 and #223 must move the operation rows to `covered` again
-and restore the `missing` call analytics rows. The pin is not advanced now so
-the snapshots stay byte-identical to one exact source commit.
+The refresh adds 17 operation rows and removes eight. Eight removed Console
+operation routes moved to `/platform/operations` and
+`/platform/projects/{projectId}/operations`; the existing `Client.operations`
+and project-view `operations` resources cover list, get, transitions and cancel.
+Three new Console retention and SIP discovery operations stay excluded.
+Six public operations remain explicitly missing: `GET` and `PUT
+/platform/call-retention`, `GET /platform/calls`, `GET /platform/calls/export`,
+`GET /platform/calls/stats`, and `GET /platform/sip/endpoint`. This P0 update
+does not add typed methods for those operations or claim whole-contract parity.
+
+The 192 refreshed fingerprints were reviewed. Most reflect `number_restricted`
+in the shared public error enum. Testing fixtures add
+`session.restriction_updated`, `restrictionActive`, and the `call_restricted`
+call-end reason. SIP transport schema wrappers preserve their existing type.
+QuickLink settings declare an add-on-required `402`, handled by the existing
+payment-required error class. The webhook catalog also adds the restriction
+payload, requires `code` on `session.logged_out`, narrows its reason enum, and
+narrows the previous BanSafe health band; SDK types follow those schemas.
 
 This revision adds the Campaigns P0 operations. Audiences gain member
 management (`POST`/`GET /platform/audiences/{listId}/members` and
@@ -41,7 +50,10 @@ single-campaign Platform operations: `GET`, `PATCH` and `DELETE`
 `/platform/campaigns/{campaignId}`, plus `/analytics`, `/events` and
 `/recipients`. It is deliberately `required: false`: a team API key is not
 bound to one project and must name the owning project, while a project token is
-bound to its own project and must omit it. `Client.campaigns.retrieve`,
+bound to its own project and must omit it at the API. The SDK exposes
+`Client.campaigns` only on organization clients, so its types require
+`projectId`; project views and project-token clients do not expose that resource.
+`Client.campaigns.retrieve`,
 `update`, `delete`, `analytics` and `events` take a `PlatformCampaignParams`
 argument for it, and `recipients` carries it in its existing params.
 
@@ -54,18 +66,6 @@ names `recipientListId` and keeps an index signature for every other field.
 The operation declares `409` for the refusal after launch, which the transport
 already maps to `PolymorfaConflictError`; no SDK change was needed for it.
 
-The shared public error enum grew again with the campaign refusal codes, so 180
-operations have a refreshed fingerprint. Every success-path change was
-reviewed: sixteen are the campaign and audience operations above, and the
-seventeenth is `GET /platform/projects/{projectId}/events/stream`, where the
-frame schemas were renamed from `EventStream*Frame` to
-`PlatformAccessEventStream*Frame` with no change to the frames themselves. No
-operation was removed.
-
-The final re-sync of this branch added only the `409` above. The `projectId`
-descriptions and the update summary that came with it are documentation, which
-the fingerprint deliberately ignores, so exactly one operation changed.
-
 The webhook catalog adds `contact.opted_out` and `contact.opted_in` with the
 exported `ContactOptPayload`. `bansafe.health_changed` and
 `bansafe.risk_changed`, which the contract already defined, are now registered
@@ -73,12 +73,12 @@ too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        316 |
-| Missing             |          0 |
-| Excluded            |        116 |
+| Covered             |        324 |
+| Missing             |          6 |
+| Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        432 |
+| Total               |        441 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

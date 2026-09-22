@@ -231,14 +231,14 @@ describe("Client campaigns", () => {
       { name: "September" },
       { projectId: "project/a" },
     );
-    await client.campaigns.delete("campaign/a");
+    await client.campaigns.delete("campaign/a", { projectId: "project/a" });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "GET /platform/campaigns?projectId=project%2Fa&projectSlug=support",
       "POST /platform/campaigns",
       "GET /platform/campaigns/campaign%2Fa?projectId=project%2Fa",
       "PATCH /platform/campaigns/campaign%2Fa?projectId=project%2Fa",
-      "DELETE /platform/campaigns/campaign%2Fa",
+      "DELETE /platform/campaigns/campaign%2Fa?projectId=project%2Fa",
     ]);
     expect(requests[1]?.body).toBe('{"projectId":"project/a","name":"August"}');
     expect(requests[1]?.headers["idempotency-key"]).toBe("campaign-1");
@@ -255,8 +255,8 @@ describe("Client campaigns", () => {
     await client.campaigns.duplicate("campaign/a", { reason: "duplicate" });
     await client.campaigns.requeue("campaign/a", { reason: "requeue" });
     await client.campaigns.analytics("campaign/a", { projectId: "project/a" });
-    await client.campaigns.events("campaign/a");
-    await client.campaigns.recipients("campaign/a");
+    await client.campaigns.events("campaign/a", { projectId: "project/a" });
+    await client.campaigns.recipients("campaign/a", { projectId: "project/a" });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "POST /platform/campaigns/campaign%2Fa/launch",
@@ -267,8 +267,8 @@ describe("Client campaigns", () => {
       "POST /platform/campaigns/campaign%2Fa/duplicate",
       "POST /platform/campaigns/campaign%2Fa/requeue",
       "GET /platform/campaigns/campaign%2Fa/analytics?projectId=project%2Fa",
-      "GET /platform/campaigns/campaign%2Fa/events",
-      "GET /platform/campaigns/campaign%2Fa/recipients",
+      "GET /platform/campaigns/campaign%2Fa/events?projectId=project%2Fa",
+      "GET /platform/campaigns/campaign%2Fa/recipients?projectId=project%2Fa",
     ]);
     expect(requests.slice(0, 7).map(({ body }) => body)).toEqual([
       '{"reason":"launch"}',
@@ -283,12 +283,20 @@ describe("Client campaigns", () => {
 
   it("points an unlaunched draft at another audience, or detaches it", async () => {
     const { client, requests } = await platformServer();
-    await client.campaigns.update("campaign/a", { recipientListId: "list/b" });
-    await client.campaigns.update("campaign/a", { recipientListId: null });
+    await client.campaigns.update(
+      "campaign/a",
+      { recipientListId: "list/b" },
+      { projectId: "project/a" },
+    );
+    await client.campaigns.update(
+      "campaign/a",
+      { recipientListId: null },
+      { projectId: "project/a" },
+    );
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "PATCH /platform/campaigns/campaign%2Fa",
-      "PATCH /platform/campaigns/campaign%2Fa",
+      "PATCH /platform/campaigns/campaign%2Fa?projectId=project%2Fa",
+      "PATCH /platform/campaigns/campaign%2Fa?projectId=project%2Fa",
     ]);
     expect(requests.map(({ body }) => body)).toEqual([
       '{"recipientListId":"list/b"}',
@@ -298,10 +306,14 @@ describe("Client campaigns", () => {
 
   it("keeps the update body open beyond the named field", async () => {
     const { client, requests } = await platformServer();
-    await client.campaigns.update("campaign/a", {
-      name: "September",
-      recipientListId: "list/b",
-    });
+    await client.campaigns.update(
+      "campaign/a",
+      {
+        name: "September",
+        recipientListId: "list/b",
+      },
+      { projectId: "project/a" },
+    );
 
     expect(requests[0]?.body).toBe(
       '{"name":"September","recipientListId":"list/b"}',
@@ -331,4 +343,34 @@ describe("Client campaigns", () => {
     );
     expect(requests[1]?.headers["idempotency-key"]).toBe("recipients-1");
   });
+});
+
+it("requires project scope on organization campaigns and omits campaigns from project views", async () => {
+  const { client } = await platformServer();
+  const project = client.project("project/a");
+  expect(project).not.toHaveProperty("campaigns");
+  // These calls are compile-time assertions and must never reach transport.
+  const invalidCalls = () => {
+    // @ts-expect-error project views do not expose Platform campaigns
+    void project.campaigns;
+    // @ts-expect-error an organization client must supply project parameters
+    client.campaigns.retrieve("campaign/a");
+    // @ts-expect-error a project ID is required within the parameters
+    client.campaigns.retrieve("campaign/a", {});
+    // @ts-expect-error updates require project parameters, even with an omitted body
+    client.campaigns.update("campaign/a", undefined);
+    // @ts-expect-error deletion requires project parameters
+    client.campaigns.delete("campaign/a");
+    // @ts-expect-error analytics requires project parameters
+    client.campaigns.analytics("campaign/a");
+    // @ts-expect-error events requires project parameters
+    client.campaigns.events("campaign/a");
+    // @ts-expect-error recipient listing requires project parameters
+    client.campaigns.recipients("campaign/a");
+    // @ts-expect-error a status filter alone does not scope the project
+    client.campaigns.recipients("campaign/a", { status: "queued" });
+    // @ts-expect-error recipient append requires its owning project
+    client.campaigns.addRecipients("campaign/a", { recipients: [] });
+  };
+  expect(invalidCalls).toBeTypeOf("function");
 });

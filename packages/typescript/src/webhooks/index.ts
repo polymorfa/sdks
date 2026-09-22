@@ -99,6 +99,7 @@ export {
   type PresenceUpdatePayload,
   type SessionConnectedPayload,
   type SessionLoggedOutPayload,
+  type SessionRestrictionUpdatedPayload,
   type SessionPhoneOfflinePayload,
   type SessionStatusPayload,
   type TemplateStatusPayload,

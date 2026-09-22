@@ -27,13 +27,14 @@ export const POST = route("admin", async ({ body, request }) => {
     });
   }
   const id = text(body, "campaignId");
+  const scope = { projectId: env.projectId() };
   switch (name) {
     case "retrieve":
-      return campaigns.retrieve(id);
+      return campaigns.retrieve(id, scope);
     case "update":
-      return campaigns.update(id, payload);
+      return campaigns.update(id, payload, scope);
     case "delete":
-      return campaigns.delete(id);
+      return campaigns.delete(id, scope);
     case "launch":
       return campaigns.launch(id, payload, {
         idempotencyKey: idempotencyKey(request),
@@ -51,11 +52,11 @@ export const POST = route("admin", async ({ body, request }) => {
     case "requeue":
       return campaigns.requeue(id, payload);
     case "analytics":
-      return campaigns.analytics(id);
+      return campaigns.analytics(id, scope);
     case "events":
-      return campaigns.events(id);
+      return campaigns.events(id, scope);
     case "recipients":
-      return campaigns.recipients(id);
+      return campaigns.recipients(id, scope);
     default:
       return unknownAction(name);
   }

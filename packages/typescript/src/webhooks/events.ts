@@ -78,6 +78,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "presence.update",
   "session.connected",
   "session.logged_out",
+  "session.restriction_updated",
   "session.phone_offline",
   "session.status",
   "template.status",
@@ -223,7 +224,17 @@ export interface SessionConnectedPayload {
 }
 
 export interface SessionLoggedOutPayload {
-  readonly reason: string;
+  readonly reason: "banned" | "device_removed" | "unknown";
+  /** WhatsApp logout code; zero when none was supplied. */
+  readonly code: number;
+}
+
+export interface SessionRestrictionUpdatedPayload {
+  readonly type: "reachout_timelock";
+  readonly active: boolean;
+  readonly enforcementType: string | null;
+  readonly expiresAt: string | null;
+  readonly observedAt: string;
 }
 
 export interface SessionPhoneOfflinePayload {
@@ -686,7 +697,7 @@ export interface BanSafeHealthChangedPayload {
   /** Health from 0 (worst) to 100 (best), or null when not measured. */
   readonly health: number | null;
   readonly band: BanSafeHealthBandName;
-  readonly previousBand: string | null;
+  readonly previousBand: BanSafeHealthBandName | null;
   readonly state:
     "measured" | "partial" | "measuring" | "restricted" | "banned";
   readonly penalties: BanSafeHealthPenalties;
@@ -976,6 +987,7 @@ export interface WebhookPayloadMap {
   readonly "presence.update": PresenceUpdatePayload;
   readonly "session.connected": SessionConnectedPayload;
   readonly "session.logged_out": SessionLoggedOutPayload;
+  readonly "session.restriction_updated": SessionRestrictionUpdatedPayload;
   readonly "session.phone_offline": SessionPhoneOfflinePayload;
   readonly "session.status": SessionStatusPayload;
   readonly "template.status": TemplateStatusPayload;
