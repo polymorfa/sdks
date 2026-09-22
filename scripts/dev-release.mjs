@@ -7,11 +7,21 @@
 // `pack` rewrites every public package version to V, pins internal
 // dependency and peer ranges to exactly V, packs each package into DIR in
 // dependency order, verifies the tarball manifests, and writes
-// DIR/manifest.json listing the tarballs in publish order. It edits the
-// package.json files in place; run it on a disposable checkout (CI) or
-// restore them with `git checkout -- packages/*/package.json` afterwards.
+// DIR/manifest.json listing the tarballs in publish order. The built dist/
+// files embed the repository version (for example SDK_VERSION and the
+// browser client header), so pack also rewrites that literal inside each
+// package's dist/ and fails if a packed tarball still contains it. It edits
+// the package.json and dist/ files in place; run it on a disposable checkout (CI) or
+// restore them afterwards with `git checkout -- packages/*/package.json`
+// followed by `npm run build:workspaces` to rebuild dist/.
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
@@ -32,6 +42,41 @@ const requiredFiles = {
     "dist/calls/internal.js",
   ],
 };
+
+// Built files whose text may embed the package version.
+const textFile = /\.(?:js|mjs|cjs|d\.ts|d\.mts|d\.cts)$/;
+
+function distFiles(dir) {
+  if (!existsSync(dir)) return [];
+  return (
+    readdirSync(dir, { recursive: true, withFileTypes: true })
+      .filter((e) => e.isFile() && textFile.test(e.name))
+      // Dirent.parentPath is Node >=20.12; older Node 20 releases expose .path.
+      .map((e) => join(e.parentPath ?? e.path, e.name))
+  );
+}
+
+// Matches a version as a whole token, so 0.1.0 does not match inside
+// 10.1.0, 0.1.0.1 or an already-suffixed 0.1.0-dev.N.
+function versionToken(version) {
+  const escaped = version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(?<![\\w.-])${escaped}(?![\\w.-])`, "g");
+}
+
+// Replaces every whole-token occurrence of the repository version in a
+// package's built dist/ files. Returns the number of files changed.
+function rewriteDistVersion(pkgDir, from, to) {
+  let changed = 0;
+  const token = versionToken(from);
+  for (const file of distFiles(join(pkgDir, "dist"))) {
+    const text = readFileSync(file, "utf8");
+    const next = text.replace(token, to);
+    if (next === text) continue;
+    writeFileSync(file, next);
+    changed += 1;
+  }
+  return changed;
+}
 
 function fail(message) {
   console.error(`dev-release: ${message}`);
@@ -112,7 +157,12 @@ function pack(version, out) {
   }
   const { pub, pubNames } = loadPackages();
   const order = publishOrder(pub, pubNames);
+  const sourceVersions = new Set(order.map((p) => p.json.version));
   for (const p of order) {
+    for (const from of sourceVersions) {
+      if (from !== version)
+        rewriteDistVersion(join(root, p.dir), from, version);
+    }
     p.json.version = version;
     for (const field of depFields) {
       for (const dep of Object.keys(p.json[field] ?? {})) {
@@ -157,6 +207,19 @@ function pack(version, out) {
         }
       }
     }
+    // npm provenance rejects a package whose repository.url does not match
+    // the publishing GitHub repository, so fail here instead of mid-publish.
+    const repo = packed.repository;
+    if (
+      !repo ||
+      typeof repo !== "object" ||
+      repo.url !== "git+https://github.com/polymorfa/sdks.git" ||
+      typeof repo.directory !== "string"
+    ) {
+      fail(
+        `${p.json.name} needs repository { url: "git+https://github.com/polymorfa/sdks.git", directory } for npm provenance`,
+      );
+    }
     const files = new Set(result.files.map((f) => f.path));
     for (const required of requiredFiles[p.json.name] ?? []) {
       if (!files.has(required))
@@ -172,6 +235,35 @@ function pack(version, out) {
         if (!files.has(file.replace(/^\.\//, ""))) {
           fail(`${p.json.name} export target ${file} is not in the tarball`);
         }
+      }
+    }
+    // Compiled version constants (SDK_VERSION, client headers) must match
+    // the published version, not the repository placeholder.
+    const distPaths = [...files].filter(
+      (f) => f.startsWith("dist/") && textFile.test(f),
+    );
+    if (distPaths.length > 0) {
+      const text = execFileSync(
+        "tar",
+        ["-xzOf", tarball, ...distPaths.map((f) => `package/${f}`)],
+        { encoding: "utf8", maxBuffer: 256 * 1024 * 1024 },
+      );
+      for (const stale of sourceVersions) {
+        if (stale !== version && versionToken(stale).test(text)) {
+          fail(`${p.json.name} dist/ still embeds version ${stale}`);
+        }
+      }
+    }
+    if (p.json.name === "@polymorfa/sdk") {
+      const compiled = /SDK_VERSION = "([^"]+)"/.exec(
+        execFileSync("tar", ["-xzOf", tarball, "package/dist/version.js"], {
+          encoding: "utf8",
+        }),
+      )?.[1];
+      if (compiled !== version) {
+        fail(
+          `@polymorfa/sdk compiled SDK_VERSION is ${compiled}, expected ${version}`,
+        );
       }
     }
     manifest.push({ name: p.json.name, version, tarball: result.filename });

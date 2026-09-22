@@ -11,7 +11,12 @@ manual dispatch. The workflow has two jobs:
    package versions, packs each public package, and verifies each tarball:
    the version, exact internal dependency ranges, a `dist/` directory, and
    every `exports` target. For `@polymorfa/sdk` it also checks the `./node`,
-   `./calls` and `./calls/internal` entry points.
+   `./calls` and `./calls/internal` entry points. The build embeds the
+   repository version in `dist/` (`SDK_VERSION`, `CALLS_SDK_VERSION`,
+   `BROWSER_SDK_VERSION` and the browser `x-polymorfa-client` header), so pack
+   rewrites that literal in each package's `dist/` and fails if any packed
+   tarball still contains it, or if the compiled `SDK_VERSION` differs from the
+   package version.
 2. **Publish** runs in the `npm-dev` environment. It publishes those exact
    tarballs to npm with `--tag dev --provenance`, in dependency order. It does
    not run repository scripts. A package version that already exists (for
@@ -69,6 +74,7 @@ npm run build:workspaces
 node scripts/dev-release.mjs pack \
   --version "$(node scripts/dev-release.mjs version)" --out ../packs
 git checkout -- packages/*/package.json   # the pack step edits them in place
+npm run build:workspaces                  # pack also rewrote dist/ in place
 ```
 
 ## One-time operator setup
