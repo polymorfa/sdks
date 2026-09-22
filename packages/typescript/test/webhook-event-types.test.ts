@@ -2,6 +2,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type {
   BlocklistUpdatePayload,
+  WhatsAppMessageIds,
   BusinessQuickReplyUpdatePayload,
   CallAcceptedPayload,
   CallConnectionJoinedPayload,
@@ -90,7 +91,7 @@ type ExpectedLinkedDeviceMessageType =
 
 type ExpectedMessagePayload = {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
   readonly conversation: ExpectedConversationReference;
   readonly fromMe: boolean;
   readonly timestamp: number;
@@ -295,11 +296,11 @@ type ExpectedPayloads = {
   };
   readonly "history.sync":
     | {
-        readonly whatsapp_id: string;
-        readonly original_whatsapp_id?: string;
+        readonly whatsapp_ids: WhatsAppMessageIds;
+        readonly original_whatsapp_ids?: WhatsAppMessageIds;
         readonly messages: readonly {
           readonly id: string;
-          readonly whatsapp_id: string;
+          readonly whatsapp_ids: WhatsAppMessageIds;
           readonly conversation: ExpectedIdentityReference;
           readonly fromMe?: boolean;
         }[];
@@ -339,7 +340,7 @@ type ExpectedPayloads = {
     readonly from: ExpectedIdentityReference;
     readonly sender: ExpectedIdentityReference;
     readonly id: string;
-    readonly whatsapp_id: string;
+    readonly whatsapp_ids: WhatsAppMessageIds;
     readonly conversation: ExpectedConversationReference;
     readonly fromMe: boolean;
   };

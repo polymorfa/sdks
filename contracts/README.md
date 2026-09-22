@@ -1,5 +1,19 @@
 # Contract coverage
 
+## Message provider references
+
+The native message-reference contract overrides the older whole-API snapshot
+for send receipts, webhook message references, acknowledgements, quotes, history
+indexes, and channel messages. Its exact schema is pinned in
+`whatsapp-message-ids.json` to monorepo task commit `6a457a0ed8a7d6cabdb1e326d7053a1e8f9c2b41`.
+This scoped revision replaces `whatsapp_id` with `whatsapp_ids`, with at least
+one of `linked_devices` or `official_api`. Both values remain exact observed
+provider strings. The Polymorfa `id` remains the action/reply identifier.
+Server and browser SDK types use the same object. No Hybrid routing or
+activation availability is implied by this identifier revision.
+
+## Whole-API snapshot
+
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
 `576176a6506a6eb20b5f9e6ded73e2fbaf3048fc` on monorepo `dev`. `source.json`

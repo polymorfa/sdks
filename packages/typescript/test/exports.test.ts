@@ -225,7 +225,7 @@ describe("public exports", () => {
     expectTypeOf<CreateChannelRequest>().toHaveProperty("picture");
     expectTypeOf<Channel>().toHaveProperty("id");
     expectTypeOf<ChannelMessage>().toHaveProperty("position");
-    expectTypeOf<ChannelMessage>().toHaveProperty("whatsapp_id");
+    expectTypeOf<ChannelMessage>().toHaveProperty("whatsapp_ids");
     expectTypeOf<Contact>().toHaveProperty("id");
     expectTypeOf<ContactUserInfo>().toHaveProperty("devices");
     expectTypeOf<EditMessageRequest>().toHaveProperty("text");

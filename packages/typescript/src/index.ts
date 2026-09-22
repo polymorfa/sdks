@@ -379,6 +379,7 @@ export type {
   MessagingMediaInfo,
   MessageResponse,
   MessageReceipt,
+  WhatsAppMessageIds,
   ConversationIdentity,
   ConversationReference,
   MessageMediaContent,

@@ -1,3 +1,8 @@
+/** Exact observed provider references; at least one provider is known. */
+export type WhatsAppMessageIds =
+  | { readonly linked_devices: string; readonly official_api?: string }
+  | { readonly linked_devices?: string; readonly official_api: string };
+
 export type MessagingConnection = "linked_device" | "cloud_api";
 export type BartenderMode = "magic" | "passthrough" | "passthrough_plus";
 
@@ -992,7 +997,7 @@ export interface ChannelMessage {
   /** Ordering position for before/after pagination, not a message ID. */
   readonly position: number;
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
   readonly conversation: ConversationIdentity;
   readonly type: string;
   readonly timestamp: string;
@@ -1984,7 +1989,7 @@ export type SendMessageRequest =
 
 export interface MessageReceipt {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
   readonly conversation: ConversationIdentity;
   readonly timestamp: string;
   readonly status: string;

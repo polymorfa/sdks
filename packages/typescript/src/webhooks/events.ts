@@ -1,5 +1,6 @@
 import type {
   MessagingConnection,
+  WhatsAppMessageIds,
   PhonePlatform,
   WhatsAppAccountType,
 } from "../messaging/types.js";
@@ -123,7 +124,7 @@ export type LinkedDeviceMessageType =
 
 export interface LinkedDeviceMessagePayload {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
   readonly conversation: ConversationReference;
   readonly fromMe: boolean;
   readonly timestamp: number;
@@ -156,7 +157,7 @@ export type MessagePayload = LinkedDeviceMessagePayload;
 
 export interface CloudMessagePayload {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
   readonly conversation: ConversationReference;
   readonly timestamp: string;
   readonly type: string;
@@ -171,7 +172,7 @@ export type MessageReceivedPayload =
 
 export interface MessageSentPayload {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
   readonly conversation: ConversationReference;
   readonly type: string;
   readonly timestamp: number;
@@ -180,7 +181,7 @@ export interface MessageSentPayload {
 export interface MessageAckPayload {
   readonly messages: readonly {
     readonly id: string;
-    readonly whatsapp_id: string;
+    readonly whatsapp_ids: WhatsAppMessageIds;
   }[];
   readonly conversation: ConversationReference;
   readonly from?: IdentityReference;
@@ -193,7 +194,7 @@ export interface MessageDeletePayload {
   readonly from: IdentityReference;
   readonly sender: IdentityReference;
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
   readonly conversation: ConversationReference;
   readonly fromMe: boolean;
 }
@@ -463,11 +464,11 @@ export interface CloudHistorySyncPayload {
 }
 
 export interface LinkedHistorySyncPayload {
-  readonly whatsapp_id: string;
-  readonly original_whatsapp_id?: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  readonly original_whatsapp_ids?: WhatsAppMessageIds;
   readonly messages: readonly {
     readonly id: string;
-    readonly whatsapp_id: string;
+    readonly whatsapp_ids: WhatsAppMessageIds;
     readonly conversation: IdentityReference;
     readonly fromMe?: boolean;
   }[];

@@ -673,3 +673,12 @@ release instruction.
 ## License
 
 MIT
+
+### Native message provider references
+
+Message receipts and webhook message references expose `whatsapp_ids`, with
+`linked_devices`, `official_api`, or both observed provider references. Unknown
+keys are omitted. This replaces `whatsapp_id`; use the separate Polymorfa `id`
+for replies and actions. The server SDK exports `WhatsAppMessageIds`; the browser
+SDK exports `BrowserWhatsAppMessageIds`. See the pinned component revision in
+[contract notes](contracts/README.md#message-provider-references).

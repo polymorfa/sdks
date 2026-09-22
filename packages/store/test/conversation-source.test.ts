@@ -137,7 +137,7 @@ describe("createStoreConversationSource with ConversationController", () => {
     await store.ingest(
       event("message.revoked", {
         id: "rev",
-        whatsapp_id: "wa",
+        whatsapp_ids: { linked_devices: "wa" },
         conversation: { id: "chat_1" },
         fromMe: false,
         timestamp: 6,
@@ -188,7 +188,7 @@ describe("createStoreConversationSource with ConversationController", () => {
     // A later delivery receipt keeps the stored message current.
     await store.ingest(
       event("message.ack", {
-        messages: [{ id: "srv_1", whatsapp_id: "wa" }],
+        messages: [{ id: "srv_1", whatsapp_ids: { linked_devices: "wa" } }],
         conversation: { id: "chat_1" },
         type: "delivered",
         timestamp: 10,
