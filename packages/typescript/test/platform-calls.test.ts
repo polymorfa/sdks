@@ -179,6 +179,20 @@ describe("Platform call analytics", () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
+  it("sends RFC 3339 date-times with any offset unchanged", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ data: [], page: { nextCursor: null, hasMore: false } }),
+    );
+    const client = teamClient(fetch);
+    await client.calls.list({
+      since: "2024-02-29T09:30:00.123456+03:00",
+      until: "2026-09-01T00:00:00Z",
+    });
+    const params = call(fetch, 0).url.searchParams;
+    expect(params.get("since")).toBe("2024-02-29T09:30:00.123456+03:00");
+    expect(params.get("until")).toBe("2026-09-01T00:00:00Z");
+  });
+
   it("validates filters before sending", () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     const client = teamClient(fetch);
@@ -186,6 +200,12 @@ describe("Platform call analytics", () => {
       () => client.calls.stats({ groupBy: "week" as unknown as "day" }),
       () => client.calls.stats({ direction: "both" as unknown as "inbound" }),
       () => client.calls.stats({ since: "last tuesday" }),
+      () => client.calls.stats({ since: "1" }),
+      () => client.calls.stats({ since: "2026-09-01" }),
+      () => client.calls.stats({ since: "2026-09-01T00:00:00" }),
+      () => client.calls.stats({ since: "2026-02-30T00:00:00Z" }),
+      () => client.calls.stats({ until: "2026-09-01T24:00:00Z" }),
+      () => client.calls.stats({ until: "Tue, 01 Sep 2026 00:00:00 GMT" }),
       () => client.calls.stats({ until: new Date(Number.NaN) }),
       () => client.calls.stats({ sessionId: "" }),
       () => client.calls.stats({ timezone: "x".repeat(65) }),

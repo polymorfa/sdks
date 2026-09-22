@@ -456,11 +456,38 @@ function timestamp(value: unknown, field: string): string {
     }
     return value.toISOString();
   }
-  if (typeof value !== "string" || Number.isNaN(Date.parse(value))) {
+  if (typeof value !== "string" || !isIsoDateTime(value)) {
     throw new PolymorfaConfigurationError(
-      `${field} must be an ISO 8601 date-time or a Date.`,
+      `${field} must be an ISO 8601 date-time with a time zone, such as 2026-09-01T00:00:00Z, or a Date.`,
       field,
     );
   }
   return value;
+}
+
+const ISO_DATE_TIME =
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(?:Z|[+-](\d{2}):(\d{2}))$/;
+
+/**
+ * An RFC 3339 date-time (`2026-09-01T00:00:00Z`, `2026-09-01T09:30:00.5+03:00`)
+ * naming a real calendar instant. Date-only values and other strings that
+ * `Date.parse` tolerates are refused, as the API refuses them.
+ */
+function isIsoDateTime(value: string): boolean {
+  const match = ISO_DATE_TIME.exec(value);
+  if (!match) return false;
+  const part = (index: number): number => Number(match[index] ?? 0);
+  const [year, month, day] = [part(1), part(2), part(3)];
+  const [hour, minute, second] = [part(4), part(5), part(6)];
+  const [offsetHour, offsetMinute] = [part(7), part(8)];
+  if (month < 1 || month > 12 || day < 1) return false;
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return (
+    day <= daysInMonth &&
+    hour <= 23 &&
+    minute <= 59 &&
+    second <= 59 &&
+    offsetHour <= 23 &&
+    offsetMinute <= 59
+  );
 }
