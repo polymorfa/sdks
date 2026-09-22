@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "9fe6c23510acf7734a93d398a21b24f92435a873",
+  "sourceCommit": "63111fec728ac3ebc9a825ea57ebc4c592abdafc",
   "excludedContracts": [
     {
       "family": "graph",
@@ -2262,6 +2262,17 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/console/call-retention",
+      "operationId": "getTeamCallRetention",
+      "fingerprint": "f87eba60a80a0821ffd262b4f478b171d8445365399a16267341a638a620119e",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Console-only call retention requires live dashboard membership; server credentials use the public Platform call-retention routes."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/console/call-settings/{sessionId}",
       "operationId": "getSessionCallSettings",
       "fingerprint": "aa83fae7ae00c28dad5225fd45b956694d853b4e96d2162dc914401a922d52fc",
@@ -2449,9 +2460,9 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/sip/endpoint",
-      "operationId": "getConsoleSipEndpoint",
-      "fingerprint": "34b2f09431afa3451736abbd783c9cfea9523803926faf123bd9695fd1a2e1a6",
+      "path": "/console/sip-trunks/{trunkId}",
+      "operationId": "getConsoleSipTrunk",
+      "fingerprint": "11545eb8527a12732f83182d7ac7ec8b4c5fdc8efc93c17747b6ff1a837fd192",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -2460,9 +2471,9 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/sip-trunks/{trunkId}",
-      "operationId": "getConsoleSipTrunk",
-      "fingerprint": "11545eb8527a12732f83182d7ac7ec8b4c5fdc8efc93c17747b6ff1a837fd192",
+      "path": "/console/sip/endpoint",
+      "operationId": "getConsoleSipEndpoint",
+      "fingerprint": "34b2f09431afa3451736abbd783c9cfea9523803926faf123bd9695fd1a2e1a6",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -2730,6 +2741,18 @@
       "typescript": {
         "status": "covered",
         "method": "Client.billing.usage"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/call-retention",
+      "operationId": "getCallRetention",
+      "fingerprint": "1ccf422a338bda3de1aefc2eb10e6cc55862ca3ba2dbdb3d834552ba8abd152d",
+      "typescript": {
+        "status": "missing",
+        "reason": "Call retention is implemented in the separate SDK PR #278; this branch has no typed Client.callRetention resource.",
+        "milestone": "call-retention"
       }
     },
     {
@@ -3323,23 +3346,23 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/sip/endpoint",
-      "operationId": "getSipEndpoint",
-      "fingerprint": "d44e2cf6daa9de33414972f09d3153bd84746f0dd98ec69d9671101e1383d3d1",
-      "typescript": {
-        "status": "covered",
-        "method": "Client.sipTrunks.endpoint"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
       "path": "/platform/sip-trunks/{trunkId}",
       "operationId": "getSipTrunk",
       "fingerprint": "385b146e6232508028ab6ea9fdf64df4980caa54cf36787414e572a7acd006dc",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.retrieve"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sip/endpoint",
+      "operationId": "getSipEndpoint",
+      "fingerprint": "d44e2cf6daa9de33414972f09d3153bd84746f0dd98ec69d9671101e1383d3d1",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.sipTrunks.endpoint"
       }
     },
     {
@@ -4565,6 +4588,17 @@
     {
       "family": "platform",
       "method": "PUT",
+      "path": "/console/call-retention",
+      "operationId": "updateTeamCallRetention",
+      "fingerprint": "3653b797772c6f0a49ac824f1c3809a16b5ea0adabb0553084b1f8673bf6d7db",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Console-only call retention requires live dashboard membership; server credentials use the public Platform call-retention routes."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
       "path": "/console/call-settings/{sessionId}",
       "operationId": "updateSessionCallSettings",
       "fingerprint": "418d1836ea48913db59bb729af92034c06bbfeab14af27871de2d7a5062fc9be",
@@ -4637,6 +4671,18 @@
       "typescript": {
         "status": "excluded",
         "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/call-retention",
+      "operationId": "updateCallRetention",
+      "fingerprint": "b62903d7eda5563aa851f917a9bd94c71b5bf6a92c917735aaa2a1b09e7b73df",
+      "typescript": {
+        "status": "missing",
+        "reason": "Call retention is implemented in the separate SDK PR #278; this branch has no typed Client.callRetention resource.",
+        "milestone": "call-retention"
       }
     },
     {

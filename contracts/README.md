@@ -2,33 +2,35 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`9fe6c23510acf7734a93d398a21b24f92435a873` on monorepo `dev`, the merge of PR #231 (BanSafe for calls). It also
-contains PR #229 (SIP address). `source.json` records the original paths and
+`63111fec728ac3ebc9a825ea57ebc4c592abdafc` on monorepo `dev`. It contains
+BanSafe for calls, the SIP address, call analytics, and call retention. `source.json` records the original paths and
 SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
 | Covered             |        317 |
-| Missing             |          3 |
-| Excluded            |        109 |
+| Missing             |          5 |
+| Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        429 |
+| Total               |        433 |
 
-This revision adds the `number_restricted` error code, the
-`session.restriction_updated` webhook, the enum `reason` and `code` on
-`session.logged_out`, the `call_restricted` call end reason, and the
-`session.restriction_updated` test-event fixture. Adding `number_restricted`
-to the shared public error enum changed the fingerprint of every operation
-that references it; those operations were reviewed and only the error enum
-differs.
+The refresh from `9fe6c235` adds two public call-retention operations and two
+Console-only counterparts. The public methods remain `missing` until SDK
+PR #278 lands; the Console routes are excluded because they require dashboard
+membership. Call analytics and export remain `missing` in this branch and are
+implemented by SDK PR #281. No existing operation fingerprint changed.
 
-The same re-sync picks up the SIP address routes from `dev`:
-`GET /console/sip/endpoint` is excluded (Console-only) and
-`GET /platform/sip/endpoint` is covered by `Client.sipTrunks.endpoint`
-(polymorfa/sdks#277). Moving the pin from the branch commit `c8798f09` to its
-merge on `dev` changes only the Messaging document's descriptions; no
-fingerprint changes.
+The BanSafe update recognizes `number_restricted`, types the
+`session.restriction_updated` webhook and the `reason` and `code` on
+`session.logged_out`, and preserves `call_restricted` through the Calls
+client's lifecycle parser. Health changes use the same health-band union for
+`band` and `previousBand` (with null for the latter's first evaluation), and
+risk factor groups use the contract's sixteen-value union. `addon_required`
+is recognized for the covered QuickLink settings endpoint.
+
+`GET /console/sip/endpoint` remains excluded (Console-only), while
+`GET /platform/sip/endpoint` is covered by `Client.sipTrunks.endpoint`.
 
 The previous revision published the operations lifecycle on the Platform API. The eight
 operation routes moved from `/console` to `/platform`, so their ledger rows
