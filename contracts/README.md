@@ -2,29 +2,44 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`dca98a4428eea96a666974929e833e06ef253593` on the unmerged branch
-`t3code/calls-bansafe` (BanSafe for calls). `source.json` records the original
-paths and SHA-256 hashes. `coverage.json` uses the same source revision.
+`c8798f097dda3e2f36bcb27b53921715b1f31e84` on the unmerged branch
+`t3code/calls-bansafe` (BanSafe for calls). That branch contains monorepo
+`dev` at `576176a6506a6eb20b5f9e6ded73e2fbaf3048fc`, the previous pin.
+`source.json` records the original paths and SHA-256 hashes. `coverage.json`
+uses the same source revision. Re-sync to `dev` once that pull request merges.
 
-That revision adds the `number_restricted` error code, the
+This revision adds the `number_restricted` error code, the
 `session.restriction_updated` webhook, the enum `reason` and `code` on
 `session.logged_out`, the `call_restricted` call end reason, and the
-`session.restriction_updated` test-event fixture. It also carries the
-`bansafe.risk_changed` and `bansafe.health_changed` webhook schemas that landed
-on monorepo `dev` after the previous pin; both are now covered by
-`WebhookPayloadMap`. Adding `number_restricted` to the shared public error enum
-changed the fingerprint of every operation that references it; those operations
-were reviewed and only the error enum differs. No operations were added or
-removed.
+`session.restriction_updated` test-event fixture. Adding `number_restricted`
+to the shared public error enum changed the fingerprint of every operation
+that references it; those operations were reviewed and only the error enum
+differs.
+
+The same re-sync picks up the SIP address routes from `dev`:
+`GET /console/sip/endpoint` is excluded (Console-only) and
+`GET /platform/sip/endpoint` is recorded as `missing` because
+`Client.sipTrunks.endpoint` implements it in a separate pull request
+(polymorfa/sdks#277).
+
+The previous revision published the operations lifecycle on the Platform API. The eight
+operation routes moved from `/console` to `/platform`, so their ledger rows
+move from `excluded` (console-only) to `covered` by `Client.operations` and
+`Client.project(projectId).operations`. The organization-wide reads accept a
+`projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
+and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
+contract. Call analytics adds `GET /platform/calls`, `/platform/calls/stats`,
+and `/platform/calls/export`; they are recorded as `missing` because
+`Client.calls` implements them in a separate pull request.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        308 |
-| Missing             |          0 |
-| Excluded            |        116 |
+| Covered             |        316 |
+| Missing             |          4 |
+| Excluded            |        109 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        424 |
+| Total               |        429 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

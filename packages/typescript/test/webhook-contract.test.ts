@@ -288,7 +288,7 @@ const PAYLOADS: {
           impact: 42,
           sentence:
             "38 of the 51 people you messaged had never messaged this number",
-          hint: "Message people who wrote to you first",
+          hint: "Warm up the number before sending to new contacts",
         },
       ],
       model: { version: "prior-v0", reliability: "prior" },

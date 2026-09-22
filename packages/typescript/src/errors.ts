@@ -50,7 +50,6 @@ export const POLYMORFA_ERROR_CODES = [
   "stream_cursor_expired",
   "stream_cursor_invalid",
   "payg_required",
-  "premium_required",
   "call_claimed",
   "call_not_ringing",
   "call_permission_required",
