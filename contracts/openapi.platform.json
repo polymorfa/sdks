@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (172 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (77 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (175 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (80 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -182,7 +182,7 @@
             "description": "Dashboard authentication required"
           },
           "403": {
-            "description": "Premium required"
+            "description": "Requires the Branded QuickLink add-on"
           },
           "404": {
             "description": "Team not accessible to this owner or admin"
@@ -1193,309 +1193,6 @@
         "x-audience": "public"
       }
     },
-    "/platform/call-retention": {
-      "get": {
-        "operationId": "getCallRetention",
-        "tags": [
-          "Calls"
-        ],
-        "summary": "Get your team's call data retention",
-        "description": "**Required scope:** `sessions:read`\n\nReturns how long Polymorfa keeps your team's call data. Teams without a saved setting return the default.",
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "x-required-scope": "sessions:read",
-        "responses": {
-          "200": {
-            "description": "The team's call data retention.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformAccessGetCallRetentionResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request — request body or params failed validation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformAccessPublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "invalid_parameter",
-                    "message": "Correct the invalid request field.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid authentication token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformAccessPublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "authentication_error",
-                    "code": "invalid_credential",
-                    "message": "Supply a valid credential.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Authenticated but not permitted (missing scope or rule violation)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformAccessPublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "permission_denied",
-                    "message": "The credential does not have access to this resource.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformAccessPublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "resource_not_found",
-                    "message": "The resource is unavailable to this caller.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformAccessPublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "api_error",
-                    "code": "internal_error",
-                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
-                }
-              }
-            }
-          }
-        },
-        "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
-        },
-        "x-audience": "public"
-      },
-      "put": {
-        "operationId": "updateCallRetention",
-        "tags": [
-          "Calls"
-        ],
-        "summary": "Update your team's call data retention",
-        "description": "**Required scope:** `sessions:manage`\n\nSets how long Polymorfa keeps your team's call data. Requires a team API key. A shorter period also applies to call data already stored: data older than the new period is deleted within 24 hours and cannot be recovered. Send `expectedRevision` to refuse the update when someone else changed the setting after you read it.",
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "x-required-scope": "sessions:manage",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PlatformAccessUpdateCallRetentionRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Call data retention saved.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformAccessUpdateCallRetentionResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request — request body or params failed validation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformAccessPublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "invalid_parameter",
-                    "message": "Correct the invalid request field.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid authentication token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformAccessPublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "authentication_error",
-                    "code": "invalid_credential",
-                    "message": "Supply a valid credential.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Authenticated but not permitted (missing scope or rule violation)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformAccessPublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "permission_denied",
-                    "message": "The credential does not have access to this resource.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformAccessPublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "resource_not_found",
-                    "message": "The resource is unavailable to this caller.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "`state_conflict`: the setting changed after `expectedRevision`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformAccessPublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "conflict_error",
-                    "code": "state_conflict",
-                    "message": "The request conflicts with the resource state.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PlatformAccessPublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "api_error",
-                    "code": "internal_error",
-                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
-                }
-              }
-            }
-          }
-        },
-        "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
-        },
-        "x-audience": "public"
-      }
-    },
     "/platform/sessions/{session}/call-settings": {
       "get": {
         "operationId": "getCallSettings",
@@ -1776,6 +1473,309 @@
           },
           "409": {
             "description": "`state_conflict`: the settings changed after `expectedRevision`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
+        "x-audience": "public"
+      }
+    },
+    "/platform/call-retention": {
+      "get": {
+        "operationId": "getCallRetention",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Get your team's call data retention",
+        "description": "**Required scope:** `sessions:read`\n\nReturns how long Polymorfa keeps your team's call data. Teams without a saved setting return the default.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "responses": {
+          "200": {
+            "description": "The team's call data retention.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessGetCallRetentionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        },
+        "x-audience": "public"
+      },
+      "put": {
+        "operationId": "updateCallRetention",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Update your team's call data retention",
+        "description": "**Required scope:** `sessions:manage`\n\nRecords how long Polymorfa keeps your team's call data. Requires a team API key. Deletion of call data older than the period starts on a date Polymorfa announces in the changelog; until then, saving a period deletes nothing. Once deletion runs, a shorter period also applies to call data already stored, and deleted data cannot be recovered. Send `expectedRevision` to refuse the update when someone else changed the setting after you read it.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessUpdateCallRetentionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Call data retention saved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessUpdateCallRetentionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`state_conflict`: the setting changed after `expectedRevision`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5202,6 +5202,144 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/console/call-retention": {
+      "get": {
+        "operationId": "getTeamCallRetention",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Read team call data retention",
+        "description": "Returns how long Polymorfa keeps the team's call data. Teams without a saved setting return the default (`extended`, 90 days) with revision 0.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console call data retention; requires live dashboard membership. The Platform API publishes the same setting under /platform/call-retention.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TeamCallRetention"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateTeamCallRetention",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Update team call data retention",
+        "description": "Records how long Polymorfa keeps the team's call data. Deletion of call data older than the period starts on a date Polymorfa announces in the changelog; until then, saving a period deletes nothing. `expectedRevision` refuses an update to a setting that changed since it was read.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console call data retention; requires live dashboard owner or admin membership. The Platform API publishes the same setting under /platform/call-retention.",
+        "x-required-organization-role": "owner_or_admin",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTeamCallRetentionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TeamCallRetention"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
@@ -12217,7 +12355,7 @@
           "projects"
         ],
         "summary": "Request production enrollment",
-        "description": "Upgrades the team to Pay-As-You-Go and creates a durable production-enrollment operation in the same request. The upgrade is permanent: every real number is billed from its next 24-hour window, and the free real number and one-project limit no longer apply. An active launch offer continues until it ends. The project stays in development until provisioning succeeds. Poll the returned operationId for progress.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Creates a durable production-enrollment operation. The team must be on Pay-As-You-Go; a Free team receives `409` with code `payg_required` and upgrades from Billing first. The project stays in development until provisioning succeeds. Poll the returned operationId for progress.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -19027,7 +19165,7 @@
           "quicklink"
         ],
         "summary": "Update QuickLink settings",
-        "description": "Updates the saved QuickLink settings for the authenticated team or project and returns the saved record.\n\nRequires `quicklink:manage`. Project tokens only access resources in their own project.",
+        "description": "Updates the saved QuickLink settings for the authenticated team or project and returns the saved record. Setting `hideWatermark` to true without an active Branded QuickLink add-on returns 402 with code `addon_required`.\n\nRequires `quicklink:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -19092,6 +19230,9 @@
           },
           "403": {
             "$ref": "#/components/responses/Forbidden"
+          },
+          "402": {
+            "$ref": "#/components/responses/AddonRequired"
           }
         }
       }
@@ -19168,11 +19309,11 @@
           "billing"
         ],
         "summary": "Top up billing",
-        "description": "**EXCLUDED from the public API** (`console`). Starts a native billing purchase in the console; human session only. API clients use auto-top-up.",
+        "description": "**EXCLUDED from the public API** (`console`). Creates a provider checkout for a credit pack in the console; human session only. API clients use auto-top-up.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Starts a native billing purchase in the console; human session only. API clients use auto-top-up.",
+        "x-exclusion-reason": "Creates a provider checkout for a credit pack in the console; human session only. API clients use auto-top-up.",
         "security": [
           {
             "ConsoleSession": []
@@ -22185,7 +22326,7 @@
               "default": "UTC",
               "maxLength": 64,
               "example": "Europe/Lisbon",
-              "description": "IANA time zone name for day and hour buckets and the heatmap. UTC offsets are not accepted."
+              "description": "IANA time zone name for day and hour buckets and the heatmap, such as `UTC`, `CET` or `Europe/Lisbon`; case does not matter and the response carries the canonical name. UTC offsets and POSIX strings such as `UTC+3` are not accepted."
             }
           }
         ],
@@ -23566,6 +23707,206 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/platform/sip/endpoint": {
+      "get": {
+        "operationId": "getSipEndpoint",
+        "tags": [
+          "SIP Trunks"
+        ],
+        "summary": "Get the SIP address",
+        "description": "**Required scope:** `sessions:read`\n\nReturns the host and ports your PBX sends SIP to, and the RTP port range to allow for call audio. When this environment does not host SIP, `status` is `sip_not_hosted` and no address is returned. The address is the same for every trunk of every project.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "responses": {
+          "200": {
+            "description": "The SIP address, or `sip_not_hosted`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessGetSipEndpointResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        },
+        "x-audience": "public"
+      }
+    },
+    "/console/sip/endpoint": {
+      "get": {
+        "operationId": "getConsoleSipEndpoint",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Get the SIP address",
+        "description": "Returns the host, ports and RTP range PBXs use for this environment, or `sip_not_hosted` when it has no SIP address.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Private Console SIP address; requires live dashboard membership. The Platform API publishes the same address under /platform/sip/endpoint.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PlatformAccessSipEndpoint"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       }
@@ -25325,6 +25666,84 @@
           "updatedAt"
         ]
       },
+      "TeamCallRetention": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "policy": {
+            "type": "string",
+            "enum": [
+              "short",
+              "standard",
+              "extended",
+              "compliance",
+              "custom"
+            ],
+            "description": "`short` (7 days), `standard` (30 days), `extended` (90 days), `compliance` (365 days), or `custom`."
+          },
+          "retentionDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2555,
+            "description": "How many days Polymorfa keeps the team's call data."
+          },
+          "appliesTo": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The call data the period applies to."
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Increases on every change; 0 while the team uses the default."
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the setting was last changed, or null while the team uses the default."
+          }
+        },
+        "required": [
+          "policy",
+          "retentionDays",
+          "appliesTo",
+          "revision",
+          "updatedAt"
+        ]
+      },
+      "UpdateTeamCallRetentionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "policy": {
+            "type": "string",
+            "enum": [
+              "short",
+              "standard",
+              "extended",
+              "compliance",
+              "custom"
+            ]
+          },
+          "retentionDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2555,
+            "description": "Required for `custom`; with a named policy, omit it or send that policy's period."
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Refuse the update with 409 unless the setting still has this revision."
+          }
+        },
+        "required": [
+          "policy"
+        ]
+      },
       "CallRecord": {
         "type": "object",
         "additionalProperties": false,
@@ -26590,7 +27009,7 @@
           },
           "hideWatermark": {
             "type": "boolean",
-            "description": "Saved preference to hide Powered by Polymorfa. QuickLink pages hide it only while the team is active and has a Branded QuickLink add-on, an active launch trial, or an Enterprise agreement."
+            "description": "Saved preference to hide Powered by Polymorfa. QuickLink pages hide it only while the team is active and has a Branded QuickLink add-on."
           },
           "allowPhoneChange": {
             "type": "boolean",
@@ -26786,7 +27205,7 @@
           },
           "hideWatermark": {
             "type": "boolean",
-            "description": "Hide Powered by Polymorfa. Setting `true` requires an active team with a Branded QuickLink add-on, an active launch trial, or an Enterprise agreement; otherwise the request returns `402` with code `premium_required`."
+            "description": "Hide Powered by Polymorfa. Setting `true` requires an active team with a Branded QuickLink add-on; otherwise the request returns `402` with code `addon_required`."
           },
           "allowPhoneChange": {
             "type": "boolean",
@@ -27233,7 +27652,7 @@
               "amountCents": {
                 "type": "number",
                 "minimum": 0,
-                "multipleOf": 1e-06,
+                "multipleOf": 0.000001,
                 "description": "Credits charged on application, with up to six decimal places."
               },
               "priceVersion": {
@@ -27959,7 +28378,7 @@
             "enum": [
               "payg"
             ],
-            "description": "The team's billing mode after the request. Always Pay-As-You-Go."
+            "description": "The team's billing mode. Always Pay-As-You-Go, because only Pay-As-You-Go teams can request production."
           }
         },
         "required": [
@@ -30089,19 +30508,19 @@
           "measuredCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 1e-06,
+            "multipleOf": 0.000001,
             "description": "Credit quantity this number consumed inside the window, with up to six decimal places."
           },
           "capCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 1e-06,
+            "multipleOf": 0.000001,
             "description": "Maximum credit quantity this claim can return, with up to six decimal places."
           },
           "amountCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 1e-06,
+            "multipleOf": 0.000001,
             "description": "Credit quantity this claim returns, with up to six decimal places."
           },
           "evidence": {
@@ -34011,123 +34430,6 @@
           "enabled"
         ]
       },
-      "PlatformAccessCallRetentionPolicy": {
-        "type": "string",
-        "enum": [
-          "short",
-          "standard",
-          "extended",
-          "compliance",
-          "custom"
-        ],
-        "description": "The retention policy: `short` (7 days), `standard` (30 days), `extended` (90 days), `compliance` (365 days), or `custom` (the number of days in `retentionDays`). Defaults to `extended`."
-      },
-      "PlatformAccessCallRetention": {
-        "type": "object",
-        "properties": {
-          "policy": {
-            "$ref": "#/components/schemas/PlatformAccessCallRetentionPolicy"
-          },
-          "retentionDays": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 2555,
-            "description": "How many days Polymorfa keeps your team's call data. Polymorfa deletes call data within 24 hours after it becomes older than this. Defaults to 90."
-          },
-          "appliesTo": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "The call data the period applies to: `call_records` (call history), `call_events` (the participant and connection history of each call) and `client_reports` (the diagnostics your apps report for their call connections). New kinds of call data are added to this list and follow the same period."
-          },
-          "revision": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Increases on every change; 0 while your team uses the default. Send it as `expectedRevision` to refuse an update that would overwrite someone else's change."
-          },
-          "updatedAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time",
-            "description": "When the setting was last changed, or null while your team uses the default."
-          }
-        },
-        "required": [
-          "policy",
-          "retentionDays",
-          "appliesTo",
-          "revision",
-          "updatedAt"
-        ],
-        "additionalProperties": false
-      },
-      "PlatformAccessGetCallRetentionResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          },
-          "data": {
-            "$ref": "#/components/schemas/PlatformAccessCallRetention"
-          }
-        },
-        "required": [
-          "success",
-          "data"
-        ]
-      },
-      "PlatformAccessUpdateCallRetentionResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          },
-          "data": {
-            "$ref": "#/components/schemas/PlatformAccessCallRetention"
-          }
-        },
-        "required": [
-          "success",
-          "data"
-        ]
-      },
-      "PlatformAccessUpdateCallRetentionRequest": {
-        "type": "object",
-        "properties": {
-          "policy": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PlatformAccessCallRetentionPolicy"
-              },
-              {
-                "description": "The retention policy. A named policy sets its own period; `custom` uses `retentionDays`."
-              }
-            ]
-          },
-          "retentionDays": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 2555,
-            "description": "Required when `policy` is `custom`: a whole number of days from 1 to 2555. With a named policy, omit it or send that policy's period."
-          },
-          "expectedRevision": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Apply the update only if the setting still has this `revision` (0 for a team using the default). Otherwise the update fails with `409 state_conflict`."
-          }
-        },
-        "required": [
-          "policy"
-        ],
-        "additionalProperties": false
-      },
       "PlatformAccessCallInboundRoute": {
         "type": "string",
         "enum": [
@@ -34267,6 +34569,123 @@
         },
         "additionalProperties": false
       },
+      "PlatformAccessCallRetentionPolicy": {
+        "type": "string",
+        "enum": [
+          "short",
+          "standard",
+          "extended",
+          "compliance",
+          "custom"
+        ],
+        "description": "The retention policy: `short` (7 days), `standard` (30 days), `extended` (90 days), `compliance` (365 days), or `custom` (the number of days in `retentionDays`). Defaults to `extended`."
+      },
+      "PlatformAccessCallRetention": {
+        "type": "object",
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/PlatformAccessCallRetentionPolicy"
+          },
+          "retentionDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2555,
+            "description": "How many days Polymorfa keeps your team's call data. Deletion of call data older than this starts on a date Polymorfa announces in the changelog; until then, the setting records your choice and nothing is deleted. Defaults to 90."
+          },
+          "appliesTo": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The call data the period applies to: `call_records` (call history), `call_events` (the participant and connection history of each call) and `client_reports` (the diagnostics your apps report for their call connections). New kinds of call data are added to this list and follow the same period."
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Increases on every change; 0 while your team uses the default. Send it as `expectedRevision` to refuse an update that would overwrite someone else's change."
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When the setting was last changed, or null while your team uses the default."
+          }
+        },
+        "required": [
+          "policy",
+          "retentionDays",
+          "appliesTo",
+          "revision",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformAccessGetCallRetentionResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/PlatformAccessCallRetention"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "PlatformAccessUpdateCallRetentionResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/PlatformAccessCallRetention"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "PlatformAccessUpdateCallRetentionRequest": {
+        "type": "object",
+        "properties": {
+          "policy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformAccessCallRetentionPolicy"
+              },
+              {
+                "description": "The retention policy. A named policy sets its own period; `custom` uses `retentionDays`."
+              }
+            ]
+          },
+          "retentionDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2555,
+            "description": "Required when `policy` is `custom`: a whole number of days from 1 to 2555. With a named policy, omit it or send that policy's period."
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Apply the update only if the setting still has this `revision` (0 for a team using the default). Otherwise the update fails with `409 state_conflict`."
+          }
+        },
+        "required": [
+          "policy"
+        ],
+        "additionalProperties": false
+      },
       "PlatformAccessSipTrunkDirection": {
         "type": "string",
         "enum": [
@@ -34283,7 +34702,7 @@
           "tcp",
           "tls"
         ],
-        "description": "Transport used to reach `targetUri`."
+        "description": "Transport your PBX uses for SIP signaling."
       },
       "PlatformAccessSipTrunkOutbound": {
         "type": "object",
@@ -34294,7 +34713,14 @@
             "description": "SIP URI that receives incoming WhatsApp calls, for example `sip:pbx.example.com:5060`."
           },
           "transport": {
-            "$ref": "#/components/schemas/PlatformAccessSipTransport"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformAccessSipTransport"
+              },
+              {
+                "description": "Transport used to reach `targetUri`."
+              }
+            ]
           },
           "authUsername": {
             "type": "string",
@@ -35940,6 +36366,168 @@
           "data",
           "docs"
         ]
+      },
+      "PlatformAccessSipEndpointTransport": {
+        "type": "object",
+        "properties": {
+          "transport": {
+            "$ref": "#/components/schemas/PlatformAccessSipTransport"
+          },
+          "port": {
+            "type": "integer",
+            "description": "Port on `host` for this transport."
+          },
+          "srtp": {
+            "type": "string",
+            "enum": [
+              "required",
+              "not_supported"
+            ],
+            "description": "`required`: calls on this transport must use SRTP (SDES) media. `not_supported`: calls use plain RTP; offers with SRTP are refused."
+          }
+        },
+        "required": [
+          "transport",
+          "port",
+          "srtp"
+        ]
+      },
+      "PlatformAccessSipEndpointRtp": {
+        "type": "object",
+        "properties": {
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "udp"
+            ]
+          },
+          "portMin": {
+            "type": "integer",
+            "description": "First port of the range."
+          },
+          "portMax": {
+            "type": "integer",
+            "description": "Last port of the range, inclusive."
+          }
+        },
+        "required": [
+          "protocol",
+          "portMin",
+          "portMax"
+        ],
+        "description": "UDP port range that call audio (RTP or SRTP) uses on Polymorfa's side. Allow it in both directions."
+      },
+      "PlatformAccessSipEndpointHosted": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "hosted"
+            ],
+            "description": "This environment accepts SIP at `host`."
+          },
+          "host": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Host name your PBX sends SIP to. Allow the addresses it resolves to for both SIP and RTP."
+          },
+          "transports": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformAccessSipEndpointTransport"
+            },
+            "minItems": 1,
+            "description": "SIP transports and their ports on `host`."
+          },
+          "rtp": {
+            "$ref": "#/components/schemas/PlatformAccessSipEndpointRtp"
+          }
+        },
+        "required": [
+          "status",
+          "host",
+          "transports",
+          "rtp"
+        ]
+      },
+      "PlatformAccessSipEndpointNotHosted": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "sip_not_hosted"
+            ],
+            "description": "This environment has no SIP address."
+          },
+          "host": {
+            "type": "string",
+            "description": "Always null: there is no address.",
+            "enum": [
+              null
+            ],
+            "nullable": true
+          },
+          "transports": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformAccessSipEndpointTransport"
+            },
+            "maxItems": 0,
+            "description": "Always empty."
+          },
+          "rtp": {
+            "type": "object",
+            "description": "Always null.",
+            "enum": [
+              null
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "status",
+          "host",
+          "transports",
+          "rtp"
+        ]
+      },
+      "PlatformAccessSipEndpoint": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/PlatformAccessSipEndpointHosted"
+          },
+          {
+            "$ref": "#/components/schemas/PlatformAccessSipEndpointNotHosted"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "status",
+          "mapping": {
+            "hosted": "#/components/schemas/PlatformAccessSipEndpointHosted",
+            "sip_not_hosted": "#/components/schemas/PlatformAccessSipEndpointNotHosted"
+          }
+        },
+        "description": "`hosted`: the host, SIP transports and RTP range PBXs use. `sip_not_hosted`: the environment has no SIP address; `host` and `rtp` are null and `transports` is empty."
+      },
+      "PlatformAccessGetSipEndpointResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/PlatformAccessSipEndpoint"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
       }
     },
     "responses": {
@@ -36305,6 +36893,30 @@
       },
       "NotImplemented": {
         "description": "Endpoint registered; handler not yet wired to a repository.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "AddonRequired": {
+        "description": "The request uses a benefit of an add-on that your team does not have active. Error code `addon_required`.",
         "headers": {
           "X-Request-Id": {
             "schema": {

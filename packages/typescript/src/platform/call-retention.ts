@@ -35,6 +35,7 @@ interface UpdateCallRetentionFields {
   /**
    * Apply the update only if the setting still has this `revision` (0 for a
    * team on the default). Otherwise the update fails with `state_conflict`.
+   * Omit it to apply the update without a revision check (last write wins).
    */
   readonly expectedRevision?: number;
 }

@@ -2,44 +2,44 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`576176a6506a6eb20b5f9e6ded73e2fbaf3048fc` on monorepo `dev`. `source.json`
-records the original paths and SHA-256 hashes. `coverage.json` uses the same
-source revision.
+`63111fec728ac3ebc9a825ea57ebc4c592abdafc` on monorepo `dev`. It contains
+BanSafe for calls, the SIP address, call analytics, and call retention. `source.json` records the original paths and
+SHA-256 hashes. `coverage.json` uses the same source revision.
 
-This revision publishes the operations lifecycle on the Platform API. The eight
+| Status              | Operations |
+| ------------------- | ---------: |
+| Covered             |        319 |
+| Missing             |          3 |
+| Excluded            |        111 |
+| Partial             |          0 |
+| Changed fingerprint |          0 |
+| Total               |        433 |
+
+The refresh from `9fe6c235` adds two public call-retention operations and two
+Console-only counterparts. The public methods are covered by `Client.callRetention`; the Console
+routes are excluded because they require dashboard membership. Call analytics and export remain `missing` in this branch and are
+implemented by SDK PR #281. No existing operation fingerprint changed.
+
+The BanSafe update recognizes `number_restricted`, types the
+`session.restriction_updated` webhook and the `reason` and `code` on
+`session.logged_out`, and preserves `call_restricted` through the Calls
+client's lifecycle parser. Health changes use the same health-band union for
+`band` and `previousBand` (with null for the latter's first evaluation), and
+risk factor groups use the contract's sixteen-value union. `addon_required`
+is recognized for the covered QuickLink settings endpoint.
+
+`GET /console/sip/endpoint` remains excluded (Console-only), while
+`GET /platform/sip/endpoint` is covered by `Client.sipTrunks.endpoint`.
+
+The previous revision published the operations lifecycle on the Platform API. The eight
 operation routes moved from `/console` to `/platform`, so their ledger rows
 move from `excluded` (console-only) to `covered` by `Client.operations` and
 `Client.project(projectId).operations`. The organization-wide reads accept a
 `projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
 and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
-contract. `/platform/projects/{projectId}/events/stream` keeps a refreshed
-fingerprint from the upstream frame `$ref` fix; only its discriminator mapping
-changed. The same re-sync picks up the management MCP tools and the call analytics work
-on `dev`. The MCP tools change no published operation this SDK covers. Call
-analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
-`/platform/calls/export`; they are recorded as `missing` here because
+contract. Call analytics adds `GET /platform/calls`, `/platform/calls/stats`,
+and `/platform/calls/export`; they are recorded as `missing` because
 `Client.calls` implements them in a separate pull request.
-
-| Status              | Operations |
-| ------------------- | ---------: |
-| Covered             |        318 |
-| Missing             |          3 |
-| Excluded            |        108 |
-| Partial             |          0 |
-| Changed fingerprint |          0 |
-| Total               |        429 |
-
-The Platform snapshot is not byte-identical to the pinned revision. It adds
-`getCallRetention` and `updateCallRetention` (`GET` and `PUT
-/platform/call-retention`), covered by `Client.callRetention.retrieve` and
-`Client.callRetention.update`, with the `PlatformAccessCallRetention*`
-schemas. They were copied verbatim from the generated management spec on
-monorepo branch `t3code/calls-retention`, which merged to monorepo `dev` at
-commit `109ac4c110d8aabad1f95864c29bee31960a7d11` (PR #235). The operations
-are no longer provisional, but the rest of the snapshot has not been
-byte-identically re-synced to that later commit; `source.json` records this
-under `pendingOverlay` and hashes the edited file. Re-sync both snapshots
-byte-identically on the next full contract re-pin.
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -66,6 +66,19 @@ the `billingMode` field of the production enrollment result.
 Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
 successful live call.
+
+## Retention integration
+
+`Client.callRetention.retrieve` and `Client.callRetention.update` cover the
+merged `GET` and `PUT /platform/call-retention` operations. The revision guard
+is optional: callers send `expectedRevision` to reject an intervening change;
+omitting it applies the update without that check. Console retention routes
+remain excluded because they require dashboard membership.
+
+This branch is held for SDK PR #282 before publication. Its BanSafe webhook,
+Calls lifecycle and known-error changes must arrive through a normal `dev`
+merge so every covered method matches these exact snapshots. The three
+analytics routes remain missing until SDK PR #281.
 
 ## Reconciliation
 

@@ -173,18 +173,20 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "576176a6506a6eb20b5f9e6ded73e2fbaf3048fc",
-      total: 429,
-      covered: 318,
+      sourceCommit: "63111fec728ac3ebc9a825ea57ebc4c592abdafc",
+      total: 433,
+      covered: 319,
       partial: 0,
-      // Call analytics and call record export arrived with this re-sync;
-      // Client.calls implements them in a separate pull request.
+      // Call analytics and call record export arrived with the operations
+      // lifecycle re-sync; Client.calls implements them in a separate pull request.
       missing: 3,
-      excluded: 108,
+      excluded: 111,
       changed: 0,
     });
-    // Monorepo dev now carries the merged Calls diagnostics route the SDK
-    // already implements, so there is no unresolved removal left.
+    // The eight excluded console-only operation-management routes were
+    // replaced by their public /platform equivalents (Operations in the
+    // Platform API), which the SDK does not cover yet (tracked as missing
+    // above), so there is no unresolved removal left.
     const resolutions = (result.report?.resolutions ?? []) as Array<{
       operationId: string;
       status: string;

@@ -1,24 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "576176a6506a6eb20b5f9e6ded73e2fbaf3048fc",
+  "commit": "63111fec728ac3ebc9a825ea57ebc4c592abdafc",
   "branch": "dev",
   "published": true,
-  "note": "Squash merge of the operations lifecycle PR on monorepo dev.",
-  "pendingOverlay": {
-    "branch": "dev",
-    "commit": "109ac4c110d8aabad1f95864c29bee31960a7d11",
-    "note": "The Platform snapshot adds GET and PUT /platform/call-retention and their schemas, copied verbatim from apps/api/docs/openapi.management.json. PR #235 merged these to monorepo dev at this commit, so the operations are no longer provisional, but the rest of the snapshot has not been byte-identically re-synced to this later commit (it still reflects the pinned commit above). Re-sync both snapshots byte-identically on the next full contract re-pin; do not read the gap between the two commits as unmerged."
-  },
+  "note": "Merged monorepo dev, including BanSafe for calls, SIP address, call analytics and call retention. Coverage records the remaining SDK gaps separately.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "64290a300b966b0dbbfd431cdf7f34d9e6d6896971305415f632b3796030fcc6"
+      "sha256": "907aa54b79a59da2a598f0358029adc106b610c51898a2592f70e74a077d9022"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "848ac757696a69103f1e513f1f11ef579a1a462c65359e8d926605b63a8bec59"
+      "sha256": "ab07ad1b821b51a685d37836d29e793bb6b337caa944ef27544d5a9126b92378"
     }
   }
 }
