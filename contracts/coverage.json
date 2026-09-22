@@ -3416,9 +3416,8 @@
       "operationId": "getSipEndpoint",
       "fingerprint": "5af3dfe52689ac903d6e4a8c69c5ae81cd9ccff8aa94cee421236100e4b8bb6f",
       "typescript": {
-        "status": "missing",
-        "reason": "No typed SDK method implements this public operation.",
-        "milestone": "calls-analytics-and-sip-discovery"
+        "status": "covered",
+        "method": "Client.sipTrunks.endpoint"
       }
     },
     {

@@ -13,10 +13,17 @@ operation routes moved to `/platform/operations` and
 `/platform/projects/{projectId}/operations`; the existing `Client.operations`
 and project-view `operations` resources cover list, get, transitions and cancel.
 Three new Console retention and SIP discovery operations stay excluded.
-Six public operations remain explicitly missing: `GET` and `PUT
+Five public operations remain explicitly missing: `GET` and `PUT
 /platform/call-retention`, `GET /platform/calls`, `GET /platform/calls/export`,
-`GET /platform/calls/stats`, and `GET /platform/sip/endpoint`. This P0 update
+and `GET /platform/calls/stats`. This P0 update
 does not add typed methods for those operations or claim whole-contract parity.
+
+SDK `dev` through `8392f66` adds `Client.sipTrunks.endpoint()` for
+`GET /platform/sip/endpoint`. Its `SipEndpoint` result is a discriminated union:
+`hosted` carries the host, transports and RTP range; `sip_not_hosted` carries
+null host/RTP and no transports. Those existing types and request tests match
+this exact snapshot, so the operation is covered. The merge also retains the
+release script's compiled-version stamping and the single BanSafe payload block.
 
 The preceding 192 refreshed fingerprints were reviewed. Most reflect `number_restricted`
 in the shared public error enum. Testing fixtures add
@@ -80,8 +87,8 @@ too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        324 |
-| Missing             |          6 |
+| Covered             |        325 |
+| Missing             |          5 |
 | Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
