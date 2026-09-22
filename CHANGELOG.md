@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Breaking: `Client.campaigns.create` requires a `CreatePlatformCampaignRequest`
+  body with `name` and `projectId`. Named optional fields replace the open
+  top-level object; composer, messages, audience, compliance and variant JSON
+  values remain opaque.
+
 - Breaking: `Client.campaigns.recipients` returns a cursor page
   (`{ data, page }`) instead of a bare array, takes `projectId`, `status`,
   `cursor` and `limit`, and each recipient now carries `sentAt`,

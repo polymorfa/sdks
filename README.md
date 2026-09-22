@@ -277,7 +277,8 @@ The organization view also exposes these management resources:
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and paged or appended recipients. The single-campaign
   operations require the owning `projectId`. This resource is available only
-  on organization clients.
+  on organization clients. `create` requires `CreatePlatformCampaignRequest`
+  with `name` and `projectId`; its named JSON fields pass through unchanged.
   `update` accepts `recipientListId` to point an unlaunched draft at another
   audience, or null to detach it
 - `customers`: enable Customers for a project; create, list, retrieve, update,
@@ -294,8 +295,8 @@ idempotency keys. The SDK returns the pairing URL only on the first successful
 creation attempt. Customer list responses retain their cursor metadata under
 `response.data.page`.
 
-Audience creation and membership, campaign recipients, and opt-out settings are
-fully typed. The remaining campaign, audience, opt-out, and media operations
+Audience creation and membership, campaign creation and recipients, and opt-out
+settings are fully typed. The remaining campaign, audience, opt-out, and media operations
 expose their payloads as open objects in the pinned contract, so those methods
 use the exported `PlatformPayload` type instead of claiming fields the contract
 does not define.

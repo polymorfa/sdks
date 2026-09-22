@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "55b94b305f2e50ba498343d4b5247cd0ee756226",
+  "sourceCommit": "8067be507dc818d2418f8724a943de138678b3db",
   "excludedContracts": [
     {
       "family": "graph",
@@ -4079,7 +4079,7 @@
       "method": "POST",
       "path": "/platform/campaigns",
       "operationId": "createPlatformCampaign",
-      "fingerprint": "63c364230050c1e81820fe7a9451fc8f1dc0a8f395500d14988332d606f6f9b6",
+      "fingerprint": "1bc165505e2850f060e7f191155ba64137b549161e713fce5f8ceed855e8e38c",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.create"

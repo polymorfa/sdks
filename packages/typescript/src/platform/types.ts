@@ -172,6 +172,30 @@ export interface TransferCustomerNumberRequest {
   readonly confirm: true;
 }
 
+/** Create a campaign through the organization client's Platform resource. */
+export interface CreatePlatformCampaignRequest {
+  /** Owning project; organization API keys are not bound to one project. */
+  readonly projectId: string;
+  /** Trimmed by the API; 1 to 200 characters and must not be blank. */
+  readonly name: string;
+  readonly templateId?: string;
+  readonly recipientListId?: string;
+  readonly senderConfig?: Readonly<Record<string, unknown>>;
+  /** Scheduled start time in Unix milliseconds. */
+  readonly scheduledAt?: number;
+  /** At most 1,000 recipients. */
+  readonly recipients?: readonly CampaignRecipientInput[];
+  /** Ignored when inline recipients are supplied. */
+  readonly recipientCount?: number;
+  // The API deliberately leaves these JSON values opaque.
+  readonly composerBlueprint?: unknown;
+  readonly messagesArray?: unknown;
+  readonly audienceRef?: unknown;
+  readonly complianceConfig?: unknown;
+  readonly variants?: unknown;
+  readonly variantStrategy?: unknown;
+}
+
 export interface ListCampaignsParams {
   readonly projectId: string;
   readonly projectSlug?: string;

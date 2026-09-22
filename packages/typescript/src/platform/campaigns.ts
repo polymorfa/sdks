@@ -4,6 +4,7 @@ import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   AddPlatformCampaignRecipientsRequest,
   AddPlatformCampaignRecipientsResult,
+  CreatePlatformCampaignRequest,
   DataEnvelope,
   ListCampaignsParams,
   ListPlatformCampaignRecipientsParams,
@@ -39,10 +40,15 @@ export class CampaignsResource {
   }
 
   create(
-    body?: PlatformPayload,
+    body: CreatePlatformCampaignRequest,
     options: RequestOptions = {},
   ): CampaignResponse {
-    return this.write("POST", "/platform/campaigns", body, options);
+    return this.transport.request({
+      method: "POST",
+      path: "/platform/campaigns",
+      body,
+      ...options,
+    });
   }
 
   retrieve(

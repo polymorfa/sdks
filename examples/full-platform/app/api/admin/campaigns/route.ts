@@ -9,7 +9,7 @@ import {
   type Body,
 } from "../../../../lib/route.js";
 
-// Management campaigns. Their payloads are open objects in the contract.
+// Management campaigns use the server-configured project.
 export const GET = route("admin", () =>
   organization().campaigns.list({
     projectId: env.projectId(),
@@ -22,9 +22,12 @@ export const POST = route("admin", async ({ body, request }) => {
   const payload = (body.payload ?? {}) as Body;
   const name = action(body);
   if (name === "create") {
-    return campaigns.create(payload, {
-      idempotencyKey: idempotencyKey(request),
-    });
+    return campaigns.create(
+      { ...payload, name: text(payload, "name"), projectId: env.projectId() },
+      {
+        idempotencyKey: idempotencyKey(request),
+      },
+    );
   }
   const id = text(body, "campaignId");
   const scope = { projectId: env.projectId() };

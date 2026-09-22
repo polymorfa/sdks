@@ -9427,12 +9427,11 @@
           }
         ],
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "additionalProperties": true
+                "$ref": "#/components/schemas/CreatePlatformCampaignRequest"
               }
             }
           }
@@ -29526,6 +29525,62 @@
         "required": [
           "row",
           "reason"
+        ]
+      },
+      "CreatePlatformCampaignRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Campaign name, trimmed before validation. Must not be blank."
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Required when using a team API key. Project tokens derive the project from the credential."
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipientListId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Audience in the same team whose members are copied when the campaign launches."
+          },
+          "senderConfig": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "scheduledAt": {
+            "type": "number",
+            "description": "Scheduled start time in Unix milliseconds."
+          },
+          "recipients": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 1000,
+            "description": "At most 1,000 recipients per request.",
+            "items": {
+              "$ref": "#/components/schemas/RecipientInput"
+            }
+          },
+          "recipientCount": {
+            "type": "number",
+            "description": "Ignored when inline recipients are provided; their stored count is authoritative."
+          },
+          "composerBlueprint": {},
+          "messagesArray": {},
+          "audienceRef": {},
+          "complianceConfig": {},
+          "variants": {},
+          "variantStrategy": {}
+        },
+        "required": [
+          "name"
         ]
       },
       "CreateAudienceRequest": {

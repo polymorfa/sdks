@@ -2,13 +2,13 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at provisional `polymorfa/polymorfa` commit
-`55b94b305f2e50ba498343d4b5247cd0ee756226` for Campaigns P0 (#232).
+`8067be507dc818d2418f8724a943de138678b3db` for Campaigns P0 (#232).
 This integration commit is not the final merged `dev` revision. SDK merge and
 publication remain blocked until `source.json`, both snapshots, the ledger and
 revision tests are rechecked against the final merged `dev` SHA. `source.json`
 records the source paths and SHA-256 hashes.
 
-The refresh adds 17 operation rows and removes eight. Eight removed Console
+The preceding refresh added 17 operation rows and removes eight. Eight removed Console
 operation routes moved to `/platform/operations` and
 `/platform/projects/{projectId}/operations`; the existing `Client.operations`
 and project-view `operations` resources cover list, get, transitions and cancel.
@@ -18,7 +18,7 @@ Six public operations remain explicitly missing: `GET` and `PUT
 `GET /platform/calls/stats`, and `GET /platform/sip/endpoint`. This P0 update
 does not add typed methods for those operations or claim whole-contract parity.
 
-The 192 refreshed fingerprints were reviewed. Most reflect `number_restricted`
+The preceding 192 refreshed fingerprints were reviewed. Most reflect `number_restricted`
 in the shared public error enum. Testing fixtures add
 `session.restriction_updated`, `restrictionActive`, and the `call_restricted`
 call-end reason. SIP transport schema wrappers preserve their existing type.
@@ -26,6 +26,13 @@ QuickLink settings declare an add-on-required `402`, handled by the existing
 payment-required error class. The webhook catalog also adds the restriction
 payload, requires `code` on `session.logged_out`, narrows its reason enum, and
 narrows the previous BanSafe health band; SDK types follow those schemas.
+
+The latest schema refresh changes only `POST /platform/campaigns`: its required
+body is now `CreatePlatformCampaignRequest`, with required `name`, named optional
+fields, and no additional top-level properties. The SDK requires `projectId`
+because its Platform campaign resource belongs to organization clients. The
+six opaque JSON fields remain `unknown`, while `senderConfig` remains an open
+object. No routes were added or removed by this schema refresh.
 
 This revision adds the Campaigns P0 operations. Audiences gain member
 management (`POST`/`GET /platform/audiences/{listId}/members` and

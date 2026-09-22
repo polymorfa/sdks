@@ -602,6 +602,7 @@ export type {
   AddAudienceMembersResult,
   AddPlatformCampaignRecipientsRequest,
   AddPlatformCampaignRecipientsResult,
+  CreatePlatformCampaignRequest,
   Audience,
   AudienceImportMapping,
   AudienceImportResult,

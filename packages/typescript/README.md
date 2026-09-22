@@ -1557,8 +1557,14 @@ const campaign = await platform.campaigns.create(
 console.log(campaign.data.data, campaign.metadata.requestId);
 ```
 
-The pinned contract defines these operation payloads as open objects, exposed
-as `PlatformPayload`. Templates and Flows are not methods on `Client`:
+`Client.campaigns.create` requires `CreatePlatformCampaignRequest`, including
+`name` and the owning `projectId`. It accepts `templateId`, `recipientListId`,
+`senderConfig`, `scheduledAt`, inline `recipients` (at most 1,000), and
+`recipientCount` (ignored when inline recipients are supplied). The named
+`composerBlueprint`, `messagesArray`, `audienceRef`, `complianceConfig`,
+`variants`, and `variantStrategy` values remain opaque JSON. Extra top-level
+fields are not part of the create contract. Lifecycle action payloads remain
+open `PlatformPayload` objects. Templates and Flows are not methods on `Client`:
 their endpoints require a dashboard bearer and reject the organization API key
 used by the server client.
 

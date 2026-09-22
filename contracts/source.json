@@ -1,7 +1,7 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "55b94b305f2e50ba498343d4b5247cd0ee756226",
-  "branch": "t3code/campaigns-exploration",
+  "commit": "8067be507dc818d2418f8724a943de138678b3db",
+  "branch": "codex/campaigns-p0-finish",
   "published": false,
   "note": "Provisional integration snapshot for polymorfa/polymorfa#232. Release blocked: replace with the final merged dev SHA and recheck source hashes before merging or publishing this SDK.",
   "contracts": {
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "fed5fd027d62e52ae40fe65ed181d0c66db3387bdbffd185c23b5fff77c0d39e"
+      "sha256": "07f148c58953f5d7972a92e2eaadf161ce506770a198cc5e5b8bb7c633df7adf"
     }
   }
 }
