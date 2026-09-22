@@ -222,11 +222,34 @@ Both organization and project views expose owner-bound resources:
 - `webhookDeliveries`: list and retrieve deliveries, list and retrieve their
   physical attempts, and retry a delivery
 - `quickLinkSettings`: retrieve and update the saved QuickLink configuration
+- `operations`: list, get, wait for, list transitions of, and cancel
+  asynchronous operations
 
 List methods return `CursorPage<T>`. Mutations return typed receipts with the
 resource, operation, and idempotency identifiers supplied by the API.
-Operation inspection is console-only. Machine clients expose no operation
-polling, transition-listing, or cancellation methods.
+
+```ts
+const enrollment = await client.projects.requestProductionEnrollment(
+  "project_123",
+  { business },
+);
+const done = await client.operations.wait(enrollment.data.data.operationId, {
+  maxWaitMs: 10 * 60_000,
+});
+if (done.data.status !== "succeeded") {
+  console.error(done.data.status, done.data.error?.code);
+}
+```
+
+`operations.wait` chains server long-polls (up to 30 seconds each) until the
+operation succeeds, fails, or is cancelled, its `sequence` passes
+`afterSequence`, or `maxWaitMs` (default 5 minutes) ends. It returns the latest
+state, so check `status`. `operations.get(id, { wait })` makes one long-poll
+read. `operations.cancel(id)` works only while `capabilities.cancellable` is
+true and sends a generated `Idempotency-Key` unless you pass one. Reads need
+`operations:read`; cancellation needs `operations:cancel`. Organization
+clients see team and project operations and accept a `projectId` filter;
+project clients see only their project.
 
 The organization view also exposes these management resources:
 

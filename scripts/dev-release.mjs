@@ -157,6 +157,19 @@ function pack(version, out) {
         }
       }
     }
+    // npm provenance rejects a package whose repository.url does not match
+    // the publishing GitHub repository, so fail here instead of mid-publish.
+    const repo = packed.repository;
+    if (
+      !repo ||
+      typeof repo !== "object" ||
+      repo.url !== "git+https://github.com/polymorfa/sdks.git" ||
+      typeof repo.directory !== "string"
+    ) {
+      fail(
+        `${p.json.name} needs repository { url: "git+https://github.com/polymorfa/sdks.git", directory } for npm provenance`,
+      );
+    }
     const files = new Set(result.files.map((f) => f.path));
     for (const required of requiredFiles[p.json.name] ?? []) {
       if (!files.has(required))

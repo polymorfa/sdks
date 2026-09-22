@@ -675,6 +675,9 @@ describe("coverage checker", () => {
         status: "covered",
         method: "Client.securityIncidents.acknowledge",
       },
+      // The pinned revision predates the Platform operations routes, so the
+      // console read stays excluded. Re-pinning to monorepo dev after #232
+      // merges restores getPlatformOperation -> Client.operations.get.
       getOrganizationOperation: {
         status: "excluded",
       },

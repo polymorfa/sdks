@@ -8,6 +8,16 @@ files at `polymorfa/polymorfa` commit
 merged to monorepo `dev`. `source.json` records the original paths and SHA-256
 hashes. `coverage.json` uses the same source revision.
 
+This branch also carries SDK `dev` through `0371147`, including
+`Client.operations` (sdks#280). That method family calls the `/platform`
+operations routes from monorepo `576176a6` (#223), which this pinned revision
+predates. Here the eight operation routes still live under `/console`, so their
+rows stay `excluded`, and the call analytics routes that `dev` records as
+`missing` are absent. Re-pinning to the merged monorepo `dev` commit that
+contains both #232 and #223 must move the operation rows to `covered` again
+and restore the `missing` call analytics rows. The pin is not advanced now so
+the snapshots stay byte-identical to one exact source commit.
+
 This revision adds the Campaigns P0 operations. Audiences gain member
 management (`POST`/`GET /platform/audiences/{listId}/members` and
 `DELETE .../{phone}`), campaigns gain recipient append and listing on both

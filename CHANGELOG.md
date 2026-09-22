@@ -55,9 +55,20 @@
   launch and resume refuse with it when the project is over its send rate.
 
 - Added the `contact.opted_out` and `contact.opted_in` webhook events with the
-  exported `ContactOptPayload`. Registered `bansafe.health_changed` and
-  `bansafe.risk_changed`, which the contract already defined, with
-  `BanSafeHealthChangedPayload` and `BanSafeRiskChangedPayload`.
+  exported `ContactOptPayload`.
+
+- Webhooks: `KNOWN_WEBHOOK_EVENT_TYPES` and `WebhookPayloadMap` add
+  `bansafe.risk_changed` and `bansafe.health_changed`, with the
+  `BanSafeRiskChangedPayload` and `BanSafeHealthChangedPayload` types and
+  their `BanSafeForecast`, `BanSafeRiskFactor`, `BanSafeModelRef`,
+  `BanSafeHealthPenalties`, and `BanSafeHealthFinding` members.
+
+- Added `Client.operations` on organization and project clients: `list`
+  (filter by `projectId`, status, kind, resource, and time), `get` with an
+  optional server long-poll (`wait`, 0 to 30 seconds), `listTransitions`,
+  `cancel` (generates an `Idempotency-Key`), and `wait`, which chains
+  long-polls until the operation is terminal or `maxWaitMs` ends. Requires
+  `operations:read`; `cancel` requires `operations:cancel`.
 
 - Client rules: `ClientRules` and `SetClientRulesRequest` add
   `conversationTtlSeconds`, the seconds a sender stays replyable in
