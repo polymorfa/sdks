@@ -1888,6 +1888,10 @@ has `delivery: "simulated"` and the event arrives as ordinary Test number
 activity. Both methods require an organization API key or project token with
 `sandbox:write` (trigger) or `sandbox:read` (list) and Test numbers access.
 
+Use `session.restriction_updated` with `{ restrictionActive: false }` to
+test a restriction ending, or `true` to test one starting. The `call.ended`
+fixture accepts `callEndReason: "call_restricted"` for a restricted call.
+
 Pass `{ idempotencyKey }` as the third argument to `triggerEvent` to retry
 safely. Repeating the request with the same key and body reuses the same event
 ID, so a retry after an uncertain response never creates a second event or
