@@ -51,6 +51,7 @@ export type CallEndReason =
   | "connection_failed"
   | "pod_lost"
   | "capacity"
+  | "call_restricted"
   | "unknown";
 
 /** Who answered the call, and whether they claimed it. */

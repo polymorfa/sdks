@@ -528,6 +528,7 @@ function endReasonFrom(value: unknown): CallEndReason {
     case "connection_failed":
     case "pod_lost":
     case "capacity":
+    case "call_restricted":
       return value;
     case "media_timeout":
     case "setup_timeout":

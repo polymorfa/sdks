@@ -93,6 +93,10 @@ promise: it resolves once media connects and rejects if media fails.
   and owner: `participant` for a WhatsApp participant, or `connectionId` and
   `connectionParticipant` for another application connection.
 
+When WhatsApp ends a call because of a calling restriction, `call.endReason`
+and the call's and client's `ended` events report `call_restricted`. An
+unrecognized reason from a newer server is reported as `unknown`.
+
 ## Media
 
 `call.audio` and `call.video` carry the call's media once it is connected:

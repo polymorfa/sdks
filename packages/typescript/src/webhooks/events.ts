@@ -714,7 +714,7 @@ export interface BanSafeHealthChangedPayload {
   /** Health from 0 (worst) to 100 (best), or null when not measured. */
   readonly health: number | null;
   readonly band: BanSafeHealthBandName;
-  readonly previousBand: string | null;
+  readonly previousBand: BanSafeHealthBandName | null;
   readonly state:
     "measured" | "partial" | "measuring" | "restricted" | "banned";
   readonly penalties: BanSafeHealthPenalties;

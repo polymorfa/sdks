@@ -1438,6 +1438,10 @@ reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
 and `retryAfter` in seconds. Unknown event names still parse as
 `UnknownWebhookEvent`.
 
+For `bansafe.health_changed`, `band` is a `BanSafeHealthBandName`:
+`good`, `fair`, `poor`, `failing`, or `unknown`. `previousBand` uses the same
+type, with `null` for the first evaluation.
+
 `contact.sync` delivers a Meta Cloud API contact batch as
 `{ kind: "contacts", value }`. `message.echo` reports a message sent from the
 WhatsApp Business app on a connected Meta Cloud API number as

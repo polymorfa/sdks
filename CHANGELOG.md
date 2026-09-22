@@ -2,14 +2,16 @@
 
 ## Unreleased
 
-- `KnownPolymorfaErrorCode` drops `premium_required`: the API stopped
-  returning it when teams moved to Free and Pay-As-You-Go. `PolymorfaErrorCode`
-  still accepts any string, so code that compares against it keeps compiling.
+- `KnownPolymorfaErrorCode` adds `addon_required` for QuickLink settings
+  that require an active add-on, and drops `premium_required` after the API
+  moved teams to Free and Pay-As-You-Go. `PolymorfaErrorCode` still accepts any
+  string, so code that compares against it keeps compiling.
 - Calls: `PolymorfaErrorCode` adds `number_restricted`. Placing a call or
   inviting someone the Number has never chatted with fails with it while
   WhatsApp restricts the Number to existing contacts; `Retry-After` carries the
   seconds until the restriction ends when WhatsApp reports one. A call WhatsApp
-  refuses for that reason ends with `reason: "call_restricted"`.
+  refuses for that reason ends with `reason: "call_restricted"`. The Calls
+  client preserves this value in `Call.endReason` and both `ended` events.
 - Webhooks: new `session.restriction_updated` event and
   `SessionRestrictionUpdatedPayload` (`type`, `active`, `enforcementType`,
   `expiresAt`, `observedAt`). `SessionLoggedOutPayload.reason` is now
@@ -33,6 +35,8 @@
   `BanSafeHealthPenalties`, and `BanSafeHealthFinding` members. The package
   root exports them, and `BanSafeRiskFactor.group` is the
   `BanSafeRiskFactorGroup` union of the sixteen documented groups.
+  `BanSafeHealthChangedPayload.previousBand` uses `BanSafeHealthBandName | null`,
+  matching the five health bands accepted by `band`.
 
 - Added `Client.operations` on organization and project clients: `list`
   (filter by `projectId`, status, kind, resource, and time), `get` with an
