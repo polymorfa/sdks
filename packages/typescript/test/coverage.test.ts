@@ -173,16 +173,19 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "256ded50de727c3d978a8bfc73bc67b3c35454e2",
-      total: 427,
-      covered: 311,
+      sourceCommit: "651c1378264aa73c1442a9fa083908d8f5195400",
+      total: 436,
+      covered: 320,
       partial: 0,
-      missing: 0,
-      excluded: 116,
+      // Retention (two operations) and analytics (three) remain separate SDK PRs.
+      missing: 5,
+      excluded: 111,
       changed: 0,
     });
-    // Monorepo dev now carries the merged Calls diagnostics route the SDK
-    // already implements, so there is no unresolved removal left.
+    // The eight excluded console-only operation-management routes were
+    // replaced by their public /platform equivalents (Operations in the
+    // Platform API), covered by Client.operations, so there is no unresolved
+    // removal left.
     const resolutions = (result.report?.resolutions ?? []) as Array<{
       operationId: string;
       status: string;
@@ -591,7 +594,7 @@ describe("coverage checker", () => {
       "listActiveSessionBans",
       "listSecurityIncidents",
       "acknowledgeSecurityIncident",
-      "getOrganizationOperation",
+      "getPlatformOperation",
       "listPolymorfaTokens",
       "inviteMember",
       "updateMemberRole",
@@ -636,8 +639,9 @@ describe("coverage checker", () => {
         status: "covered",
         method: "Client.securityIncidents.acknowledge",
       },
-      getOrganizationOperation: {
-        status: "excluded",
+      getPlatformOperation: {
+        status: "covered",
+        method: "Client.operations.get",
       },
       listPolymorfaTokens: {
         status: "covered",

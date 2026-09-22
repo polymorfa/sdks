@@ -1,38 +1,54 @@
 # Contract coverage
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` commit `256ded50` on branch
-`t3code/voice-p1-gates-metering` (pull request #228). Re-pin to the merge commit
-on monorepo `dev` before release. `source.json` records the
-original paths and SHA-256 hashes. `coverage.json` uses the same source
-revision.
+files at pending `polymorfa/polymorfa` PR #228 commit
+`651c1378264aa73c1442a9fa083908d8f5195400`, branch
+`t3code/voice-p1-gates-metering`. This is an explicit unmerged dependency,
+not the final `dev` pin. `source.json` records `published: false`, both paths
+and SHA-256 hashes; the ledger uses this same revision. Copy both snapshots
+from the final merge commit on monorepo `dev` before this SDK PR merges or publishes.
 
-Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
-`MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
-merged monorepo `dev`, the Calls diagnostics route
-(`voipReportCallDiagnostics`) is back with a refreshed fingerprint; the SDK
-keeps `MessagingClient.voip.report` covering it. The Console-only `getCall`
-response also picked up a refreshed fingerprint (still excluded). No
-operations were added or removed by this re-sync.
+Usage is covered by `Client.usage.summary`, `Client.usage.listRecords` and
+`Client.usage.listGates`; `iterateRecords` walks record pages. `usage.recorded`
+uses the same closed enums as `UsageRecord`. Gate state requires a team
+credential; project credentials are refused by the API. Records without a
+period filter span all months; summaries default to the current UTC month.
+
+Typed BanSafe alignment remains dependent on SDK #282. Merge SDK `dev`
+after that PR lands and retain its error codes, restriction webhook and Calls
+parser changes. This branch does not duplicate those fixes.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        311 |
-| Missing             |          0 |
-| Excluded            |        116 |
+| Covered             |        320 |
+| Missing             |          5 |
+| Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        427 |
+| Total               |        436 |
 
-This revision adds usage metering and usage gates: `GET /platform/usage`,
-`GET /platform/usage/records` and `GET /platform/gates`, covered by
-`Client.usage.summary`, `Client.usage.listRecords` (with `Client.usage.iterateRecords`
-for paging) and `Client.usage.listGates`. It also carries the `usage.recorded`
-webhook payload and refreshes the `streamProjectEvents` fingerprint from the
-monorepo's event-stream index change; that operation is unchanged for the SDK and
-stays covered by `Client.events.stream`.
+The refresh from `9fe6c235` adds two public call-retention operations and two
+Console-only counterparts. The public methods remain `missing` until SDK
+PR #278 lands; the Console routes are excluded because they require dashboard
+membership. Call analytics and export remain `missing` in this branch and are
+implemented by SDK PR #281. The pending usage source also adds `number_restricted` to the shared Platform
+error enum, refreshing 27 fingerprints. Their request and success-response
+shapes are unchanged.
 
-An earlier revision adds test event triggering
+`GET /console/sip/endpoint` remains excluded (Console-only), while
+`GET /platform/sip/endpoint` is covered by `Client.sipTrunks.endpoint`.
+
+The previous revision published the operations lifecycle on the Platform API. The eight
+operation routes moved from `/console` to `/platform`, so their ledger rows
+move from `excluded` (console-only) to `covered` by `Client.operations` and
+`Client.project(projectId).operations`. The organization-wide reads accept a
+`projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
+and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
+contract. Call analytics adds `GET /platform/calls`, `/platform/calls/stats`,
+and `/platform/calls/export`; they are recorded as `missing` because
+`Client.calls` implements them in a separate pull request.
+
+This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
 (`GET /messaging/testing/{projectId}/events/fixtures`), covered by
 `MessagingClient.testing.triggerEvent` (with the optional `Idempotency-Key`
@@ -63,10 +79,9 @@ successful live call.
 Revision `2259a1fd` adds the project event stream. `Client.events.stream`
 covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
 resume, and `Client.events.acknowledgeStream` covers its manual
-acknowledgement route. The Platform `PlatformAccessEventStreamFrame`
-discriminator mapping at this revision points at unprefixed schema names
-(`EventStreamReadyFrame` and so on) that the document does not define; the
-snapshot keeps the source bytes unchanged. The same revision adds
+acknowledgement route. The source pinned here corrects the
+`PlatformAccessEventStreamFrame` discriminator to reference the defined,
+Platform-prefixed schemas. Revision `2259a1fd` also adds
 `conversationTtlSeconds` to client rules, turns `recipientMode` into an enum,
 and sets a minimum of 0 on `rateLimit` and `maxDaily`; the client-rules types
 follow.
@@ -110,7 +125,8 @@ BanSafe is reconciled against these same snapshots. `Client.banSafe`,
 telemetry, findings, enforcement, incident, claim, and settings operations.
 `MessagingClient.banSafe` covers the 10 Messaging Safe Mode, warm-up, Ban
 Insurance evidence, and Health policy operations. Finding acknowledgement and
-enforcement appeals are Console-only and stay excluded. No BanSafe gap remains.
+enforcement appeals are Console-only and stay excluded. The typed BanSafe
+alignment dependency on SDK #282 is recorded above.
 
 The Platform `BanSafeNumberDetail` schema at this revision lists `sessionId`,
 `session`, `phoneNumber`, `projectId`, and `enforcement` as required but omits

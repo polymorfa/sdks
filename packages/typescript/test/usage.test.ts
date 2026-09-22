@@ -2,6 +2,7 @@ import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
   Client,
+  PolymorfaAuthorizationError,
   UsageResource,
   type ApiResponse,
   type UsageGateList,
@@ -201,5 +202,32 @@ describe("Client.usage", () => {
     );
     await client.usage.summary({ projectId: "another-project" });
     expect(requests[0]!.path).toBe("/platform/usage?projectId=project-1");
+  });
+
+  it("preserves the API's refusal of project credentials for team gate state", async () => {
+    const server = await startTestServer(() => ({
+      status: 403,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        error: {
+          code: "permission_denied",
+          message: "Usage gates require a team credential.",
+        },
+        data: null,
+      }),
+    }));
+    servers.push(server);
+    const client = new Client({
+      credential: { type: "projectToken", value: PROJECT_TOKEN },
+      projectId: "project-1",
+      baseUrl: server.url,
+      maxNetworkRetries: 0,
+    });
+    await expect(client.usage.listGates()).rejects.toBeInstanceOf(
+      PolymorfaAuthorizationError,
+    );
+    expect(server.requests[0]!.path).toBe(
+      "/platform/gates?projectId=project-1",
+    );
   });
 });

@@ -262,7 +262,8 @@ Start an existing Linked Device session, then retrieve its connection status wit
 `sessions.retrieve`. The standard pairing flow is QuickLink. Direct JSON QR and phone
 pairing-code routes require `sessions:manage` plus an explicit organization
 entitlement; without it, the API returns `403` and the application must create
-a QuickLink. Operation inspection is console-only.
+a QuickLink. Follow a returned operation ID with `Client.operations.get` or
+`Client.operations.wait`.
 
 ```ts
 const started = await messaging.sessions.start("support", {
@@ -429,6 +430,23 @@ await project.sipTrunks.update(data.trunk.id, {
   enabled: false,
   expectedRevision: data.trunk.revision,
 });
+```
+
+`endpoint()` returns the SIP address to configure in your PBX and allow in
+your firewall. `SipEndpoint` is a union on `status`. `SipEndpointHosted`
+carries the `host`, the `transports` with their ports and SRTP policy, and the
+UDP `rtp` port range for call audio; narrowing on `status === "hosted"` gives
+them without a cast. `SipEndpointNotHosted` carries `status`
+`sip_not_hosted`, a `null` `host` and `rtp`, and no transports, which is a
+successful response, not an error. The address is the same for every project
+and trunk, team and project clients call it without a project, and it needs
+`sessions:read`.
+
+```ts
+const { data: address } = await platform.sipTrunks.endpoint();
+if (address.status === "hosted") {
+  console.log(address.host, address.transports, address.rtp);
+}
 ```
 
 `retrieve`, `update`, `delete`, and `rotateCredentials` take a trunk ID. A
@@ -1292,9 +1310,10 @@ console.log(launched.data.data.operationId, launched.metadata.requestId);
 
 Launch, pause, resume, and stop append durable lifecycle commands and return the
 campaign's current persisted state plus an `operationId`. They do not wait for
-the campaign state to change. Read the campaign resource to inspect its status;
-operation inspection is console-only. The API does not expose a campaign
-watcher, stream, or command-cancellation route. Launch accepts an optional
+the campaign state to change. Read the campaign resource to inspect its status,
+or follow the returned operation with `Client.operations.wait(operationId)` and
+stop it with `Client.operations.cancel(operationId)`. The API exposes no
+campaign watcher or stream route of its own. Launch accepts an optional
 epoch-millisecond schedule. Pause requires a running campaign, resume requires
 a paused campaign, and stop accepts draft, running, or paused campaigns.
 
@@ -1411,8 +1430,9 @@ if (isEvent(event, "history.sync")) {
 ```
 
 The catalog also types Customer lifecycle events (`customer.*`), BanSafe events
-(`bansafe.health_threshold`, `bansafe.enforcement`, `bansafe.action`,
-`bansafe.incident`, and `bansafe.claim`), campaign progress events
+(`bansafe.health_threshold`, `bansafe.health_changed`, `bansafe.risk_changed`,
+`bansafe.enforcement`, `bansafe.action`, `bansafe.incident`, and
+`bansafe.claim`), campaign progress events
 (`campaign.*`), `message.failed`, and `template.status`. `message.failed`
 reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
 and `retryAfter` in seconds. Unknown event names still parse as
@@ -1447,6 +1467,7 @@ organization and project scope:
   `rotateSecret`
 - `webhookDeliveries.list`, `retrieve`, `listAttempts`, `retrieveAttempt`, and
   `retry`
+- `operations.list`, `get`, `listTransitions`, `cancel`, and `wait`
 
 ```ts
 const deliveries = await project.webhookDeliveries.list({
@@ -1555,6 +1576,40 @@ The pinned contract defines these operation payloads as open objects, exposed
 as `PlatformPayload`. Templates and Flows are not methods on `Client`:
 their endpoints require a dashboard bearer and reject the organization API key
 used by the server client.
+
+## Metered call usage and gates
+
+`Client.usage` is prepared for the pending usage API. It needs `sessions:read`.
+Organization clients can read team usage or filter by project and session;
+project clients read only their bound project's usage. Gate state is team-wide:
+`listGates()` requires an organization credential, and the API returns 403 for
+project credentials.
+
+```ts
+const { data: usage } = await platform.usage.summary({ period: "2026-09" });
+console.log(usage.billingEnabled, usage.meters);
+
+for await (const record of platform.usage.iterateRecords({
+  callId: "CALL-1",
+})) {
+  console.log(record.id, record.revision, record.quantity);
+}
+
+const { data: state } = await platform.usage.listGates({ session: "support" });
+console.log(state.gates);
+```
+
+`summary()` defaults to the current UTC calendar month. `listRecords()` and
+`iterateRecords()` include every month when `period` is omitted. Records use
+closed meter and unit types; `usage.recorded` carries the same record shape.
+Keep the highest `revision` for each record ID when a later event corrects it.
+The event envelope's timestamp identifies that revision; `recordedAt` remains
+the original record time.
+
+Usage remains unpriced. Gate modes describe behavior only where `active` is
+true; inactive voice gates have no runtime enforcement. This SDK resource
+does not change prices, modes or customer access. API PR #228 must merge and
+these contracts must be re-pinned before the SDK change publishes.
 
 ## Billing and usage
 

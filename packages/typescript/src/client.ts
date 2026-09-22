@@ -22,6 +22,7 @@ import { CampaignsResource } from "./platform/campaigns.js";
 import { CustomersResource } from "./platform/customers.js";
 import {
   EventsResource,
+  OperationsResource,
   WebhookDeliveriesResource,
   WebhooksResource,
 } from "./platform/developer-resources.js";
@@ -53,6 +54,7 @@ export interface ClientBase<O extends ClientOwner> {
   readonly events: EventsResourceFor<O>;
   readonly webhooks: WebhooksResourceFor<O>;
   readonly webhookDeliveries: WebhookDeliveriesResourceFor<O>;
+  readonly operations: OperationsResource<O>;
   readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<O>;
   readonly sipTrunks: SipTrunksResource<O>;
@@ -95,6 +97,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   readonly events: EventsResource<ClientOwner>;
   readonly webhooks: WebhooksResource<ClientOwner>;
   readonly webhookDeliveries: WebhookDeliveriesResource<ClientOwner>;
+  readonly operations: OperationsResource<ClientOwner>;
   readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<ClientOwner>;
   readonly sipTrunks: SipTrunksResource<ClientOwner>;
@@ -141,6 +144,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       this.#transport,
       prefix,
     );
+    this.operations = new OperationsResource(this.#transport, prefix);
     this.sessionConfiguration = new SessionConfigurationResource(
       this.#transport,
       projectId,

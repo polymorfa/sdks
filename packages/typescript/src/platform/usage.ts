@@ -129,8 +129,9 @@ export type UsageGateKey =
   | "voice.storage.transcripts";
 
 /**
- * `record` counts actions over the limit without refusing them. `enforce`
- * refuses them with `gate_limit_reached` (HTTP 402). `off` does not check.
+ * For an active gate, `record` counts actions over the limit without refusing
+ * them; `enforce` refuses them with `gate_limit_reached` (HTTP 402). `off`
+ * does not check. An inactive gate's configured mode does not enforce a limit.
  */
 export type UsageGateMode = "off" | "record" | "enforce";
 
