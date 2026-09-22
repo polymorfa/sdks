@@ -481,9 +481,11 @@ if (ready.status === "ready") {
 ```
 
 `upload` accepts a `Buffer`, `Uint8Array`, `ArrayBuffer`, `Blob` or
-`ReadableStream` (a stream needs `sizeBytes`) of up to 16 MiB in
-`audio/mpeg`, `audio/wav`, `audio/x-wav`, `audio/ogg`, `audio/mp4` or
-`audio/x-m4a`. It calls `createUpload`, sends the bytes to `upload.url` with
+`ReadableStream` of up to 16 MiB in `audio/mpeg`, `audio/wav`,
+`audio/x-wav`, `audio/ogg`, `audio/mp4` or `audio/x-m4a`. A stream needs
+`sizeBytes`. For bytes and Blobs the SDK uses the body's byte length and
+refuses a different `sizeBytes` with a `PolymorfaValidationError` before it
+creates the asset. It calls `createUpload`, sends the bytes to `upload.url` with
 only the returned `Content-Type` header and without your credential, then
 calls `complete`. If sending fails, the asset stays in `pending_upload`. You
 can run the three steps yourself with `createUpload` and `complete`; the
@@ -494,7 +496,8 @@ it.
 `update` changes `name` and `retentionDays` (`null` keeps the asset until
 deleted) and accepts `expectedRevision`. `list` returns a `CursorPage` and
 filters by `status`. `waitUntilReady` polls until the asset is `ready` or
-`failed` (default timeout 2 minutes); in production, prefer the
+`failed` and throws `PolymorfaTimeoutError` once `timeoutMs` (default 2
+minutes) has passed, cancelling a read still in flight; in production, prefer the
 `voice.asset_ready` and `voice.asset_failed` webhooks, typed as
 `VoiceAssetReadyPayload` and `VoiceAssetFailedPayload`. These events are
 project-scoped and arrive with an empty `session`.

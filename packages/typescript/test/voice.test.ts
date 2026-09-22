@@ -305,6 +305,61 @@ describe("voice audio library", () => {
     expect((upload.init as { duplex?: string }).duplex).toBe("half");
   });
 
+  it("refuses a sizeBytes that does not match a byte body before any request", async () => {
+    const fetch = uploadFlow();
+    const audio = projectClient(fetch).voice.audio;
+    const pool = Buffer.from("xxAUDIOyy");
+    const error = await audio
+      .upload({
+        name: "Greeting",
+        contentType: "audio/mpeg",
+        body: pool.subarray(2, 7),
+        sizeBytes: pool.length,
+      })
+      .then(
+        () => undefined,
+        (reason: unknown) => reason,
+      );
+    expect(error).toBeInstanceOf(PolymorfaValidationError);
+    expect(error).toMatchObject({
+      code: "invalid_parameter",
+      details: { field: "sizeBytes", sizeBytes: 9, byteLength: 5 },
+    });
+    await expect(
+      audio.upload({
+        name: "Greeting",
+        contentType: "audio/mpeg",
+        body: new ArrayBuffer(4),
+        sizeBytes: 3,
+      }),
+    ).rejects.toBeInstanceOf(PolymorfaValidationError);
+    await expect(
+      audio.upload({
+        name: "Greeting",
+        body: new Blob([new Uint8Array([1, 2, 3])], { type: "audio/ogg" }),
+        sizeBytes: 4,
+      }),
+    ).rejects.toBeInstanceOf(PolymorfaValidationError);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("sends a Buffer's byte length as its size", async () => {
+    const fetch = uploadFlow();
+    const audio = projectClient(fetch).voice.audio;
+    const body = Buffer.from("AUDIO!");
+    await audio.upload({ name: "Greeting", contentType: "audio/mpeg", body });
+    expect(sent(fetch, 0).json()).toMatchObject({ sizeBytes: 6 });
+
+    fetch.mockClear();
+    await audio.upload({
+      name: "Greeting",
+      contentType: "audio/mpeg",
+      body,
+      sizeBytes: 6,
+    });
+    expect(sent(fetch, 0).json()).toMatchObject({ sizeBytes: 6 });
+  });
+
   it("refuses uploads it cannot describe before calling the API", async () => {
     const fetch = uploadFlow();
     const audio = projectClient(fetch).voice.audio;
@@ -528,6 +583,86 @@ describe("voice audio library", () => {
     await expect(
       audio.waitUntilReady(ASSET_ID, { intervalMs: 1, timeoutMs: 5 }),
     ).rejects.toBeInstanceOf(PolymorfaTimeoutError);
+  });
+
+  it("cancels a slow read at the wait deadline and never resolves after it", async () => {
+    let delivered = false;
+    const fetch = vi.fn<typeof globalThis.fetch>(
+      (_input, init) =>
+        new Promise<Response>((resolve, reject) => {
+          const answer = setTimeout(() => {
+            delivered = true;
+            resolve(ok(asset({ status: "ready" })));
+          }, 400);
+          init?.signal?.addEventListener("abort", () => {
+            clearTimeout(answer);
+            reject(init.signal?.reason ?? new Error("aborted"));
+          });
+        }),
+    );
+    const audio = projectClient(fetch).voice.audio;
+    const started = Date.now();
+    const error = await audio
+      .waitUntilReady(ASSET_ID, { timeoutMs: 50, intervalMs: 1 })
+      .then(
+        () => undefined,
+        (reason: unknown) => reason,
+      );
+    const elapsed = Date.now() - started;
+    expect(error).toBeInstanceOf(PolymorfaTimeoutError);
+    expect((error as PolymorfaTimeoutError).code).toBe("request_timeout");
+    expect((error as PolymorfaTimeoutError).details).toEqual({
+      assetId: ASSET_ID,
+    });
+    expect(elapsed).toBeGreaterThanOrEqual(45);
+    expect(elapsed).toBeLessThan(300);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(sent(fetch, 0).init.signal?.aborted).toBe(true);
+    expect(delivered).toBe(false);
+  });
+
+  it("reports a terminal result that arrives after the deadline as a timeout", async () => {
+    let now = 1_000_000;
+    const clock = vi.spyOn(Date, "now").mockImplementation(() => now);
+    try {
+      const fetch = vi.fn<typeof globalThis.fetch>(async () => {
+        now += 1_001;
+        return ok(asset({ status: "ready" }));
+      });
+      const audio = projectClient(fetch).voice.audio;
+      await expect(
+        audio.waitUntilReady(ASSET_ID, { timeoutMs: 1_000, intervalMs: 1 }),
+      ).rejects.toMatchObject({
+        name: "PolymorfaTimeoutError",
+        code: "request_timeout",
+      });
+      expect(fetch).toHaveBeenCalledTimes(1);
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
+  it("keeps a caller abort during a wait a cancellation", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(
+      (_input, init) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () =>
+            reject(init.signal?.reason ?? new Error("aborted")),
+          );
+        }),
+    );
+    const controller = new AbortController();
+    const waiting = projectClient(fetch).voice.audio.waitUntilReady(ASSET_ID, {
+      timeoutMs: 5_000,
+      signal: controller.signal,
+    });
+    setTimeout(() => controller.abort(), 10);
+    const error = await waiting.then(
+      () => undefined,
+      (reason: unknown) => reason,
+    );
+    expect(error).not.toBeInstanceOf(PolymorfaTimeoutError);
+    expect(error).toMatchObject({ code: "request_cancelled" });
   });
 
   it("passes unknown enum values through for callers to treat as other", async () => {

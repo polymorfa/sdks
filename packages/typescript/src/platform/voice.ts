@@ -3,6 +3,7 @@ import {
   PolymorfaConfigurationError,
   PolymorfaNotFoundError,
   PolymorfaTimeoutError,
+  PolymorfaValidationError,
 } from "../errors.js";
 import { CursorPage } from "../pagination.js";
 import { RawClient } from "../raw.js";
@@ -237,7 +238,10 @@ export interface UploadVoiceAudioInput {
   readonly body: VoiceAudioBody;
   /** Required unless `body` is a `Blob` with a type. */
   readonly contentType?: VoiceAudioUploadContentType;
-  /** Required when `body` is a stream; computed otherwise. */
+  /**
+   * Required when `body` is a stream. For bytes and Blobs the size is the
+   * body's byte length; a different value is refused before any request.
+   */
   readonly sizeBytes?: number;
   readonly retentionDays?: number;
 }
@@ -545,8 +549,10 @@ export class VoiceAudioResource<O extends ClientOwner> {
 
   /**
    * Reads the asset until it is `ready` or `failed` and returns it; check
-   * `status` and `failureReason`. Throws `PolymorfaTimeoutError` after
-   * `timeoutMs`. Prefer the `voice.asset_ready` and `voice.asset_failed`
+   * `status` and `failureReason`. Throws `PolymorfaTimeoutError` (code
+   * `request_timeout`) once `timeoutMs` has elapsed: a read still in flight
+   * at the deadline is cancelled, and a result that arrives after it is not
+   * returned. Prefer the `voice.asset_ready` and `voice.asset_failed`
    * webhooks in production.
    */
   async waitUntilReady(
@@ -557,26 +563,55 @@ export class VoiceAudioResource<O extends ClientOwner> {
     const timeoutMs = wait.timeoutMs ?? 120_000;
     const intervalMs = wait.intervalMs ?? 2_000;
     const deadline = Date.now() + timeoutMs;
-    const read: RequestOptions = {
-      ...options,
-      ...(wait.signal === undefined ? {} : { signal: wait.signal }),
-    };
+    const callerSignals = [options.signal, wait.signal].filter(
+      (signal): signal is AbortSignal => signal !== undefined,
+    );
+    const timedOut = () =>
+      new PolymorfaTimeoutError(
+        `The audio asset was not processed within ${timeoutMs}ms.`,
+        { code: "request_timeout", details: { assetId } },
+      );
     while (true) {
-      const response = await this.retrieve(assetId, read);
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) throw timedOut();
+      // Each read is bounded by the time left, including the transport's own
+      // retries, and still honours the caller's signals.
+      const expiry = new AbortController();
+      const timer = setTimeout(() => expiry.abort(), remaining);
+      const read = linkSignals([...callerSignals, expiry.signal]);
+      let response: ApiResponse<VoiceAudioAsset>;
+      try {
+        response = await this.retrieve(assetId, {
+          ...options,
+          ...(read.signal === undefined ? {} : { signal: read.signal }),
+        });
+      } catch (error) {
+        if (
+          expiry.signal.aborted &&
+          !callerSignals.some((caller) => caller.aborted)
+        ) {
+          throw timedOut();
+        }
+        throw error;
+      } finally {
+        clearTimeout(timer);
+        read.dispose();
+      }
+      if (Date.now() >= deadline) throw timedOut();
       if (
         response.data.status === "ready" ||
         response.data.status === "failed"
       ) {
         return response;
       }
-      const remaining = deadline - Date.now();
-      if (remaining <= 0) {
-        throw new PolymorfaTimeoutError(
-          `The audio asset was not processed within ${timeoutMs}ms.`,
-          { code: "request_timeout", details: { assetId } },
-        );
+      const left = deadline - Date.now();
+      if (left <= 0) throw timedOut();
+      const pause = linkSignals(callerSignals);
+      try {
+        await defaultSleep(Math.min(intervalMs, left), pause.signal);
+      } finally {
+        pause.dispose();
       }
-      await defaultSleep(Math.min(intervalMs, remaining), wait.signal);
     }
   }
 
@@ -853,10 +888,10 @@ function uploadBody(input: UploadVoiceAudioInput): {
     return { body: value, sizeBytes: input.sizeBytes };
   }
   if (value instanceof Blob) {
-    return { body: value, sizeBytes: input.sizeBytes ?? value.size };
+    return { body: value, sizeBytes: knownSize(input, value.size) };
   }
   if (value instanceof ArrayBuffer) {
-    return { body: value, sizeBytes: input.sizeBytes ?? value.byteLength };
+    return { body: value, sizeBytes: knownSize(input, value.byteLength) };
   }
   if (ArrayBuffer.isView(value)) {
     // Copy into an ArrayBuffer of exactly the view's bytes; a Buffer can be a
@@ -866,10 +901,53 @@ function uploadBody(input: UploadVoiceAudioInput): {
       value.byteOffset,
       value.byteLength,
     ).slice();
-    return { body: bytes.buffer, sizeBytes: input.sizeBytes ?? bytes.length };
+    return { body: bytes.buffer, sizeBytes: knownSize(input, bytes.length) };
   }
   throw new PolymorfaConfigurationError(
     "body must be bytes, a Blob, or a ReadableStream.",
     "body",
   );
+}
+
+/**
+ * The size of a body whose length is known is its byte length. A `sizeBytes`
+ * that disagrees is refused before any request, so no asset is created for
+ * an upload the storage would reject.
+ */
+function knownSize(input: UploadVoiceAudioInput, byteLength: number): number {
+  if (input.sizeBytes !== undefined && input.sizeBytes !== byteLength) {
+    throw new PolymorfaValidationError(
+      `sizeBytes (${input.sizeBytes}) does not match the body's ${byteLength} bytes. Omit sizeBytes for byte and Blob bodies.`,
+      {
+        code: "invalid_parameter",
+        details: { field: "sizeBytes", sizeBytes: input.sizeBytes, byteLength },
+      },
+    );
+  }
+  return byteLength;
+}
+
+/**
+ * A signal that aborts, with the same reason, when any of `signals` aborts.
+ * `dispose` detaches it so a long-lived caller signal does not collect
+ * listeners across reads.
+ */
+function linkSignals(signals: readonly AbortSignal[]): {
+  readonly signal: AbortSignal | undefined;
+  readonly dispose: () => void;
+} {
+  if (signals.length <= 1) return { signal: signals[0], dispose: () => {} };
+  const controller = new AbortController();
+  const detach = new AbortController();
+  for (const signal of signals) {
+    if (signal.aborted) {
+      controller.abort(signal.reason);
+      break;
+    }
+    signal.addEventListener("abort", () => controller.abort(signal.reason), {
+      once: true,
+      signal: detach.signal,
+    });
+  }
+  return { signal: controller.signal, dispose: () => detach.abort() };
 }
