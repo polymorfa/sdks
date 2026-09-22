@@ -2,14 +2,15 @@
 
 The handwritten Polymorfa server SDK for TypeScript and Node.js.
 
-This package has not been published to npm. Build it from a clone of the
-development branch and install the packed tarball:
+Install the development prerelease from npm:
 
 ```bash
-npm ci
-npm run build:workspaces
-npm pack -w @polymorfa/sdk
+npm install @polymorfa/sdk@dev
 ```
+
+Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. See the
+[repository installation guide](../../README.md#typescript-development-install)
+to build and install a packed tarball from source.
 
 The Calls client is part of this package as `@polymorfa/sdk/calls`.
 `@polymorfa/sdk/calls/internal` exists for the Polymorfa browser package;
@@ -47,7 +48,7 @@ const platform = new Client({
     type: "organizationApiKey",
     value: process.env.POLYMORFA_PLATFORM_API_KEY!,
   },
-  apiVersion: "1.0.0",
+  apiVersion: "2026-03-20",
 });
 
 const project = platform.project("project_123");
@@ -84,9 +85,9 @@ v1 grammar and never decodes or decrypts the credential.
 The SDK rejects `pmfa_ct_` browser tokens and CLI-only `pmfa_ls_` listener
 credentials before a management request. It also rejects retired call-agent
 `pmfa_at_` and socket `pmfa_wst_` tickets and simulated-device `pmfa_sd_`
-capabilities as server API keys. It does not expose a listener,
-`AsyncIterable`, event emitter, or forwarding API. Live forwarding belongs to
-`polymorfa listen`.
+capabilities as server API keys. `Client.events.stream()` exposes an
+`AsyncIterable` for the separate [server event stream](#stream-events-in-real-time),
+subject to scope and beta access. Live forwarding belongs to `polymorfa listen`.
 
 ## System and Bridge clients
 
@@ -1499,7 +1500,9 @@ console.log(replay.data.operationId);
 
 List methods return `CursorPage<T>`. Mutations return owner-specific typed
 receipts and preserve response metadata, request IDs, and idempotency receipts.
-The SDK has no operation inspection or cancellation methods.
+Use `operations.get()` or `operations.wait()` to inspect asynchronous work,
+and `operations.cancel()` while `capabilities.cancellable` is true. Reads need
+`operations:read`; cancellation needs `operations:cancel`.
 
 Console and staff routes remain absent from the server client and its raw
 guidance. The CLI listener protocol stays private to the CLI.
