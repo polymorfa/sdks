@@ -5,9 +5,11 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts recorded at source revision
-`cdc7ec09a32309ee8233d9f8a3007eea18203c6e` on monorepo `dev`. Graph-compatible APIs are outside
-this SDK's initial scope.
+pending Messaging and Platform snapshots from API PR #227 at
+`b361dab557d43de9e1eed589d68adcfe92268e16` on
+`t3code/voice-audio-library`. This source is not merged to monorepo `dev`;
+contract reconciliation is in progress (see `contracts/README.md`).
+Graph-compatible APIs are outside this SDK's initial scope.
 
 ## Package architecture
 

@@ -1,31 +1,18 @@
 # Contract coverage
 
-The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` commit
-`cdc7ec09a32309ee8233d9f8a3007eea18203c6e` on monorepo `dev`. `source.json`
-records the original paths and SHA-256 hashes. `coverage.json` uses the same
-source revision.
+Current checkpoint: the Messaging and Platform snapshots are byte-identical to
+API PR #227 commit `b361dab557d43de9e1eed589d68adcfe92268e16` on
+`t3code/voice-audio-library`. `source.json` records the exact paths and hashes
+with `published: false`. This API source is not merged to monorepo `dev`.
 
-This revision merges PR #229 (public SIP address) into `dev`, on top of #223
-(operations lifecycle) that a parallel re-sync already reconciled. The
-Messaging document is unchanged; SIP address touches only the Platform
-document. Eight SIP-trunk and Console-SIP-trunk fingerprints shift again
-(unrelated documentation-only edits carried by `dev` since the last SIP
-re-sync); their reviewed shapes and SDK mappings are unchanged. The eleven
-operations-lifecycle and call-analytics rows already reconciled by the
-parallel re-sync keep their status: the eight operations rows are `covered` by
-`Client.operations` and `Client.project(projectId).operations`, and the three
-call-analytics rows stay `missing` pending `Client.calls` in a separate pull
-request.
-
-| Status              | Operations |
-| ------------------- | ---------: |
-| Covered             |        317 |
-| Missing             |          3 |
-| Excluded            |        109 |
-| Partial             |          0 |
-| Changed fingerprint |          0 |
-| Total               |        429 |
+SDK `dev` at `8392f66b4df0b0fee3403e27e3d2914516b0e243` is merged into this
+branch. **Contract reconciliation is unfinished:** the coverage ledger, older
+pending-code/event helper, and parity-test expectations still describe the
+previous snapshots. Do not merge or publish this SDK checkpoint. Complete
+those checks against the exact pending source, then re-pin to the final
+monorepo `dev` merge commit after API #227 merges. SDK #282 remains the separate
+BanSafe type dependency. The counts and revision notes below describe the prior
+ledger and are historical until that reconciliation is complete.
 
 Revision `576176a6` publishes the operations lifecycle on the Platform API. The
 eight operation routes moved from `/console` to `/platform`, so their ledger
