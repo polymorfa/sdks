@@ -127,6 +127,20 @@ describe("appends without declared replay", () => {
     },
   );
 
+  it.each(appends)(
+    "%s is not retried by a retry count without a key",
+    async (_name, append) => {
+      const { transport, requests } = await failingTransport();
+
+      await expect(
+        append(transport, { maxNetworkRetries: 2 }),
+      ).rejects.toBeInstanceOf(PolymorfaServerError);
+
+      expect(requests).toHaveLength(1);
+      expect(requests[0]?.headers["idempotency-key"]).toBeUndefined();
+    },
+  );
+
   it("still retries a read on the same transport", async () => {
     const { transport, requests } = await failingTransport();
 

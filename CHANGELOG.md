@@ -42,8 +42,8 @@
   replay these appends, so the SDK generates no idempotency key and turns off
   automatic retries for them, even when you pass `idempotencyKey`. A retry
   after a lost response would report the rows the first attempt added as
-  duplicates. List the recipients or members before you append again, or set
-  `maxNetworkRetries` on the request to opt back in.
+  duplicates. List the recipients or members before you append again. To opt
+  back in, set both `maxNetworkRetries` and `idempotencyKey` on the request.
 
 - Added `Client.audiences.addMembers`, `listMembers` and `deleteMember` for
   audience membership.
