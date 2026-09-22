@@ -2,37 +2,44 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`2259a1fd331c6ddbc8ad56a04333100ebfce7c2e` on monorepo `dev`. `source.json` records the
-original paths and SHA-256 hashes. `coverage.json` uses the same source
-revision.
+`576176a6506a6eb20b5f9e6ded73e2fbaf3048fc` on monorepo `dev`. `source.json`
+records the original paths and SHA-256 hashes. `coverage.json` uses the same
+source revision.
 
-Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
-`MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
-merged monorepo `dev`, the Calls diagnostics route
-(`voipReportCallDiagnostics`) is back with a refreshed fingerprint; the SDK
-keeps `MessagingClient.voip.report` covering it. The Console-only `getCall`
-response also picked up a refreshed fingerprint (still excluded). No
-operations were added or removed by this re-sync.
+This revision publishes the operations lifecycle on the Platform API. The eight
+operation routes moved from `/console` to `/platform`, so their ledger rows
+move from `excluded` (console-only) to `covered` by `Client.operations` and
+`Client.project(projectId).operations`. The organization-wide reads accept a
+`projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
+and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
+contract. `/platform/projects/{projectId}/events/stream` keeps a refreshed
+fingerprint from the upstream frame `$ref` fix; only its discriminator mapping
+changed. The same re-sync picks up the management MCP tools and the call analytics work
+on `dev`. The MCP tools change no published operation this SDK covers. Call
+analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
+`/platform/calls/export`; they are recorded as `missing` here because
+`Client.calls` implements them in a separate pull request.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        310 |
-| Missing             |          0 |
-| Excluded            |        116 |
+| Covered             |        318 |
+| Missing             |          3 |
+| Excluded            |        108 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        426 |
+| Total               |        429 |
 
 The Platform snapshot is not byte-identical to the pinned revision. It adds
 `getCallRetention` and `updateCallRetention` (`GET` and `PUT
 /platform/call-retention`), covered by `Client.callRetention.retrieve` and
 `Client.callRetention.update`, with the `PlatformAccessCallRetention*`
-schemas. They are copied verbatim from the generated management spec on monorepo
-branch `t3code/calls-retention` at commit
-`bd0bf5f3c254782c120182a89f4635cd5df9a615`. A full re-sync to that commit also
-brings newer `dev` webhook events the SDK does not cover yet `source.json` records this under `pendingOverlay`
-and hashes the edited file. Re-sync both snapshots byte-identically once the
-monorepo spec includes these operations, and do not release before then.
+schemas. They were copied verbatim from the generated management spec on
+monorepo branch `t3code/calls-retention`, which merged to monorepo `dev` at
+commit `109ac4c110d8aabad1f95864c29bee31960a7d11` (PR #235). The operations
+are no longer provisional, but the rest of the snapshot has not been
+byte-identically re-synced to that later commit; `source.json` records this
+under `pendingOverlay` and hashes the edited file. Re-sync both snapshots
+byte-identically on the next full contract re-pin.
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

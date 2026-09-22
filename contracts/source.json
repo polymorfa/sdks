@@ -1,24 +1,24 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "2259a1fd331c6ddbc8ad56a04333100ebfce7c2e",
+  "commit": "576176a6506a6eb20b5f9e6ded73e2fbaf3048fc",
   "branch": "dev",
   "published": true,
-  "note": "Merged commit on monorepo dev (merge of PR #200, project event streams).",
+  "note": "Squash merge of the operations lifecycle PR on monorepo dev.",
   "pendingOverlay": {
-    "branch": "t3code/calls-retention",
-    "commit": "bd0bf5f3c254782c120182a89f4635cd5df9a615",
-    "note": "The Platform snapshot adds GET and PUT /platform/call-retention and their schemas, copied verbatim from apps/api/docs/openapi.management.json at this commit. A full byte-identical re-sync to that commit also brings newer dev changes outside this PR (bansafe.risk_changed and bansafe.health_changed webhooks) that the SDK webhook catalog does not cover yet. Re-sync byte-identically once the monorepo change merges to dev and the SDK covers those events; do not release before then."
+    "branch": "dev",
+    "commit": "109ac4c110d8aabad1f95864c29bee31960a7d11",
+    "note": "The Platform snapshot adds GET and PUT /platform/call-retention and their schemas, copied verbatim from apps/api/docs/openapi.management.json. PR #235 merged these to monorepo dev at this commit, so the operations are no longer provisional, but the rest of the snapshot has not been byte-identically re-synced to this later commit (it still reflects the pinned commit above). Re-sync both snapshots byte-identically on the next full contract re-pin; do not read the gap between the two commits as unmerged."
   },
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "d9b9764b8e3bd88f18f10026a35bdc02b03506d8758ad282017d022eb4e800c6"
+      "sha256": "64290a300b966b0dbbfd431cdf7f34d9e6d6896971305415f632b3796030fcc6"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "5496587b357186cc2d4e34bd28b813da12935d66c59d54e528786d0b09e8abff"
+      "sha256": "848ac757696a69103f1e513f1f11ef579a1a462c65359e8d926605b63a8bec59"
     }
   }
 }

@@ -9,6 +9,19 @@
   keys can change it. Deletion of call data older than the period starts on
   a date Polymorfa announces; until then the setting records a choice and
   nothing is deleted.
+- Webhooks: `KNOWN_WEBHOOK_EVENT_TYPES` and `WebhookPayloadMap` add
+  `bansafe.risk_changed` and `bansafe.health_changed`, with the
+  `BanSafeRiskChangedPayload` and `BanSafeHealthChangedPayload` types and
+  their `BanSafeForecast`, `BanSafeRiskFactor`, `BanSafeModelRef`,
+  `BanSafeHealthPenalties`, and `BanSafeHealthFinding` members.
+
+- Added `Client.operations` on organization and project clients: `list`
+  (filter by `projectId`, status, kind, resource, and time), `get` with an
+  optional server long-poll (`wait`, 0 to 30 seconds), `listTransitions`,
+  `cancel` (generates an `Idempotency-Key`), and `wait`, which chains
+  long-polls until the operation is terminal or `maxWaitMs` ends. Requires
+  `operations:read`; `cancel` requires `operations:cancel`.
+
 - Client rules: `ClientRules` and `SetClientRulesRequest` add
   `conversationTtlSeconds`, the seconds a sender stays replyable in
   `conversation` mode (300 to 604800; the API default is 86400).
