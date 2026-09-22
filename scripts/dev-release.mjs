@@ -48,10 +48,12 @@ const textFile = /\.(?:js|mjs|cjs|d\.ts|d\.mts|d\.cts)$/;
 
 function distFiles(dir) {
   if (!existsSync(dir)) return [];
-  return readdirSync(dir, { recursive: true, withFileTypes: true })
-    .filter((e) => e.isFile() && textFile.test(e.name))
-    // Dirent.parentPath is Node >=20.12; older Node 20 releases expose .path.
-    .map((e) => join(e.parentPath ?? e.path, e.name));
+  return (
+    readdirSync(dir, { recursive: true, withFileTypes: true })
+      .filter((e) => e.isFile() && textFile.test(e.name))
+      // Dirent.parentPath is Node >=20.12; older Node 20 releases expose .path.
+      .map((e) => join(e.parentPath ?? e.path, e.name))
+  );
 }
 
 // Matches a version as a whole token, so 0.1.0 does not match inside
