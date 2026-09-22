@@ -21,10 +21,10 @@
   up to 20 rejected rows.
 
 - Breaking: `Client.campaigns.retrieve`, `delete`, `analytics` and `events` take
-  an optional `PlatformCampaignParams` argument before their request options,
-  and `update` takes it after the body. The contract now declares `projectId` as
-  a query parameter on these operations; a team API key is not bound to one
-  project and must name the one that owns the campaign.
+  a required `PlatformCampaignParams` argument before their request options,
+  and `update` requires it after the body. Set its mandatory `projectId` to the
+  project that owns the campaign. This resource belongs to the organization
+  client; a team API key is not bound to one project.
 
 - `Client.campaigns.update` takes `UpdatePlatformCampaignRequest`. It names
   `recipientListId` (string or null), which points an unlaunched draft at
