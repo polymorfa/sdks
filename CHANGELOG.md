@@ -5,7 +5,8 @@
 - Added `Client.callRetention` with `retrieve()` and `update()` for the
   team's call data retention (`GET` and `PUT /platform/call-retention`), and
   the `CallRetention`, `CallRetentionPolicy`, and `UpdateCallRetentionRequest`
-  types. Team API keys and project tokens can read the setting; only team API
+  types. `UpdateCallRetentionRequest` is a union on `policy`: `custom`
+  requires `retentionDays`, and named policies may omit it. Team API keys and project tokens can read the setting; only team API
   keys can change it. Deletion of call data older than the period starts on
   a date Polymorfa announces; until then the setting records a choice and
   nothing is deleted.

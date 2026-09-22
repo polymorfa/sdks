@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import {
   Client,
   PolymorfaAuthorizationError,
@@ -136,6 +136,31 @@ describe("call retention", () => {
 
     await client.callRetention.update({ policy: "short" });
     expect(request(fetch, 1).body).toEqual({ policy: "short" });
+  });
+
+  it("requires retentionDays only for the custom policy", () => {
+    expectTypeOf<{
+      policy: "custom";
+      retentionDays: number;
+    }>().toExtend<UpdateCallRetentionRequest>();
+    expectTypeOf<{
+      policy: "extended";
+    }>().toExtend<UpdateCallRetentionRequest>();
+    expectTypeOf<{
+      policy: "standard";
+      retentionDays: number;
+      expectedRevision: number;
+    }>().toExtend<UpdateCallRetentionRequest>();
+    expectTypeOf<{
+      policy: "custom";
+    }>().not.toExtend<UpdateCallRetentionRequest>();
+    expectTypeOf<{
+      policy: "custom";
+      expectedRevision: number;
+    }>().not.toExtend<UpdateCallRetentionRequest>();
+    // @ts-expect-error custom requires retentionDays
+    const missingDays: UpdateCallRetentionRequest = { policy: "custom" };
+    expect(missingDays.policy).toBe("custom");
   });
 
   it("raises PolymorfaConflictError for a stale expectedRevision", async () => {

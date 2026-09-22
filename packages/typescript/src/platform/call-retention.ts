@@ -31,21 +31,34 @@ export interface CallRetention {
   readonly updatedAt: string | null;
 }
 
-export interface UpdateCallRetentionRequest {
-  /** A named policy sets its own period; `custom` uses `retentionDays`. */
-  readonly policy: CallRetentionPolicy;
-  /**
-   * Required for `custom`: a whole number of days from 1 to 2555. With a named
-   * policy, omit it or send that policy's period; any other value fails with
-   * `invalid_parameter`.
-   */
-  readonly retentionDays?: number;
+interface UpdateCallRetentionFields {
   /**
    * Apply the update only if the setting still has this `revision` (0 for a
    * team on the default). Otherwise the update fails with `state_conflict`.
    */
   readonly expectedRevision?: number;
 }
+
+/**
+ * A new call data retention. `custom` requires `retentionDays`; a named
+ * policy sets its own period, so `retentionDays` is optional there.
+ */
+export type UpdateCallRetentionRequest =
+  | (UpdateCallRetentionFields & {
+      /** Keep call data for the number of days in `retentionDays`. */
+      readonly policy: "custom";
+      /** A whole number of days from 1 to 2555. */
+      readonly retentionDays: number;
+    })
+  | (UpdateCallRetentionFields & {
+      /** A named policy sets its own period. */
+      readonly policy: Exclude<CallRetentionPolicy, "custom">;
+      /**
+       * Omit it or send exactly that policy's period; any other value fails
+       * with `invalid_parameter`.
+       */
+      readonly retentionDays?: number;
+    });
 
 const PATH = "/platform/call-retention";
 

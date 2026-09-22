@@ -458,7 +458,8 @@ await platform.callRetention.update({
 
 `policy` is `short` (7 days), `standard` (30 days), `extended` (90 days, the
 default), `compliance` (365 days), or `custom`. `custom` requires
-`retentionDays` (1 to 2555). With a named policy, omit `retentionDays` or send
+`retentionDays` (1 to 2555), and `UpdateCallRetentionRequest` rejects a
+`custom` update without it at compile time. With a named policy, omit `retentionDays` or send
 exactly that policy's period; any other value raises
 `PolymorfaValidationError` with `code` `invalid_parameter`. When
 `expectedRevision` no longer matches the stored revision (0 for a team on the
