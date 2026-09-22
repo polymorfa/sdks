@@ -175,10 +175,10 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "c087e3496f3fcc8977d94fcba60904158c7550cf",
       total: 439,
-      covered: 322,
+      covered: 323,
       partial: 0,
-      // Calls records, retention, and the SIP endpoint remain explicit gaps.
-      missing: 6,
+      // Calls records and retention remain explicit gaps.
+      missing: 5,
       excluded: 111,
       changed: 0,
     });

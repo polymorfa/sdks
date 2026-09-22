@@ -432,6 +432,23 @@ await project.sipTrunks.update(data.trunk.id, {
 });
 ```
 
+`endpoint()` returns the SIP address to configure in your PBX and allow in
+your firewall. `SipEndpoint` is a union on `status`. `SipEndpointHosted`
+carries the `host`, the `transports` with their ports and SRTP policy, and the
+UDP `rtp` port range for call audio; narrowing on `status === "hosted"` gives
+them without a cast. `SipEndpointNotHosted` carries `status`
+`sip_not_hosted`, a `null` `host` and `rtp`, and no transports, which is a
+successful response, not an error. The address is the same for every project
+and trunk, team and project clients call it without a project, and it needs
+`sessions:read`.
+
+```ts
+const { data: address } = await platform.sipTrunks.endpoint();
+if (address.status === "hosted") {
+  console.log(address.host, address.transports, address.rtp);
+}
+```
+
 `retrieve`, `update`, `delete`, and `rotateCredentials` take a trunk ID. A
 project client built from a team key reads the trunk first and refuses a trunk
 of another project with `PolymorfaNotFoundError`. Conflicts raise
@@ -1413,8 +1430,9 @@ if (isEvent(event, "history.sync")) {
 ```
 
 The catalog also types Customer lifecycle events (`customer.*`), BanSafe events
-(`bansafe.health_threshold`, `bansafe.enforcement`, `bansafe.action`,
-`bansafe.incident`, and `bansafe.claim`), campaign progress events
+(`bansafe.health_threshold`, `bansafe.health_changed`, `bansafe.risk_changed`,
+`bansafe.enforcement`, `bansafe.action`, `bansafe.incident`, and
+`bansafe.claim`), campaign progress events
 (`campaign.*`), `message.failed`, and `template.status`. `message.failed`
 reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
 and `retryAfter` in seconds. Unknown event names still parse as

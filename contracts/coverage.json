@@ -3427,9 +3427,8 @@
       "operationId": "getSipEndpoint",
       "fingerprint": "24494eae826aac3301524b6b8eff97f0fba611380cc6ac4f32290005bce3bb47",
       "typescript": {
-        "status": "missing",
-        "reason": "The current API snapshot includes this Calls operation; the server SDK does not yet expose a typed method.",
-        "milestone": "calls-platform-parity"
+        "status": "covered",
+        "method": "Client.sipTrunks.endpoint"
       }
     },
     {

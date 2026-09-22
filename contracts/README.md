@@ -35,9 +35,15 @@ Their types match the contract, including `session.restriction_updated` and
 the Hybrid refusal codes. The retired `premium_required` code is no longer
 listed; unrecognized API error codes remain readable as strings.
 
-Six Calls operations remain missing: record listing, statistics, export,
-retention get/update, and SIP endpoint discovery. Their ledger rows name the
+Five Calls operations remain missing: record listing, statistics, export,
+and retention get/update. Their ledger rows name the
 gaps. Console equivalents stay excluded because they require dashboard identity.
+
+`Client.sipTrunks.endpoint` covers `GET /platform/sip/endpoint` for organization
+keys and project tokens. Its response distinguishes `hosted`, with a host,
+transports and RTP range, from `sip_not_hosted`, with null host and RTP fields
+and no transports. This method was merged from SDK `dev`; its response shape
+matches the same pinned API snapshot. The Console endpoint remains excluded.
 
 An earlier revision published the operations lifecycle on the Platform API. The eight
 operation routes moved from `/console` to `/platform`, so their ledger rows
@@ -55,8 +61,8 @@ analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        322 |
-| Missing             |          6 |
+| Covered             |        323 |
+| Missing             |          5 |
 | Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
