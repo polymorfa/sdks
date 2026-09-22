@@ -242,8 +242,9 @@ The organization view also exposes these management resources:
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
 - `usage`: read metered call usage for a month, list or iterate usage records
-  for a call or number, and read usage gate modes, limits and decisions (also on
-  project clients). Usage is measured, not charged.
+  for a call or number (also on project clients), and read usage gate modes,
+  limits and decisions (organization clients only). Usage is measured, not
+  charged.
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
   restrictions, incidents, claims, and Health action history; report and retract
   customer incidents
