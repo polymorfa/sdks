@@ -5,9 +5,12 @@ import {
   UsageResource,
   type ApiResponse,
   type UsageGateList,
+  type UsageMeter,
   type UsageRecord,
   type UsageRecordPage,
+  type UsageRecordedPayload,
   type UsageSummary,
+  type UsageUnit,
 } from "../src/index.js";
 import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import {
@@ -126,6 +129,12 @@ describe("Client.usage", () => {
     expectTypeOf<UsageRecord>().toHaveProperty("revision");
     expectTypeOf<UsageRecord>().toHaveProperty("pricingState");
     expectTypeOf<UsageSummary>().toHaveProperty("billingEnabled");
+  });
+
+  it("types the usage.recorded webhook payload with the closed enums", () => {
+    expectTypeOf<UsageRecordedPayload["meter"]>().toEqualTypeOf<UsageMeter>();
+    expectTypeOf<UsageRecordedPayload["unit"]>().toEqualTypeOf<UsageUnit>();
+    expectTypeOf<UsageRecordedPayload>().toEqualTypeOf<UsageRecord>();
   });
 
   it("reads a month's usage and unwraps the data envelope", async () => {

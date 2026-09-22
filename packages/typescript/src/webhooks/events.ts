@@ -3,6 +3,13 @@ import type {
   PhonePlatform,
   WhatsAppAccountType,
 } from "../messaging/types.js";
+import type {
+  UsageKeySource,
+  UsageMeter,
+  UsagePricingState,
+  UsageSourceKind,
+  UsageUnit,
+} from "../platform/usage.js";
 
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
@@ -881,13 +888,12 @@ export interface BanSafeHealthChangedPayload {
  */
 export interface UsageRecordedPayload {
   readonly id: string;
-  readonly meter: string;
+  readonly meter: UsageMeter;
   readonly quantity: number;
-  readonly unit: string;
+  readonly unit: UsageUnit;
   readonly dimensions: Readonly<Record<string, string | number | boolean>>;
-  readonly keySource: "none" | "managed" | "customer";
-  readonly sourceKind:
-    "call" | "attempt" | "flow_run" | "conversation" | "asset" | "team";
+  readonly keySource: UsageKeySource;
+  readonly sourceKind: UsageSourceKind;
   /** The call id for call meters. */
   readonly sourceId: string;
   readonly projectId: string | null;
@@ -895,7 +901,7 @@ export interface UsageRecordedPayload {
   readonly occurredAt: string;
   readonly recordedAt: string;
   readonly revision: number;
-  readonly pricingState: "unpriced" | "priced" | "waived" | "settled";
+  readonly pricingState: UsagePricingState;
   readonly rateCard: { readonly id: string; readonly version: number } | null;
   readonly pricedCredits: number | null;
 }

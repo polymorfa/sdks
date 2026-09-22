@@ -169,6 +169,8 @@ export interface UsageSummaryParams {
 }
 
 export interface UsageRecordParams extends UsageSummaryParams {
+  /** Calendar month in UTC, `YYYY-MM`. Omit it to list records from every month. */
+  readonly period?: string;
   /** One call's records. */
   readonly callId?: string;
   readonly meter?: UsageMeter;
