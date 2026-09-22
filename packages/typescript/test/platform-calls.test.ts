@@ -179,6 +179,17 @@ describe("Platform call analytics", () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
+  it.each(["CET", "GMT", "utc", "Europe/Lisbon"])(
+    "passes IANA zone %s to the API without rewriting it",
+    async (timezone) => {
+      const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+        Response.json({ data: stats() }),
+      );
+      await teamClient(fetch).calls.stats({ timezone });
+      expect(call(fetch, 0).url.searchParams.get("timezone")).toBe(timezone);
+    },
+  );
+
   it("sends RFC 3339 date-times with any offset unchanged", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json({ data: [], page: { nextCursor: null, hasMore: false } }),

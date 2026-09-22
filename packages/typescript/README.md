@@ -262,7 +262,8 @@ Start an existing Linked Device session, then retrieve its connection status wit
 `sessions.retrieve`. The standard pairing flow is QuickLink. Direct JSON QR and phone
 pairing-code routes require `sessions:manage` plus an explicit organization
 entitlement; without it, the API returns `403` and the application must create
-a QuickLink. Operation inspection is console-only.
+a QuickLink. Follow a returned operation ID with `Client.operations.get` or
+`Client.operations.wait`.
 
 ```ts
 const started = await messaging.sessions.start("support", {
@@ -431,6 +432,23 @@ await project.sipTrunks.update(data.trunk.id, {
 });
 ```
 
+`endpoint()` returns the SIP address to configure in your PBX and allow in
+your firewall. `SipEndpoint` is a union on `status`. `SipEndpointHosted`
+carries the `host`, the `transports` with their ports and SRTP policy, and the
+UDP `rtp` port range for call audio; narrowing on `status === "hosted"` gives
+them without a cast. `SipEndpointNotHosted` carries `status`
+`sip_not_hosted`, a `null` `host` and `rtp`, and no transports, which is a
+successful response, not an error. The address is the same for every project
+and trunk, team and project clients call it without a project, and it needs
+`sessions:read`.
+
+```ts
+const { data: address } = await platform.sipTrunks.endpoint();
+if (address.status === "hosted") {
+  console.log(address.host, address.transports, address.rtp);
+}
+```
+
 `retrieve`, `update`, `delete`, and `rotateCredentials` take a trunk ID. A
 project client built from a team key reads the trunk first and refuses a trunk
 of another project with `PolymorfaNotFoundError`. Conflicts raise
@@ -448,7 +466,8 @@ different project gets `PolymorfaNotFoundError` from the API.
 Every method accepts the same filters: `sessionId`, `direction` (`inbound` or
 `outbound`), `upstream` (`linked_device` or `cloud_api`), `outcome`
 (`answered`, `missed`, `declined`, `failed`, or `in_progress`), and `since` and
-`until` as ISO 8601 strings or `Date` objects. The SDK rejects values outside
+`until` as RFC 3339 date-time strings with `Z` or an offset, or `Date` objects.
+The SDK rejects invalid calendar dates, date-only strings, and values outside
 these sets before sending.
 
 ```ts
@@ -469,8 +488,9 @@ for await (const call of await platform.calls.list({ outcome: "missed" })) {
   bucket, and a 168-cell `heatmap` of calls by ISO day of week (Monday is 1)
   and hour. `groupBy` is `day` (the default, up to 366 days), `hour` (up to 31
   days), `session` (the 500 busiest numbers; `groupsTruncated` reports more),
-  or `outcome`. `timezone` is an IANA name and defaults to `UTC`; UTC offsets
-  are refused. Without `since` and `until` the range is the last 7 days. A
+  or `outcome`. `timezone` is an IANA name, including single-name zones such
+  as `CET` and `GMT`, and defaults to `UTC`. The API matches names in any case
+  and refuses UTC offsets. Without `since` and `until` the range is the last 7 days. A
   query that takes too long fails with `PolymorfaServerError`
   (`service_unavailable`).
 - `list(params)` returns a `CursorPage<CallRecord>`, newest first. `limit` is
@@ -1354,9 +1374,10 @@ console.log(launched.data.data.operationId, launched.metadata.requestId);
 
 Launch, pause, resume, and stop append durable lifecycle commands and return the
 campaign's current persisted state plus an `operationId`. They do not wait for
-the campaign state to change. Read the campaign resource to inspect its status;
-operation inspection is console-only. The API does not expose a campaign
-watcher, stream, or command-cancellation route. Launch accepts an optional
+the campaign state to change. Read the campaign resource to inspect its status,
+or follow the returned operation with `Client.operations.wait(operationId)` and
+stop it with `Client.operations.cancel(operationId)`. The API exposes no
+campaign watcher or stream route of its own. Launch accepts an optional
 epoch-millisecond schedule. Pause requires a running campaign, resume requires
 a paused campaign, and stop accepts draft, running, or paused campaigns.
 
@@ -1510,6 +1531,7 @@ organization and project scope:
   `rotateSecret`
 - `webhookDeliveries.list`, `retrieve`, `listAttempts`, `retrieveAttempt`, and
   `retry`
+- `operations.list`, `get`, `listTransitions`, `cancel`, and `wait`
 
 ```ts
 const deliveries = await project.webhookDeliveries.list({

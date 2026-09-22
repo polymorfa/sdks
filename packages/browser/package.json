@@ -4,6 +4,15 @@
   "description": "Framework-neutral Polymorfa browser transport and product controllers",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polymorfa/sdks.git",
+    "directory": "packages/browser"
+  },
+  "bugs": {
+    "url": "https://github.com/polymorfa/sdks/issues"
+  },
+  "homepage": "https://github.com/polymorfa/sdks#readme",
   "sideEffects": false,
   "dependencies": {
     "@polymorfa/sdk": "0.1.0-dev.0"

@@ -600,6 +600,21 @@ export type BanSafeIncidentEventKind =
 export type BanSafeEventRung =
   "none" | "notify" | "throttle" | "block_cold" | "suspend";
 
+export interface BanSafeHealthThresholdPayload {
+  readonly sessionId: string;
+  readonly projectId: string;
+  /** Health from 0 to 100. */
+  readonly health: number;
+  readonly threshold: number;
+  readonly healthSource: "rules_v1" | "ml_model";
+  readonly estimatorVersion: string;
+  readonly modelVersion: string | null;
+  readonly evaluatedAt: string;
+  readonly policyVersion: number;
+  readonly episodeId: string;
+  readonly actionId: string;
+}
+
 export type BanSafeRiskLevel = "low" | "elevated" | "high" | "critical";
 
 /** Probability (0 to 1) of a temporary or permanent ban within each window. */
@@ -632,7 +647,7 @@ export interface BanSafeRiskFactor {
   readonly label: string;
   readonly direction: "raises" | "lowers";
   readonly strength: "strong" | "moderate" | "slight";
-  /** Share, as a whole percentage, of the raising or lowering total. */
+  /** Whole-percentage share of the raising (or lowering) total. */
   readonly impact: number;
   readonly sentence: string;
   /** Action to take; `null` for lowering factors and groups without a hint. */
@@ -644,9 +659,7 @@ export interface BanSafeModelRef {
   readonly reliability: "prior" | "early" | "calibrated";
 }
 
-/** `bansafe.risk_changed`: the risk level of a number changed. */
 export interface BanSafeRiskChangedPayload {
-  /** The customer's own number in E.164 format. */
   readonly phoneNumber: string;
   readonly level: BanSafeRiskLevel;
   /** `null` for the first evaluation of the number. */
@@ -676,11 +689,9 @@ export interface BanSafeHealthFinding {
   readonly points: number;
 }
 
-/** `bansafe.health_changed`: the health band of a number changed. */
 export interface BanSafeHealthChangedPayload {
-  /** The customer's own number in E.164 format. */
   readonly phoneNumber: string;
-  /** Measured health from 0 (worst) to 100 (best), or `null` when not measured. */
+  /** Health from 0 (worst) to 100 (best), or `null` when not measured. */
   readonly health: number | null;
   readonly band: "good" | "fair" | "poor" | "failing" | "unknown";
   /** `null` for the first evaluation of the number. */
@@ -693,25 +704,10 @@ export interface BanSafeHealthChangedPayload {
   readonly totalChecks: number;
   /**
    * Messages the number may send today under the project's warm-up plan.
-   * `null` or absent without a warm-up plan.
+   * `null` or absent when the project has no warm-up plan.
    */
   readonly allowance?: number | null;
   readonly evaluatedAt: string;
-}
-
-export interface BanSafeHealthThresholdPayload {
-  readonly sessionId: string;
-  readonly projectId: string;
-  /** Health from 0 to 100. */
-  readonly health: number;
-  readonly threshold: number;
-  readonly healthSource: "rules_v1" | "ml_model";
-  readonly estimatorVersion: string;
-  readonly modelVersion: string | null;
-  readonly evaluatedAt: string;
-  readonly policyVersion: number;
-  readonly episodeId: string;
-  readonly actionId: string;
 }
 
 export interface BanSafeEnforcementPayload {

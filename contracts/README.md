@@ -2,48 +2,44 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`5e8a148641971e44595e3a92a5d9f4241c1ebf39` on monorepo branch
-`t3code/calls-analytics` (polymorfa/polymorfa#234). That branch is not merged to `dev` yet: it is a
-coordinated PR dependency, and the snapshots must be re-synced to the merged
-`dev` commit before this SDK revision merges. `source.json` records the
-original paths and SHA-256 hashes. `coverage.json` uses the same source
-revision.
-
-Revision `5e8a1486` adds call analytics and call detail records:
-`GET /platform/calls/stats` (`getCallStats`), `GET /platform/calls`
-(`listCallRecords`) and `GET /platform/calls/export` (`exportCallRecords`),
-covered by `Client.calls.stats`, `Client.calls.list` and
-`Client.calls.export` (with `Client.calls.exportAll` walking export pages).
-The export returns CSV or NDJSON rather than a JSON envelope and carries the
-next cursor in the `Polymorfa-Next-Cursor` header, which the transport now
-keeps in response metadata. The stats `503` response is the dedicated
-`CallStatsTooSlow` response (`service_unavailable`); the SDK raises it as
-`PolymorfaServerError`. The same revision
-corrects the `PlatformAccessEventStreamFrame` discriminator mapping to the
-`PlatformAccessEventStream*Frame` schemas the document defines, which changes
-the `streamProjectEvents` fingerprint; `Client.events.stream` is unchanged.
-The Messaging contract adds the `bansafe.health_changed` and
-`bansafe.risk_changed` webhook events (typed as
-`BanSafeHealthChangedPayload` and `BanSafeRiskChangedPayload`); no Messaging
-operation fingerprint changed. The SIP trunk operation descriptions drop the
-beta enrollment note; descriptions do not affect fingerprints.
-
-Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
-`MessagingClient.clientTokens.mint`). Now that the branch is re-synced to the
-merged monorepo `dev`, the Calls diagnostics route
-(`voipReportCallDiagnostics`) is back with a refreshed fingerprint; the SDK
-keeps `MessagingClient.voip.report` covering it. The Console-only `getCall`
-response also picked up a refreshed fingerprint (still excluded). No
-operations were added or removed by this re-sync.
+`63111fec728ac3ebc9a825ea57ebc4c592abdafc` on monorepo `dev`. It contains
+BanSafe for calls, the SIP address, call analytics, and call retention. `source.json` records the original paths and
+SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        311 |
-| Missing             |          0 |
-| Excluded            |        116 |
+| Covered             |        320 |
+| Missing             |          2 |
+| Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        427 |
+| Total               |        433 |
+
+The refresh from `9fe6c235` adds two public call-retention operations and two
+Console-only counterparts. The public methods remain `missing` until SDK
+PR #278 lands; the Console routes are excluded because they require dashboard
+membership. Analytics is covered by `Client.calls.stats`, `Client.calls.list`,
+and `Client.calls.export`; `Client.calls.exportAll` walks export pages. No existing
+operation fingerprint changed in the retention refresh.
+
+The typed BanSafe alignment for this source revision is an integration dependency
+on SDK PR #282. It must merge before this branch is ready; that change owns the
+restriction events, shared error codes, health-band types, and Calls parser.
+
+`GET /console/sip/endpoint` remains excluded (Console-only), while
+`GET /platform/sip/endpoint` is covered by `Client.sipTrunks.endpoint`.
+
+The previous revision published the operations lifecycle on the Platform API. The eight
+operation routes moved from `/console` to `/platform`, so their ledger rows
+move from `excluded` (console-only) to `covered` by `Client.operations` and
+`Client.project(projectId).operations`. The organization-wide reads accept a
+`projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
+and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
+contract. `Client.calls` covers `GET /platform/calls`, `/platform/calls/stats`,
+and `/platform/calls/export`. Export pages carry CSV or NDJSON and the
+`Polymorfa-Next-Cursor` header. The iterator refuses repeated cursors before
+returning their page and removes subsequent CSV header rows. Stats accepts
+IANA zones including single-name zones; string dates must be RFC 3339 instants.
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -76,9 +72,9 @@ successful live call.
 Revision `2259a1fd` adds the project event stream. `Client.events.stream`
 covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
 resume, and `Client.events.acknowledgeStream` covers its manual
-acknowledgement route. Its `PlatformAccessEventStreamFrame` discriminator
-mapping pointed at unprefixed schema names that the document did not define;
-revision `5e8a1486` corrects it. Revision `2259a1fd` also adds
+acknowledgement route. The Platform `PlatformAccessEventStreamFrame`
+discriminator mapping now names the defined `PlatformAccessEventStream*Frame`
+schemas, corrected in the analytics source. Revision `2259a1fd` also adds
 `conversationTtlSeconds` to client rules, turns `recipientMode` into an enum,
 and sets a minimum of 0 on `rateLimit` and `maxDaily`; the client-rules types
 follow.
@@ -122,7 +118,8 @@ BanSafe is reconciled against these same snapshots. `Client.banSafe`,
 telemetry, findings, enforcement, incident, claim, and settings operations.
 `MessagingClient.banSafe` covers the 10 Messaging Safe Mode, warm-up, Ban
 Insurance evidence, and Health policy operations. Finding acknowledgement and
-enforcement appeals are Console-only and stay excluded. No BanSafe gap remains.
+enforcement appeals are Console-only and stay excluded. The typed BanSafe
+alignment dependency on SDK PR #282 is recorded above.
 
 The Platform `BanSafeNumberDetail` schema at this revision lists `sessionId`,
 `session`, `phoneNumber`, `projectId`, and `enforcement` as required but omits
