@@ -54,14 +54,23 @@ function distFiles(dir) {
     .map((e) => join(e.parentPath ?? e.path, e.name));
 }
 
-// Replaces every occurrence of the repository version in a package's built
-// dist/ files. Returns the number of files changed.
+// Matches a version as a whole token, so 0.1.0 does not match inside
+// 10.1.0, 0.1.0.1 or an already-suffixed 0.1.0-dev.N.
+function versionToken(version) {
+  const escaped = version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(?<![\\w.-])${escaped}(?![\\w.-])`, "g");
+}
+
+// Replaces every whole-token occurrence of the repository version in a
+// package's built dist/ files. Returns the number of files changed.
 function rewriteDistVersion(pkgDir, from, to) {
   let changed = 0;
+  const token = versionToken(from);
   for (const file of distFiles(join(pkgDir, "dist"))) {
     const text = readFileSync(file, "utf8");
-    if (!text.includes(from)) continue;
-    writeFileSync(file, text.split(from).join(to));
+    const next = text.replace(token, to);
+    if (next === text) continue;
+    writeFileSync(file, next);
     changed += 1;
   }
   return changed;
@@ -238,7 +247,7 @@ function pack(version, out) {
         { encoding: "utf8", maxBuffer: 256 * 1024 * 1024 },
       );
       for (const stale of sourceVersions) {
-        if (stale !== version && text.includes(stale)) {
+        if (stale !== version && versionToken(stale).test(text)) {
           fail(`${p.json.name} dist/ still embeds version ${stale}`);
         }
       }
