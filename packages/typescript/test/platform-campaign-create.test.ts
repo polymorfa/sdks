@@ -1,6 +1,10 @@
 import { readFileSync } from "node:fs";
 import { afterEach, expect, expectTypeOf, it } from "vitest";
-import { Client, type CreatePlatformCampaignRequest } from "../src/index.js";
+import {
+  Client,
+  PolymorfaConflictError,
+  type CreatePlatformCampaignRequest,
+} from "../src/index.js";
 import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 
@@ -117,4 +121,39 @@ it("sends the required scope and preserves every JSON field to the Platform rout
     name: body.name,
     recipientCount: 1,
   });
+});
+
+it("returns the archive receipt and surfaces an active-campaign conflict", async () => {
+  const server = await startTestServer((_request, index) =>
+    index === 0
+      ? {
+          status: 200,
+          body: JSON.stringify({
+            data: { status: "archived", campaignId: "campaign-1" },
+          }),
+        }
+      : {
+          status: 409,
+          body: JSON.stringify({
+            error: {
+              code: "state_conflict",
+              message: "Campaign is still running",
+            },
+          }),
+        },
+  );
+  servers.push(server);
+  const client = new Client({
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    baseUrl: server.url,
+  });
+  const receipt = await client.campaigns.archive("campaign-1");
+  expect(receipt.data.data).toMatchObject({ status: "archived" });
+  await expect(client.campaigns.archive("campaign-2")).rejects.toBeInstanceOf(
+    PolymorfaConflictError,
+  );
+  expect(server.requests.map(({ method, path }) => [method, path])).toEqual([
+    ["POST", "/platform/campaigns/campaign-1/archive"],
+    ["POST", "/platform/campaigns/campaign-2/archive"],
+  ]);
 });

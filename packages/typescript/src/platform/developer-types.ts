@@ -43,6 +43,8 @@ export interface ListEventsParams {
   readonly until?: string;
   readonly limit?: number;
   readonly cursor?: string;
+  /** Retained-stream offset after which to list events, in ingestion order. Cannot be combined with cursor, since, or until. Use "0" for the initial high-watermark baseline. */
+  readonly afterOffset?: string;
 }
 export interface ListIndexedEventsParams {
   /** Retained stream position returned by the preceding indexed read; use "0" for a baseline. */
@@ -60,6 +62,15 @@ export interface IndexedEventPage<T> {
   readonly metadata: ResponseMetadata;
 }
 export type ListOrganizationEventsParams = ListEventsParams;
+
+/** Additional offset fields returned by organization and project event lists. */
+export interface IndexedEventPageMetadata {
+  readonly nextCursor: string | null;
+  readonly hasMore: boolean;
+  readonly nextOffset?: string | null;
+  readonly highWatermark?: string;
+}
+
 export interface RetrieveEventParams {
   readonly includePayload?: boolean;
 }

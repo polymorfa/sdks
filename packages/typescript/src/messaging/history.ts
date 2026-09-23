@@ -1,4 +1,4 @@
-import type { ConversationIdentity } from "./types.js";
+import type { ConversationIdentity, WhatsAppMessageIds } from "./types.js";
 
 /** Hosted message history is an enrolled beta and requires HMS on the Number. */
 export interface HistoryChat {
@@ -10,7 +10,9 @@ export interface HistoryChat {
 
 export interface HistoryMessageSummary {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly direction: "inbound" | "outbound";
   readonly type: string;
   readonly timestamp: string;

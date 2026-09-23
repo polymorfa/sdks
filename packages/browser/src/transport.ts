@@ -32,6 +32,7 @@ export interface BrowserRequest {
 export interface BrowserResponseMetadata {
   readonly status: number;
   readonly requestId?: string;
+  readonly operationId?: string;
   readonly attempts: number;
   readonly headers: Readonly<Record<string, string>>;
 }
@@ -55,6 +56,8 @@ export interface BrowserTransportOptions {
   readonly now?: () => number;
   readonly onDiagnostic?: BrowserDiagnosticSink;
 }
+
+const NATIVE_API_VERSION = "2026-09-22";
 
 const SAFE_METHODS = new Set<BrowserHttpMethod>(["GET", "HEAD", "OPTIONS"]);
 
@@ -124,6 +127,7 @@ export class BrowserTransport {
     let attempt = 0;
     while (true) {
       attempt += 1;
+      let response: Response | undefined;
       const startedAt = this.#now();
       this.#emit({
         type: "request.started",
@@ -133,8 +137,11 @@ export class BrowserTransport {
         attempt,
       });
       try {
-        const response = await this.#perform(request);
-        const data = await decodeBody(response);
+        const data = await this.#perform(request, (received) => {
+          response = received;
+        });
+        if (response === undefined)
+          throw new Error("Missing browser response.");
         const metadata = responseMetadata(response, attempt);
         if (response.ok) {
           this.#emit({
@@ -155,7 +162,8 @@ export class BrowserTransport {
           retryableMethod &&
           attempt <= retries &&
           isRetryableStatus(response.status) &&
-          !isIdempotentReplay(response)
+          !isIdempotentReplay(response) &&
+          metadata.operationId === undefined
         ) {
           await this.#sleep(
             retryDelay(response, attempt, this.#random),
@@ -165,10 +173,43 @@ export class BrowserTransport {
         }
         throw httpError(response, data, metadata);
       } catch (cause) {
-        const error = classifyFailure(cause, request.signal);
+        let error = classifyFailure(cause, request.signal);
+        const receivedMetadata =
+          response === undefined
+            ? undefined
+            : responseMetadata(response, attempt);
+        if (receivedMetadata?.operationId !== undefined) {
+          const options = {
+            category: error.category,
+            ...(error.code === undefined ? {} : { code: error.code }),
+            status: receivedMetadata.status,
+            ...(receivedMetadata.requestId === undefined
+              ? {}
+              : { requestId: receivedMetadata.requestId }),
+            metadata: receivedMetadata,
+            cause,
+          };
+          if (error instanceof BrowserConnectionError) {
+            error = new BrowserConnectionError(
+              "The response body could not be read. Query the operation status before retrying.",
+              { ...options, category: "connection", code: "connection_error" },
+            );
+          } else if (error instanceof BrowserTimeoutError) {
+            error = new BrowserTimeoutError(error.message, {
+              ...options,
+              category: "timeout",
+            });
+          } else if (error instanceof BrowserCancelledError) {
+            error = new BrowserCancelledError(error.message, {
+              ...options,
+              category: "cancelled",
+            });
+          }
+        }
         if (
           (error instanceof BrowserConnectionError ||
             error instanceof BrowserTimeoutError) &&
+          receivedMetadata?.operationId === undefined &&
           retryableMethod &&
           attempt <= retries
         ) {
@@ -196,11 +237,21 @@ export class BrowserTransport {
     }
   }
 
-  async #perform(request: BrowserRequest): Promise<Response> {
+  async #perform(
+    request: BrowserRequest,
+    onResponse: (response: Response) => void,
+  ): Promise<unknown> {
     throwIfAborted(request.signal);
     const token = await this.#tokens.get();
     throwIfAborted(request.signal);
+    const url = requestUrl(this.#baseUrl, request);
     const headers = new Headers(request.headers);
+    if (
+      !headers.has("polymorfa-version") &&
+      /^\/(?:messaging|platform)(?:\/|$)/.test(url.pathname)
+    ) {
+      headers.set("polymorfa-version", NATIVE_API_VERSION);
+    }
     headers.set("accept", "application/json");
     headers.set("authorization", `Bearer ${token}`);
     headers.set("x-polymorfa-client", "browser/0.1.0-dev.0");
@@ -224,12 +275,14 @@ export class BrowserTransport {
     const cancel = () => controller.abort(request.signal?.reason);
     request.signal?.addEventListener("abort", cancel, { once: true });
     try {
-      return await this.#fetch(requestUrl(this.#baseUrl, request), {
+      const response = await this.#fetch(url, {
         method: request.method,
         headers,
         ...(body === undefined ? {} : { body }),
         signal: controller.signal,
       });
+      onResponse(response);
+      return await decodeBody(response);
     } catch (cause) {
       if (timedOut) throw new RequestTimeout(timeoutMs, cause);
       throw cause;
@@ -301,11 +354,14 @@ function responseMetadata(
     response.headers.get("x-request-id") ??
     response.headers.get("request-id") ??
     undefined;
+  const operationId =
+    response.headers.get("x-polymorfa-operation-id") ?? undefined;
   return Object.freeze({
     status: response.status,
     attempts,
     headers: Object.freeze(headers),
     ...(requestId === undefined ? {} : { requestId }),
+    ...(operationId === undefined ? {} : { operationId }),
   });
 }
 

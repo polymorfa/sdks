@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "e525a1cdbc967fe5b6713df3f27a6fdfc6812d18",
-  "branch": "dev",
-  "published": true,
-  "note": "Exact merged API dev commit containing the Campaigns failed-state follow-up. Both snapshots are byte-identical to the authoritative source files; operation fingerprints and SDK method mappings are unchanged. SDK package publication is separate.",
+  "commit": "2dd0c1563b1fc4e6525f708afc12e0685110cfe0",
+  "branch": "t3code/hybrid-link-support",
+  "published": false,
+  "note": "Exact API Hybrid Link source commit, now merged into API dev by PR #260, including Calls consent and HMS history; snapshots remain byte-identical to the merged authoritative source files. SDK publication is separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "8de9461cc339aeb662e373586684d6ad03c6250944f410f398ed3bec15b437ac"
+      "sha256": "6a66ed232a8a3e650417e2b2b8dd2cf66a4ec78ebf5fdb9292c2add5f1097ce7"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "9237516a33b71a12f34aaad2fcd580093f278c508bb228d1449a5ad26f7e93bc"
+      "sha256": "4e5aa9b8890b8963d704df22efbbce7c6bd9ac09b9253f5c8215bb3966b2f2cc"
     }
   }
 }

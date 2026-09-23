@@ -70,6 +70,7 @@ export {
   type BridgeSignal,
 } from "./bridge.js";
 export { ChatsResource } from "./messaging/chats.js";
+export type { DeleteMessageOptions } from "./messaging/chats.js";
 export type {
   HistoryChat,
   HistoryMedia,
@@ -232,6 +233,13 @@ export {
   type QuickLink,
   type QuickLinkStatus,
   type QuickLinkStatusValue,
+  type QuickLinkPurpose,
+  type QuickLinkConnectionGoal,
+  type QuickLinkConnectionKind,
+  type QuickLinkHybridPhase,
+  type HybridQuickLinkAvailability,
+  type HybridQuickLinkAvailabilityRequest,
+  type HybridQuickLinkAvailabilityResponse,
 } from "./messaging/quicklinks.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
@@ -414,10 +422,16 @@ export type {
   MessagingMediaInfo,
   MessageResponse,
   MessageReceipt,
+  MessageOperation,
+  MessageOperationResponse,
+  WhatsAppMessageIds,
   ConversationIdentity,
   ConversationReference,
   MessageMediaContent,
   MessageSendContext,
+  MessageTransport,
+  MessageRoutingReason,
+  MessageRoutingMetadata,
   MessageTemplateSend,
   MintClientTokenRequest,
   MintSessionClientTokenRequest,
@@ -557,6 +571,7 @@ export type {
 } from "./messaging/types.js";
 export { WebhooksResource as MessagingWebhooksResource } from "./messaging/webhooks.js";
 export { CursorPage, type PageDecoder, type PageResult } from "./pagination.js";
+export { FollowableIndexedEventPage } from "./platform/indexed-event-page.js";
 export { AudiencesResource } from "./platform/audiences.js";
 export { ApiKeysResource } from "./platform/api-keys.js";
 export { AuditLogsResource } from "./platform/audit-logs.js";
@@ -1074,5 +1089,17 @@ export {
   type EmbeddedSignupRequest,
   type EmbeddedSignupResponse,
 } from "./messaging/onboarding.js";
+
+export { graphTransportHeaders } from "./messaging/hybrid-routing.js";
+
+export {
+  HybridLinkResource,
+  type HybridConnectionKind,
+  type HybridRoutingPolicyScope,
+  type HybridRoutingPolicy,
+  type SetHybridRoutingPolicyRequest,
+  type HybridLinkState,
+  type SetHybridLinkPausedRequest,
+} from "./messaging/hybrid-link.js";
 
 export * from "./platform/functions.js";

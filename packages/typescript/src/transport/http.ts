@@ -14,7 +14,7 @@ import {
   PolymorfaValidationError,
   type PolymorfaErrorOptions,
 } from "../errors.js";
-import { SDK_VERSION } from "../version.js";
+import { NATIVE_API_VERSION, SDK_VERSION } from "../version.js";
 import { decodeResponseBody, encodeRequestBody } from "./body.js";
 import { parseContentDispositionFilename } from "./content-disposition.js";
 import {
@@ -323,6 +323,19 @@ export class HttpTransport {
     }
   }
 
+  #requestApiVersion(request: RawRequest): string | undefined {
+    const explicitVersion =
+      request.apiVersion ??
+      this.#apiVersion ??
+      new Headers(request.headers).get("polymorfa-version") ??
+      undefined;
+    if (explicitVersion !== undefined) return explicitVersion;
+    const pathname = new URL(request.path, `${this.#baseUrl}/`).pathname;
+    return /^\/(?:messaging|platform)(?:\/|$)/.test(pathname)
+      ? NATIVE_API_VERSION
+      : undefined;
+  }
+
   #headers(request: RawRequest, accept: string): Headers {
     const headers = new Headers(request.headers);
     if (!headers.has("accept")) headers.set("accept", accept);
@@ -330,7 +343,7 @@ export class HttpTransport {
       headers.set("authorization", this.#authorization);
     }
     headers.set("user-agent", `polymorfa-node/${SDK_VERSION}`);
-    const apiVersion = request.apiVersion ?? this.#apiVersion;
+    const apiVersion = this.#requestApiVersion(request);
     if (apiVersion !== undefined) {
       headers.set("polymorfa-version", apiVersion);
     }
@@ -435,7 +448,14 @@ export class HttpTransport {
       attempt += 1;
       let response: Response | undefined;
       try {
-        const performed = await this.#perform(request, decode, accept);
+        const performed = await this.#perform(
+          request,
+          decode,
+          accept,
+          (received) => {
+            response = received;
+          },
+        );
         response = performed.response;
         const data = performed.data;
         const metadata = responseMetadata(response, attempt);
@@ -446,7 +466,8 @@ export class HttpTransport {
           eligible &&
           attempt <= retries &&
           isRetryableStatus(response.status) &&
-          !isIdempotentReplay(response)
+          !isIdempotentReplay(response) &&
+          !response.headers.has("x-polymorfa-operation-id")
         ) {
           await this.#sleep(
             retryDelayMs(response, attempt, this.#random),
@@ -459,13 +480,44 @@ export class HttpTransport {
         if (error instanceof PolymorfaError) {
           throw error;
         }
+        const receivedMetadata =
+          response === undefined
+            ? undefined
+            : responseMetadata(response, attempt);
         if (request.signal?.aborted === true) {
           throw new PolymorfaCancelledError(
             "The request was cancelled by the caller.",
             {
               code: "request_cancelled",
+              ...(receivedMetadata === undefined
+                ? {}
+                : { metadata: receivedMetadata }),
               cause: error,
             },
+          );
+        }
+        if (receivedMetadata?.operationId !== undefined) {
+          const options = {
+            code:
+              error instanceof RequestTimeout
+                ? "request_timeout"
+                : "connection_error",
+            status: receivedMetadata.status,
+            ...(receivedMetadata.requestId === undefined
+              ? {}
+              : { requestId: receivedMetadata.requestId }),
+            metadata: receivedMetadata,
+            cause: error,
+          };
+          if (error instanceof RequestTimeout) {
+            throw new PolymorfaTimeoutError(
+              `The response body exceeded its ${error.timeoutMs}ms timeout. Query the operation status before retrying.`,
+              options,
+            );
+          }
+          throw new PolymorfaConnectionError(
+            "The response body could not be read. Query the operation status before retrying.",
+            options,
           );
         }
         if (error instanceof RequestTimeout) {
@@ -512,7 +564,7 @@ export class HttpTransport {
       headers.set("authorization", this.#authorization);
     }
     headers.set("user-agent", `polymorfa-node/${SDK_VERSION}`);
-    const apiVersion = request.apiVersion ?? this.#apiVersion;
+    const apiVersion = this.#requestApiVersion(request);
     if (apiVersion !== undefined) {
       headers.set("polymorfa-version", apiVersion);
     }
@@ -597,6 +649,7 @@ export class HttpTransport {
     request: RawRequest,
     decode: (response: Response) => Promise<unknown>,
     accept: string,
+    onResponse: (response: Response) => void,
   ): Promise<{ readonly response: Response; readonly data: unknown }> {
     const url = requestUrl(this.#baseUrl, request.path, request.query);
     const { headers, encoded } = this.#requestHeaders(request, accept);
@@ -627,6 +680,7 @@ export class HttpTransport {
         ...(encoded.body === undefined ? {} : { body: encoded.body }),
         signal: controller.signal,
       });
+      onResponse(response);
       return { response, data: await decode(response) };
     } catch (error) {
       if (timedOut) {
@@ -908,17 +962,46 @@ function responseMetadata(
     response.headers.get("request-id") ??
     undefined;
   const apiVersion = response.headers.get("polymorfa-version") ?? undefined;
+  const selectedTransport = response.headers.get("x-polymorfa-transport");
+  const transport =
+    selectedTransport === "linked_devices" ||
+    selectedTransport === "official_api"
+      ? selectedTransport
+      : undefined;
+  const selectedReason = response.headers.get("x-polymorfa-routing-reason");
+  const routingReason =
+    selectedReason &&
+    [
+      "explicit_transport",
+      "template",
+      "target_reference",
+      "only_eligible_transport",
+      "session_rule",
+      "project_rule",
+      "team_rule",
+      "default_linked_devices",
+    ].includes(selectedReason)
+      ? (selectedReason as import("../messaging/types.js").MessageRoutingReason)
+      : undefined;
+  const operationId =
+    response.headers.get("x-polymorfa-operation-id") ?? undefined;
   return Object.freeze({
     status: response.status,
     ...(requestId === undefined ? {} : { requestId }),
     ...(apiVersion === undefined ? {} : { apiVersion }),
     attempts,
+    ...(transport === undefined ? {} : { transport }),
+    ...(routingReason === undefined ? {} : { routingReason }),
+    ...(operationId === undefined ? {} : { operationId }),
     headers: Object.freeze(headerRecord),
   });
 }
 
 const SAFE_RESPONSE_HEADERS = [
   "content-type",
+  "x-polymorfa-transport",
+  "x-polymorfa-routing-reason",
+  "x-polymorfa-operation-id",
   "x-request-id",
   "polymorfa-version",
   "retry-after",

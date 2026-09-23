@@ -225,11 +225,16 @@ export async function writeStreamToFile(
       callback(null, chunk);
     },
   });
+  const input = Readable.fromWeb(body as NodeReadableStream<Uint8Array>);
+  const output = createWriteStream(temporary, { flags: "wx", mode: 0o600 });
+  const outputClosed = new Promise<void>((resolve) => {
+    output.once("close", resolve);
+  });
   try {
     await pipeline(
-      Readable.fromWeb(body as NodeReadableStream<Uint8Array>),
+      input,
       counter,
-      createWriteStream(temporary, { flags: "wx", mode: 0o600 }),
+      output,
       ...(options.signal === undefined ? [] : [{ signal: options.signal }]),
     );
     if (options.overwrite === false) {
@@ -249,6 +254,10 @@ export async function writeStreamToFile(
     }
     return { path, bytes };
   } catch (error) {
+    // An abort can reject pipeline before the file descriptor finishes opening.
+    // Wait for close so a late open cannot recreate the partial file after unlink.
+    output.destroy();
+    await outputClosed;
     await unlink(temporary).catch(() => undefined);
     await body.cancel().catch(() => undefined);
     if (options.signal?.aborted === true) {

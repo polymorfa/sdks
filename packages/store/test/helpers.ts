@@ -38,7 +38,7 @@ export function received(
     "message.received",
     {
       id,
-      whatsapp_id: `wa_${id}`,
+      whatsapp_ids: { linked_devices: `wa_${id}` },
       conversation: options.conversation ?? {
         ...chat,
         sender: { id: "contact_1" },

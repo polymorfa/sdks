@@ -1,3 +1,4 @@
+import type { MessageRoutingMetadata } from "../messaging/types.js";
 export type HttpMethod =
   "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
 
@@ -21,7 +22,7 @@ export interface RawRequest extends RequestOptions {
   readonly body?: unknown;
 }
 
-export interface ResponseMetadata {
+export interface ResponseMetadata extends MessageRoutingMetadata {
   readonly status: number;
   readonly requestId?: string;
   readonly apiVersion?: string;

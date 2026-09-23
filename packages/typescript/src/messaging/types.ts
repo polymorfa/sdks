@@ -1,3 +1,8 @@
+/** Exact observed provider references; at least one provider is known. */
+export type WhatsAppMessageIds =
+  | { readonly linked_devices: string; readonly official_api?: string }
+  | { readonly linked_devices?: string; readonly official_api: string };
+
 export type MessagingConnection = "linked_device" | "cloud_api";
 export type BartenderMode = "magic" | "passthrough" | "passthrough_plus";
 
@@ -1086,7 +1091,9 @@ export interface ChannelMessage {
   /** Ordering position for before/after pagination, not a message ID. */
   readonly position: number;
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationIdentity;
   readonly type: string;
   readonly timestamp: string;
@@ -1375,7 +1382,25 @@ export type GetGroupParticipantsResponse = SuccessEnvelope<
   readonly GroupParticipant[]
 >;
 
+/** Hybrid Link requires server-authorized availability on the Number. */
+export type MessageTransport = "auto" | "linked_devices" | "official_api";
+export type MessageRoutingReason =
+  | "explicit_transport"
+  | "template"
+  | "target_reference"
+  | "only_eligible_transport"
+  | "session_rule"
+  | "project_rule"
+  | "team_rule"
+  | "default_linked_devices";
+export interface MessageRoutingMetadata {
+  readonly transport?: Exclude<MessageTransport, "auto">;
+  readonly routingReason?: MessageRoutingReason;
+  readonly operationId?: string;
+}
+
 export interface EditMessageRequest {
+  readonly transport?: MessageTransport;
   readonly text: string;
 }
 
@@ -2058,6 +2083,7 @@ export type ConversationReference = Partial<ConversationIdentity> &
   );
 
 export interface MessageSendContext {
+  readonly transport?: MessageTransport;
   readonly conversation: ConversationReference;
   readonly isForwarded?: boolean;
   readonly mentions?: readonly string[];
@@ -2183,9 +2209,25 @@ export type SendMessageRequest =
   | SendCallPermissionRequestMessageRequest
   | SendTemplateMessageRequest;
 
-export interface MessageReceipt {
+export interface MessageOperation {
+  readonly operationId: string;
+  /** Pending and unknown remain fenced; rejected proves no provider attempt. */
+  readonly status: "pending" | "unknown" | "completed" | "rejected";
+  readonly transport?: Exclude<MessageTransport, "auto">;
+  /** Present for a terminal rejection before the provider effect. */
+  readonly rejectionCode?: "hybrid_authority_unavailable";
+  readonly receipt?: {
+    readonly whatsapp_ids: WhatsAppMessageIds;
+    readonly timestamp: string;
+  };
+}
+export type MessageOperationResponse = SuccessEnvelope<MessageOperation>;
+
+export interface MessageReceipt extends MessageRoutingMetadata {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationIdentity;
   readonly timestamp: string;
   readonly status: string;
@@ -2212,6 +2254,7 @@ export interface TypingRequest {
 }
 
 export interface ReactRequest {
+  readonly transport?: MessageTransport;
   readonly conversation: ConversationReference;
   readonly id: string;
   readonly reaction: string;

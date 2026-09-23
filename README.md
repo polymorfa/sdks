@@ -5,8 +5,9 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts at merged API `dev` commit
-`270fbe53e04927d360076971a3e54e2772fb0ed2`. Graph-compatible
+the Messaging and Platform contracts from API source commit
+`2dd0c1563b1fc4e6525f708afc12e0685110cfe0`, now merged into API `dev`
+by PR #260. Graph-compatible
 APIs are outside this SDK's initial scope.
 
 The same API revision adds an enrolled hosted message history beta.
@@ -101,7 +102,7 @@ const messaging = new MessagingClient({
     type: "apiKey",
     value: process.env.POLYMORFA_MESSAGING_API_KEY!,
   },
-  apiVersion: "2026-03-20",
+  apiVersion: "2026-09-22",
 });
 
 const sessions = await messaging.sessions.list();
@@ -147,8 +148,7 @@ The handwritten Messaging resources in this milestone are:
   union, mark seen, set typing state, react, and star
 - `media`: download binary media, retrieve metadata, and request durable object
   persistence
-- `chats`: list and get stored conversations and messages (message history beta),
-  edit or delete sent messages, archive or unarchive chats, and set
+- `chats`: edit or delete sent messages, archive or unarchive chats, and set
   disappearing-message timers
 - `channels`: list, create, retrieve, and delete channels; page channel
   messages and updates; and manage viewing, reactions, live-update
@@ -178,47 +178,6 @@ The handwritten Messaging resources in this milestone are:
   LID-backed user ID
 - `webhooks`: list, create, retrieve, update, and delete
 
-### Message history (beta)
-
-For Numbers with hosted message storage, and teams enrolled in the message
-history beta, read stored conversations and messages from your server with an
-organization key or project token. Listing conversations needs `chats:read`;
-reading messages needs `messages:read`. List methods return the API's page
-envelope in `response.data`, with `nextCursor` and `previousCursor` for either
-direction. The data region is in `response.metadata.headers`. Media arrives
-as IDs to download with `media:read`, never as keys.
-
-```ts
-const chats = await messaging.chats.list("support-line", { limit: 50 });
-for (const chat of chats.data.data)
-  console.log(chat.conversation.id, chat.lastActivityAt);
-
-const page = await messaging.chats.listMessages(
-  "support-line",
-  "+15550001111",
-  {
-    direction: "inbound",
-    types: "text,image",
-    since: "2026-09-01T00:00:00Z",
-  },
-);
-for (const message of page.data.data)
-  console.log(message.timestamp, message.text);
-if (page.data.nextCursor) {
-  const older = await messaging.chats.listMessages(
-    "support-line",
-    "+15550001111",
-    {
-      cursor: page.data.nextCursor,
-    },
-  );
-  console.log(older.data.data);
-}
-```
-
-A Number without hosted message storage returns `404` with code
-`hms_not_enabled` (`PolymorfaNotFoundError`).
-
 ## Management client
 
 ```ts
@@ -239,6 +198,9 @@ const sessions = await client.sessions.list({
 const project = client.project("project_123");
 const events = await project.events.list({ limit: 25 });
 console.log(events.items, events.response.metadata.requestId);
+
+const indexed = await project.events.list({ afterOffset: "0" });
+console.log(indexed.highWatermark, indexed.nextOffset);
 ```
 
 `Client` binds its ownership context when you construct it. An organization
@@ -275,8 +237,10 @@ Both organization and project views expose owner-bound resources:
 - `operations`: list, get, wait for, list transitions of, and cancel
   asynchronous operations
 
-List methods return `CursorPage<T>`. Mutations return typed receipts with the
-resource, operation, and idempotency identifiers supplied by the API.
+Cursor list methods return `CursorPage<T>`. With `afterOffset`,
+`project.events.list` returns a `FollowableIndexedEventPage`; use `nextOffset`
+and `nextPage()` to continue in ingestion order. Mutations return typed receipts
+with the resource, operation, and idempotency identifiers supplied by the API.
 
 ```ts
 const enrollment = await client.projects.requestProductionEnrollment(
@@ -612,7 +576,9 @@ and `idempotencyKey`; the key does not make the API replay the append.
 ## API versions and raw requests
 
 Set `apiVersion` on a client or a single request. Use a date-form API revision,
-such as `2026-03-20`. The SDK sends it as the `Polymorfa-Version` header.
+such as `2026-09-22`. The SDK sends it as the `Polymorfa-Version` header.
+Native calls default to `2026-09-22`; the API accepts explicit revisions from
+`2026-03-20` and rejects earlier pins.
 
 Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 
@@ -870,10 +836,6 @@ npm run check:names
 Package publication, tags, and GitHub releases require a separate explicit
 release instruction.
 
-## License
-
-MIT
-
 ## Contract update notes
 
 The typed webhook catalog includes `session.restriction_updated` with
@@ -886,4 +848,57 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. `Client.callPolicy` and
 `Client.callOptOuts` cover consent controls. The contract snapshot is pinned
-to merged API `dev` commit `270fbe53e04927d360076971a3e54e2772fb0ed2`.
+to API source commit `2dd0c1563b1fc4e6525f708afc12e0685110cfe0`, now
+merged into API `dev` by PR #260.
+
+## Native message provider references
+
+Message receipts and webhook message references expose `whatsapp_ids`, with
+`linked_devices`, `official_api`, or both observed provider references. Unknown
+keys are omitted. A temporary optional `whatsapp_id` alias remains for older consumers. Use the separate Polymorfa `id`
+for replies and actions. The server SDK exports `WhatsAppMessageIds`; the browser
+SDK exports `BrowserWhatsAppMessageIds`. See the pinned component revision in
+[contract notes](contracts/README.md#message-provider-references).
+
+## Hybrid Link contract additions
+
+The development SDK types include Hybrid Link controls. Their presence does not
+enable the private preview: the API checks live team/project enrollment, Number
+entitlement, and operational availability. Browser client tokens cannot use the
+Hybrid control or message-operation methods, and Hybrid sends through browser
+client tokens are unavailable in this preview.
+
+Use `quickLinks.availability({projectId, session})` before offering an added
+connection. Initial setup uses `quickLinks.create({connectionGoal: "hybrid"})`;
+adding a transport uses `purpose: "add_connection"`, the existing `session`, and
+`addConnection: "linked_devices" | "official_api"`. The Number and Customer stay
+the same. `configuration.connectionPreference: "both"` still chooses one transport.
+QuickLink status includes `hybridPhase` for Cloud setup, Linked pairing, repair,
+and readiness.
+
+Native send/reaction requests and edits accept `transport: "auto" |
+"linked_devices" | "official_api"`. `chats.deleteMessage` accepts the choice in
+its options. Explicit choices never fall back. Raw Graph-compatible requests can
+use `graphTransportHeaders(transport)`; Graph remains outside handwritten method
+coverage. Routing details appear in response `metadata.transport`,
+`metadata.routingReason`, and `metadata.operationId` when supplied by the API.
+
+An accepted uncertain send raises `send_outcome_unknown` with its operation ID.
+The SDK stops automatic retries when a response carries an accepted operation ID,
+even if its body cannot be read. In that case the thrown error carries the ID in
+`error.metadata.operationId`.
+Read `messages.operationStatus(session, operationId)` with the original issuing
+server principal. `pending` and `unknown` do not permit another send or a
+transport switch. A terminal `rejected` result carries
+`rejectionCode: "hybrid_authority_unavailable"` and proves that this operation
+ended before the provider effect. Fix the cause before starting a new operation.
+
+`hybridLink.getPolicy(scope)` and `setPolicy(scope, body)` preserve team, project,
+or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
+`allowedTransports`; narrower policies cannot widen ancestor restrictions.
+`hybridLink.state(session)` reads connection status. `setPaused(session,
+{expectedRevision, paused})` changes routing at the exact current revision.
+
+## License
+
+MIT

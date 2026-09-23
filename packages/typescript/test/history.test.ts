@@ -18,6 +18,7 @@ const chat: HistoryChat = {
   lastActivityAt: "2026-09-18T10:00:00Z",
   lastMessage: {
     id: "739182640518204",
+    whatsapp_ids: { linked_devices: "wamid.1" },
     whatsapp_id: "wamid.1",
     direction: "inbound",
     type: "text",

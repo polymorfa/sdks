@@ -1,3 +1,8 @@
+/** Exact observed provider references; at least one provider is known. */
+export type BrowserWhatsAppMessageIds =
+  | { readonly linked_devices: string; readonly official_api?: string }
+  | { readonly linked_devices?: string; readonly official_api: string };
+
 import type { BrowserRequest, BrowserResponse } from "../transport.js";
 
 export interface BrowserActionOptions {
@@ -120,7 +125,9 @@ export interface BrowserSendMessageRequest {
 
 export interface BrowserMessageReceipt {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: BrowserWhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: BrowserConversationIdentity;
   readonly timestamp: string;
   readonly status: string;

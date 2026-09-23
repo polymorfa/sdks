@@ -15,7 +15,7 @@ import type {
   ListDeliveryAttemptsParams,
   ListEventsParams,
   ListIndexedEventsParams,
-  IndexedEventPage,
+  IndexedEventPage as IndexedEventRead,
   ListOperationsParams,
   ListOperationTransitionsParams,
   ListOrganizationOperationsParams,
@@ -74,6 +74,10 @@ import {
   type DataEnvelope,
   unwrapResponse,
 } from "./response.js";
+import {
+  FollowableIndexedEventPage,
+  type IndexedEventEnvelope,
+} from "./indexed-event-page.js";
 
 type EventFor<O extends ClientOwner> = O extends "project"
   ? ProjectEvent
@@ -174,77 +178,115 @@ class ResourceBase {
 
 export class EventsResource<O extends ClientOwner> extends ResourceBase {
   list(
+    params: ListEventsParams & { readonly afterOffset: string },
+    options?: RequestOptions,
+  ): Promise<FollowableIndexedEventPage<EventFor<O>>>;
+  list(
+    params?: ListEventsParams,
+    options?: RequestOptions,
+  ): Promise<CursorPage<EventFor<O>>>;
+  async list(
     params: ListEventsParams = {},
     options: RequestOptions = {},
   ): Promise<CursorPage<EventFor<O>>> {
+    if (params.afterOffset !== undefined) {
+      if (
+        params.cursor !== undefined ||
+        params.since !== undefined ||
+        params.until !== undefined
+      ) {
+        throw new PolymorfaValidationError(
+          "afterOffset cannot be combined with cursor, since, or until.",
+        );
+      }
+      return this.listOffsetPage(
+        { ...params, afterOffset: params.afterOffset },
+        options,
+      );
+    }
     return this.page(this.path("/events"), { ...params }, options);
   }
+
   async listIndexed(
     params: ListIndexedEventsParams,
     options: RequestOptions = {},
-  ): Promise<IndexedEventPage<EventFor<O>>> {
-    const validOffset = /^(0|[1-9][0-9]*)$/;
+  ): Promise<IndexedEventRead<EventFor<O>>> {
+    const result = await this.listOffsetPage(params, options);
+    return Object.freeze({
+      items: Object.freeze([...result.items]),
+      page: Object.freeze({
+        hasMore: result.hasMore,
+        nextOffset: result.nextOffset,
+        highWatermark: result.highWatermark,
+      }),
+      metadata: result.response.metadata,
+    });
+  }
+
+  private async listOffsetPage(
+    params: ListEventsParams & { readonly afterOffset: string },
+    options: RequestOptions,
+  ): Promise<FollowableIndexedEventPage<EventFor<O>>> {
     if (
-      !validOffset.test(params.afterOffset) ||
+      !/^(0|[1-9][0-9]*)$/.test(params.afterOffset) ||
       BigInt(params.afterOffset) > 9223372036854775807n
     ) {
       throw new PolymorfaValidationError(
-        "afterOffset must be a nonnegative decimal stream position.",
-        {
-          code: "invalid_after_offset",
-        },
+        "afterOffset must be a non-negative decimal stream position.",
+        { code: "invalid_after_offset" },
       );
     }
-    const response = await this.transport.request<unknown>({
+    const response = await this.transport.request<
+      IndexedEventEnvelope<EventFor<O>>
+    >({
       method: "GET",
       path: this.path("/events"),
-      query: {
-        afterOffset: params.afterOffset,
-        type: params.type,
-        limit: params.limit,
-      },
+      query: { ...params },
       ...options,
     });
-    const envelope = response.data as {
-      data?: EventFor<O>[];
-      page?: {
-        hasMore?: unknown;
-        nextOffset?: unknown;
-        highWatermark?: unknown;
-      };
-    } | null;
-    const page = envelope?.page;
+    const page = response.data?.page;
     if (
-      !envelope ||
-      !Array.isArray(envelope.data) ||
-      !page ||
-      typeof page.hasMore !== "boolean" ||
+      !Array.isArray(response.data?.data) ||
+      typeof page?.hasMore !== "boolean" ||
       typeof page.highWatermark !== "string" ||
-      !validOffset.test(page.highWatermark) ||
+      !/^(0|[1-9][0-9]*)$/.test(page.highWatermark) ||
+      (page.nextOffset !== null &&
+        page.nextOffset !== undefined &&
+        (typeof page.nextOffset !== "string" ||
+          !/^(0|[1-9][0-9]*)$/.test(page.nextOffset))) ||
       (page.hasMore &&
         (typeof page.nextOffset !== "string" ||
-          !validOffset.test(page.nextOffset) ||
           BigInt(page.nextOffset) <= BigInt(params.afterOffset) ||
           BigInt(page.nextOffset) > BigInt(page.highWatermark))) ||
-      (!page.hasMore && page.nextOffset !== null)
+      (!page.hasMore &&
+        page.nextOffset !== null &&
+        page.nextOffset !== undefined)
     ) {
       throw new PolymorfaServerError(
-        "The Polymorfa API returned an invalid indexed event page.",
+        "The Polymorfa API returned invalid indexed event metadata.",
         {
           code: "invalid_response",
           status: response.metadata.status,
           metadata: response.metadata,
+          details: response.data,
         },
       );
     }
-    return Object.freeze({
-      items: Object.freeze([...envelope.data]),
-      page: Object.freeze({
-        hasMore: page.hasMore,
-        nextOffset: page.nextOffset as string | null,
-        highWatermark: page.highWatermark,
-      }),
-      metadata: response.metadata,
+    const nextOffset = page.nextOffset ?? null;
+    return new FollowableIndexedEventPage({
+      response,
+      nextOffset,
+      highWatermark: page.highWatermark,
+      hasMore: page.hasMore,
+      ...(page.hasMore
+        ? {
+            loadNext: () =>
+              this.listOffsetPage(
+                { ...params, afterOffset: nextOffset! },
+                options,
+              ),
+          }
+        : {}),
     });
   }
   retrieve(

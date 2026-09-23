@@ -6935,7 +6935,7 @@
           "sessions"
         ],
         "summary": "Remove a session",
-        "description": "Permanently removes one session and terminates its active connection when needed.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Permanently removes a testing number. Production-number deletion requires support and returns 409 without removing the number.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -7001,6 +7001,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       },
@@ -12953,7 +12956,7 @@
           "sessions"
         ],
         "summary": "Remove multiple sessions",
-        "description": "Permanently removes up to 100 session UUIDs or slugs and terminates any rows that were still active.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Permanently removes up to 100 testing numbers. A batch containing a production number returns 409 without removing any number.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -13018,6 +13021,9 @@
           },
           "403": {
             "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -47092,6 +47098,11 @@
                   "stream_cursor_expired",
                   "stream_connection_limit_reached",
                   "state_conflict",
+                  "hybrid_routing_paused",
+                  "hybrid_automation_unavailable",
+                  "hybrid_transport_unavailable",
+                  "hybrid_target_reference_unavailable",
+                  "send_outcome_unknown",
                   "idempotency_conflict",
                   "idempotency_in_progress",
                   "idempotency_completed",

@@ -47,20 +47,20 @@ describe("createPolymorfaStore routing", () => {
     await store.ingest([
       event("message.sent", {
         id: "out1",
-        whatsapp_id: "wa_out1",
+        whatsapp_ids: { linked_devices: "wa_out1" },
         conversation,
         type: "text",
         timestamp: 1,
       }),
       event("message.ack", {
-        messages: [{ id: "out1", whatsapp_id: "wa_out1" }],
+        messages: [{ id: "out1", whatsapp_ids: { linked_devices: "wa_out1" } }],
         conversation,
         type: "read",
         timestamp: 2,
       }),
       event("message.reaction", {
         id: "r1",
-        whatsapp_id: "wa_r1",
+        whatsapp_ids: { linked_devices: "wa_r1" },
         conversation: { ...chat, sender: { id: "contact_1" } },
         fromMe: false,
         timestamp: 3,
@@ -82,7 +82,7 @@ describe("createPolymorfaStore routing", () => {
         from: chat,
         sender: chat,
         id: "gone",
-        whatsapp_id: "wa_gone",
+        whatsapp_ids: { linked_devices: "wa_gone" },
         conversation,
         fromMe: false,
       }),
@@ -326,7 +326,7 @@ describe("idempotency and ordering", () => {
       event(
         "message.ack",
         {
-          messages: [{ id: "out1", whatsapp_id: "wa" }],
+          messages: [{ id: "out1", whatsapp_ids: { linked_devices: "wa" } }],
           conversation,
           type,
           timestamp: 1,

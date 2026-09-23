@@ -1,8 +1,11 @@
+import type { MessagingCredential } from "../credentials.js";
+import { PolymorfaConfigurationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import { withIdempotencyKey } from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   ReactRequest,
+  MessageOperationResponse,
   SeenRequest,
   SendMessageRequest,
   SendMessageResponse,
@@ -14,7 +17,28 @@ import type {
 } from "./types.js";
 
 export class MessagesResource {
-  constructor(private readonly transport: HttpTransport) {}
+  constructor(
+    private readonly transport: HttpTransport,
+    private readonly credentialType: MessagingCredential["type"],
+  ) {}
+
+  /** Read the issuing principal's durable attempt. This method never resends. */
+  operationStatus(
+    session: string,
+    operationId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<MessageOperationResponse>> {
+    if (this.credentialType === "clientToken")
+      throw new PolymorfaConfigurationError(
+        "Message operation status requires a server credential.",
+        "credential",
+      );
+    return this.transport.request({
+      method: "GET",
+      path: `/messaging/${encodeURIComponent(session)}/operations/${encodeURIComponent(operationId)}`,
+      ...options,
+    });
+  }
 
   send(
     session: string,

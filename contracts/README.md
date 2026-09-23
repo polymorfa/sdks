@@ -1,9 +1,26 @@
 # Contract coverage
 
+## Message provider references
+
+Native message receipts, webhook references, acknowledgements, history, and
+channel messages expose `whatsapp_ids`, with `linked_devices`, `official_api`,
+or both observed provider references. A temporary optional `whatsapp_id`
+output alias remains for older consumers. The Polymorfa `id` remains the
+action and reply identifier. The server and browser SDK types reflect both
+fields; the alias does not select a transport.
+
+Hybrid Link adds six covered server methods: `quickLinks.availability`,
+`messages.operationStatus`, and `hybridLink.getPolicy`, `setPolicy`, `state`,
+and `setPaused`. Native send, reaction, edit, and delete requests accept an
+explicit transport. Graph-compatible calls remain outside typed API coverage;
+`graphTransportHeaders` supplies their routing header. The API enforces
+preview enrollment and live Number authority independently of these SDK types.
+
 ## Test-event supplement
 
-The consent overlay uses merged API `dev` commit
-`270fbe53e04927d360076971a3e54e2772fb0ed2`. It includes the merged
+The integrated snapshot uses Hybrid Link API source commit
+`2dd0c1563b1fc4e6525f708afc12e0685110cfe0`, now merged into API `dev`
+by PR #260. It includes the merged
 campaign, usage, voice, and HMS history API contracts. SDK package publication
 remains separate.
 `Client.callPolicy` and `Client.callOptOuts` cover six team-policy operations;
@@ -18,21 +35,31 @@ hash. The TypeScript test-event catalog and override types use that revision.
 Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
-and `call_restricted` to `callEndReason`. The full snapshots and coverage
-ledger below use the later merged API `dev` Campaigns revision. CLI consumers
-require a published SDK package before updating their pinned dependency.
+and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
+below use the pinned Hybrid Link API revision. CLI consumers require a
+published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at merged `polymorfa/polymorfa` API `dev` commit
-`e525a1cdbc967fe5b6713df3f27a6fdfc6812d18`. This revision includes
-Campaigns P0 failed-state settlement, Calls consent, Voice audio, usage gates,
-Functions, and HMS history. Compared with the preceding snapshot, it changes
-the `campaign.failed` reason example and the archive/delete operation descriptions.
-It changes no operation fingerprint or SDK method mapping. The snapshots, ledger
-and revision tests have been reconciled. `source.json` records the source paths
-and SHA-256 hashes.
+files at `polymorfa/polymorfa` Hybrid Link source commit
+`2dd0c1563b1fc4e6525f708afc12e0685110cfe0`. Those files remain
+byte-identical on merged API `dev` after PR #260. This revision includes
+Voice audio and provider credentials on top of merged usage gates, Calls
+analytics, Campaigns P0, Functions, and HMS history. The snapshots, ledger and revision
+tests have been reconciled. `source.json` records the source paths and
+SHA-256 hashes.
+
+The merged Campaigns failed-state follow-up updates the `campaign.failed`
+reason example and the public archive/delete `409` descriptions. It changes no
+operation fingerprint or SDK method mapping.
+
+The Platform event-list contract adds `afterOffset` and indexed page metadata
+for both organization and project routes. `Client.events.list` and project-view
+`events.list` expose `FollowableIndexedEventPage` in that mode; `nextPage()` follows
+`nextOffset` rather than combining an offset with a cursor.
+Both views also expose `events.listIndexed` with explicit `page.nextOffset` and
+`page.highWatermark` metadata for callers that manage their own polling loop.
 
 The preceding refresh added 17 operation rows and removes eight. Eight removed Console
 operation routes moved to `/platform/operations` and
@@ -44,7 +71,7 @@ from SDK `dev`. The three public Calls analytics operations are covered by
 `Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
 `Client.calls.exportAll` walks export pages. The 13 public Voice operations are
 covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
-13 Console counterparts are excluded. The full 503-operation snapshot includes
+13 Console counterparts are excluded. The full 509-operation snapshot includes
 all 15 Functions routes already merged to API `dev`.
 
 HMS history adds four server-only Messaging reads under
@@ -56,18 +83,7 @@ locally. Pagination retains both cursors and the data-region response header.
 The only pre-existing schema change is `hms_not_enabled` in the shared public
 error enum, which changes 166 Messaging and 46 Platform fingerprints. Those
 fingerprints were reconciled against the source specs; no pre-existing route or
-response shape changed at that history revision.
-
-The combined API also adds `afterOffset` to the two Platform event-list routes,
-with `page.nextOffset` and `page.highWatermark` for ingestion-order reads.
-`Client.events.listIndexed` covers this mode for team and project owners while
-`Client.events.list` retains its existing timestamp and cursor behavior. The
-two event-list fingerprints are reconciled against the combined source spec.
-
-The merged Campaigns follow-up makes Platform campaign archive available for
-completed, failed, or cancelled campaigns. Its response and error schema changes
-one existing fingerprint; `Client.campaigns.archive` already sends that route
-and returns the open data envelope, while the transport handles `404` and `409`.
+response shape changed.
 
 SDK `dev` through `8392f66` adds `Client.sipTrunks.endpoint()` for
 `GET /platform/sip/endpoint`. Its `SipEndpoint` result is a discriminated union:
@@ -143,12 +159,12 @@ too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        373 |
+| Covered             |        379 |
 | Missing             |          0 |
 | Excluded            |        130 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        503 |
+| Total               |        509 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -212,7 +228,8 @@ three changed operations keep their existing typed methods.
 This refresh retires direct session creation and observation-policy writes. QuickLinks supply typed configuration and test simulation. The SDK adds project history fixture upload, saved defaults, and trusted-server Meta continuation tied to an existing QuickLink.
 
 Public Number, conversation, user and message identifiers remain supported.
-Message responses retain the exact provider ID in `whatsapp_id`. Channel
+Message responses expose exact provider IDs in `whatsapp_ids`; the temporary
+optional `whatsapp_id` alias remains for older consumers. Channel
 actions use the public message ID; call participants expose public identities;
 history events carry a public message index and a separate provider archive.
 The raw LID resolver is replaced by `MessagingClient.identities.resolve`.
@@ -291,7 +308,7 @@ Functions is tracked separately in `functions/openapi.json`, with its exact
 monorepo source commit and extraction hash in `functions/source.json`. This
 snapshot contains only the 15 Functions operations and their transitive schemas.
 `npm run check:functions` verifies their ledger; SDK tests exercise every method.
-The main consent snapshots use the merged API `dev` revision; the
+The main Messaging and Platform snapshots use the pinned Hybrid Link API branch;
 Functions subset retains its separate source revision.
 
 All 15 Functions methods require `client.project(projectId).functions` and an

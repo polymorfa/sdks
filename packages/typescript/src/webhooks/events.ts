@@ -2,6 +2,7 @@ import type {
   CallPermissionSource,
   CallPermissionStatus,
   MessagingConnection,
+  WhatsAppMessageIds,
   PhonePlatform,
   WhatsAppAccountType,
 } from "../messaging/types.js";
@@ -144,7 +145,9 @@ export type LinkedDeviceMessageType =
 
 export interface LinkedDeviceMessagePayload {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationReference;
   readonly fromMe: boolean;
   readonly timestamp: number;
@@ -177,7 +180,9 @@ export type MessagePayload = LinkedDeviceMessagePayload;
 
 export interface CloudMessagePayload {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationReference;
   readonly timestamp: string;
   readonly type: string;
@@ -192,7 +197,9 @@ export type MessageReceivedPayload =
 
 export interface MessageSentPayload {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationReference;
   readonly type: string;
   readonly timestamp: number;
@@ -201,7 +208,9 @@ export interface MessageSentPayload {
 export interface MessageAckPayload {
   readonly messages: readonly {
     readonly id: string;
-    readonly whatsapp_id: string;
+    readonly whatsapp_ids: WhatsAppMessageIds;
+    /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+    readonly whatsapp_id?: string;
   }[];
   readonly conversation: ConversationReference;
   readonly from?: IdentityReference;
@@ -214,7 +223,9 @@ export interface MessageDeletePayload {
   readonly from: IdentityReference;
   readonly sender: IdentityReference;
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationReference;
   readonly fromMe: boolean;
 }
@@ -230,6 +241,16 @@ export interface PollVotePayload {
 export interface SessionStatusPayload {
   readonly status: string;
   readonly statusReason?: string;
+}
+
+export type SessionRestrictionType = "reachout_timelock";
+
+export interface SessionRestrictionUpdatedPayload {
+  readonly type: SessionRestrictionType;
+  readonly active: boolean;
+  readonly enforcementType: string | null;
+  readonly expiresAt: string | null;
+  readonly observedAt: string;
 }
 
 export interface SessionConnectedPayload {
@@ -252,26 +273,6 @@ export interface SessionLoggedOutPayload {
   readonly reason: SessionLoggedOutReason;
   /** WhatsApp's logout code (401, 403 or 406), or 0 when none was given. */
   readonly code: number;
-}
-
-/** A WhatsApp restriction reported by `session.restriction_updated`. */
-export type SessionRestrictionType = "reachout_timelock";
-
-/**
- * A WhatsApp restriction on the number started, changed or ended. While
- * `reachout_timelock` is active the number can only message or call people it
- * has already chatted with; calls to anyone else fail with
- * `number_restricted`.
- */
-export interface SessionRestrictionUpdatedPayload {
-  readonly type: SessionRestrictionType;
-  readonly active: boolean;
-  /** WhatsApp's category for the restriction; null when inactive or not reported. */
-  readonly enforcementType: string | null;
-  /** When the restriction ends (ISO 8601); null when inactive or open-ended. */
-  readonly expiresAt: string | null;
-  /** When the state was observed (ISO 8601). */
-  readonly observedAt: string;
 }
 
 export interface SessionPhoneOfflinePayload {
@@ -532,11 +533,17 @@ export interface CloudHistorySyncPayload {
 }
 
 export interface LinkedHistorySyncPayload {
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
+  readonly original_whatsapp_ids?: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `original_whatsapp_ids`. */
   readonly original_whatsapp_id?: string;
   readonly messages: readonly {
     readonly id: string;
-    readonly whatsapp_id: string;
+    readonly whatsapp_ids: WhatsAppMessageIds;
+    /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+    readonly whatsapp_id?: string;
     readonly conversation: IdentityReference;
     readonly fromMe?: boolean;
   }[];

@@ -21,6 +21,49 @@
   ],
   "components": {
     "schemas": {
+      "WhatsAppMessageIds": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "linked_devices": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "official_api": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": [
+              "linked_devices"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "linked_devices": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "official_api": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": [
+              "official_api"
+            ],
+            "additionalProperties": false
+          }
+        ],
+        "description": "Exact message references observed through Linked Devices, the Official API, or both. Use the Polymorfa message id for actions and replies. Unknown provider references are omitted."
+      },
       "IdentityRef": {
         "type": "object",
         "properties": {
@@ -94,9 +137,15 @@
             "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
             "example": "739182640518203"
           },
+          "whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
+          },
           "whatsapp_id": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "deprecated": true
           },
           "conversation": {
             "$ref": "#/components/schemas/ConversationRef"
@@ -221,7 +270,7 @@
         },
         "required": [
           "id",
-          "whatsapp_id",
+          "whatsapp_ids",
           "conversation",
           "fromMe",
           "timestamp",
@@ -239,9 +288,15 @@
             "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
             "example": "739182640518203"
           },
+          "whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
+          },
           "whatsapp_id": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "deprecated": true
           },
           "conversation": {
             "$ref": "#/components/schemas/ConversationRef"
@@ -285,7 +340,7 @@
         },
         "required": [
           "id",
-          "whatsapp_id",
+          "whatsapp_ids",
           "conversation",
           "timestamp",
           "type"
@@ -348,9 +403,15 @@
             "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
             "example": "739182640518203"
           },
+          "whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
+          },
           "whatsapp_id": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "deprecated": true
           },
           "conversation": {
             "$ref": "#/components/schemas/ConversationRef"
@@ -364,7 +425,7 @@
         },
         "required": [
           "id",
-          "whatsapp_id",
+          "whatsapp_ids",
           "conversation",
           "type",
           "timestamp"
@@ -422,14 +483,20 @@
                   "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
                   "example": "739182640518203"
                 },
+                "whatsapp_ids": {
+                  "$ref": "#/components/schemas/WhatsAppMessageIds"
+                },
                 "whatsapp_id": {
                   "type": "string",
-                  "minLength": 1
+                  "minLength": 1,
+                  "maxLength": 512,
+                  "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+                  "deprecated": true
                 }
               },
               "required": [
                 "id",
-                "whatsapp_id"
+                "whatsapp_ids"
               ]
             }
           },
@@ -662,9 +729,15 @@
             "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
             "example": "739182640518203"
           },
+          "whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
+          },
           "whatsapp_id": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "deprecated": true
           },
           "conversation": {
             "$ref": "#/components/schemas/ConversationRef"
@@ -677,7 +750,7 @@
           "from",
           "sender",
           "id",
-          "whatsapp_id",
+          "whatsapp_ids",
           "conversation",
           "fromMe"
         ]
@@ -3476,13 +3549,25 @@
       "LinkedHistorySyncPayload": {
         "type": "object",
         "properties": {
+          "whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
+          },
           "whatsapp_id": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "deprecated": true
+          },
+          "original_whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
           },
           "original_whatsapp_id": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular original provider reference for older consumers. Use original_whatsapp_ids for transport-specific references.",
+            "deprecated": true
           },
           "messages": {
             "type": "array",
@@ -3495,9 +3580,15 @@
                   "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
                   "example": "739182640518203"
                 },
+                "whatsapp_ids": {
+                  "$ref": "#/components/schemas/WhatsAppMessageIds"
+                },
                 "whatsapp_id": {
                   "type": "string",
-                  "minLength": 1
+                  "minLength": 1,
+                  "maxLength": 512,
+                  "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+                  "deprecated": true
                 },
                 "conversation": {
                   "$ref": "#/components/schemas/IdentityRef"
@@ -3508,7 +3599,7 @@
               },
               "required": [
                 "id",
-                "whatsapp_id",
+                "whatsapp_ids",
                 "conversation"
               ]
             }
@@ -3572,7 +3663,7 @@
           }
         },
         "required": [
-          "whatsapp_id",
+          "whatsapp_ids",
           "messages",
           "mode",
           "syncType",
@@ -7580,95 +7671,59 @@
           "phone"
         ]
       },
-      "SentMessage": {
+      "HybridRoutingPolicy": {
         "type": "object",
         "properties": {
-          "id": {
+          "scope": {
             "type": "string",
-            "pattern": "^[1-9][0-9]{0,18}$",
-            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
-            "example": "739182640518203"
-          },
-          "whatsapp_id": {
-            "type": "string",
-            "minLength": 1
-          },
-          "conversation": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConversationIdentity"
-              },
-              {
-                "description": "The message's conversation, including its public ID and known aliases."
-              }
+            "enum": [
+              "team",
+              "project",
+              "session"
             ]
           },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "status": {
-            "type": "string",
-            "description": "Upstream acceptance status. Delivery and read receipts arrive separately."
-          },
-          "type": {
+          "revision": {
             "type": "string"
           },
-          "content": {
-            "$ref": "#/components/schemas/MessageContent"
-          },
-          "mediaId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "whatsapp_id",
-          "conversation",
-          "timestamp",
-          "status",
-          "type",
-          "content"
-        ]
-      },
-      "SendMessageResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
+          "prefer": {
+            "type": "string",
+            "nullable": true,
             "enum": [
-              true
+              "linked_devices",
+              "official_api",
+              null
             ]
           },
-          "data": {
-            "$ref": "#/components/schemas/SentMessage"
-          }
-        },
-        "required": [
-          "success",
-          "data"
-        ]
-      },
-      "AsyncAcceptedResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "requestId": {
-                "type": "string",
-                "format": "uuid"
-              }
+          "allowedTransports": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "linked_devices",
+                "official_api"
+              ]
             },
-            "required": [
-              "requestId"
+            "maxItems": 2
+          }
+        },
+        "required": [
+          "scope",
+          "revision",
+          "prefer",
+          "allowedTransports"
+        ]
+      },
+      "HybridRoutingPolicyResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
             ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/HybridRoutingPolicy"
           }
         },
         "required": [
@@ -7713,6 +7768,11 @@
                   "stream_cursor_expired",
                   "stream_connection_limit_reached",
                   "state_conflict",
+                  "hybrid_routing_paused",
+                  "hybrid_automation_unavailable",
+                  "hybrid_transport_unavailable",
+                  "hybrid_target_reference_unavailable",
+                  "send_outcome_unknown",
                   "idempotency_conflict",
                   "idempotency_in_progress",
                   "idempotency_completed",
@@ -7811,6 +7871,269 @@
           "error",
           "data",
           "docs"
+        ]
+      },
+      "SetHybridRoutingPolicy": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "default"
+                ]
+              },
+              {
+                "type": "string",
+                "format": "uuid"
+              }
+            ]
+          },
+          "prefer": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "linked_devices",
+              "official_api",
+              null
+            ]
+          },
+          "allowedTransports": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "linked_devices",
+                "official_api"
+              ]
+            },
+            "maxItems": 2
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "prefer",
+          "allowedTransports"
+        ],
+        "additionalProperties": false
+      },
+      "HybridLinkState": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "paused": {
+            "type": "boolean"
+          },
+          "connections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                },
+                "status": {
+                  "type": "string"
+                },
+                "enabled": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "kind",
+                "status",
+                "enabled"
+              ]
+            }
+          }
+        },
+        "required": [
+          "revision",
+          "paused",
+          "connections"
+        ]
+      },
+      "HybridLinkStateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/HybridLinkState"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "HybridLinkPauseResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "revision": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "paused": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "revision",
+              "paused"
+            ]
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "SentMessage": {
+        "type": "object",
+        "properties": {
+          "transport": {
+            "type": "string",
+            "enum": [
+              "linked_devices",
+              "official_api"
+            ]
+          },
+          "routingReason": {
+            "type": "string",
+            "enum": [
+              "explicit_transport",
+              "template",
+              "target_reference",
+              "only_eligible_transport",
+              "session_rule",
+              "project_rule",
+              "team_rule",
+              "default_linked_devices"
+            ]
+          },
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
+          },
+          "whatsapp_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "deprecated": true
+          },
+          "conversation": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConversationIdentity"
+              },
+              {
+                "description": "The message's conversation, including its public ID and known aliases."
+              }
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "description": "Upstream acceptance status. Delivery and read receipts arrive separately."
+          },
+          "type": {
+            "type": "string"
+          },
+          "content": {
+            "$ref": "#/components/schemas/MessageContent"
+          },
+          "mediaId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "whatsapp_ids",
+          "conversation",
+          "timestamp",
+          "status",
+          "type",
+          "content"
+        ]
+      },
+      "SendMessageResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/SentMessage"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "AsyncAcceptedResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "requestId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "requestId"
+            ]
+          }
+        },
+        "required": [
+          "success",
+          "data"
         ]
       },
       "ConversationReference": {
@@ -8801,6 +9124,15 @@
       "SendMessageRequest": {
         "type": "object",
         "properties": {
+          "transport": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "linked_devices",
+              "official_api"
+            ],
+            "description": "Choose a transport or use the Number's routing rules. An explicit choice does not fall back."
+          },
           "conversation": {
             "$ref": "#/components/schemas/ConversationReference"
           },
@@ -8901,15 +9233,45 @@
       "MessageReceipt": {
         "type": "object",
         "properties": {
+          "transport": {
+            "type": "string",
+            "enum": [
+              "linked_devices",
+              "official_api"
+            ]
+          },
+          "routingReason": {
+            "type": "string",
+            "enum": [
+              "explicit_transport",
+              "template",
+              "target_reference",
+              "only_eligible_transport",
+              "session_rule",
+              "project_rule",
+              "team_rule",
+              "default_linked_devices"
+            ]
+          },
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "id": {
             "type": "string",
             "pattern": "^[1-9][0-9]{0,18}$",
             "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
             "example": "739182640518203"
           },
+          "whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
+          },
           "whatsapp_id": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "deprecated": true
           },
           "conversation": {
             "allOf": [
@@ -8932,7 +9294,7 @@
         },
         "required": [
           "id",
-          "whatsapp_id",
+          "whatsapp_ids",
           "conversation",
           "timestamp",
           "status"
@@ -8959,6 +9321,14 @@
       "ReactRequest": {
         "type": "object",
         "properties": {
+          "transport": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "linked_devices",
+              "official_api"
+            ]
+          },
           "conversation": {
             "$ref": "#/components/schemas/ConversationReference"
           },
@@ -9002,12 +9372,89 @@
         ],
         "additionalProperties": false
       },
+      "MessageOperation": {
+        "type": "object",
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "unknown",
+              "rejected",
+              "completed"
+            ]
+          },
+          "transport": {
+            "type": "string",
+            "enum": [
+              "linked_devices",
+              "official_api"
+            ]
+          },
+          "rejectionCode": {
+            "type": "string",
+            "enum": [
+              "hybrid_authority_unavailable"
+            ]
+          },
+          "receipt": {
+            "type": "object",
+            "properties": {
+              "whatsapp_ids": {
+                "$ref": "#/components/schemas/WhatsAppMessageIds"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "whatsapp_ids",
+              "timestamp"
+            ]
+          }
+        },
+        "required": [
+          "operationId",
+          "status"
+        ]
+      },
+      "MessageOperationResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/MessageOperation"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
       "EditMessageRequest": {
         "type": "object",
         "properties": {
           "text": {
             "type": "string",
             "minLength": 1
+          },
+          "transport": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "linked_devices",
+              "official_api"
+            ]
           }
         },
         "required": [
@@ -9059,9 +9506,15 @@
             "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
             "example": "739182640518203"
           },
+          "whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
+          },
           "whatsapp_id": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "deprecated": true
           },
           "direction": {
             "type": "string",
@@ -9080,7 +9533,7 @@
         },
         "required": [
           "id",
-          "whatsapp_id",
+          "whatsapp_ids",
           "direction",
           "type",
           "timestamp"
@@ -9142,7 +9595,7 @@
           "previousCursor": {
             "type": "string",
             "nullable": true,
-            "description": "Cursor for the items before this page. Always null for conversations."
+            "description": "Always null for conversations. Use nextCursor to continue listing."
           }
         },
         "required": [
@@ -9230,9 +9683,15 @@
             "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
             "example": "739182640518203"
           },
+          "whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
+          },
           "whatsapp_id": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "deprecated": true
           },
           "conversation": {
             "$ref": "#/components/schemas/HistoryConversation"
@@ -9333,7 +9792,7 @@
         },
         "required": [
           "id",
-          "whatsapp_id",
+          "whatsapp_ids",
           "conversation",
           "direction",
           "fromMe",
@@ -9367,7 +9826,7 @@
           "previousCursor": {
             "type": "string",
             "nullable": true,
-            "description": "Cursor for the items before this page. Always null for conversations."
+            "description": "Cursor for the preceding page of messages. Null when no preceding page exists."
           }
         },
         "required": [
@@ -13311,9 +13770,15 @@
             "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
             "example": "739182640518203"
           },
+          "whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
+          },
           "whatsapp_id": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "deprecated": true
           },
           "conversation": {
             "$ref": "#/components/schemas/ConversationIdentity"
@@ -13343,7 +13808,7 @@
         "required": [
           "position",
           "id",
-          "whatsapp_id",
+          "whatsapp_ids",
           "conversation",
           "type",
           "timestamp",
@@ -16184,6 +16649,27 @@
       "QuickLink": {
         "type": "object",
         "properties": {
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "initial",
+              "add_connection"
+            ]
+          },
+          "connectionGoal": {
+            "type": "string",
+            "enum": [
+              "single",
+              "hybrid"
+            ]
+          },
+          "addConnection": {
+            "type": "string",
+            "enum": [
+              "linked_devices",
+              "official_api"
+            ]
+          },
           "id": {
             "type": "string",
             "description": "Stable QuickLink identifier, prefixed `ql_`."
@@ -16203,6 +16689,8 @@
           }
         },
         "required": [
+          "purpose",
+          "connectionGoal",
           "id",
           "url",
           "session",
@@ -16478,6 +16966,34 @@
       "CreateQuickLinkRequest": {
         "type": "object",
         "properties": {
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "initial",
+              "add_connection"
+            ],
+            "description": "Initial setup, or add a transport to an existing session without replacing the Number."
+          },
+          "connectionGoal": {
+            "type": "string",
+            "enum": [
+              "single",
+              "hybrid"
+            ]
+          },
+          "session": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Existing session name. Required only for add_connection."
+          },
+          "addConnection": {
+            "type": "string",
+            "enum": [
+              "linked_devices",
+              "official_api"
+            ]
+          },
           "projectId": {
             "type": "string",
             "format": "uuid",
@@ -16501,11 +17017,100 @@
         },
         "additionalProperties": false
       },
+      "HybridQuickLinkAvailabilityResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "resumeQuickLinkId": {
+                "type": "string",
+                "nullable": true
+              },
+              "allowed": {
+                "type": "boolean"
+              },
+              "addConnection": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "linked_devices",
+                  "official_api",
+                  null
+                ]
+              },
+              "connections": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "linked_devices",
+                        "official_api"
+                      ]
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "status",
+                    "enabled"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "resumeQuickLinkId",
+              "allowed",
+              "addConnection",
+              "connections"
+            ]
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
       "QuickLinkStatus": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "initial",
+              "add_connection"
+            ]
+          },
+          "connectionGoal": {
+            "type": "string",
+            "enum": [
+              "single",
+              "hybrid"
+            ]
+          },
+          "addConnection": {
+            "type": "string",
+            "enum": [
+              "linked_devices",
+              "official_api"
+            ]
           },
           "status": {
             "type": "string",
@@ -16541,6 +17146,17 @@
           "errorCode": {
             "type": "string",
             "nullable": true
+          },
+          "hybridPhase": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "cloud_setup",
+              "linked_pairing",
+              "repair_linked",
+              "ready",
+              null
+            ]
           },
           "onboarding": {
             "type": "object",
@@ -16587,13 +17203,16 @@
         },
         "required": [
           "id",
+          "purpose",
+          "connectionGoal",
           "status",
           "session",
           "expiresAt",
           "openedAt",
           "connectedAt",
           "phone",
-          "errorCode"
+          "errorCode",
+          "hybridPhase"
         ]
       },
       "QuickLinkStatusResponse": {
@@ -16853,6 +17472,40 @@
               "connected",
               "failed",
               "cancelled"
+            ]
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "initial",
+              "add_connection"
+            ]
+          },
+          "connectionGoal": {
+            "type": "string",
+            "enum": [
+              "single",
+              "hybrid"
+            ]
+          },
+          "addConnection": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "linked_devices",
+              "official_api",
+              null
+            ]
+          },
+          "hybridPhase": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "cloud_setup",
+              "linked_pairing",
+              "repair_linked",
+              "ready",
+              null
             ]
           },
           "expiresAt": {
@@ -17152,6 +17805,10 @@
           "historyConsent",
           "id",
           "status",
+          "purpose",
+          "connectionGoal",
+          "addConnection",
+          "hybridPhase",
           "expiresAt",
           "connections",
           "selectedConnection",
@@ -18269,6 +18926,534 @@
         ]
       }
     },
+    "/messaging/routing/hybrid": {
+      "get": {
+        "operationId": "getHybridRoutingPolicy",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Read a team, project or Number routing policy",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "team",
+                "project",
+                "session"
+              ]
+            },
+            "required": true,
+            "name": "scope",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "projectId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "required": false,
+            "name": "session",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Routing policy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HybridRoutingPolicyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        },
+        "description": "**Required scope:** `sessions:read`"
+      },
+      "put": {
+        "operationId": "setHybridRoutingPolicy",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Set a routing policy with a revision guard",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "team",
+                "project",
+                "session"
+              ]
+            },
+            "required": true,
+            "name": "scope",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "projectId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "required": false,
+            "name": "session",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetHybridRoutingPolicy"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated routing policy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HybridRoutingPolicyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
+        "description": "**Required scope:** `sessions:manage`"
+      }
+    },
+    "/messaging/{session}/hybrid-link": {
+      "get": {
+        "operationId": "getHybridLinkState",
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Read the Number's Hybrid connection state",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hybrid state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HybridLinkStateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ],
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sessions:read`"
+      },
+      "put": {
+        "operationId": "setHybridLinkPaused",
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Pause or resume Hybrid sending",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "expectedRevision": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "paused": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "expectedRevision",
+                  "paused"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hybrid pause state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HybridLinkPauseResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Routing unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ],
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sessions:manage`"
+      }
+    },
     "/messaging/{session}/messages/send": {
       "post": {
         "operationId": "sendMessage",
@@ -18330,6 +19515,31 @@
                   "$ref": "#/components/schemas/SendMessageResponse"
                 }
               }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           },
           "202": {
@@ -18338,6 +19548,31 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AsyncAcceptedResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -18393,7 +19628,7 @@
             }
           },
           "409": {
-            "description": "`unsupported_for_connection`: call permission requests need a Cloud API number; `call_permission_granted`: the person already granted permanent permission. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`unsupported_for_connection`: call permission requests need a Cloud API number; `call_permission_granted`: the person already granted permanent permission. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {
@@ -18416,6 +19651,29 @@
                   "enum": [
                     "true"
                   ]
+                }
+              },
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -18466,6 +19724,31 @@
                   "$ref": "#/components/schemas/PublicError"
                 }
               }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           },
           "502": {
@@ -18474,6 +19757,31 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -18486,6 +19794,31 @@
                   "$ref": "#/components/schemas/PublicError"
                 }
               }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           },
           "504": {
@@ -18494,6 +19827,31 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -18604,6 +19962,16 @@
           },
           "404": {
             "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Routing or operation conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -18767,6 +20135,16 @@
               }
             }
           },
+          "409": {
+            "description": "Routing or operation conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Unexpected service failure",
             "content": {
@@ -18869,6 +20247,31 @@
                   "$ref": "#/components/schemas/SendReactionResponse"
                 }
               }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           },
           "202": {
@@ -18877,6 +20280,31 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AsyncAcceptedResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -18932,7 +20360,14 @@
             }
           },
           "409": {
-            "description": "The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "Routing or operation conflict. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            },
             "headers": {
               "Retry-After": {
                 "description": "Seconds to wait before retrying `idempotency_in_progress`.",
@@ -18949,22 +20384,28 @@
                     "true"
                   ]
                 }
-              }
-            },
-            "content": {
-              "application/json": {
+              },
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "conflict_error",
-                    "code": "idempotency_conflict",
-                    "message": "This Idempotency-Key was already used with a different request. Use a new key for a different request.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#idempotency-conflict"
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -18977,6 +20418,31 @@
                   "$ref": "#/components/schemas/PublicError"
                 }
               }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           },
           "502": {
@@ -18985,6 +20451,31 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -18997,6 +20488,31 @@
                   "$ref": "#/components/schemas/PublicError"
                 }
               }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           },
           "504": {
@@ -19005,6 +20521,31 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -19124,6 +20665,16 @@
               }
             }
           },
+          "409": {
+            "description": "Routing or operation conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Unexpected service failure",
             "content": {
@@ -19172,6 +20723,120 @@
           "Linked Device API"
         ],
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `messages:write`"
+      }
+    },
+    "/messaging/{session}/operations/{operationId}": {
+      "get": {
+        "operationId": "getMessageOperation",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Read a Hybrid send operation without repeating it",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "operations:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "operationId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operation metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageOperationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Operation unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Operation unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Operation unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Operation unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Operation unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Operation unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">operations:read</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ],
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `operations:read`"
       }
     },
     "/messaging/{session}/chats/{conversation}/messages/{messageId}": {
@@ -19243,6 +20908,31 @@
                   "$ref": "#/components/schemas/SuccessResponse"
                 }
               }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           },
           "400": {
@@ -19347,6 +21037,29 @@
                     "true"
                   ]
                 }
+              },
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
+                }
               }
             },
             "content": {
@@ -19384,6 +21097,31 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -19436,6 +21174,19 @@
             "in": "path"
           },
           {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "linked_devices",
+                "official_api"
+              ]
+            },
+            "required": false,
+            "name": "transport",
+            "in": "query"
+          },
+          {
             "name": "Idempotency-Key",
             "in": "header",
             "required": false,
@@ -19454,6 +21205,31 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -19560,6 +21336,29 @@
                     "true"
                   ]
                 }
+              },
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
+                }
               }
             },
             "content": {
@@ -19597,6 +21396,31 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            },
+            "headers": {
+              "X-Polymorfa-Operation-Id": {
+                "description": "Hybrid operation ID when a send is reserved. Read its status after an uncertain result; do not submit a new key.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Polymorfa-Transport": {
+                "description": "Transport selected by Hybrid routing, when a route was admitted.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "linked_devices",
+                    "official_api"
+                  ]
+                }
+              },
+              "X-Polymorfa-Routing-Reason": {
+                "description": "Reason for the selected Hybrid route, when a route was admitted.",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -44263,7 +46087,7 @@
             }
           },
           "409": {
-            "description": "`state_conflict`: The campaign is not a draft, or it is already launched and waiting for its start time. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`state_conflict`: The campaign is not a draft, or it is already launched and waiting for its start time. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {
@@ -44488,7 +46312,7 @@
             }
           },
           "409": {
-            "description": "`state_conflict`: The campaign is not running, or it has no active delivery run to pause. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`state_conflict`: The campaign is not running, or it has no active delivery run to pause. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {
@@ -44713,7 +46537,7 @@
             }
           },
           "409": {
-            "description": "`state_conflict`: The campaign is not paused, or it has no active delivery run to resume. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`state_conflict`: The campaign is not paused, or it has no active delivery run to resume. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {
@@ -44938,7 +46762,7 @@
             }
           },
           "409": {
-            "description": "`state_conflict`: The campaign is already finished or cancelled. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`state_conflict`: The campaign is already finished or cancelled. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {
@@ -45705,6 +47529,163 @@
         }
       }
     },
+    "/messaging/quicklinks/availability": {
+      "get": {
+        "operationId": "getHybridQuickLinkAvailability",
+        "tags": [
+          "QuickLink"
+        ],
+        "summary": "Read connection addition availability",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "quicklink:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true,
+            "name": "session",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Connection state and permitted addition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HybridQuickLinkAvailabilityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">quicklink:manage</Badge>"
+        },
+        "description": "**Required scope:** `quicklink:manage`"
+      }
+    },
     "/messaging/quicklinks/{id}": {
       "get": {
         "operationId": "getQuickLink",
@@ -45856,7 +47837,7 @@
           "QuickLink"
         ],
         "summary": "Cancel a QuickLink",
-        "description": "**Required scope:** `quicklink:manage`\n\nInvalidates the link and removes its pending session. Connected links cannot be cancelled.",
+        "description": "**Required scope:** `quicklink:manage`\n\nCancels pending onboarding. Initial Number cleanup is accepted asynchronously and completes only after runtime teardown. A supplementary link cancels only its pending addition and preserves the Number. Accepted provider work must finish before cancellation.",
         "security": [
           {
             "BearerAuth": []
@@ -45876,6 +47857,31 @@
         "responses": {
           "200": {
             "description": "Cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "QuickLink invalidated; Number cleanup pending",
             "content": {
               "application/json": {
                 "schema": {
@@ -47598,6 +49604,40 @@
         "responses": {
           "200": {
             "description": "Cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "cancelled"
+                          ]
+                        },
+                        "redirectUrl": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "redirectUrl"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "QuickLink invalidated; Number cleanup pending",
             "content": {
               "application/json": {
                 "schema": {

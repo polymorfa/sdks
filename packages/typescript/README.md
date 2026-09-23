@@ -1760,7 +1760,14 @@ listing and append also require `projectId`. Platform
 members, and `Client.optOuts` reads and replaces team keyword settings.
 
 `create` and `launch` generate an `Idempotency-Key` for each call. A supplied
-key is preserved across retries; see [Idempotent sends](#idempotent-sends).
+key is preserved across retries within the API's 24-hour replay window. If the
+outcome remains uncertain after that window, reconcile campaign state before
+starting another request; see [Idempotent sends](#idempotent-sends).
+`archive` returns a receipt for a completed, failed, or cancelled campaign;
+other states return `409`. A pending final event or active delivery run also
+returns `409`; retry after both finish. Platform `delete` accepts draft,
+completed, failed, cancelled, or archived campaigns. A completed or failed
+campaign with a pending final event or active delivery run returns `409`.
 The Messaging API has no campaign update, deletion, archive, duplicate, or
 campaign event history method. The SDK does not substitute Platform routes for
 those operations.
@@ -1876,19 +1883,12 @@ release.
 The management `Client` owns a separate durable developer API at both
 organization and project scope:
 
-- `events.list`, `listIndexed`, `retrieve`, and `replay`
+- `events.list`, `retrieve`, and `replay`
 - `webhooks.list`, `create`, `retrieve`, `update`, `delete`, `test`, and
   `rotateSecret`
 - `webhookDeliveries.list`, `retrieve`, `listAttempts`, `retrieveAttempt`, and
   `retry`
 - `operations.list`, `get`, `listTransitions`, `cancel`, and `wait`
-
-Use `events.listIndexed` to follow newly indexed events without relying on
-their producer timestamps. Start with `afterOffset: "0"` and save the returned
-`page.highWatermark` as a baseline. If `page.hasMore` is true, pass
-`page.nextOffset` until the page is exhausted; then pass `page.highWatermark`
-on the next read. A message indexed after reconnect can have an older
-`createdAt` than a message you already received.
 
 ```ts
 const deliveries = await project.webhookDeliveries.list({
@@ -1918,8 +1918,31 @@ const replay = await project.events.replay(
 console.log(replay.data.operationId);
 ```
 
-List methods return `CursorPage<T>`. Mutations return owner-specific typed
+Cursor-based list methods return `CursorPage<T>`. Mutations return owner-specific typed
 receipts and preserve response metadata, request IDs, and idempotency receipts.
+Organization and project `events.list({ afterOffset: "0" })` instead return an
+`FollowableIndexedEventPage`: `highWatermark` gives the retained-stream baseline,
+`nextOffset` identifies the continuation point when more events exist, and `nextPage()`
+continues in ingestion order using that offset. The raw response's
+`page.nextCursor` is null in this mode. Pass decimal offsets as strings;
+`afterOffset` cannot be combined with
+`cursor`, `since`, or `until`. The ordinary cursor list remains available when
+`afterOffset` is omitted.
+
+```ts
+const indexed = await project.events.list({ afterOffset: "0", limit: 100 });
+console.log(indexed.highWatermark, indexed.items);
+if (indexed.hasMore) {
+  const next = await indexed.nextPage();
+  console.log(next?.nextOffset);
+}
+```
+
+`events.listIndexed({ afterOffset: "0" })` also returns an indexed page with
+`items`, `page.nextOffset`, `page.highWatermark`, and response `metadata`. Pass
+`page.nextOffset` to the next call while `page.hasMore` is true. When the page
+is exhausted, save `page.highWatermark` as the next polling baseline.
+
 Use `operations.get()` or `operations.wait()` to inspect asynchronous work,
 and `operations.cancel()` while `capabilities.cancellable` is true. Reads need
 `operations:read`; cancellation needs `operations:cancel`.
@@ -2379,7 +2402,8 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. `Client.callPolicy` and
 `Client.callOptOuts` cover consent controls. The contract snapshot is pinned
-to merged API `dev` commit `270fbe53e04927d360076971a3e54e2772fb0ed2`.
+to API Hybrid Link source commit `2dd0c1563b1fc4e6525f708afc12e0685110cfe0`,
+now merged into API `dev` by PR #260.
 
 ## Functions
 
