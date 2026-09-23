@@ -3,6 +3,13 @@ import type {
   PhonePlatform,
   WhatsAppAccountType,
 } from "../messaging/types.js";
+import type {
+  UsageKeySource,
+  UsageMeter,
+  UsagePricingState,
+  UsageSourceKind,
+  UsageUnit,
+} from "../platform/usage.js";
 
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
@@ -82,6 +89,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "session.restriction_updated",
   "session.status",
   "template.status",
+  "usage.recorded",
 ] as const;
 
 export type KnownWebhookEventType = (typeof KNOWN_WEBHOOK_EVENT_TYPES)[number];
@@ -951,6 +959,31 @@ export interface CampaignColdBlockedPayload {
   readonly at: number;
 }
 
+/**
+ * Payload for `usage.recorded`: one usage record, emitted when it is created
+ * and again, with a higher `revision`, when a later observation corrects it.
+ * Usage is measured, not charged: `pricingState` is `unpriced`.
+ */
+export interface UsageRecordedPayload {
+  readonly id: string;
+  readonly meter: UsageMeter;
+  readonly quantity: number;
+  readonly unit: UsageUnit;
+  readonly dimensions: Readonly<Record<string, string | number | boolean>>;
+  readonly keySource: UsageKeySource;
+  readonly sourceKind: UsageSourceKind;
+  /** The call id for call meters. */
+  readonly sourceId: string;
+  readonly projectId: string | null;
+  readonly session: string | null;
+  readonly occurredAt: string;
+  readonly recordedAt: string;
+  readonly revision: number;
+  readonly pricingState: UsagePricingState;
+  readonly rateCard: { readonly id: string; readonly version: number } | null;
+  readonly pricedCredits: number | null;
+}
+
 export interface WebhookPayloadMap {
   readonly "bansafe.action": BanSafeActionPayload;
   readonly "bansafe.claim": BanSafeClaimPayload;
@@ -1029,6 +1062,7 @@ export interface WebhookPayloadMap {
   readonly "session.restriction_updated": SessionRestrictionUpdatedPayload;
   readonly "session.status": SessionStatusPayload;
   readonly "template.status": TemplateStatusPayload;
+  readonly "usage.recorded": UsageRecordedPayload;
 }
 
 export interface WebhookEventOf<TEvent extends string, TPayload> {

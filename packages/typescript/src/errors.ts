@@ -48,6 +48,7 @@ export const POLYMORFA_ERROR_CODES = [
   "idempotency_in_progress",
   "idempotency_outcome_unknown",
   "feature_unavailable",
+  "gate_limit_reached",
   "stream_connection_limit_reached",
   "stream_cursor_expired",
   "stream_cursor_invalid",

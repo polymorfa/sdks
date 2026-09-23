@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added `Client.usage` to read monthly metered usage, page or iterate usage
+  records, and inspect team usage gates. Project clients can read only their
+  own usage; gate state requires an organization key. The `usage.recorded`
+  webhook has a typed payload, and enforced limits use the
+  `gate_limit_reached` error code. Usage is measured but not charged.
+
 - Added `Client.calls` for call analytics and call detail records (needs
   `sessions:read`; also on project clients). `stats()` returns totals,
   per-day, per-hour, per-number or per-outcome groups, and a 168-cell

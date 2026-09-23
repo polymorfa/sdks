@@ -9,17 +9,17 @@ Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
 and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
-below are pinned to the same API revision. CLI consumers require a published
-SDK package before updating their pinned dependency.
+below use the merged API #228 revision. CLI consumers require a
+published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at merged `polymorfa/polymorfa` `dev` commit
-`9c876c16c60b74370d934e1275f23ef6096bee12`, including Campaigns P0
-and Functions.
-The merged source commit, both snapshots, the ledger, and revision tests have
-been reconciled. `source.json` records the source paths and SHA-256 hashes.
+`fdaff9a86220e3ef1f8ad75cc838dbfd03ede4eb`, including usage gates,
+Calls analytics, Campaigns P0 and Functions. The source commit, both snapshots,
+the ledger, and revision tests have been reconciled. `source.json` records
+the source paths and SHA-256 hashes.
 
 The preceding refresh added 17 operation rows and removes eight. Eight removed Console
 operation routes moved to `/platform/operations` and
@@ -29,7 +29,7 @@ Three new Console retention and SIP discovery operations stay excluded.
 `Client.callRetention` covers `GET` and `PUT /platform/call-retention`, merged
 from SDK `dev`. The three public Calls analytics operations are covered by
 `Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
-`Client.calls.exportAll` walks export pages. The full 456-operation snapshot
+`Client.calls.exportAll` walks export pages. The full 459-operation snapshot
 includes all 15 Functions routes now merged to API `dev`.
 
 SDK `dev` through `8392f66` adds `Client.sipTrunks.endpoint()` for
@@ -55,7 +55,12 @@ because its Platform campaign resource belongs to organization clients. The
 six opaque JSON fields remain `unknown`, while `senderConfig` remains an open
 object. No routes were added or removed by this schema refresh.
 
-This revision adds the Campaigns P0 operations. Audiences gain member
+This revision also covers `GET /platform/usage`, `/platform/usage/records`,
+and `/platform/gates` through `Client.usage.summary`, `listRecords`, and
+`listGates`. `iterateRecords` follows record-page cursors. Usage is measured
+but not charged; gate state requires an organization credential.
+
+The Campaigns P0 revision added these operations. Audiences gain member
 management (`POST`/`GET /platform/audiences/{listId}/members` and
 `DELETE .../{phone}`), campaigns gain recipient append and listing on both
 surfaces, and the organization gains STOP/START keyword settings
@@ -101,12 +106,12 @@ too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        345 |
+| Covered             |        348 |
 | Missing             |          0 |
 | Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        456 |
+| Total               |        459 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

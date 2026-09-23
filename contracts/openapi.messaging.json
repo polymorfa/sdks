@@ -2696,6 +2696,215 @@
           "payload"
         ]
       },
+      "UsageRecordedPayload": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Usage record id. Stable across revisions."
+          },
+          "meter": {
+            "type": "string",
+            "enum": [
+              "call.duration",
+              "call.cloud_pulses",
+              "campaign.call",
+              "tts.characters",
+              "tts.seconds",
+              "stt.seconds",
+              "agent.seconds",
+              "agent.tokens",
+              "agent.provider_cost",
+              "channels.peak",
+              "storage.byte_days"
+            ],
+            "description": "What was measured. Calls produce `call.duration`, and outgoing Cloud API calls also `call.cloud_pulses`.",
+            "example": "call.duration"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Measured amount in `unit`.",
+            "example": 42
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "second",
+              "pulse",
+              "call",
+              "character",
+              "token",
+              "provider_unit",
+              "channel",
+              "byte_day"
+            ],
+            "example": "second"
+          },
+          "dimensions": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "description": "Closed, per-meter attributes. Call meters carry `direction`, `upstream` (`linked_device` or `cloud_api`), `origin`, `participants`, `connections`, `sipLegs` and `video`.",
+            "example": {
+              "direction": "outbound",
+              "upstream": "linked_device",
+              "origin": "direct",
+              "participants": 1,
+              "connections": 1,
+              "sipLegs": 0,
+              "video": false
+            }
+          },
+          "keySource": {
+            "type": "string",
+            "enum": [
+              "none",
+              "managed",
+              "customer"
+            ],
+            "description": "Whose provider key produced the usage. `none` for calls."
+          },
+          "sourceKind": {
+            "type": "string",
+            "enum": [
+              "call",
+              "attempt",
+              "flow_run",
+              "conversation",
+              "asset",
+              "team"
+            ]
+          },
+          "sourceId": {
+            "type": "string",
+            "description": "The call id for call meters."
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "session": {
+            "type": "string",
+            "nullable": true,
+            "description": "The number (session name) the usage belongs to."
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the usage happened. For calls, when the call ended."
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Starts at 1. A higher revision of the same `id` replaces the earlier one."
+          },
+          "pricingState": {
+            "type": "string",
+            "enum": [
+              "unpriced",
+              "priced",
+              "waived",
+              "settled"
+            ],
+            "description": "`unpriced` while usage is measured but not charged."
+          },
+          "rateCard": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "id",
+              "version"
+            ]
+          },
+          "pricedCredits": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "meter",
+          "quantity",
+          "unit",
+          "dimensions",
+          "keySource",
+          "sourceKind",
+          "sourceId",
+          "projectId",
+          "session",
+          "occurredAt",
+          "recordedAt",
+          "revision",
+          "pricingState",
+          "rateCard",
+          "pricedCredits"
+        ]
+      },
+      "UsageRecordedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "usage.recorded"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/UsageRecordedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
       "NewsletterUpdatePayload": {
         "type": "object",
         "properties": {
@@ -7184,6 +7393,7 @@
                   "invalid_parameter",
                   "invalid_credential",
                   "entitlement_required",
+                  "gate_limit_reached",
                   "method_not_allowed",
                   "permission_denied",
                   "missing_scope",
@@ -19563,6 +19773,27 @@
               }
             }
           },
+          "402": {
+            "description": "`gate_limit_reached` when an enforced usage limit refuses placement; `entitlement_required` when the account lacks a required capability. The outbound monthly gate remains in record mode until placement reservations are available.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "gate_limit_reached",
+                    "message": "A usage limit for this team or number was reached.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#gate-limit-reached"
+                }
+              }
+            }
+          },
           "403": {
             "description": "`call_permission_required` when the recipient has not granted this business permission to call them, `number_restricted` when WhatsApp restricts the number to calling people it has already chatted with and the callee is not one of them (`Retry-After` gives the seconds until the restriction ends, when known), or the credential is not permitted",
             "content": {
@@ -19732,7 +19963,7 @@
             }
           },
           "503": {
-            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "description": "Call unavailable — the owning pod is at capacity or draining, call authority cannot be verified, or usage limits could not be checked",
             "content": {
               "application/json": {
                 "schema": {
@@ -47018,6 +47249,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CallConnectionLeftEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "usage.recorded": {
+      "post": {
+        "operationId": "onUsageRecorded",
+        "summary": "Usage recorded",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsageRecordedEvent"
               }
             }
           }

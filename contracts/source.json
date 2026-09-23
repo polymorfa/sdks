@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "9c876c16c60b74370d934e1275f23ef6096bee12",
+  "commit": "fdaff9a86220e3ef1f8ad75cc838dbfd03ede4eb",
   "branch": "dev",
   "published": true,
-  "note": "Merged polymorfa/polymorfa dev revision including Calls analytics, Campaigns P0 and Functions. Both public OpenAPI snapshots are byte-identical to the authoritative files at this commit.",
+  "note": "Merged polymorfa/polymorfa dev revision including usage gates, Calls analytics, Campaigns P0 and Functions. Both public OpenAPI snapshots are byte-identical to the authoritative files at this commit.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "1b2c37fc3f89360bc9cc92c3deeb96ca8c42349e36dff8cb7c9066bf1556ae4e"
+      "sha256": "bfea366196c950627c8da53b93dd338ce29bb1b2f3c30694a58558a4217f3e2b"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "7255d7ac18b54eb72de77d79ab8d201d2ec616f456b4be493c3028f2dbd9a890"
+      "sha256": "65e4a7be65709cdac2a0fc560e142962ff9cac7c13fd7906d357c46d55dad528"
     }
   }
 }

@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`9c876c16c60b74370d934e1275f23ef6096bee12` on monorepo `dev`. Graph-compatible APIs are outside
+`fdaff9a86220e3ef1f8ad75cc838dbfd03ede4eb` on monorepo `dev`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -23,9 +23,9 @@ this SDK's initial scope.
 | `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
 | `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
 
-The eight public packages are available on npm under the `dev` tag as development
-prereleases. `@polymorfa/sdk/calls` is a subpath of `@polymorfa/sdk`.
-No mobile-native binding is part of this milestone.
+The public packages are complete development artifacts on `dev`. They
+publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
+Polymorfa npm organization. No mobile-native binding is part of this milestone.
 
 ## TypeScript development install
 
@@ -37,9 +37,10 @@ npm install @polymorfa/sdk@dev
 npm install @polymorfa/browser@dev   # browser apps
 ```
 
-Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. These
-are development prereleases; use `@dev` or an exact version when installing.
-To build from source, install a packed tarball:
+Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. No
+stable (`latest`) release exists. Publishing starts once the npm scope and
+trusted publisher are configured; until `npm view @polymorfa/sdk dist-tags`
+shows a `dev` tag, build from source and install the packed tarballs:
 
 ```bash
 git clone --branch dev https://github.com/polymorfa/sdks.git
@@ -216,8 +217,7 @@ simulated-device capabilities are also rejected before transport.
 
 Both organization and project views expose owner-bound resources:
 
-- `events`: list, retrieve, and replay durable events; stream one project's
-  events when the required scope and beta access are available
+- `events`: list, retrieve, and replay durable events
 - `webhooks`: list, create, retrieve, update, delete, test, and rotate secrets
 - `webhookDeliveries`: list and retrieve deliveries, list and retrieve their
   physical attempts, and retry a delivery
@@ -270,6 +270,10 @@ The organization view also exposes these management resources:
   call data (also readable on project clients; changes need a team API key)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
+- `usage`: read metered call usage for a month, list or iterate usage records
+  for a call or number (also on project clients), and read usage gate modes,
+  limits and decisions (organization clients only). Usage is measured, not
+  charged.
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
   restrictions, incidents, claims, and Health action history; report and retract
   customer incidents
@@ -454,10 +458,8 @@ and `idempotencyKey`; the key does not make the API replay the append.
 
 ## API versions and raw requests
 
-Set `apiVersion` on a client or a single request to a supported contract date,
-such as `2026-03-20`. The SDK sends it as the `Polymorfa-Version` header. This
-value uses `YYYY-MM-DD`, not the SDK package version. Omitting it lets the API
-select its configured current version.
+Set `apiVersion` on a client or a single request. The SDK sends it as the
+`Polymorfa-Version` header.
 
 Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 
@@ -518,17 +520,11 @@ organization and project event, webhook, delivery, attempt, and operation
 resources described above. Dashboard and staff routes retain their separate
 credential requirements.
 
-`Client.events.stream()` returns an `AsyncIterable` of project events with
-automatic reconnect and cursor resume. It requires an organization API key or
-project token with `events:listen`, and Event streams beta access enabled for
-the enrolled team. Organization clients pass `projectId`; project views use
-their bound project. See the [streaming guide](packages/typescript/README.md#stream-events-in-real-time)
-for iteration, cancellation, and manual acknowledgement.
-
-`polymorfa listen` owns local forwarding and connects to a separate CLI-only
-protocol. Its `pmfa_ls_` credential cannot be used by `Client`,
-`MessagingClient`, or their raw request helpers. Browser client tokens cannot
-use the server event stream.
+`Client.events.stream()` exposes the server event stream as an `AsyncIterable`,
+and `Client.events.liveSource()` adapts it for `@polymorfa/store`. Both require
+the server event stream's scope and beta access. `polymorfa listen` connects to
+a separate CLI-only forwarding protocol; its `pmfa_ls_` credential cannot be
+used by `Client`, `MessagingClient`, or their raw request helpers.
 
 ## QuickLink lifecycle and settings
 
@@ -736,4 +732,4 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
 covers the three public call analytics and export operations. The contract
 snapshot is pinned to merged API `dev` commit
-`9c876c16c60b74370d934e1275f23ef6096bee12`.
+`fdaff9a86220e3ef1f8ad75cc838dbfd03ede4eb`.

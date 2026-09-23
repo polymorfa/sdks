@@ -110,6 +110,7 @@ export {
   type UnknownWebhookEvent,
   type WebhookEvent,
   type WebhookEventOf,
+  type UsageRecordedPayload,
   type WebhookPayloadMap,
 } from "./events.js";
 export {

@@ -1717,6 +1717,39 @@ and Flows are not methods on `Client`:
 their endpoints require a dashboard bearer and reject the organization API key
 used by the server client.
 
+## Metered call usage and gates
+
+`Client.usage` reads the merged usage API. It needs `sessions:read`.
+Organization clients can read team usage or filter by project and session;
+project clients read only their bound project's usage. Gate state is team-wide:
+`listGates()` requires an organization credential, and the API returns 403 for
+project credentials.
+
+```ts
+const { data: usage } = await platform.usage.summary({ period: "2026-09" });
+console.log(usage.billingEnabled, usage.meters);
+
+for await (const record of platform.usage.iterateRecords({
+  callId: "CALL-1",
+})) {
+  console.log(record.id, record.revision, record.quantity);
+}
+
+const { data: state } = await platform.usage.listGates({ session: "support" });
+console.log(state.gates);
+```
+
+`summary()` defaults to the current UTC calendar month. `listRecords()` and
+`iterateRecords()` include every month when `period` is omitted. Records use
+closed meter and unit types; `usage.recorded` carries the same record shape.
+Keep the highest `revision` for each record ID when a later event corrects it.
+The event envelope's timestamp identifies that revision; `recordedAt` remains
+the original record time.
+
+Usage remains unpriced. Gate modes describe behavior only where `active` is
+true; inactive voice gates have no runtime enforcement. This SDK resource
+does not change prices, modes or customer access. Package publication and live access require separate release and deployment checks.
+
 ## Billing and usage
 
 `Client.billing` exposes the complete organization-key billing family.
@@ -2053,7 +2086,7 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
 covers the three public call analytics and export operations. The contract
 snapshot is pinned to merged API `dev` commit
-`9c876c16c60b74370d934e1275f23ef6096bee12`.
+`fdaff9a86220e3ef1f8ad75cc838dbfd03ede4eb`.
 
 ## Functions
 
