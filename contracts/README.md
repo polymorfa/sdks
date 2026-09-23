@@ -5,6 +5,7 @@
 `testing-events.json` records the four test-event schemas from API commit
 `63111fec728ac3ebc9a825ea57ebc4c592abdafc`, including the source path and file
 hash. The TypeScript test-event catalog and override types use that revision.
+Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
 and `call_restricted` to `callEndReason`. This focused supplement does not claim

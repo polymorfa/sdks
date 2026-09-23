@@ -71,7 +71,7 @@
           "description": "Fixture name. Each name is the event type it produces."
         },
         "overrides": {
-          "$ref": "#/components/schemas/TestEventOverrides"
+          "$ref": "#/schemas/TestEventOverrides"
         },
         "fromSession": {
           "type": "string",

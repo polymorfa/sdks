@@ -87,6 +87,28 @@ it("matches the public fixture catalog at API 63111fec728ac3ebc9a825ea57ebc4c592
   );
 });
 
+it("resolves every local schema reference in the focused contract", () => {
+  const visit = (value: unknown): void => {
+    if (typeof value !== "object" || value === null) return;
+    if ("$ref" in value) {
+      const ref = String(value.$ref);
+      expect(ref).toMatch(/^#\//);
+      const resolved = ref
+        .slice(2)
+        .split("/")
+        .reduce<unknown>((current, part) => {
+          const key = part.replace(/~1/g, "/").replace(/~0/g, "~");
+          return typeof current === "object" && current !== null
+            ? (current as Record<string, unknown>)[key]
+            : undefined;
+        }, apiContract);
+      expect(resolved, ref).toBeDefined();
+    }
+    for (const nested of Object.values(value)) visit(nested);
+  };
+  visit(apiContract);
+});
+
 it.each([true, false])(
   "sends the restriction fixture with restrictionActive=%s",
   async (restrictionActive) => {
