@@ -5,9 +5,8 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts recorded at pending Voice API source
-revision `f16bfbaf9` in polymorfa/polymorfa#227. This SDK branch requires a
-final pin to the merged API `dev` commit before publication. Graph-compatible
+the Messaging and Platform contracts at merged API `dev` revision
+`087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`. Graph-compatible
 APIs are outside this SDK's initial scope.
 
 ## Package architecture
@@ -734,6 +733,5 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
 covers the three public call analytics and export operations. `Client.voice`
-covers the pending Voice audio and credential operations. The contract snapshot
-is pinned to API #227 head `f16bfbaf943cc8f470a1cabb3c23ce25405be1dc`
-and must be repinned after it merges into `dev`.
+covers the Voice audio and credential operations. The contract snapshot
+is pinned to merged API `dev` commit `087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`.

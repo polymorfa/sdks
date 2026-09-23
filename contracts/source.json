@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "f16bfbaf943cc8f470a1cabb3c23ce25405be1dc",
-  "branch": "t3code/voice-audio-library",
-  "published": false,
-  "note": "Pending API PR #227 Voice head after merging API dev; snapshots are byte-identical to this branch. Re-pin to the merged API dev commit before SDK publication.",
+  "commit": "087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f",
+  "branch": "dev",
+  "published": true,
+  "note": "Merged polymorfa/polymorfa dev revision including Voice audio and provider credentials, usage gates, Calls analytics, Campaigns P0 and Functions. Both public OpenAPI snapshots are byte-identical to the authoritative files at this commit.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",

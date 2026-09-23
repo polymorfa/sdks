@@ -315,7 +315,7 @@ type CredentialListArguments<O extends ClientOwner> = O extends "project"
   : [params?: ListVoiceProviderCredentialsParams, options?: RequestOptions];
 
 /**
- * Prepared for the pending Voice Automation API. Writes require the
+ * Follows the merged Voice Automation API contract. Writes require the
  * `calls.voice-automation` beta; other teams get `voice_not_enabled`.
  * Reads, previews and deletes keep working after withdrawal. An installed
  * resource does not grant access or establish an enabled audience.

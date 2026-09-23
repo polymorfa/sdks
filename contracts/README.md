@@ -9,18 +9,18 @@ Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
 and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
-below use the pending API #227 Voice revision. CLI consumers require a
+below use the merged API `dev` Voice revision. CLI consumers require a
 published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at pending `polymorfa/polymorfa` API #227 head
-`f16bfbaf943cc8f470a1cabb3c23ce25405be1dc`. This revision includes
+files at merged `polymorfa/polymorfa` API `dev` commit
+`087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`. This revision includes
 Voice audio and provider credentials on top of merged usage gates, Calls
 analytics, Campaigns P0 and Functions. The snapshots, ledger and revision
-tests have been reconciled. Re-pin to the final API `dev` merge commit before
-SDK publication. `source.json` records the source paths and SHA-256 hashes.
+tests have been reconciled. `source.json` records the source paths and
+SHA-256 hashes.
 
 The preceding refresh added 17 operation rows and removes eight. Eight removed Console
 operation routes moved to `/platform/operations` and

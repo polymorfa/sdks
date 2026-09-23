@@ -458,13 +458,12 @@ of another project with `PolymorfaNotFoundError`. Conflicts raise
 
 ## Voice audio library
 
-`Client.voice` is prepared for the pending Voice Automation API. The API
+`Client.voice` follows the merged Voice Automation API contract. The API
 requires `calls.voice-automation` enrollment for writes except `delete`;
 without it, writes fail with `PolymorfaAuthorizationError` and
 `code: "voice_not_enabled"`. Reads, previews and deletes remain available
 after enrollment withdrawal. These methods do not enable an audience or
-establish deployed availability. The API contract remains pending merger; SDK
-publication waits for the final merged source revision. Credentials need
+establish deployed availability. Credentials need
 `voice:read` to read and `voice:manage` to change anything; client tokens
 are refused. Team clients name the project on `audio.list`,
 `audio.createUpload`, `audio.upload` and `audio.synthesize`; project clients
@@ -2193,9 +2192,8 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
 covers the three public call analytics and export operations. `Client.voice`
-covers the pending Voice audio and credential operations. The contract snapshot
-is pinned to API #227 head `f16bfbaf943cc8f470a1cabb3c23ce25405be1dc`
-and must be repinned after it merges into `dev`.
+covers the Voice audio and credential operations. The contract snapshot
+is pinned to merged API `dev` commit `087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`.
 
 ## Functions
 
