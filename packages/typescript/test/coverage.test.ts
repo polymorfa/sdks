@@ -173,7 +173,7 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "b361dab557d43de9e1eed589d68adcfe92268e16",
+      sourceCommit: "43a1fa6e3f620120e8e7a49f7dc76599ccbbb69f",
       total: 459,
       covered: 330,
       partial: 0,
@@ -182,8 +182,7 @@ describe("coverage checker", () => {
       excluded: 124,
       changed: 0,
     });
-    // Operations use their covered public /platform routes; superseded
-    // Console paths have no unresolved removal left.
+    // All operation mappings use the pending API source without removals.
     const resolutions = (result.report?.resolutions ?? []) as Array<{
       operationId: string;
       status: string;

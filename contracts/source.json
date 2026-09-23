@@ -1,9 +1,5 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "b361dab557d43de9e1eed589d68adcfe92268e16",
-  "branch": "t3code/voice-audio-library",
-  "published": false,
-  "note": "Pending API PR #227 head, not merged to dev. Both snapshots are byte-identical to this branch commit. Re-pin both to the final monorepo dev merge commit before this SDK PR merges or publishes. Typed BanSafe alignment remains dependent on SDK #282.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +9,11 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "740ffeb59c08721f328e8101a5de5299782baac526636f390ec60796ba985e54"
+      "sha256": "e0dc8c0a63b0c59080a6901fe8972a2e111595175966f7b613ce62924e14c18b"
     }
-  }
+  },
+  "commit": "43a1fa6e3f620120e8e7a49f7dc76599ccbbb69f",
+  "branch": "t3code/voice-audio-library",
+  "published": false,
+  "note": "Pending API PR #227 head after merging monorepo dev. Both snapshots match this branch commit. Re-pin to the final monorepo dev merge before SDK publication."
 }

@@ -8,6 +8,7 @@ import {
   constructWebhookEvent,
   isEvent,
   type KnownWebhookEventType,
+  type BanSafeHealthBandName,
   type ProjectWebhookDeliveryAttempt,
   type OrganizationWebhookDeliveryAttempt,
   type WebhookPayloadMap,
@@ -736,6 +737,9 @@ describe("webhook catalog contract", () => {
     expectTypeOf<P["bansafe.action"]["previousRung"]>().toEqualTypeOf<
       "none" | "notify" | "throttle" | "block_cold" | "suspend" | null
     >();
+    expectTypeOf<
+      P["bansafe.health_changed"]["previousBand"]
+    >().toEqualTypeOf<BanSafeHealthBandName | null>();
   });
 });
 

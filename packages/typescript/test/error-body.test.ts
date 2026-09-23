@@ -144,6 +144,7 @@ describe("error codes", () => {
       "whatsapp_account_restricted",
       "bansafe_throttled",
       "session_not_ready",
+      "addon_required",
     ]) {
       expect(isKnownPolymorfaErrorCode(code), code).toBe(true);
     }
@@ -180,7 +181,9 @@ describe("error codes", () => {
       "utf8",
     );
     // Platform operations document these codes in prose rather than an enum.
-    const documentedInProse = ["payg_required", "premium_required"];
+    // premium_required left the contract when teams moved to Free and
+    // Pay-As-You-Go; the API no longer returns it.
+    const documentedInProse = ["payg_required", "addon_required"];
     for (const code of documentedInProse) {
       expect(platformText).toContain(`code \`${code}\``);
     }

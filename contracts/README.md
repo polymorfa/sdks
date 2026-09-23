@@ -1,15 +1,16 @@
 # Contract coverage
 
 The Messaging and Platform snapshots byte-match pending API PR #227 commit
-`b361dab557d43de9e1eed589d68adcfe92268e16` on `t3code/voice-audio-library`.
-`source.json` records both paths and hashes with `published: false`. This
-source is not merged to monorepo `dev`.
+`43a1fa6e3f620120e8e7a49f7dc76599ccbbb69f` on `t3code/voice-audio-library`. `source.json` records both
+paths and hashes with `published: false`; the source is not merged to monorepo
+`dev`. SDK `dev` at `228fa7b` is merged here, including the typed BanSafe
+restriction errors, events and Calls end reason.
 
-SDK `dev` at `8392f66b4df0b0fee3403e27e3d2914516b0e243` is merged here.
-The 13 public voice routes map to the existing `Client.voice.audio` and
-`Client.voice.providerCredentials` methods; their 13 Console counterparts
-remain excluded. The ledger, error-code checks and real webhook schema parity
-now use the exact snapshots. The obsolete pending-code/event helper is removed.
+The 13 public voice routes map to `Client.voice.audio` and
+`Client.voice.providerCredentials`; their 13 Console counterparts remain
+excluded. The coverage ledger and voice schema tests use the same pending
+snapshot. The five missing methods remain owned by SDK #278 (two retention
+routes) and SDK #281 (three analytics routes).
 
 | Status              | Operations |
 | ------------------- | ---------: |
@@ -20,74 +21,40 @@ now use the exact snapshots. The obsolete pending-code/event helper is removed.
 | Changed fingerprint |          0 |
 | Total               |        459 |
 
-The accepted baseline is monorepo `63111fec` recorded in SDK #282. This
-pending source adds the voice operations, schemas and events, plus public
-error codes; existing operation fingerprints changed only through the shared
-error schemas. The five missing methods remain owned by SDK #278 (two
-retention routes) and SDK #281 (three analytics routes).
+The separate `testing-events.json` supplement remains pinned to monorepo
+`63111fec`; it captures the four test-event schemas and the restriction
+fixture used by SDK #282. Re-pin both full snapshots and the ledger to the final
+monorepo `dev` merge of API #227 before this SDK merges or publishes. An
+installed method does not establish customer availability.
 
-SDK #282 remains a required typed BanSafe dependency. Its error-code,
-restriction-webhook and Calls-parser fixes are not duplicated here. Merge it
-through SDK `dev`, then re-pin both snapshots and the ledger to the final
-monorepo `dev` merge of API #227 before SDK merge/publication. An installed
-method does not enable the feature or establish an available audience.
+The refresh from `9fe6c235` adds two public call-retention operations and two
+Console-only counterparts. The public methods remain `missing` until SDK
+PR #278 lands; the Console routes are excluded because they require dashboard
+membership. Call analytics and export remain `missing` in this branch and are
+implemented by SDK PR #281. No existing operation fingerprint changed.
 
-Revision `576176a6` publishes the operations lifecycle on the Platform API. The
-eight operation routes moved from `/console` to `/platform`, so their ledger
-rows move from `excluded` (console-only) to `covered` by `Client.operations`
-and `Client.project(projectId).operations`. The organization-wide reads accept
-a `projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
+The BanSafe update recognizes `number_restricted`, types the
+`session.restriction_updated` webhook and the `reason` and `code` on
+`session.logged_out`, and preserves `call_restricted` through the Calls
+client's lifecycle parser. Health changes use the same health-band union for
+`band` and `previousBand` (with null for the latter's first evaluation), and
+risk factor groups use the contract's sixteen-value union. `addon_required`
+is recognized for the covered QuickLink settings endpoint.
+
+`GET /console/sip/endpoint` remains excluded (Console-only), while
+`GET /platform/sip/endpoint` is covered by `Client.sipTrunks.endpoint`.
+
+The previous revision published the operations lifecycle on the Platform API. The eight
+operation routes moved from `/console` to `/platform`, so their ledger rows
+move from `excluded` (console-only) to `covered` by `Client.operations` and
+`Client.project(projectId).operations`. The organization-wide reads accept a
+`projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
 and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
-contract. `/platform/projects/{projectId}/events/stream` keeps a refreshed
-fingerprint from the upstream frame `$ref` fix; only its discriminator mapping
-changed. The same re-sync picks up the management MCP tools and the call
-analytics work on `dev`. The MCP tools change no published operation this SDK
-covers. Call analytics adds `GET /platform/calls`, `/platform/calls/stats`,
-and `/platform/calls/export`; they are recorded as `missing` here because
+contract. Call analytics adds `GET /platform/calls`, `/platform/calls/stats`,
+and `/platform/calls/export`; they are recorded as `missing` because
 `Client.calls` implements them in a separate pull request.
 
-Revision `b2dc135a` declares the `sip_not_hosted` member's `host` and `rtp` as
-`nullable: true` beside the `enum: [null]` they already carried. That moves the
-same two fingerprints as the previous revision, `getSipEndpoint` and the
-excluded `getConsoleSipEndpoint`; both were reviewed and the resolved shapes
-differ only by those two keywords. `null` was already the single permitted
-value, so `SipEndpointNotHosted` keeps `host: null` and `rtp: null` and no SDK
-type changes. The revision also merges monorepo `dev`, which adds no Messaging
-or Platform operation: the MCP management-tools work lands in
-`apps/api/docs/mcp/tools-reference.md`, not in either OpenAPI document. The
-Messaging document is byte identical to `10a91351`, and the reviewed counts are
-unchanged.
-
-Revision `10a91351` splits the SIP address response on `status`:
-`PlatformAccessSipEndpoint` is a `oneOf` of `PlatformAccessSipEndpointHosted`,
-which carries a non-null `host`, at least one transport and the
-`PlatformAccessSipEndpointRtp` range, and `PlatformAccessSipEndpointNotHosted`,
-which carries a null `host`, a null `rtp` and no transports. Two fingerprints
-move, `getSipEndpoint` and the excluded `getConsoleSipEndpoint`; both were
-reviewed and only that response schema differs. `SipEndpoint` follows as
-`SipEndpointHosted | SipEndpointNotHosted`, so narrowing on `status` gives a
-`host` and an `rtp` range without a cast. The Messaging document is byte
-identical to `8a7caf47`, and the reviewed counts are unchanged.
-
-Revision `8a7caf47` added the environment's SIP address
-(`GET /platform/sip/endpoint`, `getSipEndpoint`), covered by
-`Client.sipTrunks.endpoint`, and its Console-only counterpart
-(`getConsoleSipEndpoint`, excluded). It also carried monorepo `dev` changes
-since `2259a1fd`: the SIP trunk operations drop the beta enrollment wording and
-move the `targetUri` transport description into an `allOf` wrapper (eight public
-and Console SIP trunk fingerprints; request and response fields are
-unchanged), and the `PlatformAccessEventStreamFrame` discriminator mapping now
-points at the prefixed schema names the document defines (`streamProjectEvents`
-fingerprint). The Messaging document adds the `bansafe.risk_changed` and
-`bansafe.health_changed` webhooks, typed as `BanSafeRiskChangedPayload` and
-`BanSafeHealthChangedPayload`; webhooks are not ledger operations.
-
-Revision `129d58ae` added `customer` and `allow` to `mintClientToken` (covered by
-`MessagingClient.clientTokens.mint`). An earlier re-sync restored the Calls
-diagnostics route (`voipReportCallDiagnostics`), covered by
-`MessagingClient.voip.report`.
-
-An earlier revision added test event triggering
+This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
 (`GET /messaging/testing/{projectId}/events/fixtures`), covered by
 `MessagingClient.testing.triggerEvent` (with the optional `Idempotency-Key`
@@ -138,9 +105,9 @@ Revision `2259a1fd` adds the project event stream. `Client.events.stream`
 covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
 resume, and `Client.events.acknowledgeStream` covers its manual
 acknowledgement route. The Platform `PlatformAccessEventStreamFrame`
-discriminator mapping at that revision pointed at unprefixed schema names
-(`EventStreamReadyFrame` and so on) that the document did not define; revision
-`8a7caf47` corrects the mapping. The same revision adds
+discriminator mapping at this revision points at unprefixed schema names
+(`EventStreamReadyFrame` and so on) that the document does not define; the
+snapshot keeps the source bytes unchanged. The same revision adds
 `conversationTtlSeconds` to client rules, turns `recipientMode` into an enum,
 and sets a minimum of 0 on `rateLimit` and `maxDaily`; the client-rules types
 follow.
@@ -185,8 +152,8 @@ BanSafe is reconciled against these same snapshots. `Client.banSafe`,
 telemetry, findings, enforcement, incident, claim, and settings operations.
 `MessagingClient.banSafe` covers the 10 Messaging Safe Mode, warm-up, Ban
 Insurance evidence, and Health policy operations. Finding acknowledgement and
-enforcement appeals are Console-only and stay excluded. SDK #282 still owns the
-pending typed restriction-event, error-code and Calls-parser alignment.
+enforcement appeals are Console-only and stay excluded. SDK #282 supplied the typed restriction-event, error-code and Calls-parser
+alignment merged here.
 
 The Platform `BanSafeNumberDetail` schema at this revision lists `sessionId`,
 `session`, `phoneNumber`, `projectId`, and `enforcement` as required but omits
@@ -243,3 +210,18 @@ routes, paid-number expiry, tier quotes and confirmation, and payment-required
 errors. They are checked against these same canonical API snapshots. Removed
 dashboard-only billing reminders and client-token session start/status helpers
 are not retained as compatibility aliases.
+
+## Functions contract
+
+Functions is tracked separately in `functions/openapi.json`, with its exact
+monorepo source commit and extraction hash in `functions/source.json`. This
+snapshot contains only the15 Functions operations and their transitive schemas.
+`npm run check:functions` verifies their ledger; SDK tests exercise every method.
+The main snapshots above retain their recorded baseline so a Functions change
+does not silently reconcile unrelated Calls, QuickLink or webhook work.
+
+All15 Functions methods require `client.project(projectId).functions` and an
+organization enabled for Functions. The SDK never retries Function mutations or
+invocations automatically. Browser/client-token SDKs do not expose this server
+control plane. A local implementation or installed method does not establish
+hosted availability.
