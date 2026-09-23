@@ -137,6 +137,15 @@ test("configure helper validates the callee and project before writing", async (
   assert.deepEqual(hidden.calls, ["retrieve-rules", "retrieve-session"]);
 });
 
+test("configure helper accepts a seven-digit E.164 test callee", async () => {
+  const messaging = fakeMessaging({ rulesError: missing });
+  await configureCallsExampleRules(messaging, "support", "+1234567");
+  const write = messaging.calls.find(
+    (call) => Array.isArray(call) && call[0] === "update-rules",
+  );
+  assert.equal(write[1].allowedNumber, "+1234567");
+});
+
 test("configure helper treats a 503 after the write as an uncertain outcome", async () => {
   const messaging = fakeMessaging({
     rulesError: missing,

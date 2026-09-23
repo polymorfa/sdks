@@ -1,7 +1,7 @@
 import { CallsExampleSetupError } from "./mint-client-token-core.mjs";
 
 const LOCAL_ORIGIN = "http://127.0.0.1:5273";
-const E164 = /^\+[1-9]\d{7,14}$/;
+const E164 = /^\+[1-9]\d{6,14}$/;
 
 /** Install narrow Calls rules only when this Number has no rules yet. */
 export async function configureCallsExampleRules(
