@@ -45984,7 +45984,7 @@
           "QuickLink"
         ],
         "summary": "Cancel a QuickLink",
-        "description": "**Required scope:** `quicklink:manage`\n\nCancels pending onboarding. A supplementary link cancels only its pending addition and preserves the Number. Accepted provider work must finish before cancellation.",
+        "description": "**Required scope:** `quicklink:manage`\n\nCancels pending onboarding. Initial Number cleanup is accepted asynchronously and completes only after runtime teardown. A supplementary link cancels only its pending addition and preserves the Number. Accepted provider work must finish before cancellation.",
         "security": [
           {
             "BearerAuth": []
@@ -46004,6 +46004,31 @@
         "responses": {
           "200": {
             "description": "Cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "QuickLink invalidated; Number cleanup pending",
             "content": {
               "application/json": {
                 "schema": {
@@ -47726,6 +47751,40 @@
         "responses": {
           "200": {
             "description": "Cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "cancelled"
+                          ]
+                        },
+                        "redirectUrl": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "redirectUrl"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "QuickLink invalidated; Number cleanup pending",
             "content": {
               "application/json": {
                 "schema": {

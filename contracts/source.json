@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "b38ba787b3fd83eef830060a0d454f856db4666b",
+  "commit": "b447d9513326a13f2029e2ee26f43b4d17c90835",
   "branch": "t3code/hybrid-link-support",
   "published": false,
   "note": "Unmerged Hybrid Link branch revision built on API dev with merged Voice audio, usage gates, Calls analytics, Campaigns P0 and Functions. Both public OpenAPI snapshots are byte-identical to the authoritative files at this commit.",
@@ -8,7 +8,7 @@
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "b3482ef25cddcd5120a921fffec2a16e3a0f6719f6d63a09eb278d2355dfdc69"
+      "sha256": "f8be3990b5b4fcc6941f3f33592cf5f55cb8ed1269ab08d17b1de5f8557f52b4"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",

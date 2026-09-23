@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "b38ba787b3fd83eef830060a0d454f856db4666b",
+  "sourceCommit": "b447d9513326a13f2029e2ee26f43b4d17c90835",
   "excludedContracts": [
     {
       "family": "graph",
@@ -123,7 +123,7 @@
       "method": "DELETE",
       "path": "/messaging/quicklinks/{id}",
       "operationId": "cancelQuickLink",
-      "fingerprint": "13d9f3ba0a11411687f2ad6803d07393137eb578254e91f46a79efd36b841dfa",
+      "fingerprint": "0ea42a395b95d2b438d1701c64152e3693a1b72e67957b228a2fb87b26c1ccd0",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickLinks.cancel"
@@ -1654,7 +1654,7 @@
       "method": "POST",
       "path": "/quicklink/{token}/cancel",
       "operationId": "cancelQuickLinkByToken",
-      "fingerprint": "1e8e0e2d3a0f5022722f9a4ce20ab1c42e5e6149a6ec7d3a4d37f7d4e481537d",
+      "fingerprint": "01e0c1827929a3a5c5baf2ed7abadf859d36159dc257a20c98df1d9b6f3e2f8b",
       "typescript": {
         "status": "excluded",
         "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
