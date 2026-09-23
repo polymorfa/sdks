@@ -51,8 +51,12 @@ describe("MessagingClient.quickLinks", () => {
       }
       if (request.method === "DELETE") {
         return {
+          status: 202,
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ success: true, message: "cancelled" }),
+          body: JSON.stringify({
+            success: true,
+            message: "QuickLink cancellation requested",
+          }),
         };
       }
       return {
@@ -106,7 +110,8 @@ describe("MessagingClient.quickLinks", () => {
     >();
     expect(created.data.data.id).toBe("ql_123");
     expect(retrieved.data.data.status).toBe("pending");
-    expect(cancelled.data.message).toBe("cancelled");
+    expect(cancelled.data.message).toBe("QuickLink cancellation requested");
+    expect(cancelled.metadata.status).toBe(202);
     expect(
       server.requests.map(({ method, path }) => `${method} ${path}`),
     ).toEqual([

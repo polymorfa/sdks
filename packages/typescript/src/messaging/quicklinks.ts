@@ -166,6 +166,7 @@ export class QuickLinksResource {
     });
   }
 
+  /** An initial real Number may return HTTP 202 while cleanup is pending. */
   cancel(
     id: string,
     options: RequestOptions = {},

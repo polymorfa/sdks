@@ -1966,9 +1966,12 @@ console.log(quickLink.data.data.url, status.data.data.status);
 The resource accepts organization API keys or project tokens with
 `quicklink:manage`. It rejects browser client tokens before transport. An
 organization key can select `projectId` when creating a link; a project token
-is bound by the server. `cancel()` invalidates a pending link and removes its
-pending session. Connected links cannot be cancelled. The source exposes no
-list, recover, or history operation.
+is bound by the server. `cancel()` invalidates a pending link. For an initial
+real Number, HTTP 202 with `message: "QuickLink cancellation requested"` means
+Number cleanup has been admitted and may still be in progress. Supplementary
+and testing links return HTTP 200; cancelling a supplementary link preserves
+the existing Number. Connected links cannot be cancelled. The source exposes
+no list, recover, or history operation.
 
 `Client.quickLinkSettings.retrieve` and `update` map the management
 `GET /platform/quicklink` and `PUT /platform/quicklink` operations. Use them on the root
