@@ -1,5 +1,20 @@
 # Contract coverage
 
+## Focused test-event update
+
+`testing-events.json` records the four test-event schemas from API commit
+`63111fec728ac3ebc9a825ea57ebc4c592abdafc`, including the source path and file
+hash. The TypeScript test-event catalog and override types use that revision.
+Local schema references are rebased to this supplement's `schemas` root.
+The fixture contract test compares the exported catalog against this snapshot.
+It adds `session.restriction_updated`, its boolean `restrictionActive` override,
+and `call_restricted` to `callEndReason`. This focused supplement does not claim
+that the full snapshots or coverage ledger below were reconciled to that newer
+API revision. The SDK change is local and requires package publication before
+CLI consumers can update their pinned dependency.
+
+## Full snapshots
+
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at provisional `polymorfa/polymorfa` commit
 `8067be507dc818d2418f8724a943de138678b3db` for Campaigns P0 (#232).
@@ -229,3 +244,18 @@ routes, paid-number expiry, tier quotes and confirmation, and payment-required
 errors. They are checked against these same canonical API snapshots. Removed
 dashboard-only billing reminders and client-token session start/status helpers
 are not retained as compatibility aliases.
+
+## Functions contract
+
+Functions is tracked separately in `functions/openapi.json`, with its exact
+monorepo source commit and extraction hash in `functions/source.json`. This
+snapshot contains only the15 Functions operations and their transitive schemas.
+`npm run check:functions` verifies their ledger; SDK tests exercise every method.
+The main snapshots above retain their recorded baseline so a Functions change
+does not silently reconcile unrelated Calls, QuickLink or webhook work.
+
+All15 Functions methods require `client.project(projectId).functions` and an
+organization enabled for Functions. The SDK never retries Function mutations or
+invocations automatically. Browser/client-token SDKs do not expose this server
+control plane. A local implementation or installed method does not establish
+hosted availability.

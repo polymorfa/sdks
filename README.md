@@ -23,9 +23,9 @@ this SDK's initial scope.
 | `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
 | `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
 
-The public packages are complete development artifacts on `dev`. They
-publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
-Polymorfa npm organization. No mobile-native binding is part of this milestone.
+The eight public packages are available on npm under the `dev` tag as development
+prereleases. `@polymorfa/sdk/calls` is a subpath of `@polymorfa/sdk`.
+No mobile-native binding is part of this milestone.
 
 ## TypeScript development install
 
@@ -37,10 +37,9 @@ npm install @polymorfa/sdk@dev
 npm install @polymorfa/browser@dev   # browser apps
 ```
 
-Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. No
-stable (`latest`) release exists. Publishing starts once the npm scope and
-trusted publisher are configured; until `npm view @polymorfa/sdk dist-tags`
-shows a `dev` tag, build from source and install the packed tarballs:
+Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. These
+are development prereleases; use `@dev` or an exact version when installing.
+To build from source, install a packed tarball:
 
 ```bash
 git clone --branch dev https://github.com/polymorfa/sdks.git
@@ -94,7 +93,7 @@ const messaging = new MessagingClient({
     type: "apiKey",
     value: process.env.POLYMORFA_MESSAGING_API_KEY!,
   },
-  apiVersion: "1.0.0",
+  apiVersion: "2026-03-20",
 });
 
 const sessions = await messaging.sessions.list();
@@ -217,7 +216,8 @@ simulated-device capabilities are also rejected before transport.
 
 Both organization and project views expose owner-bound resources:
 
-- `events`: list, retrieve, and replay durable events
+- `events`: list, retrieve, and replay durable events; stream one project's
+  events when the required scope and beta access are available
 - `webhooks`: list, create, retrieve, update, delete, test, and rotate secrets
 - `webhookDeliveries`: list and retrieve deliveries, list and retrieve their
   physical attempts, and retry a delivery
@@ -450,8 +450,10 @@ and `idempotencyKey`; the key does not make the API replay the append.
 
 ## API versions and raw requests
 
-Set `apiVersion` on a client or a single request. The SDK sends it as the
-`Polymorfa-Version` header.
+Set `apiVersion` on a client or a single request to a supported contract date,
+such as `2026-03-20`. The SDK sends it as the `Polymorfa-Version` header. This
+value uses `YYYY-MM-DD`, not the SDK package version. Omitting it lets the API
+select its configured current version.
 
 Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 
@@ -512,10 +514,17 @@ organization and project event, webhook, delivery, attempt, and operation
 resources described above. Dashboard and staff routes retain their separate
 credential requirements.
 
-The SDK has no listener, event stream, `AsyncIterable`, or forwarding API.
-`polymorfa listen` connects to a separate CLI-only protocol; its `pmfa_ls_`
-credential cannot be used by `Client`, `MessagingClient`, or their raw request
-helpers.
+`Client.events.stream()` returns an `AsyncIterable` of project events with
+automatic reconnect and cursor resume. It requires an organization API key or
+project token with `events:listen`, and Event streams beta access enabled for
+the enrolled team. Organization clients pass `projectId`; project views use
+their bound project. See the [streaming guide](packages/typescript/README.md#stream-events-in-real-time)
+for iteration, cancellation, and manual acknowledgement.
+
+`polymorfa listen` owns local forwarding and connects to a separate CLI-only
+protocol. Its `pmfa_ls_` credential cannot be used by `Client`,
+`MessagingClient`, or their raw request helpers. Browser client tokens cannot
+use the server event stream.
 
 ## QuickLink lifecycle and settings
 

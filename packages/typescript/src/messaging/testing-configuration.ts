@@ -74,7 +74,7 @@ export interface TestEventOverrides {
     | "lost_connection"
     | "rejected"
     | "call_restricted";
-  /** session.restriction_updated: whether the restriction is active. */
+  /** session.restriction_updated: whether the restriction starts or ends. */
   restrictionActive?: boolean;
   /** session.status: status. */
   status?: "CONNECTING" | "CONNECTED" | "DISCONNECTED";
