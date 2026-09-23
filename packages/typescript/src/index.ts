@@ -863,6 +863,7 @@ export {
   type BanSafeEventRung,
   type BanSafeForecast,
   type BanSafeHealthChangedPayload,
+  type BanSafeHealthBandName,
   type BanSafeHealthFinding,
   type BanSafeHealthPenalties,
   type BanSafeHealthThresholdPayload,

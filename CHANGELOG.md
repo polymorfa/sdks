@@ -146,7 +146,7 @@
   the documented codes (including the new WhatsApp codes
   `recipient_not_on_whatsapp`, `conversation_window_closed`,
   `template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
-  `new_chat_limit_reached`, and `whatsapp_account_restricted`; the Calls and SIP trunk codes; and the Platform `payg_required` and `premium_required` codes) that still
+  `new_chat_limit_reached`, and `whatsapp_account_restricted`; the Calls and SIP trunk codes; the Platform `payg_required` code; and the legacy `premium_required` code) that still
   accepts any string. A `413` now throws `PolymorfaValidationError`.
   `BrowserError` gains `docUrl` and reads `code`, `requestId`, and the message
   from the error object. The `polymorfa-ratelimit-reason` header is kept in
