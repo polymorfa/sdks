@@ -12,6 +12,16 @@ provider strings. The Polymorfa `id` remains the action/reply identifier.
 Server and browser SDK types use the same object. No Hybrid routing or
 activation availability is implied by this identifier revision.
 
+`testing-events.json` records the four test-event schemas from API commit
+`9c876c16c60b74370d934e1275f23ef6096bee12`, including the source path and file
+hash. The TypeScript test-event catalog and override types use that revision.
+Local schema references are rebased to this supplement's `schemas` root.
+The fixture contract test compares the exported catalog against this snapshot.
+It adds `session.restriction_updated`, its boolean `restrictionActive` override,
+and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
+below use the merged API #228 revision. CLI consumers require a
+published SDK package before updating their pinned dependency.
+
 ## Whole-API snapshot
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
@@ -45,13 +55,22 @@ listed; unrecognized API error codes remain readable as strings.
 The merged SDK covers Calls analytics, export, and retention. Console equivalents
 stay excluded because they require dashboard identity.
 
-This API revision adds `GET /platform/usage`, `/platform/usage/records`, and
-`GET /platform/gates`. The ledger records all three as missing until the SDK
-exposes them. It also adds `gate_limit_reached` to the error catalog and a 402
-response to call placement; the existing SDK transport surfaces that response
-as `PolymorfaPaymentRequiredError`.
-The Messaging snapshot also adds `usage.recorded`; the webhook event map exposes
-its revisioned usage payload and the signed-delivery contract test checks it.
+This revision also covers `GET /platform/usage`, `/platform/usage/records`,
+and `/platform/gates` through `Client.usage.summary`, `listRecords`, and
+`listGates`. `iterateRecords` follows record-page cursors. Usage is measured
+but not charged; gate state requires an organization credential.
+
+The Campaigns P0 revision added these operations. Audiences gain member
+management (`POST`/`GET /platform/audiences/{listId}/members` and
+`DELETE .../{phone}`), campaigns gain recipient append and listing on both
+surfaces, and the organization gains STOP/START keyword settings
+(`GET`/`PUT /platform/optouts/settings`). All eight are covered by
+`Client.audiences`, `Client.campaigns`, `Client.optOuts` and
+`MessagingClient.campaigns`.
+
+The same revision adds `gate_limit_reached` and a 402 call-placement response;
+`PolymorfaPaymentRequiredError` surfaces that response. The webhook event map
+exposes `usage.recorded` with the revisioned record payload.
 
 The merged SDK implements the campaign compliance operations, but 16 changed
 campaign or audience fingerprints remain unresolved against this API source.
@@ -85,8 +104,8 @@ analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        335 |
-| Missing             |          3 |
+| Covered             |        338 |
+| Missing             |          0 |
 | Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |         16 |

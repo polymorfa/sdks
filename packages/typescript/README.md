@@ -1580,6 +1580,39 @@ as `PlatformPayload`. Templates and Flows are not methods on `Client`:
 their endpoints require a dashboard bearer and reject the organization API key
 used by the server client.
 
+## Metered call usage and gates
+
+`Client.usage` reads the merged usage API. It needs `sessions:read`.
+Organization clients can read team usage or filter by project and session;
+project clients read only their bound project's usage. Gate state is team-wide:
+`listGates()` requires an organization credential, and the API returns 403 for
+project credentials.
+
+```ts
+const { data: usage } = await platform.usage.summary({ period: "2026-09" });
+console.log(usage.billingEnabled, usage.meters);
+
+for await (const record of platform.usage.iterateRecords({
+  callId: "CALL-1",
+})) {
+  console.log(record.id, record.revision, record.quantity);
+}
+
+const { data: state } = await platform.usage.listGates({ session: "support" });
+console.log(state.gates);
+```
+
+`summary()` defaults to the current UTC calendar month. `listRecords()` and
+`iterateRecords()` include every month when `period` is omitted. Records use
+closed meter and unit types; `usage.recorded` carries the same record shape.
+Keep the highest `revision` for each record ID when a later event corrects it.
+The event envelope's timestamp identifies that revision; `recordedAt` remains
+the original record time.
+
+Usage remains unpriced. Gate modes describe behavior only where `active` is
+true; inactive voice gates have no runtime enforcement. This SDK resource
+does not change prices, modes or customer access. Package publication and live access require separate release and deployment checks.
+
 ## Billing and usage
 
 `Client.billing` exposes the complete organization-key billing family.
@@ -1900,3 +1933,67 @@ Trusted servers continue an issued Meta Cloud API invitation with
 IDs, and Coexistence/history choices. This method does not create a session or
 accept Meta app secrets. Its progress response is not proof that messaging is
 ready; inspect the QuickLink status.
+
+## Contract update notes
+
+The typed webhook catalog includes `session.restriction_updated` with
+`type`, `active`, `enforcementType`, `expiresAt`, and `observedAt`.
+`session.logged_out` requires a numeric `code` and a `reason` of `banned`,
+`device_removed`, or `unknown`. Test event requests support the restriction
+fixture with `restrictionActive` and the call-end reason `call_restricted`.
+
+`Client.callRetention` covers the team call-retention settings. `Client.calls`
+covers the three public call analytics and export operations. The contract
+snapshot is pinned to merged API `dev` commit
+`a77acc90d24e114f4c313e33aa05f9f3261cd123`.
+
+## Functions
+
+Use a project client with `functions:read`, `functions:manage` or
+`functions:invoke`, according to the operation. Your organization must be enabled
+for Functions and the selected execution region must be available. Client tokens
+cannot access this control plane.
+
+```ts
+const functions = client.project(projectId).functions;
+const created = await functions.create({ name: "Order lookup" });
+const deployed = await functions.deployments.create(created.data.id, {
+  deploymentId: crypto.randomUUID(),
+  language: "typescript",
+  region: configuredRegion,
+  compatibilityDate: "2026-09-22",
+  source: `export default {
+    handler() { return Response.json({ status: "ok" }); }
+  };`,
+  egressOrigins: [],
+  secretVersionIds: [],
+});
+const result = await functions.invocations.create(
+  created.data.id,
+  {
+    deploymentId: deployed.data.id,
+    trigger: "test",
+    request: {
+      method: "POST",
+      url: "https://function.polymorfa.invalid/test",
+      headers: {},
+      bodyBase64: "e30=",
+    },
+  },
+  { idempotencyKey: crypto.randomUUID() },
+);
+```
+
+`deployments.promote` selects the default deployment and requires
+`expectedRevision`. `update` and `delete` also require the current revision.
+`secrets.create` returns version metadata only; pin its ID in a new deployment.
+`secrets.revoke` prevents subsequent invocations from using that version.
+`deployments.list` returns deployment metadata without source code. Use
+`deployments.retrieve` with a deployment ID to read its source.
+
+Mutations and invocations have no automatic network retries. Keep the original
+idempotency key when checking an interrupted invocation. Replays return a receipt
+without the original response. An `unknown` outcome can mean an external effect
+occurred; reconcile it before choosing a new key. Request/response bodies and
+customer log output are not retained. List responses contain `items` and
+`nextCursor`; pass that cursor as `before` to read the next page.

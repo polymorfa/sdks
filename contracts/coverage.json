@@ -3159,9 +3159,8 @@
       "operationId": "listUsageGates",
       "fingerprint": "4b646d3687306853c1644dec47dea1e8851c771faaa48f2680d7cf077ce7b10b",
       "typescript": {
-        "status": "missing",
-        "reason": "The TypeScript SDK does not yet expose this usage read operation.",
-        "milestone": "usage-gates"
+        "status": "covered",
+        "method": "Client.usage.listGates"
       }
     },
     {
@@ -3646,9 +3645,8 @@
       "operationId": "getUsageSummary",
       "fingerprint": "be920d63a2b9a350ae63a2f1a084d5ad1fd2f8f46c4b46c551588ac85e964512",
       "typescript": {
-        "status": "missing",
-        "reason": "The TypeScript SDK does not yet expose this usage read operation.",
-        "milestone": "usage-gates"
+        "status": "covered",
+        "method": "Client.usage.summary"
       }
     },
     {
@@ -3658,9 +3656,8 @@
       "operationId": "listUsageRecords",
       "fingerprint": "e179c106768d4ec4842b476571e14b54e14e6ab691562e5360490e81fdda41b9",
       "typescript": {
-        "status": "missing",
-        "reason": "The TypeScript SDK does not yet expose this usage read operation.",
-        "milestone": "usage-gates"
+        "status": "covered",
+        "method": "Client.usage.listRecords"
       }
     },
     {

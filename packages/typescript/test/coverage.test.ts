@@ -175,10 +175,10 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "a77acc90d24e114f4c313e33aa05f9f3261cd123",
       total: 465,
-      covered: 335,
+      covered: 338,
       partial: 0,
-      // Usage summary, records, and gate reads remain explicit gaps.
-      missing: 3,
+      // Usage summary, records, and gate reads are implemented.
+      missing: 0,
       excluded: 111,
       changed: 16,
     });

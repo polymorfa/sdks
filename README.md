@@ -10,7 +10,7 @@ the Messaging and Platform contracts recorded at source revision
 `t3code/hybrid-link-support`. Graph-compatible APIs are outside
 this SDK's initial scope.
 The matching source revision also includes campaign compliance and Functions
-changes. Three new usage-read operations do not yet have SDK methods. Sixteen changed
+changes. The three usage-read operations now have SDK methods. Sixteen changed
 campaign or audience fingerprints still need review against the merged SDK
 implementation; the Hybrid operation-status contract is covered.
 
@@ -270,6 +270,10 @@ The organization view also exposes these management resources:
   points at with `endpoint()` (also on project clients)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
+- `usage`: read metered call usage for a month, list or iterate usage records
+  for a call or number (also on project clients), and read usage gate modes,
+  limits and decisions (organization clients only). Usage is measured, not
+  charged.
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
   restrictions, incidents, claims, and Health action history; report and retract
   customer incidents
@@ -487,10 +491,11 @@ organization and project event, webhook, delivery, attempt, and operation
 resources described above. Dashboard and staff routes retain their separate
 credential requirements.
 
-The SDK has no listener, event stream, `AsyncIterable`, or forwarding API.
-`polymorfa listen` connects to a separate CLI-only protocol; its `pmfa_ls_`
-credential cannot be used by `Client`, `MessagingClient`, or their raw request
-helpers.
+`Client.events.stream()` exposes the server event stream as an `AsyncIterable`,
+and `Client.events.liveSource()` adapts it for `@polymorfa/store`. Both require
+the server event stream's scope and beta access. `polymorfa listen` connects to
+a separate CLI-only forwarding protocol; its `pmfa_ls_` credential cannot be
+used by `Client`, `MessagingClient`, or their raw request helpers.
 
 ## QuickLink lifecycle and settings
 
@@ -734,3 +739,6 @@ or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
 `allowedTransports`; narrower policies cannot widen ancestor restrictions.
 `hybridLink.state(session)` reads connection status. `setPaused(session,
 {expectedRevision, paused})` changes routing at the exact current revision.
+
+`Client.callRetention` covers the team call-retention settings. `Client.calls`
+covers the three public call analytics and export operations. The contract snapshot is pinned to the Hybrid API source revision.
