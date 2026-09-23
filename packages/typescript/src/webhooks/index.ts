@@ -108,9 +108,12 @@ export {
   type SessionStatusPayload,
   type TemplateStatusPayload,
   type UnknownWebhookEvent,
+  type UsageRecordedPayload,
+  type VoiceAssetEventPayload,
+  type VoiceAssetFailedPayload,
+  type VoiceAssetReadyPayload,
   type WebhookEvent,
   type WebhookEventOf,
-  type UsageRecordedPayload,
   type WebhookPayloadMap,
 } from "./events.js";
 export {

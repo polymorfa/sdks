@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Added `Client.voice.audio` for scoped audio upload, synthesis, preview,
+  retention and deletion, plus `Client.voice.providerCredentials` for write-only
+  provider keys. Typed `voice.asset_ready` and `voice.asset_failed` webhooks
+  report project-scoped outcomes. The Voice Automation beta still requires
+  server enrollment and deployment.
+
+- `constructWebhookEvent` accepts project-scoped deliveries with an empty
+  `session`, including Voice asset events.
+
 - Added `Client.usage` to read monthly metered usage, page or iterate usage
   records, and inspect team usage gates. Project clients can read only their
   own usage; gate state requires an organization key. The `usage.recorded`

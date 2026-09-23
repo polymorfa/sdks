@@ -66,6 +66,13 @@ export const POLYMORFA_ERROR_CODES = [
   "sip_trunk_revision_conflict",
   "sip_unavailable",
   "unsupported_for_connection",
+  "voice_not_enabled",
+  "provider_credential_invalid",
+  "provider_unavailable",
+  "asset_not_ready",
+  "voice_asset_in_use",
+  "voice_asset_revision_conflict",
+  "voice_unavailable",
 ] as const;
 
 export type KnownPolymorfaErrorCode = (typeof POLYMORFA_ERROR_CODES)[number];

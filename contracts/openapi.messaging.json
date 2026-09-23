@@ -4946,6 +4946,214 @@
         ],
         "additionalProperties": false
       },
+      "VoiceAssetReadyPayload": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Stable event ID for receiver idempotency."
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "upload",
+              "tts"
+            ],
+            "description": "`upload` or `tts`. Treat unknown values as `upload`."
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "contentSha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "SHA-256 (hex) of the converted 16 kHz mono PCM audio."
+          },
+          "originalFormat": {
+            "type": "string",
+            "enum": [
+              "mp3",
+              "wav",
+              "ogg",
+              "m4a"
+            ]
+          }
+        },
+        "required": [
+          "eventId",
+          "occurredAt",
+          "organizationId",
+          "projectId",
+          "assetId",
+          "name",
+          "source",
+          "durationMs",
+          "contentSha256",
+          "originalFormat"
+        ],
+        "additionalProperties": false
+      },
+      "VoiceAssetReadyEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "voice.asset_ready"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/VoiceAssetReadyPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ],
+        "additionalProperties": false
+      },
+      "VoiceAssetFailedPayload": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Stable event ID for receiver idempotency."
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "upload",
+              "tts"
+            ],
+            "description": "`upload` or `tts`. Treat unknown values as `upload`."
+          },
+          "failureReason": {
+            "type": "string",
+            "enum": [
+              "unsupported_format",
+              "too_large",
+              "too_long",
+              "decode_failed",
+              "silent",
+              "tts_failed",
+              "processing_failed"
+            ],
+            "description": "Treat unknown values as `processing_failed`."
+          }
+        },
+        "required": [
+          "eventId",
+          "occurredAt",
+          "organizationId",
+          "projectId",
+          "assetId",
+          "name",
+          "source",
+          "failureReason"
+        ],
+        "additionalProperties": false
+      },
+      "VoiceAssetFailedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "voice.asset_failed"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/VoiceAssetFailedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ],
+        "additionalProperties": false
+      },
       "BanSafeForecast": {
         "type": "object",
         "properties": {
@@ -7421,6 +7629,13 @@
                   "sip_trunk_revision_conflict",
                   "sip_trunk_limit",
                   "sip_unavailable",
+                  "voice_not_enabled",
+                  "provider_credential_invalid",
+                  "provider_unavailable",
+                  "asset_not_ready",
+                  "voice_asset_in_use",
+                  "voice_asset_revision_conflict",
+                  "voice_unavailable",
                   "rate_limit_exceeded",
                   "internal_error",
                   "operation_not_supported",
@@ -47825,6 +48040,54 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CustomerNumberDisconnectedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "voice.asset_ready": {
+      "post": {
+        "operationId": "onVoiceAssetReady",
+        "summary": "Audio asset ready",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoiceAssetReadyEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "voice.asset_failed": {
+      "post": {
+        "operationId": "onVoiceAssetFailed",
+        "summary": "Audio asset failed",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoiceAssetFailedEvent"
               }
             }
           }

@@ -177,6 +177,92 @@ type P = WebhookPayloadMap;
 const PAYLOADS: {
   readonly [K in Exclude<KnownWebhookEventType, LegacyEventType>]: Shape<P[K]>;
 } = {
+  "usage.recorded": shape<P["usage.recorded"]>()(
+    {
+      id: "018f0000-0000-7000-8000-000000000003",
+      meter: "call.duration",
+      quantity: 42,
+      unit: "second",
+      dimensions: { direction: "outbound", participants: 1 },
+      keySource: "none",
+      sourceKind: "call",
+      sourceId: "call_1",
+      projectId: IDS.project,
+      session: "number_1",
+      occurredAt: AT,
+      recordedAt: AT,
+      revision: 1,
+      pricingState: "unpriced",
+      rateCard: null,
+      pricedCredits: null,
+    },
+    [
+      "id",
+      "meter",
+      "quantity",
+      "unit",
+      "dimensions",
+      "keySource",
+      "sourceKind",
+      "sourceId",
+      "projectId",
+      "session",
+      "occurredAt",
+      "recordedAt",
+      "revision",
+      "pricingState",
+      "rateCard",
+      "pricedCredits",
+    ],
+  ),
+  "voice.asset_ready": shape<P["voice.asset_ready"]>()(
+    {
+      eventId: IDS.event,
+      occurredAt: AT,
+      organizationId: IDS.organization,
+      projectId: IDS.project,
+      assetId: "018f0000-0000-7000-8000-000000000001",
+      name: "Greeting",
+      source: "upload",
+      durationMs: 1000,
+      contentSha256: "a".repeat(64),
+      originalFormat: "mp3",
+    },
+    [
+      "eventId",
+      "occurredAt",
+      "organizationId",
+      "projectId",
+      "assetId",
+      "name",
+      "source",
+      "durationMs",
+      "contentSha256",
+      "originalFormat",
+    ],
+  ),
+  "voice.asset_failed": shape<P["voice.asset_failed"]>()(
+    {
+      eventId: IDS.event,
+      occurredAt: AT,
+      organizationId: IDS.organization,
+      projectId: IDS.project,
+      assetId: "018f0000-0000-7000-8000-000000000001",
+      name: "Greeting",
+      source: "upload",
+      failureReason: "too_long",
+    },
+    [
+      "eventId",
+      "occurredAt",
+      "organizationId",
+      "projectId",
+      "assetId",
+      "name",
+      "source",
+      "failureReason",
+    ],
+  ),
   "session.logged_out": shape<P["session.logged_out"]>()(
     { reason: "banned", code: 401 },
     ["reason", "code"],
@@ -622,6 +708,8 @@ type LegacyEventType = Exclude<
   | `customer.${string}`
   | `bansafe.${string}`
   | `campaign.${string}`
+  | `voice.${string}`
+  | "usage.recorded"
   | "message.failed"
   | "template.status"
   | "session.logged_out"
@@ -645,9 +733,8 @@ const sign = (body: Buffer) =>
 
 describe("webhook catalog contract", () => {
   it("lists exactly the events the pinned Messaging contract defines", () => {
-    expect([...specEvents().keys()].sort()).toEqual(
-      [...KNOWN_WEBHOOK_EVENT_TYPES].sort(),
-    );
+    const spec = [...specEvents().keys()];
+    expect(spec.sort()).toEqual([...KNOWN_WEBHOOK_EVENT_TYPES].sort());
   });
 
   it.each(Object.entries(PAYLOADS))(

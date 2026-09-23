@@ -5,9 +5,9 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts recorded at source revision
-`fdaff9a86220e3ef1f8ad75cc838dbfd03ede4eb` on monorepo `dev`. Graph-compatible APIs are outside
-this SDK's initial scope.
+the Messaging and Platform contracts at merged API `dev` revision
+`087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`. Graph-compatible
+APIs are outside this SDK's initial scope.
 
 ## Package architecture
 
@@ -266,6 +266,8 @@ The organization view also exposes these management resources:
   points at with `endpoint()` (also on project clients)
 - `calls`: call statistics, paginated call detail records, and CSV or NDJSON
   export of call records for the team or one project (also on project clients)
+- `voice`: Voice Automation beta audio uploads, synthesis, previews, retention,
+  deletion and provider credentials, subject to API enrollment and deployment
 - `callRetention`: retrieve and update how long Polymorfa keeps the team's
   call data (also readable on project clients; changes need a team API key)
 - `billing`: retrieve balance and currency, inspect usage meters, list
@@ -730,6 +732,6 @@ The typed webhook catalog includes `session.restriction_updated` with
 fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
-covers the three public call analytics and export operations. The contract
-snapshot is pinned to merged API `dev` commit
-`fdaff9a86220e3ef1f8ad75cc838dbfd03ede4eb`.
+covers the three public call analytics and export operations. `Client.voice`
+covers the Voice audio and credential operations. The contract snapshot
+is pinned to merged API `dev` commit `087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`.

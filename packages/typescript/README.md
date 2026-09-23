@@ -456,6 +456,113 @@ of another project with `PolymorfaNotFoundError`. Conflicts raise
 `PolymorfaConflictError` with `code` `sip_trunk_in_use`,
 `sip_trunk_revision_conflict`, `sip_trunk_limit`, or `state_conflict`.
 
+## Voice audio library
+
+`Client.voice` follows the merged Voice Automation API contract. The API
+requires `calls.voice-automation` enrollment for writes except `delete`;
+without it, writes fail with `PolymorfaAuthorizationError` and
+`code: "voice_not_enabled"`. Reads, previews and deletes remain available
+after enrollment withdrawal. These methods do not enable an audience or
+establish deployed availability. Credentials need
+`voice:read` to read and `voice:manage` to change anything; client tokens
+are refused. Team clients name the project on `audio.list`,
+`audio.createUpload`, `audio.upload` and `audio.synthesize`; project clients
+use their own project.
+
+`voice.audio` stores recordings and text-to-speech renders. Every asset is
+transcoded to 16 kHz mono audio and moves from `pending_upload` or
+`transcoding` to `ready` or `failed`.
+
+```ts
+import { readFile } from "node:fs/promises";
+
+const project = platform.project("018f0000-0000-7000-8000-000000000002");
+
+// Create the asset, send the file to its upload URL, and start transcoding.
+const { data: uploaded } = await project.voice.audio.upload({
+  name: "Welcome message",
+  contentType: "audio/mpeg",
+  body: await readFile("welcome.mp3"),
+  retentionDays: 90,
+});
+
+// Render speech with Polymorfa's managed key, or pass credentialId for yours.
+const { data: spoken } = await project.voice.audio.synthesize({
+  name: "Opening hours",
+  text: "We are open from nine to five, Monday to Friday.",
+  provider: "openai",
+  voiceId: "coral",
+});
+
+const { data: ready } = await project.voice.audio.waitUntilReady(spoken.id);
+if (ready.status === "ready") {
+  const { data: preview } = await project.voice.audio.previewUrl(ready.id);
+  console.log(preview.url); // Opus in Ogg, valid for 5 minutes
+}
+```
+
+`upload` accepts a `Buffer`, `Uint8Array`, `ArrayBuffer`, `Blob` or
+`ReadableStream` of up to 16 MiB in `audio/mpeg`, `audio/wav`,
+`audio/x-wav`, `audio/ogg`, `audio/mp4` or `audio/x-m4a`. A stream needs
+`sizeBytes`. For bytes and Blobs the SDK uses the body's byte length and
+refuses a different `sizeBytes` with a `PolymorfaValidationError` before it
+creates the asset. It calls `createUpload`, sends the bytes to `upload.url` with
+only the returned `Content-Type` header and without your credential, then
+calls `complete`. If sending fails, the asset stays in `pending_upload`. You
+can run the three steps yourself with `createUpload` and `complete`; the
+upload URL is valid for 5 minutes and grants access on its own, so do not log
+it.
+
+`retrieve`, `update`, `delete`, `complete` and `previewUrl` take an asset ID.
+`update` changes `name` and `retentionDays` (`null` keeps the asset until
+deleted) and accepts `expectedRevision`. `list` returns a `CursorPage` and
+filters by `status`. `waitUntilReady` polls until the asset is `ready` or
+`failed` and throws `PolymorfaTimeoutError` once `timeoutMs` (default 2
+minutes) has passed, cancelling a read still in flight; in production, prefer the
+`voice.asset_ready` and `voice.asset_failed` webhooks, typed as
+`VoiceAssetReadyPayload` and `VoiceAssetFailedPayload`. These events are
+project-scoped and arrive with an empty `session`.
+
+`voice.providerCredentials` stores your own ElevenLabs or OpenAI keys for
+text-to-speech:
+
+```ts
+const { data: credential } = await platform.voice.providerCredentials.create({
+  provider: "elevenlabs",
+  label: "Production",
+  apiKey: process.env.ELEVENLABS_API_KEY!,
+  projectId: null, // every project of the team; team keys only
+});
+await project.voice.audio.synthesize({
+  name: "Greeting",
+  text: "Hello!",
+  provider: "elevenlabs",
+  voiceId: "21m00Tcm4TlvDq8ikWAM",
+  credentialId: credential.id,
+});
+```
+
+The key is write-only. Responses return `keyFingerprint`, the first 8 hex
+characters of its SHA-256, and the SDK never logs the key or includes it in
+errors. `create` and `verify` check the key with the provider and fail with
+`provider_credential_invalid` when it is rejected. Project clients create
+credentials for their own project only. A project client built from a team
+key can read team-wide credentials but verifies and deletes only its
+project's.
+
+Errors: `voice_not_enabled` (403), `gate_limit_reached` (402,
+`PolymorfaPaymentRequiredError`), `provider_credential_invalid` (422),
+`provider_unavailable` and `voice_unavailable` (503), and `asset_not_ready`,
+`voice_asset_in_use` and `voice_asset_revision_conflict` (409,
+`PolymorfaConflictError`). Input status filters, upload content types,
+provider names and TTS selections use the values accepted by the API.
+Response fields preserve unknown values: treat an unrecognized audio status
+as unusable and an unrecognized credential status as invalid. The `VOICE_*`
+lists identify the known response values. Preview responses have
+`contentType: "audio/ogg"`.
+
+The voice resources are available only in this TypeScript SDK.
+
 ## Call analytics and call records
 
 `Client.calls` reads call statistics and call detail records. It needs
@@ -2084,9 +2191,9 @@ The typed webhook catalog includes `session.restriction_updated` with
 fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
-covers the three public call analytics and export operations. The contract
-snapshot is pinned to merged API `dev` commit
-`fdaff9a86220e3ef1f8ad75cc838dbfd03ede4eb`.
+covers the three public call analytics and export operations. `Client.voice`
+covers the Voice audio and credential operations. The contract snapshot
+is pinned to merged API `dev` commit `087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`.
 
 ## Functions
 

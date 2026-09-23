@@ -9,17 +9,18 @@ Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
 and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
-below use the merged API #228 revision. CLI consumers require a
+below use the merged API `dev` Voice revision. CLI consumers require a
 published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at merged `polymorfa/polymorfa` `dev` commit
-`fdaff9a86220e3ef1f8ad75cc838dbfd03ede4eb`, including usage gates,
-Calls analytics, Campaigns P0 and Functions. The source commit, both snapshots,
-the ledger, and revision tests have been reconciled. `source.json` records
-the source paths and SHA-256 hashes.
+files at merged `polymorfa/polymorfa` API `dev` commit
+`087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`. This revision includes
+Voice audio and provider credentials on top of merged usage gates, Calls
+analytics, Campaigns P0 and Functions. The snapshots, ledger and revision
+tests have been reconciled. `source.json` records the source paths and
+SHA-256 hashes.
 
 The preceding refresh added 17 operation rows and removes eight. Eight removed Console
 operation routes moved to `/platform/operations` and
@@ -29,8 +30,10 @@ Three new Console retention and SIP discovery operations stay excluded.
 `Client.callRetention` covers `GET` and `PUT /platform/call-retention`, merged
 from SDK `dev`. The three public Calls analytics operations are covered by
 `Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
-`Client.calls.exportAll` walks export pages. The full 459-operation snapshot
-includes all 15 Functions routes now merged to API `dev`.
+`Client.calls.exportAll` walks export pages. The 13 public Voice operations are
+covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
+13 Console counterparts are excluded. The full 485-operation snapshot includes
+all 15 Functions routes already merged to API `dev`.
 
 SDK `dev` through `8392f66` adds `Client.sipTrunks.endpoint()` for
 `GET /platform/sip/endpoint`. Its `SipEndpoint` result is a discriminated union:
@@ -106,12 +109,12 @@ too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        348 |
+| Covered             |        361 |
 | Missing             |          0 |
-| Excluded            |        111 |
+| Excluded            |        124 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        459 |
+| Total               |        485 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
