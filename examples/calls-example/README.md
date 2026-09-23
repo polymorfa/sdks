@@ -78,6 +78,13 @@ for **Ready for calls** before dialing or receiving. Incoming calls appear in
 socket and media. To reconnect after token expiry, disconnect and paste a new
 token.
 
+Enter an E.164 destination allowed by this Number's client rules before pressing
+the green handset. The dial button is unavailable during an incoming or active
+call. The example shows the controller's call error and, when an API request
+fails, its HTTP status and request ID. If an answer fails without a request,
+the controller error helps distinguish a local call-state failure from a
+server refusal. Do not share browser tokens when reporting these details.
+
 The connection status follows the SDK's live socket state. A failed first
 attempt can continue reconnecting, and errors are shown on the page. A healthy
 API `/health` response or an open SIP port does not prove this browser call

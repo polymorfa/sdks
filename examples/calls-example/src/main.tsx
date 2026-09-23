@@ -12,6 +12,8 @@ function App() {
   const [calls, setCalls] = useState<BrowserCalls | null>(null);
   const [status, setStatus] = useState("Disconnected");
   const [error, setError] = useState("");
+  const [callError, setCallError] = useState("");
+  const [requestFailure, setRequestFailure] = useState("");
   const callsRef = useRef<BrowserCalls | null>(null);
   const tokenRef = useRef("");
 
@@ -41,6 +43,8 @@ function App() {
       return;
     }
     setError("");
+    setCallError("");
+    setRequestFailure("");
     setStatus("Connecting to call events");
     await callsRef.current?.dispose();
     tokenRef.current = token.trim();
@@ -52,6 +56,27 @@ function App() {
       onError: ({ code, message }) => {
         if (callsRef.current === next) setError(`${code}: ${message}`);
       },
+      onDiagnostic: (event) => {
+        if (
+          callsRef.current !== next ||
+          !event.path.startsWith("/messaging/voip/")
+        )
+          return;
+        if (event.type === "request.started") {
+          setRequestFailure("");
+          return;
+        }
+        if (event.type !== "request.failed") return;
+        const action = event.path.split("/").at(-1) ?? "calls";
+        setRequestFailure(
+          `${event.method} ${action}: ${event.status ?? event.category}${event.requestId ? ` (request ${event.requestId})` : ""}`,
+        );
+      },
+    });
+    next.controller.subscribe(() => {
+      if (callsRef.current !== next) return;
+      const failure = next.controller.getSnapshot().error;
+      setCallError(failure ? `${failure.code}: ${failure.message}` : "");
     });
     callsRef.current = next;
     setCalls(next);
@@ -80,6 +105,8 @@ function App() {
     await current?.dispose();
     setStatus("Disconnected");
     setError("");
+    setCallError("");
+    setRequestFailure("");
   }
 
   return (
@@ -130,12 +157,27 @@ function App() {
         {calls && (
           <section aria-label="Calls" className="card">
             <h2>Place a call</h2>
+            <p>
+              Enter an allowed E.164 destination (+ followed by country code and
+              number), then press the green handset. Dialing is unavailable
+              while an incoming or active call is shown.
+            </p>
             {calls.connected ? (
-              <DialPad controller={calls.controller} />
+              <DialPad controller={calls.controller} allowVideo={false} />
             ) : (
               <p>
                 Call events are unavailable. Dialing will appear when the
                 connection is ready.
+              </p>
+            )}
+            {callError && (
+              <p className="error" role="alert">
+                {callError}
+              </p>
+            )}
+            {requestFailure && (
+              <p className="error" role="status">
+                {requestFailure}
               </p>
             )}
             <CallSurface controller={calls.controller} />
