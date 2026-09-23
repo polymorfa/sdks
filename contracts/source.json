@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "677b39a4a619a4493ce0bf3fde3cbe0c5e4c64d6",
+  "commit": "a33b77988f411220bb69d9bb6d030899f182a721",
   "branch": "t3code/calls-consent",
   "published": false,
-  "note": "Pending API PR #226 local integration checkpoint. Snapshots include campaign, usage, voice, and consent source; final dev re-pin required after the dependency merges.",
+  "note": "Pending API PR #226 Calls consent head after merging Voice and current API dev; snapshots are byte-identical to this branch. Re-pin to the merged API dev commit before SDK publication.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "c15d2602e007ff58ad5fc8f259aae6e50c5a6c1abb966671a5911663ade0aa9b"
+      "sha256": "12fb70fc61bdaa6d97adbac67fda6646c4dc1a7c050de924bfc6b8f49fc89431"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "b5db74e38515658cbc05388c82c06abbf9bad526cc9790d6dd4d6dceea7d12ee"
+      "sha256": "1444813bebc2754aa561916da2fb8466d574b65b970685621f16dc72f087dd76"
     }
   }
 }

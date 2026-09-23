@@ -731,9 +731,8 @@ type LegacyEventType = Exclude<
   | `bansafe.${string}`
   | `campaign.${string}`
   | "call.permission_changed"
+  | `voice.${string}`
   | "usage.recorded"
-  | "voice.asset_ready"
-  | "voice.asset_failed"
   | "message.failed"
   | "template.status"
   | "session.logged_out"
@@ -757,9 +756,8 @@ const sign = (body: Buffer) =>
 
 describe("webhook catalog contract", () => {
   it("lists exactly the events the pinned Messaging contract defines", () => {
-    expect([...specEvents().keys()].sort()).toEqual(
-      [...KNOWN_WEBHOOK_EVENT_TYPES].sort(),
-    );
+    const spec = [...specEvents().keys()];
+    expect(spec.sort()).toEqual([...KNOWN_WEBHOOK_EVENT_TYPES].sort());
   });
 
   it.each(Object.entries(PAYLOADS))(

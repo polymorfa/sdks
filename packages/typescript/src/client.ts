@@ -23,6 +23,7 @@ import {
   CallOptOutsResource,
   CallPolicyResource,
 } from "./platform/call-consent.js";
+import { PlatformCallsResource } from "./platform/calls.js";
 import { CallRetentionResource } from "./platform/call-retention.js";
 import { CampaignsResource } from "./platform/campaigns.js";
 import { CustomersResource } from "./platform/customers.js";
@@ -44,6 +45,8 @@ import { SecurityIncidentsResource } from "./platform/security-incidents.js";
 import { SessionBansResource } from "./platform/session-bans.js";
 import { PlatformSessionsResource } from "./platform/sessions.js";
 import { SipTrunksResource } from "./platform/sip-trunks.js";
+import { VoiceResource } from "./platform/voice.js";
+import { UsageResource } from "./platform/usage.js";
 
 export type EventsResourceFor<O extends ClientOwner> = EventsResource<O>;
 export type WebhooksResourceFor<O extends ClientOwner> = WebhooksResource<O>;
@@ -63,6 +66,11 @@ export interface ClientBase<O extends ClientOwner> {
   readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<O>;
   readonly sipTrunks: SipTrunksResource<O>;
+  /** Voice Automation (beta): audio library and provider credentials. */
+  readonly voice: VoiceResource<O>;
+  /** Metered usage and usage gates. */
+  readonly usage: UsageResource;
+  readonly calls: PlatformCallsResource<O>;
   readonly callRetention: CallRetentionResource;
   readonly raw: RawResourceFor<O>;
   project(projectId: string): Client<"project">;
@@ -117,6 +125,9 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<ClientOwner>;
   readonly sipTrunks: SipTrunksResource<ClientOwner>;
+  readonly voice: VoiceResource<ClientOwner>;
+  readonly usage: UsageResource;
+  readonly calls: PlatformCallsResource<ClientOwner>;
   readonly callRetention: CallRetentionResource;
   readonly raw: RawClient | ProjectScopedRawClient;
   readonly #transport: HttpTransport;
@@ -174,6 +185,13 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       projectId,
       projectId !== null && credential.type !== "projectToken",
     );
+    this.voice = new VoiceResource(
+      this.#transport,
+      projectId,
+      projectId !== null && credential.type !== "projectToken",
+    );
+    this.usage = new UsageResource(this.#transport, projectId);
+    this.calls = new PlatformCallsResource(this.#transport, projectId);
     this.callRetention = new CallRetentionResource(this.#transport);
     this.raw =
       projectId === null

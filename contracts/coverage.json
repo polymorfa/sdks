@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "677b39a4a619a4493ce0bf3fde3cbe0c5e4c64d6",
+  "sourceCommit": "a33b77988f411220bb69d9bb6d030899f182a721",
   "excludedContracts": [
     {
       "family": "graph",
@@ -2133,7 +2133,7 @@
       "fingerprint": "4d7512a24dceb77969bb780ac2bb48b9b62901e1d5a9c33e129fc696346e50ca",
       "typescript": {
         "status": "excluded",
-        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+        "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
       }
     },
     {
@@ -2144,7 +2144,7 @@
       "fingerprint": "69b2412025ac60b21a768a1f95627d93832a0465b551ceefa8e45649ba8d1874",
       "typescript": {
         "status": "excluded",
-        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+        "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
       }
     },
     {
@@ -2223,6 +2223,28 @@
         "status": "excluded",
         "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/functions/{functionId}",
+      "operationId": "deleteFunction",
+      "fingerprint": "47ada9366c33710b0226a7bae3bbe94650ff7882c58231e5902c69cec4730330",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.delete"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/functions/{functionId}/secrets/{versionId}",
+      "operationId": "deleteFunctionSecret",
+      "fingerprint": "d52505ebdb85b0b4ac9046d79bc0951e241b37be6e3a9f6c008c7a0c578dafb5",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.secrets.revoke"
       }
     },
     {
@@ -2321,9 +2343,8 @@
       "operationId": "deleteVoiceAudio",
       "fingerprint": "d21d20b4bc244c5d91d207582bc842641833b6a522d2c409b8469281216c4785",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.voice.audio.delete"
       }
     },
     {
@@ -2333,9 +2354,8 @@
       "operationId": "deleteVoiceProviderCredential",
       "fingerprint": "e6d5f35ad09d47b538e205bade0488f84360c737f14f010863d8c8b200301b19",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.voice.providerCredentials.delete"
       }
     },
     {
@@ -2640,10 +2660,10 @@
       "method": "GET",
       "path": "/console/voice/audio",
       "operationId": "listConsoleVoiceAudio",
-      "fingerprint": "b31742ec3cb9128c0bd7990098cd267ee0d04927ec9614f9b2e5e3cf0f8b5e53",
+      "fingerprint": "88a31a1166f1fd7b5be50f563669df4ac73441d0f120ace64b0871718e83f071",
       "typescript": {
         "status": "excluded",
-        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+        "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
       }
     },
     {
@@ -2654,7 +2674,7 @@
       "fingerprint": "7dd42bf226e352f8bafe967d4e876b8b780a0bba7aa606662acf35e14f9e5633",
       "typescript": {
         "status": "excluded",
-        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+        "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
       }
     },
     {
@@ -2665,7 +2685,7 @@
       "fingerprint": "5cb7a5d5be2ed59165c1cd1818bc69ffea8b50cf5ed5c1420348ce0c3838bc3d",
       "typescript": {
         "status": "excluded",
-        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+        "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
       }
     },
     {
@@ -2676,7 +2696,7 @@
       "fingerprint": "6783428b20f1891232d73932d850eae32b7fc5ba3010f7ed2bd17e44f227d8e4",
       "typescript": {
         "status": "excluded",
-        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+        "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
       }
     },
     {
@@ -2687,7 +2707,7 @@
       "fingerprint": "372e4ed6a7980440abab069fdeed403ee72b07431e05fbc2dd6f061de22a9509",
       "typescript": {
         "status": "excluded",
-        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+        "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
       }
     },
     {
@@ -2994,9 +3014,8 @@
       "operationId": "listCallRecords",
       "fingerprint": "1740444c3df90e22a3e5002d7dd35526f2b371c124d144039298f8598575ca31",
       "typescript": {
-        "status": "missing",
-        "reason": "No typed SDK method implements this public operation.",
-        "milestone": "calls-analytics-and-sip-discovery"
+        "status": "covered",
+        "method": "Client.calls.list"
       }
     },
     {
@@ -3006,9 +3025,8 @@
       "operationId": "exportCallRecords",
       "fingerprint": "f5e11bf4dcad41ffce165558baf6d492bd227b2a4937926ac81959607f7eab8c",
       "typescript": {
-        "status": "missing",
-        "reason": "No typed SDK method implements this public operation.",
-        "milestone": "calls-analytics-and-sip-discovery"
+        "status": "covered",
+        "method": "Client.calls.export"
       }
     },
     {
@@ -3018,9 +3036,8 @@
       "operationId": "getCallStats",
       "fingerprint": "abfb53c1e1c2ecae09b3f891cd43ccda995f0729631167c83ebb1f77f4829dbd",
       "typescript": {
-        "status": "missing",
-        "reason": "No typed SDK method implements this public operation.",
-        "milestone": "calls-analytics-and-sip-discovery"
+        "status": "covered",
+        "method": "Client.calls.stats"
       }
     },
     {
@@ -3182,13 +3199,89 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/platform/functions",
+      "operationId": "listFunctions",
+      "fingerprint": "25f349f62dac979456061ac9fe0d10baa1d9a73292e22c8766e9079239876402",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.list"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}",
+      "operationId": "getFunction",
+      "fingerprint": "aba952c826d741425457959fb7a983bfa5d8559cb39e6cb0fe2971eecec4635d",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.retrieve"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/deployments",
+      "operationId": "listFunctionDeployments",
+      "fingerprint": "fce2dc0e58e97c20b8288875ce2404e7c25f2a15304c6b1ec34dfe1749eed927",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.deployments.list"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/deployments/{deploymentId}",
+      "operationId": "getFunctionDeployment",
+      "fingerprint": "f4b73876ee8957aa384b5646fb035620ef5fff979c7c351b421a6522fa5925c0",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.deployments.retrieve"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/invocations",
+      "operationId": "listFunctionInvocations",
+      "fingerprint": "044c7821d820b165a1c31915ab22f89ac751378e83e5cde1e8baeb0018759953",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.invocations.list"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/invocations/{invocationId}",
+      "operationId": "getFunctionInvocation",
+      "fingerprint": "d575acbad03276a6ae483b58330d074c3b7cd278b8950d2a6c2d77b309fbf0b2",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.invocations.retrieve"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/secrets",
+      "operationId": "listFunctionSecrets",
+      "fingerprint": "dc90220d7de3dec97368affca6273b166fc040f1c2b9be0909cc77911e4039d2",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.secrets.list"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/platform/gates",
       "operationId": "listUsageGates",
       "fingerprint": "4b646d3687306853c1644dec47dea1e8851c771faaa48f2680d7cf077ce7b10b",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.usage.listGates"
       }
     },
     {
@@ -3673,9 +3766,8 @@
       "operationId": "getUsageSummary",
       "fingerprint": "be920d63a2b9a350ae63a2f1a084d5ad1fd2f8f46c4b46c551588ac85e964512",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.usage.summary"
       }
     },
     {
@@ -3685,9 +3777,8 @@
       "operationId": "listUsageRecords",
       "fingerprint": "e179c106768d4ec4842b476571e14b54e14e6ab691562e5360490e81fdda41b9",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.usage.listRecords"
       }
     },
     {
@@ -3697,9 +3788,8 @@
       "operationId": "listVoiceAudio",
       "fingerprint": "f8941e673adfd35ff9195ee4d530941b84eeaf917b120ca0e994ee8b8cf13790",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.voice.audio.list"
       }
     },
     {
@@ -3709,9 +3799,8 @@
       "operationId": "getVoiceAudio",
       "fingerprint": "d082ecd324987d1de4dc1f0dcfeded11ece1caa852940d33f0c5e03119ae8b5a",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.voice.audio.retrieve"
       }
     },
     {
@@ -3721,9 +3810,8 @@
       "operationId": "getVoiceAudioPreview",
       "fingerprint": "2438f8dfc004343c0184cb5f75400a01bb66e1a18b2bb528f5f3b599e7f47731",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.voice.audio.previewUrl"
       }
     },
     {
@@ -3733,9 +3821,8 @@
       "operationId": "listVoiceProviderCredentials",
       "fingerprint": "de2bca996cb1cb13a24bfc1c9e810ba0555e58debdc60fd236c5681de40d0610",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.voice.providerCredentials.list"
       }
     },
     {
@@ -3745,9 +3832,8 @@
       "operationId": "getVoiceProviderCredential",
       "fingerprint": "e003b4fd5937aaaaf5a3a014cefc47ef9ddf108db07d01edfb60e5ef003b2643",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.voice.providerCredentials.retrieve"
       }
     },
     {
@@ -3879,7 +3965,7 @@
       "fingerprint": "a640a4ac1e9b100199a3c31197714255db131171d2fa44e3a0ddc75980d231ef",
       "typescript": {
         "status": "excluded",
-        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+        "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
       }
     },
     {
@@ -3925,6 +4011,17 @@
         "status": "excluded",
         "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/functions/{functionId}",
+      "operationId": "updateFunction",
+      "fingerprint": "37aea5ef45c7720d5fc7733061316fc346bf46fcc8e34b32ee72d08a189e473c",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.update"
       }
     },
     {
@@ -3979,9 +4076,8 @@
       "operationId": "updateVoiceAudio",
       "fingerprint": "6659d19e8d1fdf39306d961dd1bc15c3c2b0971c1778673fd73abafe7411a277",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.voice.audio.update"
       }
     },
     {
@@ -4344,7 +4440,7 @@
       "fingerprint": "68893142441c84d426d88f7f3e5ab5461f26d003a0b284dfd0eaa9203a624ff4",
       "typescript": {
         "status": "excluded",
-        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+        "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
       }
     },
     {
@@ -4355,7 +4451,7 @@
       "fingerprint": "f0699a8103e5d08786cb8d5a5110397008a53f9aa7cbcd9b67685b4a2b64f3d6",
       "typescript": {
         "status": "excluded",
-        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+        "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
       }
     },
     {
@@ -4366,7 +4462,7 @@
       "fingerprint": "de7ceffc9463624a24c6e85ceff7c2f6057df21452144176b75c4ce336761861",
       "typescript": {
         "status": "excluded",
-        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+        "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
       }
     },
     {
@@ -4377,7 +4473,7 @@
       "fingerprint": "c3cedc5bd8286ce93a29d76fbb876c1a01d0d1855597ac624f63a0184a4eabd8",
       "typescript": {
         "status": "excluded",
-        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+        "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
       }
     },
     {
@@ -4388,7 +4484,7 @@
       "fingerprint": "9150c0aaa904ac3688c67f9fbd51f3264f3e4d18955e4e1eae06f80269de2908",
       "typescript": {
         "status": "excluded",
-        "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+        "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
       }
     },
     {
@@ -4665,6 +4761,50 @@
         "status": "excluded",
         "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions",
+      "operationId": "createFunction",
+      "fingerprint": "2945c6cdd2a7cf79436d3e46b7ac9b5879e1f4e6f3323fcb824efc996efbe008",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.create"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/deployments",
+      "operationId": "createFunctionDeployment",
+      "fingerprint": "4d1a8bb1076132ca7cb2ac8855021ec4ac7aabfec722adf272139108e8228636",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.deployments.create"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/invocations",
+      "operationId": "createFunctionInvocation",
+      "fingerprint": "b9c157f5555e08f48d6b16df356cc85332ab29f1f0b1345f20d400e65146e117",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.invocations.create"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/secrets",
+      "operationId": "createFunctionSecret",
+      "fingerprint": "e7e818ff1cd2b9c0e96e64965a8fbc944222890dc1fb377e321c1c8b010c13ed",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.secrets.create"
       }
     },
     {
@@ -5020,9 +5160,8 @@
       "operationId": "createVoiceAudioUpload",
       "fingerprint": "ab32760b8e4e7e354c4ad35dbe18ff5b5907668107227ee5af04cd66e17c033b",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.voice.audio.createUpload"
       }
     },
     {
@@ -5032,9 +5171,8 @@
       "operationId": "completeVoiceAudioUpload",
       "fingerprint": "41b3b4f70c3a8eb8853263f48d4a38d0eff6ee06479283ac06ba6aac26677733",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.voice.audio.complete"
       }
     },
     {
@@ -5044,9 +5182,8 @@
       "operationId": "synthesizeVoiceAudio",
       "fingerprint": "d0bda864f6c409eea60d118bffb1b72901871ddd2a9a53bde3f27f63fa913726",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.voice.audio.synthesize"
       }
     },
     {
@@ -5056,9 +5193,8 @@
       "operationId": "createVoiceProviderCredential",
       "fingerprint": "43bf0304aef8739cec953d76a4151e8177ba4a2893fbce26b687dc6ecc7f1f2d",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.voice.providerCredentials.create"
       }
     },
     {
@@ -5068,9 +5204,8 @@
       "operationId": "verifyVoiceProviderCredential",
       "fingerprint": "db034cef672c17f1b73bc9f25f8ab0b4d878baad06a27f9da33f8af9012696ec",
       "typescript": {
-        "status": "missing",
-        "reason": "Implemented by a separate pending SDK usage or voice pull request.",
-        "milestone": "calls-usage-voice-sdk"
+        "status": "covered",
+        "method": "Client.voice.providerCredentials.verify"
       }
     },
     {
@@ -5247,6 +5382,17 @@
       "typescript": {
         "status": "covered",
         "method": "Client.callRetention.update"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/functions/{functionId}/promotion",
+      "operationId": "promoteFunctionDeployment",
+      "fingerprint": "a82601d9f5be780dbf10604d9facd02f885fc060f0d2bbdd311a434b0e544304",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).functions.deployments.promote"
       }
     },
     {

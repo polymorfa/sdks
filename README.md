@@ -5,9 +5,10 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts recorded at source revision
-`677b39a4a619a4493ce0bf3fde3cbe0c5e4c64d6` on pending monorepo PR #226. This dependency has not merged; final dev re-pinning is required before this SDK change publishes. Graph-compatible APIs are outside
-this SDK's initial scope.
+the Messaging and Platform contracts at pending Calls consent API #226
+revision `a33b77988f411220bb69d9bb6d030899f182a721`. Re-pin to the
+merged API `dev` commit before publication. Graph-compatible
+APIs are outside this SDK's initial scope.
 
 ## Package architecture
 
@@ -265,10 +266,18 @@ The organization view also exposes these management resources:
 - `sipTrunks`: list, create, retrieve, update, delete, and rotate the
   credentials of a project's SIP trunks, and read the SIP address your PBX
   points at with `endpoint()` (also on project clients)
+- `calls`: call statistics, paginated call detail records, and CSV or NDJSON
+  export of call records for the team or one project (also on project clients)
+- `voice`: Voice Automation beta audio uploads, synthesis, previews, retention,
+  deletion and provider credentials, subject to API enrollment and deployment
 - `callRetention`: retrieve and update how long Polymorfa keeps the team's
   call data (also readable on project clients; changes need a team API key)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
+- `usage`: read metered call usage for a month, list or iterate usage records
+  for a call or number (also on project clients), and read usage gate modes,
+  limits and decisions (organization clients only). Usage is measured, not
+  charged.
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
   restrictions, incidents, claims, and Health action history; report and retract
   customer incidents
@@ -614,10 +623,11 @@ organization and project event, webhook, delivery, attempt, and operation
 resources described above. Dashboard and staff routes retain their separate
 credential requirements.
 
-The SDK has no listener, event stream, `AsyncIterable`, or forwarding API.
-`polymorfa listen` connects to a separate CLI-only protocol; its `pmfa_ls_`
-credential cannot be used by `Client`, `MessagingClient`, or their raw request
-helpers.
+`Client.events.stream()` exposes the server event stream as an `AsyncIterable`,
+and `Client.events.liveSource()` adapts it for `@polymorfa/store`. Both require
+the server event stream's scope and beta access. `polymorfa listen` connects to
+a separate CLI-only forwarding protocol; its `pmfa_ls_` credential cannot be
+used by `Client`, `MessagingClient`, or their raw request helpers.
 
 ## QuickLink lifecycle and settings
 
@@ -822,7 +832,8 @@ The typed webhook catalog includes `session.restriction_updated` with
 `device_removed`, or `unknown`. Test event requests support the restriction
 fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
-`Client.callRetention` covers the team call-retention settings. Three public
-call analytics and export operations remain recorded as missing in the contract
-ledger. The contract snapshot is pinned to unpublished API #226 checkpoint
-`677b39a4a619a4493ce0bf3fde3cbe0c5e4c64d6`.
+`Client.callRetention` covers the team call-retention settings. `Client.calls`
+covers the three public call analytics and export operations. `Client.voice`
+covers the Voice audio and credential operations. `Client.callPolicy` and
+`Client.callOptOuts` cover consent controls. The contract snapshot is pinned
+to pending API #226 head `a33b77988f411220bb69d9bb6d030899f182a721`.

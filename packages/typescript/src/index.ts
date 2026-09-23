@@ -552,6 +552,26 @@ export { AudiencesResource } from "./platform/audiences.js";
 export { ApiKeysResource } from "./platform/api-keys.js";
 export { AuditLogsResource } from "./platform/audit-logs.js";
 export { BillingResource } from "./platform/billing.js";
+export { UsageResource } from "./platform/usage.js";
+export type {
+  CallUsageDimensions,
+  UsageGate,
+  UsageGateKey,
+  UsageGateList,
+  UsageGateMode,
+  UsageGateParams,
+  UsageKeySource,
+  UsageMeter,
+  UsageMeterTotal,
+  UsagePricingState,
+  UsageRecord,
+  UsageRecordPage,
+  UsageRecordParams,
+  UsageSourceKind,
+  UsageSummary,
+  UsageSummaryParams,
+  UsageUnit,
+} from "./platform/usage.js";
 export { BanSafeResource } from "./platform/bansafe.js";
 export {
   CallOptOutsResource,
@@ -592,6 +612,28 @@ export { ProjectsResource } from "./platform/projects.js";
 export { SecurityIncidentsResource } from "./platform/security-incidents.js";
 export { SessionBansResource } from "./platform/session-bans.js";
 export { PlatformSessionsResource } from "./platform/sessions.js";
+export { PlatformCallsResource } from "./platform/calls.js";
+export type {
+  CallDirection,
+  CallExportFormat,
+  CallFilters,
+  CallOutcome,
+  CallRecord,
+  CallRecordExportPage,
+  CallRecordState,
+  CallStats,
+  CallStatsGroup,
+  CallStatsGroupBy,
+  CallStatsHeatmapCell,
+  CallStatsMetrics,
+  CallStatsParams,
+  CallStatsParamsFor,
+  CallUpstream,
+  ExportCallRecordsParams,
+  ExportCallRecordsParamsFor,
+  ListCallRecordsParams,
+  ListCallRecordsParamsFor,
+} from "./platform/calls.js";
 export { SipTrunksResource } from "./platform/sip-trunks.js";
 export {
   CallRetentionResource,
@@ -623,6 +665,61 @@ export type {
   SipTrunkOutboundInput,
   UpdateSipTrunkInput,
 } from "./platform/sip-trunks.js";
+export {
+  ELEVENLABS_TTS_MODELS,
+  OPENAI_TTS_MODELS,
+  OPENAI_TTS_VOICES,
+  VOICE_AUDIO_FAILURE_REASONS,
+  VOICE_AUDIO_FORMATS,
+  VOICE_AUDIO_MAX_UPLOAD_BYTES,
+  VOICE_AUDIO_SOURCES,
+  VOICE_AUDIO_STATUSES,
+  VOICE_AUDIO_UPLOAD_CONTENT_TYPES,
+  VOICE_KEY_SOURCES,
+  VOICE_PROVIDERS,
+  VOICE_PROVIDER_CREDENTIAL_ERRORS,
+  VOICE_PROVIDER_CREDENTIAL_STATUSES,
+  VoiceAudioResource,
+  VoiceProviderCredentialsResource,
+  VoiceResource,
+  type CreateVoiceAudioUploadInput,
+  type CreateVoiceProviderCredentialInput,
+  type ElevenLabsTtsModel,
+  type KnownVoiceAudioFailureReason,
+  type KnownVoiceAudioFormat,
+  type KnownVoiceAudioSource,
+  type KnownVoiceAudioStatus,
+  type KnownVoiceAudioUploadContentType,
+  type KnownVoiceKeySource,
+  type KnownVoiceProvider,
+  type KnownVoiceProviderCredentialError,
+  type KnownVoiceProviderCredentialStatus,
+  type ListVoiceAudioParams,
+  type ListVoiceProviderCredentialsParams,
+  type OpenAiTtsModel,
+  type OpenAiTtsVoice,
+  type SynthesizeVoiceAudioInput,
+  type UpdateVoiceAudioInput,
+  type UploadVoiceAudioInput,
+  type VoiceAudioAsset,
+  type VoiceAudioBody,
+  type VoiceAudioFailureReason,
+  type VoiceAudioFormat,
+  type VoiceAudioPreview,
+  type VoiceAudioSource,
+  type VoiceAudioStatus,
+  type VoiceAudioTts,
+  type VoiceAudioUpload,
+  type VoiceAudioUploadContentType,
+  type VoiceAudioUploadCreated,
+  type VoiceKeySource,
+  type VoiceProvider,
+  type VoiceProviderCredential,
+  type VoiceProviderCredentialError,
+  type VoiceProviderCredentialStatus,
+  type VoiceResourceDeleted,
+  type WaitForVoiceAudioOptions,
+} from "./platform/voice.js";
 export type {
   ApiKey,
   ApiKeyDeactivation,
@@ -845,9 +942,6 @@ export {
   type CallParticipantLeftPayload,
   type CallParticipantPayload,
   type CallPermissionChangedPayload,
-  type UsageRecordedPayload,
-  type VoiceAssetFailedPayload,
-  type VoiceAssetReadyPayload,
   type CallReceivedPayload,
   type CallRejectedPayload,
   type CallTelemetryPayload,
@@ -952,6 +1046,10 @@ export {
   type MessageFailedPayload,
   type MessageFailedReason,
   type TemplateStatusPayload,
+  type UsageRecordedPayload,
+  type VoiceAssetEventPayload,
+  type VoiceAssetFailedPayload,
+  type VoiceAssetReadyPayload,
 } from "./webhooks/index.js";
 
 export type * from "./messaging/session-configuration.js";

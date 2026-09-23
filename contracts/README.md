@@ -2,8 +2,8 @@
 
 ## Test-event supplement
 
-The pending consent overlay uses API #226 local checkpoint
-`677b39a4a619a4493ce0bf3fde3cbe0c5e4c64d6`. It includes the merged
+The pending consent overlay uses API #226 head
+`a33b77988f411220bb69d9bb6d030899f182a721`. It includes the merged
 campaign, usage, and voice API contracts. The snapshots remain unpublished;
 re-pin to the final merged monorepo `dev` commit before SDK publication.
 `Client.callPolicy` and `Client.callOptOuts` cover six team-policy operations;
@@ -13,23 +13,24 @@ operations. The six Console counterparts are excluded. Message content and
 applicable.
 
 `testing-events.json` records the four test-event schemas from API commit
-`f4a340da3b74248232ebea73f3e72b42f667beef`, including the source path and file
+`9c876c16c60b74370d934e1275f23ef6096bee12`, including the source path and file
 hash. The TypeScript test-event catalog and override types use that revision.
 Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
-and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger below use the later, unpublished consent
-integration checkpoint. CLI consumers require a published SDK package before
-updating their pinned dependency.
+and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
+below use the pending API #226 consent revision. CLI consumers require a
+published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at pending API #226 integration checkpoint
-`677b39a4a619a4493ce0bf3fde3cbe0c5e4c64d6`. Both snapshots, the ledger,
-and revision tests use that checkpoint. `source.json` records the source paths
-and SHA-256 hashes with `published: false`. Final publication requires a re-pin
-to the merged API `dev` commit.
+files at pending `polymorfa/polymorfa` API #226 head
+`a33b77988f411220bb69d9bb6d030899f182a721`. This revision includes
+Voice audio and provider credentials on top of merged usage gates, Calls
+analytics, Campaigns P0 and Functions. The snapshots, ledger and revision
+tests have been reconciled. `source.json` records the source paths and
+SHA-256 hashes; re-pin to the merged API `dev` commit before publication.
 
 The preceding refresh added 17 operation rows and removes eight. Eight removed Console
 operation routes moved to `/platform/operations` and
@@ -37,9 +38,12 @@ operation routes moved to `/platform/operations` and
 and project-view `operations` resources cover list, get, transitions and cancel.
 Three new Console retention and SIP discovery operations stay excluded.
 `Client.callRetention` covers `GET` and `PUT /platform/call-retention`, merged
-from SDK `dev`. Three public Calls operations remain explicitly missing:
-`GET /platform/calls`, `/platform/calls/export`, and `/platform/calls/stats`.
-This P0 update does not claim whole-contract parity.
+from SDK `dev`. The three public Calls analytics operations are covered by
+`Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
+`Client.calls.exportAll` walks export pages. The 13 public Voice operations are
+covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
+13 Console counterparts are excluded. The full 499-operation snapshot includes
+all 15 Functions routes already merged to API `dev`.
 
 SDK `dev` through `8392f66` adds `Client.sipTrunks.endpoint()` for
 `GET /platform/sip/endpoint`. Its `SipEndpoint` result is a discriminated union:
@@ -64,7 +68,12 @@ because its Platform campaign resource belongs to organization clients. The
 six opaque JSON fields remain `unknown`, while `senderConfig` remains an open
 object. No routes were added or removed by this schema refresh.
 
-This revision adds the Campaigns P0 operations. Audiences gain member
+This revision also covers `GET /platform/usage`, `/platform/usage/records`,
+and `/platform/gates` through `Client.usage.summary`, `listRecords`, and
+`listGates`. `iterateRecords` follows record-page cursors. Usage is measured
+but not charged; gate state requires an organization credential.
+
+The Campaigns P0 revision added these operations. Audiences gain member
 management (`POST`/`GET /platform/audiences/{listId}/members` and
 `DELETE .../{phone}`), campaigns gain recipient append and listing on both
 surfaces, and the organization gains STOP/START keyword settings
@@ -110,18 +119,12 @@ too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        335 |
-| Missing             |         19 |
+| Covered             |        369 |
+| Missing             |          0 |
 | Excluded            |        130 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        484 |
-
-The 19 missing public operations are three Calls history/analytics methods,
-three usage/gate reads, and thirteen voice library/credential methods owned by
-other SDK changes. Console-only methods remain excluded. The three new
-`usage.recorded` and `voice.asset_*` webhook payloads are typed against the
-pending snapshot so the event catalog remains exact.
+| Total               |        499 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -261,13 +264,14 @@ are not retained as compatibility aliases.
 ## Functions contract
 
 Functions is tracked separately in `functions/openapi.json`, with its exact
-monorepo source commit and extraction hash in `functions/source.json`. That
-snapshot contains 15 Functions operations and their transitive schemas.
-`npm run check:functions` verifies its ledger; SDK tests exercise every method.
-The pending consent snapshots above remain on their explicitly recorded API
-revision until PR #226 merges.
+monorepo source commit and extraction hash in `functions/source.json`. This
+snapshot contains only the 15 Functions operations and their transitive schemas.
+`npm run check:functions` verifies their ledger; SDK tests exercise every method.
+The main consent snapshots remain on the pending API #226 revision; the
+Functions subset retains its separate source revision.
 
 All 15 Functions methods require `client.project(projectId).functions` and an
-organization enabled for Functions. The SDK never retries Function mutations
-or invocations automatically. Browser and client-token SDKs do not expose this
-server control plane. An installed method does not establish hosted availability.
+organization enabled for Functions. The SDK never retries Function mutations or
+invocations automatically. Browser/client-token SDKs do not expose this server
+control plane. A local implementation or installed method does not establish
+hosted availability.

@@ -5,6 +5,18 @@ import type {
   PhonePlatform,
   WhatsAppAccountType,
 } from "../messaging/types.js";
+import type {
+  UsageKeySource,
+  UsageMeter,
+  UsagePricingState,
+  UsageSourceKind,
+  UsageUnit,
+} from "../platform/usage.js";
+import type {
+  VoiceAudioFailureReason,
+  VoiceAudioFormat,
+  VoiceAudioSource,
+} from "../platform/voice.js";
 
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
@@ -972,71 +984,53 @@ export interface CampaignColdBlockedPayload {
   readonly at: number;
 }
 
-/** One metered observation; later revisions retain the same id. */
-export interface UsageRecordedPayload {
-  readonly id: string;
-  readonly meter:
-    | "call.duration"
-    | "call.cloud_pulses"
-    | "campaign.call"
-    | "tts.characters"
-    | "tts.seconds"
-    | "stt.seconds"
-    | "agent.seconds"
-    | "agent.tokens"
-    | "agent.provider_cost"
-    | "channels.peak"
-    | "storage.byte_days";
-  readonly quantity: number;
-  readonly unit:
-    | "second"
-    | "pulse"
-    | "call"
-    | "character"
-    | "token"
-    | "provider_unit"
-    | "channel"
-    | "byte_day";
-  readonly dimensions: Record<string, string | number | boolean>;
-  readonly keySource: "none" | "managed" | "customer";
-  readonly sourceKind:
-    "call" | "attempt" | "flow_run" | "conversation" | "asset" | "team";
-  readonly sourceId: string;
-  readonly projectId: string | null;
-  readonly session: string | null;
-  readonly occurredAt: string;
-  readonly recordedAt: string;
-  readonly revision: number;
-  readonly pricingState: "unpriced" | "priced" | "waived" | "settled";
-  readonly rateCard: { readonly id: string; readonly version: number } | null;
-  readonly pricedCredits: number | null;
-}
-
-interface VoiceAssetBasePayload {
+/** Fields shared by the Voice Automation (beta) audio asset webhooks. */
+export interface VoiceAssetEventPayload {
   readonly eventId: string;
   readonly occurredAt: string;
   readonly organizationId: string;
   readonly projectId: string;
   readonly assetId: string;
   readonly name: string;
-  readonly source: "upload" | "tts";
+  readonly source: VoiceAudioSource;
 }
 
-export interface VoiceAssetReadyPayload extends VoiceAssetBasePayload {
+/** An audio asset finished transcoding and can be used in calls. */
+export interface VoiceAssetReadyPayload extends VoiceAssetEventPayload {
   readonly durationMs: number;
+  /** Hex SHA-256 of the canonical 16 kHz mono PCM. */
   readonly contentSha256: string;
-  readonly originalFormat: "mp3" | "wav" | "ogg" | "m4a";
+  readonly originalFormat: VoiceAudioFormat;
 }
 
-export interface VoiceAssetFailedPayload extends VoiceAssetBasePayload {
-  readonly failureReason:
-    | "unsupported_format"
-    | "too_large"
-    | "too_long"
-    | "decode_failed"
-    | "silent"
-    | "tts_failed"
-    | "processing_failed";
+/** An audio asset could not be processed. */
+export interface VoiceAssetFailedPayload extends VoiceAssetEventPayload {
+  readonly failureReason: VoiceAudioFailureReason;
+}
+
+/**
+ * Payload for `usage.recorded`: one usage record, emitted when it is created
+ * and again, with a higher `revision`, when a later observation corrects it.
+ * Usage is measured, not charged: `pricingState` is `unpriced`.
+ */
+export interface UsageRecordedPayload {
+  readonly id: string;
+  readonly meter: UsageMeter;
+  readonly quantity: number;
+  readonly unit: UsageUnit;
+  readonly dimensions: Readonly<Record<string, string | number | boolean>>;
+  readonly keySource: UsageKeySource;
+  readonly sourceKind: UsageSourceKind;
+  /** The call id for call meters. */
+  readonly sourceId: string;
+  readonly projectId: string | null;
+  readonly session: string | null;
+  readonly occurredAt: string;
+  readonly recordedAt: string;
+  readonly revision: number;
+  readonly pricingState: UsagePricingState;
+  readonly rateCard: { readonly id: string; readonly version: number } | null;
+  readonly pricedCredits: number | null;
 }
 
 export interface WebhookPayloadMap {
