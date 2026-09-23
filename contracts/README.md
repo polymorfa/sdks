@@ -16,12 +16,10 @@ CLI consumers can update their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at provisional `polymorfa/polymorfa` commit
-`7b4338f70a911f9b80ddf43192f7e8a6c31f6ac8` for Campaigns P0 (#232).
-This integration commit is not the final merged `dev` revision. SDK merge and
-publication remain blocked until `source.json`, both snapshots, the ledger and
-revision tests are rechecked against the final merged `dev` SHA. `source.json`
-records the source paths and SHA-256 hashes.
+files at merged `polymorfa/polymorfa` `dev` commit
+`f4a340da3b74248232ebea73f3e72b42f667beef` for Campaigns P0 (#232).
+The merged source commit, both snapshots, the ledger, and revision tests have
+been reconciled. `source.json` records the source paths and SHA-256 hashes.
 
 The preceding refresh added 17 operation rows and removes eight. Eight removed Console
 operation routes moved to `/platform/operations` and

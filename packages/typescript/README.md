@@ -1928,9 +1928,9 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
 Typed call analytics and call retention settings methods are not implemented.
 These five public operations remain recorded as
-missing in the contract ledger. The contract snapshot is provisional; the
-final merged API revision must be pinned before this SDK update is merged or
-published. See the repository contract notes for the exact source revision.
+missing in the contract ledger. The contract snapshot is pinned to merged API
+`dev` commit `f4a340da3b74248232ebea73f3e72b42f667beef`. See the repository
+contract notes for the exact source revision.
 
 ## Functions
 

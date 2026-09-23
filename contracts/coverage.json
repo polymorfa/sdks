@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "7b4338f70a911f9b80ddf43192f7e8a6c31f6ac8",
+  "sourceCommit": "f4a340da3b74248232ebea73f3e72b42f667beef",
   "excludedContracts": [
     {
       "family": "graph",
