@@ -144,7 +144,9 @@ export class HttpTransport {
       request.signal?.removeEventListener("abort", cancel);
     }
     const metadata = responseMetadata(response, 1);
-    if (!response.ok) throw apiError(response, data, metadata);
+    // The storage endpoint is outside the Polymorfa API. Its body and headers
+    // may echo the signed capability URL, so retain only the HTTP status.
+    if (!response.ok) throw apiError(response, data, metadata, true);
     return Object.freeze({ data, metadata });
   }
 
@@ -930,11 +932,16 @@ function apiError(
   response: Response,
   body: unknown,
   metadata: ResponseMetadata,
+  redactResponse = false,
 ): PolymorfaError {
-  const fields = errorFields(body);
-  const requestId = fields.requestId ?? metadata.requestId;
-  const rateLimitReason =
-    response.headers.get("polymorfa-ratelimit-reason") ?? undefined;
+  const fields = redactResponse ? {} : errorFields(body);
+  const safeMetadata: ResponseMetadata = redactResponse
+    ? { status: response.status, attempts: metadata.attempts, headers: {} }
+    : metadata;
+  const requestId = fields.requestId ?? safeMetadata.requestId;
+  const rateLimitReason = redactResponse
+    ? undefined
+    : (response.headers.get("polymorfa-ratelimit-reason") ?? undefined);
   const options: PolymorfaErrorOptions = {
     status: response.status,
     ...(requestId === undefined ? {} : { requestId }),
@@ -943,11 +950,13 @@ function apiError(
       : { requestLogUrl: fields.requestLogUrl }),
     ...(fields.docUrl === undefined ? {} : { docUrl: fields.docUrl }),
     ...(rateLimitReason === undefined ? {} : { rateLimitReason }),
-    details: body,
-    metadata,
+    ...(redactResponse ? {} : { details: body }),
+    metadata: safeMetadata,
     ...(fields.code === undefined ? {} : { code: fields.code }),
   };
-  const message = errorMessage(body, response.status);
+  const message = redactResponse
+    ? `The upload URL rejected the request with status ${response.status}.`
+    : errorMessage(body, response.status);
   if (
     response.status === 400 ||
     response.status === 413 ||

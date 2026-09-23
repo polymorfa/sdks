@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Signed Voice upload errors keep the HTTP status but discard storage response
+  text and headers that could expose the upload URL.
+
 - Added `Client.voice.audio` for scoped audio upload, synthesis, preview,
   retention and deletion, plus `Client.voice.providerCredentials` for write-only
   provider keys. Typed `voice.asset_ready` and `voice.asset_failed` webhooks

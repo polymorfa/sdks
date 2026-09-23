@@ -452,6 +452,50 @@ describe("voice audio library", () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
+  it("does not retain a signed upload URL echoed by a failed upload response", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async (input) => {
+      if (
+        new URL(String(input)).pathname.startsWith("/platform/voice/uploads/")
+      ) {
+        return Response.json(
+          {
+            error: {
+              code: "invalid_parameter",
+              message: `Rejected ${UPLOAD_URL}`,
+              request_log_url: UPLOAD_URL,
+            },
+            docs: UPLOAD_URL,
+          },
+          { status: 413, headers: { "x-request-id": UPLOAD_URL } },
+        );
+      }
+      return ok(
+        {
+          asset: asset(),
+          upload: {
+            url: UPLOAD_URL,
+            method: "POST",
+            headers: { "Content-Type": "audio/mpeg" },
+            maxBytes: 16_777_216,
+            expiresAt: "2026-09-19T10:05:00.000Z",
+          },
+        },
+        201,
+      );
+    });
+    const error = await projectClient(fetch)
+      .voice.audio.upload({
+        name: "x",
+        contentType: "audio/mpeg",
+        body: new Uint8Array([1]),
+      })
+      .catch((cause: unknown) => cause);
+    expect(error).toBeInstanceOf(PolymorfaValidationError);
+    expect(error).toMatchObject({ status: 413 });
+    expect(inspect(error, { depth: 10 })).not.toContain(UPLOAD_URL);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
   it("maps upload URL refusals to typed errors and leaves the asset pending", async () => {
     const fetch = uploadFlow();
     fetch.mockImplementation(async (input) =>
