@@ -1117,11 +1117,18 @@ release.
 The management `Client` owns a separate durable developer API at both
 organization and project scope:
 
-- `events.list`, `retrieve`, and `replay`
+- `events.list`, `listIndexed`, `retrieve`, and `replay`
 - `webhooks.list`, `create`, `retrieve`, `update`, `delete`, `test`, and
   `rotateSecret`
 - `webhookDeliveries.list`, `retrieve`, `listAttempts`, `retrieveAttempt`, and
   `retry`
+
+Use `events.listIndexed` to follow newly indexed events without relying on
+their producer timestamps. Start with `afterOffset: "0"` and save the returned
+`page.highWatermark` as a baseline. If `page.hasMore` is true, pass
+`page.nextOffset` until the page is exhausted; then pass `page.highWatermark`
+on the next read. A message indexed after reconnect can have an older
+`createdAt` than a message you already received.
 
 ```ts
 const deliveries = await project.webhookDeliveries.list({

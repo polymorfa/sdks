@@ -23,7 +23,10 @@ afterEach(async () => {
   await Promise.all(servers.splice(0).map((server) => server.close()));
 });
 
-async function testClient(projectId?: string): Promise<{
+async function testClient(
+  projectId?: string,
+  eventResponse?: string,
+): Promise<{
   client: Client<"organization"> | Client<"project">;
   requests: RecordedRequest[];
 }> {
@@ -34,7 +37,8 @@ async function testClient(projectId?: string): Promise<{
     },
     body:
       path.includes("/transitions") || path.includes("/events?")
-        ? '{"data":[],"page":{"nextCursor":null,"hasMore":false}}'
+        ? (eventResponse ??
+          '{"data":[],"page":{"nextCursor":null,"hasMore":false}}')
         : '{"data":{"id":"resource_1","status":"succeeded","sequence":1,"capabilities":{"cancellable":false,"watchable":false}}}',
   }));
   servers.push(server);
@@ -220,6 +224,48 @@ describe("project raw confinement", () => {
 });
 
 describe("durable developer resources", () => {
+  it("preserves ingestion positions on indexed event pages", async () => {
+    const body = JSON.stringify({
+      data: [{ id: "late", createdAt: "2026-09-18T08:00:00Z" }],
+      page: {
+        hasMore: true,
+        nextOffset: "42",
+        highWatermark: "43",
+        nextCursor: null,
+      },
+    });
+    const { client, requests } = await testClient("project/a", body);
+    const page = await client.events.listIndexed({
+      afterOffset: "41",
+      type: "message.received",
+      limit: 1,
+    });
+    expect(page.items.map((event) => event.id)).toEqual(["late"]);
+    expect(page.page).toEqual({
+      hasMore: true,
+      nextOffset: "42",
+      highWatermark: "43",
+    });
+    expect(requests[0]?.path).toBe(
+      "/platform/projects/project%2Fa/events?afterOffset=41&type=message.received&limit=1",
+    );
+  });
+
+  it("rejects an invalid indexed event position before fetch and malformed pages after fetch", async () => {
+    const { client, requests } = await testClient(
+      undefined,
+      '{"data":[],"page":{"hasMore":true,"nextOffset":null,"highWatermark":"4"}}',
+    );
+    await expect(
+      client.events.listIndexed({ afterOffset: "-1" }),
+    ).rejects.toBeInstanceOf(PolymorfaValidationError);
+    expect(requests).toEqual([]);
+    await expect(
+      client.events.listIndexed({ afterOffset: "3" }),
+    ).rejects.toMatchObject({ code: "invalid_response" });
+    expect(requests[0]?.path).toBe("/platform/events?afterOffset=3");
+  });
+
   it("uses exact project routes for events, deliveries, and attempts", async () => {
     const { client, requests } = await testClient("project/a");
     await client.events.list({ type: "message.received", limit: 10 });

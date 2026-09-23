@@ -2,7 +2,7 @@
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`42fc2d8d370efc126394307118f444dd6371f1ba`. `source.json` records their original
+`cd8bc98356548229193095d46da1b955c7540e7e`. `source.json` records their original
 paths and SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
@@ -19,6 +19,11 @@ It does not claim coverage in other languages, package publication, or a
 successful live call.
 
 ## Reconciliation
+
+The Platform event-list contract adds `afterOffset`, `nextOffset`, and
+`highWatermark` for ingestion-order reads. `Client.events.listIndexed` and
+project-bound `events.listIndexed` consume that mode. The Messaging snapshot is
+byte-identical at the pinned source commit.
 
 This revision is synced from the message history API change (polymorfa/polymorfa
 PR #202, not yet merged). It adds four beta history reads:

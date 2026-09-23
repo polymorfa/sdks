@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "42fc2d8d370efc126394307118f444dd6371f1ba",
+  "sourceCommit": "cd8bc98356548229193095d46da1b955c7540e7e",
   "excludedContracts": [
     {
       "family": "graph",
@@ -2873,10 +2873,10 @@
       "method": "GET",
       "path": "/platform/events",
       "operationId": "listOrganizationEvents",
-      "fingerprint": "bf63c2d46188201523bbdeb663d3911a0a73c283588f0cdfc1005d8e35b0fd03",
+      "fingerprint": "55ca0642a1b5d8ea4427b6e140286f37e635b96f42c9c7458961ad8450a620e8",
       "typescript": {
         "status": "covered",
-        "method": "Client.events.list"
+        "method": "Client.events.listIndexed"
       }
     },
     {
@@ -2996,10 +2996,10 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/events",
       "operationId": "listProjectEvents",
-      "fingerprint": "895157353719bb0300aca6af22e775f32644a9bff47257d6d01ede4354dc0b7f",
+      "fingerprint": "cdfae92948f86a6e75da42012b46e1efff57b893b7abf9d87f2968bc8d54e7bc",
       "typescript": {
         "status": "covered",
-        "method": "Client.project(projectId).events.list"
+        "method": "Client.project(projectId).events.listIndexed"
       }
     },
     {

@@ -11207,6 +11207,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "afterOffset",
+            "in": "query",
+            "required": false,
+            "description": "Return events indexed after this retained-stream offset, in ingestion order. Cannot be combined with cursor, since, or until. Pass 0 to obtain page.highWatermark for an initial wait baseline.",
+            "schema": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$"
+            }
           }
         ],
         "responses": {
@@ -11239,7 +11249,7 @@
                       }
                     },
                     "page": {
-                      "$ref": "#/components/schemas/CursorPageMetadata"
+                      "$ref": "#/components/schemas/IndexedEventPageMetadata"
                     }
                   },
                   "required": [
@@ -11531,6 +11541,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "afterOffset",
+            "in": "query",
+            "required": false,
+            "description": "Return events indexed after this retained-stream offset, in ingestion order. Cannot be combined with cursor, since, or until. Pass 0 to obtain page.highWatermark for an initial wait baseline.",
+            "schema": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$"
+            }
           }
         ],
         "responses": {
@@ -11563,7 +11583,7 @@
                       }
                     },
                     "page": {
-                      "$ref": "#/components/schemas/CursorPageMetadata"
+                      "$ref": "#/components/schemas/IndexedEventPageMetadata"
                     }
                   },
                   "required": [
@@ -23013,6 +23033,17 @@
           "action",
           "accepted"
         ]
+      },
+      "IndexedEventPageMetadata": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "nextCursor": { "type": "string", "nullable": true },
+          "hasMore": { "type": "boolean" },
+          "nextOffset": { "type": "string", "nullable": true },
+          "highWatermark": { "type": "string" }
+        },
+        "required": ["nextCursor", "hasMore"]
       },
       "CursorPageMetadata": {
         "type": "object",
