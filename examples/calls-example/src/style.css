@@ -1,0 +1,74 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #17212b;
+  background: #f5f7fa;
+}
+body {
+  margin: 0;
+}
+main {
+  width: min(100% - 2rem, 40rem);
+  margin: 3rem auto;
+}
+h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+h2 {
+  font-size: 1.1rem;
+}
+.eyebrow {
+  color: #435b72;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.api {
+  font-family: monospace;
+  overflow-wrap: anywhere;
+}
+.card {
+  background: white;
+  border: 1px solid #d9e0e7;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin-top: 1rem;
+  box-shadow: 0 6px 24px #17212b0b;
+}
+label {
+  display: block;
+  font-weight: 600;
+  margin: 0.8rem 0 0.35rem;
+}
+input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid #aab8c5;
+  border-radius: 0.4rem;
+  font: inherit;
+}
+button {
+  background: #0c635d;
+  border: 0;
+  border-radius: 0.4rem;
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.65rem 1rem;
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #e8993a;
+  outline-offset: 2px;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.error {
+  color: #a01919;
+}

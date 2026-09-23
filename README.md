@@ -32,6 +32,8 @@ The public packages are complete development artifacts on `dev`. They
 publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
 Polymorfa npm organization. No mobile-native binding is part of this milestone.
 
+For a small browser preview against staging, see the [Calls example](examples/calls-example/README.md).
+
 ## TypeScript development install
 
 Each push to `dev` publishes the public packages to npm under the `dev`
