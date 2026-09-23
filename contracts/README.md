@@ -18,19 +18,21 @@ hash. The TypeScript test-event catalog and override types use that revision.
 Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
-and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
-below use the merged API `dev` consent revision. CLI consumers require a
-published SDK package before updating their pinned dependency.
+and `call_restricted` to `callEndReason`. The full snapshots and coverage
+ledger below use the later merged API `dev` Campaigns revision. CLI consumers
+require a published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at merged `polymorfa/polymorfa` API `dev` commit
-`270fbe53e04927d360076971a3e54e2772fb0ed2`. This revision includes
-Voice audio and provider credentials on top of merged usage gates, Calls
-analytics, Campaigns P0, Functions, and HMS history. The snapshots, ledger and revision
-tests have been reconciled. `source.json` records the source paths and
-SHA-256 hashes.
+`e525a1cdbc967fe5b6713df3f27a6fdfc6812d18`. This revision includes
+Campaigns P0 failed-state settlement, Calls consent, Voice audio, usage gates,
+Functions, and HMS history. Compared with the preceding snapshot, it changes
+the `campaign.failed` reason example and the archive/delete operation descriptions.
+It changes no operation fingerprint or SDK method mapping. The snapshots, ledger
+and revision tests have been reconciled. `source.json` records the source paths
+and SHA-256 hashes.
 
 The preceding refresh added 17 operation rows and removes eight. Eight removed Console
 operation routes moved to `/platform/operations` and

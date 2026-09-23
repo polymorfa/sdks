@@ -6850,7 +6850,7 @@
           "reason": {
             "type": "string",
             "description": "Stable reason the campaign failed",
-            "example": "no_eligible_numbers"
+            "example": "all_recipients_failed"
           },
           "failedAt": {
             "type": "integer",
