@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "e72b51348e16e704f17b3e681ee60d02fcca8c7f",
-  "branch": "dev",
-  "published": true,
-  "note": "Exact merged API dev commit containing Calls consent and HMS history; both snapshots are byte-identical to the authoritative source files. SDK package publication is separate.",
+  "commit": "f4e52b3dcb45f050535080e008c3a02cb73e9b5a",
+  "branch": "t3code/hybrid-link-support",
+  "published": false,
+  "note": "Exact unmerged API Hybrid Link branch commit, including merged dev Calls consent and HMS history; snapshots are byte-identical to the authoritative source files. SDK publication is separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "0943aa46871e280dc1a714e0dd167e26b7f35a86a4a23fe50e981c620ab83df0"
+      "sha256": "5c8a00977b8632b1b520d5d51779f458279171be0508dd1266def3e34b037d12"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "8804d1249763a470bb1cb145c6697ac12381e17edd7aa0ea82b6f916ee8223db"
+      "sha256": "39267751aa7f5325e10a8479951c97fbe8d46b31a360c0739a1c6992d6183eed"
     }
   }
 }

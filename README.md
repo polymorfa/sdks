@@ -5,8 +5,8 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts at merged API `dev` commit
-`e72b51348e16e704f17b3e681ee60d02fcca8c7f`. Graph-compatible
+the Messaging and Platform contracts on the unmerged API Hybrid Link branch at
+`f4e52b3dcb45f050535080e008c3a02cb73e9b5a`. Graph-compatible
 APIs are outside this SDK's initial scope.
 
 The same API revision adds an enrolled hosted message history beta.
@@ -99,7 +99,7 @@ const messaging = new MessagingClient({
     type: "apiKey",
     value: process.env.POLYMORFA_MESSAGING_API_KEY!,
   },
-  apiVersion: "1.0.0",
+  apiVersion: "2026-09-22",
 });
 
 const sessions = await messaging.sessions.list();
@@ -568,7 +568,8 @@ and `idempotencyKey`; the key does not make the API replay the append.
 ## API versions and raw requests
 
 Set `apiVersion` on a client or a single request. The SDK sends it as the
-`Polymorfa-Version` header.
+`Polymorfa-Version` header. Native calls default to `2026-09-22`; the API
+accepts explicit revisions from `2026-03-20` and rejects earlier pins.
 
 Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 
@@ -826,10 +827,6 @@ npm run check:names
 Package publication, tags, and GitHub releases require a separate explicit
 release instruction.
 
-## License
-
-MIT
-
 ## Contract update notes
 
 The typed webhook catalog includes `session.restriction_updated` with
@@ -842,4 +839,56 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. `Client.callPolicy` and
 `Client.callOptOuts` cover consent controls. The contract snapshot is pinned
-to merged API `dev` commit `e72b51348e16e704f17b3e681ee60d02fcca8c7f`.
+to unmerged API Hybrid Link commit `f4e52b3dcb45f050535080e008c3a02cb73e9b5a`.
+
+## Native message provider references
+
+Message receipts and webhook message references expose `whatsapp_ids`, with
+`linked_devices`, `official_api`, or both observed provider references. Unknown
+keys are omitted. A temporary optional `whatsapp_id` alias remains for older consumers. Use the separate Polymorfa `id`
+for replies and actions. The server SDK exports `WhatsAppMessageIds`; the browser
+SDK exports `BrowserWhatsAppMessageIds`. See the pinned component revision in
+[contract notes](contracts/README.md#message-provider-references).
+
+## Hybrid Link contract additions
+
+The development SDK types include Hybrid Link controls. Their presence does not
+enable the private preview: the API checks live team/project enrollment, Number
+entitlement, and operational availability. Browser client tokens cannot use the
+Hybrid control or message-operation methods, and Hybrid sends through browser
+client tokens are unavailable in this preview.
+
+Use `quickLinks.availability({projectId, session})` before offering an added
+connection. Initial setup uses `quickLinks.create({connectionGoal: "hybrid"})`;
+adding a transport uses `purpose: "add_connection"`, the existing `session`, and
+`addConnection: "linked_devices" | "official_api"`. The Number and Customer stay
+the same. `configuration.connectionPreference: "both"` still chooses one transport.
+QuickLink status includes `hybridPhase` for Cloud setup, Linked pairing, repair,
+and readiness.
+
+Native send/reaction requests and edits accept `transport: "auto" |
+"linked_devices" | "official_api"`. `chats.deleteMessage` accepts the choice in
+its options. Explicit choices never fall back. Raw Graph-compatible requests can
+use `graphTransportHeaders(transport)`; Graph remains outside handwritten method
+coverage. Routing details appear in response `metadata.transport`,
+`metadata.routingReason`, and `metadata.operationId` when supplied by the API.
+
+An accepted uncertain send raises `send_outcome_unknown` with its operation ID.
+The SDK stops automatic retries when a response carries an accepted operation ID,
+even if its body cannot be read. In that case the thrown error carries the ID in
+`error.metadata.operationId`.
+Read `messages.operationStatus(session, operationId)` with the original issuing
+server principal. `pending` and `unknown` do not permit another send or a
+transport switch. A terminal `rejected` result carries
+`rejectionCode: "hybrid_authority_unavailable"` and proves that this operation
+ended before the provider effect. Fix the cause before starting a new operation.
+
+`hybridLink.getPolicy(scope)` and `setPolicy(scope, body)` preserve team, project,
+or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
+`allowedTransports`; narrower policies cannot widen ancestor restrictions.
+`hybridLink.state(session)` reads connection status. `setPaused(session,
+{expectedRevision, paused})` changes routing at the exact current revision.
+
+## License
+
+MIT

@@ -126,6 +126,8 @@ export interface BrowserSendMessageRequest {
 export interface BrowserMessageReceipt {
   readonly id: string;
   readonly whatsapp_ids: BrowserWhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: BrowserConversationIdentity;
   readonly timestamp: string;
   readonly status: string;

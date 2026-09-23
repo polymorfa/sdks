@@ -28,6 +28,8 @@ import type {
 interface Schema {
   readonly properties?: Readonly<Record<string, Schema>>;
   readonly enum?: readonly unknown[];
+  readonly required?: readonly string[];
+  readonly deprecated?: boolean;
 }
 
 function schemas(file: string): Readonly<Record<string, Schema>> {
@@ -58,6 +60,14 @@ function keys<T>(record: { readonly [K in keyof Required<T>]: true }) {
 }
 
 describe("SDK types match the pinned contract snapshots", () => {
+  it("keeps HMS provider references transport-specific with a deprecated alias", () => {
+    for (const name of ["HistoryMessageSummary", "HistoryMessage"]) {
+      const schema = messaging[name];
+      expect(schema?.required).toContain("whatsapp_ids");
+      expect(schema?.required).not.toContain("whatsapp_id");
+      expect(schema?.properties?.whatsapp_id?.deprecated).toBe(true);
+    }
+  });
   it("keeps QuickLink settings aligned with the management schema", () => {
     expect(
       keys<ProjectQuickLinkSettings>({
@@ -314,6 +324,7 @@ describe("SDK types match the pinned contract snapshots", () => {
       keys<MessageReceipt>({
         id: true,
         whatsapp_ids: true,
+        whatsapp_id: true,
         conversation: true,
         timestamp: true,
         status: true,

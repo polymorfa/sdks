@@ -172,13 +172,13 @@ describe("HttpTransport", () => {
       status: 400,
       headers: {
         "content-type": "application/json",
-        "polymorfa-version": "2026-08-19",
+        "polymorfa-version": "2026-03-19",
       },
       body: JSON.stringify({
         error: {
           code: "invalid_parameter",
           message:
-            "API version 2026-08-19 is no longer supported. Minimum: 2026-09-22",
+            "API version 2026-03-19 is no longer supported. Minimum: 2026-03-20",
           param: "Polymorfa-Version",
         },
       }),
@@ -187,11 +187,11 @@ describe("HttpTransport", () => {
       makeTransport(server.url, { maxNetworkRetries: 2 }).request({
         method: "GET",
         path: "/messaging/number/hybrid-link",
-        headers: { "Polymorfa-Version": "2026-08-19" },
+        headers: { "Polymorfa-Version": "2026-03-19" },
       }),
     ).rejects.toMatchObject({ code: "invalid_parameter", status: 400 });
     expect(server.requests).toHaveLength(1);
-    expect(server.requests[0]?.headers["polymorfa-version"]).toBe("2026-08-19");
+    expect(server.requests[0]?.headers["polymorfa-version"]).toBe("2026-03-19");
   });
 
   it("keeps API version options ahead of raw headers for JSON and streaming calls", async () => {

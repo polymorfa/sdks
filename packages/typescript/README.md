@@ -1760,7 +1760,11 @@ listing and append also require `projectId`. Platform
 members, and `Client.optOuts` reads and replaces team keyword settings.
 
 `create` and `launch` generate an `Idempotency-Key` for each call. A supplied
-key is preserved across retries; see [Idempotent sends](#idempotent-sends).
+key is preserved across retries within the API's 24-hour replay window. If the
+outcome remains uncertain after that window, reconcile campaign state before
+starting another request; see [Idempotent sends](#idempotent-sends).
+`archive` returns a receipt for a completed, failed, or cancelled campaign;
+an active campaign is refused with `409`.
 The Messaging API has no campaign update, deletion, archive, duplicate, or
 campaign event history method. The SDK does not substitute Platform routes for
 those operations.
@@ -2372,7 +2376,7 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. `Client.callPolicy` and
 `Client.callOptOuts` cover consent controls. The contract snapshot is pinned
-to merged API `dev` commit `e72b51348e16e704f17b3e681ee60d02fcca8c7f`.
+to unmerged API Hybrid Link commit `f4e52b3dcb45f050535080e008c3a02cb73e9b5a`.
 
 ## Functions
 

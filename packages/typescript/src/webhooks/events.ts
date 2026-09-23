@@ -146,6 +146,8 @@ export type LinkedDeviceMessageType =
 export interface LinkedDeviceMessagePayload {
   readonly id: string;
   readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationReference;
   readonly fromMe: boolean;
   readonly timestamp: number;
@@ -179,6 +181,8 @@ export type MessagePayload = LinkedDeviceMessagePayload;
 export interface CloudMessagePayload {
   readonly id: string;
   readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationReference;
   readonly timestamp: string;
   readonly type: string;
@@ -194,6 +198,8 @@ export type MessageReceivedPayload =
 export interface MessageSentPayload {
   readonly id: string;
   readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationReference;
   readonly type: string;
   readonly timestamp: number;
@@ -203,6 +209,8 @@ export interface MessageAckPayload {
   readonly messages: readonly {
     readonly id: string;
     readonly whatsapp_ids: WhatsAppMessageIds;
+    /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+    readonly whatsapp_id?: string;
   }[];
   readonly conversation: ConversationReference;
   readonly from?: IdentityReference;
@@ -216,6 +224,8 @@ export interface MessageDeletePayload {
   readonly sender: IdentityReference;
   readonly id: string;
   readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationReference;
   readonly fromMe: boolean;
 }
@@ -524,10 +534,16 @@ export interface CloudHistorySyncPayload {
 
 export interface LinkedHistorySyncPayload {
   readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly original_whatsapp_ids?: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `original_whatsapp_ids`. */
+  readonly original_whatsapp_id?: string;
   readonly messages: readonly {
     readonly id: string;
     readonly whatsapp_ids: WhatsAppMessageIds;
+    /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+    readonly whatsapp_id?: string;
     readonly conversation: IdentityReference;
     readonly fromMe?: boolean;
   }[];

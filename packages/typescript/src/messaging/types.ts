@@ -1092,6 +1092,8 @@ export interface ChannelMessage {
   readonly position: number;
   readonly id: string;
   readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationIdentity;
   readonly type: string;
   readonly timestamp: string;
@@ -2224,6 +2226,8 @@ export type MessageOperationResponse = SuccessEnvelope<MessageOperation>;
 export interface MessageReceipt extends MessageRoutingMetadata {
   readonly id: string;
   readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationIdentity;
   readonly timestamp: string;
   readonly status: string;

@@ -15971,7 +15971,7 @@
           "campaigns"
         ],
         "summary": "Update campaign",
-        "description": "Updates a campaign. A new `senderConfig` passes the same Campaigns plan and throughput checks as create. `recipientListId` points the campaign at another audience while it is still an unlaunched draft; after launch it answers `409`.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Updates a campaign. A new `senderConfig` passes the same Campaigns plan and throughput checks as create. `recipientListId` points the campaign at another audience while it is still an unlaunched draft and replaces its existing recipients; after launch it answers `409`.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -16706,7 +16706,7 @@
           "campaigns"
         ],
         "summary": "Archive campaign",
-        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Archives a completed, failed or cancelled campaign. A campaign still starting, running, paused or stopping is refused with `409`.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -16760,7 +16760,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
@@ -16771,8 +16781,11 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }

@@ -37,8 +37,9 @@ await messaging.messages.send({
 ```
 
 Native Messaging requests default to `Polymorfa-Version: 2026-09-22`, matching
-the `whatsapp_ids` message-reference object. An explicit version header in request
-options is preserved; retired versions return the API error without an automatic
+the `whatsapp_ids` message-reference object. A temporary optional `whatsapp_id`
+output alias remains for older consumers. An explicit version header in request
+options is preserved; versions before `2026-03-20` return the API error without an automatic
 upgrade or resend. Raw Graph-compatible paths and same-origin application
 handlers receive no default native version header. Client-token permissions and
 Hybrid preview restrictions still apply.
@@ -83,8 +84,8 @@ with `call_permission_granted` (409), and an exhausted request limit with
 grant call permission. Read permission status and manage team policy or opt-outs
 through your server.
 
-This content depends on the pending consent API. Its contract must be re-pinned
-to the merged API revision before SDK publication.
+This content follows the pinned Messaging contract. Hosted availability and
+package publication are separate.
 
 ## Voice notes
 
