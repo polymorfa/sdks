@@ -274,6 +274,6 @@ Browsers never receive a server credential. `lib/polymorfa.ts` calls
   to fill them in.
 - The server SDK has no call placement method. Calls are placed with the
   browser client token through `BrowserCallsApi`.
-- Management campaign, audience, opt-out, and media payloads are open objects
-  in the API contract. Those admin-only routes forward the caller's `payload`
-  unchanged.
+- Campaign creation requires a name and the server-configured project. Its
+  named optional JSON fields pass through unchanged. Campaign lifecycle actions
+  retain open payloads; audience creation uses the SDK's typed import request.

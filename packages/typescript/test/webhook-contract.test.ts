@@ -177,6 +177,20 @@ type P = WebhookPayloadMap;
 const PAYLOADS: {
   readonly [K in Exclude<KnownWebhookEventType, LegacyEventType>]: Shape<P[K]>;
 } = {
+  "session.logged_out": shape<P["session.logged_out"]>()(
+    { reason: "banned", code: 401 },
+    ["reason", "code"],
+  ),
+  "session.restriction_updated": shape<P["session.restriction_updated"]>()(
+    {
+      type: "reachout_timelock",
+      active: true,
+      enforcementType: null,
+      expiresAt: null,
+      observedAt: AT,
+    },
+    ["type", "active", "enforcementType", "expiresAt", "observedAt"],
+  ),
   "customer.created": shape<P["customer.created"]>()(
     customer,
     customerRequired,
@@ -610,6 +624,8 @@ type LegacyEventType = Exclude<
   | `campaign.${string}`
   | "message.failed"
   | "template.status"
+  | "session.logged_out"
+  | "session.restriction_updated"
 >;
 
 function specEvents(): Map<string, string> {

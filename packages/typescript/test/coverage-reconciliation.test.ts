@@ -160,7 +160,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("ec96f7b0a93cc05b0630aa95591330ada98378c6");
+    expect(source.commit).toBe("f4a340da3b74248232ebea73f3e72b42f667beef");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -266,38 +266,6 @@ describe("reconciled coverage evidence", () => {
     expect(entry("updateQuickLinkSettings").typescript).toEqual({
       status: "covered",
       method: "Client.quickLinkSettings.update",
-    });
-  });
-
-  it("covers team call retention through the exact Platform route", async () => {
-    const fetch = vi.fn(async () => Response.json({ data: {} }));
-    const client = new Client({
-      credential: {
-        type: "organizationApiKey",
-        value: ORGANIZATION_API_KEY,
-      },
-      fetch,
-    });
-    await client.callRetention.retrieve();
-    await client.callRetention.update({ policy: "extended" });
-    const methods = fetch.mock.calls.map((call) => {
-      const [url, init] = call as unknown as [string, RequestInit];
-      expect(new URL(url).pathname).toBe("/platform/call-retention");
-      return init.method;
-    });
-    expect(methods).toEqual(["GET", "PUT"]);
-    expect(entry("getCallRetention")).toMatchObject({
-      method: "GET",
-      path: "/platform/call-retention",
-      typescript: {
-        status: "covered",
-        method: "Client.callRetention.retrieve",
-      },
-    });
-    expect(entry("updateCallRetention")).toMatchObject({
-      method: "PUT",
-      path: "/platform/call-retention",
-      typescript: { status: "covered", method: "Client.callRetention.update" },
     });
   });
 

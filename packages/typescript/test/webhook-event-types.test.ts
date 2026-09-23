@@ -1,6 +1,8 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type {
+  BanSafeHealthBandName,
+  BanSafeHealthChangedPayload,
   BlocklistUpdatePayload,
   BusinessQuickReplyUpdatePayload,
   CallAcceptedPayload,
@@ -46,6 +48,7 @@ import type {
   WebhookPayloadMap,
 } from "../src/index.js";
 import { KNOWN_WEBHOOK_EVENT_TYPES } from "../src/index.js";
+import type { BanSafeHealthBandName as WebhooksHealthBandName } from "../src/webhooks/index.js";
 
 type ExpectedIdentityReference = {
   readonly id: string;
@@ -421,6 +424,16 @@ type ExportedPayloads = {
 };
 
 describe("webhook event payload types", () => {
+  it("exports the health band through the public webhook type surfaces", () => {
+    expectTypeOf<
+      BanSafeHealthChangedPayload["band"]
+    >().toEqualTypeOf<BanSafeHealthBandName>();
+    expectTypeOf<WebhooksHealthBandName>().toEqualTypeOf<BanSafeHealthBandName>();
+    expectTypeOf<BanSafeHealthBandName>().toEqualTypeOf<
+      "good" | "fair" | "poor" | "failing" | "unknown"
+    >();
+  });
+
   it("maps every formerly opaque event family to its contract payload", () => {
     expectTypeOf<IdentityReference>().toEqualTypeOf<ExpectedIdentityReference>();
     expectTypeOf<WebhookConversationReference>().toEqualTypeOf<ExpectedConversationReference>();
