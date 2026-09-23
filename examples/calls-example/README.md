@@ -41,9 +41,11 @@ blocked local origin before minting. On a rules 404 it also checks the Number
 ID when the key has `sessions:read`. A project token must belong to the
 Number's project. If the key cannot read the Number, a rules 404 can mean an
 inaccessible Number or missing rules. The browser authenticates the Calls
-socket with its client token in the first WebSocket frame. The SDK asks its
-token provider again on reconnect; this page holds the pasted token until you
-disconnect.
+socket with its client token in the first WebSocket frame. The SDK can reuse a
+cached token that has not expired on network reconnect; it refreshes after
+token expiry or a server rejection. This page's provider always returns the
+same pasted token, so disconnect and enter a newly minted token after expiry
+or rejection.
 
 If the Number has no client rules, the example can install narrow rules for a
 local test. Set `POLYMORFA_TEST_CALLEE` to the E.164 number you intend to call:
