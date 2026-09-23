@@ -173,17 +173,14 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "c9be7bd0471ebbbd07502a76d63443a5556b3382",
-      total: 447,
-      covered: 325,
+      sourceCommit: "677b39a4a619a4493ce0bf3fde3cbe0c5e4c64d6",
+      total: 484,
+      covered: 335,
       partial: 0,
-      // Call retention and analytics are implemented in SDK PRs #278 and #281.
-      missing: 5,
-      excluded: 117,
+      missing: 19,
+      excluded: 130,
       changed: 0,
     });
-    // Operation-management routes are covered at their public /platform
-    // paths. Superseded Console paths have no unresolved removal left.
     const resolutions = (result.report?.resolutions ?? []) as Array<{
       operationId: string;
       status: string;
@@ -240,6 +237,8 @@ describe("coverage checker", () => {
       "resumeCampaign",
       "stopCampaign",
       "requeueCampaign",
+      "listProjectCampaignRecipients",
+      "addProjectCampaignRecipients",
     ];
     const mappings = Object.fromEntries(
       ledger.operations
@@ -248,15 +247,52 @@ describe("coverage checker", () => {
     );
 
     expect(mappings).toEqual({
+      addProjectCampaignRecipients: "MessagingClient.campaigns.addRecipients",
       createCampaign: "MessagingClient.campaigns.create",
       getCampaign: "MessagingClient.campaigns.retrieve",
       getCampaignAnalytics: "MessagingClient.campaigns.analytics",
       launchCampaign: "MessagingClient.campaigns.launch",
       listCampaigns: "MessagingClient.campaigns.list",
+      listProjectCampaignRecipients: "MessagingClient.campaigns.listRecipients",
       pauseCampaign: "MessagingClient.campaigns.pause",
       requeueCampaign: "MessagingClient.campaigns.requeue",
       resumeCampaign: "MessagingClient.campaigns.resume",
       stopCampaign: "MessagingClient.campaigns.stop",
+    });
+  });
+
+  it("maps the Platform audience, recipient and opt-out settings contract", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const operationIds = [
+      "createAudience",
+      "addAudienceMembers",
+      "listAudienceMembers",
+      "deleteAudienceMember",
+      "listCampaignRecipients",
+      "addCampaignRecipients",
+      "getOptOutSettings",
+      "updateOptOutSettings",
+    ];
+    const mappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ operationId }) => operationIds.includes(operationId))
+        .map(({ operationId, typescript }) => [operationId, typescript.method]),
+    );
+
+    expect(mappings).toEqual({
+      addAudienceMembers: "Client.audiences.addMembers",
+      addCampaignRecipients: "Client.campaigns.addRecipients",
+      createAudience: "Client.audiences.create",
+      deleteAudienceMember: "Client.audiences.deleteMember",
+      getOptOutSettings: "Client.optOuts.getSettings",
+      listAudienceMembers: "Client.audiences.listMembers",
+      listCampaignRecipients: "Client.campaigns.recipients",
+      updateOptOutSettings: "Client.optOuts.updateSettings",
     });
   });
 

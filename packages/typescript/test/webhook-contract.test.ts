@@ -177,6 +177,20 @@ type P = WebhookPayloadMap;
 const PAYLOADS: {
   readonly [K in Exclude<KnownWebhookEventType, LegacyEventType>]: Shape<P[K]>;
 } = {
+  "session.logged_out": shape<P["session.logged_out"]>()(
+    { reason: "banned", code: 401 },
+    ["reason", "code"],
+  ),
+  "session.restriction_updated": shape<P["session.restriction_updated"]>()(
+    {
+      type: "reachout_timelock",
+      active: true,
+      enforcementType: null,
+      expiresAt: null,
+      observedAt: AT,
+    },
+    ["type", "active", "enforcementType", "expiresAt", "observedAt"],
+  ),
   "customer.created": shape<P["customer.created"]>()(
     customer,
     customerRequired,
@@ -490,6 +504,92 @@ const PAYLOADS: {
     },
     ["to", "type", "error", "timestamp"],
   ),
+  "usage.recorded": shape<P["usage.recorded"]>()(
+    {
+      id: IDS.event,
+      meter: "call.duration",
+      quantity: 42,
+      unit: "second",
+      dimensions: { direction: "outbound", video: false },
+      keySource: "none",
+      sourceKind: "call",
+      sourceId: "call_1",
+      projectId: IDS.project,
+      session: "number-1",
+      occurredAt: AT,
+      recordedAt: AT,
+      revision: 1,
+      pricingState: "unpriced",
+      rateCard: null,
+      pricedCredits: null,
+    },
+    [
+      "id",
+      "meter",
+      "quantity",
+      "unit",
+      "dimensions",
+      "keySource",
+      "sourceKind",
+      "sourceId",
+      "projectId",
+      "session",
+      "occurredAt",
+      "recordedAt",
+      "revision",
+      "pricingState",
+      "rateCard",
+      "pricedCredits",
+    ],
+  ),
+  "voice.asset_ready": shape<P["voice.asset_ready"]>()(
+    {
+      eventId: IDS.event,
+      occurredAt: AT,
+      organizationId: IDS.organization,
+      projectId: IDS.project,
+      assetId: IDS.customer,
+      name: "Greeting",
+      source: "upload",
+      durationMs: 1200,
+      contentSha256: "a".repeat(64),
+      originalFormat: "wav",
+    },
+    [
+      "eventId",
+      "occurredAt",
+      "organizationId",
+      "projectId",
+      "assetId",
+      "name",
+      "source",
+      "durationMs",
+      "contentSha256",
+      "originalFormat",
+    ],
+  ),
+  "voice.asset_failed": shape<P["voice.asset_failed"]>()(
+    {
+      eventId: IDS.event,
+      occurredAt: AT,
+      organizationId: IDS.organization,
+      projectId: IDS.project,
+      assetId: IDS.customer,
+      name: "Greeting",
+      source: "tts",
+      failureReason: "processing_failed",
+    },
+    [
+      "eventId",
+      "occurredAt",
+      "organizationId",
+      "projectId",
+      "assetId",
+      "name",
+      "source",
+      "failureReason",
+    ],
+  ),
   "template.status": shape<P["template.status"]>()(
     {
       templateName: "order_update",
@@ -631,8 +731,13 @@ type LegacyEventType = Exclude<
   | `bansafe.${string}`
   | `campaign.${string}`
   | "call.permission_changed"
+  | "usage.recorded"
+  | "voice.asset_ready"
+  | "voice.asset_failed"
   | "message.failed"
   | "template.status"
+  | "session.logged_out"
+  | "session.restriction_updated"
 >;
 
 function specEvents(): Map<string, string> {

@@ -54,6 +54,8 @@ export interface FunctionDeployment extends Omit<
   readonly egressOrigins: readonly string[];
   readonly createdAt: string;
 }
+/** Deployment metadata returned by list; retrieve a deployment to read its source. */
+export type FunctionDeploymentSummary = Omit<FunctionDeployment, "source">;
 export interface FunctionSecretVersion {
   readonly id: string;
   readonly name: string;
@@ -216,7 +218,7 @@ export class FunctionDeploymentsResource {
     params: ListFunctionsParams = {},
     options: RequestOptions = {},
   ) {
-    return this.api.request<FunctionPage<FunctionDeployment>>(
+    return this.api.request<FunctionPage<FunctionDeploymentSummary>>(
       "GET",
       `/${identifier(functionId)}/deployments`,
       params,

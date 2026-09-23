@@ -81,7 +81,7 @@ it("lists fixtures", async () => {
   expect(fetcher.mock.calls[0]![1]?.method).toBe("GET");
 });
 
-it("matches the public fixture catalog at API 63111fec728ac3ebc9a825ea57ebc4c592abdafc", () => {
+it("matches the public fixture catalog at API f4a340da3b74248232ebea73f3e72b42f667beef", () => {
   expect(TEST_EVENT_FIXTURES).toEqual(
     apiContract.schemas.TriggerTestEventRequest.properties.event.enum,
   );
@@ -261,4 +261,34 @@ it("omits Idempotency-Key when none is given", async () => {
   });
   const init = fetcher.mock.calls[0]![1];
   expect(new Headers(init?.headers).has("idempotency-key")).toBe(false);
+});
+
+it("serializes restriction fixtures and restricted call endings", async () => {
+  for (const input of [
+    {
+      session: "test-a",
+      event: "session.restriction_updated",
+      overrides: { restrictionActive: true },
+    },
+    {
+      session: "test-a",
+      event: "call.ended",
+      overrides: { callEndReason: "call_restricted" },
+    },
+  ] satisfies TriggerTestEventRequest[]) {
+    const { client: messaging, fetcher } = client(
+      json(
+        {
+          event: input.event,
+          session: input.session,
+          delivery: "generated",
+          eventId: null,
+          source: "test",
+        },
+        202,
+      ),
+    );
+    await messaging.testing.triggerEvent("project-a", input);
+    expect(JSON.parse(String(fetcher.mock.calls[0]![1]?.body))).toEqual(input);
+  }
 });

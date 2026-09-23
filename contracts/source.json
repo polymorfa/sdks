@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "c9be7bd0471ebbbd07502a76d63443a5556b3382",
+  "commit": "677b39a4a619a4493ce0bf3fde3cbe0c5e4c64d6",
   "branch": "t3code/calls-consent",
   "published": false,
-  "note": "Pending API PR #226 head, not merged to dev. Both snapshots are byte-identical to this branch commit; the schema-only follow-up 0e46b463 changes no OpenAPI bytes. Re-pin both to the final monorepo dev merge commit before this SDK PR merges or publishes. Typed BanSafe changes are merged from SDK dev.",
+  "note": "Pending API PR #226 local integration checkpoint. Snapshots include campaign, usage, voice, and consent source; final dev re-pin required after the dependency merges.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "56bf0f3d3f4dc2e09ef733ab988d50f94239c0595cf748a5017bb844257cc3a4"
+      "sha256": "c15d2602e007ff58ad5fc8f259aae6e50c5a6c1abb966671a5911663ade0aa9b"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "34f142d34fe9db4efaa5762ebd8f4947b13b47df6b2fc1ff577a7dcc7092cd8d"
+      "sha256": "b5db74e38515658cbc05388c82c06abbf9bad526cc9790d6dd4d6dceea7d12ee"
     }
   }
 }

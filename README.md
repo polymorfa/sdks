@@ -6,8 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`c9be7bd0471ebbbd07502a76d63443a5556b3382` on pending monorepo PR #226.
-This dependency has not merged; final dev re-pinning is required before this SDK change publishes. Graph-compatible APIs are outside
+`677b39a4a619a4493ce0bf3fde3cbe0c5e4c64d6` on pending monorepo PR #226. This dependency has not merged; final dev re-pinning is required before this SDK change publishes. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -134,8 +133,9 @@ The handwritten Messaging resources in this milestone are:
 - `voip`: place, accept, reject, leave, and end Polymorfa Calls, add
   participants, read a person's call permission on a Cloud API Number, check a
   destination before dialing, and read or update a session's call settings
-- `campaigns`: list, create, retrieve, inspect analytics, launch, pause, resume,
-  stop, and requeue project campaigns through the Messaging control plane
+- `campaigns`: list, create (with inline recipients), retrieve, inspect
+  analytics, launch, pause, resume, stop, requeue, and page or append campaign
+  recipients through the Messaging control plane
 - `messages`: send every contract-defined message kind through one typed send
   union, mark seen, set typing state, react, and star
 - `media`: download binary media, retrieve metadata, and request durable object
@@ -265,6 +265,8 @@ The organization view also exposes these management resources:
 - `sipTrunks`: list, create, retrieve, update, delete, and rotate the
   credentials of a project's SIP trunks, and read the SIP address your PBX
   points at with `endpoint()` (also on project clients)
+- `callRetention`: retrieve and update how long Polymorfa keeps the team's
+  call data (also readable on project clients; changes need a team API key)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
@@ -277,13 +279,19 @@ The organization view also exposes these management resources:
   batch; review and confirm a tier change; create a testing session; and
   retrieve or update the session Safe Mode override
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
-  analytics, events, and recipients
+  analytics, events, and paged or appended recipients. The single-campaign
+  operations require the owning `projectId`. This resource is available only
+  on organization clients. `create` requires `CreatePlatformCampaignRequest`
+  with `name` and `projectId`; its named JSON fields pass through unchanged.
+  `update` accepts `recipientListId` to point an unlaunched draft at another
+  audience, or null to detach it
 - `customers`: enable Customers for a project; create, list, retrieve, update,
   archive, and restore Customers; inspect Numbers and events; create, list,
   and revoke pairing links; and transfer Numbers between Customers
-- `audiences`: list, create, retrieve, delete, and create an upload URL
-- `optOuts`: list, create one, create a batch, and delete by phone number
-  (messaging opt-outs)
+- `audiences`: list, create from inline members or a spreadsheet import,
+  retrieve, delete, create an upload URL, and add, page, or remove members
+- `optOuts`: list, create one, create a batch, delete by phone number, and read
+  or replace the organization's STOP/START keyword settings
 - `callPolicy`: retrieve and replace the team's blocked country codes for calls
 - `callOptOuts`: list, add one, import up to 5,000, and remove entries on the
   team's do-not-call list
@@ -294,9 +302,32 @@ idempotency keys. The SDK returns the pairing URL only on the first successful
 creation attempt. Customer list responses retain their cursor metadata under
 `response.data.page`.
 
-The pinned campaign, audience, opt-out, and media contracts expose their
-operation payloads as open objects. These methods therefore use the exported
-`PlatformPayload` type instead of claiming fields the contract does not define.
+Audience creation and membership, campaign creation and recipients, and opt-out
+settings are fully typed. The remaining campaign, audience, opt-out, and media operations
+expose their payloads as open objects in the pinned contract, so those methods
+use the exported `PlatformPayload` type instead of claiming fields the contract
+does not define.
+
+`Client.campaigns.recipients` returns a cursor page. `status` finds, for
+example, the recipients a campaign skipped because they opted out:
+
+```ts
+let cursor: string | undefined;
+do {
+  const page = await client.campaigns.recipients(campaignId, {
+    projectId,
+    status: "skipped",
+    ...(cursor === undefined ? {} : { cursor }),
+  });
+  for (const recipient of page.data.data) {
+    console.log(recipient.phone, recipient.lastError);
+  }
+  cursor = page.data.page.nextCursor ?? undefined;
+} while (cursor !== undefined);
+```
+
+Appending recipients or audience members accepts partial success: the result
+reports `added`, `duplicateCount`, `invalidCount` and up to 20 `invalidRows`.
 
 Platform template and Flow endpoints require a live dashboard bearer and reject
 organization server keys. They are intentionally absent from `Client`;
@@ -513,6 +544,12 @@ timeouts, HTTP 408, 409, 429, and server failures. POST, PUT, PATCH, and DELETE
 requests retry only when the caller supplies an idempotency key. The transport
 honors `Retry-After`, then uses bounded exponential backoff with jitter.
 
+Campaign recipient and audience member appends (`campaigns.addRecipients` on
+both clients and `audiences.addMembers`) are sent once. The API does not replay
+them, so a retry after a lost response would count the first attempt's rows as
+duplicates. They retry only when that request sets both `maxNetworkRetries`
+and `idempotencyKey`; the key does not make the API replay the append.
+
 ## API versions and raw requests
 
 Set `apiVersion` on a client or a single request. The SDK sends it as the
@@ -601,7 +638,7 @@ Saved settings hold the project's `successCallbackUrl` and `failureCallbackUrl`
 HTTPS destinations and `allowPhoneChange`, which controls whether recipients can
 replace a prefilled number (default `false`). The API copies callback
 destinations into each link when it is issued. Settings have no redirect-URI
-allowlist. `hideWatermark: true` requires Premium team access.
+allowlist. `hideWatermark: true` requires an active Branded QuickLink add-on.
 
 ## Browser controllers and UI
 
@@ -776,3 +813,16 @@ release instruction.
 ## License
 
 MIT
+
+## Contract update notes
+
+The typed webhook catalog includes `session.restriction_updated` with
+`type`, `active`, `enforcementType`, `expiresAt`, and `observedAt`.
+`session.logged_out` requires a numeric `code` and a `reason` of `banned`,
+`device_removed`, or `unknown`. Test event requests support the restriction
+fixture with `restrictionActive` and the call-end reason `call_restricted`.
+
+`Client.callRetention` covers the team call-retention settings. Three public
+call analytics and export operations remain recorded as missing in the contract
+ledger. The contract snapshot is pinned to unpublished API #226 checkpoint
+`677b39a4a619a4493ce0bf3fde3cbe0c5e4c64d6`.
