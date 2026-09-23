@@ -1927,6 +1927,7 @@ These five public operations remain recorded as
 missing in the contract ledger. The contract snapshot is provisional; the
 final merged API revision must be pinned before this SDK update is merged or
 published. See the repository contract notes for the exact source revision.
+
 ## Functions
 
 Use a project client with `functions:read`, `functions:manage` or
