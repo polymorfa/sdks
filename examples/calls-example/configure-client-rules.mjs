@@ -1,20 +1,19 @@
 import { MessagingClient } from "@polymorfa/sdk";
-import {
-  CallsExampleSetupError,
-  mintCallsExampleToken,
-} from "./mint-client-token-core.mjs";
+import { CallsExampleSetupError } from "./mint-client-token-core.mjs";
+import { configureCallsExampleRules } from "./configure-client-rules-core.mjs";
 
 const key = process.env.POLYMORFA_SERVER_KEY;
 const session = process.env.POLYMORFA_SESSION;
-const ephemeralId = process.env.POLYMORFA_EPHEMERAL_ID;
+const testCallee = process.env.POLYMORFA_TEST_CALLEE;
 const credentialType = key?.startsWith("pmfa_pt_")
   ? "projectToken"
   : /^pmfa_[A-Za-z0-9_-]{72}$/.test(key ?? "")
     ? "apiKey"
     : null;
-if (!key || !session || !ephemeralId) {
+
+if (!key || !session || !testCallee) {
   process.stderr.write(
-    "Set POLYMORFA_SERVER_KEY, POLYMORFA_SESSION and POLYMORFA_EPHEMERAL_ID.\n",
+    "Set POLYMORFA_SERVER_KEY, POLYMORFA_SESSION and POLYMORFA_TEST_CALLEE.\n",
   );
   process.exitCode = 1;
 } else if (!credentialType) {
@@ -28,15 +27,13 @@ if (!key || !session || !ephemeralId) {
       credential: { type: credentialType, value: key },
       baseUrl: "https://api.polymorfastaging.com",
     });
-    const token = await mintCallsExampleToken(messaging, session, ephemeralId);
-    process.stdout.write(`${token}\n`);
+    await configureCallsExampleRules(messaging, session, testCallee);
+    process.stdout.write(
+      "Configured bounded Calls client rules for this Number.\n",
+    );
   } catch (cause) {
-    const detail =
-      cause instanceof CallsExampleSetupError
-        ? cause.message
-        : "Token mint failed.";
     process.stderr.write(
-      `${detail}\nCheck the staging API, key scopes, session and client rules.\n`,
+      `${cause instanceof CallsExampleSetupError ? cause.message : "Could not configure Calls client rules. Check the Number, project, key scopes and staging API."}\n`,
     );
     process.exitCode = 1;
   }
