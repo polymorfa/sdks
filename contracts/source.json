@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "a6ed6f26020b5b82f915f75d05715735d9a827b4",
+  "commit": "16fb20564a4b53e4dceeb791af0247ef397a1f79",
   "branch": "t3code/hybrid-link-support",
   "published": false,
   "note": "Exact unmerged API Hybrid Link branch commit, including merged dev Calls consent and HMS history; snapshots are byte-identical to the authoritative source files. SDK publication is separate.",
