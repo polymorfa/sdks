@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "cdc7ec09a32309ee8233d9f8a3007eea18203c6e",
+  "commit": "63111fec728ac3ebc9a825ea57ebc4c592abdafc",
   "branch": "dev",
   "published": true,
-  "note": "Merged commit on monorepo dev (merge of PR #229, public SIP address).",
+  "note": "Merged monorepo dev, including BanSafe for calls, SIP address, call analytics and call retention. Coverage records the remaining SDK gaps separately.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "64290a300b966b0dbbfd431cdf7f34d9e6d6896971305415f632b3796030fcc6"
+      "sha256": "907aa54b79a59da2a598f0358029adc106b610c51898a2592f70e74a077d9022"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "cd8d19917cffda4bd208c1e090cf43f5abab2721a4906b25cbfa2433e56642b1"
+      "sha256": "ab07ad1b821b51a685d37836d29e793bb6b337caa944ef27544d5a9126b92378"
     }
   }
 }
