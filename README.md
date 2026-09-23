@@ -511,7 +511,7 @@ Saved settings hold the project's `successCallbackUrl` and `failureCallbackUrl`
 HTTPS destinations and `allowPhoneChange`, which controls whether recipients can
 replace a prefilled number (default `false`). The API copies callback
 destinations into each link when it is issued. Settings have no redirect-URI
-allowlist. `hideWatermark: true` requires Premium team access.
+allowlist. `hideWatermark: true` requires the Branded QuickLink add-on.
 
 ## Browser controllers and UI
 
