@@ -79,7 +79,7 @@ export class MessagingClient {
     this.business = new BusinessResource(transport);
     this.calls = new CallsResource(transport);
     this.campaigns = new MessagingCampaignsResource(transport);
-    this.chats = new ChatsResource(transport);
+    this.chats = new ChatsResource(transport, credential.type);
     this.channels = new ChannelsResource(transport);
     this.clientTokens = new ClientTokensResource(transport, credential.type);
     this.contacts = new ContactsResource(transport);

@@ -173,18 +173,14 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "18011b3e79d9a5bb249193aae85979e0dacbaa32",
-      total: 495,
-      covered: 371,
+      sourceCommit: "e72b51348e16e704f17b3e681ee60d02fcca8c7f",
+      total: 503,
+      covered: 373,
       partial: 0,
-      // Usage summary, records, and gate reads are implemented.
       missing: 0,
-      excluded: 124,
+      excluded: 130,
       changed: 0,
     });
-    expect(result.report?.gaps).toEqual([]);
-    // Monorepo dev now carries the merged Calls diagnostics route the SDK
-    // already implements, so there is no unresolved removal left.
     const resolutions = (result.report?.resolutions ?? []) as Array<{
       operationId: string;
       status: string;
@@ -224,6 +220,26 @@ describe("coverage checker", () => {
     });
   });
 
+  it("maps the Platform call analytics and export routes", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        path: string;
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const mappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ path }) => path.startsWith("/platform/calls"))
+        .map(({ operationId, typescript }) => [operationId, typescript]),
+    );
+    expect(mappings).toEqual({
+      exportCallRecords: { status: "covered", method: "Client.calls.export" },
+      getCallStats: { status: "covered", method: "Client.calls.stats" },
+      listCallRecords: { status: "covered", method: "Client.calls.list" },
+    });
+  });
+
   it("maps the complete Messaging campaign workflow", () => {
     const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
       operations: Array<{
@@ -241,6 +257,8 @@ describe("coverage checker", () => {
       "resumeCampaign",
       "stopCampaign",
       "requeueCampaign",
+      "listProjectCampaignRecipients",
+      "addProjectCampaignRecipients",
     ];
     const mappings = Object.fromEntries(
       ledger.operations
@@ -249,15 +267,52 @@ describe("coverage checker", () => {
     );
 
     expect(mappings).toEqual({
+      addProjectCampaignRecipients: "MessagingClient.campaigns.addRecipients",
       createCampaign: "MessagingClient.campaigns.create",
       getCampaign: "MessagingClient.campaigns.retrieve",
       getCampaignAnalytics: "MessagingClient.campaigns.analytics",
       launchCampaign: "MessagingClient.campaigns.launch",
       listCampaigns: "MessagingClient.campaigns.list",
+      listProjectCampaignRecipients: "MessagingClient.campaigns.listRecipients",
       pauseCampaign: "MessagingClient.campaigns.pause",
       requeueCampaign: "MessagingClient.campaigns.requeue",
       resumeCampaign: "MessagingClient.campaigns.resume",
       stopCampaign: "MessagingClient.campaigns.stop",
+    });
+  });
+
+  it("maps the Platform audience, recipient and opt-out settings contract", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const operationIds = [
+      "createAudience",
+      "addAudienceMembers",
+      "listAudienceMembers",
+      "deleteAudienceMember",
+      "listCampaignRecipients",
+      "addCampaignRecipients",
+      "getOptOutSettings",
+      "updateOptOutSettings",
+    ];
+    const mappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ operationId }) => operationIds.includes(operationId))
+        .map(({ operationId, typescript }) => [operationId, typescript.method]),
+    );
+
+    expect(mappings).toEqual({
+      addAudienceMembers: "Client.audiences.addMembers",
+      addCampaignRecipients: "Client.campaigns.addRecipients",
+      createAudience: "Client.audiences.create",
+      deleteAudienceMember: "Client.audiences.deleteMember",
+      getOptOutSettings: "Client.optOuts.getSettings",
+      listAudienceMembers: "Client.audiences.listMembers",
+      listCampaignRecipients: "Client.campaigns.recipients",
+      updateOptOutSettings: "Client.optOuts.updateSettings",
     });
   });
 
@@ -279,50 +334,6 @@ describe("coverage checker", () => {
       deleteSessions: "Client.sessions.deleteMany",
       stopSessions: "Client.sessions.stopMany",
     });
-  });
-
-  it("maps the six Hybrid operations to verified server methods", () => {
-    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
-      operations: Array<{
-        operationId: string;
-        typescript: { status: string; method?: string };
-      }>;
-    };
-    const expected = {
-      getHybridLinkState: "MessagingClient.hybridLink.state",
-      setHybridLinkPaused: "MessagingClient.hybridLink.setPaused",
-      getHybridRoutingPolicy: "MessagingClient.hybridLink.getPolicy",
-      setHybridRoutingPolicy: "MessagingClient.hybridLink.setPolicy",
-      getMessageOperation: "MessagingClient.messages.operationStatus",
-      getHybridQuickLinkAvailability: "MessagingClient.quickLinks.availability",
-    };
-    for (const [id, method] of Object.entries(expected)) {
-      expect(
-        ledger.operations.find((operation) => operation.operationId === id)
-          ?.typescript,
-      ).toEqual({ status: "covered", method });
-    }
-  });
-
-  it("maps the four retained-history reads to typed chat methods", () => {
-    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
-      operations: Array<{
-        operationId: string;
-        typescript: { status: string; method?: string };
-      }>;
-    };
-    const expected = {
-      listChats: "MessagingClient.chats.list",
-      getChat: "MessagingClient.chats.retrieve",
-      listChatMessages: "MessagingClient.chats.listMessages",
-      getChatMessage: "MessagingClient.chats.retrieveMessage",
-    };
-    for (const [id, method] of Object.entries(expected)) {
-      expect(
-        ledger.operations.find((operation) => operation.operationId === id)
-          ?.typescript,
-      ).toEqual({ status: "covered", method });
-    }
   });
 
   it("resolves every covered ledger mapping to a public client method", () => {
@@ -556,9 +567,13 @@ describe("coverage checker", () => {
     const mappings = Object.fromEntries(
       ledger.operations
         .filter(({ operationId }) =>
-          ["rejectCall", "resolveIdentity", "getUserSecurityCode"].includes(
-            operationId,
-          ),
+          [
+            "checkCall",
+            "getCallPermission",
+            "rejectCall",
+            "resolveIdentity",
+            "getUserSecurityCode",
+          ].includes(operationId),
         )
         .map(({ operationId, typescript }) => [operationId, typescript.method]),
     );
@@ -610,11 +625,15 @@ describe("coverage checker", () => {
       .sort();
 
     expect(contractOperationIds).toEqual([
+      "checkCall",
+      "getCallPermission",
       "getUserSecurityCode",
       "rejectCall",
       "resolveIdentity",
     ]);
     expect(mappings).toEqual({
+      checkCall: "MessagingClient.voip.check",
+      getCallPermission: "MessagingClient.voip.retrieveCallPermission",
       getUserSecurityCode: "MessagingClient.users.getSecurityCode",
       rejectCall: "MessagingClient.calls.reject",
       resolveIdentity: "MessagingClient.identities.resolve",

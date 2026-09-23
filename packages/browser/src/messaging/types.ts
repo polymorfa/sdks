@@ -36,7 +36,8 @@ export type BrowserMessageKind =
   | "list"
   | "buttons"
   | "address_message"
-  | "flow";
+  | "flow"
+  | "call_permission_request";
 
 export interface BrowserQuotedMessage {
   readonly id: string;
@@ -97,6 +98,13 @@ export type BrowserMessageContent = ExclusiveUnion<
     }
   | { readonly contact: { readonly vcard: string } }
   | { readonly requestPhoneNumber: Readonly<Record<string, never>> }
+  | {
+      /** Cloud API numbers only. Requires the existing send_message grant. */
+      readonly callPermissionRequest: {
+        /** Why you want to call. The API accepts 1 to 1,024 characters. */
+        readonly body: string;
+      };
+    }
   | { readonly template: Readonly<Record<string, unknown>> }
   | { readonly product: Readonly<Record<string, unknown>> }
   | { readonly productList: Readonly<Record<string, unknown>> }

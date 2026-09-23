@@ -1,4 +1,6 @@
 import type {
+  CallPermissionSource,
+  CallPermissionStatus,
   MessagingConnection,
   WhatsAppMessageIds,
   PhonePlatform,
@@ -35,6 +37,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "call.participant_joined",
   "call.participant_left",
   "call.participant_state",
+  "call.permission_changed",
   "call.received",
   "call.rejected",
   "call.telemetry",
@@ -852,6 +855,21 @@ export interface BanSafeClaimPayload {
   readonly paidAt: string | null;
 }
 
+/**
+ * A person's call permission on a Cloud API number changed. No event is sent
+ * when a temporary permission reaches `expiresAt`; use `expiresAt` to schedule
+ * your own follow-up.
+ */
+export interface CallPermissionChangedPayload {
+  readonly conversation: IdentityReference;
+  readonly status: CallPermissionStatus;
+  readonly previousStatus: CallPermissionStatus;
+  /** When a temporary permission ends; null otherwise. */
+  readonly expiresAt: string | null;
+  readonly source: CallPermissionSource;
+  readonly changedAt: string;
+}
+
 export type MessageFailedReason =
   | "invalid_recipient"
   | "session_not_connected"
@@ -1024,6 +1042,7 @@ export interface WebhookPayloadMap {
   readonly "call.participant_joined": CallParticipantPayload;
   readonly "call.participant_left": CallParticipantLeftPayload;
   readonly "call.participant_state": CallParticipantPayload;
+  readonly "call.permission_changed": CallPermissionChangedPayload;
   readonly "call.received": CallReceivedPayload;
   readonly "call.rejected": CallRejectedPayload;
   readonly "call.telemetry": CallTelemetryPayload;

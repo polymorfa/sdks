@@ -2,14 +2,15 @@
 
 The handwritten Polymorfa server SDK for TypeScript and Node.js.
 
-This package has not been published to npm. Build it from a clone of the
-development branch and install the packed tarball:
+Install the development prerelease from npm:
 
 ```bash
-npm ci
-npm run build:workspaces
-npm pack -w @polymorfa/sdk
+npm install @polymorfa/sdk@dev
 ```
+
+Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. See the
+[repository installation guide](../../README.md#typescript-development-install)
+to build and install a packed tarball from source.
 
 The Calls client is part of this package as `@polymorfa/sdk/calls`.
 `@polymorfa/sdk/calls/internal` exists for the Polymorfa browser package;
@@ -47,7 +48,7 @@ const platform = new Client({
     type: "organizationApiKey",
     value: process.env.POLYMORFA_PLATFORM_API_KEY!,
   },
-  apiVersion: "2026-09-22",
+  apiVersion: "2026-03-20",
 });
 
 const project = platform.project("project_123");
@@ -84,9 +85,9 @@ v1 grammar and never decodes or decrypts the credential.
 The SDK rejects `pmfa_ct_` browser tokens and CLI-only `pmfa_ls_` listener
 credentials before a management request. It also rejects retired call-agent
 `pmfa_at_` and socket `pmfa_wst_` tickets and simulated-device `pmfa_sd_`
-capabilities as server API keys. It does not expose the CLI forwarding
-listener or its event emitter; live forwarding belongs to `polymorfa listen`.
-Project event streaming is available through `events.stream()` below.
+capabilities as server API keys. `Client.events.stream()` exposes an
+`AsyncIterable` for the separate [server event stream](#stream-events-in-real-time),
+subject to scope and beta access. Live forwarding belongs to `polymorfa listen`.
 
 ## System and Bridge clients
 
@@ -409,6 +410,145 @@ live and for 10 minutes after it ends. Treat reports as best-effort: do not
 retry a `4xx`, and drop reports refused with `429` or `503`. Client tokens
 need the `voip_signal` action and cannot send `participant`. The browser and
 Calls clients send these reports for you.
+
+## Call consent
+
+Every call is checked against the team's call policy before the destination
+rings. Reading and changing the policy needs an organization key; project
+tokens and client tokens receive `403`.
+
+```ts
+const policy = await platform.callPolicy.retrieve();
+console.log(policy.data.blockedCountryCodes, policy.data.optOutCount);
+
+await platform.callPolicy.update({
+  blockedCountryCodes: ["44", "1876"],
+  expectedRevision: policy.data.revision,
+});
+```
+
+Blocked codes are country calling codes or longer dialing prefixes, written as
+1 to 4 digits without `+`: `44` blocks the United Kingdom, `1876` blocks
+Jamaica without blocking the rest of `+1`. `update` replaces the whole list;
+send `[]` to allow every country. The SDK checks the digits and the 300-code
+limit before sending. Pass the `revision` you read as `expectedRevision` to
+fail with `PolymorfaConflictError` (`state_conflict`) if someone changed the
+policy meanwhile. While any code is blocked, a call to a person whose phone
+number is unknown is refused too, because the destination country cannot be
+checked.
+
+`platform.callOptOuts` manages the team's do-not-call list. A call to a listed
+person fails with `PolymorfaAuthorizationError` (`call_recipient_opted_out`).
+
+```ts
+const added = await platform.callOptOuts.create({
+  phoneNumber: "+14155550123",
+  note: "Asked not to be called on 2026-09-18",
+});
+added.metadata.status; // 201 when added, 200 when already listed
+
+const imported = await platform.callOptOuts.import({
+  entries: [
+    { phoneNumber: "+14155550123" },
+    { bsuid: "US.13491208655302741918" },
+  ],
+});
+console.log(
+  imported.data.added,
+  imported.data.existing,
+  imported.data.rejected,
+);
+
+for await (const entry of await platform.callOptOuts.list({ limit: 100 })) {
+  console.log(entry.id, entry.phoneNumber ?? entry.bsuid, entry.source);
+}
+
+await platform.callOptOuts.delete(added.data.id);
+```
+
+- `create` takes exactly one of `phoneNumber` (E.164) or `bsuid`; the SDK
+  rejects both or neither before sending. Adding someone already listed returns
+  the stored entry with `200` and leaves its note unchanged.
+- `import` takes 1 to 5,000 entries. Valid entries are added together; invalid
+  ones come back in `rejected` with their `index` and a `reason`
+  (`invalid_phone_number`, `invalid_bsuid`, `missing_identifier`,
+  `multiple_identifiers`, or `invalid_note`).
+- `list` returns a `CursorPage<CallOptOut>` ordered newest first. It follows
+  `page.nextCursor` for you; filter by `phoneNumber` or `bsuid`, not both.
+- A list that would pass 100,000 entries fails with `PolymorfaConflictError`
+  (`call_opt_out_limit`).
+
+The list is matched on what you supply: an entry for a phone number does not
+block a call to the same person addressed only by user ID.
+
+### Call permission on Cloud API Numbers
+
+WhatsApp requires a person's permission before a Cloud API Number calls them.
+Ask for it with `callPermissionRequest` content:
+
+```ts
+await messaging.messages.send("support", {
+  conversation: { phoneNumber: "+14155550123" },
+  content: {
+    callPermissionRequest: {
+      body: "We would like to call you about order 1522.",
+    },
+  },
+});
+```
+
+`body` is 1 to 1,024 characters. Outside the customer service window, send an
+approved template with a call permission request button using `template`
+content instead. WhatsApp allows one request per person every 24 hours and two
+every 7 days; a connected call resets both. A send past that limit fails with
+`PolymorfaRateLimitError` (`call_permission_request_limited`), whose
+`rateLimitReason` is `call_permission_request` and whose
+`metadata.headers["retry-after"]` carries WhatsApp's reset when it reports one.
+A person who already granted permanent permission produces
+`PolymorfaConflictError` (`call_permission_granted`); place the call instead.
+
+```ts
+const permission = await messaging.voip.retrieveCallPermission(
+  "support",
+  "+14155550123",
+);
+const state = permission.data.data;
+state.status; // "none" | "temporary" | "permanent" | "revoked"
+state.expiresAt; // when a temporary permission ends
+state.actions?.requestPermission?.limits;
+
+const check = await messaging.voip.check({
+  session: "support",
+  to: "+14155550123",
+});
+check.data.data.allowed;
+check.data.data.refusal; // null, or the first reason a call would fail
+```
+
+- `retrieveCallPermission(session, to)` takes a public user ID or an E.164
+  phone number and encodes it for you. It asks WhatsApp on every request and
+  returns its limits in `actions`. When WhatsApp cannot be reached, it returns
+  the stored state with `fresh: false` and `actions: null`. It needs
+  `sessions:read`.
+- `check({ session, to })` runs the checks a placement runs without placing a
+  call or reserving anything. `refusal` is `calls_disabled`,
+  `call_recipient_opted_out`, `call_destination_blocked`,
+  `call_permission_required`, or `call_limit_reached`. `permission` is `null`
+  on linked-device Numbers. A placement made afterwards runs the same checks
+  again. If required check state is unavailable, it raises
+  `PolymorfaServerError` (`503 service_unavailable`) without an allow or
+  refusal result.
+- Both require a server credential. `retrieveCallPermission` fails with
+  `409 unsupported_for_connection` on a linked-device Number; `check` supports
+  linked-device Numbers and returns `permission: null` for them.
+
+Permission changes arrive as the `call.permission_changed` webhook event with a
+`CallPermissionChangedPayload`: the `conversation`, the new `status`, the
+`previousStatus`, `expiresAt`, a `source` (`user_action`, `automatic`, `sync`,
+or `call_refused`) and `changedAt`. No event is published when a temporary
+permission reaches `expiresAt`; schedule your own follow-up from `expiresAt`.
+The person's reply also arrives as `message.received` with `interactive.type`
+`call_permission_reply`.
 
 ## SIP trunks
 
@@ -804,7 +944,7 @@ The source has one send route rather than separate routes for each message
 kind. `SendMessageRequest` is therefore a union of the exact typed payloads for
 text, image/file/voice/video media, polls, locations, contacts, phone-number
 requests, products, product lists, orders, lists, buttons, address messages,
-and flows. Template sends use `SendTemplateMessageRequest`. Select exactly one
+flows, and call permission requests. Template sends use `SendTemplateMessageRequest`. Select exactly one
 message kind inside `content`; `conversation` selects its destination.
 
 ```ts
@@ -830,8 +970,44 @@ await messaging.messages.send(
 ```
 
 Reply context uses `quotedMessage`; forwarding is represented by
-`isForwarded`. Neither is a separate endpoint. Retained message history is
-read through `MessagingClient.chats`; there is no standalone forward or reply route.
+`isForwarded`. Neither is a separate endpoint. The pinned contract exposes no
+message list, search, or standalone forward/reply route in `messages`. Hosted
+message history is read through `MessagingClient.chats` as described below.
+
+### Hosted message history beta
+
+`MessagingClient.chats.list(session, params)` lists stored conversations;
+`retrieve(session, conversation)` reads one. `listMessages(session,
+conversation, params)` and `retrieveMessage(session, conversation, messageId)`
+read stored messages. A conversation can be a public ID or E.164 phone number;
+the SDK encodes it in the path. Keep message IDs and cursors as opaque strings.
+
+```ts
+const page = await messaging.chats.listMessages("support", "+14155550123", {
+  limit: 50,
+  order: "desc",
+  types: "text,image",
+});
+for (const message of page.data.data) console.log(message.id, message.text);
+if (page.data.nextCursor) {
+  const older = await messaging.chats.listMessages("support", "+14155550123", {
+    cursor: page.data.nextCursor,
+    order: "desc",
+    types: "text,image",
+  });
+  console.log(older.data.previousCursor);
+}
+console.log(page.metadata.headers["polymorfa-data-region"]);
+```
+
+These four reads require an organization key or project token, a visible
+Number with hosted message storage enabled, team enrollment in
+`messaging.history`, and `chats:read` or `messages:read` as appropriate. The
+feature is an unreleased enrolled beta; an SDK method does not grant access.
+Client tokens are refused before transport. A disabled HMS Number yields
+`404 hms_not_enabled`; absent beta access yields `403 permission_denied`, and
+an unavailable regional read yields `503 service_unavailable`. Media entries
+carry an API download path, not a signed URL; downloading requires `media:read`.
 
 Client tokens can call all five Messages operations only when the corresponding
 live rule is enabled: `send_message` for send and star, `send_reaction` for
@@ -1508,86 +1684,91 @@ message identifiers are URL-encoded by the SDK.
 
 ## Messaging campaigns
 
-`MessagingClient.campaigns` exposes the complete nine-operation project-slug
-campaign workflow: `list`, `create`, `retrieve`, `analytics`, `launch`,
-`pause`, `resume`, `stop`, and `requeue`. Reads require `campaigns:read`;
-creation and lifecycle changes require `campaigns:manage`.
+`MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `analytics`,
+`listRecipients`, `addRecipients`, `launch`, `pause`, `resume`, `stop`, and
+`requeue`. Reads require `campaigns:read`; writes require `campaigns:manage`.
+Pass the project's slug as the first argument. Campaigns accept organization
+API keys or project tokens; browser client tokens cannot use these methods.
 
 ```ts
 const created = await messaging.campaigns.create(
   "support",
   {
     name: "August launch",
-    templateId: "order-ready",
-    recipientListId: "active-customers",
-    scheduledAt: Date.parse("2026-08-25T09:00:00Z"),
+    templateId,
+    recipients: [{ phone: "+14155550100", variables: { firstName: "Ada" } }],
   },
   { idempotencyKey: "campaign-august-create" },
 );
 
+const appended = await messaging.campaigns.addRecipients(
+  "support",
+  created.data.data.id,
+  {
+    recipients: [{ phone: "+442071838750", variables: { firstName: "Alan" } }],
+  },
+);
+console.log(appended.data.data.added, appended.data.data.invalidRows);
+
 const launched = await messaging.campaigns.launch(
   "support",
   created.data.data.id,
-  {},
+  { scheduledAt: Date.parse("2026-08-25T09:00:00Z") },
   { idempotencyKey: "campaign-august-launch" },
 );
-
 console.log(launched.data.data.operationId, launched.metadata.requestId);
 ```
 
-Launch, pause, resume, and stop append durable lifecycle commands and return the
-campaign's current persisted state plus an `operationId`. They do not wait for
-the campaign state to change. Read the campaign resource to inspect its status,
-or follow the returned operation with `Client.operations.wait(operationId)` and
-stop it with `Client.operations.cancel(operationId)`. The API exposes no
-campaign watcher or stream route of its own. Launch accepts an optional
-epoch-millisecond schedule. Pause requires a running campaign, resume requires
-a paused campaign, and stop accepts draft, running, or paused campaigns.
+Create accepts inline recipients, an audience ID in `recipientListId`, or both.
+Each append accepts up to 1,000 recipients before launch and reports duplicates
+and invalid rows. Appends have no declared replay contract: the SDK sends them
+once by default, generates no key, and requires both `maxNetworkRetries` and
+`idempotencyKey` to opt back into retries. A retry can report rows from an unseen
+successful first attempt as duplicates. List recipients before appending again
+after a lost response.
 
-`requeue` is a direct transaction, not a durable operation. It moves failed
-recipients back to pending and can also include recipients skipped with an
-error. Its `{ requeued }` result is the number actually moved. Lists are
-complete newest-first arrays; the source exposes no cursor, page token, search,
-event history, replay, or delivery-listener endpoint.
+`listRecipients(projectSlug, campaignId, { status, cursor, limit })` returns
+`{ data, page }` inside the response's `data`. Read recipients from
+`response.data.data` and pass `response.data.page.nextCursor` into the next
+request while `page.hasMore` is true. Each recipient includes its send,
+delivery, read, failure and reply timestamps. Campaign `list` returns a complete
+array; recipient pagination does not change that method.
 
-This Messaging family is distinct from `Client.campaigns`, which maps
-the Management API's organization-key campaign model. The Messaging routes
-accept organization API keys and project tokens bound to the exact path
-project. Browser client tokens are not allowlisted for any campaign action and
-fail before the handler.
-Campaigns are project control-plane objects and have no Linked Device versus
-Cloud session-mode discriminator.
+Launch, pause and resume return the campaign state with an `operationId`.
+They accept the transition without waiting for sending to finish. Stop always
+cancels; its `operationId` is null when the campaign had no active delivery run
+and was cancelled immediately. Check for null before calling
+`Client.operations.wait(operationId)`. A launched campaign waiting for its
+scheduled start can be stopped, but its start time cannot be changed.
+Launch, pause, resume, and stop generate one idempotency key per call unless you
+pass one. Automatic retries reuse that key; a completed replay returns the
+API's `idempotency_completed` conflict, so inspect the campaign state after a
+lost response.
 
-For organization-key calls, the live list and create handlers resolve the path
-project slug. The other seven handlers currently authorize the organization
-and campaign ID but do not verify that the campaign belongs to the supplied
-slug. Callers must still supply the intended project slug; the SDK encodes it
-and does not weaken this source behavior. The pinned OpenAPI campaign schema
-omits several JSON repository fields and leaves analytics untyped. The SDK
-exports the exact live analytics counters and preserves the extra campaign
-fields as optional `unknown` values rather than asserting undocumented shapes.
+`requeue` moves eligible failed recipients, and optionally recipients skipped
+with an error, back into the queue. It returns the number moved. The API refuses
+unentitled campaigns with `402`, suspension with `403`, and invalid lifecycle
+transitions with `409`. Throughput above the eligible number pool's ceiling is
+`400 campaign_throughput_capped`.
 
-`create` and `launch` send an `Idempotency-Key` on every call, and the API
-records it for 24 hours, so a retry after an unseen success never creates a
-second campaign or launches twice (see [Idempotent sends](#idempotent-sends)).
-The other lifecycle commands are retried only when you pass an idempotency
-key, and the API does not persist that header for them. Repeating one can
-conflict with the resulting state or append another intent; repeating requeue
-normally reports zero after the matching recipients have already moved. The live API reports entitlement failures as `402` and invalid
-lifecycle state conflicts as `400`, rather than the more specific statuses
-suggested by their semantics.
+`Client.campaigns` provides the Platform campaign methods. Its single-campaign
+reads, updates and deletion take a `PlatformCampaignParams` argument: a team
+API key must supply the owning `projectId`. This resource is available only
+on organization clients, not project views or project-token clients. Recipient
+listing and append also require `projectId`. Platform
+`recipients` uses the same cursor-page shape. `Client.audiences` manages audience
+members, and `Client.optOuts` reads and replaces team keyword settings.
 
-The source exposes no Messaging campaign update, deletion, archive, duplicate,
-recipient listing, or campaign event inspection operation. The SDK does not
-substitute similarly named Management API routes or `raw.request` calls for
-those gaps.
+`create` and `launch` generate an `Idempotency-Key` for each call. A supplied
+key is preserved across retries; see [Idempotent sends](#idempotent-sends).
+The Messaging API has no campaign update, deletion, archive, duplicate, or
+campaign event history method. The SDK does not substitute Platform routes for
+those operations.
 
 ## Chats
 
-`MessagingClient.chats` exposes Linked Device chat management and retained
-history. Mutations require `chats:manage`. History reads require hosted message
-storage, Beta team enrollment, and `chats:read` for conversations or
-`messages:read` for messages.
+`MessagingClient.chats` exposes the credential-compatible Linked Device chat
+management surface. Every operation requires `chats:manage`.
 
 ```ts
 await messaging.chats.editMessage(
@@ -1603,39 +1784,12 @@ await messaging.chats.setDisappearingTimer(
   "15551234567@s.whatsapp.net",
   { durationSeconds: 604800 },
 );
-
-const chats = await messaging.chats.list("support", {
-  limit: 50,
-  kind: "direct",
-});
-const conversationId = chats.data.data[0]?.conversation.id;
-if (conversationId) {
-  const messages = await messaging.chats.listMessages(
-    "support",
-    conversationId,
-    { limit: 50, order: "desc", types: "text,image" },
-  );
-  const messageId = messages.data.data[0]?.id;
-  if (messageId) {
-    const message = await messaging.chats.retrieveMessage(
-      "support",
-      conversationId,
-      messageId,
-    );
-    console.log(message.data.data.whatsapp_id);
-  }
-}
 ```
 
 The duration is typed to the four values accepted by the API: disabled, one
 day, one week, or 90 days. The resource also provides `deleteMessage`,
-`archive`, and `unarchive`. `chats.retrieve` reads one stored conversation;
-`list` and `listMessages` return `data`, `hasMore`, `nextCursor`, and
-`previousCursor`. Keep message IDs as strings and reuse an opaque cursor only
-with the same path and filters. History responses expose
-`metadata.headers["polymorfa-data-region"]`. A session without enabled hosted
-storage or Beta enrollment does not return an empty history page. These
-operations are not available for Cloud API sessions.
+`archive`, and `unarchive`. Chat operations are not available for Cloud API
+sessions.
 
 ## Webhooks and events
 
@@ -1688,20 +1842,21 @@ if (isEvent(event, "history.sync")) {
 The catalog also types Customer lifecycle events (`customer.*`), BanSafe events
 (`bansafe.health_threshold`, `bansafe.health_changed`, `bansafe.risk_changed`,
 `bansafe.enforcement`, `bansafe.action`, `bansafe.incident`, and
-`bansafe.claim`), campaign progress events
-(`campaign.*`), `message.failed`, and `template.status`. `message.failed`
+`bansafe.claim`), campaign progress events (`campaign.*`),
+`call.permission_changed`, `message.failed`, and `template.status`. `message.failed`
 reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
 and `retryAfter` in seconds. Unknown event names still parse as
 `UnknownWebhookEvent`.
+
+For `bansafe.health_changed`, `band` is a `BanSafeHealthBandName`:
+`good`, `fair`, `poor`, `failing`, or `unknown`. `previousBand` uses the same
+type, with `null` for the first evaluation.
 
 `contact.sync` delivers a Meta Cloud API contact batch as
 `{ kind: "contacts", value }`. `message.echo` reports a message sent from the
 WhatsApp Business app on a connected Meta Cloud API number as
 `{ source: "whatsapp_business_app", value }`. Events for a session created by a
 QuickLink include its optional `externalId`.
-
-`session.logged_out` includes `reason` (`banned`, `device_removed`, or `unknown`)
-and the integer WhatsApp logout `code`. The code is `0` when WhatsApp gave none.
 
 Development builds also export `CallEndedPayload` and `CallTelemetryPayload`.
 For `call.ended`, check `from` before reading its identity: it is `null` when
@@ -1758,6 +1913,9 @@ console.log(replay.data.operationId);
 
 List methods return `CursorPage<T>`. Mutations return owner-specific typed
 receipts and preserve response metadata, request IDs, and idempotency receipts.
+Use `operations.get()` or `operations.wait()` to inspect asynchronous work,
+and `operations.cancel()` while `capabilities.cancellable` is true. Reads need
+`operations:read`; cancellation needs `operations:cancel`.
 
 Console and staff routes remain absent from the server client and its raw
 guidance. The CLI listener protocol stays private to the CLI.
@@ -1830,8 +1988,17 @@ const campaign = await platform.campaigns.create(
 console.log(campaign.data.data, campaign.metadata.requestId);
 ```
 
-The pinned contract defines these operation payloads as open objects, exposed
-as `PlatformPayload`. Templates and Flows are not methods on `Client`:
+`Client.campaigns.create` requires `CreatePlatformCampaignRequest`, including
+`name` and the owning `projectId`. It accepts `templateId`, `recipientListId`,
+`senderConfig`, `scheduledAt`, inline `recipients` (at most 1,000), and
+`recipientCount` (ignored when inline recipients are supplied). The named
+`composerBlueprint`, `messagesArray`, `audienceRef`, `complianceConfig`,
+`variants`, and `variantStrategy` values remain opaque JSON. Extra top-level
+fields are not part of the create contract. Lifecycle action payloads remain
+open `PlatformPayload` objects. Launch, pause, resume, and stop generate one
+idempotency key per call unless you pass one. Archive, duplicate, and requeue
+do not generate keys because their contracts do not declare replay. Templates
+and Flows are not methods on `Client`:
 their endpoints require a dashboard bearer and reject the organization API key
 used by the server client.
 
@@ -1995,12 +2162,9 @@ console.log(quickLink.data.data.url, status.data.data.status);
 The resource accepts organization API keys or project tokens with
 `quicklink:manage`. It rejects browser client tokens before transport. An
 organization key can select `projectId` when creating a link; a project token
-is bound by the server. `cancel()` invalidates a pending link. For an initial
-real Number, HTTP 202 with `message: "QuickLink cancellation requested"` means
-Number cleanup has been admitted and may still be in progress. Supplementary
-and testing links return HTTP 200; cancelling a supplementary link preserves
-the existing Number. Connected links cannot be cancelled. The source exposes
-no list, recover, or history operation.
+is bound by the server. `cancel()` invalidates a pending link and removes its
+pending session. Connected links cannot be cancelled. The source exposes no
+list, recover, or history operation.
 
 `Client.quickLinkSettings.retrieve` and `update` map the management
 `GET /platform/quicklink` and `PUT /platform/quicklink` operations. Use them on the root
@@ -2030,8 +2194,8 @@ organization-key project view. Console-only logo routes are outside the SDK.
 `successCallbackUrl` and `failureCallbackUrl` are project-only HTTPS
 destinations; the API copies them into each link when it is issued, and link
 creation has no callback override. `allowPhoneChange` lets recipients replace a
-prefilled number and defaults to `false`. `hideWatermark: true` requires Premium
-team access. Saved settings have no redirect-URI allowlist. `externalId` on
+prefilled number and defaults to `false`. `hideWatermark: true` requires an active Branded QuickLink
+add-on. Saved settings have no redirect-URI allowlist. `externalId` on
 creation is an integrator correlation value copied to the resulting session; it
 can repeat across invitations and does not grant access.
 
@@ -2069,8 +2233,8 @@ const stop = await platform.sessions.stopMany(
 );
 
 const removal = await platform.sessions.deleteMany(
-  { sessionIds: ["test-support", "test-sales"] },
-  { idempotencyKey: "delete-test-support-sales" },
+  { sessionIds: ["old-support", "old-sales"] },
+  { idempotencyKey: "delete-old-support-sales" },
 );
 ```
 
@@ -2078,14 +2242,10 @@ The source accepts 1–100 UUIDs or stable slugs. It trims identifiers and the
 live handler deduplicates repeats, while OpenAPI declares the array unique.
 Only matching rows contribute to `{ stopping }` or `{ removed }`; the API does
 not return per-item results or errors for missing identifiers. Batch stop
-transitions testing Numbers to unavailable and submits lifecycle stop operations
-for production Numbers.
-`sessions.delete` and `deleteMany` remove testing Numbers only. If any matched
-Number in a deletion batch is production, the API returns HTTP 409 before
-changing the testing runtime or removing any Number in that batch. For a
-testing-only batch, the API stops and flushes each runtime before removing its
-row. Neither batch route returns a durable operation ID, stream, watcher, or
-completion status.
+requires session-control publishing and queues fire-and-forget stop commands.
+Batch delete removes rows first, then best-effort queues kill commands for
+rows that were not disconnected. Neither route returns a durable operation ID,
+stream, watcher, or completion status.
 
 The transport retries these mutations only when an idempotency key is
 provided. The pinned handlers do not persist that header. A repeated stop can
@@ -2183,6 +2343,10 @@ has `delivery: "simulated"` and the event arrives as ordinary Test number
 activity. Both methods require an organization API key or project token with
 `sandbox:write` (trigger) or `sandbox:read` (list) and Test numbers access.
 
+Use `session.restriction_updated` with `{ restrictionActive: false }` to
+test a restriction ending, or `true` to test one starting. The `call.ended`
+fixture accepts `callEndReason: "call_restricted"` for a restricted call.
+
 Pass `{ idempotencyKey }` as the third argument to `triggerEvent` to retry
 safely. Repeating the request with the same key and body reuses the same event
 ID, so a retry after an uncertain response never creates a second event or
@@ -2206,8 +2370,9 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
 covers the three public call analytics and export operations. `Client.voice`
-covers the Voice audio and credential operations. The contract snapshot
-is pinned to unmerged API Hybrid Link commit `18011b3e79d9a5bb249193aae85979e0dacbaa32`.
+covers the Voice audio and credential operations. `Client.callPolicy` and
+`Client.callOptOuts` cover consent controls. The contract snapshot is pinned
+to merged API `dev` commit `e72b51348e16e704f17b3e681ee60d02fcca8c7f`.
 
 ## Functions
 

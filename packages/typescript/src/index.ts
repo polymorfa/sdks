@@ -69,21 +69,17 @@ export {
   type BridgeRoute,
   type BridgeSignal,
 } from "./bridge.js";
-export {
-  ChatsResource,
-  type DeleteMessageOptions,
-  type GetStoredChatMessageResponse,
-  type GetStoredChatResponse,
-  type ListStoredChatMessagesResponse,
-  type ListStoredChatsResponse,
-  type StoredChat,
-  type StoredChatMessagesParams,
-  type StoredChatsParams,
-  type StoredHistoryPage,
-  type StoredMedia,
-  type StoredMessage,
-  type StoredMessageSummary,
-} from "./messaging/chats.js";
+export { ChatsResource } from "./messaging/chats.js";
+export type { DeleteMessageOptions } from "./messaging/chats.js";
+export type {
+  HistoryChat,
+  HistoryMedia,
+  HistoryMessage,
+  HistoryMessageSummary,
+  HistoryPage,
+  ListHistoryChatsParams,
+  ListHistoryMessagesParams,
+} from "./messaging/history.js";
 export { ChannelsResource } from "./messaging/channels.js";
 export { BusinessResource } from "./messaging/business.js";
 export { CallsResource } from "./messaging/calls.js";
@@ -297,6 +293,14 @@ export type {
   ClientRecipientMode,
   ClientAction,
   CallInboundRoute,
+  CallPermission,
+  CallPermissionAction,
+  CallPermissionLimit,
+  CallPermissionRequestMessageContent,
+  CallPermissionResponse,
+  CallPermissionSource,
+  CallPermissionState,
+  CallPermissionStatus,
   SessionCallSettings,
   SessionCallSettingsResponse,
   UpdateSessionCallSettingsRequest,
@@ -305,6 +309,10 @@ export type {
   VoipAcceptCallResult,
   VoipAddParticipantRequest,
   VoipAddParticipantResponse,
+  VoipCallCheck,
+  VoipCallRefusal,
+  VoipCheckCallRequest,
+  VoipCheckCallResponse,
   VoipLeaveCallRequest,
   VoipCallErrorCode,
   VoipCallErrorReport,
@@ -483,6 +491,7 @@ export type {
   SeenRequest,
   SendAddressMessageRequest,
   SendButtonsMessageRequest,
+  SendCallPermissionRequestMessageRequest,
   SendContactMessageRequest,
   SendFlowMessageRequest,
   SendListMessageRequest,
@@ -587,6 +596,23 @@ export type {
   UsageUnit,
 } from "./platform/usage.js";
 export { BanSafeResource } from "./platform/bansafe.js";
+export {
+  CallOptOutsResource,
+  CallPolicyResource,
+} from "./platform/call-consent.js";
+export type {
+  CallOptOut,
+  CallOptOutDeleted,
+  CallOptOutImportEntry,
+  CallOptOutImportResult,
+  CallOptOutRejectionReason,
+  CallOptOutSource,
+  CallPolicy,
+  CreateCallOptOutInput,
+  ImportCallOptOutsInput,
+  ListCallOptOutsParams,
+  UpdateCallPolicyInput,
+} from "./platform/call-consent.js";
 export { CampaignsResource } from "./platform/campaigns.js";
 export { CustomersResource } from "./platform/customers.js";
 export { MediaResource } from "./platform/media.js";
@@ -938,6 +964,7 @@ export {
   type CallParticipant,
   type CallParticipantLeftPayload,
   type CallParticipantPayload,
+  type CallPermissionChangedPayload,
   type CallReceivedPayload,
   type CallRejectedPayload,
   type CallTelemetryPayload,
@@ -1073,4 +1100,5 @@ export {
   type HybridLinkState,
   type SetHybridLinkPausedRequest,
 } from "./messaging/hybrid-link.js";
+
 export * from "./platform/functions.js";

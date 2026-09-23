@@ -5,11 +5,14 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts on the unmerged API Hybrid Link branch at
-`18011b3e79d9a5bb249193aae85979e0dacbaa32`. Graph-compatible APIs are outside this SDK's initial scope.
-The same source includes Hybrid Link, Beta retained-history reads for teams
-enrolled in hosted message storage, Voice audio, usage gates, Calls analytics,
-Campaigns P0, and Functions.
+the Messaging and Platform contracts at merged API `dev` commit
+`e72b51348e16e704f17b3e681ee60d02fcca8c7f`. Graph-compatible
+APIs are outside this SDK's initial scope.
+
+The same API revision adds an enrolled hosted message history beta.
+`MessagingClient.chats` has typed conversation and message reads for server
+credentials. These methods do not make the beta available before enrollment,
+HMS enablement, deployment, and SDK publication.
 
 ## Package architecture
 
@@ -96,7 +99,7 @@ const messaging = new MessagingClient({
     type: "apiKey",
     value: process.env.POLYMORFA_MESSAGING_API_KEY!,
   },
-  apiVersion: "2026-09-22",
+  apiVersion: "1.0.0",
 });
 
 const sessions = await messaging.sessions.list();
@@ -133,9 +136,11 @@ The handwritten Messaging resources in this milestone are:
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call
 - `voip`: place, accept, reject, leave, and end Polymorfa Calls, add
-  participants, and read or update a session's call settings
-- `campaigns`: list, create, retrieve, inspect analytics, launch, pause, resume,
-  stop, and requeue project campaigns through the Messaging control plane
+  participants, read a person's call permission on a Cloud API Number, check a
+  destination before dialing, and read or update a session's call settings
+- `campaigns`: list, create (with inline recipients), retrieve, inspect
+  analytics, launch, pause, resume, stop, requeue, and page or append campaign
+  recipients through the Messaging control plane
 - `messages`: send every contract-defined message kind through one typed send
   union, mark seen, set typing state, react, and star
 - `media`: download binary media, retrieve metadata, and request durable object
@@ -300,6 +305,9 @@ The organization view also exposes these management resources:
   retrieve, delete, create an upload URL, and add, page, or remove members
 - `optOuts`: list, create one, create a batch, delete by phone number, and read
   or replace the organization's STOP/START keyword settings
+- `callPolicy`: retrieve and replace the team's blocked country codes for calls
+- `callOptOuts`: list, add one, import up to 5,000, and remove entries on the
+  team's do-not-call list
 - `media`: retrieve a URL, delete, and create an upload URL
 
 Customer creation and pairing-link creation require caller-supplied
@@ -308,15 +316,131 @@ creation attempt. Customer list responses retain their cursor metadata under
 `response.data.page`.
 
 Audience creation and membership, campaign creation and recipients, and opt-out
-settings are fully typed. The remaining campaign, audience, opt-out, and media
-operations expose their payloads as open objects in the pinned contract, so
-those methods use the exported `PlatformPayload` type instead of claiming fields
-the contract does not define.
+settings are fully typed. The remaining campaign, audience, opt-out, and media operations
+expose their payloads as open objects in the pinned contract, so those methods
+use the exported `PlatformPayload` type instead of claiming fields the contract
+does not define.
+
+`Client.campaigns.recipients` returns a cursor page. `status` finds, for
+example, the recipients a campaign skipped because they opted out:
+
+```ts
+let cursor: string | undefined;
+do {
+  const page = await client.campaigns.recipients(campaignId, {
+    projectId,
+    status: "skipped",
+    ...(cursor === undefined ? {} : { cursor }),
+  });
+  for (const recipient of page.data.data) {
+    console.log(recipient.phone, recipient.lastError);
+  }
+  cursor = page.data.page.nextCursor ?? undefined;
+} while (cursor !== undefined);
+```
+
+Appending recipients or audience members accepts partial success: the result
+reports `added`, `duplicateCount`, `invalidCount` and up to 20 `invalidRows`.
 
 Platform template and Flow endpoints require a live dashboard bearer and reject
 organization server keys. They are intentionally absent from `Client`;
 browser template tooling must reach them through an application-owned server
 adapter that authorizes the signed-in user.
+
+## Call consent
+
+Polymorfa checks every call against the team's call policy before the
+destination rings. The policy is team-wide and needs an organization key;
+project tokens and client tokens receive `403`.
+
+```ts
+import { Client, MessagingClient } from "@polymorfa/sdk";
+
+const client = new Client({
+  credential: {
+    type: "organizationApiKey",
+    value: process.env.POLYMORFA_ORG_KEY!,
+  },
+});
+
+const policy = await client.callPolicy.retrieve();
+await client.callPolicy.update({
+  blockedCountryCodes: ["44", "1876"],
+  expectedRevision: policy.data.revision,
+});
+
+const added = await client.callOptOuts.create({
+  phoneNumber: "+14155550123",
+  note: "Asked not to be called on 2026-09-18",
+});
+added.metadata.status; // 201 for a new entry, 200 when already listed
+
+for await (const entry of await client.callOptOuts.list({ limit: 100 })) {
+  console.log(entry.phoneNumber ?? entry.bsuid, entry.source);
+}
+```
+
+Blocked codes are country calling codes or longer dialing prefixes, 1 to 4
+digits without `+`. `update` replaces the whole list; send `[]` to allow every
+country. Pass the `revision` you read as `expectedRevision` to refuse an
+overwrite (`409 state_conflict`). `import` adds up to 5,000 entries at once and
+reports invalid ones in `rejected`. A full list (100,000 entries) fails with
+`409 call_opt_out_limit`.
+
+A Cloud API Number can call a person only after that person grants permission.
+Ask with `callPermissionRequest` content, then read the answer:
+
+```ts
+const messaging = new MessagingClient({
+  credential: {
+    type: "apiKey",
+    value: process.env.POLYMORFA_MESSAGING_API_KEY!,
+  },
+});
+
+await messaging.messages.send("support", {
+  conversation: { phoneNumber: "+14155550123" },
+  content: {
+    callPermissionRequest: {
+      body: "We would like to call you about order 1522.",
+    },
+  },
+});
+
+const permission = await messaging.voip.retrieveCallPermission(
+  "support",
+  "+14155550123",
+);
+permission.data.data.status; // "none" | "temporary" | "permanent" | "revoked"
+
+const check = await messaging.voip.check({
+  session: "support",
+  to: "+14155550123",
+});
+check.data.data.refusal; // null, or the first reason a call would fail
+```
+
+`retrieveCallPermission` asks WhatsApp during the request: `fresh` is `false`
+when WhatsApp could not be reached and the stored state is returned with
+`actions: null`. `check` runs the same checks a placement runs without placing
+a call or reserving anything. Both need a server credential.
+`retrieveCallPermission` answers `409 unsupported_for_connection` on a
+linked-device Number; `check` supports linked-device Numbers and returns
+`permission: null` for them. If required call-check state is unavailable,
+`check` raises `PolymorfaServerError` (`503 service_unavailable`); no allow or
+refusal result is returned.
+
+A send refused by WhatsApp's request limit raises `PolymorfaRateLimitError`
+with `code` `call_permission_request_limited`, `rateLimitReason`
+`call_permission_request`, and the `retry-after` header in
+`error.metadata.headers`. An already permanent permission raises
+`PolymorfaConflictError` (`call_permission_granted`). A refused placement
+raises `PolymorfaAuthorizationError` with `call_recipient_opted_out` or
+`call_destination_blocked`.
+
+Permission changes arrive as the `call.permission_changed` webhook event, typed
+as `CallPermissionChangedPayload`. No event is sent when a temporary permission
+reaches `expiresAt`.
 
 ## System and Bridge clients
 
@@ -401,7 +525,10 @@ try {
 `PolymorfaErrorCode` lists the documented codes, including
 `recipient_not_on_whatsapp`, `conversation_window_closed`,
 `template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
-`new_chat_limit_reached`, `whatsapp_account_restricted`, the BanSafe codes, and the Calls and SIP trunk codes,
+`new_chat_limit_reached`, `whatsapp_account_restricted`, the BanSafe codes, the Calls and SIP trunk codes,
+and the call consent codes (`call_recipient_opted_out`,
+`call_destination_blocked`, `call_permission_request_limited`,
+`call_permission_granted`, `call_opt_out_limit`),
 and still accepts codes a newer API adds. `POLYMORFA_ERROR_CODES` and
 `isKnownPolymorfaErrorCode()` are exported. `requestLogUrl` is absent for
 client tokens and for requests the API did not log. `BrowserError` exposes
@@ -432,17 +559,16 @@ timeouts, HTTP 408, 409, 429, and server failures. POST, PUT, PATCH, and DELETE
 requests retry only when the caller supplies an idempotency key. The transport
 honors `Retry-After`, then uses bounded exponential backoff with jitter.
 
+Campaign recipient and audience member appends (`campaigns.addRecipients` on
+both clients and `audiences.addMembers`) are sent once. The API does not replay
+them, so a retry after a lost response would count the first attempt's rows as
+duplicates. They retry only when that request sets both `maxNetworkRetries`
+and `idempotencyKey`; the key does not make the API replay the append.
+
 ## API versions and raw requests
 
-Native Messaging and Platform requests default to `Polymorfa-Version: 2026-09-22`.
-The independent browser Messaging transport pins the same revision and preserves
-explicit request headers.
-This revision uses the `whatsapp_ids` object. Set `apiVersion` on a client or a
-single request to send an explicit revision; a request override takes precedence.
-An explicit raw `Polymorfa-Version` header is preserved when no `apiVersion`
-option is set. The API rejects retired revisions, and the SDK reports that error without
-upgrading or resending. Raw Graph-compatible requests receive no default native
-version header; their version remains part of the Graph path.
+Set `apiVersion` on a client or a single request. The SDK sends it as the
+`Polymorfa-Version` header.
 
 Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 
@@ -488,7 +614,7 @@ also accepts the `sha256=<hex>` compatibility form. Verification uses
 HMAC-SHA256 and constant-time comparison over the unmodified bytes. Recognized
 events narrow to exported payload types, including messages, sessions, groups,
 presence, contacts, chats, calls, labels, history sync, Meta Cloud API contact
-sync and Business app echoes, command results, and business quick replies. Unknown event names and payloads are preserved for
+sync and Business app echoes, command results, call permission changes, and business quick replies. Unknown event names and payloads are preserved for
 forward compatibility.
 `webhooks.verifySignature()` returns a boolean without parsing.
 `webhooks.createFixture()` creates exact-byte local fixtures, and
@@ -528,7 +654,7 @@ Saved settings hold the project's `successCallbackUrl` and `failureCallbackUrl`
 HTTPS destinations and `allowPhoneChange`, which controls whether recipients can
 replace a prefilled number (default `false`). The API copies callback
 destinations into each link when it is issued. Settings have no redirect-URI
-allowlist. `hideWatermark: true` requires the Branded QuickLink add-on.
+allowlist. `hideWatermark: true` requires an active Branded QuickLink add-on.
 
 ## Browser controllers and UI
 
@@ -704,55 +830,16 @@ release instruction.
 
 MIT
 
-### Native message provider references
+## Contract update notes
 
-Message receipts and webhook message references expose `whatsapp_ids`, with
-`linked_devices`, `official_api`, or both observed provider references. Unknown
-keys are omitted. This replaces `whatsapp_id`; use the separate Polymorfa `id`
-for replies and actions. The server SDK exports `WhatsAppMessageIds`; the browser
-SDK exports `BrowserWhatsAppMessageIds`. See the pinned component revision in
-[contract notes](contracts/README.md#message-provider-references).
-
-### Hybrid Link contract additions
-
-The development SDK types include Hybrid Link controls. Their presence does not
-enable the private preview: the API checks live team/project enrollment, Number
-entitlement, and operational availability. Browser client tokens cannot use the
-Hybrid control or message-operation methods, and Hybrid sends through browser
-client tokens are unavailable in this preview.
-
-Use `quickLinks.availability({projectId, session})` before offering an added
-connection. Initial setup uses `quickLinks.create({connectionGoal: "hybrid"})`;
-adding a transport uses `purpose: "add_connection"`, the existing `session`, and
-`addConnection: "linked_devices" | "official_api"`. The Number and Customer stay
-the same. `configuration.connectionPreference: "both"` still chooses one transport.
-QuickLink status includes `hybridPhase` for Cloud setup, Linked pairing, repair,
-and readiness.
-
-Native send/reaction requests and edits accept `transport: "auto" |
-"linked_devices" | "official_api"`. `chats.deleteMessage` accepts the choice in
-its options. Explicit choices never fall back. Raw Graph-compatible requests can
-use `graphTransportHeaders(transport)`; Graph remains outside handwritten method
-coverage. Routing details appear in response `metadata.transport`,
-`metadata.routingReason`, and `metadata.operationId` when supplied by the API.
-
-An accepted uncertain send raises `send_outcome_unknown` with its operation ID.
-The SDK stops automatic retries when a response carries an accepted operation ID,
-even if its body cannot be read. In that case the thrown error carries the ID in
-`error.metadata.operationId`.
-Read `messages.operationStatus(session, operationId)` with the original issuing
-server principal. `pending` and `unknown` do not permit another send or a
-transport switch. A terminal `rejected` result carries
-`rejectionCode: "hybrid_authority_unavailable"` and proves that this operation
-ended before the provider effect. Fix the cause before starting a new operation.
-
-`hybridLink.getPolicy(scope)` and `setPolicy(scope, body)` preserve team, project,
-or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
-`allowedTransports`; narrower policies cannot widen ancestor restrictions.
-`hybridLink.state(session)` reads connection status. `setPaused(session,
-{expectedRevision, paused})` changes routing at the exact current revision.
+The typed webhook catalog includes `session.restriction_updated` with
+`type`, `active`, `enforcementType`, `expiresAt`, and `observedAt`.
+`session.logged_out` requires a numeric `code` and a `reason` of `banned`,
+`device_removed`, or `unknown`. Test event requests support the restriction
+fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
 covers the three public call analytics and export operations. `Client.voice`
-covers the Voice audio and credential operations. The contract snapshot
-is pinned to unmerged API Hybrid Link commit `18011b3e79d9a5bb249193aae85979e0dacbaa32`.
+covers the Voice audio and credential operations. `Client.callPolicy` and
+`Client.callOptOuts` cover consent controls. The contract snapshot is pinned
+to merged API `dev` commit `e72b51348e16e704f17b3e681ee60d02fcca8c7f`.

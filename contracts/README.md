@@ -1,16 +1,16 @@
 # Contract coverage
 
-## Message provider references
+## Test-event supplement
 
-The whole-API snapshot includes the native message-reference contract for send
-receipts, webhook message references, acknowledgements, quotes, history indexes,
-and channel messages. The focused identifier schema remains pinned in
-`whatsapp-message-ids.json` to monorepo task commit `6a457a0ed8a7d6cabdb1e326d7053a1e8f9c2b41`.
-This scoped revision replaces `whatsapp_id` with `whatsapp_ids`, with at least
-one of `linked_devices` or `official_api`. Both values remain exact observed
-provider strings. The Polymorfa `id` remains the action/reply identifier.
-Server and browser SDK types use the same object. No Hybrid routing or
-activation availability is implied by this identifier revision.
+The consent overlay uses merged API `dev` commit
+`e72b51348e16e704f17b3e681ee60d02fcca8c7f`. It includes the merged
+campaign, usage, voice, and HMS history API contracts. SDK package publication
+remains separate.
+`Client.callPolicy` and `Client.callOptOuts` cover six team-policy operations;
+`MessagingClient.voip.retrieveCallPermission` and `.check` cover two Messaging
+operations. The six Console counterparts are excluded. Message content and
+`call.permission_changed` are typed in server and browser packages where
+applicable.
 
 `testing-events.json` records the four test-event schemas from API commit
 `9c876c16c60b74370d934e1275f23ef6096bee12`, including the source path and file
@@ -19,44 +19,65 @@ Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
 and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
-below use the pinned API source revision. CLI consumers require a
+below use the merged API `dev` consent revision. CLI consumers require a
 published SDK package before updating their pinned dependency.
 
-## Whole-API snapshot
+## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at unmerged `polymorfa/polymorfa` Hybrid Link branch commit
-`18011b3e79d9a5bb249193aae85979e0dacbaa32`. This revision includes Hybrid Link, Beta HMS retained-history reads,
-and Voice audio on top of usage gates, Calls analytics, Campaigns P0 and Functions. `source.json`
-records the source paths and SHA-256 hashes. The snapshots and ledger use
-the same revision; it does not establish package publication, deployed
-availability, or Hybrid Link enrollment.
+files at merged `polymorfa/polymorfa` API `dev` commit
+`e72b51348e16e704f17b3e681ee60d02fcca8c7f`. This revision includes
+Voice audio and provider credentials on top of merged usage gates, Calls
+analytics, Campaigns P0, Functions, and HMS history. The snapshots, ledger and revision
+tests have been reconciled. `source.json` records the source paths and
+SHA-256 hashes.
 
-Native Messaging and Platform calls default to API revision `2026-09-22`,
-which requires `whatsapp_ids` in place of the singular provider reference.
-The browser Messaging transport pins the same date without importing server code;
-its explicit request headers and client-token restrictions remain in force.
-Explicit older pins remain explicit and are rejected by the API; Graph keeps
-its path-based version.
+The preceding refresh added 17 operation rows and removes eight. Eight removed Console
+operation routes moved to `/platform/operations` and
+`/platform/projects/{projectId}/operations`; the existing `Client.operations`
+and project-view `operations` resources cover list, get, transitions and cancel.
+Three new Console retention and SIP discovery operations stay excluded.
+`Client.callRetention` covers `GET` and `PUT /platform/call-retention`, merged
+from SDK `dev`. The three public Calls analytics operations are covered by
+`Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
+`Client.calls.exportAll` walks export pages. The 13 public Voice operations are
+covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
+13 Console counterparts are excluded. The full 503-operation snapshot includes
+all 15 Functions routes already merged to API `dev`.
 
-The 13 public Voice operations are covered by `Client.voice.audio` and
-`Client.voice.providerCredentials`; their 13 Console counterparts are excluded.
+HMS history adds four server-only Messaging reads under
+`MessagingClient.chats`: `list`, `retrieve`, `listMessages`, and
+`retrieveMessage`. All four are covered; they require an organization key or
+project token, their respective `chats:read` or `messages:read` scope, HMS on
+the Number, and `messaging.history` beta enrollment. Client tokens are refused
+locally. Pagination retains both cursors and the data-region response header.
+The only pre-existing schema change is `hms_not_enabled` in the shared public
+error enum, which changes 166 Messaging and 46 Platform fingerprints. Those
+fingerprints were reconciled against the source specs; no pre-existing route or
+response shape changed.
 
-This revision adds six typed server methods: `quickLinks.availability`,
-`messages.operationStatus`, and `hybridLink.getPolicy`, `setPolicy`, `state`,
-and `setPaused`. Native sends, reactions, edits, and deletes accept transport
-selection. QuickLinks carry explicit initial or supplementary purpose and
-single or Hybrid connection goals. Graph remains outside typed API coverage;
-`graphTransportHeaders` supplies only the routing header.
+SDK `dev` through `8392f66` adds `Client.sipTrunks.endpoint()` for
+`GET /platform/sip/endpoint`. Its `SipEndpoint` result is a discriminated union:
+`hosted` carries the host, transports and RTP range; `sip_not_hosted` carries
+null host/RTP and no transports. Those existing types and request tests match
+this exact snapshot, so the operation is covered. The merge also retains the
+release script's compiled-version stamping and the single BanSafe payload block.
 
-The snapshot also includes Calls restriction events and testing overrides.
-Their types match the contract, including `session.restriction_updated` and
-`call_restricted`. The shared error catalog includes `number_restricted` and
-the Hybrid refusal codes. The retired `premium_required` code is no longer
-listed; unrecognized API error codes remain readable as strings.
+The preceding 192 refreshed fingerprints were reviewed. Most reflect `number_restricted`
+in the shared public error enum. Testing fixtures add
+`session.restriction_updated`, `restrictionActive`, and the `call_restricted`
+call-end reason. SIP transport schema wrappers preserve their existing type.
+QuickLink settings declare an add-on-required `402`, handled by the existing
+payment-required error class. The webhook catalog also adds the restriction
+payload, requires `code` on `session.logged_out`, narrows its reason enum, and
+narrows the previous BanSafe health band; SDK types follow those schemas.
 
-The merged SDK covers Calls analytics, export, and retention. Console equivalents
-stay excluded because they require dashboard identity.
+The latest schema refresh changes only `POST /platform/campaigns`: its required
+body is now `CreatePlatformCampaignRequest`, with required `name`, named optional
+fields, and no additional top-level properties. The SDK requires `projectId`
+because its Platform campaign resource belongs to organization clients. The
+six opaque JSON fields remain `unknown`, while `senderConfig` remains an open
+object. No routes were added or removed by this schema refresh.
 
 This revision also covers `GET /platform/usage`, `/platform/usage/records`,
 and `/platform/gates` through `Client.usage.summary`, `listRecords`, and
@@ -71,47 +92,52 @@ surfaces, and the organization gains STOP/START keyword settings
 `Client.audiences`, `Client.campaigns`, `Client.optOuts` and
 `MessagingClient.campaigns`.
 
-The same revision adds `gate_limit_reached` and a 402 call-placement response;
-`PolymorfaPaymentRequiredError` surfaces that response. The webhook event map
-exposes `usage.recorded` with the revisioned record payload.
+Two campaign contracts changed in a way callers can observe.
+`GET /platform/campaigns/{campaignId}/recipients` answers with `{ data, page }`
+and a `status` filter instead of a bare array, and each recipient carries
+`sentAt`, `deliveredAt`, `readAt`, `failedAt` and `respondedAt`;
+`Client.campaigns.recipients` was updated to match. Campaign stop answers with
+`CampaignStopOperation`, whose `operationId` is null when the campaign had no
+active delivery run and was cancelled immediately;
+`MessagingClient.campaigns.stop` no longer shares `CampaignOperationResponse`.
+Campaign create on both surfaces accepts inline `recipients`.
 
-The SDK implements the campaign compliance operations against the pinned
-contract. The global `campaign_throughput_capped` error code remains readable
-through the SDK's open error-code type.
+This revision also declares `projectId` as a query parameter on the
+single-campaign Platform operations: `GET`, `PATCH` and `DELETE`
+`/platform/campaigns/{campaignId}`, plus `/analytics`, `/events` and
+`/recipients`. It is deliberately `required: false`: a team API key is not
+bound to one project and must name the owning project, while a project token is
+bound to its own project and must omit it at the API. The SDK exposes
+`Client.campaigns` only on organization clients, so its types require
+`projectId`; project views and project-token clients do not expose that resource.
+`Client.campaigns.retrieve`,
+`update`, `delete`, `analytics` and `events` take a `PlatformCampaignParams`
+argument for it, and `recipients` carries it in its existing params.
 
-The merged SDK exposes all 15 public Functions operations. Production-number deletion now returns 409;
-the existing `Client.sessions.delete` and `deleteMany` methods still use the
-same routes and surface that response as a conflict error.
+`PATCH /platform/campaigns/{campaignId}` accepts `recipientListId`, a string or
+null, which points an unlaunched draft at another audience or detaches it. The
+API refuses the change once the campaign has launched or its audience has been
+copied into recipients. The contract still declares this request body as an
+open object, so the SDK does not close it: `UpdatePlatformCampaignRequest`
+names `recipientListId` and keeps an index signature for every other field.
+The operation declares `409` for the refusal after launch, which the transport
+already maps to `PolymorfaConflictError`; no SDK change was needed for it.
 
-`Client.sipTrunks.endpoint` covers `GET /platform/sip/endpoint` for organization
-keys and project tokens. Its response distinguishes `hosted`, with a host,
-transports and RTP range, from `sip_not_hosted`, with null host and RTP fields
-and no transports. This method was merged from SDK `dev`; its response shape
-matches the same pinned API snapshot. The Console endpoint remains excluded.
-
-An earlier revision published the operations lifecycle on the Platform API. The eight
-operation routes moved from `/console` to `/platform`, so their ledger rows
-move from `excluded` (console-only) to `covered` by `Client.operations` and
-`Client.project(projectId).operations`. The organization-wide reads accept a
-`projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
-and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
-contract. `/platform/projects/{projectId}/events/stream` keeps a refreshed
-fingerprint from the upstream frame `$ref` fix; only its discriminator mapping
-changed. The same re-sync picks up the management MCP tools and the call analytics work
-on `dev`. The MCP tools change no published operation this SDK covers. Call
-analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
-`/platform/calls/export`, covered by the merged `Client.calls` implementation.
+The webhook catalog adds `contact.opted_out` and `contact.opted_in` with the
+exported `ContactOptPayload`. `bansafe.health_changed` and
+`bansafe.risk_changed`, which the contract already defined, are now registered
+too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        371 |
+| Covered             |        373 |
 | Missing             |          0 |
-| Excluded            |        124 |
+| Excluded            |        130 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        495 |
+| Total               |        503 |
 
-An earlier revision added test event triggering
+This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
 (`GET /messaging/testing/{projectId}/events/fixtures`), covered by
 `MessagingClient.testing.triggerEvent` (with the optional `Idempotency-Key`
@@ -142,10 +168,9 @@ successful live call.
 Revision `2259a1fd` adds the project event stream. `Client.events.stream`
 covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
 resume, and `Client.events.acknowledgeStream` covers its manual
-acknowledgement route. The Platform `PlatformAccessEventStreamFrame`
-discriminator mapping at this revision points at unprefixed schema names
-(`EventStreamReadyFrame` and so on) that the document does not define; the
-snapshot keeps the source bytes unchanged. The same revision adds
+acknowledgement route. The source pinned here corrects the
+`PlatformAccessEventStreamFrame` discriminator to reference the defined,
+Platform-prefixed schemas. Revision `2259a1fd` also adds
 `conversationTtlSeconds` to client rules, turns `recipientMode` into an enum,
 and sets a minimum of 0 on `rateLimit` and `maxDaily`; the client-rules types
 follow.
@@ -174,7 +199,7 @@ three changed operations keep their existing typed methods.
 This refresh retires direct session creation and observation-policy writes. QuickLinks supply typed configuration and test simulation. The SDK adds project history fixture upload, saved defaults, and trusted-server Meta continuation tied to an existing QuickLink.
 
 Public Number, conversation, user and message identifiers remain supported.
-Message responses retain exact provider IDs in `whatsapp_ids`. Channel
+Message responses retain the exact provider ID in `whatsapp_id`. Channel
 actions use the public message ID; call participants expose public identities;
 history events carry a public message index and a separate provider archive.
 The raw LID resolver is replaced by `MessagingClient.identities.resolve`.
@@ -230,8 +255,8 @@ discovery uses `BridgeClient`, and the CLI listener protocol stays CLI-only; the
 4. Update the ledger, source revision, hashes, and mapping tests together.
    Remove obsolete rows after reviewing their replacements.
 5. Run the full SDK CI checks. The repository coverage tests require the
-   reviewed counts, the exact unresolved changed-operation list, valid public
-   method mappings, and source snapshot integrity.
+   reviewed counts, zero changed fingerprints, valid public method mappings,
+   and source snapshot integrity.
 
 `npm run check:coverage` uses the checked-in snapshots. Its strict flag requires
 a ledger row for every operation; it does not require every row to be covered.
@@ -246,3 +271,18 @@ routes, paid-number expiry, tier quotes and confirmation, and payment-required
 errors. They are checked against these same canonical API snapshots. Removed
 dashboard-only billing reminders and client-token session start/status helpers
 are not retained as compatibility aliases.
+
+## Functions contract
+
+Functions is tracked separately in `functions/openapi.json`, with its exact
+monorepo source commit and extraction hash in `functions/source.json`. This
+snapshot contains only the 15 Functions operations and their transitive schemas.
+`npm run check:functions` verifies their ledger; SDK tests exercise every method.
+The main consent snapshots use the merged API `dev` revision; the
+Functions subset retains its separate source revision.
+
+All 15 Functions methods require `client.project(projectId).functions` and an
+organization enabled for Functions. The SDK never retries Function mutations or
+invocations automatically. Browser/client-token SDKs do not expose this server
+control plane. A local implementation or installed method does not establish
+hosted availability.

@@ -1,121 +1,39 @@
+import type { MessagingCredential } from "../credentials.js";
+import { PolymorfaConfigurationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import { withIdempotencyKey } from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
+import type {
+  HistoryChat,
+  HistoryMessage,
+  HistoryPage,
+  ListHistoryChatsParams,
+  ListHistoryMessagesParams,
+} from "./history.js";
 import type {
   DisappearingTimerRequest,
   EditMessageRequest,
   MessageTransport,
   SuccessResponse,
-  ConversationIdentity,
 } from "./types.js";
 
 export interface DeleteMessageOptions extends RequestOptions {
   readonly transport?: MessageTransport;
 }
 
-/** Opaque cursors are valid only with the same path and filters. */
-export interface StoredChatsParams {
-  readonly limit?: number;
-  readonly cursor?: string;
-  readonly kind?: "direct" | "group" | "channel" | "broadcast";
-  readonly activeSince?: string;
-  readonly activeBefore?: string;
-}
-
-export interface StoredChatMessagesParams {
-  readonly limit?: number;
-  readonly cursor?: string;
-  readonly order?: "desc" | "asc";
-  readonly since?: string;
-  readonly until?: string;
-  readonly direction?: "inbound" | "outbound";
-  /** Comma-separated message types, for example `text,image`. */
-  readonly types?: string;
-}
-
-export interface StoredMessageSummary {
-  readonly id: string;
-  readonly whatsapp_id: string;
-  readonly direction: "inbound" | "outbound";
-  readonly type: string;
-  readonly timestamp: string;
-}
-
-export interface StoredChat {
-  readonly conversation: ConversationIdentity;
-  readonly kind: "direct" | "group" | "channel" | "broadcast";
-  readonly lastActivityAt: string;
-  readonly lastMessage: StoredMessageSummary;
-}
-
-export interface StoredMedia {
-  readonly id: string;
-  readonly mimeType: string;
-  readonly fileLength: number;
-  readonly url: string;
-}
-
-export interface StoredMessage {
-  /** Opaque Polymorfa resource ID; keep it as a string. */
-  readonly id: string;
-  readonly whatsapp_id: string;
-  readonly conversation: ConversationIdentity & {
-    readonly sender?: ConversationIdentity;
-  };
-  readonly direction: "inbound" | "outbound";
-  readonly fromMe: boolean;
-  readonly type: string;
-  readonly timestamp: string;
-  readonly pushName?: string;
-  readonly text?: string;
-  readonly caption?: string;
-  readonly mimeType?: string;
-  readonly filename?: string;
-  readonly ptt?: boolean;
-  readonly latitude?: number;
-  readonly longitude?: number;
-  readonly displayName?: string;
-  readonly title?: string;
-  readonly reaction?: string;
-  readonly reactionTo?: string;
-  readonly edited?: boolean;
-  readonly unavailable?: boolean;
-  readonly unavailableReason?: string;
-  readonly pollOptions?: readonly {
-    readonly name: string;
-    readonly hash: string;
-  }[];
-  readonly media?: readonly StoredMedia[];
-}
-
-export interface StoredHistoryPage<T> {
-  readonly success: true;
-  readonly data: readonly T[];
-  readonly hasMore: boolean;
-  readonly nextCursor: string | null;
-  readonly previousCursor: string | null;
-}
-
-export type ListStoredChatsResponse = StoredHistoryPage<StoredChat>;
-export type ListStoredChatMessagesResponse = StoredHistoryPage<StoredMessage>;
-export interface GetStoredChatResponse {
-  readonly success: true;
-  readonly data: StoredChat;
-}
-export interface GetStoredChatMessageResponse {
-  readonly success: true;
-  readonly data: StoredMessage;
-}
-
 export class ChatsResource {
-  constructor(private readonly transport: HttpTransport) {}
+  constructor(
+    private readonly transport: HttpTransport,
+    private readonly credentialType: MessagingCredential["type"],
+  ) {}
 
-  /** Lists retained conversations for an HMS-enabled Linked Device Number. */
+  /** Lists one page of stored conversations. Requires `chats:read` and enrolled HMS history access. */
   list(
     session: string,
-    params: StoredChatsParams = {},
+    params: ListHistoryChatsParams = {},
     options: RequestOptions = {},
-  ): Promise<ApiResponse<ListStoredChatsResponse>> {
+  ): Promise<ApiResponse<HistoryPage<HistoryChat>>> {
+    this.assertHistoryCredential();
     return this.transport.request({
       method: "GET",
       path: `/messaging/${encodeURIComponent(session)}/chats`,
@@ -124,12 +42,15 @@ export class ChatsResource {
     });
   }
 
-  /** Reads one retained conversation. */
+  /** Reads a stored conversation by public ID or E.164 phone number. */
   retrieve(
     session: string,
     conversation: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<GetStoredChatResponse>> {
+  ): Promise<
+    ApiResponse<{ readonly success: true; readonly data: HistoryChat }>
+  > {
+    this.assertHistoryCredential();
     return this.transport.request({
       method: "GET",
       path: chatPath(session, conversation),
@@ -137,13 +58,14 @@ export class ChatsResource {
     });
   }
 
-  /** Lists retained messages, newest first unless `order` is `asc`. */
+  /** Lists stored messages, newest first unless `order: "asc"` is supplied. */
   listMessages(
     session: string,
     conversation: string,
-    params: StoredChatMessagesParams = {},
+    params: ListHistoryMessagesParams = {},
     options: RequestOptions = {},
-  ): Promise<ApiResponse<ListStoredChatMessagesResponse>> {
+  ): Promise<ApiResponse<HistoryPage<HistoryMessage>>> {
+    this.assertHistoryCredential();
     return this.transport.request({
       method: "GET",
       path: `${chatPath(session, conversation)}/messages`,
@@ -152,13 +74,16 @@ export class ChatsResource {
     });
   }
 
-  /** Reads one retained message by its opaque Polymorfa resource ID. */
+  /** Reads one stored message by its opaque Polymorfa ID. */
   retrieveMessage(
     session: string,
     conversation: string,
     messageId: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<GetStoredChatMessageResponse>> {
+  ): Promise<
+    ApiResponse<{ readonly success: true; readonly data: HistoryMessage }>
+  > {
+    this.assertHistoryCredential();
     return this.transport.request({
       method: "GET",
       path: chatMessagePath(session, conversation, messageId),
@@ -189,8 +114,8 @@ export class ChatsResource {
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.transport.request({
       method: "DELETE",
-      query: { transport: options.transport },
       path: chatMessagePath(session, chatId, messageId),
+      query: { transport: options.transport },
       ...withIdempotencyKey(options),
     });
   }
@@ -236,6 +161,15 @@ export class ChatsResource {
       path: `${chatPath(session, chatId)}/${action}`,
       ...options,
     });
+  }
+
+  private assertHistoryCredential(): void {
+    if (this.credentialType === "clientToken") {
+      throw new PolymorfaConfigurationError(
+        "Hosted message history requires a server credential.",
+        "credential",
+      );
+    }
   }
 }
 

@@ -65,20 +65,25 @@ export const POLYMORFA_ERROR_CODES = [
   "call_not_ringing",
   "call_permission_required",
   "calls_disabled",
+  "call_recipient_opted_out",
+  "call_destination_blocked",
+  "call_permission_request_limited",
+  "call_permission_granted",
+  "call_opt_out_limit",
+  "asset_not_ready",
   "connection_limit",
   "invalid_sip_trunk",
   "sip_trunk_in_use",
   "sip_trunk_limit",
   "sip_trunk_revision_conflict",
   "sip_unavailable",
-  "unsupported_for_connection",
-  "voice_not_enabled",
   "provider_credential_invalid",
   "provider_unavailable",
-  "asset_not_ready",
   "voice_asset_in_use",
   "voice_asset_revision_conflict",
+  "voice_not_enabled",
   "voice_unavailable",
+  "unsupported_for_connection",
 ] as const;
 
 export type KnownPolymorfaErrorCode = (typeof POLYMORFA_ERROR_CODES)[number];
@@ -96,6 +101,7 @@ export type PolymorfaRateLimitReason =
   | "call_rate"
   | "call_concurrency"
   | "credential_mint"
+  | "call_permission_request"
   | "unspecified"
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   | (string & {});

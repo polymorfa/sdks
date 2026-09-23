@@ -206,6 +206,7 @@ flowchart LR
 | Web Components                                                         | `definePolymorfaElements`, `pmfa-message-list`, `pmfa-template-builder`                                             | `app/elements/elements.tsx`                                        |
 | Admin: organization, members, API keys, project tokens                 | `Client.organizations`, `members`, `apiKeys`, `projectTokens`                                                       | `app/api/admin/organization/route.ts`                              |
 | Admin: projects, billing, security, customers, audiences, opt-outs     | `Client.projects`, `billing`, `auditLogs`, `securityIncidents`, `sessionBans`, `customers`, `audiences`, `optOuts`  | `app/api/admin/*`                                                  |
+| Admin: call policy and do-not-call list                                | `Client.callPolicy`, `callOptOuts`                                                                                  | `app/api/admin/call-consent/route.ts`                              |
 | Admin: webhooks, deliveries, events, session settings, platform        | `Client<"project">.webhooks`, `webhookDeliveries`, `events`, `sessionConfiguration`, `SystemClient`, `BridgeClient` | `app/api/admin/*`                                                  |
 
 The routes under `app/api/messaging` and `app/api/admin` cover the rest of the

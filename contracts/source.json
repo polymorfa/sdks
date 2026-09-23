@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "18011b3e79d9a5bb249193aae85979e0dacbaa32",
-  "branch": "t3code/hybrid-link-support",
-  "published": false,
-  "note": "Unmerged Hybrid Link branch revision built on API dev with merged HMS retained history, Voice audio, usage gates, Calls analytics, Campaigns P0 and Functions. Both public OpenAPI snapshots are byte-identical to the authoritative files at this commit.",
+  "commit": "e72b51348e16e704f17b3e681ee60d02fcca8c7f",
+  "branch": "dev",
+  "published": true,
+  "note": "Exact merged API dev commit containing Calls consent and HMS history; both snapshots are byte-identical to the authoritative source files. SDK package publication is separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "59581166a9033b8f80fd3640f3588aa63a263d65d994320ee70352b040ad0a48"
+      "sha256": "0943aa46871e280dc1a714e0dd167e26b7f35a86a4a23fe50e981c620ab83df0"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "f72c6155cdc8f3e9d860416599971399f006edcd18be7ad8d33b2378a7f62557"
+      "sha256": "8804d1249763a470bb1cb145c6697ac12381e17edd7aa0ea82b6f916ee8223db"
     }
   }
 }
