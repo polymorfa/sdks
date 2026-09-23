@@ -268,6 +268,10 @@ The organization view also exposes these management resources:
 - `sipTrunks`: list, create, retrieve, update, delete, and rotate the
   credentials of a project's SIP trunks, and read the SIP address your PBX
   points at with `endpoint()` (also on project clients)
+- `calls`: call statistics, paginated call detail records, and CSV or NDJSON
+  export of call records for the team or one project (also on project clients)
+- `callRetention`: retrieve and update how long Polymorfa keeps the team's
+  call data (also readable on project clients; changes need a team API key)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
 - `usage`: read metered call usage for a month, list or iterate usage records
@@ -284,12 +288,19 @@ The organization view also exposes these management resources:
   batch; review and confirm a tier change; create a testing session; and
   retrieve or update the session Safe Mode override
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
-  analytics, events, and recipients
+  analytics, events, and paged or appended recipients. The single-campaign
+  operations require the owning `projectId`. This resource is available only
+  on organization clients. `create` requires `CreatePlatformCampaignRequest`
+  with `name` and `projectId`; its named JSON fields pass through unchanged.
+  `update` accepts `recipientListId` to point an unlaunched draft at another
+  audience, or null to detach it
 - `customers`: enable Customers for a project; create, list, retrieve, update,
   archive, and restore Customers; inspect Numbers and events; create, list,
   and revoke pairing links; and transfer Numbers between Customers
-- `audiences`: list, create, retrieve, delete, and create an upload URL
-- `optOuts`: list, create one, create a batch, and delete by phone number
+- `audiences`: list, create from inline members or a spreadsheet import,
+  retrieve, delete, create an upload URL, and add, page, or remove members
+- `optOuts`: list, create one, create a batch, delete by phone number, and read
+  or replace the organization's STOP/START keyword settings
 - `media`: retrieve a URL, delete, and create an upload URL
 
 Customer creation and pairing-link creation require caller-supplied
@@ -297,9 +308,11 @@ idempotency keys. The SDK returns the pairing URL only on the first successful
 creation attempt. Customer list responses retain their cursor metadata under
 `response.data.page`.
 
-The pinned campaign, audience, opt-out, and media contracts expose their
-operation payloads as open objects. These methods therefore use the exported
-`PlatformPayload` type instead of claiming fields the contract does not define.
+Audience creation and membership, campaign creation and recipients, and opt-out
+settings are fully typed. The remaining campaign, audience, opt-out, and media
+operations expose their payloads as open objects in the pinned contract, so
+those methods use the exported `PlatformPayload` type instead of claiming fields
+the contract does not define.
 
 Platform template and Flow endpoints require a live dashboard bearer and reject
 organization server keys. They are intentionally absent from `Client`;

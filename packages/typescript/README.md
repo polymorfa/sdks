@@ -84,9 +84,9 @@ v1 grammar and never decodes or decrypts the credential.
 The SDK rejects `pmfa_ct_` browser tokens and CLI-only `pmfa_ls_` listener
 credentials before a management request. It also rejects retired call-agent
 `pmfa_at_` and socket `pmfa_wst_` tickets and simulated-device `pmfa_sd_`
-capabilities as server API keys. It does not expose a listener,
-`AsyncIterable`, event emitter, or forwarding API. Live forwarding belongs to
-`polymorfa listen`.
+capabilities as server API keys. It does not expose the CLI forwarding
+listener or its event emitter; live forwarding belongs to `polymorfa listen`.
+Project event streaming is available through `events.stream()` below.
 
 ## System and Bridge clients
 
@@ -1502,7 +1502,6 @@ console.log(replay.data.operationId);
 
 List methods return `CursorPage<T>`. Mutations return owner-specific typed
 receipts and preserve response metadata, request IDs, and idempotency receipts.
-The SDK has no operation inspection or cancellation methods.
 
 Console and staff routes remain absent from the server client and its raw
 guidance. The CLI listener protocol stays private to the CLI.
