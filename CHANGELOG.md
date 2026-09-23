@@ -22,10 +22,76 @@
   keys can change it. Deletion of call data older than the period starts on
   a date Polymorfa announces; until then the setting records a choice and
   nothing is deleted.
+
+- Breaking: `Client.campaigns.create` requires a `CreatePlatformCampaignRequest`
+  body with `name` and `projectId`. Named optional fields replace the open
+  top-level object; composer, messages, audience, compliance and variant JSON
+  values remain opaque.
+
+- Breaking: `Client.campaigns.recipients` returns a cursor page
+  (`{ data, page }`) instead of a bare array, takes `projectId`, `status`,
+  `cursor` and `limit`, and each recipient now carries `sentAt`,
+  `deliveredAt`, `readAt`, `failedAt` and `respondedAt`. Iterate
+  `response.data.data` and continue from `response.data.page.nextCursor`.
+
+- Breaking: `MessagingClient.campaigns.stop` returns `CampaignStopResponse`.
+  Its `operationId` is `string | null`: stopping a campaign with no active
+  delivery run cancels it immediately and answers with `null`. Code that read
+  `operationId` as a string must handle `null`.
+
+- Breaking: `Client.audiences.create` takes `CreateAudienceRequest` instead of
+  an open `PlatformPayload`. It accepts inline `members`
+  (`CreateAudienceFromMembers`), or `fileId` with the required `mapping` for a
+  spreadsheet import (`CreateAudienceFromFile`), never both; omitting both
+  creates an empty audience. It returns the audience with its import counts and
+  up to 20 rejected rows.
+
+- Breaking: `Client.campaigns.retrieve`, `delete`, `analytics` and `events` take
+  a required `PlatformCampaignParams` argument before their request options,
+  and `update` requires it after the body. Set its mandatory `projectId` to the
+  project that owns the campaign. This resource belongs to the organization
+  client; a team API key is not bound to one project.
+
+- `Client.campaigns.update` takes `UpdatePlatformCampaignRequest`. It names
+  `recipientListId` (string or null), which points an unlaunched draft at
+  another audience or detaches it, and keeps an index signature because the
+  contract still declares the body as an open object. The API refuses the
+  change with `409` once the campaign has launched or its audience has been
+  copied into recipients; the SDK raises `PolymorfaConflictError`.
+
+- Added campaign recipients on both surfaces.
+  `MessagingClient.campaigns.listRecipients` and `addRecipients`, and
+  `Client.campaigns.addRecipients`, append up to 1,000 recipients to a campaign
+  that has not started sending and report duplicate and invalid entries.
+  `CreateCampaignRequest` accepts inline `recipients`.
+
+- `MessagingClient.campaigns.addRecipients`, `Client.campaigns.addRecipients`
+  and `Client.audiences.addMembers` send each request once. The API does not
+  replay these appends, so the SDK generates no idempotency key and turns off
+  automatic retries for them, even when you pass `idempotencyKey`. A retry
+  after a lost response would report the rows the first attempt added as
+  duplicates. List the recipients or members before you append again. To opt
+  back in, set both `maxNetworkRetries` and `idempotencyKey` on the request.
+
+- Messaging and Platform campaign launch, pause, resume, and stop now generate
+  an idempotency key when the caller omits one. Automatic retries reuse the
+  same key under the API's lifecycle replay contract.
+
+- Added `Client.audiences.addMembers`, `listMembers` and `deleteMember` for
+  audience membership.
+
+- Added `Client.optOuts.getSettings` and `updateSettings` for the
+  organization's STOP/START keyword capture.
+
+- Added `campaign_throughput_capped` to `POLYMORFA_ERROR_CODES`. Campaign
+  launch and resume refuse with it when the project is over its send rate.
+
+- Added the `contact.opted_out` and `contact.opted_in` webhook events with the
+  exported `ContactOptPayload`.
+
 - `KnownPolymorfaErrorCode` adds `addon_required` for QuickLink settings
-  that require an active add-on, and drops `premium_required` after the API
-  moved teams to Free and Pay-As-You-Go. `PolymorfaErrorCode` still accepts any
-  string, so code that compares against it keeps compiling.
+  that require an active add-on, and continues recognizing legacy `premium_required` responses. The
+  current API contract no longer advertises `premium_required`.
 - Calls: `PolymorfaErrorCode` adds `number_restricted`. Placing a call or
   inviting someone the Number has never chatted with fails with it while
   WhatsApp restricts the Number to existing contacts; `Retry-After` carries the
@@ -127,7 +193,7 @@
   the documented codes (including the new WhatsApp codes
   `recipient_not_on_whatsapp`, `conversation_window_closed`,
   `template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
-  `new_chat_limit_reached`, and `whatsapp_account_restricted`; the Calls and SIP trunk codes; and the Platform `payg_required` and `premium_required` codes) that still
+  `new_chat_limit_reached`, and `whatsapp_account_restricted`; the Calls and SIP trunk codes; the Platform `payg_required` code; and the legacy `premium_required` code) that still
   accepts any string. A `413` now throws `PolymorfaValidationError`.
   `BrowserError` gains `docUrl` and reads `code`, `requestId`, and the message
   from the error object. The `polymorfa-ratelimit-reason` header is kept in

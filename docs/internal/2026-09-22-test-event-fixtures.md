@@ -1,7 +1,7 @@
 # Test-event fixture correction
 
 Local source repair based on SDK `8392f66b4df0b0fee3403e27e3d2914516b0e243`.
-API source is `ec96f7b0a93cc05b0630aa95591330ada98378c6`; its exact test-event
+API source is `9c876c16c60b74370d934e1275f23ef6096bee12`; its exact test-event
 schemas and source hash are in `contracts/testing-events.json`. The full API
 snapshots and coverage ledger use the same revision.
 
