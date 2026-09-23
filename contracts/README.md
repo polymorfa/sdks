@@ -1,5 +1,20 @@
 # Contract coverage
 
+## Focused test-event update
+
+`testing-events.json` records the four test-event schemas from API commit
+`63111fec728ac3ebc9a825ea57ebc4c592abdafc`, including the source path and file
+hash. The TypeScript test-event catalog and override types use that revision.
+Local schema references are rebased to this supplement's `schemas` root.
+The fixture contract test compares the exported catalog against this snapshot.
+It adds `session.restriction_updated`, its boolean `restrictionActive` override,
+and `call_restricted` to `callEndReason`. This focused supplement does not claim
+that the full snapshots or coverage ledger below were reconciled to that newer
+API revision. The SDK change is local and requires package publication before
+CLI consumers can update their pinned dependency.
+
+## Full snapshots
+
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
 `63111fec728ac3ebc9a825ea57ebc4c592abdafc` on monorepo `dev`. It contains
@@ -22,9 +37,13 @@ membership. Analytics is covered by `Client.calls.stats`, `Client.calls.list`,
 and `Client.calls.export`; `Client.calls.exportAll` walks export pages. No existing
 operation fingerprint changed in the retention refresh.
 
-The typed BanSafe alignment for this source revision is an integration dependency
-on SDK PR #282. It must merge before this branch is ready; that change owns the
-restriction events, shared error codes, health-band types, and Calls parser.
+The BanSafe update recognizes `number_restricted`, types the
+`session.restriction_updated` webhook and the `reason` and `code` on
+`session.logged_out`, and preserves `call_restricted` through the Calls
+client's lifecycle parser. Health changes use the same health-band union for
+`band` and `previousBand` (with null for the latter's first evaluation), and
+risk factor groups use the contract's sixteen-value union. `addon_required`
+is recognized for the covered QuickLink settings endpoint.
 
 `GET /console/sip/endpoint` remains excluded (Console-only), while
 `GET /platform/sip/endpoint` is covered by `Client.sipTrunks.endpoint`.
@@ -176,3 +195,18 @@ routes, paid-number expiry, tier quotes and confirmation, and payment-required
 errors. They are checked against these same canonical API snapshots. Removed
 dashboard-only billing reminders and client-token session start/status helpers
 are not retained as compatibility aliases.
+
+## Functions contract
+
+Functions is tracked separately in `functions/openapi.json`, with its exact
+monorepo source commit and extraction hash in `functions/source.json`. This
+snapshot contains only the15 Functions operations and their transitive schemas.
+`npm run check:functions` verifies their ledger; SDK tests exercise every method.
+The main snapshots above retain their recorded baseline so a Functions change
+does not silently reconcile unrelated Calls, QuickLink or webhook work.
+
+All15 Functions methods require `client.project(projectId).functions` and an
+organization enabled for Functions. The SDK never retries Function mutations or
+invocations automatically. Browser/client-token SDKs do not expose this server
+control plane. A local implementation or installed method does not establish
+hosted availability.

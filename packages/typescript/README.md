@@ -2,14 +2,15 @@
 
 The handwritten Polymorfa server SDK for TypeScript and Node.js.
 
-This package has not been published to npm. Build it from a clone of the
-development branch and install the packed tarball:
+Install the development prerelease from npm:
 
 ```bash
-npm ci
-npm run build:workspaces
-npm pack -w @polymorfa/sdk
+npm install @polymorfa/sdk@dev
 ```
+
+Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. See the
+[repository installation guide](../../README.md#typescript-development-install)
+to build and install a packed tarball from source.
 
 The Calls client is part of this package as `@polymorfa/sdk/calls`.
 `@polymorfa/sdk/calls/internal` exists for the Polymorfa browser package;
@@ -47,7 +48,7 @@ const platform = new Client({
     type: "organizationApiKey",
     value: process.env.POLYMORFA_PLATFORM_API_KEY!,
   },
-  apiVersion: "1.0.0",
+  apiVersion: "2026-03-20",
 });
 
 const project = platform.project("project_123");
@@ -84,9 +85,9 @@ v1 grammar and never decodes or decrypts the credential.
 The SDK rejects `pmfa_ct_` browser tokens and CLI-only `pmfa_ls_` listener
 credentials before a management request. It also rejects retired call-agent
 `pmfa_at_` and socket `pmfa_wst_` tickets and simulated-device `pmfa_sd_`
-capabilities as server API keys. It does not expose a listener,
-`AsyncIterable`, event emitter, or forwarding API. Live forwarding belongs to
-`polymorfa listen`.
+capabilities as server API keys. `Client.events.stream()` exposes an
+`AsyncIterable` for the separate [server event stream](#stream-events-in-real-time),
+subject to scope and beta access. Live forwarding belongs to `polymorfa listen`.
 
 ## System and Bridge clients
 
@@ -1502,6 +1503,10 @@ reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
 and `retryAfter` in seconds. Unknown event names still parse as
 `UnknownWebhookEvent`.
 
+For `bansafe.health_changed`, `band` is a `BanSafeHealthBandName`:
+`good`, `fair`, `poor`, `failing`, or `unknown`. `previousBand` uses the same
+type, with `null` for the first evaluation.
+
 `contact.sync` delivers a Meta Cloud API contact batch as
 `{ kind: "contacts", value }`. `message.echo` reports a message sent from the
 WhatsApp Business app on a connected Meta Cloud API number as
@@ -1563,7 +1568,9 @@ console.log(replay.data.operationId);
 
 List methods return `CursorPage<T>`. Mutations return owner-specific typed
 receipts and preserve response metadata, request IDs, and idempotency receipts.
-The SDK has no operation inspection or cancellation methods.
+Use `operations.get()` or `operations.wait()` to inspect asynchronous work,
+and `operations.cancel()` while `capabilities.cancellable` is true. Reads need
+`operations:read`; cancellation needs `operations:cancel`.
 
 Console and staff routes remain absent from the server client and its raw
 guidance. The CLI listener protocol stays private to the CLI.
@@ -1949,6 +1956,10 @@ has `delivery: "simulated"` and the event arrives as ordinary Test number
 activity. Both methods require an organization API key or project token with
 `sandbox:write` (trigger) or `sandbox:read` (list) and Test numbers access.
 
+Use `session.restriction_updated` with `{ restrictionActive: false }` to
+test a restriction ending, or `true` to test one starting. The `call.ended`
+fixture accepts `callEndReason: "call_restricted"` for a restricted call.
+
 Pass `{ idempotencyKey }` as the third argument to `triggerEvent` to retry
 safely. Repeating the request with the same key and body reuses the same event
 ID, so a retry after an uncertain response never creates a second event or
@@ -1961,3 +1972,52 @@ Trusted servers continue an issued Meta Cloud API invitation with
 IDs, and Coexistence/history choices. This method does not create a session or
 accept Meta app secrets. Its progress response is not proof that messaging is
 ready; inspect the QuickLink status.
+
+## Functions
+
+Use a project client with `functions:read`, `functions:manage` or
+`functions:invoke`, according to the operation. Your organization must be enabled
+for Functions and the selected execution region must be available. Client tokens
+cannot access this control plane.
+
+```ts
+const functions = client.project(projectId).functions;
+const created = await functions.create({ name: "Order lookup" });
+const deployed = await functions.deployments.create(created.data.id, {
+  deploymentId: crypto.randomUUID(),
+  language: "typescript",
+  region: configuredRegion,
+  compatibilityDate: "2026-09-22",
+  source: `export default {
+    handler() { return Response.json({ status: "ok" }); }
+  };`,
+  egressOrigins: [],
+  secretVersionIds: [],
+});
+const result = await functions.invocations.create(
+  created.data.id,
+  {
+    deploymentId: deployed.data.id,
+    trigger: "test",
+    request: {
+      method: "POST",
+      url: "https://function.polymorfa.invalid/test",
+      headers: {},
+      bodyBase64: "e30=",
+    },
+  },
+  { idempotencyKey: crypto.randomUUID() },
+);
+```
+
+`deployments.promote` selects the default deployment and requires
+`expectedRevision`. `update` and `delete` also require the current revision.
+`secrets.create` returns version metadata only; pin its ID in a new deployment.
+`secrets.revoke` prevents subsequent invocations from using that version.
+
+Mutations and invocations have no automatic network retries. Keep the original
+idempotency key when checking an interrupted invocation. Replays return a receipt
+without the original response. An `unknown` outcome can mean an external effect
+occurred; reconcile it before choosing a new key. Request/response bodies and
+customer log output are not retained. List responses contain `items` and
+`nextCursor`; pass that cursor as `before` to read the next page.

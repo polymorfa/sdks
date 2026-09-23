@@ -38,7 +38,7 @@ export type CallExportFormat = "csv" | "ndjson";
 /** One call detail record. The other party appears only as `peerRef`. */
 export interface CallRecord {
   readonly callId: string;
-  /** Project of the number, or `null` when the number has been deleted. */
+  /** Owning project when known, preserved after the number is deleted. */
   readonly projectId: string | null;
   /** Session name of the number that placed or received the call. */
   readonly sessionId: string;

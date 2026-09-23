@@ -182,10 +182,7 @@ describe("coverage checker", () => {
       excluded: 111,
       changed: 0,
     });
-    // The eight excluded console-only operation-management routes were
-    // replaced by their public /platform equivalents (Operations in the
-    // Platform API), covered by Client.operations, so there is no unresolved
-    // removal left.
+    // No ledger rows refer to operations removed from the source contracts.
     const resolutions = (result.report?.resolutions ?? []) as Array<{
       operationId: string;
       status: string;
