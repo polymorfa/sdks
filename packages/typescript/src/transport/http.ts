@@ -83,7 +83,7 @@ export class HttpTransport {
    * capability: the request carries only the given headers, never the
    * client's `Authorization`, API version or idempotency key, and it is not
    * retried (a stream body cannot be replayed). Redirects are refused.
-   * Error messages never include the URL.
+   * Errors never retain the URL, including in an underlying cause.
    */
   async sendToUploadUrl(
     request: UploadUrlRequest,
@@ -122,22 +122,22 @@ export class HttpTransport {
         ...(streaming ? { duplex: "half" } : {}),
       } as RequestInit);
       data = await decodeResponseBody(response);
-    } catch (error) {
+    } catch {
       if (request.signal?.aborted === true) {
         throw new PolymorfaCancelledError(
           "The upload was cancelled by the caller.",
-          { code: "request_cancelled", cause: error },
+          { code: "request_cancelled" },
         );
       }
       if (timedOut) {
         throw new PolymorfaTimeoutError(
           `The upload did not finish within ${timeoutMs}ms.`,
-          { code: "request_timeout", cause: error },
+          { code: "request_timeout" },
         );
       }
       throw new PolymorfaConnectionError(
         "The upload could not reach the upload URL.",
-        { code: "connection_error", cause: error },
+        { code: "connection_error" },
       );
     } finally {
       clearTimeout(timer);
