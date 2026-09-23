@@ -19,7 +19,7 @@ preview enrollment and live Number authority independently of these SDK types.
 ## Test-event supplement
 
 The integrated snapshot uses unmerged Hybrid Link API branch commit
-`f4e52b3dcb45f050535080e008c3a02cb73e9b5a`. It includes the merged
+`6068b053aa2f4dd1d7324361ae8133f0885ffe23`. It includes the merged
 campaign, usage, voice, and HMS history API contracts. SDK package publication
 remains separate.
 `Client.callPolicy` and `Client.callOptOuts` cover six team-policy operations;
@@ -42,7 +42,7 @@ published SDK package before updating their pinned dependency.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at unmerged `polymorfa/polymorfa` Hybrid Link branch commit
-`f4e52b3dcb45f050535080e008c3a02cb73e9b5a`. This revision includes
+`6068b053aa2f4dd1d7324361ae8133f0885ffe23`. This revision includes
 Voice audio and provider credentials on top of merged usage gates, Calls
 analytics, Campaigns P0, Functions, and HMS history. The snapshots, ledger and revision
 tests have been reconciled. `source.json` records the source paths and

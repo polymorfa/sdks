@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "f4e52b3dcb45f050535080e008c3a02cb73e9b5a",
+  "commit": "6068b053aa2f4dd1d7324361ae8133f0885ffe23",
   "branch": "t3code/hybrid-link-support",
   "published": false,
   "note": "Exact unmerged API Hybrid Link branch commit, including merged dev Calls consent and HMS history; snapshots are byte-identical to the authoritative source files. SDK publication is separate.",
@@ -8,7 +8,7 @@
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "5c8a00977b8632b1b520d5d51779f458279171be0508dd1266def3e34b037d12"
+      "sha256": "519b40726df0c10a79289fc5c6b4d97d59d02fdfc1767e5864fbf96dd078bd12"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",

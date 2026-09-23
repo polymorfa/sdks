@@ -2376,7 +2376,7 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. `Client.callPolicy` and
 `Client.callOptOuts` cover consent controls. The contract snapshot is pinned
-to unmerged API Hybrid Link commit `f4e52b3dcb45f050535080e008c3a02cb73e9b5a`.
+to unmerged API Hybrid Link commit `6068b053aa2f4dd1d7324361ae8133f0885ffe23`.
 
 ## Functions
 

@@ -9595,7 +9595,7 @@
           "previousCursor": {
             "type": "string",
             "nullable": true,
-            "description": "Cursor for the items before this page. Always null for conversations."
+            "description": "Always null for conversations. Use nextCursor to continue listing."
           }
         },
         "required": [
@@ -9826,7 +9826,7 @@
           "previousCursor": {
             "type": "string",
             "nullable": true,
-            "description": "Cursor for the items before this page. Always null for conversations."
+            "description": "Cursor for the preceding page of messages. Null when no preceding page exists."
           }
         },
         "required": [
