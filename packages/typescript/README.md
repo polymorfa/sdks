@@ -2032,6 +2032,8 @@ const result = await functions.invocations.create(
 `expectedRevision`. `update` and `delete` also require the current revision.
 `secrets.create` returns version metadata only; pin its ID in a new deployment.
 `secrets.revoke` prevents subsequent invocations from using that version.
+`deployments.list` returns deployment metadata without source code. Use
+`deployments.retrieve` with a deployment ID to read its source.
 
 Mutations and invocations have no automatic network retries. Keep the original
 idempotency key when checking an interrupted invocation. Replays return a receipt

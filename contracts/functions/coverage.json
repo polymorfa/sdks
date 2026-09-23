@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "8bba27d86b5b23aac0eaf3633a56c3a0c007f73a",
+  "sourceCommit": "2d84604eabf4de577098dd36e8b58196779fa5fb",
   "operations": [
     {
       "family": "platform",
@@ -51,7 +51,7 @@
       "method": "GET",
       "path": "/platform/functions/{functionId}/deployments",
       "operationId": "listFunctionDeployments",
-      "fingerprint": "759481dba000bd0070c439601d73b622109f973ae45c518e793fc27e4443d1b9",
+      "fingerprint": "fce2dc0e58e97c20b8288875ce2404e7c25f2a15304c6b1ec34dfe1749eed927",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).functions.deployments.list"
@@ -62,7 +62,7 @@
       "method": "GET",
       "path": "/platform/functions/{functionId}/deployments/{deploymentId}",
       "operationId": "getFunctionDeployment",
-      "fingerprint": "a319dbbfdc31e1ddc4b1a3a5af73c8c5c681782b45bb32b00818485699e77516",
+      "fingerprint": "f4b73876ee8957aa384b5646fb035620ef5fff979c7c351b421a6522fa5925c0",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).functions.deployments.retrieve"
@@ -128,7 +128,7 @@
       "method": "POST",
       "path": "/platform/functions/{functionId}/deployments",
       "operationId": "createFunctionDeployment",
-      "fingerprint": "c711fc98b234a00a36975d1b64c501b35ab46d708c8fa840af702b1a84f73770",
+      "fingerprint": "4d1a8bb1076132ca7cb2ac8855021ec4ac7aabfec722adf272139108e8228636",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).functions.deployments.create"
