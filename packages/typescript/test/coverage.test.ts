@@ -173,12 +173,11 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "63111fec728ac3ebc9a825ea57ebc4c592abdafc",
+      sourceCommit: "ec96f7b0a93cc05b0630aa95591330ada98378c6",
       total: 433,
-      covered: 320,
+      covered: 322,
       partial: 0,
-      // The two call-retention operations are implemented separately in SDK #278.
-      missing: 2,
+      missing: 0,
       excluded: 111,
       changed: 0,
     });

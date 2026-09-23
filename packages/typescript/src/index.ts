@@ -571,6 +571,16 @@ export type {
   ListCallRecordsParamsFor,
 } from "./platform/calls.js";
 export { SipTrunksResource } from "./platform/sip-trunks.js";
+export {
+  CallRetentionResource,
+  createTeamCallRetentionClient,
+} from "./platform/call-retention.js";
+export type {
+  CallRetention,
+  CallRetentionPolicy,
+  TeamCallRetentionClientOptions,
+  UpdateCallRetentionRequest,
+} from "./platform/call-retention.js";
 export type {
   CreateSipTrunkInput,
   SipCodec,

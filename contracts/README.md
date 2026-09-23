@@ -3,39 +3,39 @@
 ## Focused test-event update
 
 `testing-events.json` records the four test-event schemas from API commit
-`63111fec728ac3ebc9a825ea57ebc4c592abdafc`, including the source path and file
+`ec96f7b0a93cc05b0630aa95591330ada98378c6`, including the source path and file
 hash. The TypeScript test-event catalog and override types use that revision.
 Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
-and `call_restricted` to `callEndReason`. This focused supplement does not claim
-that the full snapshots or coverage ledger below were reconciled to that newer
-API revision. The SDK change is local and requires package publication before
-CLI consumers can update their pinned dependency.
+and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
+below are pinned to the same API revision. CLI consumers still require a
+published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`63111fec728ac3ebc9a825ea57ebc4c592abdafc` on monorepo `dev`. It contains
+`ec96f7b0a93cc05b0630aa95591330ada98378c6` on monorepo `dev`. It contains
 BanSafe for calls, the SIP address, call analytics, and call retention. `source.json` records the original paths and
 SHA-256 hashes. `coverage.json` uses the same source revision.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        320 |
-| Missing             |          2 |
+| Covered             |        322 |
+| Missing             |          0 |
 | Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
 | Total               |        433 |
 
 The refresh from `9fe6c235` adds two public call-retention operations and two
-Console-only counterparts. The public methods remain `missing` until SDK
-PR #278 lands; the Console routes are excluded because they require dashboard
-membership. Analytics is covered by `Client.calls.stats`, `Client.calls.list`,
-and `Client.calls.export`; `Client.calls.exportAll` walks export pages. No existing
-operation fingerprint changed in the retention refresh.
+Console-only counterparts. The public methods are covered by
+`Client.callRetention`; the Console routes are excluded because they require
+dashboard membership. Analytics is covered by `Client.calls.stats`,
+`Client.calls.list`, and `Client.calls.export`; `Client.calls.exportAll` walks
+export pages. No existing operation fingerprint changed in the retention
+refresh.
 
 The BanSafe update recognizes `number_restricted`, types the
 `session.restriction_updated` webhook and the `reason` and `code` on
@@ -85,6 +85,19 @@ the `billingMode` field of the production enrollment result.
 Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
 successful live call.
+
+## Retention integration
+
+`Client.callRetention.retrieve` and `Client.callRetention.update` cover the
+merged `GET` and `PUT /platform/call-retention` operations. The revision guard
+is optional: callers send `expectedRevision` to reject an intervening change;
+omitting it applies the update without that check. Console retention routes
+remain excluded because they require dashboard membership.
+
+This branch is held for SDK PR #282 before publication. Its BanSafe webhook,
+Calls lifecycle and known-error changes must arrive through a normal `dev`
+merge so every covered method matches these exact snapshots. The three
+analytics routes remain missing until SDK PR #281.
 
 ## Reconciliation
 
@@ -200,12 +213,12 @@ are not retained as compatibility aliases.
 
 Functions is tracked separately in `functions/openapi.json`, with its exact
 monorepo source commit and extraction hash in `functions/source.json`. This
-snapshot contains only the15 Functions operations and their transitive schemas.
+snapshot contains only the 15 Functions operations and their transitive schemas.
 `npm run check:functions` verifies their ledger; SDK tests exercise every method.
 The main snapshots above retain their recorded baseline so a Functions change
 does not silently reconcile unrelated Calls, QuickLink or webhook work.
 
-All15 Functions methods require `client.project(projectId).functions` and an
+All 15 Functions methods require `client.project(projectId).functions` and an
 organization enabled for Functions. The SDK never retries Function mutations or
 invocations automatically. Browser/client-token SDKs do not expose this server
 control plane. A local implementation or installed method does not establish
