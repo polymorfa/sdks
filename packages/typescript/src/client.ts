@@ -19,6 +19,7 @@ import { AudiencesResource } from "./platform/audiences.js";
 import { AuditLogsResource } from "./platform/audit-logs.js";
 import { BillingResource } from "./platform/billing.js";
 import { BanSafeResource } from "./platform/bansafe.js";
+import { CallRetentionResource } from "./platform/call-retention.js";
 import { CampaignsResource } from "./platform/campaigns.js";
 import { CustomersResource } from "./platform/customers.js";
 import {
@@ -61,6 +62,7 @@ export interface ClientBase<O extends ClientOwner> {
   readonly sipTrunks: SipTrunksResource<O>;
   /** Metered usage and usage gates. */
   readonly usage: UsageResource;
+  readonly callRetention: CallRetentionResource;
   readonly raw: RawResourceFor<O>;
   project(projectId: string): Client<"project">;
 }
@@ -111,6 +113,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   readonly quickLinkSettings: QuickLinkSettingsResource<ClientOwner>;
   readonly sipTrunks: SipTrunksResource<ClientOwner>;
   readonly usage: UsageResource;
+  readonly callRetention: CallRetentionResource;
   readonly raw: RawClient | ProjectScopedRawClient;
   readonly #transport: HttpTransport;
   readonly #credential: ClientOptions["credential"];
@@ -168,6 +171,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       projectId !== null && credential.type !== "projectToken",
     );
     this.usage = new UsageResource(this.#transport, projectId);
+    this.callRetention = new CallRetentionResource(this.#transport);
     this.raw =
       projectId === null
         ? new RawClient(this.#transport)

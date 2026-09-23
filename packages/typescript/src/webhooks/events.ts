@@ -47,6 +47,8 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "chat.mute",
   "chat.read",
   "command.result",
+  "contact.opted_in",
+  "contact.opted_out",
   "contact.sync",
   "contact.update",
   "customer.archived",
@@ -292,6 +294,25 @@ export interface PresenceUpdatePayload {
   readonly media?: string;
   readonly unavailable?: boolean;
   readonly lastSeen?: number;
+}
+
+/**
+ * Payload for `contact.opted_out` and `contact.opted_in`. Emitted when a
+ * contact replies to a campaign number with one of the organization's
+ * configured keywords and the suppression list changed. The reply itself is
+ * never included.
+ */
+export interface ContactOptPayload {
+  /** Contact phone number in E.164 format. */
+  readonly phone: string;
+  /** How the change was made. Keyword replies are always `stop-keyword`. */
+  readonly source: "stop-keyword";
+  /** The matched keyword, normalized to upper case. */
+  readonly keyword: string;
+  /** Session name of the number that received the reply. */
+  readonly session: string;
+  /** Project that owns the receiving number, when known. */
+  readonly projectId?: string;
 }
 
 export interface ContactUpdatePayload {
@@ -999,6 +1020,8 @@ export interface WebhookPayloadMap {
   readonly "chat.mute": ChatMutePayload;
   readonly "chat.read": ChatReadPayload;
   readonly "command.result": CommandResultPayload;
+  readonly "contact.opted_in": ContactOptPayload;
+  readonly "contact.opted_out": ContactOptPayload;
   readonly "contact.sync": ContactsSyncPayload;
   readonly "contact.update": ContactUpdatePayload;
   readonly "customer.archived": CustomerArchivedPayload;

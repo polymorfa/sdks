@@ -1,3 +1,10 @@
+import type {
+  CampaignRecipient,
+  CampaignRecipientInput,
+  CampaignRecipientStatus,
+  InvalidRecipientRow,
+} from "../messaging/types.js";
+
 export interface DataEnvelope<T> {
   readonly data: T;
 }
@@ -165,9 +172,194 @@ export interface TransferCustomerNumberRequest {
   readonly confirm: true;
 }
 
+/** Create a campaign through the organization client's Platform resource. */
+export interface CreatePlatformCampaignRequest {
+  /** Owning project; organization API keys are not bound to one project. */
+  readonly projectId: string;
+  /** Trimmed by the API; 1 to 200 characters and must not be blank. */
+  readonly name: string;
+  readonly templateId?: string;
+  readonly recipientListId?: string;
+  readonly senderConfig?: Readonly<Record<string, unknown>>;
+  /** Scheduled start time in Unix milliseconds. */
+  readonly scheduledAt?: number;
+  /** At most 1,000 recipients. */
+  readonly recipients?: readonly CampaignRecipientInput[];
+  /** Ignored when inline recipients are supplied. */
+  readonly recipientCount?: number;
+  // The API deliberately leaves these JSON values opaque.
+  readonly composerBlueprint?: unknown;
+  readonly messagesArray?: unknown;
+  readonly audienceRef?: unknown;
+  readonly complianceConfig?: unknown;
+  readonly variants?: unknown;
+  readonly variantStrategy?: unknown;
+}
+
 export interface ListCampaignsParams {
   readonly projectId: string;
   readonly projectSlug?: string;
+}
+
+/**
+ * Query parameters shared by the single-campaign Platform operations.
+ *
+ * A team API key is not bound to one project, so it must name the project that
+ * owns the campaign. This resource is exposed only on organization clients.
+ */
+export interface PlatformCampaignParams {
+  readonly projectId: string;
+}
+
+/**
+ * Body accepted by `campaigns.update`.
+ *
+ * The contract declares this body as an open object, so any field passes
+ * through. `recipientListId` is named because its behaviour is specified:
+ * pointing a campaign at another audience, or detaching it with null, is
+ * accepted only while the campaign is an unlaunched draft whose audience has
+ * not been copied into recipients. After that the API refuses the change.
+ */
+export interface UpdatePlatformCampaignRequest {
+  readonly recipientListId?: string | null;
+  readonly [field: string]: unknown;
+}
+
+export interface ListPlatformCampaignRecipientsParams {
+  /** Owning project for this organization-client request. */
+  readonly projectId: string;
+  readonly status?: CampaignRecipientStatus;
+  readonly cursor?: string;
+  /** 1 to 100; the API defaults to 25. */
+  readonly limit?: number;
+}
+
+export type PlatformCampaignRecipientsEnvelope =
+  CursorEnvelope<CampaignRecipient>;
+
+export interface AddPlatformCampaignRecipientsRequest {
+  readonly projectId: string;
+  readonly recipients: readonly CampaignRecipientInput[];
+}
+
+export interface AddPlatformCampaignRecipientsResult {
+  readonly campaignId: string;
+  readonly added: number;
+  readonly recipientCount: number;
+  readonly duplicateCount: number;
+  readonly invalidCount: number;
+  readonly invalidRows: readonly InvalidRecipientRow[];
+}
+
+export type AudienceSource = "csv" | "manual" | "api";
+
+/** Column names in an uploaded spreadsheet, mapped onto recipient fields. */
+export interface AudienceImportMapping {
+  readonly phone: string;
+  readonly variables?: Readonly<Record<string, string>>;
+}
+
+interface CreateAudienceBase {
+  readonly name: string;
+  readonly source?: AudienceSource;
+}
+
+/** Inline members, or an empty audience when `members` is omitted. */
+export interface CreateAudienceFromMembers extends CreateAudienceBase {
+  /** Up to 1,000 members. */
+  readonly members?: readonly CampaignRecipientInput[];
+  readonly fileId?: never;
+  readonly mapping?: never;
+}
+
+/** A spreadsheet already uploaded through `audiences.createUpload`. */
+export interface CreateAudienceFromFile extends CreateAudienceBase {
+  readonly members?: never;
+  /** Storage ID returned by `audiences.createUpload`. */
+  readonly fileId: string;
+  /** The API refuses a file import without a mapping. */
+  readonly mapping: AudienceImportMapping;
+}
+
+/**
+ * Send inline `members` or `fileId` with `mapping`, never both. Omitting both
+ * creates an empty audience.
+ */
+export type CreateAudienceRequest =
+  CreateAudienceFromMembers | CreateAudienceFromFile;
+
+export interface Audience {
+  readonly id: string;
+  readonly name: string;
+  readonly source: AudienceSource;
+  readonly recipientCount: number;
+  readonly fileId: string | null;
+  readonly columns: readonly string[] | null;
+  readonly sampleRow: Readonly<Record<string, string>> | null;
+  readonly mapping: Readonly<Record<string, unknown>> | null;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+}
+
+/** An audience plus the counts of the import that created it. */
+export interface AudienceImportResult extends Audience {
+  readonly duplicateCount: number;
+  readonly invalidCount: number;
+  /** At most 20 rejected entries. */
+  readonly invalidRows: readonly InvalidRecipientRow[];
+}
+
+export interface AudienceMember {
+  readonly id: string;
+  readonly phone: string;
+  readonly variables: Readonly<Record<string, string>>;
+  readonly createdAt: number;
+}
+
+export interface ListAudienceMembersParams {
+  readonly cursor?: string;
+  /** 1 to 100; the API defaults to 25. */
+  readonly limit?: number;
+}
+
+export type AudienceMembersEnvelope = CursorEnvelope<AudienceMember>;
+
+export interface AddAudienceMembersRequest {
+  readonly members: readonly CampaignRecipientInput[];
+}
+
+export interface AddAudienceMembersResult {
+  readonly listId: string;
+  readonly added: number;
+  readonly recipientCount: number;
+  readonly duplicateCount: number;
+  readonly invalidCount: number;
+  readonly invalidRows: readonly InvalidRecipientRow[];
+}
+
+export interface DeleteAudienceMemberResult {
+  readonly removed: true;
+  readonly listId: string;
+  readonly phone: string;
+  readonly recipientCount: number;
+}
+
+/**
+ * Organization keyword capture. When enabled, a reply matching an opt-out
+ * keyword suppresses the contact and emits `contact.opted_out`.
+ */
+export interface OptOutSettings {
+  readonly enabled: boolean;
+  /** At least one keyword, at most 50, each at most 32 characters. */
+  readonly optOutKeywords: readonly string[];
+  readonly optInKeywords: readonly string[];
+  readonly updatedAt: number | null;
+}
+
+export interface UpdateOptOutSettingsRequest {
+  readonly enabled: boolean;
+  readonly optOutKeywords: readonly string[];
+  readonly optInKeywords: readonly string[];
 }
 
 export interface Organization {

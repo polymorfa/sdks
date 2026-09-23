@@ -173,19 +173,15 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "651c1378264aa73c1442a9fa083908d8f5195400",
-      total: 436,
-      covered: 320,
+      sourceCommit: "4bdc5f88821d8418bd217666ee90e31aa98d14b2",
+      total: 444,
+      covered: 330,
       partial: 0,
-      // Retention (two operations) and analytics (three) remain separate SDK PRs.
-      missing: 5,
+      missing: 3,
       excluded: 111,
       changed: 0,
     });
-    // The eight excluded console-only operation-management routes were
-    // replaced by their public /platform equivalents (Operations in the
-    // Platform API), covered by Client.operations, so there is no unresolved
-    // removal left.
+    // Analytics remains in a separate SDK PR; no source operation was removed.
     const resolutions = (result.report?.resolutions ?? []) as Array<{
       operationId: string;
       status: string;
@@ -242,6 +238,8 @@ describe("coverage checker", () => {
       "resumeCampaign",
       "stopCampaign",
       "requeueCampaign",
+      "listProjectCampaignRecipients",
+      "addProjectCampaignRecipients",
     ];
     const mappings = Object.fromEntries(
       ledger.operations
@@ -250,15 +248,52 @@ describe("coverage checker", () => {
     );
 
     expect(mappings).toEqual({
+      addProjectCampaignRecipients: "MessagingClient.campaigns.addRecipients",
       createCampaign: "MessagingClient.campaigns.create",
       getCampaign: "MessagingClient.campaigns.retrieve",
       getCampaignAnalytics: "MessagingClient.campaigns.analytics",
       launchCampaign: "MessagingClient.campaigns.launch",
       listCampaigns: "MessagingClient.campaigns.list",
+      listProjectCampaignRecipients: "MessagingClient.campaigns.listRecipients",
       pauseCampaign: "MessagingClient.campaigns.pause",
       requeueCampaign: "MessagingClient.campaigns.requeue",
       resumeCampaign: "MessagingClient.campaigns.resume",
       stopCampaign: "MessagingClient.campaigns.stop",
+    });
+  });
+
+  it("maps the Platform audience, recipient and opt-out settings contract", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const operationIds = [
+      "createAudience",
+      "addAudienceMembers",
+      "listAudienceMembers",
+      "deleteAudienceMember",
+      "listCampaignRecipients",
+      "addCampaignRecipients",
+      "getOptOutSettings",
+      "updateOptOutSettings",
+    ];
+    const mappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ operationId }) => operationIds.includes(operationId))
+        .map(({ operationId, typescript }) => [operationId, typescript.method]),
+    );
+
+    expect(mappings).toEqual({
+      addAudienceMembers: "Client.audiences.addMembers",
+      addCampaignRecipients: "Client.campaigns.addRecipients",
+      createAudience: "Client.audiences.create",
+      deleteAudienceMember: "Client.audiences.deleteMember",
+      getOptOutSettings: "Client.optOuts.getSettings",
+      listAudienceMembers: "Client.audiences.listMembers",
+      listCampaignRecipients: "Client.campaigns.recipients",
+      updateOptOutSettings: "Client.optOuts.updateSettings",
     });
   });
 

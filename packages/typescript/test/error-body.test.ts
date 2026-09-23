@@ -144,7 +144,6 @@ describe("error codes", () => {
       "whatsapp_account_restricted",
       "bansafe_throttled",
       "session_not_ready",
-      "addon_required",
     ]) {
       expect(isKnownPolymorfaErrorCode(code), code).toBe(true);
     }
@@ -181,8 +180,6 @@ describe("error codes", () => {
       "utf8",
     );
     // Platform operations document these codes in prose rather than an enum.
-    // premium_required left the contract when teams moved to Free and
-    // Pay-As-You-Go; the API no longer returns it.
     const documentedInProse = ["payg_required", "addon_required"];
     for (const code of documentedInProse) {
       expect(platformText).toContain(`code \`${code}\``);
@@ -194,7 +191,13 @@ describe("error codes", () => {
         .properties.code.enum,
       ...documentedInProse,
     ]);
-    expect([...POLYMORFA_ERROR_CODES].sort()).toEqual([...published].sort());
+    // Older API deployments returned this code; keep recognizing it even
+    // though the pinned API contract no longer advertises it.
+    const legacyCodes = ["premium_required"];
+    expect([...POLYMORFA_ERROR_CODES].sort()).toEqual(
+      [...published, ...legacyCodes].sort(),
+    );
+    expect(isKnownPolymorfaErrorCode("premium_required")).toBe(true);
   });
 
   it("accepts codes added by a newer API", () => {
