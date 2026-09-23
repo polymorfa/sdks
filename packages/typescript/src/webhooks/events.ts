@@ -77,6 +77,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "session.connected",
   "session.logged_out",
   "session.phone_offline",
+  "session.restriction_updated",
   "session.status",
   "template.status",
 ] as const;
@@ -220,8 +221,37 @@ export interface SessionConnectedPayload {
   readonly businessName?: string;
 }
 
+/**
+ * Why a session was logged out: `banned` (WhatsApp banned the account),
+ * `device_removed` (the linked device was removed from the phone or another
+ * device) or `unknown`.
+ */
+export type SessionLoggedOutReason = "banned" | "device_removed" | "unknown";
+
 export interface SessionLoggedOutPayload {
-  readonly reason: string;
+  readonly reason: SessionLoggedOutReason;
+  /** WhatsApp's logout code (401, 403 or 406), or 0 when none was given. */
+  readonly code: number;
+}
+
+/** A WhatsApp restriction reported by `session.restriction_updated`. */
+export type SessionRestrictionType = "reachout_timelock";
+
+/**
+ * A WhatsApp restriction on the number started, changed or ended. While
+ * `reachout_timelock` is active the number can only message or call people it
+ * has already chatted with; calls to anyone else fail with
+ * `number_restricted`.
+ */
+export interface SessionRestrictionUpdatedPayload {
+  readonly type: SessionRestrictionType;
+  readonly active: boolean;
+  /** WhatsApp's category for the restriction; null when inactive or not reported. */
+  readonly enforcementType: string | null;
+  /** When the restriction ends (ISO 8601); null when inactive or open-ended. */
+  readonly expiresAt: string | null;
+  /** When the state was observed (ISO 8601). */
+  readonly observedAt: string;
 }
 
 export interface SessionPhoneOfflinePayload {
@@ -600,57 +630,46 @@ export type BanSafeIncidentEventKind =
 export type BanSafeEventRung =
   "none" | "notify" | "throttle" | "block_cold" | "suspend";
 
-export interface BanSafeHealthThresholdPayload {
-  readonly sessionId: string;
-  readonly projectId: string;
-  /** Health from 0 to 100. */
-  readonly health: number;
-  readonly threshold: number;
-  readonly healthSource: "rules_v1" | "ml_model";
-  readonly estimatorVersion: string;
-  readonly modelVersion: string | null;
-  readonly evaluatedAt: string;
-  readonly policyVersion: number;
-  readonly episodeId: string;
-  readonly actionId: string;
-}
-
 export type BanSafeRiskLevel = "low" | "elevated" | "high" | "critical";
+export type BanSafeHealthBandName =
+  "good" | "fair" | "poor" | "failing" | "unknown";
 
-/** Probability (0 to 1) of a temporary or permanent ban within each window. */
 export interface BanSafeForecast {
+  /** Probability (0-1) of a temporary or permanent ban within 7 days. */
   readonly days7: number;
   readonly days14: number;
   readonly days30: number;
 }
 
+/** The factor group a risk factor belongs to. */
+export type BanSafeRiskFactorGroup =
+  | "volume"
+  | "cold_outreach"
+  | "restrictions"
+  | "engagement"
+  | "send_errors"
+  | "pattern"
+  | "traffic_mix"
+  | "number_age"
+  | "connection"
+  | "ban_history"
+  | "account"
+  | "workspace"
+  | "climate"
+  | "conversation"
+  | "solicitation"
+  | "reputation";
+
 export interface BanSafeRiskFactor {
-  /** A feature key, or `group:<groupId>`. */
+  /** Feature key, or `group:<groupId>`. */
   readonly key: string;
-  readonly group:
-    | "volume"
-    | "cold_outreach"
-    | "restrictions"
-    | "engagement"
-    | "send_errors"
-    | "pattern"
-    | "traffic_mix"
-    | "number_age"
-    | "connection"
-    | "ban_history"
-    | "account"
-    | "workspace"
-    | "climate"
-    | "conversation"
-    | "solicitation"
-    | "reputation";
+  readonly group: BanSafeRiskFactorGroup;
   readonly label: string;
   readonly direction: "raises" | "lowers";
   readonly strength: "strong" | "moderate" | "slight";
-  /** Whole-percentage share of the raising (or lowering) total. */
+  /** Share, as a whole percentage, of the raising or lowering total. */
   readonly impact: number;
   readonly sentence: string;
-  /** Action to take; `null` for lowering factors and groups without a hint. */
   readonly hint: string | null;
 }
 
@@ -660,9 +679,10 @@ export interface BanSafeModelRef {
 }
 
 export interface BanSafeRiskChangedPayload {
+  /** The customer's own number in E.164 format. */
   readonly phoneNumber: string;
   readonly level: BanSafeRiskLevel;
-  /** `null` for the first evaluation of the number. */
+  /** Null for the first evaluation of the number. */
   readonly previousLevel: BanSafeRiskLevel | null;
   /** Risk score from 0 (lowest) to 100 (highest). */
   readonly score: number;
@@ -683,7 +703,7 @@ export interface BanSafeHealthFinding {
   readonly key: string;
   readonly title: string;
   readonly severity: "info" | "warning" | "critical";
-  /** `not_measured` means the signal could not be measured; it is never reported as clean. */
+  /** `not_measured` means the signal could not be measured for this number. */
   readonly status: "open" | "acknowledged" | "not_measured";
   /** Health points this finding costs. */
   readonly points: number;
@@ -691,23 +711,34 @@ export interface BanSafeHealthFinding {
 
 export interface BanSafeHealthChangedPayload {
   readonly phoneNumber: string;
-  /** Health from 0 (worst) to 100 (best), or `null` when not measured. */
+  /** Health from 0 (worst) to 100 (best), or null when not measured. */
   readonly health: number | null;
-  readonly band: "good" | "fair" | "poor" | "failing" | "unknown";
-  /** `null` for the first evaluation of the number. */
-  readonly previousBand: string | null;
+  readonly band: BanSafeHealthBandName;
+  readonly previousBand: BanSafeHealthBandName | null;
   readonly state:
     "measured" | "partial" | "measuring" | "restricted" | "banned";
   readonly penalties: BanSafeHealthPenalties;
   readonly findings: readonly BanSafeHealthFinding[];
   readonly measuredChecks: number;
   readonly totalChecks: number;
-  /**
-   * Messages the number may send today under the project's warm-up plan.
-   * `null` or absent when the project has no warm-up plan.
-   */
+  /** Messages allowed today under the warm-up plan; null or absent without one. */
   readonly allowance?: number | null;
   readonly evaluatedAt: string;
+}
+
+export interface BanSafeHealthThresholdPayload {
+  readonly sessionId: string;
+  readonly projectId: string;
+  /** Health from 0 to 100. */
+  readonly health: number;
+  readonly threshold: number;
+  readonly healthSource: "rules_v1" | "ml_model";
+  readonly estimatorVersion: string;
+  readonly modelVersion: string | null;
+  readonly evaluatedAt: string;
+  readonly policyVersion: number;
+  readonly episodeId: string;
+  readonly actionId: string;
 }
 
 export interface BanSafeEnforcementPayload {
@@ -972,6 +1003,7 @@ export interface WebhookPayloadMap {
   readonly "session.connected": SessionConnectedPayload;
   readonly "session.logged_out": SessionLoggedOutPayload;
   readonly "session.phone_offline": SessionPhoneOfflinePayload;
+  readonly "session.restriction_updated": SessionRestrictionUpdatedPayload;
   readonly "session.status": SessionStatusPayload;
   readonly "template.status": TemplateStatusPayload;
 }

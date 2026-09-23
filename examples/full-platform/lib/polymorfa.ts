@@ -19,7 +19,7 @@ let bridgeClient: BridgeClient | undefined;
 function shared(): SharedClientOptions {
   const baseUrl = env.baseUrl();
   return {
-    apiVersion: "1.0.0",
+    apiVersion: "2026-03-20",
     ...(baseUrl === undefined ? {} : { baseUrl }),
   };
 }

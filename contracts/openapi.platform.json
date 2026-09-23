@@ -31300,6 +31300,7 @@
             "maxLength": 2048
           },
           "eventTypes": {
+            "description": "Names reserved for internal use cannot be newly subscribed. Existing stored entries may be preserved during updates but never match deliveries.",
             "type": "array",
             "minItems": 1,
             "maxItems": 100,
@@ -31349,6 +31350,7 @@
             "maxLength": 2048
           },
           "eventTypes": {
+            "description": "Names reserved for internal use cannot be newly subscribed. Existing stored entries may be preserved during updates but never match deliveries.",
             "type": "array",
             "minItems": 1,
             "maxItems": 100,
@@ -31398,6 +31400,7 @@
             "maxLength": 2048
           },
           "eventTypes": {
+            "description": "Names reserved for internal use cannot be newly subscribed. Existing stored entries may be preserved during updates but never match deliveries.",
             "type": "array",
             "minItems": 1,
             "maxItems": 100,
@@ -31442,6 +31445,7 @@
             "maxLength": 2048
           },
           "eventTypes": {
+            "description": "Names reserved for internal use cannot be newly subscribed. Existing stored entries may be preserved during updates but never match deliveries.",
             "type": "array",
             "minItems": 1,
             "maxItems": 100,
@@ -33146,6 +33150,7 @@
         "maxProperties": 0
       },
       "TestWebhookInput": {
+        "description": "Names reserved for internal use are rejected with HTTP 400, whether supplied as eventType or in the native event body, before a test event or delivery is created.",
         "oneOf": [
           {
             "type": "object",
