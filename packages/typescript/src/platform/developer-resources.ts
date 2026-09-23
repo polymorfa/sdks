@@ -185,7 +185,7 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
     params?: ListEventsParams,
     options?: RequestOptions,
   ): Promise<CursorPage<EventFor<O>>>;
-  list(
+  async list(
     params: ListEventsParams = {},
     options: RequestOptions = {},
   ): Promise<CursorPage<EventFor<O>>> {

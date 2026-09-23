@@ -108,7 +108,9 @@ it("uses the project event route and rejects incompatible offset filters locally
     { afterOffset: "1", since: "2026-09-01T00:00:00Z" },
     { afterOffset: "1", until: "2026-09-02T00:00:00Z" },
   ]) {
-    expect(() => events.list(params)).toThrow(PolymorfaValidationError);
+    await expect(events.list(params)).rejects.toBeInstanceOf(
+      PolymorfaValidationError,
+    );
   }
   for (const afterOffset of ["-1", "01", "9223372036854775808"]) {
     await expect(events.list({ afterOffset })).rejects.toMatchObject({
