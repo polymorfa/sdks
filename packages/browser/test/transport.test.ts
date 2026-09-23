@@ -300,6 +300,52 @@ describe("BrowserTransport", () => {
     ]);
   });
 
+  it("times out a stalled operation-bearing body and retains its receipt", async () => {
+    const fetcher = vi.fn<typeof fetch>(
+      async (_url, init) =>
+        new Response(
+          new ReadableStream({
+            start(controller) {
+              init?.signal?.addEventListener(
+                "abort",
+                () =>
+                  controller.error(new DOMException("Aborted", "AbortError")),
+                { once: true },
+              );
+            },
+          }),
+          {
+            status: 202,
+            headers: {
+              "content-type": "application/json",
+              "x-polymorfa-operation-id": "op_stalled",
+            },
+          },
+        ),
+    );
+    const transport = new BrowserTransport({
+      getClientToken: async () => "pmfa_ct_fixture",
+      fetch: fetcher,
+      maxNetworkRetries: 2,
+      sleep: async () => undefined,
+    });
+
+    await expect(
+      transport.request({
+        method: "POST",
+        path: "/messaging/number/messages/send",
+        body: { text: "hello" },
+        idempotencyKey: "send-stalled",
+        timeoutMs: 10,
+      }),
+    ).rejects.toMatchObject({
+      category: "timeout",
+      status: 202,
+      metadata: { operationId: "op_stalled", attempts: 1 },
+    });
+    expect(fetcher).toHaveBeenCalledOnce();
+  });
+
   it("distinguishes caller cancellation from timeout", async () => {
     const pendingFetch: typeof fetch = async (_url, init) =>
       new Promise((_resolve, reject) =>

@@ -137,9 +137,12 @@ export class BrowserTransport {
         attempt,
       });
       try {
-        response = await this.#perform(request);
+        const data = await this.#perform(request, (received) => {
+          response = received;
+        });
+        if (response === undefined)
+          throw new Error("Missing browser response.");
         const metadata = responseMetadata(response, attempt);
-        const data = await decodeBody(response);
         if (response.ok) {
           this.#emit({
             type: "request.completed",
@@ -175,23 +178,33 @@ export class BrowserTransport {
           response === undefined
             ? undefined
             : responseMetadata(response, attempt);
-        if (
-          error instanceof BrowserConnectionError &&
-          receivedMetadata?.operationId !== undefined
-        ) {
-          error = new BrowserConnectionError(
-            "The response body could not be read. Query the operation status before retrying.",
-            {
-              category: "connection",
-              code: "connection_error",
-              status: receivedMetadata.status,
-              ...(receivedMetadata.requestId === undefined
-                ? {}
-                : { requestId: receivedMetadata.requestId }),
-              metadata: receivedMetadata,
-              cause,
-            },
-          );
+        if (receivedMetadata?.operationId !== undefined) {
+          const options = {
+            category: error.category,
+            ...(error.code === undefined ? {} : { code: error.code }),
+            status: receivedMetadata.status,
+            ...(receivedMetadata.requestId === undefined
+              ? {}
+              : { requestId: receivedMetadata.requestId }),
+            metadata: receivedMetadata,
+            cause,
+          };
+          if (error instanceof BrowserConnectionError) {
+            error = new BrowserConnectionError(
+              "The response body could not be read. Query the operation status before retrying.",
+              { ...options, category: "connection", code: "connection_error" },
+            );
+          } else if (error instanceof BrowserTimeoutError) {
+            error = new BrowserTimeoutError(error.message, {
+              ...options,
+              category: "timeout",
+            });
+          } else if (error instanceof BrowserCancelledError) {
+            error = new BrowserCancelledError(error.message, {
+              ...options,
+              category: "cancelled",
+            });
+          }
         }
         if (
           (error instanceof BrowserConnectionError ||
@@ -224,7 +237,10 @@ export class BrowserTransport {
     }
   }
 
-  async #perform(request: BrowserRequest): Promise<Response> {
+  async #perform(
+    request: BrowserRequest,
+    onResponse: (response: Response) => void,
+  ): Promise<unknown> {
     throwIfAborted(request.signal);
     const token = await this.#tokens.get();
     throwIfAborted(request.signal);
@@ -259,12 +275,14 @@ export class BrowserTransport {
     const cancel = () => controller.abort(request.signal?.reason);
     request.signal?.addEventListener("abort", cancel, { once: true });
     try {
-      return await this.#fetch(url, {
+      const response = await this.#fetch(url, {
         method: request.method,
         headers,
         ...(body === undefined ? {} : { body }),
         signal: controller.signal,
       });
+      onResponse(response);
+      return await decodeBody(response);
     } catch (cause) {
       if (timedOut) throw new RequestTimeout(timeoutMs, cause);
       throw cause;
