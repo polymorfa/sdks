@@ -2037,8 +2037,8 @@ const stop = await platform.sessions.stopMany(
 );
 
 const removal = await platform.sessions.deleteMany(
-  { sessionIds: ["old-support", "old-sales"] },
-  { idempotencyKey: "delete-old-support-sales" },
+  { sessionIds: ["test-support", "test-sales"] },
+  { idempotencyKey: "delete-test-support-sales" },
 );
 ```
 
@@ -2046,10 +2046,14 @@ The source accepts 1–100 UUIDs or stable slugs. It trims identifiers and the
 live handler deduplicates repeats, while OpenAPI declares the array unique.
 Only matching rows contribute to `{ stopping }` or `{ removed }`; the API does
 not return per-item results or errors for missing identifiers. Batch stop
-requires session-control publishing and queues fire-and-forget stop commands.
-Batch delete removes rows first, then best-effort queues kill commands for
-rows that were not disconnected. Neither route returns a durable operation ID,
-stream, watcher, or completion status.
+transitions testing Numbers to unavailable and submits lifecycle stop operations
+for production Numbers.
+`sessions.delete` and `deleteMany` remove testing Numbers only. If any matched
+Number in a deletion batch is production, the API returns HTTP 409 before
+changing the testing runtime or removing any Number in that batch. For a
+testing-only batch, the API stops and flushes each runtime before removing its
+row. Neither batch route returns a durable operation ID, stream, watcher, or
+completion status.
 
 The transport retries these mutations only when an idempotency key is
 provided. The pinned handlers do not persist that header. A repeated stop can
