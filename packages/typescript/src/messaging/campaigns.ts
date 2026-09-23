@@ -115,7 +115,7 @@ export class MessagingCampaignsResource {
     return this.transport.request({
       method: "POST",
       path: `${campaignPath(projectSlug, campaignId)}/stop`,
-      ...options,
+      ...withIdempotencyKey(options),
     });
   }
 
@@ -185,7 +185,7 @@ export class MessagingCampaignsResource {
     return this.transport.request({
       method: "POST",
       path: `${campaignPath(projectSlug, campaignId)}/${action}`,
-      ...options,
+      ...withIdempotencyKey(options),
     });
   }
 }

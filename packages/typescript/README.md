@@ -1391,6 +1391,10 @@ cancels; its `operationId` is null when the campaign had no active delivery run
 and was cancelled immediately. Check for null before calling
 `Client.operations.wait(operationId)`. A launched campaign waiting for its
 scheduled start can be stopped, but its start time cannot be changed.
+Launch, pause, resume, and stop generate one idempotency key per call unless you
+pass one. Automatic retries reuse that key; a completed replay returns the
+API's `idempotency_completed` conflict, so inspect the campaign state after a
+lost response.
 
 `requeue` moves eligible failed recipients, and optionally recipients skipped
 with an error, back into the queue. It returns the number moved. The API refuses
@@ -1642,7 +1646,10 @@ console.log(campaign.data.data, campaign.metadata.requestId);
 `composerBlueprint`, `messagesArray`, `audienceRef`, `complianceConfig`,
 `variants`, and `variantStrategy` values remain opaque JSON. Extra top-level
 fields are not part of the create contract. Lifecycle action payloads remain
-open `PlatformPayload` objects. Templates and Flows are not methods on `Client`:
+open `PlatformPayload` objects. Launch, pause, resume, and stop generate one
+idempotency key per call unless you pass one. Archive, duplicate, and requeue
+do not generate keys because their contracts do not declare replay. Templates
+and Flows are not methods on `Client`:
 their endpoints require a dashboard bearer and reject the organization API key
 used by the server client.
 

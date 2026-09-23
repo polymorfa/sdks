@@ -61,6 +61,10 @@
   duplicates. List the recipients or members before you append again. To opt
   back in, set both `maxNetworkRetries` and `idempotencyKey` on the request.
 
+- Messaging and Platform campaign launch, pause, resume, and stop now generate
+  an idempotency key when the caller omits one. Automatic retries reuse the
+  same key under the API's lifecycle replay contract.
+
 - Added `Client.audiences.addMembers`, `listMembers` and `deleteMember` for
   audience membership.
 

@@ -1,5 +1,8 @@
 import { HttpTransport } from "../transport/http.js";
-import { withoutAutomaticRetry } from "../transport/idempotency.js";
+import {
+  withIdempotencyKey,
+  withoutAutomaticRetry,
+} from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   AddPlatformCampaignRecipientsRequest,
@@ -221,11 +224,16 @@ export class CampaignsResource {
     body: PlatformPayload | undefined,
     options: RequestOptions,
   ): CampaignResponse {
+    const retryable =
+      action === "launch" ||
+      action === "pause" ||
+      action === "resume" ||
+      action === "stop";
     return this.write(
       "POST",
       `${campaignPath(campaignId)}/${action}`,
       body,
-      options,
+      retryable ? withIdempotencyKey(options) : options,
     );
   }
 

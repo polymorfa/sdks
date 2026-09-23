@@ -250,7 +250,11 @@ describe("Client campaigns", () => {
     await client.campaigns.launch("campaign/a", { reason: "launch" });
     await client.campaigns.pause("campaign/a", { reason: "pause" });
     await client.campaigns.resume("campaign/a", { reason: "resume" });
-    await client.campaigns.stop("campaign/a", { reason: "stop" });
+    await client.campaigns.stop(
+      "campaign/a",
+      { reason: "stop" },
+      { idempotencyKey: "platform-campaign-stop" },
+    );
     await client.campaigns.archive("campaign/a", { reason: "archive" });
     await client.campaigns.duplicate("campaign/a", { reason: "duplicate" });
     await client.campaigns.requeue("campaign/a", { reason: "requeue" });
@@ -270,6 +274,15 @@ describe("Client campaigns", () => {
       "GET /platform/campaigns/campaign%2Fa/events?projectId=project%2Fa",
       "GET /platform/campaigns/campaign%2Fa/recipients?projectId=project%2Fa",
     ]);
+    for (const request of requests.slice(0, 3)) {
+      expect(request.headers["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/);
+    }
+    expect(requests[3]?.headers["idempotency-key"]).toBe(
+      "platform-campaign-stop",
+    );
+    for (const request of requests.slice(4, 7)) {
+      expect(request.headers["idempotency-key"]).toBeUndefined();
+    }
     expect(requests.slice(0, 7).map(({ body }) => body)).toEqual([
       '{"reason":"launch"}',
       '{"reason":"pause"}',

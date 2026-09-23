@@ -216,7 +216,9 @@ describe("MessagingClient campaigns", () => {
     );
     const paused = await client.campaigns.pause("launch/eu", campaign.id);
     await client.campaigns.resume("launch/eu", campaign.id);
-    await client.campaigns.stop("launch/eu", campaign.id);
+    await client.campaigns.stop("launch/eu", campaign.id, {
+      idempotencyKey: "campaign-stop-august",
+    });
 
     expectTypeOf(launched).toEqualTypeOf<
       ApiResponse<CampaignOperationResponse>
@@ -250,6 +252,11 @@ describe("MessagingClient campaigns", () => {
     ]);
     expect(requests[0]?.headers["idempotency-key"]).toBe(
       "campaign-launch-august",
+    );
+    expect(requests[1]?.headers["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/);
+    expect(requests[2]?.headers["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/);
+    expect(requests[3]?.headers["idempotency-key"]).toBe(
+      "campaign-stop-august",
     );
     expect(launched.data.data.operationId).toBe(
       "018f0000-0000-7000-8000-000000000003",
@@ -347,11 +354,12 @@ describe("MessagingClient campaign recipients", () => {
   });
 
   it("types stop with a nullable operation ID", async () => {
-    const { client } = await campaignsServer();
+    const { client, requests } = await campaignsServer();
 
     const stopped = await client.campaigns.stop("launch/eu", campaign.id);
 
     expectTypeOf(stopped).toEqualTypeOf<ApiResponse<CampaignStopResponse>>();
     expectTypeOf(stopped.data.data.operationId).toEqualTypeOf<string | null>();
+    expect(requests[0]?.headers["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/);
   });
 });
