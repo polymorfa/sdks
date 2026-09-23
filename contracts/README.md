@@ -25,11 +25,11 @@ published SDK package before updating their pinned dependency.
 ## Whole-API snapshot
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at merged `polymorfa/polymorfa` API `dev` commit
+files at unmerged `polymorfa/polymorfa` Hybrid Link branch commit
 `b38ba787b3fd83eef830060a0d454f856db4666b`. This revision includes Hybrid Link and Voice audio on top of
 usage gates, Calls analytics, Campaigns P0 and Functions. `source.json`
 records the source paths and SHA-256 hashes. The snapshots and ledger use
-the same revision; this does not establish package publication, deployed
+the same revision; it does not establish package publication, deployed
 availability, or Hybrid Link enrollment.
 
 Native Messaging and Platform calls default to API revision `2026-09-22`,
