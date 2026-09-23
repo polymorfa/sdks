@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`63111fec728ac3ebc9a825ea57ebc4c592abdafc` on monorepo `dev`. Graph-compatible APIs are outside
+`f4a340da3b74248232ebea73f3e72b42f667beef` on monorepo `dev`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -264,6 +264,8 @@ The organization view also exposes these management resources:
 - `sipTrunks`: list, create, retrieve, update, delete, and rotate the
   credentials of a project's SIP trunks, and read the SIP address your PBX
   points at with `endpoint()` (also on project clients)
+- `callRetention`: retrieve and update how long Polymorfa keeps the team's
+  call data (also readable on project clients; changes need a team API key)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
@@ -729,8 +731,7 @@ The typed webhook catalog includes `session.restriction_updated` with
 `device_removed`, or `unknown`. Test event requests support the restriction
 fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
-Typed call analytics and call retention settings methods are not implemented.
-These five public operations remain recorded as
-missing in the contract ledger. The contract snapshot is provisional; the
-final merged API revision must be pinned before this SDK update is merged or
-published. See the repository contract notes for the exact source revision.
+`Client.callRetention` covers the team call-retention settings. Three public
+call analytics and export operations remain recorded as missing in the contract
+ledger. The contract snapshot is pinned to merged API `dev` commit
+`f4a340da3b74248232ebea73f3e72b42f667beef`.

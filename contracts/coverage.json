@@ -2794,9 +2794,8 @@
       "operationId": "getCallRetention",
       "fingerprint": "3e825da1f3944a588552e1631f09c8ea7daee2894b07f03cd08db9cce2ac1580",
       "typescript": {
-        "status": "missing",
-        "reason": "No typed SDK method implements this public operation.",
-        "milestone": "calls-analytics-and-sip-discovery"
+        "status": "covered",
+        "method": "Client.callRetention.retrieve"
       }
     },
     {
@@ -4757,9 +4756,8 @@
       "operationId": "updateCallRetention",
       "fingerprint": "6004ba28c2417f134b7c0d9fa7589e482e57d574dd4322d9f613e4e3e33253ef",
       "typescript": {
-        "status": "missing",
-        "reason": "No typed SDK method implements this public operation.",
-        "milestone": "calls-analytics-and-sip-discovery"
+        "status": "covered",
+        "method": "Client.callRetention.update"
       }
     },
     {

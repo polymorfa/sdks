@@ -3,15 +3,14 @@
 ## Focused test-event update
 
 `testing-events.json` records the four test-event schemas from API commit
-`63111fec728ac3ebc9a825ea57ebc4c592abdafc`, including the source path and file
+`f4a340da3b74248232ebea73f3e72b42f667beef`, including the source path and file
 hash. The TypeScript test-event catalog and override types use that revision.
 Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
-and `call_restricted` to `callEndReason`. This focused supplement does not claim
-that the full snapshots or coverage ledger below were reconciled to that newer
-API revision. The SDK change is local and requires package publication before
-CLI consumers can update their pinned dependency.
+and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
+below are pinned to the same API revision. CLI consumers require a published
+SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
@@ -26,10 +25,10 @@ operation routes moved to `/platform/operations` and
 `/platform/projects/{projectId}/operations`; the existing `Client.operations`
 and project-view `operations` resources cover list, get, transitions and cancel.
 Three new Console retention and SIP discovery operations stay excluded.
-Five public operations remain explicitly missing: `GET` and `PUT
-/platform/call-retention`, `GET /platform/calls`, `GET /platform/calls/export`,
-and `GET /platform/calls/stats`. This P0 update
-does not add typed methods for those operations or claim whole-contract parity.
+`Client.callRetention` covers `GET` and `PUT /platform/call-retention`, merged
+from SDK `dev`. Three public Calls operations remain explicitly missing:
+`GET /platform/calls`, `/platform/calls/export`, and `/platform/calls/stats`.
+This P0 update does not claim whole-contract parity.
 
 SDK `dev` through `8392f66` adds `Client.sipTrunks.endpoint()` for
 `GET /platform/sip/endpoint`. Its `SipEndpoint` result is a discriminated union:
@@ -100,8 +99,8 @@ too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        325 |
-| Missing             |          5 |
+| Covered             |        327 |
+| Missing             |          3 |
 | Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
