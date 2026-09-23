@@ -69,7 +69,21 @@ export {
   type BridgeRoute,
   type BridgeSignal,
 } from "./bridge.js";
-export { ChatsResource, type DeleteMessageOptions } from "./messaging/chats.js";
+export {
+  ChatsResource,
+  type DeleteMessageOptions,
+  type GetStoredChatMessageResponse,
+  type GetStoredChatResponse,
+  type ListStoredChatMessagesResponse,
+  type ListStoredChatsResponse,
+  type StoredChat,
+  type StoredChatMessagesParams,
+  type StoredChatsParams,
+  type StoredHistoryPage,
+  type StoredMedia,
+  type StoredMessage,
+  type StoredMessageSummary,
+} from "./messaging/chats.js";
 export { ChannelsResource } from "./messaging/channels.js";
 export { BusinessResource } from "./messaging/business.js";
 export { CallsResource } from "./messaging/calls.js";

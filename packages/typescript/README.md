@@ -830,8 +830,8 @@ await messaging.messages.send(
 ```
 
 Reply context uses `quotedMessage`; forwarding is represented by
-`isForwarded`. Neither is a separate endpoint. The pinned contract exposes no
-message history, list, search, or standalone forward/reply route.
+`isForwarded`. Neither is a separate endpoint. Retained message history is
+read through `MessagingClient.chats`; there is no standalone forward or reply route.
 
 Client tokens can call all five Messages operations only when the corresponding
 live rule is enabled: `send_message` for send and star, `send_reaction` for
@@ -1584,8 +1584,10 @@ those gaps.
 
 ## Chats
 
-`MessagingClient.chats` exposes the credential-compatible Linked Device chat
-management surface. Every operation requires `chats:manage`.
+`MessagingClient.chats` exposes Linked Device chat management and retained
+history. Mutations require `chats:manage`. History reads require hosted message
+storage, Beta team enrollment, and `chats:read` for conversations or
+`messages:read` for messages.
 
 ```ts
 await messaging.chats.editMessage(
@@ -1601,12 +1603,39 @@ await messaging.chats.setDisappearingTimer(
   "15551234567@s.whatsapp.net",
   { durationSeconds: 604800 },
 );
+
+const chats = await messaging.chats.list("support", {
+  limit: 50,
+  kind: "direct",
+});
+const conversationId = chats.data.data[0]?.conversation.id;
+if (conversationId) {
+  const messages = await messaging.chats.listMessages(
+    "support",
+    conversationId,
+    { limit: 50, order: "desc", types: "text,image" },
+  );
+  const messageId = messages.data.data[0]?.id;
+  if (messageId) {
+    const message = await messaging.chats.retrieveMessage(
+      "support",
+      conversationId,
+      messageId,
+    );
+    console.log(message.data.data.whatsapp_id);
+  }
+}
 ```
 
 The duration is typed to the four values accepted by the API: disabled, one
 day, one week, or 90 days. The resource also provides `deleteMessage`,
-`archive`, and `unarchive`. Chat operations are not available for Cloud API
-sessions.
+`archive`, and `unarchive`. `chats.retrieve` reads one stored conversation;
+`list` and `listMessages` return `data`, `hasMore`, `nextCursor`, and
+`previousCursor`. Keep message IDs as strings and reuse an opaque cursor only
+with the same path and filters. History responses expose
+`metadata.headers["polymorfa-data-region"]`. A session without enabled hosted
+storage or Beta enrollment does not return an empty history page. These
+operations are not available for Cloud API sessions.
 
 ## Webhooks and events
 
@@ -2178,7 +2207,7 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. The contract snapshot
-is pinned to unmerged API Hybrid Link commit `c7b20c3775b9234ce03cf2c90d72eed903249efe`.
+is pinned to unmerged API Hybrid Link commit `f3ac0bb3ad02d50bf284d1d3b28ae30e771faf20`.
 
 ## Functions
 

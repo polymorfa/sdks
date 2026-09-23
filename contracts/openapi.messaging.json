@@ -7583,6 +7583,7 @@
                   "permission_denied",
                   "missing_scope",
                   "resource_not_found",
+                  "hms_not_enabled",
                   "media_fetch_failed",
                   "resource_gone",
                   "feature_unavailable",
@@ -9288,6 +9289,352 @@
         },
         "required": [
           "durationSeconds"
+        ]
+      },
+      "HistoryMessageSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "whatsapp_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "inbound",
+              "outbound"
+            ]
+          },
+          "type": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "whatsapp_id",
+          "direction",
+          "type",
+          "timestamp"
+        ]
+      },
+      "HistoryChat": {
+        "type": "object",
+        "properties": {
+          "conversation": {
+            "$ref": "#/components/schemas/ConversationIdentity"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "direct",
+              "group",
+              "channel",
+              "broadcast"
+            ]
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastMessage": {
+            "$ref": "#/components/schemas/HistoryMessageSummary"
+          }
+        },
+        "required": [
+          "conversation",
+          "kind",
+          "lastActivityAt",
+          "lastMessage"
+        ]
+      },
+      "ListChatsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryChat"
+            }
+          },
+          "hasMore": {
+            "type": "boolean",
+            "description": "True when `nextCursor` returns more items."
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "previousCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor for the items before this page. Always null for conversations."
+          }
+        },
+        "required": [
+          "success",
+          "data",
+          "hasMore",
+          "nextCursor",
+          "previousCursor"
+        ]
+      },
+      "GetChatResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/HistoryChat"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "HistoryConversation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ConversationIdentity"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "sender": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ConversationIdentity"
+                  },
+                  {
+                    "description": "Author of an inbound group message."
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "HistoryMedia": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Media ID. Download it with `GET /messaging/media/{id}` and a credential with `media:read`."
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "fileLength": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "url": {
+            "type": "string",
+            "description": "Path of the media download method.",
+            "example": "/messaging/media/0e6f1c3a-5a55-4f3c-9d4f-0b1f8f2a9c11"
+          }
+        },
+        "required": [
+          "id",
+          "mimeType",
+          "fileLength",
+          "url"
+        ]
+      },
+      "HistoryMessage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "whatsapp_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "conversation": {
+            "$ref": "#/components/schemas/HistoryConversation"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "inbound",
+              "outbound"
+            ]
+          },
+          "fromMe": {
+            "type": "boolean",
+            "description": "True when the Number sent the message, including from another linked device."
+          },
+          "type": {
+            "type": "string",
+            "description": "Message type as delivered in `message.received`, for example `text` or `image`."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When WhatsApp reported the message."
+          },
+          "pushName": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "caption": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "ptt": {
+            "type": "boolean"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "reaction": {
+            "type": "string"
+          },
+          "reactionTo": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "edited": {
+            "type": "boolean"
+          },
+          "unavailable": {
+            "type": "boolean"
+          },
+          "unavailableReason": {
+            "type": "string"
+          },
+          "pollOptions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "hash": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "hash"
+              ]
+            }
+          },
+          "media": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryMedia"
+            },
+            "description": "Downloadable media for image, video, audio, document, and sticker messages. Empty when no copy is available."
+          }
+        },
+        "required": [
+          "id",
+          "whatsapp_id",
+          "conversation",
+          "direction",
+          "fromMe",
+          "type",
+          "timestamp"
+        ]
+      },
+      "ListChatMessagesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryMessage"
+            }
+          },
+          "hasMore": {
+            "type": "boolean",
+            "description": "True when `nextCursor` returns more items."
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "previousCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor for the items before this page. Always null for conversations."
+          }
+        },
+        "required": [
+          "success",
+          "data",
+          "hasMore",
+          "nextCursor",
+          "previousCursor"
+        ]
+      },
+      "GetChatMessageResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/HistoryMessage"
+          }
+        },
+        "required": [
+          "success",
+          "data"
         ]
       },
       "RejectCallRequest": {
@@ -20521,6 +20868,128 @@
           "Linked Device API"
         ],
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `chats:manage`"
+      },
+      "get": {
+        "operationId": "getChatMessage",
+        "tags": [
+          "Chats"
+        ],
+        "summary": "Get a stored message",
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `messages:read`\n\nReturns one stored message. Beta: requires team enrollment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "messages:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Number ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Conversation ID or E.164 phone number."
+            },
+            "required": true,
+            "name": "conversation",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$",
+              "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+              "example": "739182640518203"
+            },
+            "required": true,
+            "name": "messageId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The message",
+            "headers": {
+              "Polymorfa-Data-Region": {
+                "description": "Data region that served the stored history.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetChatMessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A filter or cursor is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The credential is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credential lacks the scope, is a client token, or the team is not enrolled in the beta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Number or conversation is unavailable, or hosted message storage is not enabled (`hms_not_enabled`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The history service for the Number's data region is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">messages:read</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ]
       }
     },
     "/messaging/{session}/chats/{conversation}/archive": {
@@ -21001,6 +21470,479 @@
           "Linked Device API"
         ],
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `chats:manage`"
+      }
+    },
+    "/messaging/{session}/chats": {
+      "get": {
+        "operationId": "listChats",
+        "tags": [
+          "Chats"
+        ],
+        "summary": "List stored conversations",
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `chats:read`\n\nLists conversations with stored messages for a Number with hosted message storage, most recent activity first. Beta: requires team enrollment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "chats:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Number ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "description": "Page size, from 1 through 100.",
+              "example": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "description": "Opaque cursor from `nextCursor` or `previousCursor`. Reuse it only with the same path and filters."
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "direct",
+                "group",
+                "channel",
+                "broadcast"
+              ],
+              "description": "Return only conversations of this kind."
+            },
+            "required": false,
+            "name": "kind",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Return conversations with activity at or after this time (ISO 8601)."
+            },
+            "required": false,
+            "name": "activeSince",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Return conversations whose latest activity is before this time (ISO 8601)."
+            },
+            "required": false,
+            "name": "activeBefore",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of conversations",
+            "headers": {
+              "Polymorfa-Data-Region": {
+                "description": "Data region that served the stored history.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListChatsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A filter or cursor is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The credential is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credential lacks the scope, is a client token, or the team is not enrolled in the beta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Number or conversation is unavailable, or hosted message storage is not enabled (`hms_not_enabled`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The history service for the Number's data region is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">chats:read</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ]
+      }
+    },
+    "/messaging/{session}/chats/{conversation}": {
+      "get": {
+        "operationId": "getChat",
+        "tags": [
+          "Chats"
+        ],
+        "summary": "Get a stored conversation",
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `chats:read`\n\nReturns one conversation with stored messages. Beta: requires team enrollment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "chats:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Number ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Conversation ID or E.164 phone number."
+            },
+            "required": true,
+            "name": "conversation",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The conversation",
+            "headers": {
+              "Polymorfa-Data-Region": {
+                "description": "Data region that served the stored history.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetChatResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A filter or cursor is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The credential is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credential lacks the scope, is a client token, or the team is not enrolled in the beta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Number or conversation is unavailable, or hosted message storage is not enabled (`hms_not_enabled`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The history service for the Number's data region is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">chats:read</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ]
+      }
+    },
+    "/messaging/{session}/chats/{conversation}/messages": {
+      "get": {
+        "operationId": "listChatMessages",
+        "tags": [
+          "Chats"
+        ],
+        "summary": "List stored messages in a conversation",
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `messages:read`\n\nLists stored messages in one conversation, newest first by default. Page in either direction with `nextCursor` and `previousCursor`. Beta: requires team enrollment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "messages:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Number ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Conversation ID or E.164 phone number."
+            },
+            "required": true,
+            "name": "conversation",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "description": "Page size, from 1 through 100.",
+              "example": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "description": "Opaque cursor from `nextCursor` or `previousCursor`. Reuse it only with the same path and filters."
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "desc",
+                "asc"
+              ],
+              "default": "desc",
+              "description": "`desc` returns newest messages first; `asc` returns oldest first."
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Return messages sent at or after this time (ISO 8601)."
+            },
+            "required": false,
+            "name": "since",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Return messages sent before this time (ISO 8601)."
+            },
+            "required": false,
+            "name": "until",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "inbound",
+                "outbound"
+              ],
+              "description": "`inbound` returns messages from contacts; `outbound` returns messages sent by the Number."
+            },
+            "required": false,
+            "name": "direction",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z_]{0,31}(?:,[a-z][a-z_]{0,31}){0,15}$",
+              "description": "Comma-separated message types, for example `text,image`. Up to 16 types.",
+              "example": "text,image"
+            },
+            "required": false,
+            "name": "types",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of messages",
+            "headers": {
+              "Polymorfa-Data-Region": {
+                "description": "Data region that served the stored history.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListChatMessagesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A filter or cursor is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The credential is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credential lacks the scope, is a client token, or the team is not enrolled in the beta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Number or conversation is unavailable, or hosted message storage is not enabled (`hms_not_enabled`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The history service for the Number's data region is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">messages:read</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ]
       }
     },
     "/messaging/{session}/calls/{callId}/reject": {

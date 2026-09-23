@@ -173,9 +173,9 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "c7b20c3775b9234ce03cf2c90d72eed903249efe",
-      total: 491,
-      covered: 367,
+      sourceCommit: "f3ac0bb3ad02d50bf284d1d3b28ae30e771faf20",
+      total: 495,
+      covered: 371,
       partial: 0,
       // Usage summary, records, and gate reads are implemented.
       missing: 0,
@@ -295,6 +295,27 @@ describe("coverage checker", () => {
       setHybridRoutingPolicy: "MessagingClient.hybridLink.setPolicy",
       getMessageOperation: "MessagingClient.messages.operationStatus",
       getHybridQuickLinkAvailability: "MessagingClient.quickLinks.availability",
+    };
+    for (const [id, method] of Object.entries(expected)) {
+      expect(
+        ledger.operations.find((operation) => operation.operationId === id)
+          ?.typescript,
+      ).toEqual({ status: "covered", method });
+    }
+  });
+
+  it("maps the four retained-history reads to typed chat methods", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const expected = {
+      listChats: "MessagingClient.chats.list",
+      getChat: "MessagingClient.chats.retrieve",
+      listChatMessages: "MessagingClient.chats.listMessages",
+      getChatMessage: "MessagingClient.chats.retrieveMessage",
     };
     for (const [id, method] of Object.entries(expected)) {
       expect(

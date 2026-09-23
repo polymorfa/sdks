@@ -26,8 +26,8 @@ published SDK package before updating their pinned dependency.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at unmerged `polymorfa/polymorfa` Hybrid Link branch commit
-`c7b20c3775b9234ce03cf2c90d72eed903249efe`. This revision includes Hybrid Link and Voice audio on top of
-usage gates, Calls analytics, Campaigns P0 and Functions. `source.json`
+`f3ac0bb3ad02d50bf284d1d3b28ae30e771faf20`. This revision includes Hybrid Link, Beta HMS retained-history reads,
+and Voice audio on top of usage gates, Calls analytics, Campaigns P0 and Functions. `source.json`
 records the source paths and SHA-256 hashes. The snapshots and ledger use
 the same revision; it does not establish package publication, deployed
 availability, or Hybrid Link enrollment.
@@ -104,12 +104,12 @@ analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        367 |
+| Covered             |        371 |
 | Missing             |          0 |
 | Excluded            |        124 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        491 |
+| Total               |        495 |
 
 An earlier revision added test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
