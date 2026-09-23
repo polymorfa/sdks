@@ -75,12 +75,12 @@ analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        323 |
-| Missing             |          5 |
+| Covered             |        307 |
+| Missing             |         13 |
 | Excluded            |        111 |
 | Partial             |          0 |
-| Changed fingerprint |          0 |
-| Total               |        439 |
+| Changed fingerprint |         16 |
+| Total               |        447 |
 
 An earlier revision added test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -201,8 +201,8 @@ discovery uses `BridgeClient`, and the CLI listener protocol stays CLI-only; the
 4. Update the ledger, source revision, hashes, and mapping tests together.
    Remove obsolete rows after reviewing their replacements.
 5. Run the full SDK CI checks. The repository coverage tests require the
-   reviewed counts, zero changed fingerprints, valid public method mappings,
-   and source snapshot integrity.
+   reviewed counts, the exact unresolved changed-operation list, valid public
+   method mappings, and source snapshot integrity.
 
 `npm run check:coverage` uses the checked-in snapshots. Its strict flag requires
 a ledger row for every operation; it does not require every row to be covered.
