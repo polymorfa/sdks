@@ -1,5 +1,6 @@
 {
   "name": "@polymorfa/example-calls",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
   "engines": {
