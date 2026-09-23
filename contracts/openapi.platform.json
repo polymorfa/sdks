@@ -16075,7 +16075,7 @@
           "campaigns"
         ],
         "summary": "Delete campaign",
-        "description": "Deletes a draft, completed, cancelled or archived campaign. Any other campaign is refused with `409`; stop it first.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Deletes a draft, completed, failed, cancelled or archived campaign. Any other campaign is refused with `409`; stop it first. A completed or failed campaign with a final event pending delivery or an active delivery run is also refused with `409`; retry after both finish.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -16706,7 +16706,7 @@
           "campaigns"
         ],
         "summary": "Archive campaign",
-        "description": "Archives a completed, failed or cancelled campaign. A campaign still starting, running, paused or stopping is refused with `409`.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Archives a completed, failed or cancelled campaign. Other states return `409`. A final event pending delivery or an active delivery run also returns `409`; retry after both finish.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,

@@ -1764,7 +1764,10 @@ key is preserved across retries within the API's 24-hour replay window. If the
 outcome remains uncertain after that window, reconcile campaign state before
 starting another request; see [Idempotent sends](#idempotent-sends).
 `archive` returns a receipt for a completed, failed, or cancelled campaign;
-an active campaign is refused with `409`.
+other states return `409`. A pending final event or active delivery run also
+returns `409`; retry after both finish. Platform `delete` accepts draft,
+completed, failed, cancelled, or archived campaigns. A completed or failed
+campaign with a pending final event or active delivery run returns `409`.
 The Messaging API has no campaign update, deletion, archive, duplicate, or
 campaign event history method. The SDK does not substitute Platform routes for
 those operations.
@@ -2399,7 +2402,7 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. `Client.callPolicy` and
 `Client.callOptOuts` cover consent controls. The contract snapshot is pinned
-to unmerged API Hybrid Link commit `16fb20564a4b53e4dceeb791af0247ef397a1f79`.
+to unmerged API Hybrid Link commit `2dd0c1563b1fc4e6525f708afc12e0685110cfe0`.
 
 ## Functions
 

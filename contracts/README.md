@@ -19,7 +19,7 @@ preview enrollment and live Number authority independently of these SDK types.
 ## Test-event supplement
 
 The integrated snapshot uses unmerged Hybrid Link API branch commit
-`16fb20564a4b53e4dceeb791af0247ef397a1f79`. It includes the merged
+`2dd0c1563b1fc4e6525f708afc12e0685110cfe0`. It includes the merged
 campaign, usage, voice, and HMS history API contracts. SDK package publication
 remains separate.
 `Client.callPolicy` and `Client.callOptOuts` cover six team-policy operations;
@@ -42,11 +42,15 @@ published SDK package before updating their pinned dependency.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at unmerged `polymorfa/polymorfa` Hybrid Link branch commit
-`16fb20564a4b53e4dceeb791af0247ef397a1f79`. This revision includes
+`2dd0c1563b1fc4e6525f708afc12e0685110cfe0`. This revision includes
 Voice audio and provider credentials on top of merged usage gates, Calls
 analytics, Campaigns P0, Functions, and HMS history. The snapshots, ledger and revision
 tests have been reconciled. `source.json` records the source paths and
 SHA-256 hashes.
+
+The merged Campaigns failed-state follow-up updates the `campaign.failed`
+reason example and the public archive/delete `409` descriptions. It changes no
+operation fingerprint or SDK method mapping.
 
 The Platform event-list contract adds `afterOffset` and indexed page metadata
 for both organization and project routes. `Client.events.list` and project-view
