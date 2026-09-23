@@ -3566,7 +3566,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 512,
-            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "description": "Temporary singular original provider reference for older consumers. Use original_whatsapp_ids for transport-specific references.",
             "deprecated": true
           },
           "messages": {

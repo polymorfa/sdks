@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts on the unmerged API Hybrid Link branch at
-`75bf8ffb7f61dbd7222fc9fbc9dbedf2c954583e`. Graph-compatible
+`a6ed6f26020b5b82f915f75d05715735d9a827b4`. Graph-compatible
 APIs are outside this SDK's initial scope.
 
 The same API revision adds an enrolled hosted message history beta.
@@ -844,7 +844,7 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. `Client.callPolicy` and
 `Client.callOptOuts` cover consent controls. The contract snapshot is pinned
-to unmerged API Hybrid Link commit `75bf8ffb7f61dbd7222fc9fbc9dbedf2c954583e`.
+to unmerged API Hybrid Link commit `a6ed6f26020b5b82f915f75d05715735d9a827b4`.
 
 ## Native message provider references
 
