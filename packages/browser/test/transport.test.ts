@@ -80,6 +80,37 @@ describe("BrowserTransport", () => {
     expect(postFetch).toHaveBeenCalledTimes(1);
   });
 
+  it("surfaces a replayed idempotent failure without retrying", async () => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(
+      async () =>
+        new Response(
+          '{"error":{"code":"result_unknown","message":"unknown"}}',
+          {
+            status: 503,
+            headers: {
+              "content-type": "application/json",
+              "idempotent-replayed": "true",
+            },
+          },
+        ),
+    );
+    const transport = new BrowserTransport({
+      getClientToken: async () => "pmfa_ct_fixture",
+      fetch: fetcher,
+      maxNetworkRetries: 2,
+      sleep: async () => undefined,
+    });
+    await expect(
+      transport.request({
+        method: "POST",
+        path: "/client/send",
+        body: {},
+        idempotencyKey: "send-1",
+      }),
+    ).rejects.toBeInstanceOf(BrowserHttpError);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
   it("distinguishes caller cancellation from timeout", async () => {
     const pendingFetch: typeof fetch = async (_url, init) =>
       new Promise((_resolve, reject) =>
@@ -140,5 +171,39 @@ describe("BrowserTransport", () => {
     ).rejects.toBeInstanceOf(BrowserValidationError);
     expect(getClientToken).toHaveBeenCalledTimes(1);
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("reads the code, request ID, and doc link from an error body without the header", async () => {
+    const transport = new BrowserTransport({
+      getClientToken: async () => "pmfa_ct_fixture",
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            error: {
+              type: "rate_limit_error",
+              code: "whatsapp_rate_limited",
+              message: "WhatsApp is limiting requests from this number.",
+              param: null,
+              request_id: "req_body_only",
+            },
+            data: null,
+            docs: "https://docs.polymorfa.com/api/errors#whatsapp-rate-limited",
+          }),
+          { status: 429, headers: { "content-type": "application/json" } },
+        ),
+      maxNetworkRetries: 0,
+      sleep: async () => undefined,
+    });
+    const failure = await transport
+      .request({ method: "GET", path: "/client/state" })
+      .catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(BrowserHttpError);
+    expect(failure).toMatchObject({
+      category: "rate_limit",
+      code: "whatsapp_rate_limited",
+      requestId: "req_body_only",
+      docUrl: "https://docs.polymorfa.com/api/errors#whatsapp-rate-limited",
+      message: "WhatsApp is limiting requests from this number.",
+    });
   });
 });

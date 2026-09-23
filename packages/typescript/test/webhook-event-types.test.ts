@@ -1,9 +1,13 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type {
+  BanSafeHealthBandName,
+  BanSafeHealthChangedPayload,
   BlocklistUpdatePayload,
   BusinessQuickReplyUpdatePayload,
   CallAcceptedPayload,
+  CallConnectionJoinedPayload,
+  CallConnectionLeftPayload,
   CallEndedPayload,
   CallMissedPayload,
   CallParticipant,
@@ -37,17 +41,25 @@ import type {
   PollOption,
   PollVotePayload,
   PresenceUpdatePayload,
+  SessionLoggedOutPayload,
   SessionPhoneOfflinePayload,
+  SessionRestrictionUpdatedPayload,
   KnownWebhookEvent,
   WebhookPayloadMap,
 } from "../src/index.js";
 import { KNOWN_WEBHOOK_EVENT_TYPES } from "../src/index.js";
+import type { BanSafeHealthBandName as WebhooksHealthBandName } from "../src/webhooks/index.js";
 
 type ExpectedIdentityReference = {
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;
   readonly username?: string;
+};
+
+type ExpectedCallCapabilities = {
+  readonly video: boolean;
+  readonly invite: boolean;
 };
 
 interface ExpectedConversationReference extends ExpectedIdentityReference {
@@ -137,6 +149,10 @@ type ExpectedPayloads = {
   readonly "call.accepted": {
     readonly from: ExpectedIdentityReference;
     readonly callId: string;
+    readonly answeredBy?: string;
+    readonly exclusive?: boolean;
+    readonly sessionConnection?: "linked_device" | "cloud_api";
+    readonly capabilities?: ExpectedCallCapabilities;
   };
   readonly "call.ended": {
     readonly from: ExpectedIdentityReference | null;
@@ -145,6 +161,7 @@ type ExpectedPayloads = {
     readonly reason: string;
     readonly direction: "inbound" | "outbound";
     readonly hadVideo: boolean;
+    readonly sessionConnection?: "linked_device" | "cloud_api";
   };
   readonly "call.missed": {
     readonly from: ExpectedIdentityReference;
@@ -183,10 +200,36 @@ type ExpectedPayloads = {
   readonly "call.received": {
     readonly from: ExpectedIdentityReference;
     readonly callId: string;
+    readonly hasVideo: boolean;
+    readonly sessionConnection?: "linked_device" | "cloud_api";
+    readonly capabilities?: ExpectedCallCapabilities;
   };
   readonly "call.rejected": {
     readonly from: ExpectedIdentityReference;
     readonly callId: string;
+  };
+  readonly "call.connection_joined": {
+    readonly callId: string;
+    readonly connection: {
+      readonly id: string;
+      readonly participant: string;
+      readonly transport: "webrtc" | "socket" | "sip";
+    };
+  };
+  readonly "call.connection_left": {
+    readonly callId: string;
+    readonly connectionId: string;
+    readonly participant: string;
+    readonly reason:
+      | "left"
+      | "replaced"
+      | "claimed"
+      | "call_ended"
+      | "sip_busy"
+      | "sip_declined"
+      | "sip_no_answer"
+      | "sip_unavailable"
+      | "sip_auth_failed";
   };
   readonly "call.telemetry": {
     readonly callId: string;
@@ -346,6 +389,8 @@ type ExportedPayloads = {
   readonly "blocklist.update": BlocklistUpdatePayload;
   readonly "business.quick_reply.update": BusinessQuickReplyUpdatePayload;
   readonly "call.accepted": CallAcceptedPayload;
+  readonly "call.connection_joined": CallConnectionJoinedPayload;
+  readonly "call.connection_left": CallConnectionLeftPayload;
   readonly "call.ended": CallEndedPayload;
   readonly "call.missed": CallMissedPayload;
   readonly "call.participant_joined": CallParticipantPayload;
@@ -379,6 +424,16 @@ type ExportedPayloads = {
 };
 
 describe("webhook event payload types", () => {
+  it("exports the health band through the public webhook type surfaces", () => {
+    expectTypeOf<
+      BanSafeHealthChangedPayload["band"]
+    >().toEqualTypeOf<BanSafeHealthBandName>();
+    expectTypeOf<WebhooksHealthBandName>().toEqualTypeOf<BanSafeHealthBandName>();
+    expectTypeOf<BanSafeHealthBandName>().toEqualTypeOf<
+      "good" | "fair" | "poor" | "failing" | "unknown"
+    >();
+  });
+
   it("maps every formerly opaque event family to its contract payload", () => {
     expectTypeOf<IdentityReference>().toEqualTypeOf<ExpectedIdentityReference>();
     expectTypeOf<WebhookConversationReference>().toEqualTypeOf<ExpectedConversationReference>();
@@ -392,6 +447,25 @@ describe("webhook event payload types", () => {
     expectTypeOf<
       Pick<WebhookPayloadMap, keyof ExpectedPayloads>
     >().toEqualTypeOf<ExpectedPayloads>();
+  });
+
+  it("types the logout reason and the restriction event", () => {
+    expectTypeOf<
+      WebhookPayloadMap["session.logged_out"]
+    >().toEqualTypeOf<SessionLoggedOutPayload>();
+    expectTypeOf<SessionLoggedOutPayload["reason"]>().toEqualTypeOf<
+      "banned" | "device_removed" | "unknown"
+    >();
+    expectTypeOf<SessionLoggedOutPayload["code"]>().toEqualTypeOf<number>();
+    expectTypeOf<
+      WebhookPayloadMap["session.restriction_updated"]
+    >().toEqualTypeOf<SessionRestrictionUpdatedPayload>();
+    expectTypeOf<
+      SessionRestrictionUpdatedPayload["type"]
+    >().toEqualTypeOf<"reachout_timelock">();
+    expectTypeOf<SessionRestrictionUpdatedPayload["expiresAt"]>().toEqualTypeOf<
+      string | null
+    >();
   });
 
   it("distinguishes Meta Cloud API synchronization events", () => {

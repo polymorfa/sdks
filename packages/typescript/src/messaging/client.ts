@@ -77,7 +77,7 @@ export class MessagingClient {
     this.business = new BusinessResource(transport);
     this.calls = new CallsResource(transport);
     this.campaigns = new MessagingCampaignsResource(transport);
-    this.chats = new ChatsResource(transport);
+    this.chats = new ChatsResource(transport, credential.type);
     this.channels = new ChannelsResource(transport);
     this.clientTokens = new ClientTokensResource(transport, credential.type);
     this.contacts = new ContactsResource(transport);
@@ -100,7 +100,7 @@ export class MessagingClient {
     this.quickLinks = new QuickLinksResource(transport, credential.type);
     this.templates = new TemplatesResource(transport);
     this.users = new UsersResource(transport);
-    this.voip = new VoipResource(transport);
+    this.voip = new VoipResource(transport, credential.type);
     this.webhooks = new WebhooksResource(transport);
     this.raw = new RawClient(transport);
   }

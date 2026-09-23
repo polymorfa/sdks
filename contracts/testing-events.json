@@ -1,0 +1,231 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "9c876c16c60b74370d934e1275f23ef6096bee12",
+  "sourcePath": "apps/api/docs/openapi.json",
+  "sourceSha256": "1b2c37fc3f89360bc9cc92c3deeb96ca8c42349e36dff8cb7c9066bf1556ae4e",
+  "schemas": {
+    "TestEventFixtureList": {
+      "type": "object",
+      "properties": {
+        "fixtures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "enum": [
+                  "message.received",
+                  "message.ack",
+                  "message.failed",
+                  "call.received",
+                  "call.missed",
+                  "call.ended",
+                  "session.status",
+                  "session.restriction_updated",
+                  "template.status",
+                  "bansafe.enforcement",
+                  "bansafe.risk_changed"
+                ]
+              },
+              "description": {
+                "type": "string"
+              },
+              "overrides": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": ["name", "description", "overrides"]
+          }
+        }
+      },
+      "required": ["fixtures"]
+    },
+    "TriggerTestEventRequest": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Test number session name in the project."
+        },
+        "event": {
+          "type": "string",
+          "enum": [
+            "message.received",
+            "message.ack",
+            "message.failed",
+            "call.received",
+            "call.missed",
+            "call.ended",
+            "session.status",
+            "session.restriction_updated",
+            "template.status",
+            "bansafe.enforcement",
+            "bansafe.risk_changed"
+          ],
+          "description": "Fixture name. Each name is the event type it produces."
+        },
+        "overrides": {
+          "$ref": "#/schemas/TestEventOverrides"
+        },
+        "fromSession": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "message.received only. Send a simulated text message from this other connected Test number in the same project instead of generating an event."
+        }
+      },
+      "required": ["session", "event"],
+      "additionalProperties": false
+    },
+    "TriggerTestEventResponse": {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "enum": [
+            "message.received",
+            "message.ack",
+            "message.failed",
+            "call.received",
+            "call.missed",
+            "call.ended",
+            "session.status",
+            "session.restriction_updated",
+            "template.status",
+            "bansafe.enforcement",
+            "bansafe.risk_changed"
+          ]
+        },
+        "session": {
+          "type": "string"
+        },
+        "delivery": {
+          "type": "string",
+          "enum": ["generated", "simulated"]
+        },
+        "eventId": {
+          "type": "string",
+          "nullable": true,
+          "format": "uuid"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["test", "runtime"]
+        }
+      },
+      "required": ["event", "session", "delivery", "eventId", "source"]
+    },
+    "TestEventOverrides": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "from": {
+          "type": "string",
+          "pattern": "^\\+[1-9]\\d{7,14}$"
+        },
+        "pushName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "mediaType": {
+          "type": "string",
+          "enum": ["image", "video", "audio", "document", "sticker"]
+        },
+        "caption": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "ackStatus": {
+          "type": "string",
+          "enum": ["delivered", "read", "played", "error"]
+        },
+        "messageId": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,18}$"
+        },
+        "failureReason": {
+          "type": "string",
+          "enum": [
+            "invalid_recipient",
+            "session_not_connected",
+            "ack_timeout",
+            "send_failed",
+            "blocked_by_safety"
+          ]
+        },
+        "video": {
+          "type": "boolean"
+        },
+        "durationSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 86400
+        },
+        "callEndReason": {
+          "type": "string",
+          "enum": [
+            "user_hangup",
+            "timeout",
+            "lost_connection",
+            "rejected",
+            "call_restricted"
+          ]
+        },
+        "restrictionActive": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["CONNECTING", "CONNECTED", "DISCONNECTED"]
+        },
+        "statusReason": {
+          "type": "string",
+          "enum": [
+            "SCAN_QR",
+            "AUTO_RECONNECT",
+            "FAILED",
+            "MANUAL_STOP",
+            "QR_TIMEOUT",
+            "LOGGED_OUT",
+            "TEMPORARY_BAN",
+            "STREAM_ERROR"
+          ]
+        },
+        "templateName": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]{1,512}$"
+        },
+        "templateStatus": {
+          "type": "string",
+          "enum": ["APPROVED", "REJECTED"]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "enforcementKind": {
+          "type": "string",
+          "enum": ["cap_warning", "cap_reached", "timelock", "temporary_ban"]
+        },
+        "riskLevel": {
+          "type": "string",
+          "enum": ["low", "elevated", "high", "critical"]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

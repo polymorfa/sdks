@@ -45,6 +45,57 @@ describe("ClientTokenManager", () => {
     expect(provider).toHaveBeenCalledTimes(1);
   });
 
+  it("starts a new provider call for a forced refresh while an older one is pending", async () => {
+    const pending: ((token: ClientToken) => void)[] = [];
+    const provider = vi.fn(
+      () =>
+        new Promise<ClientToken>((resolve) => {
+          pending.push(resolve);
+        }),
+    );
+    const manager = new ClientTokenManager(provider, { now: () => 1_000 });
+    const plain = manager.get();
+    // A 4401 close: the pending call may return the revoked token.
+    const refreshed = manager.token({ refresh: true });
+    const joined = manager.get();
+    expect(provider).toHaveBeenCalledTimes(2);
+    pending[1]!({
+      value: "pmfa_ct_fresh",
+      audience: "browser",
+      expiresAt: 90_000,
+    });
+    await expect(refreshed).resolves.toEqual({
+      value: "pmfa_ct_fresh",
+      expiresAt: 90_000,
+    });
+    await expect(joined).resolves.toBe("pmfa_ct_fresh");
+    // The older call settling later does not replace the refreshed token.
+    pending[0]!({
+      value: "pmfa_ct_revoked",
+      audience: "browser",
+      expiresAt: 95_000,
+    });
+    await expect(plain).resolves.toBe("pmfa_ct_revoked");
+    await expect(manager.get()).resolves.toBe("pmfa_ct_fresh");
+    expect(provider).toHaveBeenCalledTimes(2);
+  });
+
+  it("lets a plain request share an in-flight forced refresh", async () => {
+    const provider = vi.fn(async () => ({
+      value: "pmfa_ct_fresh",
+      audience: "browser" as const,
+      expiresAt: 90_000,
+    }));
+    const manager = new ClientTokenManager(provider, { now: () => 1_000 });
+    const [refreshed, plain] = await Promise.all([
+      manager.token({ refresh: true }),
+      manager.get(),
+    ]);
+    expect(refreshed.value).toBe("pmfa_ct_fresh");
+    expect(plain).toBe("pmfa_ct_fresh");
+    expect(provider).toHaveBeenCalledTimes(1);
+  });
+
   it("refreshes inside the expiry skew", async () => {
     let now = 1_000;
     const provider = vi

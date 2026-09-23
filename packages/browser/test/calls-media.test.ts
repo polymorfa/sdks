@@ -2,10 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   WebRtcMediaFactory,
   type CallMediaCallbacks,
+  type RemoteVideo,
   type CallsSignaling,
   type CandidateTransport,
   type TrickleCandidate,
-} from "../src/index.js";
+} from "../src/internal.js";
 
 // The factory builds its own remote `MediaStream`; everything else is injected.
 class FakeStream {
@@ -39,33 +40,71 @@ beforeEach(() => {
   (globalThis as { MediaStream?: unknown }).MediaStream = FakeStream;
 });
 
+type FakeSender = {
+  track: FakeTrack | null;
+  replaceTrack: (track: FakeTrack | null) => Promise<void>;
+  setStreams: ReturnType<typeof vi.fn>;
+};
+type FakeTransceiver = {
+  mid: string | null;
+  direction: string;
+  currentDirection: string | null;
+  sender: FakeSender;
+  receiver: { track: FakeTrack };
+};
+
 function peerConnection(overrides: Partial<Record<string, unknown>> = {}) {
-  const senders: {
-    track: FakeTrack | null;
-    replaceTrack?: (track: FakeTrack) => Promise<void>;
+  const transceivers: FakeTransceiver[] = [];
+  const channels: {
+    label: string;
+    init: unknown;
+    onmessage: ((event: { data: unknown }) => void) | null;
   }[] = [];
   const peer = {
     connectionState: "new",
     iceConnectionState: "new",
-    senders,
+    transceivers,
+    channels,
     addIceCandidate: vi.fn(async () => undefined),
-    addTrack: vi.fn((track: FakeTrack) => {
-      const sender = {
-        track,
-        replaceTrack: async (next: FakeTrack) => {
-          sender.track = next;
-        },
-      };
-      senders.push(sender);
-      return sender;
+    addTransceiver: vi.fn(
+      (
+        trackOrKind: FakeTrack | "audio" | "video",
+        init: { direction: string },
+      ) => {
+        const kind =
+          typeof trackOrKind === "string" ? trackOrKind : trackOrKind.kind;
+        const sender: FakeSender = {
+          track: typeof trackOrKind === "string" ? null : trackOrKind,
+          replaceTrack: async (next) => {
+            sender.track = next;
+          },
+          setStreams: vi.fn(),
+        };
+        const transceiver: FakeTransceiver = {
+          mid: null,
+          direction: init.direction,
+          currentDirection: null,
+          sender,
+          receiver: { track: new FakeTrack(kind) },
+        };
+        transceivers.push(transceiver);
+        return transceiver;
+      },
+    ),
+    getTransceivers: () => [...transceivers],
+    createDataChannel: vi.fn((label: string, init: unknown) => {
+      const channel = { label, init, onmessage: null };
+      channels.push(channel);
+      return channel;
     }),
-    removeTrack: vi.fn((sender: { track: FakeTrack | null }) => {
-      const index = senders.indexOf(sender);
-      if (index >= 0) senders.splice(index, 1);
-    }),
-    getSenders: () => [...senders],
+    getSenders: () => transceivers.map((t) => t.sender),
     createOffer: vi.fn(async () => ({ type: "offer", sdp: "v=0" })),
-    setLocalDescription: vi.fn(async () => undefined),
+    // Mids are assigned when the offer is applied, as in a browser.
+    setLocalDescription: vi.fn(async () => {
+      transceivers.forEach((t, index) => {
+        t.mid ??= String(index);
+      });
+    }),
     setRemoteDescription: vi.fn(async () => undefined),
     localDescription: { sdp: "v=0" },
     setConfiguration: vi.fn(),
@@ -73,6 +112,11 @@ function peerConnection(overrides: Partial<Record<string, unknown>> = {}) {
     ...overrides,
   };
   return peer as unknown as RTCPeerConnection & typeof peer;
+}
+
+/** Deliver one data-channel message from the platform. */
+function control(peer: ReturnType<typeof peerConnection>, message: unknown) {
+  peer.channels[0]?.onmessage?.({ data: JSON.stringify(message) });
 }
 
 function signaling(
@@ -83,7 +127,8 @@ function signaling(
     renegotiate: vi.fn(async () => ({ sdp: "v=0", iceServers: [] })),
     candidate: vi.fn(async () => undefined),
     candidates: vi.fn(async () => []),
-    teardown: vi.fn(async () => undefined),
+    leave: vi.fn(async () => undefined),
+    end: vi.fn(async () => undefined),
     ...overrides,
   } as never;
 }
@@ -202,7 +247,7 @@ describe("WebRtcMediaFactory candidate handling", () => {
 });
 
 describe("WebRtcMediaFactory track negotiation", () => {
-  it("does not keep a camera track that no sender carries", async () => {
+  it("does not open a camera to switch on a call that sends none", async () => {
     const audio = new FakeTrack("audio");
     const local = new FakeStream([audio]);
     const camera = new FakeTrack("video");
@@ -218,9 +263,10 @@ describe("WebRtcMediaFactory track negotiation", () => {
     }).open("call-1", false, callbacks, new AbortController().signal);
 
     await session.switchInput?.("video", "cam-1", new AbortController().signal);
-    // Retaining it would satisfy enableVideo's guard and strand the upgrade.
-    expect(camera.stop).toHaveBeenCalled();
+    // Keeping one would satisfy enableVideo's guard and strand the upgrade.
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
     expect(local.getVideoTracks()).toHaveLength(0);
+    void camera;
   });
 
   it("rolls the local offer back when renegotiation fails", async () => {
@@ -389,6 +435,7 @@ describe("WebRtcMediaFactory track negotiation", () => {
     expect(
       peer.getSenders().filter((s) => s.track?.kind === "video"),
     ).toHaveLength(1);
+    expect(peer.transceivers[1]?.sender.track).toBe(first);
     // The queued call re-checks the guard and returns without acquiring, so
     // the second camera is never opened at all.
     expect(getUserMedia).toHaveBeenCalledTimes(2);
@@ -409,6 +456,37 @@ describe("WebRtcMediaFactory track negotiation", () => {
     // guards and failed into handlers that swallow the reason.
     expect(session.enableVideo).toBeUndefined();
     expect(session.restartIce).toBeUndefined();
+  });
+
+  it("rolls the camera back when attaching it to the sender fails", async () => {
+    const audio = new FakeTrack("audio");
+    const local = new FakeStream([audio]);
+    const camera = new FakeTrack("video");
+    const getUserMedia = vi
+      .fn()
+      .mockResolvedValueOnce(local)
+      .mockResolvedValueOnce(new FakeStream([camera]));
+    const peer = peerConnection();
+    const session = await factoryFor({
+      peer,
+      signaling: signaling(),
+      getUserMedia,
+    }).open("call-1", false, callbacks, new AbortController().signal);
+    const sender = peer.transceivers[1]!.sender as unknown as {
+      replaceTrack: (track: unknown) => Promise<void>;
+    };
+    const original = sender.replaceTrack.bind(sender);
+    sender.replaceTrack = async (track) => {
+      if (track !== null) throw new Error("attach rejected");
+      await original(track);
+    };
+
+    await expect(
+      session.enableVideo?.(new AbortController().signal),
+    ).rejects.toThrow("attach rejected");
+    expect(camera.stop).toHaveBeenCalled();
+    // No camera track is left behind to satisfy a later upgrade's guard.
+    expect(local.getVideoTracks()).toHaveLength(0);
   });
 
   it("rolls the camera back when the upgrade re-offer fails", async () => {
@@ -436,8 +514,288 @@ describe("WebRtcMediaFactory track negotiation", () => {
     ).rejects.toThrow("re-offer rejected");
     expect(camera.stop).toHaveBeenCalled();
     expect(local.getVideoTracks()).toHaveLength(0);
-    expect(peer.removeTrack).toHaveBeenCalled();
+    // The camera transceiver stays, without a track.
+    expect(peer.transceivers[1]?.sender.track).toBeNull();
     // The audio call survives and the upgrade can be tried again.
     expect(local.getAudioTracks()).toHaveLength(1);
+  });
+});
+
+describe("WebRtcMediaFactory transceivers and video sources", () => {
+  async function opened(
+    options: {
+      video?: boolean;
+      signaling?: CallsSignaling;
+      videoSlots?: number;
+      maxVideoSlots?: number;
+      onRemoteVideos?: (videos: readonly RemoteVideo[]) => void;
+      connectionId?: string;
+    } = {},
+  ) {
+    const peer = peerConnection();
+    const audio = new FakeTrack("audio");
+    const camera = new FakeTrack("video");
+    const local = new FakeStream(
+      options.video === true ? [audio, camera] : [audio],
+    );
+    const s = options.signaling ?? signaling();
+    const factory = new WebRtcMediaFactory({
+      signaling: s,
+      mediaDevices: {
+        getUserMedia: vi.fn(async () => local),
+      } as unknown as MediaDevices,
+      createPeerConnection: () => peer,
+      setInterval: (() => 0) as never,
+      clearInterval: (() => undefined) as never,
+      ...(options.videoSlots === undefined
+        ? {}
+        : { videoSlots: options.videoSlots }),
+      ...(options.maxVideoSlots === undefined
+        ? {}
+        : { maxVideoSlots: options.maxVideoSlots }),
+    });
+    const session = await factory.open(
+      "call-1",
+      options.video === true,
+      {
+        ...callbacks,
+        ...(options.onRemoteVideos === undefined
+          ? {}
+          : { onRemoteVideos: options.onRemoteVideos }),
+      },
+      new AbortController().signal,
+      options.connectionId === undefined
+        ? {}
+        : { connectionId: options.connectionId },
+    );
+    return { peer, session, signaling: s, audio, camera };
+  }
+
+  it("offers audio, a negotiated control channel, the camera and three receive slots", async () => {
+    const {
+      peer,
+      session,
+      signaling: s,
+      camera,
+    } = await opened({
+      video: true,
+      connectionId: "tab-conn-0001",
+    });
+    expect(peer.createDataChannel).toHaveBeenCalledWith("pmfa.calls", {
+      negotiated: true,
+      id: 0,
+    });
+    expect(
+      peer.transceivers.map((t) => [t.receiver.track.kind, t.direction]),
+    ).toEqual([
+      ["audio", "sendrecv"],
+      ["video", "sendrecv"],
+      ["video", "recvonly"],
+      ["video", "recvonly"],
+      ["video", "recvonly"],
+    ]);
+    expect(peer.transceivers[1]?.sender.track).toBe(camera);
+    expect(session.connectionId).toBe("tab-conn-0001");
+    expect(s["offer"]).toHaveBeenCalledWith(
+      "call-1",
+      { sdp: "v=0", connectionId: "tab-conn-0001" },
+      expect.any(AbortSignal),
+    );
+  });
+
+  it("keeps a camera transceiver on audio calls and honours the slot option", async () => {
+    const { peer, session } = await opened({ videoSlots: 1 });
+    expect(peer.transceivers.map((t) => t.direction)).toEqual([
+      "sendrecv",
+      "sendrecv",
+      "recvonly",
+    ]);
+    expect(peer.transceivers[1]?.sender.track).toBeNull();
+    // A generated connection id follows the contract.
+    expect(session.connectionId).toMatch(/^[A-Za-z0-9_-]{8,64}$/);
+  });
+
+  it("sends candidates with the connection id over REST", async () => {
+    const { peer, signaling: s, session } = await opened();
+    peer.onicecandidate?.({
+      candidate: { toJSON: () => ({ candidate: "candidate:7", sdpMid: "0" }) },
+    } as unknown as RTCPeerConnectionIceEvent);
+    expect(s["candidate"]).toHaveBeenCalledWith(
+      "call-1",
+      { candidate: "candidate:7", sdpMid: "0" },
+      session.connectionId,
+      expect.any(AbortSignal),
+    );
+  });
+
+  it("maps video_source and video_source_removed to per-participant streams", async () => {
+    const seen: (readonly RemoteVideo[])[] = [];
+    const { peer, session } = await opened({
+      onRemoteVideos: (videos) => seen.push(videos),
+    });
+    const participant = {
+      id: "123",
+      phoneNumber: "+15550100",
+      audioMuted: false,
+      video: true,
+      state: "connected",
+    };
+    control(peer, {
+      type: "video_source",
+      source: 4,
+      mid: "1",
+      participant,
+    });
+    control(peer, {
+      type: "video_source",
+      source: 9,
+      mid: "2",
+      connectionId: "peer-conn-1",
+      connectionParticipant: "client:tab-2",
+    });
+    // Unknown mids and malformed frames are ignored.
+    control(peer, {
+      type: "video_source",
+      source: 5,
+      mid: "77",
+      connectionId: "peer-conn-2",
+    });
+    control(peer, { type: "video_source", source: 6, mid: "3" });
+    expect(seen).toHaveLength(2);
+    const videos = session.remoteVideos ?? [];
+    expect(videos.map((v) => [v.key, v.source, v.mid])).toEqual([
+      ["participant:123", 4, "1"],
+      ["connection:peer-conn-1", 9, "2"],
+    ]);
+    expect(videos[0]?.participant).toEqual(participant);
+    expect(videos[1]?.connectionId).toBe("peer-conn-1");
+    expect(videos[1]?.connectionParticipant).toBe("client:tab-2");
+    // A connection source cannot also name a WhatsApp participant.
+    control(peer, {
+      type: "video_source",
+      source: 12,
+      mid: "3",
+      participant,
+      connectionParticipant: "client:x",
+    });
+    expect(session.remoteVideos).toHaveLength(2);
+    // Each source has its own stream carrying its transceiver's track.
+    expect((videos[1]?.stream as unknown as FakeStream).getTracks()).toEqual([
+      peer.transceivers[2]?.receiver.track,
+    ]);
+
+    // A removal for the wrong mid is ignored; the right one removes the tile.
+    control(peer, { type: "video_source_removed", source: 9, mid: "1" });
+    expect(session.remoteVideos).toHaveLength(2);
+    control(peer, { type: "video_source_removed", source: 9, mid: "2" });
+    expect(session.remoteVideos?.map((v) => v.source)).toEqual([4]);
+
+    // A new source on a reused slot replaces the old one.
+    control(peer, {
+      type: "video_source",
+      source: 11,
+      mid: "1",
+      connectionId: "peer-conn-3",
+    });
+    expect(session.remoteVideos?.map((v) => v.key)).toEqual([
+      "connection:peer-conn-3",
+    ]);
+  });
+
+  it("adds receive slots and renegotiates when the platform runs out", async () => {
+    const { peer, signaling: s } = await opened({ maxVideoSlots: 6 });
+    const videoSlots = () =>
+      peer.transceivers.filter((t) => t.receiver.track.kind === "video").length;
+    expect(videoSlots()).toBe(4);
+    control(peer, { type: "video_slots_exhausted", slots: 4, needed: 5 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(videoSlots()).toBe(5);
+    expect(peer.transceivers.at(-1)?.direction).toBe("recvonly");
+    expect(s["renegotiate"]).toHaveBeenCalledTimes(1);
+    expect(s["renegotiate"]).toHaveBeenCalledWith(
+      "call-1",
+      expect.objectContaining({ connectionId: expect.any(String) }),
+      expect.any(AbortSignal),
+    );
+    // Bounded: asking for more than the ceiling adds up to the ceiling only.
+    control(peer, { type: "video_slots_exhausted", slots: 5, needed: 40 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(videoSlots()).toBe(6);
+    expect(s["renegotiate"]).toHaveBeenCalledTimes(2);
+    // Reports at or below the offered count do nothing.
+    control(peer, { type: "video_slots_exhausted", slots: 6, needed: 40 });
+    control(peer, { type: "video_slots_exhausted", slots: 5, needed: 5 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(videoSlots()).toBe(6);
+    expect(s["renegotiate"]).toHaveBeenCalledTimes(2);
+  });
+
+  it("offers added slots again after a failed re-offer", async () => {
+    const { peer, signaling: s } = await opened({ maxVideoSlots: 6 });
+    const videoSlots = () =>
+      peer.transceivers.filter((t) => t.receiver.track.kind === "video").length;
+    vi.mocked(s["renegotiate"]!).mockRejectedValueOnce(new Error("503"));
+    control(peer, { type: "video_slots_exhausted", slots: 4, needed: 5 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(videoSlots()).toBe(5);
+    expect(s["renegotiate"]).toHaveBeenCalledTimes(1);
+    // The same report again: the slot exists but was never negotiated.
+    control(peer, { type: "video_slots_exhausted", slots: 4, needed: 5 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(videoSlots()).toBe(5);
+    expect(s["renegotiate"]).toHaveBeenCalledTimes(2);
+    // Now negotiated: the same report does nothing.
+    control(peer, { type: "video_slots_exhausted", slots: 5, needed: 5 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(s["renegotiate"]).toHaveBeenCalledTimes(2);
+  });
+
+  it("runs one slot re-offer at a time and follows up with the largest request", async () => {
+    let finish!: () => void;
+    const { peer, signaling: s } = await opened({ maxVideoSlots: 8 });
+    const videoSlots = () =>
+      peer.transceivers.filter((t) => t.receiver.track.kind === "video").length;
+    vi.mocked(s["renegotiate"]!).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = () => resolve({ sdp: "v=0", iceServers: [] });
+        }),
+    );
+    control(peer, { type: "video_slots_exhausted", slots: 4, needed: 5 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    control(peer, { type: "video_slots_exhausted", slots: 4, needed: 6 });
+    control(peer, { type: "video_slots_exhausted", slots: 4, needed: 7 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(s["renegotiate"]).toHaveBeenCalledTimes(1);
+    expect(videoSlots()).toBe(5);
+    finish();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(s["renegotiate"]).toHaveBeenCalledTimes(2);
+    expect(videoSlots()).toBe(7);
+  });
+
+  it("does not add slots when signaling cannot renegotiate", async () => {
+    const basic = signaling();
+    delete (basic as { renegotiate?: unknown }).renegotiate;
+    const { peer } = await opened({ signaling: basic });
+    control(peer, { type: "video_slots_exhausted", slots: 4, needed: 6 });
+    expect(peer.transceivers).toHaveLength(5);
+  });
+
+  it("leaves the connection on close unless told not to", async () => {
+    const first = await opened();
+    await first.session.close();
+    expect(first.signaling["leave"]).toHaveBeenCalledWith(
+      "call-1",
+      first.session.connectionId,
+    );
+    expect(first.signaling["end"]).not.toHaveBeenCalled();
+    expect(first.peer.close).toHaveBeenCalled();
+
+    const second = await opened();
+    await second.session.close({ leave: false });
+    expect(second.signaling["leave"]).not.toHaveBeenCalled();
+    expect(second.signaling["end"]).not.toHaveBeenCalled();
   });
 });

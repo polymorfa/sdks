@@ -1,13 +1,33 @@
+import {
+  PolymorfaConfigurationError,
+  PolymorfaServerError,
+  PolymorfaValidationError,
+} from "../errors.js";
 import { CursorPage } from "../pagination.js";
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
+import { withIdempotencyKey } from "../transport/idempotency.js";
 import type {
   ClientOwner,
   CreateOrganizationWebhookInput,
   CreateProjectWebhookInput,
   ListDeliveryAttemptsParams,
   ListEventsParams,
+  ListIndexedEventsParams,
+  IndexedEventPage,
+  ListOperationsParams,
+  ListOperationTransitionsParams,
+  ListOrganizationOperationsParams,
+  ManagementOperation,
+  OperationTransition,
+  OrganizationOperationCancellationReceipt,
+  ProjectOperation,
+  ProjectOperationCancellationReceipt,
+  RetrieveOperationParams,
+  RetrieveOrganizationOperationParams,
+  WaitForOperationOptions,
+  WaitForOrganizationOperationOptions,
   ListWebhookDeliveriesParams,
   ListWebhooksParams,
   OrganizationEvent,
@@ -41,6 +61,15 @@ import type {
   UpdateProjectWebhookInput,
 } from "./developer-types.js";
 import {
+  EventStream,
+  eventStreamSource,
+  type EventStreamAcknowledgement,
+  type EventStreamAcknowledgementReceipt,
+  type EventStreamParams,
+  type LiveEventSourceAdapter,
+  type OrganizationEventStreamParams,
+} from "./event-stream.js";
+import {
   decodeCursorPage,
   type DataEnvelope,
   unwrapResponse,
@@ -49,6 +78,9 @@ import {
 type EventFor<O extends ClientOwner> = O extends "project"
   ? ProjectEvent
   : OrganizationEvent;
+type EventStreamParamsFor<O extends ClientOwner> = O extends "project"
+  ? EventStreamParams
+  : OrganizationEventStreamParams;
 type EventReplayFor<O extends ClientOwner> = O extends "project"
   ? ProjectEventReplayReceipt
   : OrganizationEventReplayReceipt;
@@ -147,6 +179,74 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
   ): Promise<CursorPage<EventFor<O>>> {
     return this.page(this.path("/events"), { ...params }, options);
   }
+  async listIndexed(
+    params: ListIndexedEventsParams,
+    options: RequestOptions = {},
+  ): Promise<IndexedEventPage<EventFor<O>>> {
+    const validOffset = /^(0|[1-9][0-9]*)$/;
+    if (
+      !validOffset.test(params.afterOffset) ||
+      BigInt(params.afterOffset) > 9223372036854775807n
+    ) {
+      throw new PolymorfaValidationError(
+        "afterOffset must be a nonnegative decimal stream position.",
+        {
+          code: "invalid_after_offset",
+        },
+      );
+    }
+    const response = await this.transport.request<unknown>({
+      method: "GET",
+      path: this.path("/events"),
+      query: {
+        afterOffset: params.afterOffset,
+        type: params.type,
+        limit: params.limit,
+      },
+      ...options,
+    });
+    const envelope = response.data as {
+      data?: EventFor<O>[];
+      page?: {
+        hasMore?: unknown;
+        nextOffset?: unknown;
+        highWatermark?: unknown;
+      };
+    } | null;
+    const page = envelope?.page;
+    if (
+      !envelope ||
+      !Array.isArray(envelope.data) ||
+      !page ||
+      typeof page.hasMore !== "boolean" ||
+      typeof page.highWatermark !== "string" ||
+      !validOffset.test(page.highWatermark) ||
+      (page.hasMore &&
+        (typeof page.nextOffset !== "string" ||
+          !validOffset.test(page.nextOffset) ||
+          BigInt(page.nextOffset) <= BigInt(params.afterOffset) ||
+          BigInt(page.nextOffset) > BigInt(page.highWatermark))) ||
+      (!page.hasMore && page.nextOffset !== null)
+    ) {
+      throw new PolymorfaServerError(
+        "The Polymorfa API returned an invalid indexed event page.",
+        {
+          code: "invalid_response",
+          status: response.metadata.status,
+          metadata: response.metadata,
+        },
+      );
+    }
+    return Object.freeze({
+      items: Object.freeze([...envelope.data]),
+      page: Object.freeze({
+        hasMore: page.hasMore,
+        nextOffset: page.nextOffset as string | null,
+        highWatermark: page.highWatermark,
+      }),
+      metadata: response.metadata,
+    });
+  }
   retrieve(
     eventId: string,
     params: RetrieveEventParams = {},
@@ -172,6 +272,64 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
       input,
       options,
     );
+  }
+  /**
+   * Streams a project's events over server-sent events with automatic
+   * reconnect and resume. Requires `events:listen` and the Event streams
+   * beta. Organization clients pass `projectId`.
+   */
+  stream(
+    params: EventStreamParamsFor<O> = {} as EventStreamParamsFor<O>,
+  ): EventStream {
+    return new EventStream(this.transport, this.streamPath(params), params);
+  }
+  /**
+   * Acknowledges every event up to `sequence` on a stream opened with
+   * `ack: "manual"`. Use the same credential that opened the stream.
+   */
+  acknowledgeStream(
+    streamId: string,
+    input: EventStreamAcknowledgement &
+      (O extends "project" ? object : { readonly projectId: string }),
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<EventStreamAcknowledgementReceipt>> {
+    const body = { cursor: input.cursor, sequence: input.sequence };
+    const base = this.streamPath(input as never);
+    return this.transport
+      .request<DataEnvelope<EventStreamAcknowledgementReceipt>>({
+        method: "POST",
+        path: `${base}/${encodeURIComponent(streamId)}/ack`,
+        body,
+        ...options,
+      })
+      .then(unwrapResponse);
+  }
+  /** A `@polymorfa/store` live source over `stream()`; see `eventStreamSource`. */
+  liveSource(
+    params: Omit<EventStreamParamsFor<O>, "since" | "signal"> = {} as Omit<
+      EventStreamParamsFor<O>,
+      "since" | "signal"
+    >,
+  ): LiveEventSourceAdapter {
+    return eventStreamSource(
+      (next) => this.stream({ ...params, ...next } as EventStreamParamsFor<O>),
+      params,
+    );
+  }
+  private streamPath(
+    params: EventStreamParams | OrganizationEventStreamParams,
+  ): string {
+    if (this.prefix.startsWith("/platform/projects/"))
+      return this.path("/events/stream");
+    const projectId = (params as Partial<OrganizationEventStreamParams>)
+      .projectId;
+    if (typeof projectId !== "string" || projectId.trim() === "") {
+      throw new PolymorfaConfigurationError(
+        "Organization clients must pass projectId to stream events.",
+        "projectId",
+      );
+    }
+    return `/platform/projects/${encodeURIComponent(projectId)}/events/stream`;
   }
 }
 
@@ -300,5 +458,181 @@ export class WebhookDeliveriesResource<
       input,
       options,
     );
+  }
+}
+
+type OperationFor<O extends ClientOwner> = O extends "project"
+  ? ProjectOperation
+  : ManagementOperation;
+type ListOperationsFor<O extends ClientOwner> = O extends "project"
+  ? ListOperationsParams
+  : ListOrganizationOperationsParams;
+type RetrieveOperationParamsFor<O extends ClientOwner> = O extends "project"
+  ? RetrieveOperationParams
+  : RetrieveOrganizationOperationParams;
+type WaitOptionsFor<O extends ClientOwner> = O extends "project"
+  ? WaitForOperationOptions
+  : WaitForOrganizationOperationOptions;
+type OperationCancellationFor<O extends ClientOwner> = O extends "project"
+  ? ProjectOperationCancellationReceipt
+  : OrganizationOperationCancellationReceipt;
+
+const TERMINAL_OPERATION_STATUSES = new Set([
+  "succeeded",
+  "failed",
+  "cancelled",
+]);
+/** Longest server-side wait for one request, in seconds. */
+export const OPERATION_WAIT_MAX_SECONDS = 30;
+
+/**
+ * Asynchronous operations (campaign sends, production enrollments, and other
+ * durable work). Organization clients see team and project operations;
+ * project clients see only their project. Requires `operations:read`;
+ * `cancel` requires `operations:cancel`.
+ */
+export class OperationsResource<O extends ClientOwner> extends ResourceBase {
+  list(
+    params: ListOperationsFor<O> = {} as ListOperationsFor<O>,
+    options: RequestOptions = {},
+  ): Promise<CursorPage<OperationFor<O>>> {
+    return this.page(this.path("/operations"), { ...params }, options);
+  }
+  /** Gets one operation. `params.wait` long-polls for up to 30 seconds. */
+  get(
+    operationId: string,
+    params: RetrieveOperationParamsFor<O> = {} as RetrieveOperationParamsFor<O>,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<OperationFor<O>>> {
+    if (
+      params.wait !== undefined &&
+      (!Number.isInteger(params.wait) ||
+        params.wait < 0 ||
+        params.wait > OPERATION_WAIT_MAX_SECONDS)
+    ) {
+      throw new PolymorfaConfigurationError(
+        `wait must be an integer between 0 and ${OPERATION_WAIT_MAX_SECONDS}.`,
+        "wait",
+      );
+    }
+    const wait = params.wait ?? 0;
+    return this.transport
+      .request<DataEnvelope<OperationFor<O>>>({
+        method: "GET",
+        path: this.path(`/operations/${encodeURIComponent(operationId)}`),
+        query: { ...params } as Readonly<Record<string, never>>,
+        ...options,
+        // The request stays open for the wait; leave headroom for the response.
+        ...(wait > 0 && options.timeoutMs === undefined
+          ? { timeoutMs: (wait + 15) * 1000 }
+          : {}),
+      })
+      .then(unwrapResponse);
+  }
+  listTransitions(
+    operationId: string,
+    params: ListOperationTransitionsParams = {},
+    options: RequestOptions = {},
+  ): Promise<CursorPage<OperationTransition>> {
+    return this.page(
+      this.path(`/operations/${encodeURIComponent(operationId)}/transitions`),
+      { ...params },
+      options,
+    );
+  }
+  /**
+   * Requests cancellation. Only operations whose `capabilities.cancellable`
+   * is true accept it; others fail with 409 `operation_conflict`. An
+   * Idempotency-Key is generated when `options.idempotencyKey` is omitted.
+   */
+  cancel(
+    operationId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<OperationCancellationFor<O>>> {
+    return this.mutate(
+      "POST",
+      this.path(`/operations/${encodeURIComponent(operationId)}/cancel`),
+      undefined,
+      withIdempotencyKey(options),
+    );
+  }
+  /**
+   * Waits until the operation is terminal (`succeeded`, `failed`,
+   * `cancelled`), its sequence passes `afterSequence`, or `maxWaitMs`
+   * (default 5 minutes) elapses, using server long-polls. Returns the latest
+   * state; check `status`, because the wait can end first.
+   */
+  async wait(
+    operationId: string,
+    options: WaitOptionsFor<O> = {} as WaitOptionsFor<O>,
+  ): Promise<ApiResponse<OperationFor<O>>> {
+    const maxWaitMs = options.maxWaitMs ?? 5 * 60_000;
+    if (!Number.isFinite(maxWaitMs) || maxWaitMs < 0) {
+      throw new PolymorfaConfigurationError(
+        "maxWaitMs must be a finite, non-negative number of milliseconds.",
+        "maxWaitMs",
+      );
+    }
+    const deadline = Date.now() + maxWaitMs;
+    let latest: ApiResponse<OperationFor<O>> | undefined;
+    for (;;) {
+      options.signal?.throwIfAborted();
+      const remaining = Math.max(0, deadline - Date.now());
+      const wait = Math.min(
+        OPERATION_WAIT_MAX_SECONDS,
+        Math.floor(remaining / 1000),
+      );
+      // Bound the request itself by what is left of the budget, so a server
+      // that holds the connection open cannot extend the wait. The last read
+      // still gets a second to answer, so a spent budget returns real state
+      // instead of an abort.
+      const budget = new AbortController();
+      const timer = setTimeout(
+        () => budget.abort(),
+        Math.max(remaining, 1_000),
+      );
+      const abortBudget = () => budget.abort(options.signal?.reason);
+      options.signal?.addEventListener("abort", abortBudget, { once: true });
+      let response: ApiResponse<OperationFor<O>>;
+      try {
+        response = await this.get(
+          operationId,
+          {
+            wait,
+            ...((options as WaitForOrganizationOperationOptions).projectId ===
+            undefined
+              ? {}
+              : {
+                  projectId: (options as WaitForOrganizationOperationOptions)
+                    .projectId,
+                }),
+            ...(options.afterSequence === undefined
+              ? {}
+              : { afterSequence: options.afterSequence }),
+          } as RetrieveOperationParamsFor<O>,
+          { ...options.requestOptions, signal: budget.signal },
+        );
+      } catch (error) {
+        // The caller's own abort always propagates. A budget abort returns the
+        // last state this wait observed, and only fails when it has none.
+        options.signal?.throwIfAborted();
+        if (!budget.signal.aborted || latest === undefined) throw error;
+        return latest;
+      } finally {
+        clearTimeout(timer);
+        options.signal?.removeEventListener("abort", abortBudget);
+      }
+      latest = response;
+      const operation = response.data;
+      if (
+        TERMINAL_OPERATION_STATUSES.has(operation.status) ||
+        (options.afterSequence !== undefined &&
+          operation.sequence > options.afterSequence) ||
+        wait === 0 ||
+        Date.now() >= deadline
+      ) {
+        return response;
+      }
+    }
   }
 }

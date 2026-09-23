@@ -8,6 +8,7 @@ import {
   constructWebhookEvent,
   isEvent,
   type KnownWebhookEventType,
+  type BanSafeHealthBandName,
   type ProjectWebhookDeliveryAttempt,
   type OrganizationWebhookDeliveryAttempt,
   type WebhookPayloadMap,
@@ -176,6 +177,20 @@ type P = WebhookPayloadMap;
 const PAYLOADS: {
   readonly [K in Exclude<KnownWebhookEventType, LegacyEventType>]: Shape<P[K]>;
 } = {
+  "session.logged_out": shape<P["session.logged_out"]>()(
+    { reason: "banned", code: 401 },
+    ["reason", "code"],
+  ),
+  "session.restriction_updated": shape<P["session.restriction_updated"]>()(
+    {
+      type: "reachout_timelock",
+      active: true,
+      enforcementType: null,
+      expiresAt: null,
+      observedAt: AT,
+    },
+    ["type", "active", "enforcementType", "expiresAt", "observedAt"],
+  ),
   "customer.created": shape<P["customer.created"]>()(
     customer,
     customerRequired,
@@ -269,6 +284,97 @@ const PAYLOADS: {
       "policyVersion",
       "episodeId",
       "actionId",
+    ],
+  ),
+  "bansafe.risk_changed": shape<P["bansafe.risk_changed"]>()(
+    {
+      phoneNumber: "+15551234567",
+      level: "elevated",
+      previousLevel: "low",
+      score: 37,
+      forecast: { days7: 0.02, days14: 0.06, days30: 0.11 },
+      factors: [
+        {
+          key: "cold_send_ratio",
+          group: "cold_outreach",
+          label: "Share of messages sent to people who never messaged you",
+          direction: "raises",
+          strength: "strong",
+          impact: 42,
+          sentence:
+            "38 of the 51 people you messaged had never messaged this number",
+          hint: "Warm up the number before sending to new contacts",
+        },
+      ],
+      model: { version: "prior-v0", reliability: "prior" },
+      evaluatedAt: AT,
+    },
+    [
+      "phoneNumber",
+      "level",
+      "previousLevel",
+      "score",
+      "forecast",
+      "factors",
+      "model",
+      "evaluatedAt",
+    ],
+  ),
+  "bansafe.health_changed": shape<P["bansafe.health_changed"]>()(
+    {
+      phoneNumber: "+15551234567",
+      health: 62,
+      band: "fair",
+      previousBand: "good",
+      state: "measured",
+      penalties: { conduct: 12, restriction: 0, connection: 4 },
+      findings: [
+        {
+          key: "unsolicited_outreach",
+          title: "Messaging people who never wrote to you",
+          severity: "warning",
+          status: "open",
+          points: 8,
+        },
+      ],
+      measuredChecks: 14,
+      totalChecks: 18,
+      allowance: 240,
+      evaluatedAt: AT,
+    },
+    [
+      "phoneNumber",
+      "health",
+      "band",
+      "previousBand",
+      "state",
+      "penalties",
+      "findings",
+      "measuredChecks",
+      "totalChecks",
+      "evaluatedAt",
+    ],
+  ),
+  "call.permission_changed": shape<P["call.permission_changed"]>()(
+    {
+      conversation: {
+        id: "739182640518203",
+        phoneNumber: "+15551234567",
+        bsuid: "US.13491208655302741918",
+      },
+      status: "temporary",
+      previousStatus: "none",
+      expiresAt: "2026-09-23T00:00:00.000Z",
+      source: "user_action",
+      changedAt: AT,
+    },
+    [
+      "conversation",
+      "status",
+      "previousStatus",
+      "expiresAt",
+      "source",
+      "changedAt",
     ],
   ),
   "bansafe.enforcement": shape<P["bansafe.enforcement"]>()(
@@ -397,6 +503,92 @@ const PAYLOADS: {
       timestamp: 1_789_000_000,
     },
     ["to", "type", "error", "timestamp"],
+  ),
+  "usage.recorded": shape<P["usage.recorded"]>()(
+    {
+      id: IDS.event,
+      meter: "call.duration",
+      quantity: 42,
+      unit: "second",
+      dimensions: { direction: "outbound", video: false },
+      keySource: "none",
+      sourceKind: "call",
+      sourceId: "call_1",
+      projectId: IDS.project,
+      session: "number-1",
+      occurredAt: AT,
+      recordedAt: AT,
+      revision: 1,
+      pricingState: "unpriced",
+      rateCard: null,
+      pricedCredits: null,
+    },
+    [
+      "id",
+      "meter",
+      "quantity",
+      "unit",
+      "dimensions",
+      "keySource",
+      "sourceKind",
+      "sourceId",
+      "projectId",
+      "session",
+      "occurredAt",
+      "recordedAt",
+      "revision",
+      "pricingState",
+      "rateCard",
+      "pricedCredits",
+    ],
+  ),
+  "voice.asset_ready": shape<P["voice.asset_ready"]>()(
+    {
+      eventId: IDS.event,
+      occurredAt: AT,
+      organizationId: IDS.organization,
+      projectId: IDS.project,
+      assetId: IDS.customer,
+      name: "Greeting",
+      source: "upload",
+      durationMs: 1200,
+      contentSha256: "a".repeat(64),
+      originalFormat: "wav",
+    },
+    [
+      "eventId",
+      "occurredAt",
+      "organizationId",
+      "projectId",
+      "assetId",
+      "name",
+      "source",
+      "durationMs",
+      "contentSha256",
+      "originalFormat",
+    ],
+  ),
+  "voice.asset_failed": shape<P["voice.asset_failed"]>()(
+    {
+      eventId: IDS.event,
+      occurredAt: AT,
+      organizationId: IDS.organization,
+      projectId: IDS.project,
+      assetId: IDS.customer,
+      name: "Greeting",
+      source: "tts",
+      failureReason: "processing_failed",
+    },
+    [
+      "eventId",
+      "occurredAt",
+      "organizationId",
+      "projectId",
+      "assetId",
+      "name",
+      "source",
+      "failureReason",
+    ],
   ),
   "template.status": shape<P["template.status"]>()(
     {
@@ -538,8 +730,13 @@ type LegacyEventType = Exclude<
   | `customer.${string}`
   | `bansafe.${string}`
   | `campaign.${string}`
+  | "call.permission_changed"
+  | `voice.${string}`
+  | "usage.recorded"
   | "message.failed"
   | "template.status"
+  | "session.logged_out"
+  | "session.restriction_updated"
 >;
 
 function specEvents(): Map<string, string> {
@@ -559,9 +756,8 @@ const sign = (body: Buffer) =>
 
 describe("webhook catalog contract", () => {
   it("lists exactly the events the pinned Messaging contract defines", () => {
-    expect([...specEvents().keys()].sort()).toEqual(
-      [...KNOWN_WEBHOOK_EVENT_TYPES].sort(),
-    );
+    const spec = [...specEvents().keys()];
+    expect(spec.sort()).toEqual([...KNOWN_WEBHOOK_EVENT_TYPES].sort());
   });
 
   it.each(Object.entries(PAYLOADS))(
@@ -619,6 +815,9 @@ describe("webhook catalog contract", () => {
     expectTypeOf<P["bansafe.action"]["previousRung"]>().toEqualTypeOf<
       "none" | "notify" | "throttle" | "block_cold" | "suspend" | null
     >();
+    expectTypeOf<
+      P["bansafe.health_changed"]["previousBand"]
+    >().toEqualTypeOf<BanSafeHealthBandName | null>();
   });
 });
 

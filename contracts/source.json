@@ -1,16 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "42fc2d8d370efc126394307118f444dd6371f1ba",
+  "commit": "270fbe53e04927d360076971a3e54e2772fb0ed2",
+  "branch": "dev",
+  "published": true,
+  "note": "Exact merged API dev commit containing Calls consent and HMS history; both snapshots are byte-identical to the authoritative source files. SDK package publication is separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "11f7f6cf3aae621db5763ce77c38c56fdaa1bbf6a5d96d5eb7bc996849e3e8ab"
+      "sha256": "0943aa46871e280dc1a714e0dd167e26b7f35a86a4a23fe50e981c620ab83df0"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "05961bc09932a68e508475194a1f3349a650829a9077d4eec923e5f939d9d5c2"
+      "sha256": "53a1c41d155edfa1797919e62f8df5908f550dbe06de20d4fe5d11a40867e11f"
     }
   }
 }

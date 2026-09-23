@@ -1,9 +1,18 @@
 {
   "name": "@polymorfa/nextjs",
   "version": "0.1.0-dev.0",
-  "description": "Server-only Next.js helpers for Polymorfa client tokens and webhooks",
+  "description": "Server-only helpers for Polymorfa: one catch-all handler for Next.js, Express and Hono, client tokens, webhooks and media",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polymorfa/sdks.git",
+    "directory": "packages/nextjs"
+  },
+  "bugs": {
+    "url": "https://github.com/polymorfa/sdks/issues"
+  },
+  "homepage": "https://github.com/polymorfa/sdks#readme",
   "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -11,6 +20,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./express": {
+      "types": "./dist/express.d.ts",
+      "import": "./dist/express.js"
+    },
+    "./hono": {
+      "types": "./dist/hono.d.ts",
+      "import": "./dist/hono.js"
     }
   },
   "files": [

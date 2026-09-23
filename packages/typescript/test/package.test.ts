@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 
 const repositoryRoot = new URL("../../../", import.meta.url).pathname;
+const packageRoot = new URL("../", import.meta.url).pathname;
 
 describe("npm package", () => {
   it("packs and imports in a clean consumer without runtime dependencies", () => {
@@ -24,7 +25,7 @@ describe("npm package", () => {
     const packed = spawnSync(
       "npm",
       ["pack", "--json", "--ignore-scripts", "--pack-destination", directory],
-      { cwd: repositoryRoot, encoding: "utf8", env: environment },
+      { cwd: packageRoot, encoding: "utf8", env: environment },
     );
     expect(packed.status, packed.stderr).toBe(0);
     const metadata = JSON.parse(packed.stdout) as Array<{
@@ -34,8 +35,14 @@ describe("npm package", () => {
     const paths = metadata[0]?.files.map(({ path }) => path) ?? [];
     expect(paths).toContain("LICENSE");
     expect(paths).toContain("README.md");
-    expect(paths).toContain("packages/typescript/README.md");
-    expect(paths).toContain("packages/typescript/dist/index.js");
+    expect(paths).toContain("dist/index.js");
+    // The Calls client is compiled into this package, not a dependency.
+    expect(paths).toContain("dist/calls/index.js");
+    expect(paths).toContain("dist/calls/index.d.ts");
+    expect(paths).toContain("dist/calls/internal.js");
+    expect(paths).toContain("dist/node.js");
+    expect(paths).toContain("dist/node.d.ts");
+    expect(paths).toContain("package.json");
     expect(
       paths.some((path) => path.includes("/src/") || path.includes("/test/")),
     ).toBe(false);
@@ -66,7 +73,7 @@ describe("npm package", () => {
         'const bridge = new BridgeClient({ credential: { type: "projectToken", value: "pmfa_pt_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" } });',
         "let listenerCredentialRejected = false;",
         'try { new Client({ credential: { type: "organizationApiKey", value: "pmfa_ls_fixture" } }); } catch { listenerCredentialRejected = true; }',
-        'console.log(JSON.stringify({ version: SDK_VERSION, messaging: !!messaging.raw, business: typeof messaging.business.getCatalog, calls: typeof messaging.calls.reject, campaigns: typeof messaging.campaigns.launch, messagingMedia: typeof messaging.media.download, chats: typeof messaging.chats.editMessage, channels: typeof messaging.channels.listMessageUpdates, contacts: typeof messaging.contacts.list, groups: typeof messaging.groups.list, labels: typeof messaging.labels.list, lids: typeof messaging.identities.resolve, observationPolicies: typeof messaging.observationPolicies.retrieveForProject, profile: typeof messaging.profile.get, privacy: typeof messaging.privacy.set, privacyValues: PRIVACY_SETTING_VALUES.defense, presence: typeof messaging.presence.getForChat, presenceStates: PRESENCE_STATES, quickReplies: typeof messaging.quickReplies.list, pairing: typeof messaging.sessions.requestPairingCode, messagingOperations: typeof messaging.operations, templates: typeof messaging.templates.create, users: typeof messaging.users.getSecurityCode, systemStatus: typeof system.status, systemVersion: typeof system.version, systemHealth: typeof system.health, systemPing: typeof system.ping, bridgeRoutes: typeof bridge.routes.resolve, bridgeListen: typeof bridge.listen, platform: !!platform.raw, platformOwner: platform.owner, projectOwner: project.owner, projectId: project.projectId, apiKeys: typeof platform.apiKeys.deactivate, auditLogs: typeof platform.auditLogs.list, billing: typeof platform.billing.usage, members: typeof platform.members.list, events: typeof project.events.replay, webhooks: typeof project.webhooks.rotateSecret, webhookDeliveries: typeof project.webhookDeliveries.retrieveAttempt, operations: typeof project.operations, projectTokens: typeof platform.projectTokens.list, securityIncidents: typeof platform.securityIncidents.acknowledge, sessionBans: typeof platform.sessionBans.listActive, sessionStart: typeof platform.sessions.start, batchStop: typeof platform.sessions.stopMany, quickLinkSettings: typeof project.quickLinkSettings.update, verifyWebhook: typeof webhooks.verify, createWebhookFixture: typeof webhooks.createFixture, listenerCredentialRejected, platformClientExported: "PlatformClient" in sdk, listenerApiExported: "eventStreams" in sdk, memberInvite: typeof platform.members.invite, organizationUpdate: typeof platform.organizations.update }));',
+        'console.log(JSON.stringify({ version: SDK_VERSION, messaging: !!messaging.raw, business: typeof messaging.business.getCatalog, calls: typeof messaging.calls.reject, campaigns: typeof messaging.campaigns.launch, messagingMedia: typeof messaging.media.download, chats: typeof messaging.chats.editMessage, channels: typeof messaging.channels.listMessageUpdates, contacts: typeof messaging.contacts.list, groups: typeof messaging.groups.list, labels: typeof messaging.labels.list, lids: typeof messaging.identities.resolve, observationPolicies: typeof messaging.observationPolicies.retrieveForProject, profile: typeof messaging.profile.get, privacy: typeof messaging.privacy.set, privacyValues: PRIVACY_SETTING_VALUES.defense, presence: typeof messaging.presence.getForChat, presenceStates: PRESENCE_STATES, quickReplies: typeof messaging.quickReplies.list, pairing: typeof messaging.sessions.requestPairingCode, messagingOperations: typeof messaging.operations, templates: typeof messaging.templates.create, users: typeof messaging.users.getSecurityCode, systemStatus: typeof system.status, systemVersion: typeof system.version, systemHealth: typeof system.health, systemPing: typeof system.ping, bridgeRoutes: typeof bridge.routes.resolve, bridgeListen: typeof bridge.listen, platform: !!platform.raw, platformOwner: platform.owner, projectOwner: project.owner, projectId: project.projectId, apiKeys: typeof platform.apiKeys.deactivate, auditLogs: typeof platform.auditLogs.list, billing: typeof platform.billing.usage, members: typeof platform.members.list, events: typeof project.events.replay, webhooks: typeof project.webhooks.rotateSecret, webhookDeliveries: typeof project.webhookDeliveries.retrieveAttempt, operations: typeof project.operations.wait, projectTokens: typeof platform.projectTokens.list, securityIncidents: typeof platform.securityIncidents.acknowledge, sessionBans: typeof platform.sessionBans.listActive, sessionStart: typeof platform.sessions.start, batchStop: typeof platform.sessions.stopMany, quickLinkSettings: typeof project.quickLinkSettings.update, verifyWebhook: typeof webhooks.verify, createWebhookFixture: typeof webhooks.createFixture, listenerCredentialRejected, platformClientExported: "PlatformClient" in sdk, listenerApiExported: "eventStreams" in sdk, memberInvite: typeof platform.members.invite, organizationUpdate: typeof platform.organizations.update }));',
       ].join("\n"),
     );
     const imported = spawnSync(process.execPath, [consumer], {
@@ -115,7 +122,7 @@ describe("npm package", () => {
       events: "function",
       webhooks: "function",
       webhookDeliveries: "function",
-      operations: "undefined",
+      operations: "function",
       projectTokens: "function",
       securityIncidents: "function",
       sessionBans: "function",
@@ -129,6 +136,51 @@ describe("npm package", () => {
       listenerApiExported: false,
       memberInvite: "undefined",
       organizationUpdate: "undefined",
+    });
+
+    const nodeConsumer = join(directory, "node-consumer.mjs");
+    writeFileSync(
+      nodeConsumer,
+      [
+        'import * as node from "@polymorfa/sdk/node";',
+        'import { MessagingClient, decodeWhatsAppMedia } from "@polymorfa/sdk";',
+        'const messaging = new MessagingClient({ credential: { type: "apiKey", value: "pmfa_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" } });',
+        "console.log(JSON.stringify({ exports: Object.keys(node).sort(), stream: typeof messaging.media.downloadStream, url: typeof messaging.media.downloadUrl, blob: typeof messaging.media.downloadBlob, whatsapp: typeof messaging.media.downloadFromWhatsApp, decode: typeof decodeWhatsAppMedia }));",
+      ].join("\n"),
+    );
+    const nodeImported = spawnSync(process.execPath, [nodeConsumer], {
+      cwd: directory,
+      encoding: "utf8",
+    });
+    expect(nodeImported.status, nodeImported.stderr).toBe(0);
+    expect(JSON.parse(nodeImported.stdout)).toEqual({
+      exports: [
+        "downloadMediaToFile",
+        "downloadWhatsAppMediaToFile",
+        "nodeMediaCrypto",
+        "writeStreamToFile",
+      ],
+      stream: "function",
+      url: "function",
+      blob: "function",
+      whatsapp: "function",
+      decode: "function",
+    });
+
+    const callsConsumer = join(directory, "calls-consumer.mjs");
+    writeFileSync(
+      callsConsumer,
+      'import * as calls from "@polymorfa/sdk/calls"; console.log(JSON.stringify({ client: typeof calls.CallsClient, disabled: typeof calls.CallsDisabledError, sampleRate: typeof calls.DEFAULT_SAMPLE_RATE }));',
+    );
+    const importedCalls = spawnSync(process.execPath, [callsConsumer], {
+      cwd: directory,
+      encoding: "utf8",
+    });
+    expect(importedCalls.status, importedCalls.stderr).toBe(0);
+    expect(JSON.parse(importedCalls.stdout)).toEqual({
+      client: "function",
+      disabled: "function",
+      sampleRate: "number",
     });
 
     const installedManifest = JSON.parse(

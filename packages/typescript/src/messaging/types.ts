@@ -127,6 +127,91 @@ export interface CreateCampaignRequest {
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Epoch milliseconds. */
   readonly scheduledAt?: number;
+  /**
+   * Up to 1,000 recipients to queue with the draft. Invalid entries reject the
+   * whole request; use `campaigns.addRecipients` for partial acceptance.
+   */
+  readonly recipients?: readonly CampaignRecipientInput[];
+}
+
+export type CampaignRecipientStatus =
+  "queued" | "sending" | "sent" | "delivered" | "read" | "failed" | "skipped";
+
+export type InvalidRecipientReason =
+  "missing_phone" | "invalid_phone" | "invalid_variables" | "invalid_entry";
+
+/** One rejected entry, reported without aborting an append. */
+export interface InvalidRecipientRow {
+  /** 1-based position in the request, or the spreadsheet row for a file import. */
+  readonly row: number;
+  readonly reason: InvalidRecipientReason;
+}
+
+export type CampaignRecipientVariables = Readonly<
+  Record<string, string | number | boolean>
+>;
+
+export interface CampaignRecipientInput {
+  /** International format. Separators are ignored and a leading `00` reads as `+`. */
+  readonly phone: string;
+  /** At most 50 template variables, stored as strings of at most 1,024 characters. */
+  readonly variables?: CampaignRecipientVariables;
+}
+
+/** One queued or settled recipient of a campaign. */
+export interface CampaignRecipient {
+  readonly id: string;
+  readonly phone: string;
+  readonly variables: Readonly<Record<string, unknown>>;
+  readonly variantKey: string | null;
+  readonly status: CampaignRecipientStatus;
+  readonly attempts: number;
+  /** `opted_out` means the phone is on the organization's opt-out list. */
+  readonly lastError: string | null;
+  readonly externalMessageId: string | null;
+  /** Epoch milliseconds, or null while the transition has not happened. */
+  readonly queuedAt: number;
+  readonly sentAt: number | null;
+  readonly deliveredAt: number | null;
+  readonly readAt: number | null;
+  readonly failedAt: number | null;
+  readonly respondedAt: number | null;
+}
+
+export interface CampaignRecipientPage {
+  readonly nextCursor: string | null;
+  readonly hasMore: boolean;
+}
+
+export interface ListCampaignRecipientsParams {
+  readonly status?: CampaignRecipientStatus;
+  readonly cursor?: string;
+  /** 1 to 100; the API defaults to 25. */
+  readonly limit?: number;
+}
+
+export interface AddCampaignRecipientsRequest {
+  readonly recipients: readonly CampaignRecipientInput[];
+}
+
+export interface AddCampaignRecipientsResult {
+  readonly campaignId: string;
+  readonly added: number;
+  /** Recipients on the campaign after the append. */
+  readonly recipientCount: number;
+  /** Valid entries skipped as repeated in the request or already on the campaign. */
+  readonly duplicateCount: number;
+  readonly invalidCount: number;
+  /** At most 20 rejected entries. */
+  readonly invalidRows: readonly InvalidRecipientRow[];
+}
+
+/**
+ * Stop answers with a null `operationId` when the campaign had no active
+ * delivery run: it was cancelled immediately and no remaining recipient is sent.
+ */
+export interface CampaignStopOperation extends Campaign {
+  readonly operationId: string | null;
 }
 
 export interface LaunchCampaignRequest {
@@ -153,6 +238,15 @@ export type CreateCampaignResponse = SuccessEnvelope<Campaign>;
 export type CampaignAnalyticsResponse = SuccessEnvelope<CampaignAnalytics>;
 export type CampaignOperationResponse = SuccessEnvelope<CampaignOperation>;
 export type CampaignRequeueResponse = SuccessEnvelope<CampaignRequeueResult>;
+export type CampaignStopResponse = SuccessEnvelope<CampaignStopOperation>;
+export type AddCampaignRecipientsResponse =
+  SuccessEnvelope<AddCampaignRecipientsResult>;
+
+export interface ListCampaignRecipientsResponse {
+  readonly success: true;
+  readonly data: readonly CampaignRecipient[];
+  readonly page: CampaignRecipientPage;
+}
 
 export interface RejectCallRequest {
   /** JID of the incoming caller. */
@@ -1331,11 +1425,43 @@ export interface Operation {
 
 export type GetOperationResponse = SuccessEnvelope<Operation>;
 
-export interface MintClientTokenRequest {
-  readonly session: string;
+/** Actions a Customer-scoped client token can carry in `allow`. */
+export type CustomerClientTokenAction =
+  | "send_message"
+  | "send_reaction"
+  | "send_typing"
+  | "send_seen"
+  | "read_presence"
+  | "subscribe_presence"
+  | "read_contact";
+
+interface MintClientTokenBase {
   readonly ephemeralId: string;
   readonly ttlSeconds?: number;
 }
+
+/** A token limited to one session. */
+export interface MintSessionClientTokenRequest extends MintClientTokenBase {
+  readonly session: string;
+  readonly customer?: never;
+  readonly allow?: never;
+}
+
+/**
+ * A token covering the numbers one Customer owns when it is minted (beta).
+ * Each request also requires that the Customer still owns the number and
+ * passes that session's client rules. Requires `customers:read`.
+ */
+export interface MintCustomerClientTokenRequest extends MintClientTokenBase {
+  /** Polymorfa Customer ID. Never pass your own external ID. */
+  readonly customer: string;
+  /** Narrows the token's actions further; omit to use session rules alone. */
+  readonly allow?: readonly CustomerClientTokenAction[];
+  readonly session?: never;
+}
+
+export type MintClientTokenRequest =
+  MintSessionClientTokenRequest | MintCustomerClientTokenRequest;
 
 export interface ClientTokenValue {
   readonly token: string;
@@ -1349,8 +1475,9 @@ export type ClientRecipientMode = "conversation" | "any" | "none";
 
 /**
  * Client-token actions (comma-separated in `allowedActions`). The `voip_*`
- * actions gate the browser call signaling routes: `voip_place` and
- * `voip_answer` establish media, `voip_signal` covers trickle ICE and teardown.
+ * actions gate the Calls routes for client tokens: `voip_place` places calls
+ * and adds participants, `voip_answer` accepts or declines, and `voip_signal`
+ * covers ICE candidates, renegotiation, ending a call, and the lifecycle socket.
  */
 export type ClientAction =
   | "mcp"
@@ -1372,7 +1499,11 @@ export type ClientAction =
 
 /** Rules as returned by `GET /platform/sessions/{session}/client-rules`. */
 export interface ClientRules {
-  readonly recipientMode: ClientRecipientMode | "";
+  /**
+   * Who client tokens may send to. Rules saved before `verified` was retired
+   * may still return `verified`; it cannot be set.
+   */
+  readonly recipientMode: ClientRecipientMode | "verified";
   /** Comma-separated {@link ClientAction} list. */
   readonly allowedActions: string;
   /** Requests per minute per ephemeral id (0 = unlimited). */
@@ -1381,6 +1512,11 @@ export interface ClientRules {
   readonly maxDaily: number;
   /** Comma-separated browser origins allowed to use the token. */
   readonly allowedOrigins: string;
+  /**
+   * Seconds a sender stays replyable in `conversation` mode after their latest
+   * inbound message (300 to 604800).
+   */
+  readonly conversationTtlSeconds: number;
   /** Calls: max distinct in-flight calls per token (0 = unlimited). */
   readonly maxConcurrency: number;
   /** Polymorfa Calls: call setups per minute per ephemeral id (0 = platform default of 10). */
@@ -1396,10 +1532,18 @@ export interface SetClientRulesRequest {
   readonly recipientMode: ClientRecipientMode;
   /** Comma-separated {@link ClientAction} list. */
   readonly allowedActions?: string;
+  /** Requests per minute per ephemeral id; 0 or more (0 = unlimited). */
   readonly rateLimit?: number;
+  /** Sends per day per ephemeral id; 0 or more (0 = unlimited). */
   readonly maxDaily?: number;
   readonly allowedOrigins?: string;
   readonly enabled: boolean;
+  /**
+   * Seconds a sender stays replyable in `conversation` mode after their latest
+   * inbound message: 300 (5 minutes) to 604800 (7 days). The API default is
+   * 86400 (24 hours).
+   */
+  readonly conversationTtlSeconds?: number;
   /** Calls: max distinct in-flight calls per token (0 = unlimited). */
   readonly maxConcurrency?: number;
   /** Polymorfa Calls: call setups per minute per ephemeral id (0 = platform default). */
@@ -1409,55 +1553,315 @@ export interface SetClientRulesRequest {
 }
 
 /**
- * Body for `POST /messaging/voip/token`: the same claims as
- * {@link MintClientTokenRequest}, minting the browser token that
- * `@polymorfa/browser` call signaling runs on.
+ * Who acts in a call when a server credential calls a Calls route. Matches
+ * `[A-Za-z0-9._:@-]{1,128}`; the API uses `default` when omitted. Client
+ * tokens act as their own participant and cannot set this field.
  */
-export interface VoipTokenRequest {
+export type VoipParticipantReference = string;
+
+/** Body for `POST /messaging/voip/calls`. */
+export interface VoipPlaceCallRequest {
+  /** Phone number in E.164 form or a WhatsApp user ID. */
+  readonly to: string;
+  /** Session that places the call. Required with a server credential. */
+  readonly session?: string;
+  readonly video?: boolean;
+  /** Claim the call for the placing participant. */
+  readonly exclusive?: boolean;
+  readonly participant?: VoipParticipantReference;
+}
+
+export interface VoipPlaceCallResult {
+  readonly callId: string;
   readonly session: string;
-  readonly ephemeralId: string;
-  readonly ttlSeconds?: number;
+  readonly video: boolean;
 }
 
-export interface VoipTokenValue {
-  readonly token: string;
-  /** Unix epoch milliseconds. */
-  readonly expiresAt: number;
+export type VoipPlaceCallResponse = SuccessEnvelope<VoipPlaceCallResult>;
+
+/** Body for `POST /messaging/voip/calls/{callId}/accept`. */
+export interface VoipAcceptCallRequest {
+  /**
+   * Claim the call. Other participants then receive `409 call_claimed` and
+   * their connections close. Without a claim, later accepts join the call.
+   */
+  readonly exclusive?: boolean;
+  readonly video?: boolean;
+  readonly participant?: VoipParticipantReference;
 }
 
-export type VoipTokenResponse = SuccessEnvelope<VoipTokenValue>;
+export interface VoipAcceptCallResult {
+  /** `true` once the call is answered, including when this accept joined it. */
+  readonly answered: boolean;
+  /** Participant reference that answered the call. */
+  readonly answeredBy: string;
+  /** Whether a participant holds an exclusive claim on the call. */
+  readonly exclusive: boolean;
+}
+
+export type VoipAcceptCallResponse = SuccessEnvelope<VoipAcceptCallResult>;
+
+/** Body for `POST /messaging/voip/calls/{callId}/leave`. */
+export interface VoipLeaveCallRequest {
+  /** Media connection to close. Matches `[A-Za-z0-9_-]{8,64}`. */
+  readonly connectionId: string;
+  /** Server credentials only: the participant that owns the connection. */
+  readonly participant?: VoipParticipantReference;
+}
+
+/** SDK that sent a call report. */
+export interface VoipCallReportClient {
+  /** Package name. Matches `[a-z0-9@/._-]{1,32}`. */
+  readonly sdk: string;
+  /** `MAJOR.MINOR.PATCH` with an optional `-` or `+` suffix, at most 32 characters. */
+  readonly version: string;
+  readonly platform: "browser" | "node" | "other";
+}
 
 /**
- * Body for `POST /messaging/voip/ws-ticket`. Required here because this client
- * authenticates with a server key, and the route answers 400 when one of
- * those does not name a session. (The wire contract leaves it optional for
- * client tokens, which are already bound to theirs.)
+ * Figures an app measured for one connection. Omit what you did not
+ * measure; send at least one.
  */
-export interface VoipSocketTicketRequest {
-  readonly session: string;
+export interface VoipCallQuality {
+  /** Round-trip time in milliseconds, 0–60000. */
+  readonly rttMs?: number;
+  /** Receive jitter in milliseconds, 0–60000. */
+  readonly jitterMs?: number;
+  /** Packets lost since the connection started. */
+  readonly packetsLost?: number;
+  /** Packets received since the connection started. */
+  readonly packetsReceived?: number;
+  /** Negotiated audio codec, for example `audio/opus`. */
+  readonly audioCodec?: string;
+  readonly videoCodec?: string;
+  /** Local ICE candidate type in use; `relay` means a TURN relay. */
+  readonly candidateType?: "host" | "srflx" | "prflx" | "relay";
+  /** Times this connection reconnected so far, 0–1000. */
+  readonly reconnects?: number;
 }
-/** A single-use, 60-second ticket that opens the calls WebSocket. */
-export interface VoipSocketTicketValue {
-  readonly ticket: string;
-  /** Unix epoch milliseconds. */
-  readonly expiresAt: number;
-  /** Root-relative WebSocket URL, ticket included. */
-  readonly url: string;
-}
-export type VoipSocketTicketResponse = SuccessEnvelope<VoipSocketTicketValue>;
 
-/** Body for `POST /messaging/voip/calls/{id}/agent-token`. */
-export interface VoipAgentTokenRequest {
-  /** Ticket lifetime in seconds (default 300, max 3600). */
-  readonly ttlSeconds?: number;
+export type VoipCallErrorCode =
+  | "media_permission_denied"
+  | "device_not_found"
+  | "device_in_use"
+  | "ice_failed"
+  | "negotiation_failed"
+  | "media_timeout"
+  | "reconnect_exhausted"
+  | "token_refresh_failed"
+  | "unsupported_browser"
+  | "other";
+
+interface VoipCallReportBase {
+  /** The connection the report is about. Matches `[A-Za-z0-9_-]{8,64}`. */
+  readonly connectionId: string;
+  /** Server credentials only: the participant that owns the connection. */
+  readonly participant?: VoipParticipantReference;
+  readonly client?: VoipCallReportClient;
 }
-/** A per-call ticket a voice agent presents to the voip pod's PCM WebSocket. */
-export interface VoipAgentTokenValue {
-  readonly token: string;
-  /** Unix epoch milliseconds. */
-  readonly expiresAt: number;
+
+export interface VoipCallQualityReport extends VoipCallReportBase {
+  readonly kind: "quality";
+  readonly quality: VoipCallQuality;
 }
-export type VoipAgentTokenResponse = SuccessEnvelope<VoipAgentTokenValue>;
+
+export interface VoipCallErrorReport extends VoipCallReportBase {
+  readonly kind: "error";
+  readonly error: { readonly code: VoipCallErrorCode };
+}
+
+/** Body for `POST /messaging/voip/calls/{callId}/reports`. */
+export type VoipCallReportRequest = VoipCallQualityReport | VoipCallErrorReport;
+
+/** Body for `POST /messaging/voip/calls/{callId}/reject`. */
+export interface VoipRejectCallRequest {
+  /** Server credentials only: the participant declining the call. */
+  readonly participant?: VoipParticipantReference;
+}
+
+/** Body for `POST /messaging/voip/calls/{callId}/participants`. */
+export interface VoipAddParticipantRequest {
+  /** Phone number in E.164 form or a WhatsApp user ID. */
+  readonly to: string;
+}
+
+export type VoipParticipantState = "invited" | "ringing" | "connected" | "left";
+
+export interface VoipParticipant {
+  readonly id: string;
+  readonly phoneNumber?: string;
+  readonly bsuid?: string;
+  readonly username?: string;
+  readonly audioMuted: boolean;
+  readonly video: boolean;
+  readonly state: VoipParticipantState;
+}
+
+export type VoipAddParticipantResponse = SuccessEnvelope<VoipParticipant>;
+
+/** Call settings for one session (`/platform/sessions/{session}/call-settings`). */
+export interface SessionCallSettings {
+  /**
+   * Whether the session can place, answer and receive calls. While `false`,
+   * those actions fail with `calls_disabled`, incoming calls are declined and
+   * SIP trunks cannot call through the session. Calls in progress continue.
+   */
+  readonly callsEnabled: boolean;
+  /**
+   * Conference mode, `true` by default. When `true`, every participant you
+   * connect to a call (browser, app and server connections, and SIP trunk
+   * callers) hears the WhatsApp party and each other. When `false`, each
+   * hears only the WhatsApp party. The WhatsApp party always hears all of
+   * your participants, and nobody hears their own audio, including from
+   * their other connections.
+   */
+  readonly conferenceMode: boolean;
+  /**
+   * Where incoming WhatsApp calls ring. `clients` rings your connected
+   * participants; `sip_trunk` also sends each call to `sipTrunkId`.
+   */
+  readonly inboundRoute: CallInboundRoute;
+  /** The SIP trunk that receives incoming calls, or `null` when `inboundRoute` is `clients`. */
+  readonly sipTrunkId: string | null;
+  /** Whether an answer from the SIP trunk claims the call. `true` by default. */
+  readonly sipClaim: boolean;
+  /**
+   * On a Cloud API session, whether Polymorfa Calls answers incoming calls.
+   * `false` by default: your Graph API integration answers them. Sessions on a
+   * linked device ignore it.
+   */
+  readonly hostCloudApiCalls: boolean;
+  /**
+   * Increases on every change; `0` while the session uses the defaults. Send
+   * it as `expectedRevision` so an update cannot overwrite another change.
+   */
+  readonly revision: number;
+  /** ISO 8601 timestamp of the last change, or `null` while the session uses the defaults. */
+  readonly updatedAt: string | null;
+}
+
+export type CallInboundRoute = "clients" | "sip_trunk";
+
+/**
+ * Changes the settings you send; omitted settings keep their values. Send at
+ * least one setting.
+ */
+export interface UpdateSessionCallSettingsRequest {
+  /** `false` turns calling off for the session; `true` turns it back on. */
+  readonly callsEnabled?: boolean;
+  /**
+   * `true` lets the participants you connect hear each other as well as the
+   * WhatsApp party; `false` lets each hear only the WhatsApp party.
+   */
+  readonly conferenceMode?: boolean;
+  /** Where incoming WhatsApp calls ring. `clients` clears the trunk. */
+  readonly inboundRoute?: CallInboundRoute;
+  /**
+   * A trunk of the session's project with direction `outbound` or `both`.
+   * Required when switching to `sip_trunk`; omit it to keep the stored trunk.
+   */
+  readonly sipTrunkId?: string | null;
+  readonly sipClaim?: boolean;
+  /** `true` has Polymorfa Calls answer a Cloud API session's incoming calls. */
+  readonly hostCloudApiCalls?: boolean;
+  /**
+   * Apply the update only if the settings still have this `revision`;
+   * otherwise it fails with `PolymorfaConflictError` (`state_conflict`).
+   */
+  readonly expectedRevision?: number;
+}
+
+export type SessionCallSettingsResponse = SuccessEnvelope<SessionCallSettings>;
+
+/** A person's call permission on a Cloud API number. */
+export type CallPermissionStatus =
+  "none" | "temporary" | "permanent" | "revoked";
+
+/**
+ * How the last change was learned: the person's reply (`user_action`),
+ * WhatsApp acting on its own (`automatic`), asking WhatsApp (`sync`), or a
+ * call WhatsApp refused for lack of permission (`call_refused`).
+ */
+export type CallPermissionSource =
+  "user_action" | "automatic" | "sync" | "call_refused";
+
+/** One of WhatsApp's limits on an action, for example one request per day. */
+export interface CallPermissionLimit {
+  /** ISO 8601 duration of the window, for example `PT24H` or `P7D`. */
+  readonly period: string;
+  readonly maxAllowed: number;
+  readonly used: number;
+  /** When the window resets, when WhatsApp reports it. */
+  readonly resetsAt: string | null;
+}
+
+export interface CallPermissionAction {
+  /** Whether WhatsApp allows the action now. */
+  readonly allowed: boolean;
+  readonly limits: readonly CallPermissionLimit[];
+}
+
+/** A person's call permission, without the conversation it belongs to. */
+export interface CallPermissionState {
+  /**
+   * `none`: no permission. `temporary`: granted until `expiresAt`.
+   * `permanent`: granted without expiry. `revoked`: the person declined or
+   * withdrew permission, or WhatsApp withdrew it after unanswered calls.
+   */
+  readonly status: CallPermissionStatus;
+  /** When a temporary permission ends; `null` otherwise. */
+  readonly expiresAt: string | null;
+  /** `null` when nothing is recorded. */
+  readonly source: CallPermissionSource | null;
+  readonly updatedAt: string | null;
+  /** When WhatsApp was last asked, or `null`. */
+  readonly checkedAt: string | null;
+  /**
+   * `true` when WhatsApp was asked during this request. `false` returns the
+   * stored state because WhatsApp could not be reached.
+   */
+  readonly fresh: boolean;
+  /** WhatsApp's limits, present when `fresh` is `true`. */
+  readonly actions: {
+    /** Whether this number can send the person a call permission request now. */
+    readonly requestPermission: CallPermissionAction | null;
+    /** Whether this number can call the person now. */
+    readonly startCall: CallPermissionAction | null;
+  } | null;
+}
+
+/** `GET /messaging/{session}/call-permissions/{to}`. */
+export interface CallPermission extends CallPermissionState {
+  readonly conversation: ConversationIdentity;
+}
+
+export type CallPermissionResponse = SuccessEnvelope<CallPermission>;
+
+/** Body for `POST /messaging/voip/calls/check`. */
+export interface VoipCheckCallRequest {
+  /** The session (number) that would place the call. */
+  readonly session: string;
+  /** User ID or phone number in E.164 format. */
+  readonly to: string;
+}
+
+/** The first reason a call placed now would be refused. */
+export type VoipCallRefusal =
+  | "calls_disabled"
+  | "call_recipient_opted_out"
+  | "call_destination_blocked"
+  | "call_permission_required"
+  | "call_limit_reached";
+
+export interface VoipCallCheck {
+  /** Whether a call placed now would pass every check Polymorfa and WhatsApp report. */
+  readonly allowed: boolean;
+  readonly refusal: VoipCallRefusal | null;
+  /** The person's call permission on a Cloud API number; `null` on linked-device numbers. */
+  readonly permission: CallPermissionState | null;
+}
+
+export type VoipCheckCallResponse = SuccessEnvelope<VoipCallCheck>;
 
 export type ListSessionsResponse = SuccessEnvelope<readonly Session[]>;
 export type GetSessionResponse = SuccessEnvelope<Session>;
@@ -1480,7 +1884,8 @@ export type MessageKind =
   | "list"
   | "buttons"
   | "address_message"
-  | "flow";
+  | "flow"
+  | "call_permission_request";
 
 export interface QuotedMessage {
   readonly id: string;
@@ -1742,6 +2147,21 @@ export interface SendFlowMessageRequest extends MessageSendContext {
   readonly content: { readonly flow: FlowMessageContent };
 }
 
+/**
+ * Asks the person for permission to call them. Cloud API numbers only;
+ * WhatsApp limits how often you can ask.
+ */
+export interface CallPermissionRequestMessageContent {
+  /** Why you want to call, shown above WhatsApp's allow and decline buttons. 1 to 1,024 characters. */
+  readonly body: string;
+}
+
+export interface SendCallPermissionRequestMessageRequest extends MessageSendContext {
+  readonly content: {
+    readonly callPermissionRequest: CallPermissionRequestMessageContent;
+  };
+}
+
 export interface SendTemplateMessageRequest extends MessageSendContext {
   readonly content: { readonly template: MessageTemplateSend };
 }
@@ -1760,6 +2180,7 @@ export type SendMessageRequest =
   | SendButtonsMessageRequest
   | SendAddressMessageRequest
   | SendFlowMessageRequest
+  | SendCallPermissionRequestMessageRequest
   | SendTemplateMessageRequest;
 
 export interface MessageReceipt {
@@ -1974,90 +2395,3 @@ export type ProjectTemplateResponse = SuccessEnvelope<ProjectTemplate>;
 export type ProjectTemplateOperationResponse = SuccessEnvelope<
   Readonly<Record<string, unknown>>
 >;
-
-// ── Stored message history (beta; hosted message storage) ─────────
-
-export type HistoryChatKind = "direct" | "group" | "channel" | "broadcast";
-export type HistoryDirection = "inbound" | "outbound";
-
-export interface HistoryConversation extends ConversationIdentity {
-  /** Author of an inbound group message. */
-  readonly sender?: ConversationIdentity;
-}
-
-/** A downloadable file. Fetch it with `client.media.download(id)` and `media:read`. */
-export interface HistoryMedia {
-  readonly id: string;
-  readonly mimeType: string;
-  readonly fileLength: number;
-  readonly url: string;
-}
-
-export interface HistoryMessage {
-  readonly id: string;
-  readonly whatsapp_id: string;
-  readonly conversation: HistoryConversation;
-  readonly direction: HistoryDirection;
-  readonly fromMe: boolean;
-  readonly type: string;
-  /** ISO 8601 time WhatsApp reported the message. */
-  readonly timestamp: string;
-  readonly pushName?: string;
-  readonly text?: string;
-  readonly caption?: string;
-  readonly mimeType?: string;
-  readonly filename?: string;
-  readonly ptt?: boolean;
-  readonly latitude?: number;
-  readonly longitude?: number;
-  readonly displayName?: string;
-  readonly title?: string;
-  readonly reaction?: string;
-  readonly reactionTo?: string;
-  readonly edited?: boolean;
-  readonly unavailable?: boolean;
-  readonly unavailableReason?: string;
-  readonly pollOptions?: readonly {
-    readonly name: string;
-    readonly hash: string;
-  }[];
-  readonly media?: readonly HistoryMedia[];
-}
-
-export interface HistoryMessageSummary {
-  readonly id: string;
-  readonly whatsapp_id: string;
-  readonly direction: HistoryDirection;
-  readonly type: string;
-  readonly timestamp: string;
-}
-
-export interface HistoryChat {
-  readonly conversation: ConversationIdentity;
-  readonly kind: HistoryChatKind;
-  readonly lastActivityAt: string;
-  readonly lastMessage: HistoryMessageSummary;
-}
-
-export interface ListChatsParams {
-  /** 1 to 100; default 50. */
-  readonly limit?: number;
-  readonly cursor?: string;
-  readonly kind?: HistoryChatKind;
-  /** ISO 8601 or Date. */
-  readonly activeSince?: string | Date;
-  readonly activeBefore?: string | Date;
-}
-
-export interface ListMessagesParams {
-  /** 1 to 100; default 50. */
-  readonly limit?: number;
-  readonly cursor?: string;
-  /** `desc` (newest first, default) or `asc`. */
-  readonly order?: "asc" | "desc";
-  readonly since?: string | Date;
-  readonly until?: string | Date;
-  readonly direction?: HistoryDirection;
-  /** Up to 16 message types, for example `["text", "image"]`. */
-  readonly types?: readonly string[];
-}

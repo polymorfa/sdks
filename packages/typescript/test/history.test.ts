@@ -1,181 +1,197 @@
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
-  HistoryPage,
   MessagingClient,
+  PolymorfaAuthorizationError,
+  PolymorfaConfigurationError,
+  PolymorfaNotFoundError,
+  PolymorfaServerError,
+  type HistoryChat,
   type HistoryMessage,
+  type HistoryPage,
 } from "../src/index.js";
-import {
-  startTestServer,
-  type RecordedRequest,
-  type TestServer,
-} from "./support/http-server.js";
+import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 
-const servers: TestServer[] = [];
-afterEach(async () => {
-  await Promise.all(servers.splice(0).map((server) => server.close()));
-});
+const chat: HistoryChat = {
+  conversation: { id: "739182640518203", phoneNumber: "+14155550123" },
+  kind: "direct",
+  lastActivityAt: "2026-09-18T10:00:00Z",
+  lastMessage: {
+    id: "739182640518204",
+    whatsapp_id: "wamid.1",
+    direction: "inbound",
+    type: "text",
+    timestamp: "2026-09-18T10:00:00Z",
+  },
+};
 
-const message = (id: string): HistoryMessage => ({
-  id,
-  whatsapp_id: `WA-${id}`,
-  conversation: { id: "739182640518203" },
-  direction: "inbound",
+const message: HistoryMessage = {
+  ...chat.lastMessage,
+  conversation: chat.conversation,
   fromMe: false,
-  type: "text",
-  timestamp: "2026-09-18T10:00:00.000Z",
-  text: `m${id}`,
-});
+  text: "Hello",
+  media: [],
+};
 
-async function historyServer(): Promise<{
-  client: MessagingClient;
-  requests: RecordedRequest[];
-}> {
-  const server = await startTestServer((request) => {
-    const url = new URL(request.path, "http://x");
-    const cursor = url.searchParams.get("cursor");
-    let body: unknown;
-    if (url.pathname.endsWith("/chats")) {
-      body = {
-        success: true,
-        data: [
-          {
-            conversation: { id: "1" },
-            kind: "direct",
-            lastActivityAt: "2026-09-18T10:00:00.000Z",
-            lastMessage: {
-              id: "2",
-              whatsapp_id: "WA",
-              direction: "inbound",
-              type: "text",
-              timestamp: "2026-09-18T10:00:00.000Z",
-            },
-          },
-        ],
-        hasMore: false,
-        nextCursor: null,
-        previousCursor: null,
-      };
-    } else if (url.pathname.endsWith("/messages")) {
-      body =
-        cursor === null
-          ? {
-              success: true,
-              data: [message("1"), message("2")],
-              hasMore: true,
-              nextCursor: "page2",
-              previousCursor: null,
-            }
-          : cursor === "page2"
-            ? {
-                success: true,
-                data: [message("3")],
-                hasMore: false,
-                nextCursor: null,
-                previousCursor: "back1",
-              }
-            : {
-                success: true,
-                data: [message("1"), message("2")],
-                hasMore: true,
-                nextCursor: "page2",
-                previousCursor: null,
-              };
-    } else {
-      body = { success: true, data: message("9") };
-    }
-    return {
-      status: 200,
-      headers: {
-        "content-type": "application/json",
-        "polymorfa-data-region": "ch",
-      },
-      body: JSON.stringify(body),
-    };
+function client(
+  fetch: typeof globalThis.fetch,
+  type: "apiKey" | "clientToken" = "apiKey",
+) {
+  return new MessagingClient({
+    credential:
+      type === "apiKey"
+        ? { type, value: ORGANIZATION_API_KEY }
+        : { type, value: `pmfa_ct_${"A".repeat(94)}` },
+    baseUrl: "https://api.example.com",
+    maxNetworkRetries: 0,
+    fetch,
   });
-  servers.push(server);
-  return {
-    requests: server.requests,
-    client: new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
-      baseUrl: server.url,
-      maxNetworkRetries: 0,
-    }),
-  };
 }
 
-describe("MessagingClient message history", () => {
-  it("lists conversations with filters and exposes the data region", async () => {
-    const { client, requests } = await historyServer();
-    const page = await client.chats.list("support line", {
-      limit: 20,
-      kind: "group",
-      activeSince: new Date("2026-09-01T00:00:00Z"),
+function body<T>(data: T) {
+  return Response.json(data, { headers: { "polymorfa-data-region": "eu" } });
+}
+
+describe("hosted message history", () => {
+  it("types and forwards conversation filters and opaque cursors", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      body<HistoryPage<HistoryChat>>({
+        success: true,
+        data: [chat],
+        hasMore: true,
+        nextCursor: "next_cursor",
+        previousCursor: null,
+      }),
+    );
+    const result = await client(fetch).chats.list("support", {
+      limit: 10,
+      cursor: "page_1",
+      kind: "direct",
+      activeSince: "2026-09-18T00:00:00Z",
+      activeBefore: "2026-09-19T00:00:00Z",
     });
-    expect(page).toBeInstanceOf(HistoryPage);
-    expect(page.items[0]?.kind).toBe("direct");
-    expect(page.hasMore).toBe(false);
-    expect(page.dataRegion).toBe("ch");
-    const url = new URL(requests[0]!.path, "http://x");
-    expect(url.pathname).toBe("/messaging/support%20line/chats");
-    expect(Object.fromEntries(url.searchParams)).toEqual({
-      limit: "20",
-      kind: "group",
-      activeSince: "2026-09-01T00:00:00.000Z",
+
+    expectTypeOf(result.data.data[0]).toEqualTypeOf<HistoryChat | undefined>();
+    expect(result.data.data).toEqual([chat]);
+    expect(result.data.nextCursor).toBe("next_cursor");
+    expect(result.metadata.headers["polymorfa-data-region"]).toBe("eu");
+    const [url, init] = fetch.mock.calls[0]!;
+    expect(init?.method).toBe("GET");
+    const request = new URL(String(url));
+    expect(request.pathname).toBe("/messaging/support/chats");
+    expect(Object.fromEntries(request.searchParams)).toEqual({
+      limit: "10",
+      cursor: "page_1",
+      kind: "direct",
+      activeSince: "2026-09-18T00:00:00Z",
+      activeBefore: "2026-09-19T00:00:00Z",
     });
   });
 
-  it("auto-paginates messages forward and walks back with previousPage", async () => {
-    const { client, requests } = await historyServer();
-    const first = await client.messages.list("primary", "+15550001111", {
-      limit: 2,
-      order: "desc",
-      direction: "inbound",
-      types: ["text", "image"],
-      since: "2026-09-01T00:00:00Z",
-    });
-    const ids: string[] = [];
-    for await (const item of first) ids.push(item.id);
-    expect(ids).toEqual(["1", "2", "3"]);
-    const url = new URL(requests[0]!.path, "http://x");
-    expect(url.pathname).toBe(
-      "/messaging/primary/chats/%2B15550001111/messages",
+  it("encodes conversation references and returns one stored chat", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      body({ success: true, data: chat }),
     );
-    expect(Object.fromEntries(url.searchParams)).toEqual({
-      limit: "2",
-      order: "desc",
+    const result = await client(fetch).chats.retrieve(
+      "support",
+      "+14155550123",
+    );
+    expect(result.data.data).toEqual(chat);
+    expect(new URL(String(fetch.mock.calls[0]![0])).pathname).toBe(
+      "/messaging/support/chats/%2B14155550123",
+    );
+  });
+
+  it("preserves both message paging directions and filters", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      body<HistoryPage<HistoryMessage>>({
+        success: true,
+        data: [message],
+        hasMore: true,
+        nextCursor: "older",
+        previousCursor: "newer",
+      }),
+    );
+    const result = await client(fetch).chats.listMessages(
+      "support",
+      "+14155550123",
+      {
+        limit: 20,
+        cursor: "page_2",
+        order: "asc",
+        since: "2026-09-17T00:00:00Z",
+        until: "2026-09-19T00:00:00Z",
+        direction: "inbound",
+        types: "text,image",
+      },
+    );
+    expect(result.data).toMatchObject({
+      data: [message],
+      nextCursor: "older",
+      previousCursor: "newer",
+    });
+    const request = new URL(String(fetch.mock.calls[0]![0]));
+    expect(request.pathname).toBe(
+      "/messaging/support/chats/%2B14155550123/messages",
+    );
+    expect(Object.fromEntries(request.searchParams)).toEqual({
+      limit: "20",
+      cursor: "page_2",
+      order: "asc",
+      since: "2026-09-17T00:00:00Z",
+      until: "2026-09-19T00:00:00Z",
       direction: "inbound",
       types: "text,image",
-      since: "2026-09-01T00:00:00Z",
     });
-    expect(
-      new URL(requests[1]!.path, "http://x").searchParams.get("cursor"),
-    ).toBe("page2");
-
-    const second = await first.nextPage();
-    expect(second?.hasPrevious).toBe(true);
-    const back = await second!.previousPage();
-    expect(back?.items.map((m) => m.id)).toEqual(["1", "2"]);
-    expect(
-      new URL(requests.at(-1)!.path, "http://x").searchParams.get("cursor"),
-    ).toBe("back1");
-    expect(first.hasPrevious).toBe(false);
-    expect(await first.previousPage()).toBeNull();
   });
 
-  it("gets one conversation and one message", async () => {
-    const { client, requests } = await historyServer();
-    await client.chats.get("primary", "739182640518203");
-    const got = await client.messages.get(
-      "primary",
-      "739182640518203",
-      "739182640518977",
+  it("reads a message by its opaque string ID", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      body({ success: true, data: message }),
     );
-    expect(got.data.data.id).toBe("9");
-    expect(requests.map((r) => r.path)).toEqual([
-      "/messaging/primary/chats/739182640518203",
-      "/messaging/primary/chats/739182640518203/messages/739182640518977",
-    ]);
+    const result = await client(fetch).chats.retrieveMessage(
+      "support",
+      "+14155550123",
+      "739182640518204",
+    );
+    expect(result.data.data.id).toBe("739182640518204");
+    expect(new URL(String(fetch.mock.calls[0]![0])).pathname).toBe(
+      "/messaging/support/chats/%2B14155550123/messages/739182640518204",
+    );
+  });
+
+  it("rejects client tokens locally on all history reads", () => {
+    const fetch = vi.fn<typeof globalThis.fetch>();
+    const chats = client(fetch, "clientToken").chats;
+    expect(() => chats.list("support")).toThrow(PolymorfaConfigurationError);
+    expect(() => chats.retrieve("support", "+14155550123")).toThrow(
+      PolymorfaConfigurationError,
+    );
+    expect(() => chats.listMessages("support", "+14155550123")).toThrow(
+      PolymorfaConfigurationError,
+    );
+    expect(() =>
+      chats.retrieveMessage("support", "+14155550123", "739182640518204"),
+    ).toThrow(PolymorfaConfigurationError);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [403, "permission_denied", PolymorfaAuthorizationError],
+    [404, "hms_not_enabled", PolymorfaNotFoundError],
+    [503, "service_unavailable", PolymorfaServerError],
+  ])("keeps %i %s as a typed error", async (status, code, type) => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json(
+        { error: { code, message: "History unavailable." } },
+        { status },
+      ),
+    );
+    const failure = await client(fetch)
+      .chats.list("support")
+      .catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(type);
+    expect(failure).toMatchObject({ status, code });
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 });

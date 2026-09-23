@@ -11,6 +11,10 @@ export interface MessageAttachment {
   readonly name: string;
   readonly size: number;
   readonly contentType: string;
+  /** Where the full file can be opened or downloaded. */
+  readonly url?: string;
+  /** A smaller image to show inline; falls back to `url` for images. */
+  readonly previewUrl?: string;
 }
 
 export interface ConversationMessage {
@@ -129,9 +133,16 @@ export class ConversationController extends ObservableController<ConversationSna
     }
   }
 
-  async send(input: Omit<OutgoingMessage, "clientId">): Promise<void> {
+  /**
+   * Send optimistically. Aborting `signal` cancels the data-source request;
+   * the message is then marked failed so it can be retried.
+   */
+  async send(
+    input: Omit<OutgoingMessage, "clientId">,
+    signal?: AbortSignal,
+  ): Promise<void> {
     const clientId = this.#createClientId();
-    await this.#send({ ...input, clientId }, false);
+    await this.#send({ ...input, clientId }, false, signal);
   }
 
   async retry(clientId: string): Promise<void> {
@@ -159,7 +170,11 @@ export class ConversationController extends ObservableController<ConversationSna
     this.#unsubscribe = undefined;
   }
 
-  async #send(outgoing: OutgoingMessage, replacing: boolean): Promise<void> {
+  async #send(
+    outgoing: OutgoingMessage,
+    replacing: boolean,
+    external?: AbortSignal,
+  ): Promise<void> {
     this.assertActive();
     const current = this.getSnapshot();
     const optimistic: ConversationMessage = {
@@ -182,11 +197,9 @@ export class ConversationController extends ObservableController<ConversationSna
       status: "ready",
       messages,
     });
+    const signal = eitherSignal(this.#abort.signal, external);
     try {
-      const acknowledged = await this.#source.send(
-        outgoing,
-        this.#abort.signal,
-      );
+      const acknowledged = await this.#source.send(outgoing, signal.signal);
       if (!this.#abort.signal.aborted)
         this.#replaceMessage(outgoing.clientId, {
           ...acknowledged,
@@ -197,8 +210,13 @@ export class ConversationController extends ObservableController<ConversationSna
         this.#replaceMessage(outgoing.clientId, {
           ...optimistic,
           status: "failed",
-          error: errorMessage(cause),
+          error:
+            external?.aborted === true
+              ? "Message send was cancelled."
+              : errorMessage(cause),
         });
+    } finally {
+      signal.release();
     }
   }
 
@@ -223,6 +241,26 @@ export class ConversationController extends ObservableController<ConversationSna
       messages: replaceByClientId(current.messages, message),
     });
   }
+}
+
+/** A signal that aborts when either input does, plus listener cleanup. */
+function eitherSignal(
+  own: AbortSignal,
+  external: AbortSignal | undefined,
+): { readonly signal: AbortSignal; release(): void } {
+  if (external === undefined) return { signal: own, release: () => undefined };
+  const combined = new AbortController();
+  const abort = () => combined.abort();
+  if (own.aborted || external.aborted) abort();
+  own.addEventListener("abort", abort, { once: true });
+  external.addEventListener("abort", abort, { once: true });
+  return {
+    signal: combined.signal,
+    release: () => {
+      own.removeEventListener("abort", abort);
+      external.removeEventListener("abort", abort);
+    },
+  };
 }
 
 function pageSnapshot(
