@@ -1,64 +1,38 @@
 {
-  "name": "@polymorfa/sdk",
-  "version": "0.1.0-dev.0",
-  "description": "Handwritten Polymorfa server SDK for TypeScript and Node.js",
+  "name": "polymorfa-sdks",
+  "private": true,
+  "description": "Workspace for the Polymorfa SDK packages",
   "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/polymorfa/sdks.git"
   },
-  "bugs": {
-    "url": "https://github.com/polymorfa/sdks/issues"
-  },
-  "homepage": "https://github.com/polymorfa/sdks#readme",
-  "keywords": [
-    "polymorfa",
-    "messaging",
-    "sdk"
-  ],
-  "sideEffects": false,
   "workspaces": [
+    "packages/typescript",
     "packages/calls",
     "packages/browser",
     "packages/ui",
     "packages/elements",
     "packages/react",
+    "packages/store",
     "packages/nextjs",
     "packages/devtools"
   ],
   "engines": {
     "node": ">=20"
   },
-  "main": "./packages/typescript/dist/index.js",
-  "types": "./packages/typescript/dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./packages/typescript/dist/index.d.ts",
-      "import": "./packages/typescript/dist/index.js"
-    }
-  },
-  "files": [
-    "packages/typescript/dist",
-    "packages/typescript/README.md",
-    "README.md",
-    "LICENSE"
-  ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "npm run build -w @polymorfa/sdk",
     "build:workspaces": "npm run build --workspaces --if-present",
     "check:coverage": "node scripts/check-coverage.mjs --messaging contracts/openapi.messaging.json --platform contracts/openapi.platform.json --ledger contracts/coverage.json --strict",
     "check:names": "node scripts/check-retired-name.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint \"packages/**/*.{ts,tsx}\" vitest.config.ts",
-    "prepare": "npm run build",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check:functions": "node scripts/check-functions.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
@@ -66,6 +40,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "eslint": "^9.39.5",
+    "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.11.2",
     "prettier": "^3.9.6",
     "react": "^19.2.8",

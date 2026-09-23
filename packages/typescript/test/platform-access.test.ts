@@ -65,7 +65,7 @@ describe("Client organization access and operations", () => {
     expectTypeOf<
       Client["securityIncidents"]
     >().toEqualTypeOf<SecurityIncidentsResource>();
-    expectTypeOf<Client>().not.toHaveProperty("operations");
+    expectTypeOf<Client>().toHaveProperty("operations");
     expectTypeOf<
       Client["projectTokens"]
     >().toEqualTypeOf<ProjectTokensResource>();

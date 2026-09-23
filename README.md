@@ -5,37 +5,60 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts recorded at source revision
-`aca849cda44ad8582d7ae87489404d2483173a53`. Graph-compatible APIs are outside
-this SDK's initial scope.
+the Messaging and Platform contracts at merged API `dev` revision
+`087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`. Graph-compatible
+APIs are outside this SDK's initial scope.
 
 ## Package architecture
 
-| Package               | Runtime             | Responsibility                                                                    |
-| --------------------- | ------------------- | --------------------------------------------------------------------------------- |
-| `@polymorfa/sdk`      | Node.js 20+         | Messaging, management, system, and Bridge server clients                          |
-| `@polymorfa/browser`  | Browser             | Client-token transport and framework-neutral product controllers                  |
-| `@polymorfa/ui`       | Isomorphic          | Appearance, locale, direction, motion, and diagnostic contracts                   |
-| `@polymorfa/elements` | Browser             | Portable custom elements for React-free, Vue, Svelte, and plain HTML applications |
-| `@polymorfa/react`    | Browser             | React bindings over the same controllers                                          |
-| `@polymorfa/nextjs`   | Server              | App Router-compatible client-token and webhook helpers                            |
-| `@polymorfa/devtools` | Development browser | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
+| Package                | Runtime              | Responsibility                                                                    |
+| ---------------------- | -------------------- | --------------------------------------------------------------------------------- |
+| `@polymorfa/sdk`       | Node.js 20+          | Messaging, management, system, and Bridge server clients                          |
+| `@polymorfa/sdk/calls` | Node.js 22+, Browser | Calls lifecycle, answer/join/leave, and programmatic media sockets                |
+| `@polymorfa/browser`   | Browser              | Client-token transport and framework-neutral product controllers                  |
+| `@polymorfa/ui`        | Isomorphic           | Appearance, locale, direction, motion, and diagnostic contracts                   |
+| `@polymorfa/elements`  | Browser              | Portable custom elements for React-free, Vue, Svelte, and plain HTML applications |
+| `@polymorfa/react`     | Browser              | React bindings over the same controllers                                          |
+| `@polymorfa/store`     | Browser              | Opt-in IndexedDB store for webhook-shaped events, with live sources and chat data |
+| `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
+| `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
 
-The non-server packages are complete development artifacts on `dev`, but have
-not been published. Their names are the intended public identities in the
+The public packages are complete development artifacts on `dev`. They
+publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
 Polymorfa npm organization. No mobile-native binding is part of this milestone.
 
 ## TypeScript development install
 
-The package has not been published to npm. Install the verified development
-branch directly from GitHub:
+Each push to `dev` publishes the public packages to npm under the `dev`
+dist-tag, with versions such as `0.1.0-dev.20260919094454`:
 
 ```bash
-npm install github:polymorfa/sdks#dev
+npm install @polymorfa/sdk@dev
+npm install @polymorfa/browser@dev   # browser apps
 ```
 
-The Git install runs the package build through `prepare`. The published package
-name and root import are already stable:
+Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. No
+stable (`latest`) release exists. Publishing starts once the npm scope and
+trusted publisher are configured; until `npm view @polymorfa/sdk dist-tags`
+shows a `dev` tag, build from source and install the packed tarballs:
+
+```bash
+git clone --branch dev https://github.com/polymorfa/sdks.git
+cd sdks
+npm ci
+npm run build:workspaces
+npm pack -w @polymorfa/sdk           # add -w @polymorfa/browser for browser apps
+npm install /path/to/sdks/polymorfa-sdk-0.1.0-dev.0.tgz   # from your application
+```
+
+See [docs/releasing.md](docs/releasing.md) for the version scheme and the
+publishing workflow.
+
+`npm install github:polymorfa/sdks#dev` no longer installs the SDK: the
+repository root is a private workspace, and `@polymorfa/sdk` lives in
+`packages/typescript`.
+
+The published package name and root import are already stable:
 
 ```ts
 import {
@@ -48,6 +71,19 @@ import {
 
 Node.js 20 or newer is required. The package has no runtime dependencies.
 
+The programmatic Calls client ships inside the same package as the
+`@polymorfa/sdk/calls` subpath; there is no separate Calls package to install.
+`@polymorfa/browser` depends on `@polymorfa/sdk` and uses this same Calls
+client, so errors raised by browser calls are the classes exported from
+`@polymorfa/sdk/calls`:
+
+```ts
+import { CallsClient } from "@polymorfa/sdk/calls";
+```
+
+`@polymorfa/sdk/calls` needs Node.js 22 or newer for its built-in `WebSocket`.
+On older runtimes, pass a `WebSocket` implementation to `CallsClient`.
+
 ## Messaging client
 
 ```ts
@@ -58,7 +94,7 @@ const messaging = new MessagingClient({
     type: "apiKey",
     value: process.env.POLYMORFA_MESSAGING_API_KEY!,
   },
-  apiVersion: "1.0.0",
+  apiVersion: "2026-03-20",
 });
 
 const sessions = await messaging.sessions.list();
@@ -94,9 +130,11 @@ The handwritten Messaging resources in this milestone are:
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call
-- `voip`: mint the browser call token used by `@polymorfa/browser` signaling
-- `campaigns`: list, create, retrieve, inspect analytics, launch, pause, resume,
-  stop, and requeue project campaigns through the Messaging control plane
+- `voip`: place, accept, reject, leave, and end Polymorfa Calls, add
+  participants, and read or update a session's call settings
+- `campaigns`: list, create (with inline recipients), retrieve, inspect
+  analytics, launch, pause, resume, stop, requeue, and page or append campaign
+  recipients through the Messaging control plane
 - `messages`: send every contract-defined message kind through one typed send
   union, mark seen, set typing state, react, and star; list and get stored
   messages (message history beta)
@@ -201,7 +239,7 @@ project fails before transport. `Client` also rejects browser client tokens and
 the CLI-only `pmfa_ls_` listener credential before transport. Organization
 keys must use the single v1 form `pmfa_` plus 72 unpadded base64url characters;
 project tokens must use `pmfa_pt_` plus 94. The SDK validates that grammar
-without decoding the credential. Call-agent tickets, socket tickets, and
+without decoding the credential. Retired call-agent and socket tickets and
 simulated-device capabilities are also rejected before transport.
 
 Both organization and project views expose owner-bound resources:
@@ -211,11 +249,34 @@ Both organization and project views expose owner-bound resources:
 - `webhookDeliveries`: list and retrieve deliveries, list and retrieve their
   physical attempts, and retry a delivery
 - `quickLinkSettings`: retrieve and update the saved QuickLink configuration
+- `operations`: list, get, wait for, list transitions of, and cancel
+  asynchronous operations
 
 List methods return `CursorPage<T>`. Mutations return typed receipts with the
 resource, operation, and idempotency identifiers supplied by the API.
-Operation inspection is console-only. Machine clients expose no operation
-polling, transition-listing, or cancellation methods.
+
+```ts
+const enrollment = await client.projects.requestProductionEnrollment(
+  "project_123",
+  { business },
+);
+const done = await client.operations.wait(enrollment.data.data.operationId, {
+  maxWaitMs: 10 * 60_000,
+});
+if (done.data.status !== "succeeded") {
+  console.error(done.data.status, done.data.error?.code);
+}
+```
+
+`operations.wait` chains server long-polls (up to 30 seconds each) until the
+operation succeeds, fails, or is cancelled, its `sequence` passes
+`afterSequence`, or `maxWaitMs` (default 5 minutes) ends. It returns the latest
+state, so check `status`. `operations.get(id, { wait })` makes one long-poll
+read. `operations.cancel(id)` works only while `capabilities.cancellable` is
+true and sends a generated `Idempotency-Key` unless you pass one. Reads need
+`operations:read`; cancellation needs `operations:cancel`. Organization
+clients see team and project operations and accept a `projectId` filter;
+project clients see only their project.
 
 The organization view also exposes these management resources:
 
@@ -227,8 +288,21 @@ The organization view also exposes these management resources:
 - `sessionBans`: list all or active session bans
 - `securityIncidents`: list and acknowledge leaked-credential incidents
 - `projectTokens`: list token metadata for an explicit project
+- `sipTrunks`: list, create, retrieve, update, delete, and rotate the
+  credentials of a project's SIP trunks, and read the SIP address your PBX
+  points at with `endpoint()` (also on project clients)
+- `calls`: call statistics, paginated call detail records, and CSV or NDJSON
+  export of call records for the team or one project (also on project clients)
+- `voice`: Voice Automation beta audio uploads, synthesis, previews, retention,
+  deletion and provider credentials, subject to API enrollment and deployment
+- `callRetention`: retrieve and update how long Polymorfa keeps the team's
+  call data (also readable on project clients; changes need a team API key)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
+- `usage`: read metered call usage for a month, list or iterate usage records
+  for a call or number (also on project clients), and read usage gate modes,
+  limits and decisions (organization clients only). Usage is measured, not
+  charged.
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
   restrictions, incidents, claims, and Health action history; report and retract
   customer incidents
@@ -239,12 +313,19 @@ The organization view also exposes these management resources:
   batch; review and confirm a tier change; create a testing session; and
   retrieve or update the session Safe Mode override
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
-  analytics, events, and recipients
+  analytics, events, and paged or appended recipients. The single-campaign
+  operations require the owning `projectId`. This resource is available only
+  on organization clients. `create` requires `CreatePlatformCampaignRequest`
+  with `name` and `projectId`; its named JSON fields pass through unchanged.
+  `update` accepts `recipientListId` to point an unlaunched draft at another
+  audience, or null to detach it
 - `customers`: enable Customers for a project; create, list, retrieve, update,
   archive, and restore Customers; inspect Numbers and events; create, list,
   and revoke pairing links; and transfer Numbers between Customers
-- `audiences`: list, create, retrieve, delete, and create an upload URL
-- `optOuts`: list, create one, create a batch, and delete by phone number
+- `audiences`: list, create from inline members or a spreadsheet import,
+  retrieve, delete, create an upload URL, and add, page, or remove members
+- `optOuts`: list, create one, create a batch, delete by phone number, and read
+  or replace the organization's STOP/START keyword settings
 - `media`: retrieve a URL, delete, and create an upload URL
 
 Customer creation and pairing-link creation require caller-supplied
@@ -252,9 +333,32 @@ idempotency keys. The SDK returns the pairing URL only on the first successful
 creation attempt. Customer list responses retain their cursor metadata under
 `response.data.page`.
 
-The pinned campaign, audience, opt-out, and media contracts expose their
-operation payloads as open objects. These methods therefore use the exported
-`PlatformPayload` type instead of claiming fields the contract does not define.
+Audience creation and membership, campaign creation and recipients, and opt-out
+settings are fully typed. The remaining campaign, audience, opt-out, and media operations
+expose their payloads as open objects in the pinned contract, so those methods
+use the exported `PlatformPayload` type instead of claiming fields the contract
+does not define.
+
+`Client.campaigns.recipients` returns a cursor page. `status` finds, for
+example, the recipients a campaign skipped because they opted out:
+
+```ts
+let cursor: string | undefined;
+do {
+  const page = await client.campaigns.recipients(campaignId, {
+    projectId,
+    status: "skipped",
+    ...(cursor === undefined ? {} : { cursor }),
+  });
+  for (const recipient of page.data.data) {
+    console.log(recipient.phone, recipient.lastError);
+  }
+  cursor = page.data.page.nextCursor ?? undefined;
+} while (cursor !== undefined);
+```
+
+Appending recipients or audience members accepts partial success: the result
+reports `added`, `duplicateCount`, `invalidCount` and up to 20 `invalidRows`.
 
 Platform template and Flow endpoints require a live dashboard bearer and reject
 organization server keys. They are intentionally absent from `Client`;
@@ -321,6 +425,36 @@ connection, timeout, and caller-cancellation cases. HTTP errors carry status,
 request ID, decoded details, and response metadata when the server supplied
 them.
 
+Every API error also exposes the fields from its error body:
+
+```ts
+import { PolymorfaError, PolymorfaRateLimitError } from "@polymorfa/sdk";
+
+try {
+  await messaging.messages.send("sales", message);
+} catch (error) {
+  if (error instanceof PolymorfaError) {
+    error.code; // "conversation_window_closed", typed as PolymorfaErrorCode
+    error.requestId; // body `request_id`, else the X-Request-Id header
+    error.requestLogUrl; // Console request log, for team keys and project tokens
+    error.docUrl; // https://docs.polymorfa.com/api/errors#conversation-window-closed
+  }
+  if (error instanceof PolymorfaRateLimitError) {
+    error.rateLimitReason; // "whatsapp", "request_rate", ...
+  }
+}
+```
+
+`PolymorfaErrorCode` lists the documented codes, including
+`recipient_not_on_whatsapp`, `conversation_window_closed`,
+`template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
+`new_chat_limit_reached`, `whatsapp_account_restricted`, the BanSafe codes, and the Calls and SIP trunk codes,
+and still accepts codes a newer API adds. `POLYMORFA_ERROR_CODES` and
+`isKnownPolymorfaErrorCode()` are exported. `requestLogUrl` is absent for
+client tokens and for requests the API did not log. `BrowserError` exposes
+`code`, `requestId`, and `docUrl` from the same body, so browser callers get the
+request ID even when the `X-Request-Id` header is not readable.
+
 ## Timeouts, cancellation, retries, and idempotency
 
 Client defaults are a 30-second timeout and two network retries. Configure
@@ -344,6 +478,12 @@ GET, HEAD, and OPTIONS requests can retry transient connection failures,
 timeouts, HTTP 408, 409, 429, and server failures. POST, PUT, PATCH, and DELETE
 requests retry only when the caller supplies an idempotency key. The transport
 honors `Retry-After`, then uses bounded exponential backoff with jitter.
+
+Campaign recipient and audience member appends (`campaigns.addRecipients` on
+both clients and `audiences.addMembers`) are sent once. The API does not replay
+them, so a retry after a lost response would count the first attempt's rows as
+duplicates. They retry only when that request sets both `maxNetworkRetries`
+and `idempotencyKey`; the key does not make the API replay the append.
 
 ## API versions and raw requests
 
@@ -409,10 +549,11 @@ organization and project event, webhook, delivery, attempt, and operation
 resources described above. Dashboard and staff routes retain their separate
 credential requirements.
 
-The SDK has no listener, event stream, `AsyncIterable`, or forwarding API.
-`polymorfa listen` connects to a separate CLI-only protocol; its `pmfa_ls_`
-credential cannot be used by `Client`, `MessagingClient`, or their raw request
-helpers.
+`Client.events.stream()` exposes the server event stream as an `AsyncIterable`,
+and `Client.events.liveSource()` adapts it for `@polymorfa/store`. Both require
+the server event stream's scope and beta access. `polymorfa listen` connects to
+a separate CLI-only forwarding protocol; its `pmfa_ls_` credential cannot be
+used by `Client`, `MessagingClient`, or their raw request helpers.
 
 ## QuickLink lifecycle and settings
 
@@ -433,14 +574,14 @@ Saved settings hold the project's `successCallbackUrl` and `failureCallbackUrl`
 HTTPS destinations and `allowPhoneChange`, which controls whether recipients can
 replace a prefilled number (default `false`). The API copies callback
 destinations into each link when it is issued. Settings have no redirect-URI
-allowlist. `hideWatermark: true` requires Premium team access.
+allowlist. `hideWatermark: true` requires an active Branded QuickLink add-on.
 
 ## Browser controllers and UI
 
 Browser code accepts only short-lived `pmfa_ct_` tokens returned by an
 application callback. It rejects server credentials and absolute request URLs.
 The framework-neutral controllers cover conversations, composing,
-template building, and one-to-one calls. They expose immutable snapshots through
+template building, and one-to-one and group calls. They expose immutable snapshots through
 `getSnapshot()` and `subscribe()`; React and Web Components render those same
 objects rather than reimplementing product state.
 
@@ -487,7 +628,7 @@ controller lifecycles.
 
 ### Calls
 
-`createBrowserCalls` connects the shared `@polymorfa/calls` model to the
+`createBrowserCalls` connects the shared `@polymorfa/sdk/calls` model to the
 existing browser controller and WebRTC media. It places calls directly with a
 short-lived client token, receives lifecycle events, and exposes the active
 model as `controller.call`. Pass its controller to React or Web Components.
@@ -502,26 +643,55 @@ await calls.controller.place("+15550100");
 await calls.dispose();
 ```
 
-The token needs `voip_place`, `voip_answer` and `voip_signal` actions. Requests
-use its bound session. Connecting claims `browser` mode, which auto-answers
-remotely; the widget's Answer action attaches local media and Reject hangs up.
-Direct placement supports linked devices. Custom signaling backends and
-application-fed lifecycle channels remain available.
+The token needs `voip_place`, `voip_answer` and `voip_signal` actions. Your
+server mints it with `POST /platform/client-tokens`; the browser uses it
+directly for REST calls and for the first frame of each call socket. No
+calling ticket is involved. Requests use the token's bound session.
 
-Calls carry a `line`: `linkedDevice` (a paired WhatsApp device session, audio
-and video) or `cloudApi` (the WhatsApp Business Calling API, audio only). Every
-component gates on the snapshot's `capabilities`, never on the line name. The
+Incoming calls ring until a participant answers or declines them. Several
+calls can ring at once, and the widget never declines one for you. Answer
+takes an `exclusive` choice: `false` (the default) leaves other participants
+ringing so they can join, and `true` claims the call. A call another
+participant answered without a claim offers Join; a claimed call shows as
+answered elsewhere. Leave closes only this browser's connection; hang-up ends
+the call for everyone. A call you placed offers only hang-up until it
+connects, and a microphone failure while it rings ends it. Each remote participant's video arrives as its own
+stream in `controller.remoteVideos`; call audio is merged. Signaling, media
+negotiation and socket transports are internal to the SDK; the packages export
+only these calling operations.
+
+Each call reports its `capabilities` (`video`, `invite`, `mute`), and every
+component gates its controls on them. A placed call starts with video and
+invitations allowed and takes the platform's report when the callee answers.
+The
 controller also owns capture/playback device choice (`setPreferredDevices`,
 `switchDevice`, `refreshDevices`) so a microphone or camera swap mid-call is a
 track replacement, not a renegotiation. The shared call model supports
 participant invitations. Browser WebRTC calls receive live participant joins,
 state changes, and departures through the lifecycle stream.
 
+The browser and Calls clients send call diagnostics for their own media
+connections (quality figures and error codes, no personal data) so the Console
+can show why a call sounded bad or failed. Pass `diagnostics: false` to turn
+this off; `MessagingClient.voip.report()` sends your own.
+
 `@polymorfa/react` ships the complete call UI: `CallSurface` (incoming card,
 stage, control dock, and a pop-out window), plus `IncomingCallCard`,
-`CallStage`, `CallControls`, and `DialPad` for composition. The design mirrors
+`CallStage`, `CallControls`, `ParticipantVideoGrid`, `ParticipantList`, and
+`DialPad` for composition. The design mirrors
 the official WhatsApp desktop call windows in a monochrome Material-3 voice;
 colors derive from the shared appearance variables.
+
+### Local event store
+
+`@polymorfa/store` keeps an opt-in IndexedDB copy of webhook-shaped events for
+applications that store messages themselves. Your backend receives webhooks
+and streams them to the browser; the store files messages, conversations,
+contacts, presence, calls, labels, sessions, templates, and other events into
+separate stores and feeds `ConversationController` through
+`createStoreConversationSource()`. Message content is written to the device;
+see the [store guide](packages/store/README.md#privacy) for encryption,
+redaction, and retention.
 
 ## Next.js and dev mode
 
@@ -557,6 +727,10 @@ rules.
 
 ## Development
 
+The repository is an npm workspace: `packages/typescript` is `@polymorfa/sdk`,
+and `packages/calls` is a private workspace compiled into
+`@polymorfa/sdk/calls`.
+
 ```bash
 npm install
 npm test
@@ -575,3 +749,16 @@ release instruction.
 ## License
 
 MIT
+
+## Contract update notes
+
+The typed webhook catalog includes `session.restriction_updated` with
+`type`, `active`, `enforcementType`, `expiresAt`, and `observedAt`.
+`session.logged_out` requires a numeric `code` and a `reason` of `banned`,
+`device_removed`, or `unknown`. Test event requests support the restriction
+fixture with `restrictionActive` and the call-end reason `call_restricted`.
+
+`Client.callRetention` covers the team call-retention settings. `Client.calls`
+covers the three public call analytics and export operations. `Client.voice`
+covers the Voice audio and credential operations. The contract snapshot
+is pinned to merged API `dev` commit `087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`.

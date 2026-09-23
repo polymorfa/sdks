@@ -1,3 +1,4 @@
+import { FunctionsResource } from "./platform/functions.js";
 import { SessionConfigurationResource } from "./platform/session-configuration.js";
 import {
   assertServerRuntime,
@@ -18,10 +19,13 @@ import { AudiencesResource } from "./platform/audiences.js";
 import { AuditLogsResource } from "./platform/audit-logs.js";
 import { BillingResource } from "./platform/billing.js";
 import { BanSafeResource } from "./platform/bansafe.js";
+import { PlatformCallsResource } from "./platform/calls.js";
+import { CallRetentionResource } from "./platform/call-retention.js";
 import { CampaignsResource } from "./platform/campaigns.js";
 import { CustomersResource } from "./platform/customers.js";
 import {
   EventsResource,
+  OperationsResource,
   WebhookDeliveriesResource,
   WebhooksResource,
 } from "./platform/developer-resources.js";
@@ -36,6 +40,9 @@ import { QuickLinkSettingsResource } from "./platform/quicklink-settings.js";
 import { SecurityIncidentsResource } from "./platform/security-incidents.js";
 import { SessionBansResource } from "./platform/session-bans.js";
 import { PlatformSessionsResource } from "./platform/sessions.js";
+import { SipTrunksResource } from "./platform/sip-trunks.js";
+import { VoiceResource } from "./platform/voice.js";
+import { UsageResource } from "./platform/usage.js";
 
 export type EventsResourceFor<O extends ClientOwner> = EventsResource<O>;
 export type WebhooksResourceFor<O extends ClientOwner> = WebhooksResource<O>;
@@ -51,8 +58,16 @@ export interface ClientBase<O extends ClientOwner> {
   readonly events: EventsResourceFor<O>;
   readonly webhooks: WebhooksResourceFor<O>;
   readonly webhookDeliveries: WebhookDeliveriesResourceFor<O>;
+  readonly operations: OperationsResource<O>;
   readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<O>;
+  readonly sipTrunks: SipTrunksResource<O>;
+  /** Voice Automation (beta): audio library and provider credentials. */
+  readonly voice: VoiceResource<O>;
+  /** Metered usage and usage gates. */
+  readonly usage: UsageResource;
+  readonly calls: PlatformCallsResource<O>;
+  readonly callRetention: CallRetentionResource;
   readonly raw: RawResourceFor<O>;
   project(projectId: string): Client<"project">;
 }
@@ -76,8 +91,14 @@ export interface OrganizationControlPlaneResources {
   readonly sessions: PlatformSessionsResource;
 }
 
+export interface ProjectControlPlaneResources {
+  readonly functions: FunctionsResource;
+}
+
 export type Client<O extends ClientOwner = "organization"> = ClientBase<O> &
-  (O extends "organization" ? OrganizationControlPlaneResources : object);
+  (O extends "organization"
+    ? OrganizationControlPlaneResources
+    : ProjectControlPlaneResources);
 
 export interface ClientConstructor {
   new (options: OrganizationClientOptions): Client<"organization">;
@@ -85,13 +106,21 @@ export interface ClientConstructor {
 }
 
 class ClientImplementation implements ClientBase<ClientOwner> {
+  /** Installed only for project instances; the public conditional type reflects that. */
+  declare readonly functions: FunctionsResource;
   readonly owner: ClientOwner;
   readonly projectId: string | null;
   readonly events: EventsResource<ClientOwner>;
   readonly webhooks: WebhooksResource<ClientOwner>;
   readonly webhookDeliveries: WebhookDeliveriesResource<ClientOwner>;
+  readonly operations: OperationsResource<ClientOwner>;
   readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<ClientOwner>;
+  readonly sipTrunks: SipTrunksResource<ClientOwner>;
+  readonly voice: VoiceResource<ClientOwner>;
+  readonly usage: UsageResource;
+  readonly calls: PlatformCallsResource<ClientOwner>;
+  readonly callRetention: CallRetentionResource;
   readonly raw: RawClient | ProjectScopedRawClient;
   readonly #transport: HttpTransport;
   readonly #credential: ClientOptions["credential"];
@@ -134,6 +163,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       this.#transport,
       prefix,
     );
+    this.operations = new OperationsResource(this.#transport, prefix);
     this.sessionConfiguration = new SessionConfigurationResource(
       this.#transport,
       projectId,
@@ -142,10 +172,28 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       this.#transport,
       projectId,
     );
+    this.sipTrunks = new SipTrunksResource(
+      this.#transport,
+      projectId,
+      projectId !== null && credential.type !== "projectToken",
+    );
+    this.voice = new VoiceResource(
+      this.#transport,
+      projectId,
+      projectId !== null && credential.type !== "projectToken",
+    );
+    this.usage = new UsageResource(this.#transport, projectId);
+    this.calls = new PlatformCallsResource(this.#transport, projectId);
+    this.callRetention = new CallRetentionResource(this.#transport);
     this.raw =
       projectId === null
         ? new RawClient(this.#transport)
         : new ConfinedProjectRawClient(this.#transport, projectId);
+
+    if (projectId !== null)
+      Object.assign(this, {
+        functions: new FunctionsResource(this.#transport, projectId),
+      });
 
     if (this.owner === "organization") {
       Object.assign(this, {

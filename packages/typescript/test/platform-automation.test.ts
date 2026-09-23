@@ -2,6 +2,7 @@ import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { Client } from "../src/client.js";
+import type { CreateAudienceRequest } from "../src/index.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -108,6 +109,24 @@ describe("Client opt-outs", () => {
     expect(requests[1]?.headers["idempotency-key"]).toBe("opt-out-1");
     expect(requests[2]?.body).toBe('{"phones":["+1 555","+44 20"]}');
   });
+
+  it("reads and replaces the organization keyword settings", async () => {
+    const { client, requests } = await platformServer();
+    await client.optOuts.getSettings();
+    await client.optOuts.updateSettings({
+      enabled: true,
+      optOutKeywords: ["STOP", "BAJA"],
+      optInKeywords: ["START"],
+    });
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /platform/optouts/settings",
+      "PUT /platform/optouts/settings",
+    ]);
+    expect(requests[1]?.body).toBe(
+      '{"enabled":true,"optOutKeywords":["STOP","BAJA"],"optInKeywords":["START"]}',
+    );
+  });
 });
 
 describe("Client audiences", () => {
@@ -133,6 +152,66 @@ describe("Client audiences", () => {
     expect(requests[1]?.headers["idempotency-key"]).toBe("audience-1");
     expect(requests[4]?.body).toBe('{"filename":"audience.csv"}');
   });
+
+  it("imports a spreadsheet through fileId and mapping", async () => {
+    const { client, requests } = await platformServer();
+    await client.audiences.create({
+      name: "August",
+      source: "csv",
+      fileId: "upload_1",
+      mapping: { phone: "Phone", variables: { firstName: "First name" } },
+    });
+
+    expect(requests[0]?.body).toBe(
+      '{"name":"August","source":"csv","fileId":"upload_1","mapping":{"phone":"Phone","variables":{"firstName":"First name"}}}',
+    );
+  });
+
+  it("types audience creation as members or a mapped file, never both", async () => {
+    const { client, requests } = await platformServer();
+    await client.audiences.create({ name: "Empty" });
+
+    // @ts-expect-error a file import requires a mapping
+    const unmapped: CreateAudienceRequest = { name: "A", fileId: "upload_1" };
+    // @ts-expect-error members and fileId are mutually exclusive
+    const both: CreateAudienceRequest = {
+      name: "A",
+      members: [{ phone: "+1 555" }],
+      fileId: "upload_1",
+      mapping: { phone: "Phone" },
+    };
+    // @ts-expect-error a mapping belongs to a file import
+    const stray: CreateAudienceRequest = { name: "A", mapping: { phone: "P" } };
+
+    expect([unmapped, both, stray]).toHaveLength(3);
+    expect(requests[0]?.body).toBe('{"name":"Empty"}');
+  });
+
+  it("appends, pages, and removes members on the encoded member routes", async () => {
+    const { client, requests } = await platformServer();
+    await client.audiences.addMembers(
+      "list/a",
+      { members: [{ phone: "+1 555", variables: { plan: "pro" } }] },
+      { idempotencyKey: "members-1" },
+    );
+    await client.audiences.listMembers("list/a", {
+      cursor: "cur/1",
+      limit: 50,
+    });
+    await client.audiences.listMembers("list/a");
+    await client.audiences.deleteMember("list/a", "+1/555");
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "POST /platform/audiences/list%2Fa/members",
+      "GET /platform/audiences/list%2Fa/members?cursor=cur%2F1&limit=50",
+      "GET /platform/audiences/list%2Fa/members",
+      "DELETE /platform/audiences/list%2Fa/members/%2B1%2F555",
+    ]);
+    expect(requests[0]?.body).toBe(
+      '{"members":[{"phone":"+1 555","variables":{"plan":"pro"}}]}',
+    );
+    expect(requests[0]?.headers["idempotency-key"]).toBe("members-1");
+  });
 });
 
 describe("Client campaigns", () => {
@@ -146,16 +225,20 @@ describe("Client campaigns", () => {
       { projectId: "project/a", name: "August" },
       { idempotencyKey: "campaign-1" },
     );
-    await client.campaigns.retrieve("campaign/a");
-    await client.campaigns.update("campaign/a", { name: "September" });
-    await client.campaigns.delete("campaign/a");
+    await client.campaigns.retrieve("campaign/a", { projectId: "project/a" });
+    await client.campaigns.update(
+      "campaign/a",
+      { name: "September" },
+      { projectId: "project/a" },
+    );
+    await client.campaigns.delete("campaign/a", { projectId: "project/a" });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "GET /platform/campaigns?projectId=project%2Fa&projectSlug=support",
       "POST /platform/campaigns",
-      "GET /platform/campaigns/campaign%2Fa",
-      "PATCH /platform/campaigns/campaign%2Fa",
-      "DELETE /platform/campaigns/campaign%2Fa",
+      "GET /platform/campaigns/campaign%2Fa?projectId=project%2Fa",
+      "PATCH /platform/campaigns/campaign%2Fa?projectId=project%2Fa",
+      "DELETE /platform/campaigns/campaign%2Fa?projectId=project%2Fa",
     ]);
     expect(requests[1]?.body).toBe('{"projectId":"project/a","name":"August"}');
     expect(requests[1]?.headers["idempotency-key"]).toBe("campaign-1");
@@ -167,13 +250,17 @@ describe("Client campaigns", () => {
     await client.campaigns.launch("campaign/a", { reason: "launch" });
     await client.campaigns.pause("campaign/a", { reason: "pause" });
     await client.campaigns.resume("campaign/a", { reason: "resume" });
-    await client.campaigns.stop("campaign/a", { reason: "stop" });
+    await client.campaigns.stop(
+      "campaign/a",
+      { reason: "stop" },
+      { idempotencyKey: "platform-campaign-stop" },
+    );
     await client.campaigns.archive("campaign/a", { reason: "archive" });
     await client.campaigns.duplicate("campaign/a", { reason: "duplicate" });
     await client.campaigns.requeue("campaign/a", { reason: "requeue" });
-    await client.campaigns.analytics("campaign/a");
-    await client.campaigns.events("campaign/a");
-    await client.campaigns.recipients("campaign/a");
+    await client.campaigns.analytics("campaign/a", { projectId: "project/a" });
+    await client.campaigns.events("campaign/a", { projectId: "project/a" });
+    await client.campaigns.recipients("campaign/a", { projectId: "project/a" });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "POST /platform/campaigns/campaign%2Fa/launch",
@@ -183,10 +270,19 @@ describe("Client campaigns", () => {
       "POST /platform/campaigns/campaign%2Fa/archive",
       "POST /platform/campaigns/campaign%2Fa/duplicate",
       "POST /platform/campaigns/campaign%2Fa/requeue",
-      "GET /platform/campaigns/campaign%2Fa/analytics",
-      "GET /platform/campaigns/campaign%2Fa/events",
-      "GET /platform/campaigns/campaign%2Fa/recipients",
+      "GET /platform/campaigns/campaign%2Fa/analytics?projectId=project%2Fa",
+      "GET /platform/campaigns/campaign%2Fa/events?projectId=project%2Fa",
+      "GET /platform/campaigns/campaign%2Fa/recipients?projectId=project%2Fa",
     ]);
+    for (const request of requests.slice(0, 3)) {
+      expect(request.headers["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/);
+    }
+    expect(requests[3]?.headers["idempotency-key"]).toBe(
+      "platform-campaign-stop",
+    );
+    for (const request of requests.slice(4, 7)) {
+      expect(request.headers["idempotency-key"]).toBeUndefined();
+    }
     expect(requests.slice(0, 7).map(({ body }) => body)).toEqual([
       '{"reason":"launch"}',
       '{"reason":"pause"}',
@@ -197,4 +293,97 @@ describe("Client campaigns", () => {
       '{"reason":"requeue"}',
     ]);
   });
+
+  it("points an unlaunched draft at another audience, or detaches it", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.update(
+      "campaign/a",
+      { recipientListId: "list/b" },
+      { projectId: "project/a" },
+    );
+    await client.campaigns.update(
+      "campaign/a",
+      { recipientListId: null },
+      { projectId: "project/a" },
+    );
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "PATCH /platform/campaigns/campaign%2Fa?projectId=project%2Fa",
+      "PATCH /platform/campaigns/campaign%2Fa?projectId=project%2Fa",
+    ]);
+    expect(requests.map(({ body }) => body)).toEqual([
+      '{"recipientListId":"list/b"}',
+      '{"recipientListId":null}',
+    ]);
+  });
+
+  it("keeps the update body open beyond the named field", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.update(
+      "campaign/a",
+      {
+        name: "September",
+        recipientListId: "list/b",
+      },
+      { projectId: "project/a" },
+    );
+
+    expect(requests[0]?.body).toBe(
+      '{"name":"September","recipientListId":"list/b"}',
+    );
+  });
+
+  it("pages recipients and filters them by status", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.recipients("campaign/a", {
+      projectId: "project/a",
+      status: "skipped",
+      cursor: "cur/1",
+      limit: 100,
+    });
+    await client.campaigns.addRecipients(
+      "campaign/a",
+      { projectId: "project/a", recipients: [{ phone: "+1 555" }] },
+      { idempotencyKey: "recipients-1" },
+    );
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "GET /platform/campaigns/campaign%2Fa/recipients?projectId=project%2Fa&status=skipped&cursor=cur%2F1&limit=100",
+      "POST /platform/campaigns/campaign%2Fa/recipients",
+    ]);
+    expect(requests[1]?.body).toBe(
+      '{"projectId":"project/a","recipients":[{"phone":"+1 555"}]}',
+    );
+    expect(requests[1]?.headers["idempotency-key"]).toBe("recipients-1");
+  });
+});
+
+it("requires project scope on organization campaigns and omits campaigns from project views", async () => {
+  const { client } = await platformServer();
+  const project = client.project("project/a");
+  expect(project).not.toHaveProperty("campaigns");
+  // These calls are compile-time assertions and must never reach transport.
+  const invalidCalls = () => {
+    // @ts-expect-error project views do not expose Platform campaigns
+    void project.campaigns;
+    // @ts-expect-error an organization client must supply project parameters
+    client.campaigns.retrieve("campaign/a");
+    // @ts-expect-error a project ID is required within the parameters
+    client.campaigns.retrieve("campaign/a", {});
+    // @ts-expect-error updates require project parameters, even with an omitted body
+    client.campaigns.update("campaign/a", undefined);
+    // @ts-expect-error deletion requires project parameters
+    client.campaigns.delete("campaign/a");
+    // @ts-expect-error analytics requires project parameters
+    client.campaigns.analytics("campaign/a");
+    // @ts-expect-error events requires project parameters
+    client.campaigns.events("campaign/a");
+    // @ts-expect-error recipient listing requires project parameters
+    client.campaigns.recipients("campaign/a");
+    // @ts-expect-error a status filter alone does not scope the project
+    client.campaigns.recipients("campaign/a", { status: "queued" });
+    // @ts-expect-error recipient append requires its owning project
+    client.campaigns.addRecipients("campaign/a", { recipients: [] });
+  };
+  expect(invalidCalls).toBeTypeOf("function");
 });

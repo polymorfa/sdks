@@ -1,16 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "cd8bc98356548229193095d46da1b955c7540e7e",
+  "commit": "087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f",
+  "branch": "dev",
+  "published": true,
+  "note": "Combined polymorfa/polymorfa dev revision including message history beta and ingestion-offset event listing, plus Voice, usage gates, Calls analytics, Campaigns P0 and Functions. Both public OpenAPI snapshots are byte-identical to the authoritative files at this commit.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "11f7f6cf3aae621db5763ce77c38c56fdaa1bbf6a5d96d5eb7bc996849e3e8ab"
+      "sha256": "9ff03379f73caa1965856104ed0bb28b8606c284d553cd9bc190772b04506ce2"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "a423e74e218ec11bcc4c19e3e6415090d286328b46427afb428defd3c082fa2f"
+      "sha256": "3d98d62f46ef5c580c80a3d8ceb4ac4c63978f85d4baf148b0190903aa698822"
     }
   }
 }

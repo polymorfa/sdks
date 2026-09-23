@@ -1,4 +1,5 @@
 import { HttpTransport } from "../transport/http.js";
+import { withIdempotencyKey } from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import { isoTime, loadHistoryPage, type HistoryPage } from "./history.js";
 import type {
@@ -66,7 +67,7 @@ export class MessagesResource {
     body: SendMessageRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SendMessageResponse>> {
-    return this.post(session, "send", body, options);
+    return this.post(session, "send", body, withIdempotencyKey(options));
   }
 
   markSeen(
@@ -90,7 +91,7 @@ export class MessagesResource {
     body: ReactRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SendReactionResponse>> {
-    return this.post(session, "react", body, options);
+    return this.post(session, "react", body, withIdempotencyKey(options));
   }
 
   star(

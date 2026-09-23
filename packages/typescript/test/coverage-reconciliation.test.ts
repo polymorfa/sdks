@@ -3,8 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 import { describe, expect, it, vi } from "vitest";
-import { HttpCallsApi } from "../../calls/src/index.js";
-import { Client } from "../src/index.js";
+import { Client, MessagingClient } from "../src/index.js";
 
 type LedgerEntry = {
   family: string;
@@ -35,6 +34,10 @@ const participant = {
   video: false,
   state: "invited",
 };
+const callSettings = {
+  conferenceMode: true,
+  updatedAt: "2026-09-16T10:00:00.000Z",
+};
 const calls = [
   {
     operationId: "voipPlaceCall",
@@ -44,25 +47,34 @@ const calls = [
         session: "support",
         to: "+15550100",
         video: false,
-        idempotencyKey: "place-555",
+        exclusive: true,
+        participant: "desk-1",
       },
+      { idempotencyKey: "place-555" },
     ],
-    body: { session: "support", to: "+15550100", video: false },
+    body: {
+      session: "support",
+      to: "+15550100",
+      video: false,
+      exclusive: true,
+      participant: "desk-1",
+    },
     status: 201,
     response: {
       success: true,
       data: { callId, session: "support", video: false },
     },
-    result: { callId },
   },
   {
     operationId: "voipAcceptCall",
     method: "accept",
-    args: [callId, { video: true }],
-    body: { video: true },
-    status: 202,
-    response: { success: true },
-    result: undefined,
+    args: [callId, { video: true, exclusive: false, participant: "desk-1" }],
+    body: { video: true, exclusive: false, participant: "desk-1" },
+    status: 200,
+    response: {
+      success: true,
+      data: { answered: true, answeredBy: "server:desk-1", exclusive: false },
+    },
   },
   {
     operationId: "voipRejectCall",
@@ -71,25 +83,69 @@ const calls = [
     body: undefined,
     status: 202,
     response: { success: true },
-    result: undefined,
+  },
+  {
+    operationId: "voipLeaveCall",
+    method: "leave",
+    args: [callId, { connectionId: "conn_0555" }],
+    body: { connectionId: "conn_0555" },
+    status: 200,
+    response: { success: true },
+  },
+  {
+    operationId: "voipTeardown",
+    method: "end",
+    args: [callId],
+    body: undefined,
+    status: 200,
+    response: { success: true },
+  },
+  {
+    operationId: "voipReportCallDiagnostics",
+    method: "report",
+    args: [
+      callId,
+      {
+        kind: "quality",
+        connectionId: "conn_0123456789",
+        participant: "desk-1",
+        client: { sdk: "@polymorfa/sdk", version: "1.2.3", platform: "node" },
+        quality: { rttMs: 42, candidateType: "relay" },
+      },
+    ],
+    body: {
+      kind: "quality",
+      connectionId: "conn_0123456789",
+      participant: "desk-1",
+      client: { sdk: "@polymorfa/sdk", version: "1.2.3", platform: "node" },
+      quality: { rttMs: 42, candidateType: "relay" },
+    },
+    status: 202,
+    response: { success: true },
   },
   {
     operationId: "voipAddParticipant",
     method: "addParticipant",
-    args: [callId, "+15550100"],
+    args: [callId, { to: "+15550100" }],
     body: { to: "+15550100" },
     status: 201,
     response: { success: true, data: participant },
-    result: participant,
   },
   {
-    operationId: "voipSetMode",
-    method: "setMode",
-    args: ["support", "sdk"],
-    body: { session: "support", mode: "sdk" },
+    operationId: "getCallSettings",
+    method: "retrieveCallSettings",
+    args: ["support/eu"],
+    body: undefined,
     status: 200,
-    response: { success: true, data: { session: "support", mode: "sdk" } },
-    result: undefined,
+    response: { success: true, data: callSettings },
+  },
+  {
+    operationId: "updateCallSettings",
+    method: "updateCallSettings",
+    args: ["support/eu", { conferenceMode: true }],
+    body: { conferenceMode: true },
+    status: 200,
+    response: { success: true, data: callSettings },
   },
 ] as const;
 
@@ -104,7 +160,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("cd8bc98356548229193095d46da1b955c7540e7e");
+    expect(source.commit).toBe("087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -124,31 +180,38 @@ describe("reconciled coverage evidence", () => {
       const mapping = entry(fixture.operationId);
       expect(mapping.typescript).toEqual({
         status: "covered",
-        method: `HttpCallsApi.${fixture.method}`,
+        method: `MessagingClient.voip.${fixture.method}`,
       });
       const fetch = vi.fn(async () =>
         Response.json(fixture.response, { status: fixture.status }),
       );
-      const api = new HttpCallsApi({
-        apiKey: ORGANIZATION_API_KEY,
+      const messaging = new MessagingClient({
+        credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
         baseUrl: "https://api.example.com",
+        maxNetworkRetries: 0,
         fetch,
       });
-      const result = await Reflect.apply(api[fixture.method], api, [
+      const resource = messaging.voip as unknown as Record<
+        string,
+        (...args: readonly unknown[]) => Promise<{ data: unknown }>
+      >;
+      const result = await Reflect.apply(resource[fixture.method]!, resource, [
         ...fixture.args,
       ]);
-      expect(result).toEqual(fixture.result);
+      expect(result.data).toEqual(fixture.response);
       expect(fetch).toHaveBeenCalledTimes(1);
       const [url, init] = fetch.mock.calls[0] as unknown as [
         string,
         RequestInit,
       ];
-      expect(url).toBe(
-        `https://api.example.com${mapping.path.replace("{id}", encodeURIComponent(callId))}`,
+      expect(new URL(url).pathname).toBe(
+        mapping.path
+          .replace("{id}", encodeURIComponent(callId))
+          .replace("{session}", encodeURIComponent("support/eu")),
       );
       expect(init.method).toBe(mapping.method);
       if (fixture.body === undefined) {
-        expect(init.body).toBeUndefined();
+        expect(init.body ?? undefined).toBeUndefined();
         expect(new Headers(init.headers).has("content-type")).toBe(false);
       } else {
         expect(JSON.parse(init.body as string)).toEqual(fixture.body);
@@ -163,6 +226,22 @@ describe("reconciled coverage evidence", () => {
       }
     },
   );
+
+  it("retires session answer modes and calling tickets", () => {
+    for (const operationId of [
+      "voipSetMode",
+      "voipToken",
+      "voipSocketTicket",
+      "voipAgentToken",
+    ]) {
+      expect(
+        ledger.operations.filter(
+          (operation) => operation.operationId === operationId,
+        ),
+        operationId,
+      ).toEqual([]);
+    }
+  });
 
   it("covers QuickLink settings through the exact management routes", async () => {
     const fetch = vi.fn(async () => Response.json({ data: {} }));
@@ -199,7 +278,7 @@ describe("reconciled coverage evidence", () => {
         ) &&
         operationId.length > 0,
     );
-    expect(operations).toHaveLength(30);
+    expect(operations).toHaveLength(32);
     for (const operation of operations) {
       expect(operation.typescript.status, operation.operationId).toBe(
         "covered",
