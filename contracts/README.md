@@ -36,19 +36,20 @@ Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
 and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
-below use the pinned Hybrid Link API revision. CLI consumers require a
+below use the merged API revision. CLI consumers require a
 published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` Hybrid Link source commit
-`2dd0c1563b1fc4e6525f708afc12e0685110cfe0`. Those files remain
-byte-identical on merged API `dev` after PR #260. This revision includes
-Voice audio and provider credentials on top of merged usage gates, Calls
-analytics, Campaigns P0, Functions, and HMS history. The snapshots, ledger and revision
-tests have been reconciled. `source.json` records the source paths and
-SHA-256 hashes.
+files at merged `polymorfa/polymorfa` API `dev` commit
+`5cba4237fcec1ef776e8d3727c7ecc4d8f0207a3`. This revision integrates
+Hybrid Link and the `campaign.launched`, `campaign.resumed`, and
+`campaign.stopped` webhook schemas from API feature source
+`3558c289ec35aba45a498a8794a94b4919365899`. The three events change no
+operation fingerprint or SDK method mapping. The snapshots, ledger, and revision
+tests have been reconciled. `source.json` records the source paths and SHA-256
+hashes. SDK package publication remains separate.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no

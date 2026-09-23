@@ -6836,6 +6836,210 @@
           "payload"
         ]
       },
+      "CampaignLaunchedPayload": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "Campaign id",
+            "example": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11"
+          },
+          "name": {
+            "type": "string"
+          },
+          "recipientCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scheduled": {
+            "type": "boolean"
+          },
+          "launchedAt": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Unix timestamp in milliseconds when sending began"
+          }
+        },
+        "required": [
+          "campaignId",
+          "name",
+          "recipientCount",
+          "scheduled",
+          "launchedAt"
+        ]
+      },
+      "CampaignLaunchedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "campaign.launched"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CampaignLaunchedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CampaignResumedPayload": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "Campaign id",
+            "example": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11"
+          },
+          "sentCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "remainingCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "resumedAt": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Unix timestamp in milliseconds when sending resumed"
+          }
+        },
+        "required": [
+          "campaignId",
+          "sentCount",
+          "remainingCount",
+          "resumedAt"
+        ]
+      },
+      "CampaignResumedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "campaign.resumed"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CampaignResumedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
+      "CampaignStoppedPayload": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "Campaign id",
+            "example": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11"
+          },
+          "sentCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "abandonedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "stoppedAt": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Unix timestamp in milliseconds when the stop settled"
+          }
+        },
+        "required": [
+          "campaignId",
+          "sentCount",
+          "abandonedCount",
+          "stoppedAt"
+        ]
+      },
+      "CampaignStoppedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "campaign.stopped"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CampaignStoppedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
       "CampaignCompletedPayload": {
         "type": "object",
         "properties": {
@@ -52146,6 +52350,78 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CampaignPausedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "campaign.launched": {
+      "post": {
+        "operationId": "onCampaignLaunched",
+        "summary": "Campaign began sending",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignLaunchedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "campaign.resumed": {
+      "post": {
+        "operationId": "onCampaignResumed",
+        "summary": "Campaign resumed sending",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignResumedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "campaign.stopped": {
+      "post": {
+        "operationId": "onCampaignStopped",
+        "summary": "Campaign stop settled",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignStoppedEvent"
               }
             }
           }

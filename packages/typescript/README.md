@@ -1841,6 +1841,8 @@ if (isEvent(event, "history.sync")) {
   }
 } else if (isEvent(event, "bansafe.action")) {
   console.log(event.payload.rung, event.payload.requires);
+} else if (isEvent(event, "campaign.stopped")) {
+  console.log(event.payload.campaignId, event.payload.abandonedCount);
 } else if (isEvent(event, "customer.pairing_link.connected")) {
   console.log(event.payload.customerId, event.payload.sessionId);
 }
@@ -1849,7 +1851,7 @@ if (isEvent(event, "history.sync")) {
 The catalog also types Customer lifecycle events (`customer.*`), BanSafe events
 (`bansafe.health_threshold`, `bansafe.health_changed`, `bansafe.risk_changed`,
 `bansafe.enforcement`, `bansafe.action`, `bansafe.incident`, and
-`bansafe.claim`), campaign progress events (`campaign.*`),
+`bansafe.claim`), campaign progress and lifecycle events (`campaign.*`),
 `call.permission_changed`, `message.failed`, and `template.status`. `message.failed`
 reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
 and `retryAfter` in seconds. Unknown event names still parse as
