@@ -7,6 +7,7 @@ import {
   type ApiResponse,
   type CancelQuickLinkResponse,
   type CreateQuickLinkResponse,
+  type CreateQuickLinkRequest,
   type GetQuickLinkResponse,
 } from "../src/index.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
@@ -19,6 +20,18 @@ afterEach(async () => {
 });
 
 describe("MessagingClient.quickLinks", () => {
+  it("requires an existing session for supplementary setup at compile time", () => {
+    const initial = {} satisfies CreateQuickLinkRequest;
+    const supplement = {
+      purpose: "add_connection",
+      session: "existing/number",
+    } satisfies CreateQuickLinkRequest;
+    // @ts-expect-error supplementary setup requires an existing Number session
+    const invalid: CreateQuickLinkRequest = { purpose: "add_connection" };
+    expect(initial).toEqual({});
+    expect(supplement.session).toBe("existing/number");
+    expect(invalid.purpose).toBe("add_connection");
+  });
   it("creates, retrieves, and cancels the exact hosted QuickLink resource", async () => {
     const server = await startTestServer((request) => {
       if (request.method === "POST") {

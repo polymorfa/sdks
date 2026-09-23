@@ -107,6 +107,7 @@ export {
   type SessionPhoneOfflinePayload,
   type SessionStatusPayload,
   type TemplateStatusPayload,
+  type UsageRecordedPayload,
   type UnknownWebhookEvent,
   type WebhookEvent,
   type WebhookEventOf,

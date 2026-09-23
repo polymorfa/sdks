@@ -376,7 +376,14 @@ export class HttpTransport {
       attempt += 1;
       let response: Response | undefined;
       try {
-        const performed = await this.#perform(request, decode, accept);
+        const performed = await this.#perform(
+          request,
+          decode,
+          accept,
+          (received) => {
+            response = received;
+          },
+        );
         response = performed.response;
         const data = performed.data;
         const metadata = responseMetadata(response, attempt);
@@ -401,13 +408,44 @@ export class HttpTransport {
         if (error instanceof PolymorfaError) {
           throw error;
         }
+        const receivedMetadata =
+          response === undefined
+            ? undefined
+            : responseMetadata(response, attempt);
         if (request.signal?.aborted === true) {
           throw new PolymorfaCancelledError(
             "The request was cancelled by the caller.",
             {
               code: "request_cancelled",
+              ...(receivedMetadata === undefined
+                ? {}
+                : { metadata: receivedMetadata }),
               cause: error,
             },
+          );
+        }
+        if (receivedMetadata?.operationId !== undefined) {
+          const options = {
+            code:
+              error instanceof RequestTimeout
+                ? "request_timeout"
+                : "connection_error",
+            status: receivedMetadata.status,
+            ...(receivedMetadata.requestId === undefined
+              ? {}
+              : { requestId: receivedMetadata.requestId }),
+            metadata: receivedMetadata,
+            cause: error,
+          };
+          if (error instanceof RequestTimeout) {
+            throw new PolymorfaTimeoutError(
+              `The response body exceeded its ${error.timeoutMs}ms timeout. Query the operation status before retrying.`,
+              options,
+            );
+          }
+          throw new PolymorfaConnectionError(
+            "The response body could not be read. Query the operation status before retrying.",
+            options,
           );
         }
         if (error instanceof RequestTimeout) {
@@ -539,6 +577,7 @@ export class HttpTransport {
     request: RawRequest,
     decode: (response: Response) => Promise<unknown>,
     accept: string,
+    onResponse: (response: Response) => void,
   ): Promise<{ readonly response: Response; readonly data: unknown }> {
     const url = requestUrl(this.#baseUrl, request.path, request.query);
     const { headers, encoded } = this.#requestHeaders(request, accept);
@@ -569,6 +608,7 @@ export class HttpTransport {
         ...(encoded.body === undefined ? {} : { body: encoded.body }),
         signal: controller.signal,
       });
+      onResponse(response);
       return { response, data: await decode(response) };
     } catch (error) {
       if (timedOut) {

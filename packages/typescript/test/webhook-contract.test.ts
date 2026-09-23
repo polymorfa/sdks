@@ -635,6 +635,44 @@ const PAYLOADS: {
     },
     ["campaignId", "recipientId", "phone", "surface", "reason", "at"],
   ),
+  "usage.recorded": shape<P["usage.recorded"]>()(
+    {
+      id: IDS.event,
+      meter: "call.duration",
+      quantity: 42,
+      unit: "second",
+      dimensions: { direction: "outbound", participants: 1 },
+      keySource: "none",
+      sourceKind: "call",
+      sourceId: "call_1",
+      projectId: IDS.project,
+      session: "support",
+      occurredAt: AT,
+      recordedAt: AT,
+      revision: 1,
+      pricingState: "unpriced",
+      rateCard: null,
+      pricedCredits: null,
+    },
+    [
+      "id",
+      "meter",
+      "quantity",
+      "unit",
+      "dimensions",
+      "keySource",
+      "sourceKind",
+      "sourceId",
+      "projectId",
+      "session",
+      "occurredAt",
+      "recordedAt",
+      "revision",
+      "pricingState",
+      "rateCard",
+      "pricedCredits",
+    ],
+  ),
 };
 
 /** Event families whose payload shapes webhook-event-types.test.ts pins. */
@@ -648,6 +686,7 @@ type LegacyEventType = Exclude<
   | "message.failed"
   | "session.restriction_updated"
   | "template.status"
+  | "usage.recorded"
   | "session.logged_out"
   | "session.restriction_updated"
 >;

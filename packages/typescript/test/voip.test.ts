@@ -6,6 +6,7 @@ import {
   PolymorfaConfigurationError,
   PolymorfaAuthorizationError,
   PolymorfaConflictError,
+  PolymorfaPaymentRequiredError,
   PolymorfaValidationError,
   VoipResource,
   type ApiResponse,
@@ -507,6 +508,28 @@ describe("VoipResource", () => {
     expect(refused).toBeInstanceOf(PolymorfaAuthorizationError);
     expect((refused as PolymorfaAuthorizationError).code).toBe(
       "calls_disabled",
+    );
+  });
+
+  it("surfaces an enforced call usage gate as a payment-required error", async () => {
+    const server = await serve([
+      json(
+        {
+          error: {
+            code: "gate_limit_reached",
+            message: "A usage limit was reached.",
+          },
+          data: null,
+        },
+        402,
+      ),
+    ]);
+    const refused = await client(server)
+      .voip.place({ session: "support", to: "+15550100" })
+      .catch((error: unknown) => error);
+    expect(refused).toBeInstanceOf(PolymorfaPaymentRequiredError);
+    expect((refused as PolymorfaPaymentRequiredError).code).toBe(
+      "gate_limit_reached",
     );
   });
 

@@ -33,17 +33,20 @@ export type QuickLinkConnectionKind = "linked_devices" | "official_api";
 export type QuickLinkHybridPhase =
   "cloud_setup" | "linked_pairing" | "repair_linked" | "ready";
 
-export interface CreateQuickLinkRequest {
-  readonly purpose?: QuickLinkPurpose;
+interface CreateQuickLinkBase {
   readonly connectionGoal?: QuickLinkConnectionGoal;
-  /** Existing Number session name; required when purpose is add_connection. */
-  readonly session?: string;
   readonly addConnection?: QuickLinkConnectionKind;
   readonly projectId?: string;
   readonly customerId?: string;
   readonly externalId?: string;
   readonly configuration?: QuickLinkConfiguration;
 }
+
+export type CreateQuickLinkRequest = CreateQuickLinkBase &
+  (
+    | { readonly purpose?: "initial"; readonly session?: string }
+    | { readonly purpose: "add_connection"; readonly session: string }
+  );
 
 export interface QuickLink {
   readonly purpose: QuickLinkPurpose;

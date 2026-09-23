@@ -6,11 +6,11 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`d5245f76d5d6bc7b9af439571bd1f157185b1b87` on the dev-based monorepo branch
+`a77acc90d24e114f4c313e33aa05f9f3261cd123` on the dev-based monorepo branch
 `t3code/hybrid-link-support`. Graph-compatible APIs are outside
 this SDK's initial scope.
 The matching source revision also includes campaign compliance and Functions
-changes. All public operations have an SDK method. Sixteen changed
+changes. Three new usage-read operations do not yet have SDK methods. Sixteen changed
 campaign or audience fingerprints still need review against the merged SDK
 implementation; the Hybrid operation-status contract is covered.
 
@@ -720,7 +720,9 @@ coverage. Routing details appear in response `metadata.transport`,
 `metadata.routingReason`, and `metadata.operationId` when supplied by the API.
 
 An accepted uncertain send raises `send_outcome_unknown` with its operation ID.
-The SDK stops automatic retries when a response carries an accepted operation ID.
+The SDK stops automatic retries when a response carries an accepted operation ID,
+even if its body cannot be read. In that case the thrown error carries the ID in
+`error.metadata.operationId`.
 Read `messages.operationStatus(session, operationId)` with the original issuing
 server principal. `pending` and `unknown` do not permit another send or a
 transport switch. A terminal `rejected` result carries

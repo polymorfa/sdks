@@ -83,6 +83,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "session.restriction_updated",
   "session.status",
   "template.status",
+  "usage.recorded",
 ] as const;
 
 export type KnownWebhookEventType = (typeof KNOWN_WEBHOOK_EVENT_TYPES)[number];
@@ -223,6 +224,46 @@ export interface SessionRestrictionUpdatedPayload {
   readonly enforcementType: string | null;
   readonly expiresAt: string | null;
   readonly observedAt: string;
+}
+
+/** A revisioned usage observation. A later revision of the same id replaces it. */
+export interface UsageRecordedPayload {
+  readonly id: string;
+  readonly meter:
+    | "call.duration"
+    | "call.cloud_pulses"
+    | "campaign.call"
+    | "tts.characters"
+    | "tts.seconds"
+    | "stt.seconds"
+    | "agent.seconds"
+    | "agent.tokens"
+    | "agent.provider_cost"
+    | "channels.peak"
+    | "storage.byte_days";
+  readonly quantity: number;
+  readonly unit:
+    | "second"
+    | "pulse"
+    | "call"
+    | "character"
+    | "token"
+    | "provider_unit"
+    | "channel"
+    | "byte_day";
+  readonly dimensions: Readonly<Record<string, string | number | boolean>>;
+  readonly keySource: "none" | "managed" | "customer";
+  readonly sourceKind:
+    "call" | "attempt" | "flow_run" | "conversation" | "asset" | "team";
+  readonly sourceId: string;
+  readonly projectId: string | null;
+  readonly session: string | null;
+  readonly occurredAt: string;
+  readonly recordedAt: string;
+  readonly revision: number;
+  readonly pricingState: "unpriced" | "priced" | "waived" | "settled";
+  readonly rateCard: { readonly id: string; readonly version: number } | null;
+  readonly pricedCredits: number | null;
 }
 
 export interface SessionConnectedPayload {
@@ -1029,6 +1070,7 @@ export interface WebhookPayloadMap {
   readonly "session.restriction_updated": SessionRestrictionUpdatedPayload;
   readonly "session.status": SessionStatusPayload;
   readonly "template.status": TemplateStatusPayload;
+  readonly "usage.recorded": UsageRecordedPayload;
 }
 
 export interface WebhookEventOf<TEvent extends string, TPayload> {

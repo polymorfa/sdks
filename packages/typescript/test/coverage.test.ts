@@ -173,11 +173,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "d5245f76d5d6bc7b9af439571bd1f157185b1b87",
-      total: 462,
+      sourceCommit: "a77acc90d24e114f4c313e33aa05f9f3261cd123",
+      total: 465,
       covered: 335,
       partial: 0,
-      missing: 0,
+      // Usage summary, records, and gate reads remain explicit gaps.
+      missing: 3,
       excluded: 111,
       changed: 16,
     });

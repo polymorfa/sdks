@@ -953,6 +953,7 @@ export {
   type MessageFailedPayload,
   type MessageFailedReason,
   type TemplateStatusPayload,
+  type UsageRecordedPayload,
 } from "./webhooks/index.js";
 
 export type * from "./messaging/session-configuration.js";

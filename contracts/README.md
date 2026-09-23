@@ -16,7 +16,7 @@ activation availability is implied by this identifier revision.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`d5245f76d5d6bc7b9af439571bd1f157185b1b87` on the dev-based branch
+`a77acc90d24e114f4c313e33aa05f9f3261cd123` on the dev-based branch
 `t3code/hybrid-link-support`. `source.json`
 records the original paths and SHA-256 hashes. `coverage.json` uses the same
 source revision. The source branch is published to Git; this does not establish
@@ -44,6 +44,14 @@ listed; unrecognized API error codes remain readable as strings.
 
 The merged SDK covers Calls analytics, export, and retention. Console equivalents
 stay excluded because they require dashboard identity.
+
+This API revision adds `GET /platform/usage`, `/platform/usage/records`, and
+`GET /platform/gates`. The ledger records all three as missing until the SDK
+exposes them. It also adds `gate_limit_reached` to the error catalog and a 402
+response to call placement; the existing SDK transport surfaces that response
+as `PolymorfaPaymentRequiredError`.
+The Messaging snapshot also adds `usage.recorded`; the webhook event map exposes
+its revisioned usage payload and the signed-delivery contract test checks it.
 
 The merged SDK implements the campaign compliance operations, but 16 changed
 campaign or audience fingerprints remain unresolved against this API source.
@@ -78,11 +86,11 @@ analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
 | Status              | Operations |
 | ------------------- | ---------: |
 | Covered             |        335 |
-| Missing             |          0 |
+| Missing             |          3 |
 | Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |         16 |
-| Total               |        462 |
+| Total               |        465 |
 
 An earlier revision added test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

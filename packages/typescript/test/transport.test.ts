@@ -399,6 +399,45 @@ describe("HttpTransport", () => {
     expect(server.requests[1]?.headers["idempotency-key"]).toBe("send-42");
   });
 
+  it("preserves an operation receipt and does not retry after response body failure", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(
+      async () =>
+        new Response(
+          new ReadableStream({
+            start(controller) {
+              controller.error(new Error("body disconnected"));
+            },
+          }),
+          {
+            status: 202,
+            headers: {
+              "content-type": "application/json",
+              "x-polymorfa-operation-id": "op_accepted",
+              "x-request-id": "req_accepted",
+            },
+          },
+        ),
+    );
+    const transport = makeTransport("https://api.example.com", {
+      fetch,
+      maxNetworkRetries: 2,
+    });
+
+    await expect(
+      transport.request({
+        method: "POST",
+        path: "/messaging/number/messages",
+        body: { text: "hello" },
+        idempotencyKey: "send-accepted",
+      }),
+    ).rejects.toMatchObject({
+      code: "connection_error",
+      requestId: "req_accepted",
+      metadata: { operationId: "op_accepted", status: 202, attempts: 1 },
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
   it("honors Retry-After for rate limits", async () => {
     const delays: number[] = [];
     const server = await serverFor((_request, index) =>
