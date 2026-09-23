@@ -231,7 +231,9 @@ export interface SessionConnectedPayload {
 }
 
 export interface SessionLoggedOutPayload {
-  readonly reason: string;
+  readonly reason: "banned" | "device_removed" | "unknown";
+  /** WhatsApp's logout code, or 0 when none was given. */
+  readonly code: number;
 }
 
 export interface SessionPhoneOfflinePayload {

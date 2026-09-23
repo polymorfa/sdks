@@ -10,6 +10,7 @@ import {
   type KnownWebhookEventType,
   type ProjectWebhookDeliveryAttempt,
   type OrganizationWebhookDeliveryAttempt,
+  type SessionLoggedOutPayload,
   type WebhookPayloadMap,
 } from "../src/index.js";
 
@@ -699,6 +700,41 @@ describe("webhook catalog contract", () => {
     expectTypeOf<P["bansafe.action"]["previousRung"]>().toEqualTypeOf<
       "none" | "notify" | "throttle" | "block_cold" | "suspend" | null
     >();
+  });
+
+  it("types logged-out reasons and the required integer code from the pinned contract", async () => {
+    const payload = shape<SessionLoggedOutPayload>()(
+      { reason: "device_removed", code: 401 },
+      ["reason", "code"],
+    );
+    expectShape(messaging, "SessionLoggedOutPayload", payload);
+    expectTypeOf<SessionLoggedOutPayload["reason"]>().toEqualTypeOf<
+      "banned" | "device_removed" | "unknown"
+    >();
+    const schema = messaging.components.schemas.SessionLoggedOutPayload!;
+    expect(
+      violations(messaging, schema, { reason: "device_removed" }),
+    ).toContain("$.code is required");
+    expect(
+      violations(messaging, schema, { reason: "other", code: 401 }),
+    ).toContain('$.reason="other" is outside the enum');
+    expect(
+      violations(messaging, schema, { reason: "banned", code: 406.5 }),
+    ).toContain("$.code is not an integer");
+    const body = Buffer.from(
+      JSON.stringify({
+        id: "evt_logout",
+        session: "support",
+        timestamp: AT,
+        event: "session.logged_out",
+        payload: payload.value,
+      }),
+    );
+    const event = await constructWebhookEvent(body, sign(body), secret);
+    if (!isEvent(event, "session.logged_out"))
+      throw new Error("Expected logged-out event");
+    expectTypeOf(event.payload).toEqualTypeOf<SessionLoggedOutPayload>();
+    expect(event.payload).toEqual({ reason: "device_removed", code: 401 });
   });
 });
 

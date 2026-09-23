@@ -1444,6 +1444,9 @@ WhatsApp Business app on a connected Meta Cloud API number as
 `{ source: "whatsapp_business_app", value }`. Events for a session created by a
 QuickLink include its optional `externalId`.
 
+`session.logged_out` includes `reason` (`banned`, `device_removed`, or `unknown`)
+and the integer WhatsApp logout `code`. The code is `0` when WhatsApp gave none.
+
 Development builds also export `CallEndedPayload` and `CallTelemetryPayload`.
 For `call.ended`, check `from` before reading its identity: it is `null` when
 the media host disappeared before reporting the caller. The reason is
