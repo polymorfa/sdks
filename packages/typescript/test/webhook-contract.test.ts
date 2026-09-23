@@ -629,9 +629,28 @@ const PAYLOADS: {
       "qualityRating",
     ],
   ),
+  "campaign.launched": shape<P["campaign.launched"]>()(
+    {
+      ...campaign,
+      name: "September follow-up",
+      recipientCount: 15,
+      scheduled: false,
+      launchedAt: 1_790_000_000_000,
+    },
+    ["campaignId", "name", "recipientCount", "scheduled", "launchedAt"],
+  ),
   "campaign.paused": shape<P["campaign.paused"]>()(
     { ...campaign, sentCount: 10, remainingCount: 5, pausedAt: 1 },
     ["campaignId", "sentCount", "remainingCount", "pausedAt"],
+  ),
+  "campaign.resumed": shape<P["campaign.resumed"]>()(
+    {
+      ...campaign,
+      sentCount: 10,
+      remainingCount: 5,
+      resumedAt: 1_790_000_003_000,
+    },
+    ["campaignId", "sentCount", "remainingCount", "resumedAt"],
   ),
   "campaign.completed": shape<P["campaign.completed"]>()(
     {
@@ -660,6 +679,15 @@ const PAYLOADS: {
   "campaign.failed": shape<P["campaign.failed"]>()(
     { ...campaign, reason: "insufficient_funds", failedAt: 3 },
     ["campaignId", "reason", "failedAt"],
+  ),
+  "campaign.stopped": shape<P["campaign.stopped"]>()(
+    {
+      ...campaign,
+      sentCount: 10,
+      abandonedCount: 5,
+      stoppedAt: 1_790_000_010_000,
+    },
+    ["campaignId", "sentCount", "abandonedCount", "stoppedAt"],
   ),
   "campaign.recipient_sent": shape<P["campaign.recipient_sent"]>()(
     {

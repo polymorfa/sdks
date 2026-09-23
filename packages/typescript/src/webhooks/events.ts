@@ -45,10 +45,13 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "campaign.cold_blocked",
   "campaign.completed",
   "campaign.failed",
+  "campaign.launched",
   "campaign.paused",
   "campaign.recipient_failed",
   "campaign.recipient_sent",
   "campaign.recipient_skipped",
+  "campaign.resumed",
+  "campaign.stopped",
   "campaign.throttled",
   "chat.archive",
   "chat.clear",
@@ -912,11 +915,28 @@ export interface TemplateStatusPayload {
   readonly qualityRating: string;
 }
 
+export interface CampaignLaunchedPayload {
+  readonly campaignId: string;
+  readonly name: string;
+  readonly recipientCount: number;
+  readonly scheduled: boolean;
+  /** Unix milliseconds. */
+  readonly launchedAt: number;
+}
+
 export interface CampaignPausedPayload {
   readonly campaignId: string;
   readonly sentCount: number;
   readonly remainingCount: number;
   readonly pausedAt: number;
+}
+
+export interface CampaignResumedPayload {
+  readonly campaignId: string;
+  readonly sentCount: number;
+  readonly remainingCount: number;
+  /** Unix milliseconds. */
+  readonly resumedAt: number;
 }
 
 export interface CampaignCompletedPayload {
@@ -935,6 +955,14 @@ export interface CampaignFailedPayload {
   readonly campaignId: string;
   readonly reason: string;
   readonly failedAt: number;
+}
+
+export interface CampaignStoppedPayload {
+  readonly campaignId: string;
+  readonly sentCount: number;
+  readonly abandonedCount: number;
+  /** Unix milliseconds. */
+  readonly stoppedAt: number;
 }
 
 export interface CampaignRecipientSentPayload {
@@ -1066,10 +1094,13 @@ export interface WebhookPayloadMap {
   readonly "campaign.cold_blocked": CampaignColdBlockedPayload;
   readonly "campaign.completed": CampaignCompletedPayload;
   readonly "campaign.failed": CampaignFailedPayload;
+  readonly "campaign.launched": CampaignLaunchedPayload;
   readonly "campaign.paused": CampaignPausedPayload;
   readonly "campaign.recipient_failed": CampaignRecipientFailedPayload;
   readonly "campaign.recipient_sent": CampaignRecipientSentPayload;
   readonly "campaign.recipient_skipped": CampaignRecipientSkippedPayload;
+  readonly "campaign.resumed": CampaignResumedPayload;
+  readonly "campaign.stopped": CampaignStoppedPayload;
   readonly "campaign.throttled": CampaignThrottledPayload;
   readonly "chat.archive": ChatArchivePayload;
   readonly "chat.clear": ChatClearPayload;

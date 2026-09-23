@@ -7,6 +7,7 @@ import {
   KNOWN_WEBHOOK_EVENT_TYPES,
   type CallEndedPayload,
   type CallTelemetryPayload,
+  type CampaignStoppedPayload,
   constructWebhookEvent,
   isEvent,
   webhooks,
@@ -194,6 +195,34 @@ describe("constructWebhookEvent", () => {
     expect(isEvent(event, "call.telemetry")).toBe(true);
     if (isEvent(event, "call.telemetry")) {
       expectTypeOf(event.payload).toEqualTypeOf<CallTelemetryPayload>();
+      expect(event.payload).toEqual(payload);
+    }
+  });
+
+  it("narrows a signed campaign stop to its lifecycle payload", async () => {
+    const payload: CampaignStoppedPayload = {
+      campaignId: "campaign-123",
+      sentCount: 10,
+      abandonedCount: 5,
+      stoppedAt: 1_790_000_010_000,
+    };
+    const body = Buffer.from(
+      JSON.stringify({
+        id: "evt_campaign_stopped",
+        session: "",
+        timestamp: "2026-09-23T00:00:00Z",
+        event: "campaign.stopped",
+        payload,
+      }),
+    );
+    const event = await constructWebhookEvent(
+      body,
+      sign(body),
+      "fixture-secret",
+    );
+    expect(isEvent(event, "campaign.stopped")).toBe(true);
+    if (isEvent(event, "campaign.stopped")) {
+      expectTypeOf(event.payload).toEqualTypeOf<CampaignStoppedPayload>();
       expect(event.payload).toEqual(payload);
     }
   });
