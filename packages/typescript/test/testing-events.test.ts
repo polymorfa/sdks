@@ -81,7 +81,7 @@ it("lists fixtures", async () => {
   expect(fetcher.mock.calls[0]![1]?.method).toBe("GET");
 });
 
-it("matches the public fixture catalog at API 2d80738c2a89618584cd3bb612e9ebae1f28763f", () => {
+it("matches the public fixture catalog at API 75264661fdf38690ff2d18b342b3026db6332093", () => {
   expect(TEST_EVENT_FIXTURES).toEqual(
     apiContract.schemas.TriggerTestEventRequest.properties.event.enum,
   );
