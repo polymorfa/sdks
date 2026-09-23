@@ -327,7 +327,7 @@
         "operationId": "listFunctionDeployments",
         "tags": ["functions"],
         "summary": "List Function deployments",
-        "description": "Lists immutable Function deployments, including source configuration and secret version references.\n\nRequires `functions:read`. Project tokens only access resources in their own project.",
+        "description": "Lists immutable Function deployment metadata and secret version references. Retrieve one deployment to read its source.\n\nRequires `functions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -1431,7 +1431,6 @@
         "properties": {
           "id": { "type": "string", "format": "uuid" },
           "functionId": { "type": "string", "format": "uuid" },
-          "source": { "type": "string", "maxLength": 262144 },
           "language": {
             "type": "string",
             "enum": ["javascript", "typescript", "visual"]
@@ -1449,19 +1448,20 @@
             "items": { "type": "string", "format": "uri" },
             "maxItems": 32
           },
-          "createdAt": { "type": "string", "format": "date-time" }
+          "createdAt": { "type": "string", "format": "date-time" },
+          "source": { "type": "string", "maxLength": 262144 }
         },
         "required": [
           "id",
           "functionId",
-          "source",
           "language",
           "region",
           "compatibilityDate",
           "sha256",
           "secretVersionIds",
           "egressOrigins",
-          "createdAt"
+          "createdAt",
+          "source"
         ]
       },
       "CreateFunctionDeploymentRequest": {
@@ -1506,12 +1506,51 @@
         "properties": {
           "items": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/FunctionDeployment" },
+            "items": {
+              "$ref": "#/components/schemas/FunctionDeploymentSummary"
+            },
             "maxItems": 100
           },
           "nextCursor": { "type": "string", "format": "uuid", "nullable": true }
         },
         "required": ["items", "nextCursor"]
+      },
+      "FunctionDeploymentSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "functionId": { "type": "string", "format": "uuid" },
+          "language": {
+            "type": "string",
+            "enum": ["javascript", "typescript", "visual"]
+          },
+          "region": { "type": "string" },
+          "compatibilityDate": { "type": "string", "format": "date" },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "secretVersionIds": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" },
+            "maxItems": 64
+          },
+          "egressOrigins": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" },
+            "maxItems": 32
+          },
+          "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": [
+          "id",
+          "functionId",
+          "language",
+          "region",
+          "compatibilityDate",
+          "sha256",
+          "secretVersionIds",
+          "egressOrigins",
+          "createdAt"
+        ]
       },
       "UpdateFunctionRequest": {
         "type": "object",

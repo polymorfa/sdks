@@ -6,8 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`4bdc5f88821d8418bd217666ee90e31aa98d14b2` on pending monorepo PR #228.
-This dependency has not merged; final dev re-pinning is required before this SDK change publishes. Graph-compatible APIs are outside
+`fdaff9a86220e3ef1f8ad75cc838dbfd03ede4eb` on monorepo `dev`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -265,6 +264,8 @@ The organization view also exposes these management resources:
 - `sipTrunks`: list, create, retrieve, update, delete, and rotate the
   credentials of a project's SIP trunks, and read the SIP address your PBX
   points at with `endpoint()` (also on project clients)
+- `calls`: call statistics, paginated call detail records, and CSV or NDJSON
+  export of call records for the team or one project (also on project clients)
 - `callRetention`: retrieve and update how long Polymorfa keeps the team's
   call data (also readable on project clients; changes need a team API key)
 - `billing`: retrieve balance and currency, inspect usage meters, list
@@ -727,7 +728,7 @@ The typed webhook catalog includes `session.restriction_updated` with
 `device_removed`, or `unknown`. Test event requests support the restriction
 fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
-`Client.callRetention` covers the team call-retention settings. Three public
-call analytics and export operations remain recorded as missing in the contract
-ledger. The contract snapshot is pinned to merged API `dev` commit
-`f4a340da3b74248232ebea73f3e72b42f667beef`.
+`Client.callRetention` covers the team call-retention settings. `Client.calls`
+covers the three public call analytics and export operations. The contract
+snapshot is pinned to merged API `dev` commit
+`fdaff9a86220e3ef1f8ad75cc838dbfd03ede4eb`.

@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- Added `Client.usage` to read monthly metered usage, page or iterate usage
+  records, and inspect team usage gates. Project clients can read only their
+  own usage; gate state requires an organization key. The `usage.recorded`
+  webhook has a typed payload, and enforced limits use the
+  `gate_limit_reached` error code. Usage is measured but not charged.
+
+- Added `Client.calls` for call analytics and call detail records (needs
+  `sessions:read`; also on project clients). `stats()` returns totals,
+  per-day, per-hour, per-number or per-outcome groups, and a 168-cell
+  hour-of-week heatmap in an IANA time zone. `list()` returns a
+  `CursorPage<CallRecord>`. `export()` returns one CSV or NDJSON page of up to
+  1,000 records with its `nextCursor`, and `exportAll()` yields every page,
+  dropping repeated CSV header rows. `exportAll()` throws an
+  `invalid_response` `PolymorfaServerError`, without yielding the page, when
+  the API returns an already requested cursor. Filters: `projectId` (team clients),
+  `sessionId`, `direction`, `upstream`, `outcome`, `since` and `until`. Call
+  records identify the other party only by the pseudonymous `peerRef`.
+  Response metadata now keeps the `polymorfa-next-cursor` header.
 - Added `Client.callRetention` with `retrieve()` and `update()` for the
   team's call data retention (`GET` and `PUT /platform/call-retention`), and
   the `CallRetention`, `CallRetentionPolicy`, and `UpdateCallRetentionRequest`

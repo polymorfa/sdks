@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "4bdc5f88821d8418bd217666ee90e31aa98d14b2",
-  "branch": "t3code/voice-p1-gates-metering",
-  "published": false,
-  "note": "Pending API PR #228 head after Campaigns P0 merged to dev. Both snapshots are byte-identical to this unmerged branch commit; re-pin to the final API dev merge commit before SDK publication.",
+  "commit": "fdaff9a86220e3ef1f8ad75cc838dbfd03ede4eb",
+  "branch": "dev",
+  "published": true,
+  "note": "Merged polymorfa/polymorfa dev revision including usage gates, Calls analytics, Campaigns P0 and Functions. Both public OpenAPI snapshots are byte-identical to the authoritative files at this commit.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "181172654124efaeb5e85534caf9046137033d0273c7711da606c32e6d8f478f"
+      "sha256": "bfea366196c950627c8da53b93dd338ce29bb1b2f3c30694a58558a4217f3e2b"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "f1118afb2b6180a890b2768c2b9df9872303adb29c6ac834a0853256655d18f7"
+      "sha256": "65e4a7be65709cdac2a0fc560e142962ff9cac7c13fd7906d357c46d55dad528"
     }
   }
 }
