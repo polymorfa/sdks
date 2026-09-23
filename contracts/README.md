@@ -1,5 +1,20 @@
 # Contract coverage
 
+## Focused test-event update
+
+`testing-events.json` records the four test-event schemas from API commit
+`63111fec728ac3ebc9a825ea57ebc4c592abdafc`, including the source path and file
+hash. The TypeScript test-event catalog and override types use that revision.
+Local schema references are rebased to this supplement's `schemas` root.
+The fixture contract test compares the exported catalog against this snapshot.
+It adds `session.restriction_updated`, its boolean `restrictionActive` override,
+and `call_restricted` to `callEndReason`. This focused supplement does not claim
+that the full snapshots or coverage ledger below were reconciled to that newer
+API revision. The SDK change is local and requires package publication before
+CLI consumers can update their pinned dependency.
+
+## Full snapshots
+
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
 `cdc7ec09a32309ee8233d9f8a3007eea18203c6e` on monorepo `dev`. `source.json`
