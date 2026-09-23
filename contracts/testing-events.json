@@ -1,8 +1,8 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "9c876c16c60b74370d934e1275f23ef6096bee12",
+  "commit": "2d80738c2a89618584cd3bb612e9ebae1f28763f",
   "sourcePath": "apps/api/docs/openapi.json",
-  "sourceSha256": "1b2c37fc3f89360bc9cc92c3deeb96ca8c42349e36dff8cb7c9066bf1556ae4e",
+  "sourceSha256": "79543bf719017598c3e2497004d761056e919b3200abdaae1560893542816cc7",
   "schemas": {
     "TestEventFixtureList": {
       "type": "object",
@@ -23,9 +23,7 @@
                   "call.ended",
                   "session.status",
                   "session.restriction_updated",
-                  "template.status",
-                  "bansafe.enforcement",
-                  "bansafe.risk_changed"
+                  "template.status"
                 ]
               },
               "description": {
@@ -64,9 +62,7 @@
             "call.ended",
             "session.status",
             "session.restriction_updated",
-            "template.status",
-            "bansafe.enforcement",
-            "bansafe.risk_changed"
+            "template.status"
           ],
           "description": "Fixture name. Each name is the event type it produces."
         },
@@ -97,9 +93,7 @@
             "call.ended",
             "session.status",
             "session.restriction_updated",
-            "template.status",
-            "bansafe.enforcement",
-            "bansafe.risk_changed"
+            "template.status"
           ]
         },
         "session": {
@@ -215,14 +209,6 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256
-        },
-        "enforcementKind": {
-          "type": "string",
-          "enum": ["cap_warning", "cap_reached", "timelock", "temporary_ban"]
-        },
-        "riskLevel": {
-          "type": "string",
-          "enum": ["low", "elevated", "high", "critical"]
         }
       },
       "additionalProperties": false

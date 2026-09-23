@@ -125,6 +125,30 @@ describe("constructWebhookEvent", () => {
     }
   });
 
+  it.each([
+    "bansafe.risk_changed",
+    "bansafe.health_changed",
+    "bansafe.enforcement",
+  ])("preserves a signed historical %s event as unknown", async (name) => {
+    const body = Buffer.from(
+      JSON.stringify({
+        id: "historical-bansafe-event",
+        session: "support",
+        timestamp: "2026-09-07T00:00:00Z",
+        event: name,
+        payload: { legacy: true },
+      }),
+    );
+    const event = await constructWebhookEvent(
+      body,
+      sign(body),
+      "fixture-secret",
+    );
+    expect(KNOWN_WEBHOOK_EVENT_TYPES).not.toContain(name);
+    expect(event.event).toBe(name);
+    expect(event.payload).toEqual({ legacy: true });
+  });
+
   it.each([null, { id: "15550100@s.whatsapp.net" }])(
     "preserves terminal caller identity %j through signature verification",
     async (from) => {

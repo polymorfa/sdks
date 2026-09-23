@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Retired the unproduced `bansafe.risk_changed`,
+  `bansafe.health_changed`, and `bansafe.enforcement` webhook names and their
+  test-event fixtures. The typed `bansafe.incident`, `bansafe.action`,
+  `bansafe.health_threshold`, and `bansafe.claim` events remain available.
+
 - Added typed hosted message history reads to `MessagingClient.chats`:
   `list`, `retrieve`, `listMessages`, and `retrieveMessage`. Server credentials
   need the relevant read scope, HMS enabled on the Number, and enrollment in

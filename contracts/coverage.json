@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "5cba4237fcec1ef776e8d3727c7ecc4d8f0207a3",
+  "sourceCommit": "2d80738c2a89618584cd3bb612e9ebae1f28763f",
   "excludedContracts": [
     {
       "family": "graph",
@@ -860,7 +860,7 @@
       "method": "GET",
       "path": "/messaging/testing/{projectId}/events/fixtures",
       "operationId": "listTestEventFixtures",
-      "fingerprint": "6dc56807cfc48718a9e5da98ce3c3649694f718d4643b333b75e7341d82943b2",
+      "fingerprint": "05b7145174ef35215dd9b6f51b83927279d12a1281e4f142f882e13c27fb5361",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.testing.listEventFixtures"
@@ -1577,7 +1577,7 @@
       "method": "POST",
       "path": "/messaging/testing/{projectId}/events",
       "operationId": "triggerTestEvent",
-      "fingerprint": "d0fa7c0f5b2dee4925898d46c1e4b9f26b75b6b8169616d862e87064d7e066b1",
+      "fingerprint": "b5257525dd5d250dd5df292894bf43b30c663c55a85c4c664033611e6f959118",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.testing.triggerEvent"
