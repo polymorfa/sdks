@@ -509,7 +509,10 @@ refuses a different `sizeBytes` with a `PolymorfaValidationError` before it
 creates the asset. It calls `createUpload`, sends the bytes to `upload.url` with
 only the returned `Content-Type` header and without your credential, then
 calls `complete`. If sending fails, the asset stays in `pending_upload`. You
-can run the three steps yourself with `createUpload` and `complete`; the
+receive the HTTP status for an upload refusal; the SDK omits the storage
+response body and headers from the error because they may contain the signed
+upload URL. You can run the three steps yourself with `createUpload` and
+`complete`; the
 upload URL is valid for 5 minutes and grants access on its own, so do not log
 it.
 
