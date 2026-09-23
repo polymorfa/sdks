@@ -1,4 +1,8 @@
-import { PolymorfaConfigurationError } from "../errors.js";
+import {
+  PolymorfaConfigurationError,
+  PolymorfaServerError,
+  PolymorfaValidationError,
+} from "../errors.js";
 import { CursorPage } from "../pagination.js";
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
@@ -68,6 +72,10 @@ import {
   type DataEnvelope,
   unwrapResponse,
 } from "./response.js";
+import {
+  IndexedEventPage,
+  type IndexedEventEnvelope,
+} from "./indexed-event-page.js";
 
 type EventFor<O extends ClientOwner> = O extends "project"
   ? ProjectEvent
@@ -168,10 +176,93 @@ class ResourceBase {
 
 export class EventsResource<O extends ClientOwner> extends ResourceBase {
   list(
+    params: ListEventsParams & { readonly afterOffset: string },
+    options?: RequestOptions,
+  ): Promise<IndexedEventPage<EventFor<O>>>;
+  list(
+    params?: ListEventsParams,
+    options?: RequestOptions,
+  ): Promise<CursorPage<EventFor<O>>>;
+  list(
     params: ListEventsParams = {},
     options: RequestOptions = {},
   ): Promise<CursorPage<EventFor<O>>> {
+    if (params.afterOffset !== undefined) {
+      if (!/^(0|[1-9][0-9]*)$/.test(params.afterOffset)) {
+        throw new PolymorfaValidationError(
+          "afterOffset must be a non-negative decimal string.",
+        );
+      }
+      if (
+        params.cursor !== undefined ||
+        params.since !== undefined ||
+        params.until !== undefined
+      ) {
+        throw new PolymorfaValidationError(
+          "afterOffset cannot be combined with cursor, since, or until.",
+        );
+      }
+      if (BigInt(params.afterOffset) > 9223372036854775807n) {
+        throw new PolymorfaValidationError("afterOffset is too large.");
+      }
+      return this.listIndexed(
+        { ...params, afterOffset: params.afterOffset },
+        options,
+      );
+    }
     return this.page(this.path("/events"), { ...params }, options);
+  }
+
+  private async listIndexed(
+    params: ListEventsParams & { readonly afterOffset: string },
+    options: RequestOptions,
+  ): Promise<IndexedEventPage<EventFor<O>>> {
+    const response = await this.transport.request<
+      IndexedEventEnvelope<EventFor<O>>
+    >({
+      method: "GET",
+      path: this.path("/events"),
+      query: { ...params },
+      ...options,
+    });
+    const page = response.data?.page;
+    if (
+      !Array.isArray(response.data?.data) ||
+      typeof page?.hasMore !== "boolean" ||
+      typeof page.highWatermark !== "string" ||
+      !/^(0|[1-9][0-9]*)$/.test(page.highWatermark) ||
+      (page.nextOffset !== null &&
+        page.nextOffset !== undefined &&
+        (typeof page.nextOffset !== "string" ||
+          !/^(0|[1-9][0-9]*)$/.test(page.nextOffset))) ||
+      (page.hasMore && typeof page.nextOffset !== "string")
+    ) {
+      throw new PolymorfaServerError(
+        "The Polymorfa API returned invalid indexed event metadata.",
+        {
+          code: "invalid_response",
+          status: response.metadata.status,
+          metadata: response.metadata,
+          details: response.data,
+        },
+      );
+    }
+    const nextOffset = page.nextOffset ?? null;
+    return new IndexedEventPage({
+      response,
+      nextOffset,
+      highWatermark: page.highWatermark,
+      hasMore: page.hasMore,
+      ...(page.hasMore
+        ? {
+            loadNext: () =>
+              this.listIndexed(
+                { ...params, afterOffset: nextOffset! },
+                options,
+              ),
+          }
+        : {}),
+    });
   }
   retrieve(
     eventId: string,

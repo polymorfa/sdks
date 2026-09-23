@@ -571,6 +571,7 @@ export type {
 } from "./messaging/types.js";
 export { WebhooksResource as MessagingWebhooksResource } from "./messaging/webhooks.js";
 export { CursorPage, type PageDecoder, type PageResult } from "./pagination.js";
+export { IndexedEventPage } from "./platform/indexed-event-page.js";
 export { AudiencesResource } from "./platform/audiences.js";
 export { ApiKeysResource } from "./platform/api-keys.js";
 export { AuditLogsResource } from "./platform/audit-logs.js";

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "6068b053aa2f4dd1d7324361ae8133f0885ffe23",
+  "sourceCommit": "13879400834b75985e2413fc74c18497076f7384",
   "excludedContracts": [
     {
       "family": "graph",
@@ -3265,7 +3265,7 @@
       "method": "GET",
       "path": "/platform/events",
       "operationId": "listOrganizationEvents",
-      "fingerprint": "3119960bdc0e48e5ae9ab54b31c54c5af51b06b791ec1fc5661673b7917f9be1",
+      "fingerprint": "76a0a4e53824cc9928b0771796beef4ce04654462d4214e1b697508c753587c4",
       "typescript": {
         "status": "covered",
         "method": "Client.events.list"
@@ -3520,7 +3520,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/events",
       "operationId": "listProjectEvents",
-      "fingerprint": "a14b41fd42b9efbca658a4cc7d4acf1eb11c8d0dfe01c40ef75053a0b7a6713d",
+      "fingerprint": "f126a126665a2a29f7e460ac6f2751c1a5ecc98522dc24d2e5d2df6ae4bfe2f7",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).events.list"

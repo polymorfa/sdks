@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts on the unmerged API Hybrid Link branch at
-`6068b053aa2f4dd1d7324361ae8133f0885ffe23`. Graph-compatible
+`13879400834b75985e2413fc74c18497076f7384`. Graph-compatible
 APIs are outside this SDK's initial scope.
 
 The same API revision adds an enrolled hosted message history beta.
@@ -195,6 +195,9 @@ const sessions = await client.sessions.list({
 const project = client.project("project_123");
 const events = await project.events.list({ limit: 25 });
 console.log(events.items, events.response.metadata.requestId);
+
+const indexed = await project.events.list({ afterOffset: "0" });
+console.log(indexed.highWatermark, indexed.nextOffset);
 ```
 
 `Client` binds its ownership context when you construct it. An organization
@@ -839,7 +842,7 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. `Client.callPolicy` and
 `Client.callOptOuts` cover consent controls. The contract snapshot is pinned
-to unmerged API Hybrid Link commit `6068b053aa2f4dd1d7324361ae8133f0885ffe23`.
+to unmerged API Hybrid Link commit `13879400834b75985e2413fc74c18497076f7384`.
 
 ## Native message provider references
 

@@ -1915,8 +1915,26 @@ const replay = await project.events.replay(
 console.log(replay.data.operationId);
 ```
 
-List methods return `CursorPage<T>`. Mutations return owner-specific typed
+Cursor-based list methods return `CursorPage<T>`. Mutations return owner-specific typed
 receipts and preserve response metadata, request IDs, and idempotency receipts.
+Organization and project `events.list({ afterOffset: "0" })` instead return an
+`IndexedEventPage`: `highWatermark` gives the retained-stream baseline,
+`nextOffset` identifies the continuation point when more events exist, and `nextPage()`
+continues in ingestion order using that offset. The raw response's
+`page.nextCursor` is null in this mode. Pass decimal offsets as strings;
+`afterOffset` cannot be combined with
+`cursor`, `since`, or `until`. The ordinary cursor list remains available when
+`afterOffset` is omitted.
+
+```ts
+const indexed = await project.events.list({ afterOffset: "0", limit: 100 });
+console.log(indexed.highWatermark, indexed.items);
+if (indexed.hasMore) {
+  const next = await indexed.nextPage();
+  console.log(next?.nextOffset);
+}
+```
+
 Use `operations.get()` or `operations.wait()` to inspect asynchronous work,
 and `operations.cancel()` while `capabilities.cancellable` is true. Reads need
 `operations:read`; cancellation needs `operations:cancel`.
@@ -2376,7 +2394,7 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. `Client.callPolicy` and
 `Client.callOptOuts` cover consent controls. The contract snapshot is pinned
-to unmerged API Hybrid Link commit `6068b053aa2f4dd1d7324361ae8133f0885ffe23`.
+to unmerged API Hybrid Link commit `13879400834b75985e2413fc74c18497076f7384`.
 
 ## Functions
 
