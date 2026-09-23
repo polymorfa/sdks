@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "5cc85a22898a8f41b03b1d2fc4976d1cb1dbdc74",
+  "sourceCommit": "d5245f76d5d6bc7b9af439571bd1f157185b1b87",
   "excludedContracts": [
     {
       "family": "graph",
@@ -2231,6 +2231,30 @@
     {
       "family": "platform",
       "method": "DELETE",
+      "path": "/platform/functions/{functionId}",
+      "operationId": "deleteFunction",
+      "fingerprint": "47ada9366c33710b0226a7bae3bbe94650ff7882c58231e5902c69cec4730330",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/functions/{functionId}/secrets/{versionId}",
+      "operationId": "deleteFunctionSecret",
+      "fingerprint": "d52505ebdb85b0b4ac9046d79bc0951e241b37be6e3a9f6c008c7a0c578dafb5",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
       "path": "/platform/keys/{keyId}",
       "operationId": "deactivateApiKey",
       "fingerprint": "3bc6580c15162209c02f62d80fce46f3860eeaeab4cdcf762462575611403286",
@@ -2288,7 +2312,7 @@
       "method": "DELETE",
       "path": "/platform/sessions/{sessionId}",
       "operationId": "deletePlatformSession",
-      "fingerprint": "9b927720c008ea176f677355ce1aac35abfe9578b9e49679c100ff6ddf115240",
+      "fingerprint": "57d15ba7f31ccd24c9b2cf3ccc948f5bc2e21d3a80a574fccae108564394d39e",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.delete"
@@ -3064,6 +3088,90 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/platform/functions",
+      "operationId": "listFunctions",
+      "fingerprint": "25f349f62dac979456061ac9fe0d10baa1d9a73292e22c8766e9079239876402",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}",
+      "operationId": "getFunction",
+      "fingerprint": "aba952c826d741425457959fb7a983bfa5d8559cb39e6cb0fe2971eecec4635d",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/deployments",
+      "operationId": "listFunctionDeployments",
+      "fingerprint": "fce2dc0e58e97c20b8288875ce2404e7c25f2a15304c6b1ec34dfe1749eed927",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/deployments/{deploymentId}",
+      "operationId": "getFunctionDeployment",
+      "fingerprint": "f4b73876ee8957aa384b5646fb035620ef5fff979c7c351b421a6522fa5925c0",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/invocations",
+      "operationId": "listFunctionInvocations",
+      "fingerprint": "044c7821d820b165a1c31915ab22f89ac751378e83e5cde1e8baeb0018759953",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/invocations/{invocationId}",
+      "operationId": "getFunctionInvocation",
+      "fingerprint": "d575acbad03276a6ae483b58330d074c3b7cd278b8950d2a6c2d77b309fbf0b2",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/secrets",
+      "operationId": "listFunctionSecrets",
+      "fingerprint": "dc90220d7de3dec97368affca6273b166fc040f1c2b9be0909cc77911e4039d2",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/platform/incidents",
       "operationId": "listSecurityIncidents",
       "fingerprint": "1c3d88a19bb3b0fbaab05edf9c37f654c5f3ac2dd6b262def70d06830b64c152",
@@ -3706,6 +3814,18 @@
     {
       "family": "platform",
       "method": "PATCH",
+      "path": "/platform/functions/{functionId}",
+      "operationId": "updateFunction",
+      "fingerprint": "37aea5ef45c7720d5fc7733061316fc346bf46fcc8e34b32ee72d08a189e473c",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
       "operationId": "updateProjectWebhook",
       "fingerprint": "97736d6e9e6a5bdd5106f8a8bfdfa8d93cc4871b1fa3361bcf850b2bd614ceaa",
@@ -4337,6 +4457,54 @@
     {
       "family": "platform",
       "method": "POST",
+      "path": "/platform/functions",
+      "operationId": "createFunction",
+      "fingerprint": "2945c6cdd2a7cf79436d3e46b7ac9b5879e1f4e6f3323fcb824efc996efbe008",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/deployments",
+      "operationId": "createFunctionDeployment",
+      "fingerprint": "4d1a8bb1076132ca7cb2ac8855021ec4ac7aabfec722adf272139108e8228636",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/invocations",
+      "operationId": "createFunctionInvocation",
+      "fingerprint": "b9c157f5555e08f48d6b16df356cc85332ab29f1f0b1345f20d400e65146e117",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/secrets",
+      "operationId": "createFunctionSecret",
+      "fingerprint": "e7e818ff1cd2b9c0e96e64965a8fbc944222890dc1fb377e321c1c8b010c13ed",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
       "path": "/platform/incidents/{incidentId}/acknowledge",
       "operationId": "acknowledgeSecurityIncident",
       "fingerprint": "cc67aca0f106baa290a945738074a19fd2ad807be1c04f65df84af0682068254",
@@ -4629,7 +4797,7 @@
       "method": "POST",
       "path": "/platform/sessions/delete",
       "operationId": "deleteSessions",
-      "fingerprint": "e903e50c609b927f5e58bfdfded20297d4ae200ab05fbdd12e5872889986ceb7",
+      "fingerprint": "a8c7a7af2ddbed25ae8e0e8b83284611dd979880e25045ac9af8180ea711414f",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.deleteMany"
@@ -4833,6 +5001,18 @@
         "status": "missing",
         "reason": "The current API snapshot includes this Calls operation; the server SDK does not yet expose a typed method.",
         "milestone": "calls-platform-parity"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/functions/{functionId}/promotion",
+      "operationId": "promoteFunctionDeployment",
+      "fingerprint": "a82601d9f5be780dbf10604d9facd02f885fc060f0d2bbdd311a434b0e544304",
+      "typescript": {
+        "status": "missing",
+        "reason": "The TypeScript SDK does not yet expose the Functions operation.",
+        "milestone": "functions"
       }
     },
     {

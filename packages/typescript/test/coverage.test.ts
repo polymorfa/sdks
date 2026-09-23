@@ -173,12 +173,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "5cc85a22898a8f41b03b1d2fc4976d1cb1dbdc74",
-      total: 447,
+      sourceCommit: "d5245f76d5d6bc7b9af439571bd1f157185b1b87",
+      total: 462,
       covered: 307,
       partial: 0,
-      // Five Calls and eight newer campaign operations remain explicit gaps.
-      missing: 13,
+      // Five Calls, eight campaign, and 15 Functions operations remain explicit gaps.
+      missing: 28,
       excluded: 111,
       changed: 16,
     });

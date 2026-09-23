@@ -6,12 +6,13 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`5cc85a22898a8f41b03b1d2fc4976d1cb1dbdc74` on the dev-based monorepo branch
+`d5245f76d5d6bc7b9af439571bd1f157185b1b87` on the dev-based monorepo branch
 `t3code/hybrid-link-support`. Graph-compatible APIs are outside
 this SDK's initial scope.
-The matching source revision also includes campaign compliance changes. Eight
-new operations are missing here, and 16 changed campaign or audience contracts
-still need review; the Hybrid operation-status contract is covered.
+The matching source revision also includes campaign compliance and Functions
+changes. Eight campaign and 15 Functions operations are missing here, alongside
+five Calls operations. Sixteen changed campaign or audience contracts still
+need review; the Hybrid operation-status contract is covered.
 
 ## Package architecture
 

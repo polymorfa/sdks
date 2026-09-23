@@ -43788,7 +43788,7 @@
             }
           },
           "409": {
-            "description": "`state_conflict`: The campaign is not a draft, or it is already launched and waiting for its start time. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`state_conflict`: The campaign is not a draft, or it is already launched and waiting for its start time. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {
@@ -44013,7 +44013,7 @@
             }
           },
           "409": {
-            "description": "`state_conflict`: The campaign is not running, or it has no active delivery run to pause. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`state_conflict`: The campaign is not running, or it has no active delivery run to pause. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {
@@ -44238,7 +44238,7 @@
             }
           },
           "409": {
-            "description": "`state_conflict`: The campaign is not paused, or it has no active delivery run to resume. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`state_conflict`: The campaign is not paused, or it has no active delivery run to resume. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {
@@ -44463,7 +44463,7 @@
             }
           },
           "409": {
-            "description": "`state_conflict`: The campaign is already finished or cancelled. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`state_conflict`: The campaign is already finished or cancelled. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {

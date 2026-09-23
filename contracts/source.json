@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "5cc85a22898a8f41b03b1d2fc4976d1cb1dbdc74",
+  "commit": "d5245f76d5d6bc7b9af439571bd1f157185b1b87",
   "branch": "t3code/hybrid-link-support",
   "published": true,
   "note": "Hybrid Link contracts committed and published on the dev-based source branch; Git publication does not establish deployed availability.",
@@ -8,12 +8,12 @@
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "622d6d4a03c7fcb1ac43c44e4dd2726472eec51d577c29cd20565080df4b756f"
+      "sha256": "b746725bb32005195968008f18d62fa59c41c77abe2060d9c20c9b36cd3bd425"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "2a31cfa6e7b1c42d7980e0ff4535fd655c97b3864efabe0017624f0c9034e0a6"
+      "sha256": "eec8ecf4ed10a610c956f5ae892aaecfcf188c4a0ce41179c648e09dc105219b"
     }
   }
 }

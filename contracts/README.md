@@ -16,7 +16,7 @@ activation availability is implied by this identifier revision.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`5cc85a22898a8f41b03b1d2fc4976d1cb1dbdc74` on the dev-based branch
+`d5245f76d5d6bc7b9af439571bd1f157185b1b87` on the dev-based branch
 `t3code/hybrid-link-support`. `source.json`
 records the original paths and SHA-256 hashes. `coverage.json` uses the same
 source revision. The source branch is published to Git; this does not establish
@@ -53,6 +53,11 @@ campaign or audience fingerprints unresolved. The global
 the SDK's error type already accepts unrecognized codes as strings. This snapshot
 records the source contract without claiming campaign parity.
 
+The Functions merge adds 15 public Platform operations. They are recorded as
+missing until the SDK exposes them. Production-number deletion now returns 409;
+the existing `Client.sessions.delete` and `deleteMany` methods still use the
+same routes and surface that response as a conflict error.
+
 `Client.sipTrunks.endpoint` covers `GET /platform/sip/endpoint` for organization
 keys and project tokens. Its response distinguishes `hosted`, with a host,
 transports and RTP range, from `sip_not_hosted`, with null host and RTP fields
@@ -76,11 +81,11 @@ analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
 | Status              | Operations |
 | ------------------- | ---------: |
 | Covered             |        307 |
-| Missing             |         13 |
+| Missing             |         28 |
 | Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |         16 |
-| Total               |        447 |
+| Total               |        462 |
 
 An earlier revision added test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
