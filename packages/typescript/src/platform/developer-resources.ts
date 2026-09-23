@@ -75,7 +75,7 @@ import {
   unwrapResponse,
 } from "./response.js";
 import {
-  IndexedEventPage,
+  FollowableIndexedEventPage,
   type IndexedEventEnvelope,
 } from "./indexed-event-page.js";
 
@@ -180,7 +180,7 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
   list(
     params: ListEventsParams & { readonly afterOffset: string },
     options?: RequestOptions,
-  ): Promise<IndexedEventPage<EventFor<O>>>;
+  ): Promise<FollowableIndexedEventPage<EventFor<O>>>;
   list(
     params?: ListEventsParams,
     options?: RequestOptions,
@@ -190,11 +190,6 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
     options: RequestOptions = {},
   ): Promise<CursorPage<EventFor<O>>> {
     if (params.afterOffset !== undefined) {
-      if (!/^(0|[1-9][0-9]*)$/.test(params.afterOffset)) {
-        throw new PolymorfaValidationError(
-          "afterOffset must be a non-negative decimal string.",
-        );
-      }
       if (
         params.cursor !== undefined ||
         params.since !== undefined ||
@@ -203,9 +198,6 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
         throw new PolymorfaValidationError(
           "afterOffset cannot be combined with cursor, since, or until.",
         );
-      }
-      if (BigInt(params.afterOffset) > 9223372036854775807n) {
-        throw new PolymorfaValidationError("afterOffset is too large.");
       }
       return this.listOffsetPage(
         { ...params, afterOffset: params.afterOffset },
@@ -234,7 +226,7 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
   private async listOffsetPage(
     params: ListEventsParams & { readonly afterOffset: string },
     options: RequestOptions,
-  ): Promise<IndexedEventPage<EventFor<O>>> {
+  ): Promise<FollowableIndexedEventPage<EventFor<O>>> {
     if (
       !/^(0|[1-9][0-9]*)$/.test(params.afterOffset) ||
       BigInt(params.afterOffset) > 9223372036854775807n
@@ -266,7 +258,9 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
         (typeof page.nextOffset !== "string" ||
           BigInt(page.nextOffset) <= BigInt(params.afterOffset) ||
           BigInt(page.nextOffset) > BigInt(page.highWatermark))) ||
-      (!page.hasMore && page.nextOffset !== null)
+      (!page.hasMore &&
+        page.nextOffset !== null &&
+        page.nextOffset !== undefined)
     ) {
       throw new PolymorfaServerError(
         "The Polymorfa API returned invalid indexed event metadata.",
@@ -279,7 +273,7 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
       );
     }
     const nextOffset = page.nextOffset ?? null;
-    return new IndexedEventPage({
+    return new FollowableIndexedEventPage({
       response,
       nextOffset,
       highWatermark: page.highWatermark,

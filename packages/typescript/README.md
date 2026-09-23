@@ -1918,7 +1918,7 @@ console.log(replay.data.operationId);
 Cursor-based list methods return `CursorPage<T>`. Mutations return owner-specific typed
 receipts and preserve response metadata, request IDs, and idempotency receipts.
 Organization and project `events.list({ afterOffset: "0" })` instead return an
-`IndexedEventPage`: `highWatermark` gives the retained-stream baseline,
+`FollowableIndexedEventPage`: `highWatermark` gives the retained-stream baseline,
 `nextOffset` identifies the continuation point when more events exist, and `nextPage()`
 continues in ingestion order using that offset. The raw response's
 `page.nextCursor` is null in this mode. Pass decimal offsets as strings;

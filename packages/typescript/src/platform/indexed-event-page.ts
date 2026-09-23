@@ -7,23 +7,24 @@ export interface IndexedEventEnvelope<T> {
   readonly page: IndexedEventPageMetadata;
 }
 
-interface IndexedEventPageOptions<T> {
+interface FollowableIndexedEventPageOptions<T> {
   readonly response: ApiResponse<IndexedEventEnvelope<T>>;
   readonly nextOffset: string | null;
   readonly highWatermark: string;
   readonly hasMore: boolean;
-  readonly loadNext?: () => Promise<IndexedEventPage<T>>;
+  readonly loadNext?: () => Promise<FollowableIndexedEventPage<T>>;
 }
 
 /** An event page followed by retained-stream offset rather than cursor. */
-export class IndexedEventPage<T> extends CursorPage<T> {
+export class FollowableIndexedEventPage<T> extends CursorPage<T> {
   readonly nextOffset: string | null;
   readonly highWatermark: string;
   declare readonly response: ApiResponse<IndexedEventEnvelope<T>>;
   readonly #hasMore: boolean;
-  readonly #loadNextIndexed: (() => Promise<IndexedEventPage<T>>) | undefined;
+  readonly #loadNextIndexed:
+    (() => Promise<FollowableIndexedEventPage<T>>) | undefined;
 
-  constructor(options: IndexedEventPageOptions<T>) {
+  constructor(options: FollowableIndexedEventPageOptions<T>) {
     super({ items: options.response.data.data, response: options.response });
     this.nextOffset = options.nextOffset;
     this.highWatermark = options.highWatermark;
@@ -35,7 +36,7 @@ export class IndexedEventPage<T> extends CursorPage<T> {
     return this.#hasMore;
   }
 
-  override nextPage(): Promise<IndexedEventPage<T> | null> {
+  override nextPage(): Promise<FollowableIndexedEventPage<T> | null> {
     return this.#loadNextIndexed?.() ?? Promise.resolve(null);
   }
 

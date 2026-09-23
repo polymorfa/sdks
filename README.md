@@ -234,8 +234,10 @@ Both organization and project views expose owner-bound resources:
 - `operations`: list, get, wait for, list transitions of, and cancel
   asynchronous operations
 
-List methods return `CursorPage<T>`. Mutations return typed receipts with the
-resource, operation, and idempotency identifiers supplied by the API.
+Cursor list methods return `CursorPage<T>`. With `afterOffset`,
+`project.events.list` returns a `FollowableIndexedEventPage`; use `nextOffset`
+and `nextPage()` to continue in ingestion order. Mutations return typed receipts
+with the resource, operation, and idempotency identifiers supplied by the API.
 
 ```ts
 const enrollment = await client.projects.requestProductionEnrollment(
