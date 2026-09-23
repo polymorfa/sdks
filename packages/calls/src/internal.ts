@@ -11,12 +11,14 @@ export {
   callsHttpError,
   parseAcceptResult,
   parseParticipant,
+  parseSocketTicket,
   type AcceptCallOptions,
   type AcceptCallResult,
   type CallsApi,
   type FetchLike,
   type HttpCallsApiOptions,
   type PlaceCallRequest,
+  type SocketTicket,
 } from "./api.js";
 export { capabilitiesFrom, type CallInit } from "./call.js";
 export {

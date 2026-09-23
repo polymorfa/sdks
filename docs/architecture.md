@@ -37,9 +37,10 @@ public implementations rather than copying their visual design or API names.
   itself from a query string or inspect secret material.
 - Mobile-native packages are deferred. The browser and server contracts avoid
   assuming React Native so a future binding can reuse the controller protocol.
-- Calls follow Calls contract revision 1: no session answer modes and no
-  calling tickets. Clients authenticate REST calls and both call sockets with
-  the existing token (a client token in browsers). Applications choose per
+- Calls have no session answer modes. Clients authenticate REST calls with
+  their token (a client token in browsers), exchange it for a single-use
+  lifecycle socket ticket, and authenticate media sockets with the token's
+  first frame. Applications choose per
   answer whether to claim a call; components default to not claiming and never
   decline a call on their own. Audio is merged per participant; video stays
   one stream per participant.

@@ -735,8 +735,10 @@ await calls.dispose();
 
 The token needs `voip_place`, `voip_answer` and `voip_signal` actions. Your
 server mints it with `POST /platform/client-tokens`; the browser uses it
-directly for REST calls and for the first frame of each call socket. No
-calling ticket is involved. Requests use the token's bound session.
+for REST calls and exchanges it for a single-use lifecycle socket ticket
+with `POST /messaging/voip/ws-ticket`. Each reconnect mints a new ticket.
+The media socket still authenticates with its first frame. Requests use
+the token's bound session.
 
 Incoming calls ring until a participant answers or declines them. Several
 calls can ring at once, and the widget never declines one for you. Answer

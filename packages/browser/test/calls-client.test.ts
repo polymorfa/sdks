@@ -38,15 +38,22 @@ function fixture(extra: { diagnostics?: boolean } = {}) {
       typeof init?.body === "string"
         ? (JSON.parse(init.body) as Record<string, unknown>)
         : {};
-    const data = path.endsWith("/accept")
-      ? {
-          answered: true,
-          answeredBy: "client:self",
-          exclusive: body["exclusive"] === true,
-        }
-      : path === "/messaging/voip/calls"
-        ? { callId: "CALL-OUT" }
-        : {};
+    const data =
+      path === "/messaging/voip/ws-ticket"
+        ? {
+            ticket: "pmfa_wst_test",
+            expiresAt: Date.now() + 60_000,
+            url: "/voip/ws?ticket=pmfa_wst_test",
+          }
+        : path.endsWith("/accept")
+          ? {
+              answered: true,
+              answeredBy: "client:self",
+              exclusive: body["exclusive"] === true,
+            }
+          : path === "/messaging/voip/calls"
+            ? { callId: "CALL-OUT" }
+            : {};
     return new Response(JSON.stringify({ data }), {
       headers: { "content-type": "application/json" },
     });
@@ -640,7 +647,7 @@ describe("browser widget and shared calls client", () => {
     });
     expect(f.calls.controller.call?.endReason).toBe("capacity");
   });
-  it("authenticates with the client token and answers through WebRTC without tickets or modes", async () => {
+  it("opens with a client-token ticket and answers through WebRTC", async () => {
     const f = fixture();
     const socket = await f.connect();
     event(socket, "call.received", "CALL-IN", {
@@ -655,14 +662,19 @@ describe("browser widget and shared calls client", () => {
     expect(f.calls.controller.getSnapshot().status).toBe("connected");
     f.calls.controller.setMuted({ audio: true });
     expect(f.session.setMuted).toHaveBeenCalledWith({ audio: true });
-    expect(socket.url).toBe("wss://api.polymorfa.test/voip/ws");
-    expect(socket.texts[0]).toEqual({ type: "auth", token: "pmfa_ct_test" });
+    expect(socket.url).toBe(
+      "wss://api.polymorfa.test/voip/ws?ticket=pmfa_wst_test",
+    );
+    expect(socket.texts).toEqual([]);
     expect(
       f.fetch.mock.calls.map(([url]) => new URL(String(url)).pathname),
-    ).toEqual(["/messaging/voip/calls/CALL-IN/accept"]);
+    ).toEqual([
+      "/messaging/voip/ws-ticket",
+      "/messaging/voip/calls/CALL-IN/accept",
+    ]);
     expect(
       f.fetch.mock.calls.map(([, init]) => JSON.parse(String(init?.body))),
-    ).toEqual([{ exclusive: false, video: true }]);
+    ).toEqual([{}, { exclusive: false, video: true }]);
     expect(f.media.open).toHaveBeenCalledWith(
       "CALL-IN",
       true,
@@ -764,7 +776,9 @@ describe("browser widget and shared calls client", () => {
     await expect(f.calls.controller.answer()).rejects.toMatchObject({
       code: "call_claimed",
     });
-    expect(f.fetch).not.toHaveBeenCalled();
+    expect(
+      f.fetch.mock.calls.map(([url]) => new URL(String(url)).pathname),
+    ).toEqual(["/messaging/voip/ws-ticket"]);
     // The claimer's call ends later; the invitation goes away.
     event(socket, "call.ended", "CALL-IN", { reason: "remote_hangup" });
     expect(f.calls.controller.getSnapshot().invitations).toEqual([]);
@@ -791,6 +805,7 @@ describe("browser widget and shared calls client", () => {
       init?.body === undefined ? undefined : JSON.parse(String(init.body)),
     ]);
     expect(paths).toEqual([
+      ["POST", "/messaging/voip/ws-ticket", {}],
       [
         "POST",
         "/messaging/voip/calls/CALL-IN/accept",
@@ -842,6 +857,34 @@ describe("browser widget and shared calls client", () => {
 });
 
 describe("BrowserCallsApi", () => {
+  it("requests one lifecycle ticket and surfaces a rule refusal", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json(
+        {
+          error: {
+            code: "permission_denied",
+            message: "Calls signaling is not allowed.",
+          },
+        },
+        { status: 403 },
+      ),
+    );
+    const api = new BrowserCallsApi(
+      new BrowserTransport({
+        getClientToken: async () => "pmfa_ct_test",
+        fetch,
+        maxNetworkRetries: 2,
+      }),
+    );
+    await expect(api.socketTicket("support")).rejects.toMatchObject({
+      status: 403,
+      code: "permission_denied",
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(String(fetch.mock.calls[0]?.[0])).toBe(
+      "https://api.polymorfa.com/messaging/voip/ws-ticket",
+    );
+  });
   it.each(["phoneNumber", "bsuid", "username"])(
     "validates optional participant %s",
     async (field) => {
@@ -881,7 +924,7 @@ describe("BrowserCallsApi", () => {
     expect(fetch).not.toHaveBeenCalled();
     expect("setMode" in api).toBe(false);
     expect("mediaTicket" in api).toBe(false);
-    expect("socketTicket" in api).toBe(false);
+    await expect(api.socketTicket()).rejects.toThrow("pmfa_ct_");
   });
   it("maps a claimed accept to CallClaimedError", async () => {
     const api = new BrowserCallsApi(

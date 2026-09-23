@@ -9,6 +9,7 @@ import {
   type CallsTokenRequest,
   type Participant,
   type PlaceCallRequest,
+  type SocketTicket,
 } from "@polymorfa/sdk/calls/internal";
 import { BrowserTransport } from "../transport.js";
 import { CallsSignalingClient, claimedError } from "./signaling.js";
@@ -34,6 +35,10 @@ export class BrowserCallsApi implements CallsApi {
     const url = this.#signaling.socketUrl(path);
     if (!/^wss?:\/\//.test(url)) throw malformed("socket URL");
     return url;
+  }
+
+  socketTicket(_session?: string, signal?: AbortSignal): Promise<SocketTicket> {
+    return this.#signaling.socketTicket(_session, signal);
   }
 
   async place(

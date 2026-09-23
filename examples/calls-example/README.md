@@ -36,6 +36,11 @@ allowed by this session's rules. The rules need `voip_place`, `voip_answer`,
 and `voip_signal` for the flows here. If the rules restrict origins, allow
 `http://127.0.0.1:5273`. Calls must be enabled for the connected Number and
 its project must have calling access. Use a fresh ephemeral ID for each browser.
+The mint helper checks the Number ID when the key has `sessions:read`, then
+reads client rules and reports missing Calls actions or a blocked local origin
+before minting. A project token must belong to the Number's project. The browser exchanges its
+client token for a single-use lifecycle socket ticket before connecting; each
+reconnect needs a fresh ticket. Staging must serve the ticket socket contract.
 Click **Connect** and wait
 for **Ready for calls** before dialing or receiving. Incoming calls appear in
 `CallSurface`; the dial pad places outbound calls. **Disconnect** releases the

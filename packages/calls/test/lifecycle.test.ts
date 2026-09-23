@@ -31,10 +31,10 @@ describe("LifecycleSocket authentication", () => {
     const connecting = h.socket.connect();
     await flush();
     const ws = FakeWebSocket.instances[0]!;
-    expect(ws.url).toBe("wss://api.example/voip/ws");
+    expect(ws.url).toBe("wss://api.example/voip/ws?ticket=pmfa_wst_test");
     expect(ws.url).not.toContain("token");
     ws.open();
-    expect(ws.texts).toEqual([{ type: "auth", token: "pmfa_ct_test" }]);
+    expect(ws.texts).toEqual([]);
     expect(h.socket.connected).toBe(false);
     // The socket does not claim to be up before the platform accepts the token.
     expect(h.socket.sendCandidate("c", "conn-0001", { candidate: "x" })).toBe(
@@ -57,37 +57,37 @@ describe("LifecycleSocket authentication", () => {
     h.socket.close();
   });
 
-  it("sends a replacement auth frame before the token expires", async () => {
-    let now = 0;
-    const h = lifecycleWith(vi.fn(), () => now);
-    h.api.token
-      .mockResolvedValueOnce({ value: "pmfa_ct_one", expiresAt: 300_000 })
-      .mockResolvedValueOnce({ value: "pmfa_ct_two", expiresAt: 600_000 });
+  it("mints a new ticket on reconnect without sending an auth frame", async () => {
+    const h = lifecycleWith();
+    h.api.socketTicket
+      .mockResolvedValueOnce({
+        ticket: "first",
+        expiresAt: 1,
+        url: "/voip/ws?ticket=first",
+      })
+      .mockResolvedValueOnce({
+        ticket: "second",
+        expiresAt: 2,
+        url: "/voip/ws?ticket=second",
+      });
     const connecting = h.socket.connect();
     await flush();
-    const ws = FakeWebSocket.instances[0]!;
-    ws.authenticate();
+    const first = FakeWebSocket.instances[0]!;
+    expect(first.url).toBe("wss://api.example/voip/ws?ticket=first");
+    first.authenticate();
     await connecting;
-    // Refresh one minute before expiry.
-    const refresh = h.t.timeouts.find((x) => x.ms === 240_000 && !x.cleared);
-    expect(refresh).toBeDefined();
-    now = 240_000;
-    refresh!.cleared = true;
-    refresh!.fn();
+    expect(first.texts).toEqual([]);
+    first.drop();
+    h.t.fireTimeouts();
     await flush();
-    expect(h.api.token).toHaveBeenLastCalledWith({ refresh: true });
-    expect(ws.lastText).toEqual({ type: "auth", token: "pmfa_ct_two" });
-    // Same socket; no reconnect.
-    expect(FakeWebSocket.instances).toHaveLength(1);
-    expect(h.socket.connected).toBe(true);
-    // The next replacement is scheduled from the new token's expiry.
-    expect(
-      h.t.timeouts.some((x) => x.ms === 300_000 && x.cleared !== true),
-    ).toBe(true);
+    expect(FakeWebSocket.instances[1]!.url).toBe(
+      "wss://api.example/voip/ws?ticket=second",
+    );
+    expect(h.api.socketTicket).toHaveBeenCalledTimes(2);
     h.socket.close();
   });
 
-  it("surfaces a 4401 close as CallsAuthError and refreshes the token before reconnecting", async () => {
+  it("surfaces a 4401 close as CallsAuthError and mints a new ticket before reconnecting", async () => {
     const h = lifecycleWith();
     const errors: unknown[] = [];
     const states: boolean[] = [];
@@ -102,12 +102,10 @@ describe("LifecycleSocket authentication", () => {
     expect(errors[0]).toBeInstanceOf(CallsAuthError);
     expect((errors[0] as CallsAuthError).code).toBe("unauthorized");
     expect(states).toEqual([true, false]);
-    // Reconnect runs from the backoff timer with a forced refresh.
+    // Reconnect runs from the backoff timer with a new single-use ticket.
     h.t.fireTimeouts();
     await flush();
-    expect(h.api.token).toHaveBeenLastCalledWith(
-      expect.objectContaining({ refresh: true }),
-    );
+    expect(h.api.socketTicket).toHaveBeenCalledTimes(2);
     expect(FakeWebSocket.instances).toHaveLength(2);
     FakeWebSocket.instances[1]!.authenticate();
     expect(h.socket.connected).toBe(true);
@@ -132,11 +130,13 @@ describe("LifecycleSocket authentication", () => {
     const connecting = socket.connect();
     await flush();
     const ws = FakeWebSocket.instances[0]!;
-    expect(ws.url).toBe(
-      "wss://api.example/voip/ws?session=support&participant=voice-agent",
-    );
+    expect(ws.url).toBe("wss://api.example/voip/ws?ticket=pmfa_wst_test");
     ws.open();
-    expect(ws.texts).toEqual([{ type: "auth", token: "pmfa_live_key" }]);
+    expect(ws.texts).toEqual([]);
+    expect(api.socketTicket).toHaveBeenCalledWith(
+      "support",
+      expect.any(AbortSignal),
+    );
     ws.text({
       type: "ready",
       session: "support",
@@ -188,21 +188,6 @@ describe("LifecycleSocket authentication", () => {
     FakeWebSocket.instances[1]!.authenticate();
     await flush();
     expect(h.socket.connected).toBe(true);
-    h.socket.close();
-  });
-
-  it("does not refresh the token after an ordinary drop", async () => {
-    const h = lifecycleWith();
-    const connecting = h.socket.connect();
-    await flush();
-    FakeWebSocket.instances[0]!.authenticate();
-    await connecting;
-    FakeWebSocket.instances[0]!.drop(1006);
-    h.t.fireTimeouts();
-    await flush();
-    expect(h.api.token).toHaveBeenLastCalledWith(
-      expect.objectContaining({ refresh: false }),
-    );
     h.socket.close();
   });
 
@@ -277,9 +262,9 @@ describe("LifecycleSocket listener failures", () => {
     expect(outcome).toBe("settled");
   });
 
-  it("reports a listener exception from a failed token request instead of leaving an unhandled rejection", async () => {
+  it("reports a listener exception from a failed ticket request instead of leaving an unhandled rejection", async () => {
     const h = lifecycleWith();
-    h.api.token.mockRejectedValue(new Error("mint failed"));
+    h.api.socketTicket.mockRejectedValue(new Error("mint failed"));
     h.socket.on("error", () => {
       throw new Error("listener bug");
     });
@@ -309,7 +294,7 @@ describe("LifecycleSocket listener failures", () => {
         throw new Error("reporter bug");
       }),
     );
-    h.api.token.mockRejectedValue(new Error("mint failed"));
+    h.api.socketTicket.mockRejectedValue(new Error("mint failed"));
     h.socket.on("error", () => {
       throw new Error("listener bug");
     });

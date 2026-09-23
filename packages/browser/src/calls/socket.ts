@@ -14,7 +14,7 @@ export type CallsSocketServerMessage = LifecycleFrame;
 /**
  * A failure delivered to {@link CallsSocket.onError}. A `CallsAuthError`
  * (`code: "unauthorized"`) means the platform closed the socket with 4401;
- * the socket asks for a fresh token before reconnecting.
+ * the socket mints a fresh ticket before reconnecting.
  */
 export interface CallsSocketError {
   readonly code: string;
@@ -23,7 +23,6 @@ export interface CallsSocketError {
 
 /** Browser → server frames on the calls WebSocket. */
 export type CallsSocketClientMessage =
-  | { readonly type: "auth"; readonly token: string }
   | {
       readonly type: "candidate";
       readonly callId: string;
@@ -33,11 +32,11 @@ export type CallsSocketClientMessage =
   | { readonly type: "ping" };
 
 export interface CallsSocketOptions {
-  /** Signaling client that supplies the client token and the socket URL. */
-  readonly signaling: Pick<CallsSignaling, "token" | "socketUrl">;
-  /** Session to follow when the credential is a server key (sent as `?session=`). */
+  /** Signaling client that supplies a ticket and the socket URL. */
+  readonly signaling: Pick<CallsSignaling, "socketTicket" | "socketUrl">;
+  /** Session to follow when the credential is a server key. */
   readonly session?: string;
-  /** Participant name for a server key (sent as `?participant=`). */
+  /** Participant name used by other Calls operations. */
   readonly participant?: string;
   /** Reconnect backoff bounds in milliseconds. Defaults 1 000 → 30 000. */
   readonly minBackoffMs?: number;
@@ -45,11 +44,11 @@ export interface CallsSocketOptions {
   /** Heartbeat period in milliseconds; 0 disables it. Defaults to 15 000. */
   readonly heartbeatMs?: number;
   /**
-   * Deadline in milliseconds from opening until the platform accepts the auth
-   * frame; 0 disables it. Defaults to 10 000.
+   * Deadline in milliseconds from opening until the platform sends ready;
+   * 0 disables it. Defaults to 10 000.
    */
   readonly openTimeoutMs?: number;
-  /** Send a replacement token this long before expiry. Defaults to 60 000. */
+  /** Deprecated: reconnect mints a fresh ticket. */
   readonly refreshBeforeExpiryMs?: number;
   readonly WebSocket?: typeof globalThis.WebSocket;
   readonly setTimeout?: typeof globalThis.setTimeout;
@@ -61,9 +60,9 @@ export interface CallsSocketOptions {
 }
 
 /**
- * The calls WebSocket: one socket per client at `/voip/ws`. The client token
- * travels in the first frame, never in the URL, and is replaced before it
- * expires. It pushes the session's `call.*` lifecycle events, delivers the
+ * The calls WebSocket: one socket per client at `/voip/ws?ticket=…`. A client
+ * token is exchanged for a single-use ticket over REST before every attempt.
+ * It pushes the session's `call.*` lifecycle events, delivers the
  * pod's ICE candidates, and carries the browser's candidates. It reconnects
  * with capped exponential backoff until {@link close}. Pass it as a
  * backend's `incoming` source and as the media factory's candidate transport.
@@ -79,15 +78,18 @@ export class CallsSocket {
 
   constructor(options: CallsSocketOptions) {
     const signaling = options.signaling;
-    if (signaling.token === undefined || signaling.socketUrl === undefined) {
+    if (
+      signaling.socketTicket === undefined ||
+      signaling.socketUrl === undefined
+    ) {
       this.#socket = undefined;
       return;
     }
     // Read the methods on every call so a replaced provider takes effect.
     this.#socket = new LifecycleSocket({
       api: {
-        token: (request) =>
-          unsupported(signaling.token).call(signaling, request),
+        socketTicket: (session, signal) =>
+          unsupported(signaling.socketTicket).call(signaling, session, signal),
         socketUrl: (path) =>
           unsupported(signaling.socketUrl).call(signaling, path),
       },
@@ -200,10 +202,10 @@ export class CallsSocket {
   }
 
   /**
-   * Failures worth surfacing: server `error` frames, `token_failed`,
+   * Failures worth surfacing: server `error` frames, `ticket_failed`,
    * `connect_timeout`, `unauthorized` (a 4401 close), and `unsupported`.
    * Only `unsupported` stops the socket. For a revoked credential your token
-   * provider decides: throw from it, or call {@link close}.
+   * credential provider decides: throw from it, or call {@link close}.
    */
   onError(listener: (error: CallsSocketError) => void): () => void {
     this.#errors.add(listener);

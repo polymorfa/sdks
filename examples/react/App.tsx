@@ -15,8 +15,8 @@ const calls = createBrowserCalls({
   session: "support",
   getClientToken: createClientTokenProvider(),
   onError: (error) => {
-    // "unauthorized": the token was revoked or expired; the next reconnect
-    // asks createClientTokenProvider for a new one.
+    // "ticket_failed": ticket issuance failed; check token rules and session.
+    // Reconnect asks for a new single-use ticket.
     console.warn("Calls:", error.code);
   },
 });

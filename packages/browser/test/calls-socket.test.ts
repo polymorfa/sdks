@@ -49,7 +49,7 @@ class FakeWebSocket {
 }
 
 function signaling(): CallsSignaling & {
-  token: ReturnType<typeof vi.fn>;
+  socketTicket: ReturnType<typeof vi.fn>;
 } {
   return {
     offer: vi.fn(async () => ({ sdp: "v=0", iceServers: [] })),
@@ -63,7 +63,11 @@ function signaling(): CallsSignaling & {
     reject: vi.fn(async () => undefined),
     leave: vi.fn(async () => undefined),
     end: vi.fn(async () => undefined),
-    token: vi.fn(async () => ({ value: "pmfa_ct_abc" })),
+    socketTicket: vi.fn(async () => ({
+      ticket: "pmfa_wst_abc",
+      expiresAt: 1,
+      url: "/voip/ws?ticket=pmfa_wst_abc",
+    })),
     socketUrl: (path: string) => `wss://api.example${path}`,
   };
 }
@@ -143,7 +147,7 @@ describe("CallsSocket", () => {
 
   it("stops on a signaling client that cannot supply a token, retries on a failed request", async () => {
     const noTickets = socketWith({
-      signaling: { token: undefined, socketUrl: undefined } as never,
+      signaling: { socketTicket: undefined, socketUrl: undefined } as never,
     });
     const unsupported: { code: string; message: string }[] = [];
     noTickets.socket.onError((error) => unsupported.push(error));
@@ -155,8 +159,8 @@ describe("CallsSocket", () => {
     noTickets.socket.close();
 
     const failing = signaling();
-    failing.token = vi.fn(async () => {
-      throw new Error("token route down");
+    failing.socketTicket = vi.fn(async () => {
+      throw new Error("ticket route down");
     });
     const transient = socketWith({ signaling: failing });
     const errors: { code: string; message: string }[] = [];
@@ -164,7 +168,7 @@ describe("CallsSocket", () => {
     await transient.socket.connect();
     // A token route that is merely down is worth retrying — but not silently.
     expect(errors.map((e) => ({ code: e.code, message: e.message }))).toEqual([
-      { code: "token_failed", message: "token route down" },
+      { code: "ticket_failed", message: "ticket route down" },
     ]);
     expect(transient.timers).toHaveLength(1);
     transient.socket.close();
@@ -325,11 +329,9 @@ describe("CallsSocket", () => {
     const connecting = socket.connect();
     await Promise.resolve();
     await Promise.resolve();
-    expect(ws().url).toBe("wss://api.example/voip/ws");
+    expect(ws().url).toBe("wss://api.example/voip/ws?ticket=pmfa_wst_abc");
     ws().open();
-    expect(ws().sent.map((x) => JSON.parse(x) as unknown)).toEqual([
-      { type: "auth", token: "pmfa_ct_abc" },
-    ]);
+    expect(ws().sent).toEqual([]);
     expect(socket.connected).toBe(false);
     ws().receive({ type: "ready", session: "support" });
     await connecting;
@@ -471,14 +473,18 @@ describe("CallsSocket lifecycle", () => {
   });
 
   it("settles connect() and aborts the token request when closed during acquisition", async () => {
-    let resolveToken: ((t: { value: string }) => void) | undefined;
+    let resolveToken:
+      | ((t: { ticket: string; expiresAt: number; url: string }) => void)
+      | undefined;
     let tokenSignal: AbortSignal | undefined;
     const sig = signaling();
-    sig.token = vi.fn((request?: { signal?: AbortSignal }) => {
-      tokenSignal = request?.signal;
-      return new Promise<{ value: string }>((resolve) => {
-        resolveToken = resolve;
-      });
+    sig.socketTicket = vi.fn((_session?: string, signal?: AbortSignal) => {
+      tokenSignal = signal;
+      return new Promise<{ ticket: string; expiresAt: number; url: string }>(
+        (resolve) => {
+          resolveToken = resolve;
+        },
+      );
     });
     FakeWebSocket.instances = [];
     const socket = new CallsSocket({
@@ -498,12 +504,20 @@ describe("CallsSocket lifecycle", () => {
     ).resolves.toBeUndefined();
     expect(tokenSignal?.aborted).toBe(true);
     // The stale token completing later must not open a socket.
-    resolveToken?.({ value: "pmfa_ct_late" });
+    resolveToken?.({
+      ticket: "pmfa_wst_late",
+      expiresAt: 1,
+      url: "/voip/ws?ticket=pmfa_wst_late",
+    });
     await Promise.resolve();
     await Promise.resolve();
     expect(FakeWebSocket.instances).toHaveLength(0);
     // A fresh connect() after close works again.
-    sig.token = vi.fn(async () => ({ value: "pmfa_ct_new" }));
+    sig.socketTicket = vi.fn(async () => ({
+      ticket: "pmfa_wst_new",
+      expiresAt: 1,
+      url: "/voip/ws?ticket=pmfa_wst_new",
+    }));
     const again = socket.connect();
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(FakeWebSocket.instances).toHaveLength(1);

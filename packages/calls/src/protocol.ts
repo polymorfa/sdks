@@ -2,14 +2,11 @@
  * The wire contract between this client and the platform (Calls contract
  * revision 1). Two sockets carry a call:
  *
- * 1. The **lifecycle socket** (`GET /voip/ws`) — one per client. No credential
- *    travels in the URL: the first frame is `{ type: "auth", token }` and the
- *    platform answers `ready`. Server credentials name the session with
- *    `?session=` (and optionally `&participant=`); client tokens send no query
- *    parameters. A later `auth` frame replaces an expiring token and must
- *    resolve to the same organization, project, session and participant. The
- *    platform closes the socket with 4401 once the token stops authorizing
- *    the session.
+ * 1. The **lifecycle socket** (`GET /voip/ws?ticket=…`) — one per client.
+ *    A bearer-authenticated `POST /messaging/voip/ws-ticket` mints a single-use
+ *    ticket for each attempt. The platform authenticates the upgrade and sends
+ *    `ready`; no lifecycle auth frame is sent. Server credentials name their
+ *    session in the ticket request; client tokens are already session-bound.
  *
  * 2. The **media socket** (`GET /voip/calls/{callId}/media`, subprotocol
  *    `pmfa.calls.v2`) — one per media connection. The first frame is
@@ -24,7 +21,7 @@
 
 /** Lifecycle socket path on the API host. */
 export const LIFECYCLE_SOCKET_PATH = "/voip/ws";
-/** Close code for a token that no longer authorizes the socket. */
+/** Close code for an unauthorized socket. */
 export const AUTH_FAILED_CLOSE_CODE = 4401;
 /** Media socket subprotocol. */
 export const MEDIA_SUBPROTOCOL = "pmfa.calls.v2";
@@ -95,7 +92,6 @@ export type LifecycleFrame =
   | { readonly type: "pong" };
 
 export type LifecycleClientFrame =
-  | { readonly type: "auth"; readonly token: string }
   | { readonly type: "ping" }
   | {
       readonly type: "candidate";

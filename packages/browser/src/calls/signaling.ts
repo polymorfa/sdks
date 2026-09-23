@@ -6,6 +6,8 @@ import {
   type CallReport,
   type CallsToken,
   type CallsTokenRequest,
+  parseSocketTicket,
+  type SocketTicket,
 } from "@polymorfa/sdk/calls/internal";
 import { BrowserTransport } from "../transport.js";
 
@@ -77,8 +79,10 @@ export interface CallsSignaling {
     report: CallReport,
     signal?: AbortSignal,
   ): Promise<void>;
-  /** Credential for socket authentication frames. Optional for fakes. */
+  /** Credential for media socket authentication. Optional for fakes. */
   token?(request?: CallsTokenRequest): Promise<CallsToken>;
+  /** Fresh lifecycle ticket for each socket attempt. Optional for fakes. */
+  socketTicket?(session?: string, signal?: AbortSignal): Promise<SocketTicket>;
   /** Absolute `ws(s)://` URL for a socket path. Optional for fakes. */
   socketUrl?(path: string): string;
 }
@@ -228,6 +232,19 @@ export class CallsSignalingClient implements CallsSignaling {
     return this.#transport.token(
       request.refresh === undefined ? {} : { refresh: request.refresh },
     );
+  }
+  async socketTicket(
+    _session?: string,
+    signal?: AbortSignal,
+  ): Promise<SocketTicket> {
+    const response = await this.#transport.request<{ data?: unknown }>({
+      method: "POST",
+      path: `${this.#prefix}/voip/ws-ticket`,
+      body: {},
+      maxNetworkRetries: 0,
+      ...(signal === undefined ? {} : { signal }),
+    });
+    return parseSocketTicket(response.data?.data);
   }
   socketUrl(path: string): string {
     const url = new URL(path, `${this.#transport.baseUrl}/`);

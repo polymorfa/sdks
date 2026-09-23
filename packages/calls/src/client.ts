@@ -203,7 +203,7 @@ export class CallsClient extends Emitter<ClientEvents> {
       if (!isClientToken(token.value))
         this.#credentialReference = `server:${this.#o.participant ?? "default"}`;
     } catch {
-      // The socket attempt reports token failures itself.
+      // Ticket issuance reports a credential failure on the socket attempt.
     }
     if (generation !== this.#connectGeneration) return;
     return this.#socket.connect();

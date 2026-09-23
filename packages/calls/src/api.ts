@@ -60,10 +60,12 @@ export interface PlaceCallRequest {
  * it and the browser package backs it with its client-token transport.
  */
 export interface CallsApi {
-  /** Credential for socket authentication frames. */
+  /** Credential for REST and media socket authentication. */
   token(request?: CallsTokenRequest): Promise<CallsToken>;
   /** Absolute `ws(s)://` URL for a socket path on the API host. */
   socketUrl(path: string): string;
+  /** Mint a fresh, single-use lifecycle socket ticket for each connection. */
+  socketTicket(session?: string, signal?: AbortSignal): Promise<SocketTicket>;
   /** Start an outbound call; resolves the platform call id. */
   place(
     input: PlaceCallRequest,
@@ -110,6 +112,32 @@ export interface CallsApi {
     to: string,
     signal?: AbortSignal,
   ): Promise<Participant>;
+}
+
+export interface SocketTicket {
+  readonly ticket: string;
+  readonly expiresAt: number;
+  /** Root-relative socket URL with the ticket in its query. */
+  readonly url: string;
+}
+
+/** Validate the platform's single-use ticket response before opening a socket. */
+export function parseSocketTicket(data: unknown): SocketTicket {
+  if (data === null || typeof data !== "object")
+    throw malformed("socket ticket");
+  const ticket = data as Record<string, unknown>;
+  if (
+    typeof ticket["ticket"] !== "string" ||
+    !ticket["ticket"] ||
+    typeof ticket["expiresAt"] !== "number" ||
+    !Number.isFinite(ticket["expiresAt"]) ||
+    typeof ticket["url"] !== "string" ||
+    !ticket["url"].startsWith("/voip/ws?") ||
+    new URL(ticket["url"], "https://api.example").searchParams.get("ticket") !==
+      ticket["ticket"]
+  )
+    throw malformed("socket ticket");
+  return ticket as unknown as SocketTicket;
 }
 
 export interface HttpCallsApiOptions {
@@ -210,6 +238,19 @@ export class HttpCallsApi implements CallsApi {
 
   socketUrl(path: string): string {
     return `${this.#socketBaseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
+  }
+
+  async socketTicket(
+    session?: string,
+    signal?: AbortSignal,
+  ): Promise<SocketTicket> {
+    const data = await this.#request(
+      "POST",
+      "/messaging/voip/ws-ticket",
+      async (token) => ({ ...(isClientToken(token) ? {} : { session }) }),
+      signal,
+    );
+    return parseSocketTicket(data);
   }
 
   async place(

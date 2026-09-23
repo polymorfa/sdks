@@ -70,9 +70,9 @@ describe("CallsClient", () => {
   it("rings on call.received and answers into a bridged media socket", async () => {
     const h = clientWith();
     const life = await connected(h);
-    expect(life.url).toBe("wss://api.example/voip/ws");
-    // No credential in the URL: the first frame authenticates.
-    expect(life.texts[0]).toEqual({ type: "auth", token: "pmfa_ct_test" });
+    expect(life.url).toBe("wss://api.example/voip/ws?ticket=pmfa_wst_test");
+    // The single-use ticket is in the URL; no auth frame is sent.
+    expect(life.texts).toEqual([]);
 
     const incoming: Call[] = [];
     h.client.on("incoming", (call) => incoming.push(call));
@@ -292,7 +292,7 @@ describe("CallsClient", () => {
     await flush();
     const life = h.ws(0);
     life.open();
-    expect(life.texts).toEqual([{ type: "auth", token: "pmfa_ct_test" }]);
+    expect(life.texts).toEqual([]);
     expect(h.client.connected).toBe(false);
     // Nothing but ready is processed before authentication.
     ring(life);
@@ -307,19 +307,21 @@ describe("CallsClient", () => {
     const client = clientWith();
     await connected(client);
     // Client tokens send no query parameters.
-    expect(client.ws(0).url).toBe("wss://api.example/voip/ws");
+    expect(client.ws(0).url).toBe(
+      "wss://api.example/voip/ws?ticket=pmfa_wst_test",
+    );
     await client.client.disconnect();
 
     const api = fakeApi();
     api.token.mockResolvedValue({ value: "pmfa_live_server" });
     const h = clientWith(api);
     await connected(h);
-    expect(h.ws(0).url).toBe("wss://api.example/voip/ws?session=support");
-    // The auth frame is exactly { type, token }.
-    expect(h.ws(0).texts[0]).toEqual({
-      type: "auth",
-      token: "pmfa_live_server",
-    });
+    expect(h.ws(0).url).toBe("wss://api.example/voip/ws?ticket=pmfa_wst_test");
+    expect(api.socketTicket).toHaveBeenCalledWith(
+      "support",
+      expect.any(AbortSignal),
+    );
+    expect(h.ws(0).texts).toEqual([]);
     expect(h.client.participantReference).toBe("server:default");
     await h.client.disconnect();
   });

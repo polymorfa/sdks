@@ -85,6 +85,11 @@ export function fakeApi(): FakeApi {
   const api: FakeApi = {
     token: vi.fn(async () => ({ value: "pmfa_ct_test" })),
     socketUrl: vi.fn((path: string) => `wss://api.example${path}`),
+    socketTicket: vi.fn(async () => ({
+      ticket: "pmfa_wst_test",
+      expiresAt: Date.now() + 60_000,
+      url: "/voip/ws?ticket=pmfa_wst_test",
+    })),
     place: vi.fn(async () => ({ callId: "CALL-OUT" })),
     accept: vi.fn(async () => ({
       answered: true,
