@@ -474,6 +474,21 @@ await platform.callRetention.update({
 });
 ```
 
+To read the team setting with a project token when you do not have its project
+ID, create the retention client directly:
+
+```ts
+import { createTeamCallRetentionClient } from "@polymorfa/sdk";
+
+const retention = createTeamCallRetentionClient({
+  credential: { type: "projectToken", value: projectToken },
+});
+const { data } = await retention.retrieve();
+```
+
+This client exposes only call retention. Other project-token methods still
+require an explicit project ID.
+
 `policy` is `short` (7 days), `standard` (30 days), `extended` (90 days, the
 default), `compliance` (365 days), or `custom`. `custom` requires
 `retentionDays` (1 to 2555), and `UpdateCallRetentionRequest` rejects a

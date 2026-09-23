@@ -1,4 +1,10 @@
 import { HttpTransport } from "../transport/http.js";
+import {
+  assertServerRuntime,
+  validateClientCredential,
+  type ClientCredential,
+  type SharedClientOptions,
+} from "../credentials.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import { type DataEnvelope, unwrapResponse } from "./response.js";
 
@@ -62,6 +68,35 @@ export type UpdateCallRetentionRequest =
     });
 
 const PATH = "/platform/call-retention";
+
+/** A team-wide retention request does not need a project ID, even for a project token. */
+export interface TeamCallRetentionClientOptions extends SharedClientOptions {
+  readonly credential: ClientCredential;
+}
+
+/**
+ * Creates only the team-wide call retention resource. Use this entrypoint
+ * when a project token has no project ID; project-scoped Client methods still
+ * require an explicit project ID.
+ */
+export function createTeamCallRetentionClient(
+  options: TeamCallRetentionClientOptions,
+): CallRetentionResource {
+  const credential = validateClientCredential(options.credential);
+  assertServerRuntime();
+  return new CallRetentionResource(
+    new HttpTransport({
+      baseUrl: options.baseUrl ?? "https://api.polymorfa.com",
+      authorization: `Bearer ${credential.value}`,
+      timeoutMs: options.timeoutMs ?? 30_000,
+      maxNetworkRetries: options.maxNetworkRetries ?? 2,
+      ...(options.apiVersion === undefined
+        ? {}
+        : { apiVersion: options.apiVersion }),
+      ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
+    }),
+  );
+}
 
 /**
  * The team's call data retention. It is one setting per team: project clients

@@ -549,10 +549,14 @@ export { SecurityIncidentsResource } from "./platform/security-incidents.js";
 export { SessionBansResource } from "./platform/session-bans.js";
 export { PlatformSessionsResource } from "./platform/sessions.js";
 export { SipTrunksResource } from "./platform/sip-trunks.js";
-export { CallRetentionResource } from "./platform/call-retention.js";
+export {
+  CallRetentionResource,
+  createTeamCallRetentionClient,
+} from "./platform/call-retention.js";
 export type {
   CallRetention,
   CallRetentionPolicy,
+  TeamCallRetentionClientOptions,
   UpdateCallRetentionRequest,
 } from "./platform/call-retention.js";
 export type {

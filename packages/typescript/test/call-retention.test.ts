@@ -1,7 +1,9 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import {
   Client,
+  createTeamCallRetentionClient,
   PolymorfaAuthorizationError,
+  PolymorfaConfigurationError,
   PolymorfaConflictError,
   PolymorfaValidationError,
   type CallRetention,
@@ -103,6 +105,36 @@ describe("call retention", () => {
     const sent = request(fetch, 0);
     expect(sent.url.pathname).toBe("/platform/call-retention");
     expect(sent.url.search).toBe("");
+  });
+
+  it("reads team retention with a project token and no fabricated project ID", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ success: true, data: DEFAULT_RETENTION }),
+    );
+    const retention = createTeamCallRetentionClient({
+      credential: { type: "projectToken", value: PROJECT_TOKEN },
+      baseUrl: "https://api.example.com",
+      fetch,
+      maxNetworkRetries: 0,
+    });
+
+    expect((await retention.retrieve()).data).toEqual(DEFAULT_RETENTION);
+    const sent = request(fetch, 0);
+    expect(sent.url.pathname).toBe("/platform/call-retention");
+    expect(sent.url.search).toBe("");
+    expect(sent.headers.get("authorization")).toBe(`Bearer ${PROJECT_TOKEN}`);
+  });
+
+  it("rejects an invalid team retention credential before a request", () => {
+    const fetch = vi.fn<typeof globalThis.fetch>();
+
+    expect(() =>
+      createTeamCallRetentionClient({
+        credential: { type: "projectToken", value: "pmfa_ct_browser" },
+        fetch,
+      }),
+    ).toThrow(PolymorfaConfigurationError);
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it("sends the update body unchanged with PUT", async () => {
