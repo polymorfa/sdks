@@ -15965,7 +15965,7 @@
           "campaigns"
         ],
         "summary": "Update campaign",
-        "description": "Updates a campaign. A new `senderConfig` passes the same Campaigns plan and throughput checks as create. `recipientListId` points the campaign at another audience while it is still an unlaunched draft; after launch it answers `409`.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Updates a campaign. A new `senderConfig` passes the same Campaigns plan and throughput checks as create. `recipientListId` points the campaign at another audience while it is still an unlaunched draft and replaces its existing recipients; after launch it answers `409`.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -16700,7 +16700,7 @@
           "campaigns"
         ],
         "summary": "Archive campaign",
-        "description": "Public Management API. Requires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Archives a completed, failed or cancelled campaign. A campaign still starting, running, paused or stopping is refused with `409`.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -16754,7 +16754,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
@@ -16765,8 +16775,11 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -22206,6 +22219,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "afterOffset",
+            "in": "query",
+            "required": false,
+            "description": "Return events indexed after this retained-stream offset, in ingestion order. Cannot be combined with cursor, since, or until. Pass 0 to obtain page.highWatermark for an initial wait baseline.",
+            "schema": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$"
+            }
           }
         ],
         "responses": {
@@ -22238,7 +22261,7 @@
                       }
                     },
                     "page": {
-                      "$ref": "#/components/schemas/CursorPageMetadata"
+                      "$ref": "#/components/schemas/IndexedEventPageMetadata"
                     }
                   },
                   "required": [
@@ -22530,6 +22553,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "afterOffset",
+            "in": "query",
+            "required": false,
+            "description": "Return events indexed after this retained-stream offset, in ingestion order. Cannot be combined with cursor, since, or until. Pass 0 to obtain page.highWatermark for an initial wait baseline.",
+            "schema": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$"
+            }
           }
         ],
         "responses": {
@@ -22562,7 +22595,7 @@
                       }
                     },
                     "page": {
-                      "$ref": "#/components/schemas/CursorPageMetadata"
+                      "$ref": "#/components/schemas/IndexedEventPageMetadata"
                     }
                   },
                   "required": [
@@ -37793,6 +37826,30 @@
           },
           "hasMore": {
             "type": "boolean"
+          }
+        },
+        "required": [
+          "nextCursor",
+          "hasMore"
+        ]
+      },
+      "IndexedEventPageMetadata": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "nextOffset": {
+            "type": "string",
+            "nullable": true
+          },
+          "highWatermark": {
+            "type": "string"
           }
         },
         "required": [

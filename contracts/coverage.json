@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "e72b51348e16e704f17b3e681ee60d02fcca8c7f",
+  "sourceCommit": "270fbe53e04927d360076971a3e54e2772fb0ed2",
   "excludedContracts": [
     {
       "family": "graph",
@@ -3199,7 +3199,7 @@
       "method": "GET",
       "path": "/platform/events",
       "operationId": "listOrganizationEvents",
-      "fingerprint": "3119960bdc0e48e5ae9ab54b31c54c5af51b06b791ec1fc5661673b7917f9be1",
+      "fingerprint": "76a0a4e53824cc9928b0771796beef4ce04654462d4214e1b697508c753587c4",
       "typescript": {
         "status": "covered",
         "method": "Client.events.list"
@@ -3454,7 +3454,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/events",
       "operationId": "listProjectEvents",
-      "fingerprint": "a14b41fd42b9efbca658a4cc7d4acf1eb11c8d0dfe01c40ef75053a0b7a6713d",
+      "fingerprint": "f126a126665a2a29f7e460ac6f2751c1a5ecc98522dc24d2e5d2df6ae4bfe2f7",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).events.list"
@@ -4635,7 +4635,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/archive",
       "operationId": "archiveCampaign",
-      "fingerprint": "046d1f6b55987dfd780f0f3b1adb608db9f393e3da87dd62ba00d5a89397a520",
+      "fingerprint": "3f2440854ee2197b9530310f1bb620c5f6f370de84ea6fe94d615b2a6577a24d",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.archive"

@@ -7,6 +7,8 @@
   need the relevant read scope, HMS enabled on the Number, and enrollment in
   the message history beta. Pages retain both cursors and responses expose the
   data region. `PolymorfaErrorCode` includes `hms_not_enabled`.
+- Added `Client.events.listIndexed()` to follow event ingestion offsets,
+  including late-indexed events with older producer timestamps.
 
 - Call consent. `Client.callPolicy` (`retrieve`, `update`) reads and replaces
   the team's blocked country codes with an optional `expectedRevision` guard,

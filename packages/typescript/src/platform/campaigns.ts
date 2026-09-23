@@ -69,8 +69,8 @@ export class CampaignsResource {
 
   /**
    * Change a campaign. `recipientListId` points an unlaunched draft at another
-   * audience, or detaches it with null; the API refuses the change once the
-   * campaign has launched or its audience has been copied into recipients.
+   * audience and replaces its draft recipients, or detaches it with null; the
+   * API refuses the change once the campaign has launched.
    */
   update(
     campaignId: string,

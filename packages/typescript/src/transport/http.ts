@@ -922,6 +922,7 @@ const SAFE_RESPONSE_HEADERS = [
   "x-request-id",
   "polymorfa-version",
   "retry-after",
+  "polymorfa-data-region",
   "x-ratelimit-limit",
   "x-ratelimit-remaining",
   "polymorfa-ratelimit-reason",

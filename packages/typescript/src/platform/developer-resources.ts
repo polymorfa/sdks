@@ -1,4 +1,8 @@
-import { PolymorfaConfigurationError } from "../errors.js";
+import {
+  PolymorfaConfigurationError,
+  PolymorfaServerError,
+  PolymorfaValidationError,
+} from "../errors.js";
 import { CursorPage } from "../pagination.js";
 import { RawClient } from "../raw.js";
 import { HttpTransport } from "../transport/http.js";
@@ -10,6 +14,8 @@ import type {
   CreateProjectWebhookInput,
   ListDeliveryAttemptsParams,
   ListEventsParams,
+  ListIndexedEventsParams,
+  IndexedEventPage,
   ListOperationsParams,
   ListOperationTransitionsParams,
   ListOrganizationOperationsParams,
@@ -172,6 +178,74 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
     options: RequestOptions = {},
   ): Promise<CursorPage<EventFor<O>>> {
     return this.page(this.path("/events"), { ...params }, options);
+  }
+  async listIndexed(
+    params: ListIndexedEventsParams,
+    options: RequestOptions = {},
+  ): Promise<IndexedEventPage<EventFor<O>>> {
+    const validOffset = /^(0|[1-9][0-9]*)$/;
+    if (
+      !validOffset.test(params.afterOffset) ||
+      BigInt(params.afterOffset) > 9223372036854775807n
+    ) {
+      throw new PolymorfaValidationError(
+        "afterOffset must be a nonnegative decimal stream position.",
+        {
+          code: "invalid_after_offset",
+        },
+      );
+    }
+    const response = await this.transport.request<unknown>({
+      method: "GET",
+      path: this.path("/events"),
+      query: {
+        afterOffset: params.afterOffset,
+        type: params.type,
+        limit: params.limit,
+      },
+      ...options,
+    });
+    const envelope = response.data as {
+      data?: EventFor<O>[];
+      page?: {
+        hasMore?: unknown;
+        nextOffset?: unknown;
+        highWatermark?: unknown;
+      };
+    } | null;
+    const page = envelope?.page;
+    if (
+      !envelope ||
+      !Array.isArray(envelope.data) ||
+      !page ||
+      typeof page.hasMore !== "boolean" ||
+      typeof page.highWatermark !== "string" ||
+      !validOffset.test(page.highWatermark) ||
+      (page.hasMore &&
+        (typeof page.nextOffset !== "string" ||
+          !validOffset.test(page.nextOffset) ||
+          BigInt(page.nextOffset) <= BigInt(params.afterOffset) ||
+          BigInt(page.nextOffset) > BigInt(page.highWatermark))) ||
+      (!page.hasMore && page.nextOffset !== null)
+    ) {
+      throw new PolymorfaServerError(
+        "The Polymorfa API returned an invalid indexed event page.",
+        {
+          code: "invalid_response",
+          status: response.metadata.status,
+          metadata: response.metadata,
+        },
+      );
+    }
+    return Object.freeze({
+      items: Object.freeze([...envelope.data]),
+      page: Object.freeze({
+        hasMore: page.hasMore,
+        nextOffset: page.nextOffset as string | null,
+        highWatermark: page.highWatermark,
+      }),
+      metadata: response.metadata,
+    });
   }
   retrieve(
     eventId: string,

@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts at merged API `dev` commit
-`e72b51348e16e704f17b3e681ee60d02fcca8c7f`. Graph-compatible
+`270fbe53e04927d360076971a3e54e2772fb0ed2`. Graph-compatible
 APIs are outside this SDK's initial scope.
 
 The same API revision adds an enrolled hosted message history beta.
@@ -145,7 +145,8 @@ The handwritten Messaging resources in this milestone are:
   union, mark seen, set typing state, react, and star
 - `media`: download binary media, retrieve metadata, and request durable object
   persistence
-- `chats`: edit or delete sent messages, archive or unarchive chats, and set
+- `chats`: list and get stored conversations and messages (message history beta),
+  edit or delete sent messages, archive or unarchive chats, and set
   disappearing-message timers
 - `channels`: list, create, retrieve, and delete channels; page channel
   messages and updates; and manage viewing, reactions, live-update
@@ -174,6 +175,47 @@ The handwritten Messaging resources in this milestone are:
 - `users`: retrieve a display-only identity verification code for a stable
   LID-backed user ID
 - `webhooks`: list, create, retrieve, update, and delete
+
+### Message history (beta)
+
+For Numbers with hosted message storage, and teams enrolled in the message
+history beta, read stored conversations and messages from your server with an
+organization key or project token. Listing conversations needs `chats:read`;
+reading messages needs `messages:read`. List methods return the API's page
+envelope in `response.data`, with `nextCursor` and `previousCursor` for either
+direction. The data region is in `response.metadata.headers`. Media arrives
+as IDs to download with `media:read`, never as keys.
+
+```ts
+const chats = await messaging.chats.list("support-line", { limit: 50 });
+for (const chat of chats.data.data)
+  console.log(chat.conversation.id, chat.lastActivityAt);
+
+const page = await messaging.chats.listMessages(
+  "support-line",
+  "+15550001111",
+  {
+    direction: "inbound",
+    types: "text,image",
+    since: "2026-09-01T00:00:00Z",
+  },
+);
+for (const message of page.data.data)
+  console.log(message.timestamp, message.text);
+if (page.data.nextCursor) {
+  const older = await messaging.chats.listMessages(
+    "support-line",
+    "+15550001111",
+    {
+      cursor: page.data.nextCursor,
+    },
+  );
+  console.log(older.data.data);
+}
+```
+
+A Number without hosted message storage returns `404` with code
+`hms_not_enabled` (`PolymorfaNotFoundError`).
 
 ## Management client
 
@@ -842,4 +884,4 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. `Client.callPolicy` and
 `Client.callOptOuts` cover consent controls. The contract snapshot is pinned
-to merged API `dev` commit `e72b51348e16e704f17b3e681ee60d02fcca8c7f`.
+to merged API `dev` commit `270fbe53e04927d360076971a3e54e2772fb0ed2`.

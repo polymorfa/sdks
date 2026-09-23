@@ -3,7 +3,7 @@
 ## Test-event supplement
 
 The consent overlay uses merged API `dev` commit
-`e72b51348e16e704f17b3e681ee60d02fcca8c7f`. It includes the merged
+`270fbe53e04927d360076971a3e54e2772fb0ed2`. It includes the merged
 campaign, usage, voice, and HMS history API contracts. SDK package publication
 remains separate.
 `Client.callPolicy` and `Client.callOptOuts` cover six team-policy operations;
@@ -26,7 +26,7 @@ published SDK package before updating their pinned dependency.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at merged `polymorfa/polymorfa` API `dev` commit
-`e72b51348e16e704f17b3e681ee60d02fcca8c7f`. This revision includes
+`270fbe53e04927d360076971a3e54e2772fb0ed2`. This revision includes
 Voice audio and provider credentials on top of merged usage gates, Calls
 analytics, Campaigns P0, Functions, and HMS history. The snapshots, ledger and revision
 tests have been reconciled. `source.json` records the source paths and
@@ -54,7 +54,18 @@ locally. Pagination retains both cursors and the data-region response header.
 The only pre-existing schema change is `hms_not_enabled` in the shared public
 error enum, which changes 166 Messaging and 46 Platform fingerprints. Those
 fingerprints were reconciled against the source specs; no pre-existing route or
-response shape changed.
+response shape changed at that history revision.
+
+The combined API also adds `afterOffset` to the two Platform event-list routes,
+with `page.nextOffset` and `page.highWatermark` for ingestion-order reads.
+`Client.events.listIndexed` covers this mode for team and project owners while
+`Client.events.list` retains its existing timestamp and cursor behavior. The
+two event-list fingerprints are reconciled against the combined source spec.
+
+The merged Campaigns follow-up makes Platform campaign archive available for
+completed, failed, or cancelled campaigns. Its response and error schema changes
+one existing fingerprint; `Client.campaigns.archive` already sends that route
+and returns the open data envelope, while the transport handles `404` and `409`.
 
 SDK `dev` through `8392f66` adds `Client.sipTrunks.endpoint()` for
 `GET /platform/sip/endpoint`. Its `SipEndpoint` result is a discriminated union:
