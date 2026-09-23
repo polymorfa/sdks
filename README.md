@@ -94,7 +94,7 @@ const messaging = new MessagingClient({
     type: "apiKey",
     value: process.env.POLYMORFA_MESSAGING_API_KEY!,
   },
-  apiVersion: "1.0.0",
+  apiVersion: "2026-03-20",
 });
 
 const sessions = await messaging.sessions.list();
@@ -520,10 +520,11 @@ organization and project event, webhook, delivery, attempt, and operation
 resources described above. Dashboard and staff routes retain their separate
 credential requirements.
 
-The SDK has no listener, event stream, `AsyncIterable`, or forwarding API.
-`polymorfa listen` connects to a separate CLI-only protocol; its `pmfa_ls_`
-credential cannot be used by `Client`, `MessagingClient`, or their raw request
-helpers.
+`Client.events.stream()` exposes the server event stream as an `AsyncIterable`,
+and `Client.events.liveSource()` adapts it for `@polymorfa/store`. Both require
+the server event stream's scope and beta access. `polymorfa listen` connects to
+a separate CLI-only forwarding protocol; its `pmfa_ls_` credential cannot be
+used by `Client`, `MessagingClient`, or their raw request helpers.
 
 ## QuickLink lifecycle and settings
 

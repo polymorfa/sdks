@@ -3,6 +3,7 @@ import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 import {
   Client,
   PolymorfaAuthorizationError,
+  PolymorfaServerError,
   UsageResource,
   type ApiResponse,
   type UsageGateList,
@@ -183,6 +184,26 @@ describe("Client.usage", () => {
     expect(requests[2]!.path).toBe(
       "/platform/usage/records?session=support&cursor=cursor-2",
     );
+  });
+
+  it("rejects a repeated record cursor before yielding its page", async () => {
+    const { client, requests } = await usageServer(() =>
+      JSON.stringify({
+        data: {
+          records: [{ ...record, revision: requests.length }],
+          nextCursor: "a",
+        },
+      }),
+    );
+    const revisions: number[] = [];
+    const walk = async () => {
+      for await (const item of client.usage.iterateRecords()) {
+        revisions.push(item.revision);
+      }
+    };
+    await expect(walk()).rejects.toBeInstanceOf(PolymorfaServerError);
+    expect(requests).toHaveLength(2);
+    expect(revisions).toEqual([1]);
   });
 
   it("reads gate state for one number", async () => {

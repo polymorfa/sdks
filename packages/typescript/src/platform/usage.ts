@@ -1,3 +1,4 @@
+import { PolymorfaServerError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import type {
   ApiResponse,
@@ -227,14 +228,31 @@ export class UsageResource {
     options: RequestOptions = {},
   ): AsyncGenerator<UsageRecord, void, undefined> {
     let cursor: string | undefined;
-    do {
+    const seen = new Set<string>();
+    while (true) {
       const page = await this.listRecords(
         { ...params, ...(cursor ? { cursor } : {}) },
         options,
       );
+      const next = page.data.nextCursor;
+      if (next !== null && seen.has(next)) {
+        throw new PolymorfaServerError(
+          "The Polymorfa API repeated a usage record cursor.",
+          {
+            code: "invalid_response",
+            status: page.metadata.status,
+            ...(page.metadata.requestId === undefined
+              ? {}
+              : { requestId: page.metadata.requestId }),
+            metadata: page.metadata,
+          },
+        );
+      }
       yield* page.data.records;
-      cursor = page.data.nextCursor ?? undefined;
-    } while (cursor);
+      if (next === null) return;
+      seen.add(next);
+      cursor = next;
+    }
   }
 
   /**
