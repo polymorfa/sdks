@@ -45,6 +45,8 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "chat.mute",
   "chat.read",
   "command.result",
+  "contact.opted_in",
+  "contact.opted_out",
   "contact.sync",
   "contact.update",
   "customer.archived",
@@ -85,6 +87,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "session.restriction_updated",
   "session.status",
   "template.status",
+  "usage.recorded",
   "voice.asset_failed",
   "voice.asset_ready",
 ] as const;
@@ -291,6 +294,25 @@ export interface PresenceUpdatePayload {
   readonly media?: string;
   readonly unavailable?: boolean;
   readonly lastSeen?: number;
+}
+
+/**
+ * Payload for `contact.opted_out` and `contact.opted_in`. Emitted when a
+ * contact replies to a campaign number with one of the organization's
+ * configured keywords and the suppression list changed. The reply itself is
+ * never included.
+ */
+export interface ContactOptPayload {
+  /** Contact phone number in E.164 format. */
+  readonly phone: string;
+  /** How the change was made. Keyword replies are always `stop-keyword`. */
+  readonly source: "stop-keyword";
+  /** The matched keyword, normalized to upper case. */
+  readonly keyword: string;
+  /** Session name of the number that received the reply. */
+  readonly session: string;
+  /** Project that owns the receiving number, when known. */
+  readonly projectId?: string;
 }
 
 export interface ContactUpdatePayload {
@@ -961,6 +983,46 @@ export interface VoiceAssetFailedPayload extends VoiceAssetEventPayload {
   readonly failureReason: VoiceAudioFailureReason;
 }
 
+/** One usage record, emitted when created and again on a higher revision. */
+export interface UsageRecordedPayload {
+  readonly id: string;
+  readonly meter:
+    | "call.duration"
+    | "call.cloud_pulses"
+    | "campaign.call"
+    | "tts.characters"
+    | "tts.seconds"
+    | "stt.seconds"
+    | "agent.seconds"
+    | "agent.tokens"
+    | "agent.provider_cost"
+    | "channels.peak"
+    | "storage.byte_days";
+  readonly quantity: number;
+  readonly unit:
+    | "second"
+    | "pulse"
+    | "call"
+    | "character"
+    | "token"
+    | "provider_unit"
+    | "channel"
+    | "byte_day";
+  readonly dimensions: Readonly<Record<string, string | number | boolean>>;
+  readonly keySource: "none" | "managed" | "customer";
+  readonly sourceKind:
+    "call" | "attempt" | "flow_run" | "conversation" | "asset" | "team";
+  readonly sourceId: string;
+  readonly projectId: string | null;
+  readonly session: string | null;
+  readonly occurredAt: string;
+  readonly recordedAt: string;
+  readonly revision: number;
+  readonly pricingState: "unpriced" | "priced" | "waived" | "settled";
+  readonly rateCard: { readonly id: string; readonly version: number } | null;
+  readonly pricedCredits: number | null;
+}
+
 export interface WebhookPayloadMap {
   readonly "bansafe.action": BanSafeActionPayload;
   readonly "bansafe.claim": BanSafeClaimPayload;
@@ -997,6 +1059,8 @@ export interface WebhookPayloadMap {
   readonly "chat.mute": ChatMutePayload;
   readonly "chat.read": ChatReadPayload;
   readonly "command.result": CommandResultPayload;
+  readonly "contact.opted_in": ContactOptPayload;
+  readonly "contact.opted_out": ContactOptPayload;
   readonly "contact.sync": ContactsSyncPayload;
   readonly "contact.update": ContactUpdatePayload;
   readonly "customer.archived": CustomerArchivedPayload;
@@ -1037,6 +1101,7 @@ export interface WebhookPayloadMap {
   readonly "session.restriction_updated": SessionRestrictionUpdatedPayload;
   readonly "session.status": SessionStatusPayload;
   readonly "template.status": TemplateStatusPayload;
+  readonly "usage.recorded": UsageRecordedPayload;
   readonly "voice.asset_failed": VoiceAssetFailedPayload;
   readonly "voice.asset_ready": VoiceAssetReadyPayload;
 }

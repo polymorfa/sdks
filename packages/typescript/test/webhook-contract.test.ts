@@ -177,6 +177,44 @@ type P = WebhookPayloadMap;
 const PAYLOADS: {
   readonly [K in Exclude<KnownWebhookEventType, LegacyEventType>]: Shape<P[K]>;
 } = {
+  "usage.recorded": shape<P["usage.recorded"]>()(
+    {
+      id: "018f0000-0000-7000-8000-000000000003",
+      meter: "call.duration",
+      quantity: 42,
+      unit: "second",
+      dimensions: { direction: "outbound", participants: 1 },
+      keySource: "none",
+      sourceKind: "call",
+      sourceId: "call_1",
+      projectId: IDS.project,
+      session: "number_1",
+      occurredAt: AT,
+      recordedAt: AT,
+      revision: 1,
+      pricingState: "unpriced",
+      rateCard: null,
+      pricedCredits: null,
+    },
+    [
+      "id",
+      "meter",
+      "quantity",
+      "unit",
+      "dimensions",
+      "keySource",
+      "sourceKind",
+      "sourceId",
+      "projectId",
+      "session",
+      "occurredAt",
+      "recordedAt",
+      "revision",
+      "pricingState",
+      "rateCard",
+      "pricedCredits",
+    ],
+  ),
   "voice.asset_ready": shape<P["voice.asset_ready"]>()(
     {
       eventId: IDS.event,
@@ -224,6 +262,20 @@ const PAYLOADS: {
       "source",
       "failureReason",
     ],
+  ),
+  "session.logged_out": shape<P["session.logged_out"]>()(
+    { reason: "banned", code: 401 },
+    ["reason", "code"],
+  ),
+  "session.restriction_updated": shape<P["session.restriction_updated"]>()(
+    {
+      type: "reachout_timelock",
+      active: true,
+      enforcementType: null,
+      expiresAt: null,
+      observedAt: AT,
+    },
+    ["type", "active", "enforcementType", "expiresAt", "observedAt"],
   ),
   "customer.created": shape<P["customer.created"]>()(
     customer,
@@ -657,8 +709,11 @@ type LegacyEventType = Exclude<
   | `bansafe.${string}`
   | `campaign.${string}`
   | `voice.${string}`
+  | "usage.recorded"
   | "message.failed"
   | "template.status"
+  | "session.logged_out"
+  | "session.restriction_updated"
 >;
 
 function specEvents(): Map<string, string> {

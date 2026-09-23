@@ -1,58 +1,121 @@
 # Contract coverage
 
-The Messaging and Platform snapshots byte-match pending API PR #227 commit
-`43a1fa6e3f620120e8e7a49f7dc76599ccbbb69f` on `t3code/voice-audio-library`. `source.json` records both
-paths and hashes with `published: false`; the source is not merged to monorepo
-`dev`. SDK `dev` at `228fa7b` is merged here, including the typed BanSafe
-restriction errors, events and Calls end reason.
+## Focused test-event update
 
-The 13 public voice routes map to `Client.voice.audio` and
-`Client.voice.providerCredentials`; their 13 Console counterparts remain
-excluded. The coverage ledger and voice schema tests use the same pending
-snapshot. The five missing methods remain owned by SDK #278 (two retention
-routes) and SDK #281 (three analytics routes).
+`testing-events.json` records the four test-event schemas from API commit
+`f4a340da3b74248232ebea73f3e72b42f667beef`, including the source path and file
+hash. The TypeScript test-event catalog and override types use that revision.
+Local schema references are rebased to this supplement's `schemas` root.
+The fixture contract test compares the exported catalog against this snapshot.
+It adds `session.restriction_updated`, its boolean `restrictionActive` override,
+and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
+below use the later pending API #227 revision. CLI consumers require a published
+SDK package before updating their pinned dependency.
+
+## Full snapshots
+
+The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
+files at pending `polymorfa/polymorfa` API #227 commit
+`31d9c52f5f8573efee520a34d03b2d36fa7dc152`. That revision includes
+the voice audio library and provider credentials, Campaigns P0, usage/gates,
+and function operations. Re-pin to the final API `dev` commit before publishing
+this SDK branch. The snapshots, coverage ledger, and revision tests have
+been reconciled. `source.json` records the source paths and SHA-256 hashes.
+
+The preceding refresh added 17 operation rows and removes eight. Eight removed Console
+operation routes moved to `/platform/operations` and
+`/platform/projects/{projectId}/operations`; the existing `Client.operations`
+and project-view `operations` resources cover list, get, transitions and cancel.
+Three new Console retention and SIP discovery operations stay excluded.
+`Client.callRetention` covers `GET` and `PUT /platform/call-retention`, merged
+from SDK `dev`. Six public operations remain explicitly missing: the three usage/gate routes
+(prepared in SDK #283) and three Calls analytics routes:
+`GET /platform/calls`, `/platform/calls/export`, and `/platform/calls/stats`.
+The 13 public voice routes are covered by `Client.voice.audio` and
+`Client.voice.providerCredentials`; their 13 Console counterparts are excluded.
+The voice path and schema subtrees did not change from the prior pending API
+#227 snapshot. This branch does not claim whole-contract parity.
+
+The pending Messaging contract adds `usage.recorded`; the webhook catalog
+includes its typed payload, stable record ID, and revision. Usage remains
+measured but not charged. The three usage/gate API methods themselves remain
+with SDK #283.
+
+SDK `dev` through `8392f66` adds `Client.sipTrunks.endpoint()` for
+`GET /platform/sip/endpoint`. Its `SipEndpoint` result is a discriminated union:
+`hosted` carries the host, transports and RTP range; `sip_not_hosted` carries
+null host/RTP and no transports. Those existing types and request tests match
+this exact snapshot, so the operation is covered. The merge also retains the
+release script's compiled-version stamping and the single BanSafe payload block.
+
+The preceding 192 refreshed fingerprints were reviewed. Most reflect `number_restricted`
+in the shared public error enum. Testing fixtures add
+`session.restriction_updated`, `restrictionActive`, and the `call_restricted`
+call-end reason. SIP transport schema wrappers preserve their existing type.
+QuickLink settings declare an add-on-required `402`, handled by the existing
+payment-required error class. The webhook catalog also adds the restriction
+payload, requires `code` on `session.logged_out`, narrows its reason enum, and
+narrows the previous BanSafe health band; SDK types follow those schemas.
+
+The latest schema refresh changes only `POST /platform/campaigns`: its required
+body is now `CreatePlatformCampaignRequest`, with required `name`, named optional
+fields, and no additional top-level properties. The SDK requires `projectId`
+because its Platform campaign resource belongs to organization clients. The
+six opaque JSON fields remain `unknown`, while `senderConfig` remains an open
+object. No routes were added or removed by this schema refresh.
+
+This revision adds the Campaigns P0 operations. Audiences gain member
+management (`POST`/`GET /platform/audiences/{listId}/members` and
+`DELETE .../{phone}`), campaigns gain recipient append and listing on both
+surfaces, and the organization gains STOP/START keyword settings
+(`GET`/`PUT /platform/optouts/settings`). All eight are covered by
+`Client.audiences`, `Client.campaigns`, `Client.optOuts` and
+`MessagingClient.campaigns`.
+
+Two campaign contracts changed in a way callers can observe.
+`GET /platform/campaigns/{campaignId}/recipients` answers with `{ data, page }`
+and a `status` filter instead of a bare array, and each recipient carries
+`sentAt`, `deliveredAt`, `readAt`, `failedAt` and `respondedAt`;
+`Client.campaigns.recipients` was updated to match. Campaign stop answers with
+`CampaignStopOperation`, whose `operationId` is null when the campaign had no
+active delivery run and was cancelled immediately;
+`MessagingClient.campaigns.stop` no longer shares `CampaignOperationResponse`.
+Campaign create on both surfaces accepts inline `recipients`.
+
+This revision also declares `projectId` as a query parameter on the
+single-campaign Platform operations: `GET`, `PATCH` and `DELETE`
+`/platform/campaigns/{campaignId}`, plus `/analytics`, `/events` and
+`/recipients`. It is deliberately `required: false`: a team API key is not
+bound to one project and must name the owning project, while a project token is
+bound to its own project and must omit it at the API. The SDK exposes
+`Client.campaigns` only on organization clients, so its types require
+`projectId`; project views and project-token clients do not expose that resource.
+`Client.campaigns.retrieve`,
+`update`, `delete`, `analytics` and `events` take a `PlatformCampaignParams`
+argument for it, and `recipients` carries it in its existing params.
+
+`PATCH /platform/campaigns/{campaignId}` accepts `recipientListId`, a string or
+null, which points an unlaunched draft at another audience or detaches it. The
+API refuses the change once the campaign has launched or its audience has been
+copied into recipients. The contract still declares this request body as an
+open object, so the SDK does not close it: `UpdatePlatformCampaignRequest`
+names `recipientListId` and keeps an index signature for every other field.
+The operation declares `409` for the refusal after launch, which the transport
+already maps to `PolymorfaConflictError`; no SDK change was needed for it.
+
+The webhook catalog adds `contact.opted_out` and `contact.opted_in` with the
+exported `ContactOptPayload`. `bansafe.health_changed` and
+`bansafe.risk_changed`, which the contract already defined, are now registered
+too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        330 |
-| Missing             |          5 |
+| Covered             |        340 |
+| Missing             |          6 |
 | Excluded            |        124 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        459 |
-
-The separate `testing-events.json` supplement remains pinned to monorepo
-`63111fec`; it captures the four test-event schemas and the restriction
-fixture used by SDK #282. Re-pin both full snapshots and the ledger to the final
-monorepo `dev` merge of API #227 before this SDK merges or publishes. An
-installed method does not establish customer availability.
-
-The refresh from `9fe6c235` adds two public call-retention operations and two
-Console-only counterparts. The public methods remain `missing` until SDK
-PR #278 lands; the Console routes are excluded because they require dashboard
-membership. Call analytics and export remain `missing` in this branch and are
-implemented by SDK PR #281. No existing operation fingerprint changed.
-
-The BanSafe update recognizes `number_restricted`, types the
-`session.restriction_updated` webhook and the `reason` and `code` on
-`session.logged_out`, and preserves `call_restricted` through the Calls
-client's lifecycle parser. Health changes use the same health-band union for
-`band` and `previousBand` (with null for the latter's first evaluation), and
-risk factor groups use the contract's sixteen-value union. `addon_required`
-is recognized for the covered QuickLink settings endpoint.
-
-`GET /console/sip/endpoint` remains excluded (Console-only), while
-`GET /platform/sip/endpoint` is covered by `Client.sipTrunks.endpoint`.
-
-The previous revision published the operations lifecycle on the Platform API. The eight
-operation routes moved from `/console` to `/platform`, so their ledger rows
-move from `excluded` (console-only) to `covered` by `Client.operations` and
-`Client.project(projectId).operations`. The organization-wide reads accept a
-`projectId` filter, `GET /platform/operations/{operationId}` accepts `wait`
-and `afterSequence`, and the cancel routes keep their `Idempotency-Key`
-contract. Call analytics adds `GET /platform/calls`, `/platform/calls/stats`,
-and `/platform/calls/export`; they are recorded as `missing` because
-`Client.calls` implements them in a separate pull request.
+| Total               |        470 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -80,26 +143,7 @@ Coverage spans the TypeScript server SDK, browser transport, and Calls package.
 It does not claim coverage in other languages, package publication, or a
 successful live call.
 
-## Voice contract alignment
-
-`Client.voice` retains the existing upload, completion, TTS, retrieval,
-update, deletion, preview and provider-credential operations. Upload requests
-and filters use closed API input enums; provider model/voice inputs follow
-the owning API's validated choices. Asset, credential and upload response
-fields are checked for required and nullable parity against these snapshots.
-The preview content type is `audio/ogg`.
-
-Response values still pass through. The API documents unknown audio statuses
-as unusable and unknown credential statuses as invalid; the SDK preserves
-those values for callers to handle. `voice.asset_ready` and
-`voice.asset_failed` use the real Messaging payload schemas in parity tests.
-No fictitious pending events or error codes are added to those schemas.
-
-The source remains an explicit pending API dependency. Keep the final
-merged-source pin, package publication, CLI migration and release audience
-checks separate from this local reconciliation. Voice resources are
-implemented in the TypeScript server SDK; no browser or other-language
-voice management resource is claimed.
+## Reconciliation
 
 Revision `2259a1fd` adds the project event stream. `Client.events.stream`
 covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
@@ -143,17 +187,15 @@ The raw LID resolver is replaced by `MessagingClient.identities.resolve`.
 
 The ledger reconciles moved Messaging and Platform paths against the exact
 source revision. Component references are resolved before fingerprinting, so a
-referenced request or response change cannot pass unnoticed. Operation polling
-uses the public Platform routes through `Client.operations`; obsolete Console
-paths and unsupported browser handoff methods remain excluded.
+referenced request or response change cannot pass unnoticed. Removed console-only
+operation polling and unsupported browser handoff methods are not SDK APIs.
 
 BanSafe is reconciled against these same snapshots. `Client.banSafe`,
 `Client.projects`, and `Client.sessions` cover the 25 Platform Health,
 telemetry, findings, enforcement, incident, claim, and settings operations.
 `MessagingClient.banSafe` covers the 10 Messaging Safe Mode, warm-up, Ban
 Insurance evidence, and Health policy operations. Finding acknowledgement and
-enforcement appeals are Console-only and stay excluded. SDK #282 supplied the typed restriction-event, error-code and Calls-parser
-alignment merged here.
+enforcement appeals are Console-only and stay excluded. No BanSafe gap remains.
 
 The Platform `BanSafeNumberDetail` schema at this revision lists `sessionId`,
 `session`, `phoneNumber`, `projectId`, and `enforcement` as required but omits

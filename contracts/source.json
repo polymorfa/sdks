@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
+  "commit": "31d9c52f5f8573efee520a34d03b2d36fa7dc152",
+  "branch": "t3code/voice-audio-library",
+  "published": false,
+  "note": "Pending API PR #227 head after merging current monorepo dev. Both snapshots are byte-identical to this unmerged branch commit; re-pin to the final API dev merge commit before SDK publication.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "35d6336ec2120765687d8edc0f9d9d50db06d5db6dda499e62f463679ae73cd3"
+      "sha256": "4a80f11a51346d343f28b6513d203d5846c56e9fa2a97b2cb4c3d5600c9c43ef"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "e0dc8c0a63b0c59080a6901fe8972a2e111595175966f7b613ce62924e14c18b"
+      "sha256": "c59292f7c9911b902cd769c3c90c7e31177d84ee3fef00eab6079c9766352d6f"
     }
-  },
-  "commit": "43a1fa6e3f620120e8e7a49f7dc76599ccbbb69f",
-  "branch": "t3code/voice-audio-library",
-  "published": false,
-  "note": "Pending API PR #227 head after merging monorepo dev. Both snapshots match this branch commit. Re-pin to the final monorepo dev merge before SDK publication."
+  }
 }

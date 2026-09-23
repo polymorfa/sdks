@@ -3,6 +3,8 @@ import {
   Client,
   PolymorfaValidationError,
   type FunctionInvocationResult,
+  type FunctionDeployment,
+  type FunctionDeploymentSummary,
   type FunctionsResource,
 } from "../src/index.js";
 import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
@@ -123,6 +125,34 @@ describe("Functions project contract", () => {
     expectTypeOf(client.functions).toEqualTypeOf<FunctionsResource>();
     expect(() => client.project(fn)).toThrow();
     expect(fetch).not.toHaveBeenCalled();
+  });
+  it("types deployment pages as metadata and retrieval as full source", async () => {
+    const { fetch, functions } = fixture();
+    const metadata = {
+      id: deployment,
+      functionId: fn,
+      language: "typescript",
+      region: "eu",
+      compatibilityDate: "2026-09-22",
+      sha256: "a".repeat(64),
+      secretVersionIds: [],
+      egressOrigins: [],
+      createdAt: "2026-09-22T00:00:00Z",
+    };
+    fetch.mockResolvedValueOnce(
+      Response.json({ data: { items: [metadata], nextCursor: null } }),
+    );
+    fetch.mockResolvedValueOnce(
+      Response.json({ data: { ...metadata, source: "export default {}" } }),
+    );
+    const page = await functions.deployments.list(fn);
+    const full = await functions.deployments.retrieve(fn, deployment);
+    expectTypeOf(
+      page.data.items[0]!,
+    ).toEqualTypeOf<FunctionDeploymentSummary>();
+    expectTypeOf(full.data).toEqualTypeOf<FunctionDeployment>();
+    expect(page.data.items[0]).toEqual(metadata);
+    expect(full.data.source).toBe("export default {}");
   });
   it("rejects path and project overrides before sending a credential", () => {
     const { fetch, functions } = fixture();

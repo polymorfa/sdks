@@ -564,6 +564,59 @@ lists identify the known response values. Preview responses have
 
 The voice resources are available only in this TypeScript SDK.
 
+## Call data retention
+
+`Client.callRetention` reads and changes how long Polymorfa keeps your team's
+call data. It is one setting for the whole team, so a project client reads the
+same value as its team. Changing it requires a team API key; a project token
+receives `PolymorfaAuthorizationError`.
+
+```ts
+const { data: current } = await platform.callRetention.retrieve();
+// { policy: "extended", retentionDays: 90, appliesTo: [...], revision: 0, updatedAt: null }
+
+await platform.callRetention.update({
+  policy: "custom",
+  retentionDays: 45,
+  expectedRevision: current.revision,
+});
+```
+
+To read the team setting with a project token when you do not have its project
+ID, create the retention client directly:
+
+```ts
+import { createTeamCallRetentionClient } from "@polymorfa/sdk";
+
+const retention = createTeamCallRetentionClient({
+  credential: { type: "projectToken", value: projectToken },
+});
+const { data } = await retention.retrieve();
+```
+
+This client exposes only call retention. Other project-token methods still
+require an explicit project ID.
+
+`policy` is `short` (7 days), `standard` (30 days), `extended` (90 days, the
+default), `compliance` (365 days), or `custom`. `custom` requires
+`retentionDays` (1 to 2555), and `UpdateCallRetentionRequest` rejects a
+`custom` update without it at compile time. With a named policy, omit `retentionDays` or send
+exactly that policy's period; any other value raises
+`PolymorfaValidationError` with `code` `invalid_parameter`. When
+`expectedRevision` no longer matches the stored revision (0 for a team on the
+default), the update raises `PolymorfaConflictError` with `code`
+`state_conflict`. The revision guard is optional: omitting
+`expectedRevision` applies the update without checking for intervening changes
+(last write wins).
+
+Deletion of call data older than `retentionDays` starts on a date Polymorfa
+announces in its changelog; until then the setting records a choice and
+nothing is deleted. Once deletion runs, a shorter period also applies to call
+data already stored, and deleted data cannot be recovered. `appliesTo`
+lists the kinds of call data the period covers (`call_records`,
+`call_events`, and `client_reports`); new kinds are added to the list and
+follow the same period, so treat it as an open list of strings.
+
 ## Calls and stable user identity
 
 The `calls`, `identities`, and `users` resources use public Polymorfa user IDs.
@@ -1390,79 +1443,86 @@ message identifiers are URL-encoded by the SDK.
 
 ## Messaging campaigns
 
-`MessagingClient.campaigns` exposes the complete nine-operation project-slug
-campaign workflow: `list`, `create`, `retrieve`, `analytics`, `launch`,
-`pause`, `resume`, `stop`, and `requeue`. Reads require `campaigns:read`;
-creation and lifecycle changes require `campaigns:manage`.
+`MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `analytics`,
+`listRecipients`, `addRecipients`, `launch`, `pause`, `resume`, `stop`, and
+`requeue`. Reads require `campaigns:read`; writes require `campaigns:manage`.
+Pass the project's slug as the first argument. Campaigns accept organization
+API keys or project tokens; browser client tokens cannot use these methods.
 
 ```ts
 const created = await messaging.campaigns.create(
   "support",
   {
     name: "August launch",
-    templateId: "order-ready",
-    recipientListId: "active-customers",
-    scheduledAt: Date.parse("2026-08-25T09:00:00Z"),
+    templateId,
+    recipients: [{ phone: "+14155550100", variables: { firstName: "Ada" } }],
   },
   { idempotencyKey: "campaign-august-create" },
 );
 
+const appended = await messaging.campaigns.addRecipients(
+  "support",
+  created.data.data.id,
+  {
+    recipients: [{ phone: "+442071838750", variables: { firstName: "Alan" } }],
+  },
+);
+console.log(appended.data.data.added, appended.data.data.invalidRows);
+
 const launched = await messaging.campaigns.launch(
   "support",
   created.data.data.id,
-  {},
+  { scheduledAt: Date.parse("2026-08-25T09:00:00Z") },
   { idempotencyKey: "campaign-august-launch" },
 );
-
 console.log(launched.data.data.operationId, launched.metadata.requestId);
 ```
 
-Launch, pause, resume, and stop append durable lifecycle commands and return the
-campaign's current persisted state plus an `operationId`. They do not wait for
-the campaign state to change. Read the campaign resource to inspect its status,
-or follow the returned operation with `Client.operations.wait(operationId)` and
-stop it with `Client.operations.cancel(operationId)`. The API exposes no
-campaign watcher or stream route of its own. Launch accepts an optional
-epoch-millisecond schedule. Pause requires a running campaign, resume requires
-a paused campaign, and stop accepts draft, running, or paused campaigns.
+Create accepts inline recipients, an audience ID in `recipientListId`, or both.
+Each append accepts up to 1,000 recipients before launch and reports duplicates
+and invalid rows. Appends have no declared replay contract: the SDK sends them
+once by default, generates no key, and requires both `maxNetworkRetries` and
+`idempotencyKey` to opt back into retries. A retry can report rows from an unseen
+successful first attempt as duplicates. List recipients before appending again
+after a lost response.
 
-`requeue` is a direct transaction, not a durable operation. It moves failed
-recipients back to pending and can also include recipients skipped with an
-error. Its `{ requeued }` result is the number actually moved. Lists are
-complete newest-first arrays; the source exposes no cursor, page token, search,
-event history, replay, or delivery-listener endpoint.
+`listRecipients(projectSlug, campaignId, { status, cursor, limit })` returns
+`{ data, page }` inside the response's `data`. Read recipients from
+`response.data.data` and pass `response.data.page.nextCursor` into the next
+request while `page.hasMore` is true. Each recipient includes its send,
+delivery, read, failure and reply timestamps. Campaign `list` returns a complete
+array; recipient pagination does not change that method.
 
-This Messaging family is distinct from `Client.campaigns`, which maps
-the Management API's organization-key campaign model. The Messaging routes
-accept organization API keys and project tokens bound to the exact path
-project. Browser client tokens are not allowlisted for any campaign action and
-fail before the handler.
-Campaigns are project control-plane objects and have no Linked Device versus
-Cloud session-mode discriminator.
+Launch, pause and resume return the campaign state with an `operationId`.
+They accept the transition without waiting for sending to finish. Stop always
+cancels; its `operationId` is null when the campaign had no active delivery run
+and was cancelled immediately. Check for null before calling
+`Client.operations.wait(operationId)`. A launched campaign waiting for its
+scheduled start can be stopped, but its start time cannot be changed.
+Launch, pause, resume, and stop generate one idempotency key per call unless you
+pass one. Automatic retries reuse that key; a completed replay returns the
+API's `idempotency_completed` conflict, so inspect the campaign state after a
+lost response.
 
-For organization-key calls, the live list and create handlers resolve the path
-project slug. The other seven handlers currently authorize the organization
-and campaign ID but do not verify that the campaign belongs to the supplied
-slug. Callers must still supply the intended project slug; the SDK encodes it
-and does not weaken this source behavior. The pinned OpenAPI campaign schema
-omits several JSON repository fields and leaves analytics untyped. The SDK
-exports the exact live analytics counters and preserves the extra campaign
-fields as optional `unknown` values rather than asserting undocumented shapes.
+`requeue` moves eligible failed recipients, and optionally recipients skipped
+with an error, back into the queue. It returns the number moved. The API refuses
+unentitled campaigns with `402`, suspension with `403`, and invalid lifecycle
+transitions with `409`. Throughput above the eligible number pool's ceiling is
+`400 campaign_throughput_capped`.
 
-`create` and `launch` send an `Idempotency-Key` on every call, and the API
-records it for 24 hours, so a retry after an unseen success never creates a
-second campaign or launches twice (see [Idempotent sends](#idempotent-sends)).
-The other lifecycle commands are retried only when you pass an idempotency
-key, and the API does not persist that header for them. Repeating one can
-conflict with the resulting state or append another intent; repeating requeue
-normally reports zero after the matching recipients have already moved. The live API reports entitlement failures as `402` and invalid
-lifecycle state conflicts as `400`, rather than the more specific statuses
-suggested by their semantics.
+`Client.campaigns` provides the Platform campaign methods. Its single-campaign
+reads, updates and deletion take a `PlatformCampaignParams` argument: a team
+API key must supply the owning `projectId`. This resource is available only
+on organization clients, not project views or project-token clients. Recipient
+listing and append also require `projectId`. Platform
+`recipients` uses the same cursor-page shape. `Client.audiences` manages audience
+members, and `Client.optOuts` reads and replaces team keyword settings.
 
-The source exposes no Messaging campaign update, deletion, archive, duplicate,
-recipient listing, or campaign event inspection operation. The SDK does not
-substitute similarly named Management API routes or `raw.request` calls for
-those gaps.
+`create` and `launch` generate an `Idempotency-Key` for each call. A supplied
+key is preserved across retries; see [Idempotent sends](#idempotent-sends).
+The Messaging API has no campaign update, deletion, archive, duplicate, or
+campaign event history method. The SDK does not substitute Platform routes for
+those operations.
 
 ## Chats
 
@@ -1687,8 +1747,17 @@ const campaign = await platform.campaigns.create(
 console.log(campaign.data.data, campaign.metadata.requestId);
 ```
 
-The pinned contract defines these operation payloads as open objects, exposed
-as `PlatformPayload`. Templates and Flows are not methods on `Client`:
+`Client.campaigns.create` requires `CreatePlatformCampaignRequest`, including
+`name` and the owning `projectId`. It accepts `templateId`, `recipientListId`,
+`senderConfig`, `scheduledAt`, inline `recipients` (at most 1,000), and
+`recipientCount` (ignored when inline recipients are supplied). The named
+`composerBlueprint`, `messagesArray`, `audienceRef`, `complianceConfig`,
+`variants`, and `variantStrategy` values remain opaque JSON. Extra top-level
+fields are not part of the create contract. Lifecycle action payloads remain
+open `PlatformPayload` objects. Launch, pause, resume, and stop generate one
+idempotency key per call unless you pass one. Archive, duplicate, and requeue
+do not generate keys because their contracts do not declare replay. Templates
+and Flows are not methods on `Client`:
 their endpoints require a dashboard bearer and reject the organization API key
 used by the server client.
 
@@ -1851,8 +1920,8 @@ organization-key project view. Console-only logo routes are outside the SDK.
 `successCallbackUrl` and `failureCallbackUrl` are project-only HTTPS
 destinations; the API copies them into each link when it is issued, and link
 creation has no callback override. `allowPhoneChange` lets recipients replace a
-prefilled number and defaults to `false`. `hideWatermark: true` requires Premium
-team access. Saved settings have no redirect-URI allowlist. `externalId` on
+prefilled number and defaults to `false`. `hideWatermark: true` requires an active Branded QuickLink
+add-on. Saved settings have no redirect-URI allowlist. `externalId` on
 creation is an integrator correlation value copied to the resulting session; it
 can repeat across invitations and does not grant access.
 
@@ -2017,6 +2086,19 @@ IDs, and Coexistence/history choices. This method does not create a session or
 accept Meta app secrets. Its progress response is not proof that messaging is
 ready; inspect the QuickLink status.
 
+## Contract update notes
+
+The typed webhook catalog includes `session.restriction_updated` with
+`type`, `active`, `enforcementType`, `expiresAt`, and `observedAt`.
+`session.logged_out` requires a numeric `code` and a `reason` of `banned`,
+`device_removed`, or `unknown`. Test event requests support the restriction
+fixture with `restrictionActive` and the call-end reason `call_restricted`.
+
+`Client.callRetention` covers the team call-retention settings. Three public
+call analytics and export operations remain recorded as missing in the contract
+ledger. The contract snapshot is pinned to merged API `dev` commit
+`f4a340da3b74248232ebea73f3e72b42f667beef`.
+
 ## Functions
 
 Use a project client with `functions:read`, `functions:manage` or
@@ -2058,6 +2140,8 @@ const result = await functions.invocations.create(
 `expectedRevision`. `update` and `delete` also require the current revision.
 `secrets.create` returns version metadata only; pin its ID in a new deployment.
 `secrets.revoke` prevents subsequent invocations from using that version.
+`deployments.list` returns deployment metadata without source code. Use
+`deployments.retrieve` with a deployment ID to read its source.
 
 Mutations and invocations have no automatic network retries. Keep the original
 idempotency key when checking an interrupted invocation. Replays return a receipt
