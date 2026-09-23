@@ -1,9 +1,9 @@
 # Test-event fixture correction
 
 Local source repair based on SDK `8392f66b4df0b0fee3403e27e3d2914516b0e243`.
-API source is `63111fec728ac3ebc9a825ea57ebc4c592abdafc`; its exact test-event
+API source is `ec96f7b0a93cc05b0630aa95591330ada98378c6`; its exact test-event
 schemas and source hash are in `contracts/testing-events.json`. The full API
-snapshots and coverage ledger retain their separately recorded revision.
+snapshots and coverage ledger use the same revision.
 
 The exported fixture list gains `session.restriction_updated`; its overrides
 gain `restrictionActive?: boolean`. `callEndReason` also gains the existing

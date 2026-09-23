@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`63111fec728ac3ebc9a825ea57ebc4c592abdafc` on monorepo `dev`. Graph-compatible APIs are outside
+`ec96f7b0a93cc05b0630aa95591330ada98378c6` on monorepo `dev`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -263,6 +263,8 @@ The organization view also exposes these management resources:
 - `sipTrunks`: list, create, retrieve, update, delete, and rotate the
   credentials of a project's SIP trunks, and read the SIP address your PBX
   points at with `endpoint()` (also on project clients)
+- `callRetention`: retrieve and update how long Polymorfa keeps the team's
+  call data (also readable on project clients; changes need a team API key)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,

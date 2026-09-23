@@ -173,13 +173,13 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "63111fec728ac3ebc9a825ea57ebc4c592abdafc",
+      sourceCommit: "ec96f7b0a93cc05b0630aa95591330ada98378c6",
       total: 433,
-      covered: 317,
+      covered: 319,
       partial: 0,
-      // Analytics/export and retention are implemented in their separate
-      // SDK pull requests; this branch does not claim those methods.
-      missing: 5,
+      // Call analytics and call record export arrived with the operations
+      // lifecycle re-sync; Client.calls implements them in a separate pull request.
+      missing: 3,
       excluded: 111,
       changed: 0,
     });
