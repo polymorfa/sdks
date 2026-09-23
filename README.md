@@ -5,8 +5,9 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts on the unmerged API Hybrid Link branch at
-`2dd0c1563b1fc4e6525f708afc12e0685110cfe0`. Graph-compatible
+the Messaging and Platform contracts from API source commit
+`2dd0c1563b1fc4e6525f708afc12e0685110cfe0`, now merged into API `dev`
+by PR #260. Graph-compatible
 APIs are outside this SDK's initial scope.
 
 The same API revision adds an enrolled hosted message history beta.
@@ -31,6 +32,8 @@ HMS enablement, deployment, and SDK publication.
 The public packages are complete development artifacts on `dev`. They
 publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
 Polymorfa npm organization. No mobile-native binding is part of this milestone.
+
+For a small browser preview against staging, see the [Calls example](examples/calls-example/README.md).
 
 ## TypeScript development install
 
@@ -572,9 +575,10 @@ and `idempotencyKey`; the key does not make the API replay the append.
 
 ## API versions and raw requests
 
-Set `apiVersion` on a client or a single request. The SDK sends it as the
-`Polymorfa-Version` header. Native calls default to `2026-09-22`; the API
-accepts explicit revisions from `2026-03-20` and rejects earlier pins.
+Set `apiVersion` on a client or a single request. Use a date-form API revision,
+such as `2026-09-22`. The SDK sends it as the `Polymorfa-Version` header.
+Native calls default to `2026-09-22`; the API accepts explicit revisions from
+`2026-03-20` and rejects earlier pins.
 
 Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 
@@ -844,7 +848,8 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. `Client.callPolicy` and
 `Client.callOptOuts` cover consent controls. The contract snapshot is pinned
-to unmerged API Hybrid Link commit `2dd0c1563b1fc4e6525f708afc12e0685110cfe0`.
+to API source commit `2dd0c1563b1fc4e6525f708afc12e0685110cfe0`, now
+merged into API `dev` by PR #260.
 
 ## Native message provider references
 

@@ -1,5 +1,6 @@
 node_modules/
 packages/*/dist/
+examples/calls-example/dist/
 coverage/
 contracts/openapi.messaging.json
 contracts/openapi.platform.json

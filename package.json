@@ -17,7 +17,8 @@
     "packages/react",
     "packages/store",
     "packages/nextjs",
-    "packages/devtools"
+    "packages/devtools",
+    "examples/calls-example"
   ],
   "engines": {
     "node": ">=20"

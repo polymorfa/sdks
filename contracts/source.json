@@ -3,7 +3,7 @@
   "commit": "2dd0c1563b1fc4e6525f708afc12e0685110cfe0",
   "branch": "t3code/hybrid-link-support",
   "published": false,
-  "note": "Exact unmerged API Hybrid Link branch commit, including merged dev Calls consent and HMS history; snapshots are byte-identical to the authoritative source files. SDK publication is separate.",
+  "note": "Exact API Hybrid Link source commit, now merged into API dev by PR #260, including Calls consent and HMS history; snapshots remain byte-identical to the merged authoritative source files. SDK publication is separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
