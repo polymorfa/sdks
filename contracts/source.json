@@ -3,7 +3,7 @@
   "commit": "c9be7bd0471ebbbd07502a76d63443a5556b3382",
   "branch": "t3code/calls-consent",
   "published": false,
-  "note": "Pending API PR #226 head, not merged to dev. Both snapshots are byte-identical to this branch commit; the schema-only follow-up 0e46b463 changes no OpenAPI bytes. Re-pin both to the final monorepo dev merge commit before this SDK PR merges or publishes. Typed BanSafe alignment remains dependent on SDK #282.",
+  "note": "Pending API PR #226 head, not merged to dev. Both snapshots are byte-identical to this branch commit; the schema-only follow-up 0e46b463 changes no OpenAPI bytes. Re-pin both to the final monorepo dev merge commit before this SDK PR merges or publishes. Typed BanSafe changes are merged from SDK dev.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",

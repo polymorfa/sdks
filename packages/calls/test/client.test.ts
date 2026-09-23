@@ -206,6 +206,33 @@ describe("CallsClient", () => {
     expect(h.client.calls).toEqual([]);
   });
 
+  it.each([
+    ["call_restricted", "call_restricted"],
+    ["a_future_end_reason", "unknown"],
+  ])("maps lifecycle end reason %s to %s", async (reason, expected) => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (value) => (call = value));
+    ring(life);
+    const ended = vi.fn();
+    const clientEnded = vi.fn();
+    call!.on("ended", ended);
+    h.client.on("ended", clientEnded);
+    life.text({
+      type: "event",
+      event: "call.ended",
+      callId: "CALL-1",
+      payload: { reason },
+      timestamp: "",
+    });
+    expect(call!.endReason).toBe(expected);
+    expect(call!.state).toBe("ended");
+    expect(ended).toHaveBeenCalledExactlyOnceWith(expected);
+    expect(clientEnded).toHaveBeenCalledExactlyOnceWith(call, expected);
+    expect(h.client.calls).toEqual([]);
+  });
+
   it("reports a failed accept and returns the call to incoming", async () => {
     const api = fakeApi();
     api.accept.mockRejectedValueOnce(new Error("pod refused"));

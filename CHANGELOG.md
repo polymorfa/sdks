@@ -19,6 +19,24 @@
   `call_permission_request_limited`, `call_permission_granted` and
   `call_opt_out_limit`, and `PolymorfaRateLimitReason` adds
   `call_permission_request`.
+- `KnownPolymorfaErrorCode` adds `addon_required` for QuickLink settings
+  that require an active add-on, and drops `premium_required` after the API
+  moved teams to Free and Pay-As-You-Go. `PolymorfaErrorCode` still accepts any
+  string, so code that compares against it keeps compiling.
+- Calls: `PolymorfaErrorCode` adds `number_restricted`. Placing a call or
+  inviting someone the Number has never chatted with fails with it while
+  WhatsApp restricts the Number to existing contacts; `Retry-After` carries the
+  seconds until the restriction ends when WhatsApp reports one. A call WhatsApp
+  refuses for that reason ends with `reason: "call_restricted"`. The Calls
+  client preserves this value in `Call.endReason` and both `ended` events.
+- Webhooks: new `session.restriction_updated` event and
+  `SessionRestrictionUpdatedPayload` (`type`, `active`, `enforcementType`,
+  `expiresAt`, `observedAt`). `SessionLoggedOutPayload.reason` is now
+  `"banned" | "device_removed" | "unknown"` with WhatsApp's `code`, instead of
+  a free-form string.
+- Test events: `TEST_EVENT_FIXTURES` adds `session.restriction_updated` with
+  the `restrictionActive` override, and `callEndReason` accepts
+  `call_restricted`.
 - `Client.sipTrunks.endpoint()` returns the SIP address your PBX points at.
   `SipEndpoint` is a union on `status`: `SipEndpointHosted` carries the
   `host`, the `transports` (`SipEndpointTransport`, with port and SRTP
@@ -31,7 +49,11 @@
   `bansafe.risk_changed` and `bansafe.health_changed`, with the
   `BanSafeRiskChangedPayload` and `BanSafeHealthChangedPayload` types and
   their `BanSafeForecast`, `BanSafeRiskFactor`, `BanSafeModelRef`,
-  `BanSafeHealthPenalties`, and `BanSafeHealthFinding` members.
+  `BanSafeHealthPenalties`, and `BanSafeHealthFinding` members. The package
+  root exports them, and `BanSafeRiskFactor.group` is the
+  `BanSafeRiskFactorGroup` union of the sixteen documented groups.
+  `BanSafeHealthChangedPayload.previousBand` uses `BanSafeHealthBandName | null`,
+  matching the five health bands accepted by `band`.
 - Added `Client.operations` on organization and project clients: `list`
   (filter by `projectId`, status, kind, resource, and time), `get` with an
   optional server long-poll (`wait`, 0 to 30 seconds), `listTransitions`,
