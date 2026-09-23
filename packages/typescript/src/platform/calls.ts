@@ -501,7 +501,9 @@ function isIsoDateTime(value: string): boolean {
   const [hour, minute, second] = [part(4), part(5), part(6)];
   const [offsetHour, offsetMinute] = [part(7), part(8)];
   if (month < 1 || month > 12 || day < 1) return false;
-  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const lastDay = new Date(0);
+  lastDay.setUTCFullYear(year, month, 0);
+  const daysInMonth = lastDay.getUTCDate();
   return (
     day <= daysInMonth &&
     hour <= 23 &&

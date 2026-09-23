@@ -204,6 +204,21 @@ describe("Platform call analytics", () => {
     expect(params.get("until")).toBe("2026-09-01T00:00:00Z");
   });
 
+  it("validates leap days in years below 0100 without remapping them to 1900", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ data: [], page: { nextCursor: null, hasMore: false } }),
+    );
+    const client = teamClient(fetch);
+    await client.calls.list({ since: "0096-02-29T00:00:00Z" });
+    expect(call(fetch, 0).url.searchParams.get("since")).toBe(
+      "0096-02-29T00:00:00Z",
+    );
+    expect(() => client.calls.list({ since: "0097-02-29T00:00:00Z" })).toThrow(
+      PolymorfaConfigurationError,
+    );
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
   it("validates filters before sending", () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     const client = teamClient(fetch);
