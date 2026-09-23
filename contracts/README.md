@@ -1,5 +1,13 @@
 # Contract coverage
 
+## Test-event supplement
+
+`testing-events.json` records the four test-event schemas from merged API
+commit `63111fec728ac3ebc9a825ea57ebc4c592abdafc`. The fixture tests compare
+the exported catalog and overrides against that snapshot. This supplement has
+its own source hash; the full snapshots below remain pinned to pending API
+PR #228 until that PR merges.
+
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at pending `polymorfa/polymorfa` PR #228 commit
 `651c1378264aa73c1442a9fa083908d8f5195400`, branch
@@ -14,9 +22,9 @@ uses the same closed enums as `UsageRecord`. Gate state requires a team
 credential; project credentials are refused by the API. Records without a
 period filter span all months; summaries default to the current UTC month.
 
-Typed BanSafe alignment remains dependent on SDK #282. Merge SDK `dev`
-after that PR lands and retain its error codes, restriction webhook and Calls
-parser changes. This branch does not duplicate those fixes.
+SDK #282 is merged into this branch through `dev`; its BanSafe error codes,
+restriction webhook and Calls parser changes remain in the typed SDK. The
+pending API snapshots still require a final pin after PR #228 merges.
 
 | Status              | Operations |
 | ------------------- | ---------: |
@@ -34,6 +42,10 @@ membership. Call analytics and export remain `missing` in this branch and are
 implemented by SDK PR #281. The pending usage source also adds `number_restricted` to the shared Platform
 error enum, refreshing 27 fingerprints. Their request and success-response
 shapes are unchanged.
+
+The typed BanSafe changes from SDK `dev` recognize `number_restricted`,
+`session.restriction_updated` and `call_restricted` independently of the
+pending usage snapshot.
 
 `GET /console/sip/endpoint` remains excluded (Console-only), while
 `GET /platform/sip/endpoint` is covered by `Client.sipTrunks.endpoint`.
@@ -183,3 +195,17 @@ routes, paid-number expiry, tier quotes and confirmation, and payment-required
 errors. They are checked against these same canonical API snapshots. Removed
 dashboard-only billing reminders and client-token session start/status helpers
 are not retained as compatibility aliases.
+
+## Functions contract
+
+Functions is tracked separately in `functions/openapi.json`, with its exact
+monorepo source commit and extraction hash in `functions/source.json`. That
+snapshot contains 15 Functions operations and their transitive schemas.
+`npm run check:functions` verifies its ledger; SDK tests exercise every method.
+The pending usage snapshots above remain on their explicitly recorded API
+revision until PR #228 merges.
+
+All 15 Functions methods require `client.project(projectId).functions` and an
+organization enabled for Functions. The SDK never retries Function mutations
+or invocations automatically. Browser and client-token SDKs do not expose this
+server control plane. An installed method does not establish hosted availability.

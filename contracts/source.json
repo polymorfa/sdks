@@ -3,7 +3,7 @@
   "commit": "651c1378264aa73c1442a9fa083908d8f5195400",
   "branch": "t3code/voice-p1-gates-metering",
   "published": false,
-  "note": "Pending API PR #228 head, not merged to dev. Snapshots are byte-identical to this branch commit. Re-pin both to the final monorepo dev merge commit before this SDK PR merges or publishes. Typed BanSafe alignment also depends on SDK #282.",
+  "note": "Pending API PR #228 head, not merged to dev. Snapshots are byte-identical to this branch commit. Re-pin both to the final monorepo dev merge commit before this SDK PR merges or publishes. Typed BanSafe changes are merged from SDK dev.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
