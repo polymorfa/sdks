@@ -101,7 +101,7 @@ const messaging = new MessagingClient({
     type: "apiKey",
     value: process.env.POLYMORFA_MESSAGING_API_KEY!,
   },
-  apiVersion: "1.0.0",
+  apiVersion: "2026-03-20",
 });
 
 const sessions = await messaging.sessions.list();
@@ -611,8 +611,8 @@ and `idempotencyKey`; the key does not make the API replay the append.
 
 ## API versions and raw requests
 
-Set `apiVersion` on a client or a single request. The SDK sends it as the
-`Polymorfa-Version` header.
+Set `apiVersion` on a client or a single request. Use a date-form API revision,
+such as `2026-03-20`. The SDK sends it as the `Polymorfa-Version` header.
 
 Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 
