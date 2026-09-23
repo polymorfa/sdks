@@ -1945,7 +1945,7 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
 covers the three public call analytics and export operations. The contract
 snapshot is pinned to merged API `dev` commit
-`a77acc90d24e114f4c313e33aa05f9f3261cd123`.
+`ec2601700db139d94a5e8523cf339368f2bccc34`.
 
 ## Functions
 

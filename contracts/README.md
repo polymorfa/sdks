@@ -26,7 +26,7 @@ published SDK package before updating their pinned dependency.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`a77acc90d24e114f4c313e33aa05f9f3261cd123` on the dev-based branch
+`ec2601700db139d94a5e8523cf339368f2bccc34` on the dev-based branch
 `t3code/hybrid-link-support`. `source.json`
 records the original paths and SHA-256 hashes. `coverage.json` uses the same
 source revision. The source branch is published to Git; this does not establish
