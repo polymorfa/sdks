@@ -15,7 +15,12 @@ afterEach(async () => {
   FakeWebSocket.instances = [];
 });
 
-function fixture(extra: { diagnostics?: boolean } = {}) {
+function fixture(
+  extra: {
+    diagnostics?: boolean;
+    getClientToken?: Parameters<typeof createBrowserCalls>[0]["getClientToken"];
+  } = {},
+) {
   let callbacks: CallMediaCallbacks | undefined;
   const session: CallMediaSession = {
     localStream: {} as MediaStream,
@@ -828,6 +833,37 @@ describe("browser widget and shared calls client", () => {
     expect(errors).toEqual(["unauthorized"]);
     expect(calls.connected).toBe(false);
     void socket;
+  });
+
+  it("reconnects with a fresh client token in the first frame", async () => {
+    const getClientToken = vi
+      .fn()
+      .mockResolvedValueOnce({
+        value: "pmfa_ct_first",
+        audience: "browser",
+        expiresAt: Date.now() + 900_000,
+      })
+      .mockResolvedValueOnce({
+        value: "pmfa_ct_second",
+        audience: "browser",
+        expiresAt: Date.now() + 900_000,
+      });
+    const f = fixture({ getClientToken });
+    const first = await f.connect();
+    expect(first.url).toBe("wss://api.polymorfa.test/voip/ws");
+    expect(first.texts).toEqual([{ type: "auth", token: "pmfa_ct_first" }]);
+    expect(f.fetch).not.toHaveBeenCalled();
+
+    first.drop(4401, "unauthorized");
+    await vi.waitFor(() => expect(FakeWebSocket.instances).toHaveLength(2), {
+      timeout: 2_000,
+    });
+    const second = FakeWebSocket.instances[1]!;
+    second.authenticate();
+    expect(second.url).toBe("wss://api.polymorfa.test/voip/ws");
+    expect(second.texts).toEqual([{ type: "auth", token: "pmfa_ct_second" }]);
+    expect(getClientToken).toHaveBeenCalledTimes(2);
+    expect(f.fetch).not.toHaveBeenCalled();
   });
 
   it("ignores unrelated terminal events and disposes the lifecycle socket", async () => {
