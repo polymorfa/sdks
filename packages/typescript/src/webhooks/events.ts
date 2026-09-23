@@ -354,15 +354,6 @@ export interface ContactUpdatePayload {
   readonly username?: string;
 }
 
-/** Keyword-based campaign suppression change. The reply body is not delivered. */
-export interface ContactOptPayload {
-  readonly phone: string;
-  readonly source: "stop-keyword";
-  readonly keyword: string;
-  readonly session: string;
-  readonly projectId?: string;
-}
-
 export interface ChatArchivePayload {
   readonly from: IdentityReference;
   readonly archive?: boolean;

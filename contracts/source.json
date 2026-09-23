@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "ec2601700db139d94a5e8523cf339368f2bccc34",
+  "commit": "a76bd18f6553b8c2fd340012842d8a8c80bd1b67",
   "branch": "t3code/hybrid-link-support",
   "published": true,
   "note": "Hybrid Link contracts committed and published on the dev-based source branch; Git publication does not establish deployed availability.",
