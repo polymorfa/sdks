@@ -5,14 +5,10 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts recorded at source revision
-`a76bd18f6553b8c2fd340012842d8a8c80bd1b67` on the dev-based monorepo branch
-`t3code/hybrid-link-support`. Graph-compatible APIs are outside
-this SDK's initial scope.
-The matching source revision also includes campaign compliance and Functions
-changes. The three usage-read operations now have SDK methods. Sixteen changed
-campaign or audience fingerprints still need review against the merged SDK
-implementation; the Hybrid operation-status contract is covered.
+the Messaging and Platform contracts at merged API `dev` revision
+`b38ba787b3fd83eef830060a0d454f856db4666b`. Graph-compatible APIs are outside this SDK's initial scope.
+The same source includes Hybrid Link, Voice audio, usage gates, Calls analytics,
+Campaigns P0, and Functions.
 
 ## Package architecture
 
@@ -270,6 +266,8 @@ The organization view also exposes these management resources:
   points at with `endpoint()` (also on project clients)
 - `calls`: call statistics, paginated call detail records, and CSV or NDJSON
   export of call records for the team or one project (also on project clients)
+- `voice`: Voice Automation beta audio uploads, synthesis, previews, retention,
+  deletion and provider credentials, subject to API enrollment and deployment
 - `callRetention`: retrieve and update how long Polymorfa keeps the team's
   call data (also readable on project clients; changes need a team API key)
 - `billing`: retrieve balance and currency, inspect usage meters, list
@@ -754,4 +752,6 @@ or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
 {expectedRevision, paused})` changes routing at the exact current revision.
 
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
-covers the three public call analytics and export operations. The contract snapshot is pinned to the Hybrid API source revision.
+covers the three public call analytics and export operations. `Client.voice`
+covers the Voice audio and credential operations. The contract snapshot
+is pinned to merged API `dev` commit `b38ba787b3fd83eef830060a0d454f856db4666b`.

@@ -455,6 +455,233 @@ of another project with `PolymorfaNotFoundError`. Conflicts raise
 `PolymorfaConflictError` with `code` `sip_trunk_in_use`,
 `sip_trunk_revision_conflict`, `sip_trunk_limit`, or `state_conflict`.
 
+## Voice audio library
+
+`Client.voice` follows the merged Voice Automation API contract. The API
+requires `calls.voice-automation` enrollment for writes except `delete`;
+without it, writes fail with `PolymorfaAuthorizationError` and
+`code: "voice_not_enabled"`. Reads, previews and deletes remain available
+after enrollment withdrawal. These methods do not enable an audience or
+establish deployed availability. Credentials need
+`voice:read` to read and `voice:manage` to change anything; client tokens
+are refused. Team clients name the project on `audio.list`,
+`audio.createUpload`, `audio.upload` and `audio.synthesize`; project clients
+use their own project.
+
+`voice.audio` stores recordings and text-to-speech renders. Every asset is
+transcoded to 16 kHz mono audio and moves from `pending_upload` or
+`transcoding` to `ready` or `failed`.
+
+```ts
+import { readFile } from "node:fs/promises";
+
+const project = platform.project("018f0000-0000-7000-8000-000000000002");
+
+// Create the asset, send the file to its upload URL, and start transcoding.
+const { data: uploaded } = await project.voice.audio.upload({
+  name: "Welcome message",
+  contentType: "audio/mpeg",
+  body: await readFile("welcome.mp3"),
+  retentionDays: 90,
+});
+
+// Render speech with Polymorfa's managed key, or pass credentialId for yours.
+const { data: spoken } = await project.voice.audio.synthesize({
+  name: "Opening hours",
+  text: "We are open from nine to five, Monday to Friday.",
+  provider: "openai",
+  voiceId: "coral",
+});
+
+const { data: ready } = await project.voice.audio.waitUntilReady(spoken.id);
+if (ready.status === "ready") {
+  const { data: preview } = await project.voice.audio.previewUrl(ready.id);
+  console.log(preview.url); // Opus in Ogg, valid for 5 minutes
+}
+```
+
+`upload` accepts a `Buffer`, `Uint8Array`, `ArrayBuffer`, `Blob` or
+`ReadableStream` of up to 16 MiB in `audio/mpeg`, `audio/wav`,
+`audio/x-wav`, `audio/ogg`, `audio/mp4` or `audio/x-m4a`. A stream needs
+`sizeBytes`. For bytes and Blobs the SDK uses the body's byte length and
+refuses a different `sizeBytes` with a `PolymorfaValidationError` before it
+creates the asset. It calls `createUpload`, sends the bytes to `upload.url` with
+only the returned `Content-Type` header and without your credential, then
+calls `complete`. If sending fails, the asset stays in `pending_upload`. You
+receive the HTTP status for an upload refusal; the SDK omits the storage
+response body and headers from the error because they may contain the signed
+upload URL. You can run the three steps yourself with `createUpload` and
+`complete`; the
+upload URL is valid for 5 minutes and grants access on its own, so do not log
+it.
+
+`retrieve`, `update`, `delete`, `complete` and `previewUrl` take an asset ID.
+`update` changes `name` and `retentionDays` (`null` keeps the asset until
+deleted) and accepts `expectedRevision`. `list` returns a `CursorPage` and
+filters by `status`. `waitUntilReady` polls until the asset is `ready` or
+`failed` and throws `PolymorfaTimeoutError` once `timeoutMs` (default 2
+minutes) has passed, cancelling a read still in flight; in production, prefer the
+`voice.asset_ready` and `voice.asset_failed` webhooks, typed as
+`VoiceAssetReadyPayload` and `VoiceAssetFailedPayload`. These events are
+project-scoped and arrive with an empty `session`.
+
+`voice.providerCredentials` stores your own ElevenLabs or OpenAI keys for
+text-to-speech:
+
+```ts
+const { data: credential } = await platform.voice.providerCredentials.create({
+  provider: "elevenlabs",
+  label: "Production",
+  apiKey: process.env.ELEVENLABS_API_KEY!,
+  projectId: null, // every project of the team; team keys only
+});
+await project.voice.audio.synthesize({
+  name: "Greeting",
+  text: "Hello!",
+  provider: "elevenlabs",
+  voiceId: "21m00Tcm4TlvDq8ikWAM",
+  credentialId: credential.id,
+});
+```
+
+The key is write-only. Responses return `keyFingerprint`, the first 8 hex
+characters of its SHA-256, and the SDK never logs the key or includes it in
+errors. `create` and `verify` check the key with the provider and fail with
+`provider_credential_invalid` when it is rejected. Project clients create
+credentials for their own project only. A project client built from a team
+key can read team-wide credentials but verifies and deletes only its
+project's.
+
+Errors: `voice_not_enabled` (403), `gate_limit_reached` (402,
+`PolymorfaPaymentRequiredError`), `provider_credential_invalid` (422),
+`provider_unavailable` and `voice_unavailable` (503), and `asset_not_ready`,
+`voice_asset_in_use` and `voice_asset_revision_conflict` (409,
+`PolymorfaConflictError`). Input status filters, upload content types,
+provider names and TTS selections use the values accepted by the API.
+Response fields preserve unknown values: treat an unrecognized audio status
+as unusable and an unrecognized credential status as invalid. The `VOICE_*`
+lists identify the known response values. Preview responses have
+`contentType: "audio/ogg"`.
+
+The voice resources are available only in this TypeScript SDK.
+
+## Call analytics and call records
+
+`Client.calls` reads call statistics and call detail records. It needs
+`sessions:read`. A team client covers every project of the team unless you
+pass `projectId`; a project client reads only its own project, and the SDK
+refuses another `projectId` before sending. A project token that names a
+different project gets `PolymorfaNotFoundError` from the API.
+
+Every method accepts the same filters: `sessionId`, `direction` (`inbound` or
+`outbound`), `upstream` (`linked_device` or `cloud_api`), `outcome`
+(`answered`, `missed`, `declined`, `failed`, or `in_progress`), and `since` and
+`until` as RFC 3339 date-time strings with `Z` or an offset, or `Date` objects.
+The SDK rejects invalid calendar dates, date-only strings, and values outside
+these sets before sending.
+
+```ts
+const { data: stats } = await platform.calls.stats({
+  since: "2026-09-01T00:00:00Z",
+  until: "2026-09-18T00:00:00Z",
+  groupBy: "day",
+  timezone: "Europe/Lisbon",
+});
+console.log(stats.totals.answerRate, stats.groups, stats.heatmap);
+
+for await (const call of await platform.calls.list({ outcome: "missed" })) {
+  console.log(call.callId, call.peerRef, call.endReason);
+}
+```
+
+- `stats(params)` returns `CallStats`: `totals`, one `groups` entry per
+  bucket, and a 168-cell `heatmap` of calls by ISO day of week (Monday is 1)
+  and hour. `groupBy` is `day` (the default, up to 366 days), `hour` (up to 31
+  days), `session` (the 500 busiest numbers; `groupsTruncated` reports more),
+  or `outcome`. `timezone` is an IANA name, including single-name zones such
+  as `CET` and `GMT`, and defaults to `UTC`. The API matches names in any case
+  and refuses UTC offsets. Without `since` and `until` the range is the last 7 days. A
+  query that takes too long fails with `PolymorfaServerError`
+  (`service_unavailable`).
+- `list(params)` returns a `CursorPage<CallRecord>`, newest first. `limit` is
+  1 to 100 (default 25). `peerRef` is a team-specific pseudonym of the other
+  party; call records never contain phone numbers.
+- `export(params)` returns one page of up to 1,000 records (`limit` 1 to 1,000)
+  as `{ format, body, nextCursor }`. `format` is `csv` (the default; every page
+  starts with a header row and uses CRLF line endings) or `ndjson` (one call
+  record per line). Pass `nextCursor` back as `cursor` with the same filters;
+  it is `null` on the last page.
+- `exportAll(params)` yields the body of every page in order. CSV pages after
+  the first drop their header row, so the chunks join into one CSV file. If
+  the API returns a cursor that was already requested, including the starting
+  `cursor`, `exportAll` throws `PolymorfaServerError` (`invalid_response`)
+  without yielding that page, so a replayed page never reaches your output.
+
+```ts
+import { createWriteStream } from "node:fs";
+
+const file = createWriteStream("calls.csv");
+for await (const chunk of platform.calls.exportAll({
+  since: "2026-09-01T00:00:00Z",
+})) {
+  file.write(chunk);
+}
+file.end();
+```
+
+## Call data retention
+
+`Client.callRetention` reads and changes how long Polymorfa keeps your team's
+call data. It is one setting for the whole team, so a project client reads the
+same value as its team. Changing it requires a team API key; a project token
+receives `PolymorfaAuthorizationError`.
+
+```ts
+const { data: current } = await platform.callRetention.retrieve();
+// { policy: "extended", retentionDays: 90, appliesTo: [...], revision: 0, updatedAt: null }
+
+await platform.callRetention.update({
+  policy: "custom",
+  retentionDays: 45,
+  expectedRevision: current.revision,
+});
+```
+
+To read the team setting with a project token when you do not have its project
+ID, create the retention client directly:
+
+```ts
+import { createTeamCallRetentionClient } from "@polymorfa/sdk";
+
+const retention = createTeamCallRetentionClient({
+  credential: { type: "projectToken", value: projectToken },
+});
+const { data } = await retention.retrieve();
+```
+
+This client exposes only call retention. Other project-token methods still
+require an explicit project ID.
+
+`policy` is `short` (7 days), `standard` (30 days), `extended` (90 days, the
+default), `compliance` (365 days), or `custom`. `custom` requires
+`retentionDays` (1 to 2555), and `UpdateCallRetentionRequest` rejects a
+`custom` update without it at compile time. With a named policy, omit `retentionDays` or send
+exactly that policy's period; any other value raises
+`PolymorfaValidationError` with `code` `invalid_parameter`. When
+`expectedRevision` no longer matches the stored revision (0 for a team on the
+default), the update raises `PolymorfaConflictError` with `code`
+`state_conflict`. The revision guard is optional: omitting
+`expectedRevision` applies the update without checking for intervening changes
+(last write wins).
+
+Deletion of call data older than `retentionDays` starts on a date Polymorfa
+announces in its changelog; until then the setting records a choice and
+nothing is deleted. Once deletion runs, a shorter period also applies to call
+data already stored, and deleted data cannot be recovered. `appliesTo`
+lists the kinds of call data the period covers (`call_records`,
+`call_events`, and `client_reports`); new kinds are added to the list and
+follow the same period, so treat it as an open list of strings.
+
 ## Calls and stable user identity
 
 The `calls`, `identities`, and `users` resources use public Polymorfa user IDs.
@@ -1942,9 +2169,9 @@ The typed webhook catalog includes `session.restriction_updated` with
 fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
-covers the three public call analytics and export operations. The contract
-snapshot is pinned to merged API `dev` commit
-`ec2601700db139d94a5e8523cf339368f2bccc34`.
+covers the three public call analytics and export operations. `Client.voice`
+covers the Voice audio and credential operations. The contract snapshot
+is pinned to merged API `dev` commit `b38ba787b3fd83eef830060a0d454f856db4666b`.
 
 ## Functions
 

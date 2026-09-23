@@ -25,12 +25,12 @@ published SDK package before updating their pinned dependency.
 ## Whole-API snapshot
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` commit
-`a76bd18f6553b8c2fd340012842d8a8c80bd1b67` on the dev-based branch
-`t3code/hybrid-link-support`. `source.json`
-records the original paths and SHA-256 hashes. `coverage.json` uses the same
-source revision. The source branch is published to Git; this does not establish
-package publication, deployed availability, or Hybrid Link enrollment.
+files at merged `polymorfa/polymorfa` API `dev` commit
+`b38ba787b3fd83eef830060a0d454f856db4666b`. This revision includes Hybrid Link and Voice audio on top of
+usage gates, Calls analytics, Campaigns P0 and Functions. `source.json`
+records the source paths and SHA-256 hashes. The snapshots and ledger use
+the same revision; this does not establish package publication, deployed
+availability, or Hybrid Link enrollment.
 
 Native Messaging and Platform calls default to API revision `2026-09-22`,
 which requires `whatsapp_ids` in place of the singular provider reference.
@@ -38,6 +38,9 @@ The browser Messaging transport pins the same date without importing server code
 its explicit request headers and client-token restrictions remain in force.
 Explicit older pins remain explicit and are rejected by the API; Graph keeps
 its path-based version.
+
+The 13 public Voice operations are covered by `Client.voice.audio` and
+`Client.voice.providerCredentials`; their 13 Console counterparts are excluded.
 
 This revision adds six typed server methods: `quickLinks.availability`,
 `messages.operationStatus`, and `hybridLink.getPolicy`, `setPolicy`, `state`,
@@ -72,12 +75,9 @@ The same revision adds `gate_limit_reached` and a 402 call-placement response;
 `PolymorfaPaymentRequiredError` surfaces that response. The webhook event map
 exposes `usage.recorded` with the revisioned record payload.
 
-The merged SDK implements the campaign compliance operations, but 16 changed
-campaign or audience fingerprints remain unresolved against this API source.
-The global
-`campaign_throughput_capped` error code changes other operation fingerprints;
-the SDK's error type already accepts unrecognized codes as strings. This snapshot
-records the source contract without claiming campaign parity.
+The SDK implements the campaign compliance operations against the pinned
+contract. The global `campaign_throughput_capped` error code remains readable
+through the SDK's open error-code type.
 
 The merged SDK exposes all 15 public Functions operations. Production-number deletion now returns 409;
 the existing `Client.sessions.delete` and `deleteMany` methods still use the
@@ -104,12 +104,12 @@ analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        338 |
+| Covered             |        367 |
 | Missing             |          0 |
-| Excluded            |        111 |
+| Excluded            |        124 |
 | Partial             |          0 |
-| Changed fingerprint |         16 |
-| Total               |        465 |
+| Changed fingerprint |          0 |
+| Total               |        491 |
 
 An earlier revision added test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
