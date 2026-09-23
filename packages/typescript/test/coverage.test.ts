@@ -173,15 +173,14 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f",
-      total: 489,
-      covered: 365,
+      sourceCommit: "270fbe53e04927d360076971a3e54e2772fb0ed2",
+      total: 503,
+      covered: 373,
       partial: 0,
       missing: 0,
-      excluded: 124,
+      excluded: 130,
       changed: 0,
     });
-    // No source operation was removed.
     const resolutions = (result.report?.resolutions ?? []) as Array<{
       operationId: string;
       status: string;
@@ -568,9 +567,13 @@ describe("coverage checker", () => {
     const mappings = Object.fromEntries(
       ledger.operations
         .filter(({ operationId }) =>
-          ["rejectCall", "resolveIdentity", "getUserSecurityCode"].includes(
-            operationId,
-          ),
+          [
+            "checkCall",
+            "getCallPermission",
+            "rejectCall",
+            "resolveIdentity",
+            "getUserSecurityCode",
+          ].includes(operationId),
         )
         .map(({ operationId, typescript }) => [operationId, typescript.method]),
     );
@@ -622,11 +625,15 @@ describe("coverage checker", () => {
       .sort();
 
     expect(contractOperationIds).toEqual([
+      "checkCall",
+      "getCallPermission",
       "getUserSecurityCode",
       "rejectCall",
       "resolveIdentity",
     ]);
     expect(mappings).toEqual({
+      checkCall: "MessagingClient.voip.check",
+      getCallPermission: "MessagingClient.voip.retrieveCallPermission",
       getUserSecurityCode: "MessagingClient.users.getSecurityCode",
       rejectCall: "MessagingClient.calls.reject",
       resolveIdentity: "MessagingClient.identities.resolve",

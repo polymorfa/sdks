@@ -70,6 +70,15 @@ export {
   type BridgeSignal,
 } from "./bridge.js";
 export { ChatsResource } from "./messaging/chats.js";
+export type {
+  HistoryChat,
+  HistoryMedia,
+  HistoryMessage,
+  HistoryMessageSummary,
+  HistoryPage,
+  ListHistoryChatsParams,
+  ListHistoryMessagesParams,
+} from "./messaging/history.js";
 export { ChannelsResource } from "./messaging/channels.js";
 export { BusinessResource } from "./messaging/business.js";
 export { CallsResource } from "./messaging/calls.js";
@@ -276,6 +285,14 @@ export type {
   ClientRecipientMode,
   ClientAction,
   CallInboundRoute,
+  CallPermission,
+  CallPermissionAction,
+  CallPermissionLimit,
+  CallPermissionRequestMessageContent,
+  CallPermissionResponse,
+  CallPermissionSource,
+  CallPermissionState,
+  CallPermissionStatus,
   SessionCallSettings,
   SessionCallSettingsResponse,
   UpdateSessionCallSettingsRequest,
@@ -284,6 +301,10 @@ export type {
   VoipAcceptCallResult,
   VoipAddParticipantRequest,
   VoipAddParticipantResponse,
+  VoipCallCheck,
+  VoipCallRefusal,
+  VoipCheckCallRequest,
+  VoipCheckCallResponse,
   VoipLeaveCallRequest,
   VoipCallErrorCode,
   VoipCallErrorReport,
@@ -394,15 +415,6 @@ export type {
   MessageResponse,
   MessageReceipt,
   ConversationIdentity,
-  HistoryChat,
-  HistoryChatKind,
-  HistoryConversation,
-  HistoryDirection,
-  HistoryMedia,
-  HistoryMessage,
-  HistoryMessageSummary,
-  ListChatsParams,
-  ListMessagesParams,
   ConversationReference,
   MessageMediaContent,
   MessageSendContext,
@@ -465,6 +477,7 @@ export type {
   SeenRequest,
   SendAddressMessageRequest,
   SendButtonsMessageRequest,
+  SendCallPermissionRequestMessageRequest,
   SendContactMessageRequest,
   SendFlowMessageRequest,
   SendListMessageRequest,
@@ -544,7 +557,6 @@ export type {
 } from "./messaging/types.js";
 export { WebhooksResource as MessagingWebhooksResource } from "./messaging/webhooks.js";
 export { CursorPage, type PageDecoder, type PageResult } from "./pagination.js";
-export { HistoryPage } from "./messaging/history.js";
 export { AudiencesResource } from "./platform/audiences.js";
 export { ApiKeysResource } from "./platform/api-keys.js";
 export { AuditLogsResource } from "./platform/audit-logs.js";
@@ -570,6 +582,23 @@ export type {
   UsageUnit,
 } from "./platform/usage.js";
 export { BanSafeResource } from "./platform/bansafe.js";
+export {
+  CallOptOutsResource,
+  CallPolicyResource,
+} from "./platform/call-consent.js";
+export type {
+  CallOptOut,
+  CallOptOutDeleted,
+  CallOptOutImportEntry,
+  CallOptOutImportResult,
+  CallOptOutRejectionReason,
+  CallOptOutSource,
+  CallPolicy,
+  CreateCallOptOutInput,
+  ImportCallOptOutsInput,
+  ListCallOptOutsParams,
+  UpdateCallPolicyInput,
+} from "./platform/call-consent.js";
 export { CampaignsResource } from "./platform/campaigns.js";
 export { CustomersResource } from "./platform/customers.js";
 export { MediaResource } from "./platform/media.js";
@@ -921,6 +950,7 @@ export {
   type CallParticipant,
   type CallParticipantLeftPayload,
   type CallParticipantPayload,
+  type CallPermissionChangedPayload,
   type CallReceivedPayload,
   type CallRejectedPayload,
   type CallTelemetryPayload,

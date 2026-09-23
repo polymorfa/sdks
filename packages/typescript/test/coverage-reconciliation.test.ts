@@ -38,6 +38,19 @@ const callSettings = {
   conferenceMode: true,
   updatedAt: "2026-09-16T10:00:00.000Z",
 };
+const callPermission = {
+  conversation: { id: "739182640518203", phoneNumber: "+14155550123" },
+  status: "temporary",
+  expiresAt: "2026-09-26T10:00:00.000Z",
+  source: "user_action",
+  updatedAt: "2026-09-19T10:00:00.000Z",
+  checkedAt: "2026-09-19T12:30:00.000Z",
+  fresh: true,
+  actions: {
+    requestPermission: { allowed: false, limits: [] },
+    startCall: { allowed: true, limits: [] },
+  },
+};
 const calls = [
   {
     operationId: "voipPlaceCall",
@@ -132,6 +145,29 @@ const calls = [
     response: { success: true, data: participant },
   },
   {
+    operationId: "getCallPermission",
+    method: "retrieveCallPermission",
+    args: ["support/eu", "+14155550123"],
+    body: undefined,
+    status: 200,
+    response: { success: true, data: callPermission },
+  },
+  {
+    operationId: "checkCall",
+    method: "check",
+    args: [{ session: "support/eu", to: "+14155550123" }],
+    body: { session: "support/eu", to: "+14155550123" },
+    status: 200,
+    response: {
+      success: true,
+      data: {
+        allowed: false,
+        refusal: "call_permission_required",
+        permission: { status: "revoked", fresh: true },
+      },
+    },
+  },
+  {
     operationId: "getCallSettings",
     method: "retrieveCallSettings",
     args: ["support/eu"],
@@ -160,7 +196,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f");
+    expect(source.commit).toBe("270fbe53e04927d360076971a3e54e2772fb0ed2");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -172,6 +208,25 @@ describe("reconciled coverage evidence", () => {
         .digest("hex");
       expect(hash, contract.snapshotPath).toBe(contract.sha256);
     }
+  });
+
+  it("maps all four hosted-history reads to the server SDK", () => {
+    expect(entry("listChats").typescript).toEqual({
+      status: "covered",
+      method: "MessagingClient.chats.list",
+    });
+    expect(entry("getChat").typescript).toEqual({
+      status: "covered",
+      method: "MessagingClient.chats.retrieve",
+    });
+    expect(entry("listChatMessages").typescript).toEqual({
+      status: "covered",
+      method: "MessagingClient.chats.listMessages",
+    });
+    expect(entry("getChatMessage").typescript).toEqual({
+      status: "covered",
+      method: "MessagingClient.chats.retrieveMessage",
+    });
   });
 
   it.each(calls)(
@@ -207,7 +262,8 @@ describe("reconciled coverage evidence", () => {
       expect(new URL(url).pathname).toBe(
         mapping.path
           .replace("{id}", encodeURIComponent(callId))
-          .replace("{session}", encodeURIComponent("support/eu")),
+          .replace("{session}", encodeURIComponent("support/eu"))
+          .replace("{to}", encodeURIComponent("+14155550123")),
       );
       expect(init.method).toBe(mapping.method);
       if (fixture.body === undefined) {

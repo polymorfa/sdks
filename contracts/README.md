@@ -1,6 +1,16 @@
 # Contract coverage
 
-## Focused test-event update
+## Test-event supplement
+
+The consent overlay uses merged API `dev` commit
+`270fbe53e04927d360076971a3e54e2772fb0ed2`. It includes the merged
+campaign, usage, voice, and HMS history API contracts. SDK package publication
+remains separate.
+`Client.callPolicy` and `Client.callOptOuts` cover six team-policy operations;
+`MessagingClient.voip.retrieveCallPermission` and `.check` cover two Messaging
+operations. The six Console counterparts are excluded. Message content and
+`call.permission_changed` are typed in server and browser packages where
+applicable.
 
 `testing-events.json` records the four test-event schemas from API commit
 `9c876c16c60b74370d934e1275f23ef6096bee12`, including the source path and file
@@ -9,16 +19,16 @@ Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
 and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
-below use the merged API `dev` Voice revision. CLI consumers require a
+below use the merged API `dev` consent revision. CLI consumers require a
 published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at merged `polymorfa/polymorfa` API `dev` commit
-`087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`. This revision includes
+`270fbe53e04927d360076971a3e54e2772fb0ed2`. This revision includes
 Voice audio and provider credentials on top of merged usage gates, Calls
-analytics, Campaigns P0 and Functions. The snapshots, ledger and revision
+analytics, Campaigns P0, Functions, and HMS history. The snapshots, ledger and revision
 tests have been reconciled. `source.json` records the source paths and
 SHA-256 hashes.
 
@@ -32,8 +42,30 @@ from SDK `dev`. The three public Calls analytics operations are covered by
 `Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
 `Client.calls.exportAll` walks export pages. The 13 public Voice operations are
 covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
-13 Console counterparts are excluded. The full 489-operation snapshot includes
+13 Console counterparts are excluded. The full 503-operation snapshot includes
 all 15 Functions routes already merged to API `dev`.
+
+HMS history adds four server-only Messaging reads under
+`MessagingClient.chats`: `list`, `retrieve`, `listMessages`, and
+`retrieveMessage`. All four are covered; they require an organization key or
+project token, their respective `chats:read` or `messages:read` scope, HMS on
+the Number, and `messaging.history` beta enrollment. Client tokens are refused
+locally. Pagination retains both cursors and the data-region response header.
+The only pre-existing schema change is `hms_not_enabled` in the shared public
+error enum, which changes 166 Messaging and 46 Platform fingerprints. Those
+fingerprints were reconciled against the source specs; no pre-existing route or
+response shape changed at that history revision.
+
+The combined API also adds `afterOffset` to the two Platform event-list routes,
+with `page.nextOffset` and `page.highWatermark` for ingestion-order reads.
+`Client.events.listIndexed` covers this mode for team and project owners while
+`Client.events.list` retains its existing timestamp and cursor behavior. The
+two event-list fingerprints are reconciled against the combined source spec.
+
+The merged Campaigns follow-up makes Platform campaign archive available for
+completed, failed, or cancelled campaigns. Its response and error schema changes
+one existing fingerprint; `Client.campaigns.archive` already sends that route
+and returns the open data envelope, while the transport handles `404` and `409`.
 
 SDK `dev` through `8392f66` adds `Client.sipTrunks.endpoint()` for
 `GET /platform/sip/endpoint`. Its `SipEndpoint` result is a discriminated union:
@@ -109,12 +141,12 @@ too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        365 |
+| Covered             |        373 |
 | Missing             |          0 |
-| Excluded            |        124 |
+| Excluded            |        130 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        489 |
+| Total               |        503 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -144,28 +176,12 @@ successful live call.
 
 ## Reconciliation
 
-The history API adds four beta reads: `MessagingClient.chats.list`,
-`chats.get`, `messages.list`, and `messages.get`. The Platform event-list
-contract adds `afterOffset`, `nextOffset`, and `highWatermark` for ingestion-order
-reads. `Client.events.listIndexed` consumes that mode for both team and project
-owners. Both snapshots and their coverage entries will be pinned to the final
-combined monorepo source revision.
-
-The combined contract keeps the same operation IDs and paths as the reconciled
-SDK `dev` ledger, plus the four history reads. Adding `hms_not_enabled` to the
-shared Messaging error schema changes the fingerprints of operations that
-reference it; the Platform event-list page schema and merged API work change
-other fingerprints. The ledger records the new source shapes while retaining
-the reviewed SDK method mappings. Strict coverage reports no missing, partial,
-changed, or removed operations.
-
 Revision `2259a1fd` adds the project event stream. `Client.events.stream`
 covers `GET /platform/projects/{projectId}/events/stream` with reconnect and
 resume, and `Client.events.acknowledgeStream` covers its manual
-acknowledgement route. The Platform `PlatformAccessEventStreamFrame`
-discriminator mapping at this revision points at unprefixed schema names
-(`EventStreamReadyFrame` and so on) that the document does not define; the
-snapshot keeps the source bytes unchanged. The same revision adds
+acknowledgement route. The source pinned here corrects the
+`PlatformAccessEventStreamFrame` discriminator to reference the defined,
+Platform-prefixed schemas. Revision `2259a1fd` also adds
 `conversationTtlSeconds` to client rules, turns `recipientMode` into an enum,
 and sets a minimum of 0 on `rateLimit` and `maxDaily`; the client-rules types
 follow.
@@ -273,7 +289,8 @@ Functions is tracked separately in `functions/openapi.json`, with its exact
 monorepo source commit and extraction hash in `functions/source.json`. This
 snapshot contains only the 15 Functions operations and their transitive schemas.
 `npm run check:functions` verifies their ledger; SDK tests exercise every method.
-The main snapshots and Functions subset use the same merged API `dev` revision.
+The main consent snapshots use the merged API `dev` revision; the
+Functions subset retains its separate source revision.
 
 All 15 Functions methods require `client.project(projectId).functions` and an
 organization enabled for Functions. The SDK never retries Function mutations or

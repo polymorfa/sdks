@@ -1,127 +1,79 @@
-import { CursorPage } from "../pagination.js";
-import { PolymorfaServerError } from "../errors.js";
-import { HttpTransport } from "../transport/http.js";
-import type {
-  ApiResponse,
-  QueryValue,
-  RequestOptions,
-} from "../transport/types.js";
+import type { ConversationIdentity } from "./types.js";
 
-interface HistoryEnvelope<T> {
+/** Hosted message history is an enrolled beta and requires HMS on the Number. */
+export interface HistoryChat {
+  readonly conversation: ConversationIdentity;
+  readonly kind: "direct" | "group" | "channel" | "broadcast";
+  readonly lastActivityAt: string;
+  readonly lastMessage: HistoryMessageSummary;
+}
+
+export interface HistoryMessageSummary {
+  readonly id: string;
+  readonly whatsapp_id: string;
+  readonly direction: "inbound" | "outbound";
+  readonly type: string;
+  readonly timestamp: string;
+}
+
+export interface HistoryMedia {
+  readonly id: string;
+  readonly mimeType: string;
+  readonly fileLength: number;
+  /** API path for `MessagingClient.media.download`; this is not a signed URL. */
+  readonly url: string;
+}
+
+export interface HistoryMessage extends HistoryMessageSummary {
+  readonly conversation: ConversationIdentity & {
+    readonly sender?: ConversationIdentity;
+  };
+  readonly fromMe: boolean;
+  readonly pushName?: string;
+  readonly text?: string;
+  readonly caption?: string;
+  readonly mimeType?: string;
+  readonly filename?: string;
+  readonly ptt?: boolean;
+  readonly latitude?: number;
+  readonly longitude?: number;
+  readonly displayName?: string;
+  readonly title?: string;
+  readonly reaction?: string;
+  readonly reactionTo?: string;
+  readonly edited?: boolean;
+  readonly unavailable?: boolean;
+  readonly unavailableReason?: string;
+  readonly pollOptions?: readonly {
+    readonly name: string;
+    readonly hash: string;
+  }[];
+  readonly media?: readonly HistoryMedia[];
+}
+
+export interface HistoryPage<T> {
+  readonly success: true;
   readonly data: readonly T[];
+  readonly hasMore: boolean;
   readonly nextCursor: string | null;
   readonly previousCursor: string | null;
 }
 
-/**
- * A page of stored history. Iterating with `for await` follows `nextCursor`
- * through every later page; `previousPage()` walks back toward the start.
- */
-export class HistoryPage<T> extends CursorPage<T> {
-  readonly previousCursor: string | undefined;
-  /** Data region that served the page (`Polymorfa-Data-Region`). */
-  readonly dataRegion: string | undefined;
-  readonly #loadPrevious: (() => Promise<HistoryPage<T>>) | undefined;
-
-  constructor(options: {
-    readonly items: readonly T[];
-    readonly nextCursor?: string;
-    readonly previousCursor?: string;
-    readonly response: ApiResponse<unknown>;
-    readonly loadNext?: () => Promise<HistoryPage<T>>;
-    readonly loadPrevious?: () => Promise<HistoryPage<T>>;
-  }) {
-    super(options);
-    this.previousCursor = options.previousCursor;
-    this.dataRegion = headerValue(
-      options.response.metadata.headers,
-      "polymorfa-data-region",
-    );
-    this.#loadPrevious = options.loadPrevious;
-  }
-
-  override async nextPage(): Promise<HistoryPage<T> | null> {
-    return (await super.nextPage()) as HistoryPage<T> | null;
-  }
-
-  get hasPrevious(): boolean {
-    return this.previousCursor !== undefined;
-  }
-
-  async previousPage(): Promise<HistoryPage<T> | null> {
-    return this.#loadPrevious === undefined ? null : this.#loadPrevious();
-  }
+export interface ListHistoryChatsParams {
+  readonly limit?: number;
+  readonly cursor?: string;
+  readonly kind?: HistoryChat["kind"];
+  readonly activeSince?: string;
+  readonly activeBefore?: string;
 }
 
-function headerValue(
-  headers: Readonly<Record<string, string>>,
-  name: string,
-): string | undefined {
-  for (const [key, value] of Object.entries(headers))
-    if (key.toLowerCase() === name) return value;
-  return undefined;
-}
-
-export function isoTime(value: string | Date | undefined): string | undefined {
-  return value instanceof Date ? value.toISOString() : value;
-}
-
-function decode<T>(response: ApiResponse<unknown>): HistoryEnvelope<T> {
-  const body = response.data as Partial<HistoryEnvelope<T>> | null;
-  if (!body || !Array.isArray(body.data)) {
-    throw new PolymorfaServerError(
-      "The Polymorfa API returned an invalid history page.",
-      {
-        code: "invalid_response",
-        status: response.metadata.status,
-        ...(response.metadata.requestId === undefined
-          ? {}
-          : { requestId: response.metadata.requestId }),
-        metadata: response.metadata,
-        details: response.data,
-      },
-    );
-  }
-  return {
-    data: body.data,
-    nextCursor: typeof body.nextCursor === "string" ? body.nextCursor : null,
-    previousCursor:
-      typeof body.previousCursor === "string" ? body.previousCursor : null,
-  };
-}
-
-export async function loadHistoryPage<T>(
-  transport: HttpTransport,
-  path: string,
-  query: Readonly<Record<string, QueryValue>>,
-  options: RequestOptions,
-  cursor?: string,
-): Promise<HistoryPage<T>> {
-  const response = await transport.request<unknown>({
-    method: "GET",
-    path,
-    query: cursor === undefined ? query : { ...query, cursor },
-    ...options,
-  });
-  const page = decode<T>(response);
-  const next = page.nextCursor ?? undefined;
-  const previous = page.previousCursor ?? undefined;
-  return new HistoryPage<T>({
-    items: page.data,
-    response,
-    ...(next === undefined
-      ? {}
-      : {
-          nextCursor: next,
-          loadNext: () =>
-            loadHistoryPage<T>(transport, path, query, options, next),
-        }),
-    ...(previous === undefined
-      ? {}
-      : {
-          previousCursor: previous,
-          loadPrevious: () =>
-            loadHistoryPage<T>(transport, path, query, options, previous),
-        }),
-  });
+export interface ListHistoryMessagesParams {
+  readonly limit?: number;
+  readonly cursor?: string;
+  readonly order?: "desc" | "asc";
+  readonly since?: string;
+  readonly until?: string;
+  readonly direction?: HistoryMessage["direction"];
+  /** Comma-separated message types, such as `text,image` (up to 16). */
+  readonly types?: string;
 }

@@ -411,6 +411,145 @@ retry a `4xx`, and drop reports refused with `429` or `503`. Client tokens
 need the `voip_signal` action and cannot send `participant`. The browser and
 Calls clients send these reports for you.
 
+## Call consent
+
+Every call is checked against the team's call policy before the destination
+rings. Reading and changing the policy needs an organization key; project
+tokens and client tokens receive `403`.
+
+```ts
+const policy = await platform.callPolicy.retrieve();
+console.log(policy.data.blockedCountryCodes, policy.data.optOutCount);
+
+await platform.callPolicy.update({
+  blockedCountryCodes: ["44", "1876"],
+  expectedRevision: policy.data.revision,
+});
+```
+
+Blocked codes are country calling codes or longer dialing prefixes, written as
+1 to 4 digits without `+`: `44` blocks the United Kingdom, `1876` blocks
+Jamaica without blocking the rest of `+1`. `update` replaces the whole list;
+send `[]` to allow every country. The SDK checks the digits and the 300-code
+limit before sending. Pass the `revision` you read as `expectedRevision` to
+fail with `PolymorfaConflictError` (`state_conflict`) if someone changed the
+policy meanwhile. While any code is blocked, a call to a person whose phone
+number is unknown is refused too, because the destination country cannot be
+checked.
+
+`platform.callOptOuts` manages the team's do-not-call list. A call to a listed
+person fails with `PolymorfaAuthorizationError` (`call_recipient_opted_out`).
+
+```ts
+const added = await platform.callOptOuts.create({
+  phoneNumber: "+14155550123",
+  note: "Asked not to be called on 2026-09-18",
+});
+added.metadata.status; // 201 when added, 200 when already listed
+
+const imported = await platform.callOptOuts.import({
+  entries: [
+    { phoneNumber: "+14155550123" },
+    { bsuid: "US.13491208655302741918" },
+  ],
+});
+console.log(
+  imported.data.added,
+  imported.data.existing,
+  imported.data.rejected,
+);
+
+for await (const entry of await platform.callOptOuts.list({ limit: 100 })) {
+  console.log(entry.id, entry.phoneNumber ?? entry.bsuid, entry.source);
+}
+
+await platform.callOptOuts.delete(added.data.id);
+```
+
+- `create` takes exactly one of `phoneNumber` (E.164) or `bsuid`; the SDK
+  rejects both or neither before sending. Adding someone already listed returns
+  the stored entry with `200` and leaves its note unchanged.
+- `import` takes 1 to 5,000 entries. Valid entries are added together; invalid
+  ones come back in `rejected` with their `index` and a `reason`
+  (`invalid_phone_number`, `invalid_bsuid`, `missing_identifier`,
+  `multiple_identifiers`, or `invalid_note`).
+- `list` returns a `CursorPage<CallOptOut>` ordered newest first. It follows
+  `page.nextCursor` for you; filter by `phoneNumber` or `bsuid`, not both.
+- A list that would pass 100,000 entries fails with `PolymorfaConflictError`
+  (`call_opt_out_limit`).
+
+The list is matched on what you supply: an entry for a phone number does not
+block a call to the same person addressed only by user ID.
+
+### Call permission on Cloud API Numbers
+
+WhatsApp requires a person's permission before a Cloud API Number calls them.
+Ask for it with `callPermissionRequest` content:
+
+```ts
+await messaging.messages.send("support", {
+  conversation: { phoneNumber: "+14155550123" },
+  content: {
+    callPermissionRequest: {
+      body: "We would like to call you about order 1522.",
+    },
+  },
+});
+```
+
+`body` is 1 to 1,024 characters. Outside the customer service window, send an
+approved template with a call permission request button using `template`
+content instead. WhatsApp allows one request per person every 24 hours and two
+every 7 days; a connected call resets both. A send past that limit fails with
+`PolymorfaRateLimitError` (`call_permission_request_limited`), whose
+`rateLimitReason` is `call_permission_request` and whose
+`metadata.headers["retry-after"]` carries WhatsApp's reset when it reports one.
+A person who already granted permanent permission produces
+`PolymorfaConflictError` (`call_permission_granted`); place the call instead.
+
+```ts
+const permission = await messaging.voip.retrieveCallPermission(
+  "support",
+  "+14155550123",
+);
+const state = permission.data.data;
+state.status; // "none" | "temporary" | "permanent" | "revoked"
+state.expiresAt; // when a temporary permission ends
+state.actions?.requestPermission?.limits;
+
+const check = await messaging.voip.check({
+  session: "support",
+  to: "+14155550123",
+});
+check.data.data.allowed;
+check.data.data.refusal; // null, or the first reason a call would fail
+```
+
+- `retrieveCallPermission(session, to)` takes a public user ID or an E.164
+  phone number and encodes it for you. It asks WhatsApp on every request and
+  returns its limits in `actions`. When WhatsApp cannot be reached, it returns
+  the stored state with `fresh: false` and `actions: null`. It needs
+  `sessions:read`.
+- `check({ session, to })` runs the checks a placement runs without placing a
+  call or reserving anything. `refusal` is `calls_disabled`,
+  `call_recipient_opted_out`, `call_destination_blocked`,
+  `call_permission_required`, or `call_limit_reached`. `permission` is `null`
+  on linked-device Numbers. A placement made afterwards runs the same checks
+  again. If required check state is unavailable, it raises
+  `PolymorfaServerError` (`503 service_unavailable`) without an allow or
+  refusal result.
+- Both require a server credential. `retrieveCallPermission` fails with
+  `409 unsupported_for_connection` on a linked-device Number; `check` supports
+  linked-device Numbers and returns `permission: null` for them.
+
+Permission changes arrive as the `call.permission_changed` webhook event with a
+`CallPermissionChangedPayload`: the `conversation`, the new `status`, the
+`previousStatus`, `expiresAt`, a `source` (`user_action`, `automatic`, `sync`,
+or `call_refused`) and `changedAt`. No event is published when a temporary
+permission reaches `expiresAt`; schedule your own follow-up from `expiresAt`.
+The person's reply also arrives as `message.received` with `interactive.type`
+`call_permission_reply`.
+
 ## SIP trunks
 
 `Client.sipTrunks` manages the SIP trunks that connect a PBX to a project's
@@ -805,7 +944,7 @@ The source has one send route rather than separate routes for each message
 kind. `SendMessageRequest` is therefore a union of the exact typed payloads for
 text, image/file/voice/video media, polls, locations, contacts, phone-number
 requests, products, product lists, orders, lists, buttons, address messages,
-and flows. Template sends use `SendTemplateMessageRequest`. Select exactly one
+flows, and call permission requests. Template sends use `SendTemplateMessageRequest`. Select exactly one
 message kind inside `content`; `conversation` selects its destination.
 
 ```ts
@@ -832,7 +971,43 @@ await messaging.messages.send(
 
 Reply context uses `quotedMessage`; forwarding is represented by
 `isForwarded`. Neither is a separate endpoint. The pinned contract exposes no
-message history, list, search, or standalone forward/reply route.
+message list, search, or standalone forward/reply route in `messages`. Hosted
+message history is read through `MessagingClient.chats` as described below.
+
+### Hosted message history beta
+
+`MessagingClient.chats.list(session, params)` lists stored conversations;
+`retrieve(session, conversation)` reads one. `listMessages(session,
+conversation, params)` and `retrieveMessage(session, conversation, messageId)`
+read stored messages. A conversation can be a public ID or E.164 phone number;
+the SDK encodes it in the path. Keep message IDs and cursors as opaque strings.
+
+```ts
+const page = await messaging.chats.listMessages("support", "+14155550123", {
+  limit: 50,
+  order: "desc",
+  types: "text,image",
+});
+for (const message of page.data.data) console.log(message.id, message.text);
+if (page.data.nextCursor) {
+  const older = await messaging.chats.listMessages("support", "+14155550123", {
+    cursor: page.data.nextCursor,
+    order: "desc",
+    types: "text,image",
+  });
+  console.log(older.data.previousCursor);
+}
+console.log(page.metadata.headers["polymorfa-data-region"]);
+```
+
+These four reads require an organization key or project token, a visible
+Number with hosted message storage enabled, team enrollment in
+`messaging.history`, and `chats:read` or `messages:read` as appropriate. The
+feature is an unreleased enrolled beta; an SDK method does not grant access.
+Client tokens are refused before transport. A disabled HMS Number yields
+`404 hms_not_enabled`; absent beta access yields `403 permission_denied`, and
+an unavailable regional read yields `503 service_unavailable`. Media entries
+carry an API download path, not a signed URL; downloading requires `media:read`.
 
 Client tokens can call all five Messages operations only when the corresponding
 live rule is enabled: `send_message` for send and star, `send_reaction` for
@@ -1667,8 +1842,8 @@ if (isEvent(event, "history.sync")) {
 The catalog also types Customer lifecycle events (`customer.*`), BanSafe events
 (`bansafe.health_threshold`, `bansafe.health_changed`, `bansafe.risk_changed`,
 `bansafe.enforcement`, `bansafe.action`, `bansafe.incident`, and
-`bansafe.claim`), campaign progress events
-(`campaign.*`), `message.failed`, and `template.status`. `message.failed`
+`bansafe.claim`), campaign progress events (`campaign.*`),
+`call.permission_changed`, `message.failed`, and `template.status`. `message.failed`
 reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
 and `retryAfter` in seconds. Unknown event names still parse as
 `UnknownWebhookEvent`.
@@ -2202,8 +2377,9 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
 covers the three public call analytics and export operations. `Client.voice`
-covers the Voice audio and credential operations. The contract snapshot
-is pinned to merged API `dev` commit `087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`.
+covers the Voice audio and credential operations. `Client.callPolicy` and
+`Client.callOptOuts` cover consent controls. The contract snapshot is pinned
+to merged API `dev` commit `270fbe53e04927d360076971a3e54e2772fb0ed2`.
 
 ## Functions
 

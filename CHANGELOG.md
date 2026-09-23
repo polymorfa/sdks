@@ -2,14 +2,31 @@
 
 ## Unreleased
 
-- Added message history (beta) reads: `MessagingClient.chats.list()`,
-  `chats.get()`, `messages.list()`, and `messages.get()`. Lists return an exported
-  `HistoryPage` with `for await` pagination, `previousPage()`, and `dataRegion`.
-  These reads require hosted message storage and beta enrollment. Response
-  metadata includes the `polymorfa-data-region` header.
-- Added `Client.events.listIndexed()` to follow event ingestion offsets, so
-  delayed producer timestamps do not hide newly indexed events.
+- Added typed hosted message history reads to `MessagingClient.chats`:
+  `list`, `retrieve`, `listMessages`, and `retrieveMessage`. Server credentials
+  need the relevant read scope, HMS enabled on the Number, and enrollment in
+  the message history beta. Pages retain both cursors and responses expose the
+  data region. `PolymorfaErrorCode` includes `hms_not_enabled`.
+- Added `Client.events.listIndexed()` to follow event ingestion offsets,
+  including late-indexed events with older producer timestamps.
 
+- Call consent. `Client.callPolicy` (`retrieve`, `update`) reads and replaces
+  the team's blocked country codes with an optional `expectedRevision` guard,
+  and `Client.callOptOuts` (`list`, `create`, `import`, `delete`) manages the
+  team's do-not-call list. Both need an organization key. `list` returns a
+  `CursorPage` that follows `page.nextCursor`; `create` answers `201` for a new
+  entry and `200` for one already listed, told apart by `metadata.status`.
+  `MessagingClient.voip.retrieveCallPermission()` reads a person's call
+  permission on a Cloud API Number, and `MessagingClient.voip.check()` runs a
+  placement's checks without placing a call. Message content adds
+  `callPermissionRequest: { body }` in both server and browser clients; the
+  browser kind is `call_permission_request`, with existing client-token grants
+  and server consent checks. The `call.permission_changed` webhook
+  event narrows to `CallPermissionChangedPayload`. `PolymorfaErrorCode` adds
+  `call_recipient_opted_out`, `call_destination_blocked`,
+  `call_permission_request_limited`, `call_permission_granted` and
+  `call_opt_out_limit`, and `PolymorfaRateLimitReason` adds
+  `call_permission_request`.
 - Signed Voice upload errors keep the HTTP status but discard storage response
   text and headers that could expose the upload URL.
 
@@ -149,7 +166,6 @@
   `BanSafeRiskFactorGroup` union of the sixteen documented groups.
   `BanSafeHealthChangedPayload.previousBand` uses `BanSafeHealthBandName | null`,
   matching the five health bands accepted by `band`.
-
 - Added `Client.operations` on organization and project clients: `list`
   (filter by `projectId`, status, kind, resource, and time), `get` with an
   optional server long-poll (`wait`, 0 to 30 seconds), `listTransitions`,
