@@ -10,7 +10,7 @@ the Messaging and Platform contracts recorded at source revision
 `t3code/hybrid-link-support`. Graph-compatible APIs are outside
 this SDK's initial scope.
 The matching source revision also includes campaign compliance and Functions
-changes. Three Calls analytics operations remain missing. Sixteen changed
+changes. All public operations have an SDK method. Sixteen changed
 campaign or audience fingerprints still need review against the merged SDK
 implementation; the Hybrid operation-status contract is covered.
 

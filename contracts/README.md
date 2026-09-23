@@ -42,8 +42,7 @@ Their types match the contract, including `session.restriction_updated` and
 the Hybrid refusal codes. The retired `premium_required` code is no longer
 listed; unrecognized API error codes remain readable as strings.
 
-Three Calls analytics operations remain missing: record listing, statistics,
-and export. The merged SDK covers retention get/update. Console equivalents
+The merged SDK covers Calls analytics, export, and retention. Console equivalents
 stay excluded because they require dashboard identity.
 
 The merged SDK implements the campaign compliance operations, but 16 changed
@@ -74,13 +73,12 @@ fingerprint from the upstream frame `$ref` fix; only its discriminator mapping
 changed. The same re-sync picks up the management MCP tools and the call analytics work
 on `dev`. The MCP tools change no published operation this SDK covers. Call
 analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
-`/platform/calls/export`; they are recorded as `missing` here because
-`Client.calls` implements them in a separate pull request.
+`/platform/calls/export`, covered by the merged `Client.calls` implementation.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        332 |
-| Missing             |          3 |
+| Covered             |        335 |
+| Missing             |          0 |
 | Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |         16 |

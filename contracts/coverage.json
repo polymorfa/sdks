@@ -2893,9 +2893,8 @@
       "operationId": "listCallRecords",
       "fingerprint": "1740444c3df90e22a3e5002d7dd35526f2b371c124d144039298f8598575ca31",
       "typescript": {
-        "status": "missing",
-        "reason": "No typed SDK method implements this public operation.",
-        "milestone": "calls-analytics-and-sip-discovery"
+        "status": "covered",
+        "method": "Client.calls.list"
       }
     },
     {
@@ -2905,9 +2904,8 @@
       "operationId": "exportCallRecords",
       "fingerprint": "a1ce6d319f8c5250968c0eefe9061dd1588dc7f21a4824d7ce59ef42494cfde9",
       "typescript": {
-        "status": "missing",
-        "reason": "No typed SDK method implements this public operation.",
-        "milestone": "calls-analytics-and-sip-discovery"
+        "status": "covered",
+        "method": "Client.calls.export"
       }
     },
     {
@@ -2917,9 +2915,8 @@
       "operationId": "getCallStats",
       "fingerprint": "abfb53c1e1c2ecae09b3f891cd43ccda995f0729631167c83ebb1f77f4829dbd",
       "typescript": {
-        "status": "missing",
-        "reason": "No typed SDK method implements this public operation.",
-        "milestone": "calls-analytics-and-sip-discovery"
+        "status": "covered",
+        "method": "Client.calls.stats"
       }
     },
     {

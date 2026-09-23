@@ -175,10 +175,9 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "d5245f76d5d6bc7b9af439571bd1f157185b1b87",
       total: 462,
-      covered: 332,
+      covered: 335,
       partial: 0,
-      // Three Calls analytics operations remain explicit gaps.
-      missing: 3,
+      missing: 0,
       excluded: 111,
       changed: 16,
     });
