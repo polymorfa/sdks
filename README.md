@@ -6,7 +6,7 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts on the unmerged API Hybrid Link branch at
-`b447d9513326a13f2029e2ee26f43b4d17c90835`. Graph-compatible APIs are outside this SDK's initial scope.
+`c7b20c3775b9234ce03cf2c90d72eed903249efe`. Graph-compatible APIs are outside this SDK's initial scope.
 The same source includes Hybrid Link, Voice audio, usage gates, Calls analytics,
 Campaigns P0, and Functions.
 
@@ -754,4 +754,4 @@ or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. The contract snapshot
-is pinned to unmerged API Hybrid Link commit `b447d9513326a13f2029e2ee26f43b4d17c90835`.
+is pinned to unmerged API Hybrid Link commit `c7b20c3775b9234ce03cf2c90d72eed903249efe`.

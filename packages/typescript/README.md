@@ -2178,7 +2178,7 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. The contract snapshot
-is pinned to unmerged API Hybrid Link commit `b447d9513326a13f2029e2ee26f43b4d17c90835`.
+is pinned to unmerged API Hybrid Link commit `c7b20c3775b9234ce03cf2c90d72eed903249efe`.
 
 ## Functions
 
