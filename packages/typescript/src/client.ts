@@ -19,6 +19,7 @@ import { AudiencesResource } from "./platform/audiences.js";
 import { AuditLogsResource } from "./platform/audit-logs.js";
 import { BillingResource } from "./platform/billing.js";
 import { BanSafeResource } from "./platform/bansafe.js";
+import { PlatformCallsResource } from "./platform/calls.js";
 import { CallRetentionResource } from "./platform/call-retention.js";
 import { CampaignsResource } from "./platform/campaigns.js";
 import { CustomersResource } from "./platform/customers.js";
@@ -59,6 +60,7 @@ export interface ClientBase<O extends ClientOwner> {
   readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<O>;
   readonly sipTrunks: SipTrunksResource<O>;
+  readonly calls: PlatformCallsResource<O>;
   readonly callRetention: CallRetentionResource;
   readonly raw: RawResourceFor<O>;
   project(projectId: string): Client<"project">;
@@ -109,6 +111,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<ClientOwner>;
   readonly sipTrunks: SipTrunksResource<ClientOwner>;
+  readonly calls: PlatformCallsResource<ClientOwner>;
   readonly callRetention: CallRetentionResource;
   readonly raw: RawClient | ProjectScopedRawClient;
   readonly #transport: HttpTransport;
@@ -166,6 +169,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       projectId,
       projectId !== null && credential.type !== "projectToken",
     );
+    this.calls = new PlatformCallsResource(this.#transport, projectId);
     this.callRetention = new CallRetentionResource(this.#transport);
     this.raw =
       projectId === null

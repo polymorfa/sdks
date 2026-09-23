@@ -456,6 +456,70 @@ of another project with `PolymorfaNotFoundError`. Conflicts raise
 `PolymorfaConflictError` with `code` `sip_trunk_in_use`,
 `sip_trunk_revision_conflict`, `sip_trunk_limit`, or `state_conflict`.
 
+## Call analytics and call records
+
+`Client.calls` reads call statistics and call detail records. It needs
+`sessions:read`. A team client covers every project of the team unless you
+pass `projectId`; a project client reads only its own project, and the SDK
+refuses another `projectId` before sending. A project token that names a
+different project gets `PolymorfaNotFoundError` from the API.
+
+Every method accepts the same filters: `sessionId`, `direction` (`inbound` or
+`outbound`), `upstream` (`linked_device` or `cloud_api`), `outcome`
+(`answered`, `missed`, `declined`, `failed`, or `in_progress`), and `since` and
+`until` as RFC 3339 date-time strings with `Z` or an offset, or `Date` objects.
+The SDK rejects invalid calendar dates, date-only strings, and values outside
+these sets before sending.
+
+```ts
+const { data: stats } = await platform.calls.stats({
+  since: "2026-09-01T00:00:00Z",
+  until: "2026-09-18T00:00:00Z",
+  groupBy: "day",
+  timezone: "Europe/Lisbon",
+});
+console.log(stats.totals.answerRate, stats.groups, stats.heatmap);
+
+for await (const call of await platform.calls.list({ outcome: "missed" })) {
+  console.log(call.callId, call.peerRef, call.endReason);
+}
+```
+
+- `stats(params)` returns `CallStats`: `totals`, one `groups` entry per
+  bucket, and a 168-cell `heatmap` of calls by ISO day of week (Monday is 1)
+  and hour. `groupBy` is `day` (the default, up to 366 days), `hour` (up to 31
+  days), `session` (the 500 busiest numbers; `groupsTruncated` reports more),
+  or `outcome`. `timezone` is an IANA name, including single-name zones such
+  as `CET` and `GMT`, and defaults to `UTC`. The API matches names in any case
+  and refuses UTC offsets. Without `since` and `until` the range is the last 7 days. A
+  query that takes too long fails with `PolymorfaServerError`
+  (`service_unavailable`).
+- `list(params)` returns a `CursorPage<CallRecord>`, newest first. `limit` is
+  1 to 100 (default 25). `peerRef` is a team-specific pseudonym of the other
+  party; call records never contain phone numbers.
+- `export(params)` returns one page of up to 1,000 records (`limit` 1 to 1,000)
+  as `{ format, body, nextCursor }`. `format` is `csv` (the default; every page
+  starts with a header row and uses CRLF line endings) or `ndjson` (one call
+  record per line). Pass `nextCursor` back as `cursor` with the same filters;
+  it is `null` on the last page.
+- `exportAll(params)` yields the body of every page in order. CSV pages after
+  the first drop their header row, so the chunks join into one CSV file. If
+  the API returns a cursor that was already requested, including the starting
+  `cursor`, `exportAll` throws `PolymorfaServerError` (`invalid_response`)
+  without yielding that page, so a replayed page never reaches your output.
+
+```ts
+import { createWriteStream } from "node:fs";
+
+const file = createWriteStream("calls.csv");
+for await (const chunk of platform.calls.exportAll({
+  since: "2026-09-01T00:00:00Z",
+})) {
+  file.write(chunk);
+}
+file.end();
+```
+
 ## Call data retention
 
 `Client.callRetention` reads and changes how long Polymorfa keeps your team's
@@ -1986,10 +2050,10 @@ The typed webhook catalog includes `session.restriction_updated` with
 `device_removed`, or `unknown`. Test event requests support the restriction
 fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
-`Client.callRetention` covers the team call-retention settings. Three public
-call analytics and export operations remain recorded as missing in the contract
-ledger. The contract snapshot is pinned to merged API `dev` commit
-`f4a340da3b74248232ebea73f3e72b42f667beef`.
+`Client.callRetention` covers the team call-retention settings. `Client.calls`
+covers the three public call analytics and export operations. The contract
+snapshot is pinned to merged API `dev` commit
+`9c876c16c60b74370d934e1275f23ef6096bee12`.
 
 ## Functions
 

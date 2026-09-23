@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "f4a340da3b74248232ebea73f3e72b42f667beef",
+  "commit": "9c876c16c60b74370d934e1275f23ef6096bee12",
   "branch": "dev",
   "published": true,
-  "note": "Merged polymorfa/polymorfa#232 API revision on dev. Both public OpenAPI snapshots are byte-identical to the authoritative files at this commit.",
+  "note": "Merged polymorfa/polymorfa dev revision including Calls analytics, Campaigns P0 and Functions. Both public OpenAPI snapshots are byte-identical to the authoritative files at this commit.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "6cb9481faf31e89adbc883eff476962b3ddb5a04ed18e13cd3c38b92554df5ad"
+      "sha256": "7255d7ac18b54eb72de77d79ab8d201d2ec616f456b4be493c3028f2dbd9a890"
     }
   }
 }
