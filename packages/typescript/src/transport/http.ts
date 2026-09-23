@@ -149,6 +149,22 @@ export class HttpTransport {
   }
 
   /**
+   * Returns a successful response body as text. Error responses are decoded
+   * and raised like JSON requests. `accept` is sent unless the caller set it.
+   */
+  async requestText(
+    request: RawRequest,
+    accept: string,
+  ): Promise<ApiResponse<string>> {
+    return this.#request(
+      request,
+      async (response) =>
+        response.ok ? response.text() : decodeResponseBody(response),
+      accept,
+    );
+  }
+
+  /**
    * Returns a successful response body as an unbuffered stream.
    *
    * Retries apply only before a body is handed to the caller. `timeoutMs`
@@ -907,6 +923,7 @@ const SAFE_RESPONSE_HEADERS = [
   "x-ratelimit-limit",
   "x-ratelimit-remaining",
   "polymorfa-ratelimit-reason",
+  "polymorfa-next-cursor",
 ] as const;
 
 function apiError(

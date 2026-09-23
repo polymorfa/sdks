@@ -19989,7 +19989,7 @@
             }
           },
           "402": {
-            "description": "Reserved `gate_limit_reached` response for enforced monthly limits. The outbound monthly gate is record-only until placement reservations are available.",
+            "description": "`gate_limit_reached` when an enforced usage limit refuses placement; `entitlement_required` when the account lacks a required capability. The outbound monthly gate remains in record mode until placement reservations are available.",
             "content": {
               "application/json": {
                 "schema": {
@@ -19998,13 +19998,13 @@
                 "example": {
                   "error": {
                     "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
+                    "code": "gate_limit_reached",
+                    "message": "A usage limit for this team or number was reached.",
                     "param": null,
                     "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
+                  "docs": "https://docs.polymorfa.com/api/errors#gate-limit-reached"
                 }
               }
             }

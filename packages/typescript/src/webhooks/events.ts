@@ -1,13 +1,20 @@
 import type {
-  VoiceAudioFailureReason,
-  VoiceAudioFormat,
-  VoiceAudioSource,
-} from "../platform/voice.js";
-import type {
   MessagingConnection,
   PhonePlatform,
   WhatsAppAccountType,
 } from "../messaging/types.js";
+import type {
+  UsageKeySource,
+  UsageMeter,
+  UsagePricingState,
+  UsageSourceKind,
+  UsageUnit,
+} from "../platform/usage.js";
+import type {
+  VoiceAudioFailureReason,
+  VoiceAudioFormat,
+  VoiceAudioSource,
+} from "../platform/voice.js";
 
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
@@ -983,42 +990,27 @@ export interface VoiceAssetFailedPayload extends VoiceAssetEventPayload {
   readonly failureReason: VoiceAudioFailureReason;
 }
 
-/** One usage record, emitted when created and again on a higher revision. */
+/**
+ * Payload for `usage.recorded`: one usage record, emitted when it is created
+ * and again, with a higher `revision`, when a later observation corrects it.
+ * Usage is measured, not charged: `pricingState` is `unpriced`.
+ */
 export interface UsageRecordedPayload {
   readonly id: string;
-  readonly meter:
-    | "call.duration"
-    | "call.cloud_pulses"
-    | "campaign.call"
-    | "tts.characters"
-    | "tts.seconds"
-    | "stt.seconds"
-    | "agent.seconds"
-    | "agent.tokens"
-    | "agent.provider_cost"
-    | "channels.peak"
-    | "storage.byte_days";
+  readonly meter: UsageMeter;
   readonly quantity: number;
-  readonly unit:
-    | "second"
-    | "pulse"
-    | "call"
-    | "character"
-    | "token"
-    | "provider_unit"
-    | "channel"
-    | "byte_day";
+  readonly unit: UsageUnit;
   readonly dimensions: Readonly<Record<string, string | number | boolean>>;
-  readonly keySource: "none" | "managed" | "customer";
-  readonly sourceKind:
-    "call" | "attempt" | "flow_run" | "conversation" | "asset" | "team";
+  readonly keySource: UsageKeySource;
+  readonly sourceKind: UsageSourceKind;
+  /** The call id for call meters. */
   readonly sourceId: string;
   readonly projectId: string | null;
   readonly session: string | null;
   readonly occurredAt: string;
   readonly recordedAt: string;
   readonly revision: number;
-  readonly pricingState: "unpriced" | "priced" | "waived" | "settled";
+  readonly pricingState: UsagePricingState;
   readonly rateCard: { readonly id: string; readonly version: number } | null;
   readonly pricedCredits: number | null;
 }
@@ -1108,7 +1100,6 @@ export interface WebhookPayloadMap {
 
 export interface WebhookEventOf<TEvent extends string, TPayload> {
   readonly id: string;
-  /** Session name. Empty for project-scoped events such as `customer.*` and `voice.*`. */
   readonly session: string;
   /** Integrator reference from the QuickLink that created the session, when supplied. */
   readonly externalId?: string;

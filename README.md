@@ -5,8 +5,10 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
-pending Messaging and Platform snapshots from API PR #227 at
-`31d9c52f5f8573efee520a34d03b2d36fa7dc152` on `t3code/voice-audio-library`. This source is not merged to monorepo `dev`; the typed voice methods and coverage ledger are reconciled to this pending source. Re-pin to the final API `dev` merge before publishing (see `contracts/README.md`). Graph-compatible APIs are outside this SDK's initial scope.
+the Messaging and Platform contracts recorded at pending Voice API source
+revision `f16bfbaf9` in polymorfa/polymorfa#227. This SDK branch requires a
+final pin to the merged API `dev` commit before publication. Graph-compatible
+APIs are outside this SDK's initial scope.
 
 ## Package architecture
 
@@ -22,9 +24,9 @@ pending Messaging and Platform snapshots from API PR #227 at
 | `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
 | `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
 
-The eight public packages are available on npm under the `dev` tag as development
-prereleases. `@polymorfa/sdk/calls` is a subpath of `@polymorfa/sdk`.
-No mobile-native binding is part of this milestone.
+The public packages are complete development artifacts on `dev`. They
+publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
+Polymorfa npm organization. No mobile-native binding is part of this milestone.
 
 ## TypeScript development install
 
@@ -36,9 +38,10 @@ npm install @polymorfa/sdk@dev
 npm install @polymorfa/browser@dev   # browser apps
 ```
 
-Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. These
-are development prereleases; use `@dev` or an exact version when installing.
-To build from source, install a packed tarball:
+Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. No
+stable (`latest`) release exists. Publishing starts once the npm scope and
+trusted publisher are configured; until `npm view @polymorfa/sdk dist-tags`
+shows a `dev` tag, build from source and install the packed tarballs:
 
 ```bash
 git clone --branch dev https://github.com/polymorfa/sdks.git
@@ -215,8 +218,7 @@ simulated-device capabilities are also rejected before transport.
 
 Both organization and project views expose owner-bound resources:
 
-- `events`: list, retrieve, and replay durable events; stream one project's
-  events when the required scope and beta access are available
+- `events`: list, retrieve, and replay durable events
 - `webhooks`: list, create, retrieve, update, delete, test, and rotate secrets
 - `webhookDeliveries`: list and retrieve deliveries, list and retrieve their
   physical attempts, and retry a delivery
@@ -263,15 +265,18 @@ The organization view also exposes these management resources:
 - `sipTrunks`: list, create, retrieve, update, delete, and rotate the
   credentials of a project's SIP trunks, and read the SIP address your PBX
   points at with `endpoint()` (also on project clients)
-- `voice`: pending Voice Automation audio-library resources. `voice.audio`
-  lists, uploads, synthesizes, retrieves, updates, deletes, and previews a
-  project's audio assets; `voice.providerCredentials` manages ElevenLabs and
-  OpenAI keys. The API dependency is unmerged; installing this branch does not
-  make the feature available. See [the pending contract](contracts/README.md).
+- `calls`: call statistics, paginated call detail records, and CSV or NDJSON
+  export of call records for the team or one project (also on project clients)
+- `voice`: Voice Automation beta audio uploads, synthesis, previews, retention,
+  deletion and provider credentials, subject to API enrollment and deployment
 - `callRetention`: retrieve and update how long Polymorfa keeps the team's
   call data (also readable on project clients; changes need a team API key)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
+- `usage`: read metered call usage for a month, list or iterate usage records
+  for a call or number (also on project clients), and read usage gate modes,
+  limits and decisions (organization clients only). Usage is measured, not
+  charged.
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
   restrictions, incidents, claims, and Health action history; report and retract
   customer incidents
@@ -417,7 +422,7 @@ try {
 `PolymorfaErrorCode` lists the documented codes, including
 `recipient_not_on_whatsapp`, `conversation_window_closed`,
 `template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
-`new_chat_limit_reached`, `whatsapp_account_restricted`, the BanSafe codes, the Calls and SIP trunk codes, and the Voice Automation codes,
+`new_chat_limit_reached`, `whatsapp_account_restricted`, the BanSafe codes, and the Calls and SIP trunk codes,
 and still accepts codes a newer API adds. `POLYMORFA_ERROR_CODES` and
 `isKnownPolymorfaErrorCode()` are exported. `requestLogUrl` is absent for
 client tokens and for requests the API did not log. `BrowserError` exposes
@@ -456,10 +461,8 @@ and `idempotencyKey`; the key does not make the API replay the append.
 
 ## API versions and raw requests
 
-Set `apiVersion` on a client or a single request to a supported contract date,
-such as `2026-03-20`. The SDK sends it as the `Polymorfa-Version` header. This
-value uses `YYYY-MM-DD`, not the SDK package version. Omitting it lets the API
-select its configured current version.
+Set `apiVersion` on a client or a single request. The SDK sends it as the
+`Polymorfa-Version` header.
 
 Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 
@@ -520,17 +523,11 @@ organization and project event, webhook, delivery, attempt, and operation
 resources described above. Dashboard and staff routes retain their separate
 credential requirements.
 
-`Client.events.stream()` returns an `AsyncIterable` of project events with
-automatic reconnect and cursor resume. It requires an organization API key or
-project token with `events:listen`, and Event streams beta access enabled for
-the enrolled team. Organization clients pass `projectId`; project views use
-their bound project. See the [streaming guide](packages/typescript/README.md#stream-events-in-real-time)
-for iteration, cancellation, and manual acknowledgement.
-
-`polymorfa listen` owns local forwarding and connects to a separate CLI-only
-protocol. Its `pmfa_ls_` credential cannot be used by `Client`,
-`MessagingClient`, or their raw request helpers. Browser client tokens cannot
-use the server event stream.
+`Client.events.stream()` exposes the server event stream as an `AsyncIterable`,
+and `Client.events.liveSource()` adapts it for `@polymorfa/store`. Both require
+the server event stream's scope and beta access. `polymorfa listen` connects to
+a separate CLI-only forwarding protocol; its `pmfa_ls_` credential cannot be
+used by `Client`, `MessagingClient`, or their raw request helpers.
 
 ## QuickLink lifecycle and settings
 
@@ -735,7 +732,8 @@ The typed webhook catalog includes `session.restriction_updated` with
 `device_removed`, or `unknown`. Test event requests support the restriction
 fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
-`Client.callRetention` covers the team call-retention settings. Three public
-call analytics and export operations remain recorded as missing in the contract
-ledger. The contract snapshot is pinned to merged API `dev` commit
-`f4a340da3b74248232ebea73f3e72b42f667beef`.
+`Client.callRetention` covers the team call-retention settings. `Client.calls`
+covers the three public call analytics and export operations. `Client.voice`
+covers the pending Voice audio and credential operations. The contract snapshot
+is pinned to API #227 head `f16bfbaf943cc8f470a1cabb3c23ce25405be1dc`
+and must be repinned after it merges into `dev`.

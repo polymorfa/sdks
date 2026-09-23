@@ -173,16 +173,15 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "31d9c52f5f8573efee520a34d03b2d36fa7dc152",
-      total: 470,
-      covered: 340,
+      sourceCommit: "f16bfbaf943cc8f470a1cabb3c23ce25405be1dc",
+      total: 485,
+      covered: 361,
       partial: 0,
-      // Calls analytics (#281) and usage/gates (#283) remain separate SDK dependencies.
-      missing: 6,
+      missing: 0,
       excluded: 124,
       changed: 0,
     });
-    // All mappings use the pending API source without unresolved removals.
+    // No source operation was removed.
     const resolutions = (result.report?.resolutions ?? []) as Array<{
       operationId: string;
       status: string;
@@ -219,6 +218,26 @@ describe("coverage checker", () => {
       revokeCustomerPairingLink: "Client.customers.revokePairingLink",
       transferCustomerNumber: "Client.customers.transferNumber",
       updateCustomer: "Client.customers.update",
+    });
+  });
+
+  it("maps the Platform call analytics and export routes", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{
+        path: string;
+        operationId: string;
+        typescript: { status: string; method?: string };
+      }>;
+    };
+    const mappings = Object.fromEntries(
+      ledger.operations
+        .filter(({ path }) => path.startsWith("/platform/calls"))
+        .map(({ operationId, typescript }) => [operationId, typescript]),
+    );
+    expect(mappings).toEqual({
+      exportCallRecords: { status: "covered", method: "Client.calls.export" },
+      getCallStats: { status: "covered", method: "Client.calls.stats" },
+      listCallRecords: { status: "covered", method: "Client.calls.list" },
     });
   });
 

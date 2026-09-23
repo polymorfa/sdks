@@ -539,6 +539,26 @@ export { AudiencesResource } from "./platform/audiences.js";
 export { ApiKeysResource } from "./platform/api-keys.js";
 export { AuditLogsResource } from "./platform/audit-logs.js";
 export { BillingResource } from "./platform/billing.js";
+export { UsageResource } from "./platform/usage.js";
+export type {
+  CallUsageDimensions,
+  UsageGate,
+  UsageGateKey,
+  UsageGateList,
+  UsageGateMode,
+  UsageGateParams,
+  UsageKeySource,
+  UsageMeter,
+  UsageMeterTotal,
+  UsagePricingState,
+  UsageRecord,
+  UsageRecordPage,
+  UsageRecordParams,
+  UsageSourceKind,
+  UsageSummary,
+  UsageSummaryParams,
+  UsageUnit,
+} from "./platform/usage.js";
 export { BanSafeResource } from "./platform/bansafe.js";
 export { CampaignsResource } from "./platform/campaigns.js";
 export { CustomersResource } from "./platform/customers.js";
@@ -562,6 +582,28 @@ export { ProjectsResource } from "./platform/projects.js";
 export { SecurityIncidentsResource } from "./platform/security-incidents.js";
 export { SessionBansResource } from "./platform/session-bans.js";
 export { PlatformSessionsResource } from "./platform/sessions.js";
+export { PlatformCallsResource } from "./platform/calls.js";
+export type {
+  CallDirection,
+  CallExportFormat,
+  CallFilters,
+  CallOutcome,
+  CallRecord,
+  CallRecordExportPage,
+  CallRecordState,
+  CallStats,
+  CallStatsGroup,
+  CallStatsGroupBy,
+  CallStatsHeatmapCell,
+  CallStatsMetrics,
+  CallStatsParams,
+  CallStatsParamsFor,
+  CallUpstream,
+  ExportCallRecordsParams,
+  ExportCallRecordsParamsFor,
+  ListCallRecordsParams,
+  ListCallRecordsParamsFor,
+} from "./platform/calls.js";
 export { SipTrunksResource } from "./platform/sip-trunks.js";
 export {
   CallRetentionResource,

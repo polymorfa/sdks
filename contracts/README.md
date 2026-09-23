@@ -3,24 +3,24 @@
 ## Focused test-event update
 
 `testing-events.json` records the four test-event schemas from API commit
-`f4a340da3b74248232ebea73f3e72b42f667beef`, including the source path and file
+`9c876c16c60b74370d934e1275f23ef6096bee12`, including the source path and file
 hash. The TypeScript test-event catalog and override types use that revision.
 Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
 and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
-below use the later pending API #227 revision. CLI consumers require a published
-SDK package before updating their pinned dependency.
+below use the pending API #227 Voice revision. CLI consumers require a
+published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at pending `polymorfa/polymorfa` API #227 commit
-`31d9c52f5f8573efee520a34d03b2d36fa7dc152`. That revision includes
-the voice audio library and provider credentials, Campaigns P0, usage/gates,
-and function operations. Re-pin to the final API `dev` commit before publishing
-this SDK branch. The snapshots, coverage ledger, and revision tests have
-been reconciled. `source.json` records the source paths and SHA-256 hashes.
+files at pending `polymorfa/polymorfa` API #227 head
+`f16bfbaf943cc8f470a1cabb3c23ce25405be1dc`. This revision includes
+Voice audio and provider credentials on top of merged usage gates, Calls
+analytics, Campaigns P0 and Functions. The snapshots, ledger and revision
+tests have been reconciled. Re-pin to the final API `dev` merge commit before
+SDK publication. `source.json` records the source paths and SHA-256 hashes.
 
 The preceding refresh added 17 operation rows and removes eight. Eight removed Console
 operation routes moved to `/platform/operations` and
@@ -28,18 +28,12 @@ operation routes moved to `/platform/operations` and
 and project-view `operations` resources cover list, get, transitions and cancel.
 Three new Console retention and SIP discovery operations stay excluded.
 `Client.callRetention` covers `GET` and `PUT /platform/call-retention`, merged
-from SDK `dev`. Six public operations remain explicitly missing: the three usage/gate routes
-(prepared in SDK #283) and three Calls analytics routes:
-`GET /platform/calls`, `/platform/calls/export`, and `/platform/calls/stats`.
-The 13 public voice routes are covered by `Client.voice.audio` and
-`Client.voice.providerCredentials`; their 13 Console counterparts are excluded.
-The voice path and schema subtrees did not change from the prior pending API
-#227 snapshot. This branch does not claim whole-contract parity.
-
-The pending Messaging contract adds `usage.recorded`; the webhook catalog
-includes its typed payload, stable record ID, and revision. Usage remains
-measured but not charged. The three usage/gate API methods themselves remain
-with SDK #283.
+from SDK `dev`. The three public Calls analytics operations are covered by
+`Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
+`Client.calls.exportAll` walks export pages. The 13 public Voice operations are
+covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
+13 Console counterparts are excluded. The full 485-operation snapshot includes
+all 15 Functions routes already merged to API `dev`.
 
 SDK `dev` through `8392f66` adds `Client.sipTrunks.endpoint()` for
 `GET /platform/sip/endpoint`. Its `SipEndpoint` result is a discriminated union:
@@ -64,7 +58,12 @@ because its Platform campaign resource belongs to organization clients. The
 six opaque JSON fields remain `unknown`, while `senderConfig` remains an open
 object. No routes were added or removed by this schema refresh.
 
-This revision adds the Campaigns P0 operations. Audiences gain member
+This revision also covers `GET /platform/usage`, `/platform/usage/records`,
+and `/platform/gates` through `Client.usage.summary`, `listRecords`, and
+`listGates`. `iterateRecords` follows record-page cursors. Usage is measured
+but not charged; gate state requires an organization credential.
+
+The Campaigns P0 revision added these operations. Audiences gain member
 management (`POST`/`GET /platform/audiences/{listId}/members` and
 `DELETE .../{phone}`), campaigns gain recipient append and listing on both
 surfaces, and the organization gains STOP/START keyword settings
@@ -110,12 +109,12 @@ too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        340 |
-| Missing             |          6 |
+| Covered             |        361 |
+| Missing             |          0 |
 | Excluded            |        124 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        470 |
+| Total               |        485 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -257,12 +256,11 @@ are not retained as compatibility aliases.
 
 Functions is tracked separately in `functions/openapi.json`, with its exact
 monorepo source commit and extraction hash in `functions/source.json`. This
-snapshot contains only the15 Functions operations and their transitive schemas.
+snapshot contains only the 15 Functions operations and their transitive schemas.
 `npm run check:functions` verifies their ledger; SDK tests exercise every method.
-The main snapshots above retain their recorded baseline so a Functions change
-does not silently reconcile unrelated Calls, QuickLink or webhook work.
+The main snapshots and Functions subset use the same merged API `dev` revision.
 
-All15 Functions methods require `client.project(projectId).functions` and an
+All 15 Functions methods require `client.project(projectId).functions` and an
 organization enabled for Functions. The SDK never retries Function mutations or
 invocations automatically. Browser/client-token SDKs do not expose this server
 control plane. A local implementation or installed method does not establish

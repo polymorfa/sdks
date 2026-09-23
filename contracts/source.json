@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "31d9c52f5f8573efee520a34d03b2d36fa7dc152",
+  "commit": "f16bfbaf943cc8f470a1cabb3c23ce25405be1dc",
   "branch": "t3code/voice-audio-library",
   "published": false,
-  "note": "Pending API PR #227 head after merging current monorepo dev. Both snapshots are byte-identical to this unmerged branch commit; re-pin to the final API dev merge commit before SDK publication.",
+  "note": "Pending API PR #227 Voice head after merging API dev; snapshots are byte-identical to this branch. Re-pin to the merged API dev commit before SDK publication.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "4a80f11a51346d343f28b6513d203d5846c56e9fa2a97b2cb4c3d5600c9c43ef"
+      "sha256": "b6c851d9286e6ca4bae900246fdcd7a9d9c0bef8bf06fa4b18e9fac34ce6bd94"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "c59292f7c9911b902cd769c3c90c7e31177d84ee3fef00eab6079c9766352d6f"
+      "sha256": "ddef8989a1542d24ea2dcfccf242fe2d61999fc0ccf44b35121ec312c8eed7ba"
     }
   }
 }
