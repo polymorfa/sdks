@@ -52,6 +52,8 @@ The Platform event-list contract adds `afterOffset` and indexed page metadata
 for both organization and project routes. `Client.events.list` and project-view
 `events.list` expose `IndexedEventPage` in that mode; `nextPage()` follows
 `nextOffset` rather than combining an offset with a cursor.
+Both views also expose `events.listIndexed` with explicit `page.nextOffset` and
+`page.highWatermark` metadata for callers that manage their own polling loop.
 
 The preceding refresh added 17 operation rows and removes eight. Eight removed Console
 operation routes moved to `/platform/operations` and

@@ -1935,6 +1935,11 @@ if (indexed.hasMore) {
 }
 ```
 
+`events.listIndexed({ afterOffset: "0" })` also returns an indexed page with
+`items`, `page.nextOffset`, `page.highWatermark`, and response `metadata`. Pass
+`page.nextOffset` to the next call while `page.hasMore` is true. When the page
+is exhausted, save `page.highWatermark` as the next polling baseline.
+
 Use `operations.get()` or `operations.wait()` to inspect asynchronous work,
 and `operations.cancel()` while `capabilities.cancellable` is true. Reads need
 `operations:read`; cancellation needs `operations:cancel`.

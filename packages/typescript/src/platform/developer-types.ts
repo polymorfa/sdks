@@ -1,4 +1,4 @@
-import type { RequestOptions } from "../transport/types.js";
+import type { RequestOptions, ResponseMetadata } from "../transport/types.js";
 
 export type ClientOwner = "organization" | "project";
 export type JsonValue =
@@ -45,6 +45,21 @@ export interface ListEventsParams {
   readonly cursor?: string;
   /** Retained-stream offset after which to list events, in ingestion order. Cannot be combined with cursor, since, or until. Use "0" for the initial high-watermark baseline. */
   readonly afterOffset?: string;
+}
+export interface ListIndexedEventsParams {
+  /** Retained stream position returned by the preceding indexed read; use "0" for a baseline. */
+  readonly afterOffset: string;
+  readonly type?: string;
+  readonly limit?: number;
+}
+export interface IndexedEventPage<T> {
+  readonly items: readonly T[];
+  readonly page: {
+    readonly hasMore: boolean;
+    readonly nextOffset: string | null;
+    readonly highWatermark: string;
+  };
+  readonly metadata: ResponseMetadata;
 }
 export type ListOrganizationEventsParams = ListEventsParams;
 
