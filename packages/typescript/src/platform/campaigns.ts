@@ -1,15 +1,26 @@
 import { HttpTransport } from "../transport/http.js";
+import {
+  withIdempotencyKey,
+  withoutAutomaticRetry,
+} from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
+  AddPlatformCampaignRecipientsRequest,
+  AddPlatformCampaignRecipientsResult,
+  CreatePlatformCampaignRequest,
   DataEnvelope,
   ListCampaignsParams,
+  ListPlatformCampaignRecipientsParams,
+  PlatformCampaignParams,
+  PlatformCampaignRecipientsEnvelope,
   PlatformPayload,
+  UpdatePlatformCampaignRequest,
 } from "./types.js";
 
 type CampaignResponse = Promise<ApiResponse<DataEnvelope<PlatformPayload>>>;
 type CampaignAction =
   "launch" | "pause" | "resume" | "stop" | "archive" | "duplicate" | "requeue";
-type CampaignRead = "analytics" | "events" | "recipients";
+type CampaignRead = "analytics" | "events";
 
 export class CampaignsResource {
   constructor(private readonly transport: HttpTransport) {}
@@ -32,32 +43,59 @@ export class CampaignsResource {
   }
 
   create(
-    body?: PlatformPayload,
+    body: CreatePlatformCampaignRequest,
     options: RequestOptions = {},
   ): CampaignResponse {
-    return this.write("POST", "/platform/campaigns", body, options);
-  }
-
-  retrieve(campaignId: string, options: RequestOptions = {}): CampaignResponse {
     return this.transport.request({
-      method: "GET",
-      path: campaignPath(campaignId),
+      method: "POST",
+      path: "/platform/campaigns",
+      body,
       ...options,
     });
   }
 
-  update(
+  retrieve(
     campaignId: string,
-    body?: PlatformPayload,
+    params: PlatformCampaignParams,
     options: RequestOptions = {},
   ): CampaignResponse {
-    return this.write("PATCH", campaignPath(campaignId), body, options);
+    return this.transport.request({
+      method: "GET",
+      path: campaignPath(campaignId),
+      query: campaignQuery(params),
+      ...options,
+    });
   }
 
-  delete(campaignId: string, options: RequestOptions = {}): CampaignResponse {
+  /**
+   * Change a campaign. `recipientListId` points an unlaunched draft at another
+   * audience and replaces its draft recipients, or detaches it with null; the
+   * API refuses the change once the campaign has launched.
+   */
+  update(
+    campaignId: string,
+    body: UpdatePlatformCampaignRequest | undefined,
+    params: PlatformCampaignParams,
+    options: RequestOptions = {},
+  ): CampaignResponse {
+    return this.transport.request({
+      method: "PATCH",
+      path: campaignPath(campaignId),
+      query: campaignQuery(params),
+      ...(body === undefined ? {} : { body }),
+      ...options,
+    });
+  }
+
+  delete(
+    campaignId: string,
+    params: PlatformCampaignParams,
+    options: RequestOptions = {},
+  ): CampaignResponse {
     return this.transport.request({
       method: "DELETE",
       path: campaignPath(campaignId),
+      query: campaignQuery(params),
       ...options,
     });
   }
@@ -120,20 +158,64 @@ export class CampaignsResource {
 
   analytics(
     campaignId: string,
+    params: PlatformCampaignParams,
     options: RequestOptions = {},
   ): CampaignResponse {
-    return this.read(campaignId, "analytics", options);
+    return this.read(campaignId, "analytics", params, options);
   }
 
-  events(campaignId: string, options: RequestOptions = {}): CampaignResponse {
-    return this.read(campaignId, "events", options);
+  events(
+    campaignId: string,
+    params: PlatformCampaignParams,
+    options: RequestOptions = {},
+  ): CampaignResponse {
+    return this.read(campaignId, "events", params, options);
   }
 
+  /**
+   * One cursor page of a campaign's recipients in queue order.
+   *
+   * This replaces the earlier bare array: the response is now
+   * `{ data, page }`, and each recipient carries its own delivery timestamps.
+   */
   recipients(
     campaignId: string,
+    params: ListPlatformCampaignRecipientsParams,
     options: RequestOptions = {},
-  ): CampaignResponse {
-    return this.read(campaignId, "recipients", options);
+  ): Promise<ApiResponse<PlatformCampaignRecipientsEnvelope>> {
+    return this.transport.request({
+      method: "GET",
+      path: recipientsPath(campaignId),
+      query: {
+        projectId: params.projectId,
+        ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
+        ...(params.limit === undefined ? {} : { limit: params.limit }),
+      },
+      ...options,
+    });
+  }
+
+  /**
+   * Add up to 1,000 recipients to a campaign that has not started sending.
+   *
+   * The API declares no idempotent replay for this append, so by default the
+   * SDK sends it once and does not retry it. Setting both `maxNetworkRetries`
+   * and `idempotencyKey` on the request re-enables retries, and a retry can be
+   * processed as a new append. After a lost response, list the recipients before
+   * appending again.
+   */
+  addRecipients(
+    campaignId: string,
+    body: AddPlatformCampaignRecipientsRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<AddPlatformCampaignRecipientsResult>>> {
+    return this.transport.request({
+      method: "POST",
+      path: recipientsPath(campaignId),
+      body,
+      ...withoutAutomaticRetry(options),
+    });
   }
 
   private action(
@@ -142,22 +224,29 @@ export class CampaignsResource {
     body: PlatformPayload | undefined,
     options: RequestOptions,
   ): CampaignResponse {
+    const retryable =
+      action === "launch" ||
+      action === "pause" ||
+      action === "resume" ||
+      action === "stop";
     return this.write(
       "POST",
       `${campaignPath(campaignId)}/${action}`,
       body,
-      options,
+      retryable ? withIdempotencyKey(options) : options,
     );
   }
 
   private read(
     campaignId: string,
     resource: CampaignRead,
+    params: PlatformCampaignParams,
     options: RequestOptions,
   ): CampaignResponse {
     return this.transport.request({
       method: "GET",
       path: `${campaignPath(campaignId)}/${resource}`,
+      query: campaignQuery(params),
       ...options,
     });
   }
@@ -179,4 +268,14 @@ export class CampaignsResource {
 
 function campaignPath(campaignId: string): string {
   return `/platform/campaigns/${encodeURIComponent(campaignId)}`;
+}
+
+function campaignQuery(
+  params: PlatformCampaignParams,
+): Readonly<Record<string, string>> {
+  return { projectId: params.projectId };
+}
+
+function recipientsPath(campaignId: string): string {
+  return `${campaignPath(campaignId)}/recipients`;
 }

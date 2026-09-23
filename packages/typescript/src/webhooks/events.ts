@@ -1,19 +1,43 @@
-import type { PhonePlatform, WhatsAppAccountType } from "../messaging/types.js";
+import type {
+  CallPermissionSource,
+  CallPermissionStatus,
+  MessagingConnection,
+  WhatsAppMessageIds,
+  PhonePlatform,
+  WhatsAppAccountType,
+} from "../messaging/types.js";
+import type {
+  UsageKeySource,
+  UsageMeter,
+  UsagePricingState,
+  UsageSourceKind,
+  UsageUnit,
+} from "../platform/usage.js";
+import type {
+  VoiceAudioFailureReason,
+  VoiceAudioFormat,
+  VoiceAudioSource,
+} from "../platform/voice.js";
 
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
   "bansafe.claim",
   "bansafe.enforcement",
+  "bansafe.health_changed",
   "bansafe.health_threshold",
   "bansafe.incident",
+  "bansafe.risk_changed",
   "blocklist.update",
   "business.quick_reply.update",
   "call.accepted",
+  "call.connection_joined",
+  "call.connection_left",
   "call.ended",
   "call.missed",
   "call.participant_joined",
   "call.participant_left",
   "call.participant_state",
+  "call.permission_changed",
   "call.received",
   "call.rejected",
   "call.telemetry",
@@ -21,10 +45,13 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "campaign.cold_blocked",
   "campaign.completed",
   "campaign.failed",
+  "campaign.launched",
   "campaign.paused",
   "campaign.recipient_failed",
   "campaign.recipient_sent",
   "campaign.recipient_skipped",
+  "campaign.resumed",
+  "campaign.stopped",
   "campaign.throttled",
   "chat.archive",
   "chat.clear",
@@ -32,6 +59,8 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "chat.mute",
   "chat.read",
   "command.result",
+  "contact.opted_in",
+  "contact.opted_out",
   "contact.sync",
   "contact.update",
   "customer.archived",
@@ -69,8 +98,12 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "session.connected",
   "session.logged_out",
   "session.phone_offline",
+  "session.restriction_updated",
   "session.status",
   "template.status",
+  "usage.recorded",
+  "voice.asset_failed",
+  "voice.asset_ready",
 ] as const;
 
 export type KnownWebhookEventType = (typeof KNOWN_WEBHOOK_EVENT_TYPES)[number];
@@ -115,7 +148,9 @@ export type LinkedDeviceMessageType =
 
 export interface LinkedDeviceMessagePayload {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationReference;
   readonly fromMe: boolean;
   readonly timestamp: number;
@@ -148,7 +183,9 @@ export type MessagePayload = LinkedDeviceMessagePayload;
 
 export interface CloudMessagePayload {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationReference;
   readonly timestamp: string;
   readonly type: string;
@@ -163,7 +200,9 @@ export type MessageReceivedPayload =
 
 export interface MessageSentPayload {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationReference;
   readonly type: string;
   readonly timestamp: number;
@@ -172,7 +211,9 @@ export interface MessageSentPayload {
 export interface MessageAckPayload {
   readonly messages: readonly {
     readonly id: string;
-    readonly whatsapp_id: string;
+    readonly whatsapp_ids: WhatsAppMessageIds;
+    /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+    readonly whatsapp_id?: string;
   }[];
   readonly conversation: ConversationReference;
   readonly from?: IdentityReference;
@@ -185,7 +226,9 @@ export interface MessageDeletePayload {
   readonly from: IdentityReference;
   readonly sender: IdentityReference;
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: ConversationReference;
   readonly fromMe: boolean;
 }
@@ -203,6 +246,16 @@ export interface SessionStatusPayload {
   readonly statusReason?: string;
 }
 
+export type SessionRestrictionType = "reachout_timelock";
+
+export interface SessionRestrictionUpdatedPayload {
+  readonly type: SessionRestrictionType;
+  readonly active: boolean;
+  readonly enforcementType: string | null;
+  readonly expiresAt: string | null;
+  readonly observedAt: string;
+}
+
 export interface SessionConnectedPayload {
   readonly phoneNumber: string;
   readonly id?: string;
@@ -212,8 +265,17 @@ export interface SessionConnectedPayload {
   readonly businessName?: string;
 }
 
+/**
+ * Why a session was logged out: `banned` (WhatsApp banned the account),
+ * `device_removed` (the linked device was removed from the phone or another
+ * device) or `unknown`.
+ */
+export type SessionLoggedOutReason = "banned" | "device_removed" | "unknown";
+
 export interface SessionLoggedOutPayload {
-  readonly reason: string;
+  readonly reason: SessionLoggedOutReason;
+  /** WhatsApp's logout code (401, 403 or 406), or 0 when none was given. */
+  readonly code: number;
 }
 
 export interface SessionPhoneOfflinePayload {
@@ -246,6 +308,25 @@ export interface PresenceUpdatePayload {
   readonly media?: string;
   readonly unavailable?: boolean;
   readonly lastSeen?: number;
+}
+
+/**
+ * Payload for `contact.opted_out` and `contact.opted_in`. Emitted when a
+ * contact replies to a campaign number with one of the organization's
+ * configured keywords and the suppression list changed. The reply itself is
+ * never included.
+ */
+export interface ContactOptPayload {
+  /** Contact phone number in E.164 format. */
+  readonly phone: string;
+  /** How the change was made. Keyword replies are always `stop-keyword`. */
+  readonly source: "stop-keyword";
+  /** The matched keyword, normalized to upper case. */
+  readonly keyword: string;
+  /** Session name of the number that received the reply. */
+  readonly session: string;
+  /** Project that owns the receiving number, when known. */
+  readonly projectId?: string;
 }
 
 export interface ContactUpdatePayload {
@@ -288,17 +369,43 @@ export interface ChatDeletePayload {
   readonly from: IdentityReference;
 }
 
+/** What a call supports, as reported by the session that carries it. */
+export interface WebhookCallCapabilities {
+  readonly video: boolean;
+  /** Other parties can be invited, turning the call into a group call. */
+  readonly invite: boolean;
+}
+
 export interface CallReceivedPayload {
   readonly from: IdentityReference;
   readonly callId: string;
+  readonly hasVideo: boolean;
+  /** How the session is connected to WhatsApp. */
+  readonly sessionConnection?: MessagingConnection;
+  readonly capabilities?: WebhookCallCapabilities;
 }
 
-export interface CallMissedPayload extends CallReceivedPayload {
+export interface CallMissedPayload {
+  readonly from: IdentityReference;
+  readonly callId: string;
   readonly reason: string;
 }
 
-export type CallAcceptedPayload = CallReceivedPayload;
-export type CallRejectedPayload = CallReceivedPayload;
+export interface CallAcceptedPayload {
+  readonly from: IdentityReference;
+  readonly callId: string;
+  /** Participant reference that answered first, when known. */
+  readonly answeredBy?: string;
+  /** The answer claimed the call: other participants stopped ringing. */
+  readonly exclusive?: boolean;
+  readonly sessionConnection?: MessagingConnection;
+  readonly capabilities?: WebhookCallCapabilities;
+}
+
+export interface CallRejectedPayload {
+  readonly from: IdentityReference;
+  readonly callId: string;
+}
 
 export interface CallEndedPayload {
   /** Null when the media host disappeared before reporting caller identity. */
@@ -309,6 +416,7 @@ export interface CallEndedPayload {
   readonly reason: string;
   readonly direction: "inbound" | "outbound";
   readonly hadVideo: boolean;
+  readonly sessionConnection?: MessagingConnection;
 }
 
 export interface CallTelemetryPayload {
@@ -346,6 +454,41 @@ export interface CallParticipantLeftPayload {
   readonly callId: string;
   readonly participantId: string;
   readonly reason?: string;
+}
+
+/** One media connection to a call: a browser, app, server, or SIP trunk. */
+export interface CallConnection {
+  readonly id: string;
+  /** `client:<id>` for a client token, `server:<id>` for a server credential. */
+  readonly participant: string;
+  readonly transport: "webrtc" | "socket" | "sip";
+}
+
+export interface CallConnectionJoinedPayload {
+  readonly callId: string;
+  readonly connection: CallConnection;
+}
+
+/**
+ * Why a connection left. A SIP trunk that never joined reports a `sip_*`
+ * reason, `claimed`, or `call_ended`, with no joined event before it.
+ */
+export type CallConnectionLeftReason =
+  | "left"
+  | "replaced"
+  | "claimed"
+  | "call_ended"
+  | "sip_busy"
+  | "sip_declined"
+  | "sip_no_answer"
+  | "sip_unavailable"
+  | "sip_auth_failed";
+
+export interface CallConnectionLeftPayload {
+  readonly callId: string;
+  readonly connectionId: string;
+  readonly participant: string;
+  readonly reason: CallConnectionLeftReason;
 }
 
 export interface NewsletterUpdatePayload {
@@ -393,11 +536,17 @@ export interface CloudHistorySyncPayload {
 }
 
 export interface LinkedHistorySyncPayload {
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
+  readonly original_whatsapp_ids?: WhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `original_whatsapp_ids`. */
   readonly original_whatsapp_id?: string;
   readonly messages: readonly {
     readonly id: string;
-    readonly whatsapp_id: string;
+    readonly whatsapp_ids: WhatsAppMessageIds;
+    /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+    readonly whatsapp_id?: string;
     readonly conversation: IdentityReference;
     readonly fromMe?: boolean;
   }[];
@@ -530,6 +679,102 @@ export type BanSafeIncidentEventKind =
 export type BanSafeEventRung =
   "none" | "notify" | "throttle" | "block_cold" | "suspend";
 
+export type BanSafeRiskLevel = "low" | "elevated" | "high" | "critical";
+export type BanSafeHealthBandName =
+  "good" | "fair" | "poor" | "failing" | "unknown";
+
+export interface BanSafeForecast {
+  /** Probability (0-1) of a temporary or permanent ban within 7 days. */
+  readonly days7: number;
+  readonly days14: number;
+  readonly days30: number;
+}
+
+/** The factor group a risk factor belongs to. */
+export type BanSafeRiskFactorGroup =
+  | "volume"
+  | "cold_outreach"
+  | "restrictions"
+  | "engagement"
+  | "send_errors"
+  | "pattern"
+  | "traffic_mix"
+  | "number_age"
+  | "connection"
+  | "ban_history"
+  | "account"
+  | "workspace"
+  | "climate"
+  | "conversation"
+  | "solicitation"
+  | "reputation";
+
+export interface BanSafeRiskFactor {
+  /** Feature key, or `group:<groupId>`. */
+  readonly key: string;
+  readonly group: BanSafeRiskFactorGroup;
+  readonly label: string;
+  readonly direction: "raises" | "lowers";
+  readonly strength: "strong" | "moderate" | "slight";
+  /** Share, as a whole percentage, of the raising or lowering total. */
+  readonly impact: number;
+  readonly sentence: string;
+  readonly hint: string | null;
+}
+
+export interface BanSafeModelRef {
+  readonly version: string;
+  readonly reliability: "prior" | "early" | "calibrated";
+}
+
+export interface BanSafeRiskChangedPayload {
+  /** The customer's own number in E.164 format. */
+  readonly phoneNumber: string;
+  readonly level: BanSafeRiskLevel;
+  /** Null for the first evaluation of the number. */
+  readonly previousLevel: BanSafeRiskLevel | null;
+  /** Risk score from 0 (lowest) to 100 (highest). */
+  readonly score: number;
+  readonly forecast: BanSafeForecast;
+  /** Up to five contributing factors, ordered by impact. */
+  readonly factors: readonly BanSafeRiskFactor[];
+  readonly model: BanSafeModelRef;
+  readonly evaluatedAt: string;
+}
+
+export interface BanSafeHealthPenalties {
+  readonly conduct: number;
+  readonly restriction: number;
+  readonly connection: number;
+}
+
+export interface BanSafeHealthFinding {
+  readonly key: string;
+  readonly title: string;
+  readonly severity: "info" | "warning" | "critical";
+  /** `not_measured` means the signal could not be measured for this number. */
+  readonly status: "open" | "acknowledged" | "not_measured";
+  /** Health points this finding costs. */
+  readonly points: number;
+}
+
+export interface BanSafeHealthChangedPayload {
+  readonly phoneNumber: string;
+  /** Health from 0 (worst) to 100 (best), or null when not measured. */
+  readonly health: number | null;
+  readonly band: BanSafeHealthBandName;
+  readonly previousBand: BanSafeHealthBandName | null;
+  readonly state:
+    "measured" | "partial" | "measuring" | "restricted" | "banned";
+  readonly penalties: BanSafeHealthPenalties;
+  readonly findings: readonly BanSafeHealthFinding[];
+  readonly measuredChecks: number;
+  readonly totalChecks: number;
+  /** Messages allowed today under the warm-up plan; null or absent without one. */
+  readonly allowance?: number | null;
+  readonly evaluatedAt: string;
+}
+
 export interface BanSafeHealthThresholdPayload {
   readonly sessionId: string;
   readonly projectId: string;
@@ -629,6 +874,21 @@ export interface BanSafeClaimPayload {
   readonly paidAt: string | null;
 }
 
+/**
+ * A person's call permission on a Cloud API number changed. No event is sent
+ * when a temporary permission reaches `expiresAt`; use `expiresAt` to schedule
+ * your own follow-up.
+ */
+export interface CallPermissionChangedPayload {
+  readonly conversation: IdentityReference;
+  readonly status: CallPermissionStatus;
+  readonly previousStatus: CallPermissionStatus;
+  /** When a temporary permission ends; null otherwise. */
+  readonly expiresAt: string | null;
+  readonly source: CallPermissionSource;
+  readonly changedAt: string;
+}
+
 export type MessageFailedReason =
   | "invalid_recipient"
   | "session_not_connected"
@@ -655,11 +915,28 @@ export interface TemplateStatusPayload {
   readonly qualityRating: string;
 }
 
+export interface CampaignLaunchedPayload {
+  readonly campaignId: string;
+  readonly name: string;
+  readonly recipientCount: number;
+  readonly scheduled: boolean;
+  /** Unix milliseconds. */
+  readonly launchedAt: number;
+}
+
 export interface CampaignPausedPayload {
   readonly campaignId: string;
   readonly sentCount: number;
   readonly remainingCount: number;
   readonly pausedAt: number;
+}
+
+export interface CampaignResumedPayload {
+  readonly campaignId: string;
+  readonly sentCount: number;
+  readonly remainingCount: number;
+  /** Unix milliseconds. */
+  readonly resumedAt: number;
 }
 
 export interface CampaignCompletedPayload {
@@ -678,6 +955,14 @@ export interface CampaignFailedPayload {
   readonly campaignId: string;
   readonly reason: string;
   readonly failedAt: number;
+}
+
+export interface CampaignStoppedPayload {
+  readonly campaignId: string;
+  readonly sentCount: number;
+  readonly abandonedCount: number;
+  /** Unix milliseconds. */
+  readonly stoppedAt: number;
 }
 
 export interface CampaignRecipientSentPayload {
@@ -734,20 +1019,74 @@ export interface CampaignColdBlockedPayload {
   readonly at: number;
 }
 
+/** Fields shared by the Voice Automation (beta) audio asset webhooks. */
+export interface VoiceAssetEventPayload {
+  readonly eventId: string;
+  readonly occurredAt: string;
+  readonly organizationId: string;
+  readonly projectId: string;
+  readonly assetId: string;
+  readonly name: string;
+  readonly source: VoiceAudioSource;
+}
+
+/** An audio asset finished transcoding and can be used in calls. */
+export interface VoiceAssetReadyPayload extends VoiceAssetEventPayload {
+  readonly durationMs: number;
+  /** Hex SHA-256 of the canonical 16 kHz mono PCM. */
+  readonly contentSha256: string;
+  readonly originalFormat: VoiceAudioFormat;
+}
+
+/** An audio asset could not be processed. */
+export interface VoiceAssetFailedPayload extends VoiceAssetEventPayload {
+  readonly failureReason: VoiceAudioFailureReason;
+}
+
+/**
+ * Payload for `usage.recorded`: one usage record, emitted when it is created
+ * and again, with a higher `revision`, when a later observation corrects it.
+ * Usage is measured, not charged: `pricingState` is `unpriced`.
+ */
+export interface UsageRecordedPayload {
+  readonly id: string;
+  readonly meter: UsageMeter;
+  readonly quantity: number;
+  readonly unit: UsageUnit;
+  readonly dimensions: Readonly<Record<string, string | number | boolean>>;
+  readonly keySource: UsageKeySource;
+  readonly sourceKind: UsageSourceKind;
+  /** The call id for call meters. */
+  readonly sourceId: string;
+  readonly projectId: string | null;
+  readonly session: string | null;
+  readonly occurredAt: string;
+  readonly recordedAt: string;
+  readonly revision: number;
+  readonly pricingState: UsagePricingState;
+  readonly rateCard: { readonly id: string; readonly version: number } | null;
+  readonly pricedCredits: number | null;
+}
+
 export interface WebhookPayloadMap {
   readonly "bansafe.action": BanSafeActionPayload;
   readonly "bansafe.claim": BanSafeClaimPayload;
   readonly "bansafe.enforcement": BanSafeEnforcementPayload;
+  readonly "bansafe.health_changed": BanSafeHealthChangedPayload;
   readonly "bansafe.health_threshold": BanSafeHealthThresholdPayload;
   readonly "bansafe.incident": BanSafeIncidentPayload;
+  readonly "bansafe.risk_changed": BanSafeRiskChangedPayload;
   readonly "blocklist.update": BlocklistUpdatePayload;
   readonly "business.quick_reply.update": BusinessQuickReplyUpdatePayload;
   readonly "call.accepted": CallAcceptedPayload;
+  readonly "call.connection_joined": CallConnectionJoinedPayload;
+  readonly "call.connection_left": CallConnectionLeftPayload;
   readonly "call.ended": CallEndedPayload;
   readonly "call.missed": CallMissedPayload;
   readonly "call.participant_joined": CallParticipantPayload;
   readonly "call.participant_left": CallParticipantLeftPayload;
   readonly "call.participant_state": CallParticipantPayload;
+  readonly "call.permission_changed": CallPermissionChangedPayload;
   readonly "call.received": CallReceivedPayload;
   readonly "call.rejected": CallRejectedPayload;
   readonly "call.telemetry": CallTelemetryPayload;
@@ -755,10 +1094,13 @@ export interface WebhookPayloadMap {
   readonly "campaign.cold_blocked": CampaignColdBlockedPayload;
   readonly "campaign.completed": CampaignCompletedPayload;
   readonly "campaign.failed": CampaignFailedPayload;
+  readonly "campaign.launched": CampaignLaunchedPayload;
   readonly "campaign.paused": CampaignPausedPayload;
   readonly "campaign.recipient_failed": CampaignRecipientFailedPayload;
   readonly "campaign.recipient_sent": CampaignRecipientSentPayload;
   readonly "campaign.recipient_skipped": CampaignRecipientSkippedPayload;
+  readonly "campaign.resumed": CampaignResumedPayload;
+  readonly "campaign.stopped": CampaignStoppedPayload;
   readonly "campaign.throttled": CampaignThrottledPayload;
   readonly "chat.archive": ChatArchivePayload;
   readonly "chat.clear": ChatClearPayload;
@@ -766,6 +1108,8 @@ export interface WebhookPayloadMap {
   readonly "chat.mute": ChatMutePayload;
   readonly "chat.read": ChatReadPayload;
   readonly "command.result": CommandResultPayload;
+  readonly "contact.opted_in": ContactOptPayload;
+  readonly "contact.opted_out": ContactOptPayload;
   readonly "contact.sync": ContactsSyncPayload;
   readonly "contact.update": ContactUpdatePayload;
   readonly "customer.archived": CustomerArchivedPayload;
@@ -803,8 +1147,12 @@ export interface WebhookPayloadMap {
   readonly "session.connected": SessionConnectedPayload;
   readonly "session.logged_out": SessionLoggedOutPayload;
   readonly "session.phone_offline": SessionPhoneOfflinePayload;
+  readonly "session.restriction_updated": SessionRestrictionUpdatedPayload;
   readonly "session.status": SessionStatusPayload;
   readonly "template.status": TemplateStatusPayload;
+  readonly "usage.recorded": UsageRecordedPayload;
+  readonly "voice.asset_failed": VoiceAssetFailedPayload;
+  readonly "voice.asset_ready": VoiceAssetReadyPayload;
 }
 
 export interface WebhookEventOf<TEvent extends string, TPayload> {

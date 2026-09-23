@@ -8,8 +8,10 @@ import {
   constructWebhookEvent,
   isEvent,
   type KnownWebhookEventType,
+  type BanSafeHealthBandName,
   type ProjectWebhookDeliveryAttempt,
   type OrganizationWebhookDeliveryAttempt,
+  type SessionLoggedOutPayload,
   type WebhookPayloadMap,
 } from "../src/index.js";
 
@@ -176,6 +178,40 @@ type P = WebhookPayloadMap;
 const PAYLOADS: {
   readonly [K in Exclude<KnownWebhookEventType, LegacyEventType>]: Shape<P[K]>;
 } = {
+  "contact.opted_in": shape<P["contact.opted_in"]>()(
+    {
+      phone: "+15551234567",
+      source: "stop-keyword",
+      keyword: "START",
+      session: "support",
+      projectId: IDS.project,
+    },
+    ["phone", "source", "keyword", "session"],
+  ),
+  "contact.opted_out": shape<P["contact.opted_out"]>()(
+    {
+      phone: "+15551234567",
+      source: "stop-keyword",
+      keyword: "STOP",
+      session: "support",
+      projectId: IDS.project,
+    },
+    ["phone", "source", "keyword", "session"],
+  ),
+  "session.logged_out": shape<P["session.logged_out"]>()(
+    { reason: "banned", code: 401 },
+    ["reason", "code"],
+  ),
+  "session.restriction_updated": shape<P["session.restriction_updated"]>()(
+    {
+      type: "reachout_timelock",
+      active: true,
+      enforcementType: null,
+      expiresAt: null,
+      observedAt: AT,
+    },
+    ["type", "active", "enforcementType", "expiresAt", "observedAt"],
+  ),
   "customer.created": shape<P["customer.created"]>()(
     customer,
     customerRequired,
@@ -269,6 +305,97 @@ const PAYLOADS: {
       "policyVersion",
       "episodeId",
       "actionId",
+    ],
+  ),
+  "bansafe.risk_changed": shape<P["bansafe.risk_changed"]>()(
+    {
+      phoneNumber: "+15551234567",
+      level: "elevated",
+      previousLevel: "low",
+      score: 37,
+      forecast: { days7: 0.02, days14: 0.06, days30: 0.11 },
+      factors: [
+        {
+          key: "cold_send_ratio",
+          group: "cold_outreach",
+          label: "Share of messages sent to people who never messaged you",
+          direction: "raises",
+          strength: "strong",
+          impact: 42,
+          sentence:
+            "38 of the 51 people you messaged had never messaged this number",
+          hint: "Warm up the number before sending to new contacts",
+        },
+      ],
+      model: { version: "prior-v0", reliability: "prior" },
+      evaluatedAt: AT,
+    },
+    [
+      "phoneNumber",
+      "level",
+      "previousLevel",
+      "score",
+      "forecast",
+      "factors",
+      "model",
+      "evaluatedAt",
+    ],
+  ),
+  "bansafe.health_changed": shape<P["bansafe.health_changed"]>()(
+    {
+      phoneNumber: "+15551234567",
+      health: 62,
+      band: "fair",
+      previousBand: "good",
+      state: "measured",
+      penalties: { conduct: 12, restriction: 0, connection: 4 },
+      findings: [
+        {
+          key: "unsolicited_outreach",
+          title: "Messaging people who never wrote to you",
+          severity: "warning",
+          status: "open",
+          points: 8,
+        },
+      ],
+      measuredChecks: 14,
+      totalChecks: 18,
+      allowance: 240,
+      evaluatedAt: AT,
+    },
+    [
+      "phoneNumber",
+      "health",
+      "band",
+      "previousBand",
+      "state",
+      "penalties",
+      "findings",
+      "measuredChecks",
+      "totalChecks",
+      "evaluatedAt",
+    ],
+  ),
+  "call.permission_changed": shape<P["call.permission_changed"]>()(
+    {
+      conversation: {
+        id: "739182640518203",
+        phoneNumber: "+15551234567",
+        bsuid: "US.13491208655302741918",
+      },
+      status: "temporary",
+      previousStatus: "none",
+      expiresAt: "2026-09-23T00:00:00.000Z",
+      source: "user_action",
+      changedAt: AT,
+    },
+    [
+      "conversation",
+      "status",
+      "previousStatus",
+      "expiresAt",
+      "source",
+      "changedAt",
     ],
   ),
   "bansafe.enforcement": shape<P["bansafe.enforcement"]>()(
@@ -398,6 +525,92 @@ const PAYLOADS: {
     },
     ["to", "type", "error", "timestamp"],
   ),
+  "usage.recorded": shape<P["usage.recorded"]>()(
+    {
+      id: IDS.event,
+      meter: "call.duration",
+      quantity: 42,
+      unit: "second",
+      dimensions: { direction: "outbound", video: false },
+      keySource: "none",
+      sourceKind: "call",
+      sourceId: "call_1",
+      projectId: IDS.project,
+      session: "number-1",
+      occurredAt: AT,
+      recordedAt: AT,
+      revision: 1,
+      pricingState: "unpriced",
+      rateCard: null,
+      pricedCredits: null,
+    },
+    [
+      "id",
+      "meter",
+      "quantity",
+      "unit",
+      "dimensions",
+      "keySource",
+      "sourceKind",
+      "sourceId",
+      "projectId",
+      "session",
+      "occurredAt",
+      "recordedAt",
+      "revision",
+      "pricingState",
+      "rateCard",
+      "pricedCredits",
+    ],
+  ),
+  "voice.asset_ready": shape<P["voice.asset_ready"]>()(
+    {
+      eventId: IDS.event,
+      occurredAt: AT,
+      organizationId: IDS.organization,
+      projectId: IDS.project,
+      assetId: IDS.customer,
+      name: "Greeting",
+      source: "upload",
+      durationMs: 1200,
+      contentSha256: "a".repeat(64),
+      originalFormat: "wav",
+    },
+    [
+      "eventId",
+      "occurredAt",
+      "organizationId",
+      "projectId",
+      "assetId",
+      "name",
+      "source",
+      "durationMs",
+      "contentSha256",
+      "originalFormat",
+    ],
+  ),
+  "voice.asset_failed": shape<P["voice.asset_failed"]>()(
+    {
+      eventId: IDS.event,
+      occurredAt: AT,
+      organizationId: IDS.organization,
+      projectId: IDS.project,
+      assetId: IDS.customer,
+      name: "Greeting",
+      source: "tts",
+      failureReason: "processing_failed",
+    },
+    [
+      "eventId",
+      "occurredAt",
+      "organizationId",
+      "projectId",
+      "assetId",
+      "name",
+      "source",
+      "failureReason",
+    ],
+  ),
   "template.status": shape<P["template.status"]>()(
     {
       templateName: "order_update",
@@ -416,9 +629,28 @@ const PAYLOADS: {
       "qualityRating",
     ],
   ),
+  "campaign.launched": shape<P["campaign.launched"]>()(
+    {
+      ...campaign,
+      name: "September follow-up",
+      recipientCount: 15,
+      scheduled: false,
+      launchedAt: 1_790_000_000_000,
+    },
+    ["campaignId", "name", "recipientCount", "scheduled", "launchedAt"],
+  ),
   "campaign.paused": shape<P["campaign.paused"]>()(
     { ...campaign, sentCount: 10, remainingCount: 5, pausedAt: 1 },
     ["campaignId", "sentCount", "remainingCount", "pausedAt"],
+  ),
+  "campaign.resumed": shape<P["campaign.resumed"]>()(
+    {
+      ...campaign,
+      sentCount: 10,
+      remainingCount: 5,
+      resumedAt: 1_790_000_003_000,
+    },
+    ["campaignId", "sentCount", "remainingCount", "resumedAt"],
   ),
   "campaign.completed": shape<P["campaign.completed"]>()(
     {
@@ -447,6 +679,15 @@ const PAYLOADS: {
   "campaign.failed": shape<P["campaign.failed"]>()(
     { ...campaign, reason: "insufficient_funds", failedAt: 3 },
     ["campaignId", "reason", "failedAt"],
+  ),
+  "campaign.stopped": shape<P["campaign.stopped"]>()(
+    {
+      ...campaign,
+      sentCount: 10,
+      abandonedCount: 5,
+      stoppedAt: 1_790_000_010_000,
+    },
+    ["campaignId", "sentCount", "abandonedCount", "stoppedAt"],
   ),
   "campaign.recipient_sent": shape<P["campaign.recipient_sent"]>()(
     {
@@ -536,10 +777,17 @@ const PAYLOADS: {
 type LegacyEventType = Exclude<
   KnownWebhookEventType,
   | `customer.${string}`
+  | "contact.opted_in"
+  | "contact.opted_out"
   | `bansafe.${string}`
   | `campaign.${string}`
+  | "call.permission_changed"
+  | `voice.${string}`
+  | "usage.recorded"
   | "message.failed"
+  | "session.restriction_updated"
   | "template.status"
+  | "session.logged_out"
 >;
 
 function specEvents(): Map<string, string> {
@@ -559,9 +807,8 @@ const sign = (body: Buffer) =>
 
 describe("webhook catalog contract", () => {
   it("lists exactly the events the pinned Messaging contract defines", () => {
-    expect([...specEvents().keys()].sort()).toEqual(
-      [...KNOWN_WEBHOOK_EVENT_TYPES].sort(),
-    );
+    const spec = [...specEvents().keys()];
+    expect(spec.sort()).toEqual([...KNOWN_WEBHOOK_EVENT_TYPES].sort());
   });
 
   it.each(Object.entries(PAYLOADS))(
@@ -619,6 +866,65 @@ describe("webhook catalog contract", () => {
     expectTypeOf<P["bansafe.action"]["previousRung"]>().toEqualTypeOf<
       "none" | "notify" | "throttle" | "block_cold" | "suspend" | null
     >();
+    expectTypeOf<
+      P["bansafe.health_changed"]["previousBand"]
+    >().toEqualTypeOf<BanSafeHealthBandName | null>();
+  });
+
+  it("types logged-out reasons and the required integer code from the pinned contract", async () => {
+    const payload = shape<SessionLoggedOutPayload>()(
+      { reason: "device_removed", code: 401 },
+      ["reason", "code"],
+    );
+    expectShape(messaging, "SessionLoggedOutPayload", payload);
+    expectTypeOf<SessionLoggedOutPayload["reason"]>().toEqualTypeOf<
+      "banned" | "device_removed" | "unknown"
+    >();
+    const schema = messaging.components.schemas.SessionLoggedOutPayload!;
+    expect(
+      violations(messaging, schema, { reason: "device_removed" }),
+    ).toContain("$.code is required");
+    expect(
+      violations(messaging, schema, { reason: "other", code: 401 }),
+    ).toContain('$.reason="other" is outside the enum');
+    expect(
+      violations(messaging, schema, { reason: "banned", code: 406.5 }),
+    ).toContain("$.code is not an integer");
+    const body = Buffer.from(
+      JSON.stringify({
+        id: "evt_logout",
+        session: "support",
+        timestamp: AT,
+        event: "session.logged_out",
+        payload: payload.value,
+      }),
+    );
+    const event = await constructWebhookEvent(body, sign(body), secret);
+    if (!isEvent(event, "session.logged_out"))
+      throw new Error("Expected logged-out event");
+    expectTypeOf(event.payload).toEqualTypeOf<SessionLoggedOutPayload>();
+    expect(event.payload).toEqual({ reason: "device_removed", code: 401 });
+  });
+
+  it("limits the previous BanSafe health band to the published values", () => {
+    expectTypeOf<P["bansafe.health_changed"]["previousBand"]>().toEqualTypeOf<
+      "good" | "fair" | "poor" | "failing" | "unknown" | null
+    >();
+    const schema = messaging.components.schemas.BanSafeHealthChangedPayload!;
+    expect(schema.properties?.previousBand?.enum).toEqual([
+      "good",
+      "fair",
+      "poor",
+      "failing",
+      "unknown",
+      null,
+    ]);
+    expect(
+      violations(messaging, schema, {
+        ...PAYLOADS["bansafe.health_changed"].value,
+        previousBand: "other",
+      }),
+    ).toContain('$.previousBand="other" is outside the enum');
   });
 });
 

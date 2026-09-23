@@ -80,6 +80,11 @@ interface SdkResponse<T> {
 }
 
 export interface TemplateRouteResource {
+  /** Enables the `list` action. */
+  list?(
+    projectSlug: string,
+    options: { readonly signal: AbortSignal },
+  ): Promise<SdkResponse<unknown>>;
   create(
     projectSlug: string,
     body: TemplateRouteDraft,
@@ -134,6 +139,7 @@ export interface TemplateBuilderRouteOptions {
 }
 
 type TemplateRouteAction =
+  | { readonly action: "list" }
   | { readonly action: "load"; readonly templateId: string }
   | {
       readonly action: "save";
@@ -180,6 +186,23 @@ export function createTemplateBuilderRoute(
       const signalOptions = { signal: request.signal };
 
       switch (action.action) {
+        case "list": {
+          if (options.templates.list === undefined)
+            throw new RouteInputError(
+              "invalid_action",
+              "Template listing is not enabled.",
+            );
+          const response = await options.templates.list(
+            projectSlug,
+            signalOptions,
+          );
+          const templates = responseData(response);
+          if (!Array.isArray(templates))
+            throw new TypeError(
+              "The server SDK returned an invalid template list.",
+            );
+          return json({ templates });
+        }
         case "load": {
           const response = await options.templates.retrieve(
             projectSlug,
@@ -269,6 +292,8 @@ async function readAction(request: Request): Promise<TemplateRouteAction> {
       "A template action is required.",
     );
   }
+
+  if (value.action === "list") return { action: "list" };
 
   if (value.action === "save") {
     const draft = readDraft(value.draft);

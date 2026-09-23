@@ -1,0 +1,54 @@
+{
+  "name": "@polymorfa/store",
+  "version": "0.1.0-dev.0",
+  "description": "Opt-in IndexedDB store for Polymorfa webhook-shaped events in the browser",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polymorfa/sdks.git",
+    "directory": "packages/store"
+  },
+  "bugs": {
+    "url": "https://github.com/polymorfa/sdks/issues"
+  },
+  "homepage": "https://github.com/polymorfa/sdks#readme",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "@polymorfa/browser": "0.1.0-dev.0",
+    "react": ">=18.2.0 <20"
+  },
+  "peerDependenciesMeta": {
+    "@polymorfa/browser": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

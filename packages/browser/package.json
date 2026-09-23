@@ -4,9 +4,18 @@
   "description": "Framework-neutral Polymorfa browser transport and product controllers",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polymorfa/sdks.git",
+    "directory": "packages/browser"
+  },
+  "bugs": {
+    "url": "https://github.com/polymorfa/sdks/issues"
+  },
+  "homepage": "https://github.com/polymorfa/sdks#readme",
   "sideEffects": false,
   "dependencies": {
-    "@polymorfa/calls": "0.1.0-dev.0"
+    "@polymorfa/sdk": "0.1.0-dev.0"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,6 +23,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./internal": {
+      "types": "./dist/internal.d.ts",
+      "import": "./dist/internal.js"
     }
   },
   "files": [

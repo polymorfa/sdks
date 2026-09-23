@@ -1,4 +1,4 @@
-import type { RequestOptions } from "../transport/types.js";
+import type { RequestOptions, ResponseMetadata } from "../transport/types.js";
 
 export type ClientOwner = "organization" | "project";
 export type JsonValue =
@@ -43,8 +43,34 @@ export interface ListEventsParams {
   readonly until?: string;
   readonly limit?: number;
   readonly cursor?: string;
+  /** Retained-stream offset after which to list events, in ingestion order. Cannot be combined with cursor, since, or until. Use "0" for the initial high-watermark baseline. */
+  readonly afterOffset?: string;
+}
+export interface ListIndexedEventsParams {
+  /** Retained stream position returned by the preceding indexed read; use "0" for a baseline. */
+  readonly afterOffset: string;
+  readonly type?: string;
+  readonly limit?: number;
+}
+export interface IndexedEventPage<T> {
+  readonly items: readonly T[];
+  readonly page: {
+    readonly hasMore: boolean;
+    readonly nextOffset: string | null;
+    readonly highWatermark: string;
+  };
+  readonly metadata: ResponseMetadata;
 }
 export type ListOrganizationEventsParams = ListEventsParams;
+
+/** Additional offset fields returned by organization and project event lists. */
+export interface IndexedEventPageMetadata {
+  readonly nextCursor: string | null;
+  readonly hasMore: boolean;
+  readonly nextOffset?: string | null;
+  readonly highWatermark?: string;
+}
+
 export interface RetrieveEventParams {
   readonly includePayload?: boolean;
 }
@@ -349,7 +375,24 @@ export interface ListOperationsParams {
   readonly limit?: number;
   readonly cursor?: string;
 }
-export type ListOrganizationOperationsParams = ListOperationsParams;
+/** Organization clients may narrow the list to one project. */
+export interface ListOrganizationOperationsParams extends ListOperationsParams {
+  readonly projectId?: string;
+}
+export interface RetrieveOperationParams {
+  /** Hold the request up to this many seconds (0-30) while the operation is not terminal. */
+  readonly wait?: number;
+  /** With `wait`, return as soon as the operation's sequence exceeds this value. */
+  readonly afterSequence?: number;
+}
+
+/**
+ * Organization clients may narrow the read to one project. The project route
+ * takes its project from the path, so it has no such parameter.
+ */
+export interface RetrieveOrganizationOperationParams extends RetrieveOperationParams {
+  readonly projectId?: string;
+}
 export type ListOperationTransitionsParams =
   | {
       readonly afterSequence?: number;
@@ -382,12 +425,21 @@ interface OperationCancellationReceipt<T> {
   readonly idempotency: IdempotencyReceipt;
 }
 export type OrganizationOperationCancellationReceipt =
-  OperationCancellationReceipt<OrganizationOperation>;
+  OperationCancellationReceipt<ManagementOperation>;
 export type ProjectOperationCancellationReceipt =
   OperationCancellationReceipt<ProjectOperation>;
 export interface WaitForOperationOptions {
+  /** Total time to wait before returning the current state. Default 5 minutes. */
   readonly maxWaitMs?: number;
+  /** Return as soon as the operation's sequence exceeds this value. */
+  readonly afterSequence?: number;
+  /** Deprecated: the API long-polls, so polling intervals are ignored. */
   readonly pollIntervalMs?: number;
   readonly requestOptions?: Omit<RequestOptions, "signal">;
   readonly signal?: AbortSignal;
+}
+
+/** Organization clients may narrow the wait to one project. */
+export interface WaitForOrganizationOperationOptions extends WaitForOperationOptions {
+  readonly projectId?: string;
 }

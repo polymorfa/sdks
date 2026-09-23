@@ -1,3 +1,8 @@
+/** Exact observed provider references; at least one provider is known. */
+export type BrowserWhatsAppMessageIds =
+  | { readonly linked_devices: string; readonly official_api?: string }
+  | { readonly linked_devices?: string; readonly official_api: string };
+
 import type { BrowserRequest, BrowserResponse } from "../transport.js";
 
 export interface BrowserActionOptions {
@@ -31,7 +36,8 @@ export type BrowserMessageKind =
   | "list"
   | "buttons"
   | "address_message"
-  | "flow";
+  | "flow"
+  | "call_permission_request";
 
 export interface BrowserQuotedMessage {
   readonly id: string;
@@ -92,6 +98,13 @@ export type BrowserMessageContent = ExclusiveUnion<
     }
   | { readonly contact: { readonly vcard: string } }
   | { readonly requestPhoneNumber: Readonly<Record<string, never>> }
+  | {
+      /** Cloud API numbers only. Requires the existing send_message grant. */
+      readonly callPermissionRequest: {
+        /** Why you want to call. The API accepts 1 to 1,024 characters. */
+        readonly body: string;
+      };
+    }
   | { readonly template: Readonly<Record<string, unknown>> }
   | { readonly product: Readonly<Record<string, unknown>> }
   | { readonly productList: Readonly<Record<string, unknown>> }
@@ -112,7 +125,9 @@ export interface BrowserSendMessageRequest {
 
 export interface BrowserMessageReceipt {
   readonly id: string;
-  readonly whatsapp_id: string;
+  readonly whatsapp_ids: BrowserWhatsAppMessageIds;
+  /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
+  readonly whatsapp_id?: string;
   readonly conversation: BrowserConversationIdentity;
   readonly timestamp: string;
   readonly status: string;

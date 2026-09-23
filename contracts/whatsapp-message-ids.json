@@ -1,0 +1,45 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "6a457a0ed8a7d6cabdb1e326d7053a1e8f9c2b41",
+  "branch": "t3code/hybrid-link-support",
+  "sourcePath": "apps/api/docs/openapi.json#/components/schemas/WhatsAppMessageIds",
+  "schema": {
+    "anyOf": [
+      {
+        "type": "object",
+        "properties": {
+          "linked_devices": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "official_api": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "required": ["linked_devices"],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "linked_devices": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "official_api": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "required": ["official_api"],
+        "additionalProperties": false
+      }
+    ],
+    "description": "Exact message references observed through Linked Devices, the Official API, or both. Use the Polymorfa message id for actions and replies. Unknown provider references are omitted."
+  }
+}

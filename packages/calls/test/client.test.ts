@@ -1,21 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   Call,
-  CallsClient,
   MediaSocket,
   encodeAudioFrame,
-  type CallsClientOptions,
+  createInternalCallsClient,
+  type InternalCallsClientOptions,
   type Participant,
-} from "../src/index.js";
+} from "../src/internal.js";
 import { FakeWebSocket, fakeApi, flush, timers } from "./helpers.js";
 
 function clientWith(
   api = fakeApi(),
-  options: Pick<CallsClientOptions, "mediaMode"> = {},
+  options: Pick<InternalCallsClientOptions, "mediaMode"> = {},
 ) {
   FakeWebSocket.instances = [];
   const t = timers();
-  const client = new CallsClient({
+  const client = createInternalCallsClient({
     session: "support",
     api,
     WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
@@ -33,7 +33,7 @@ function clientWith(
 async function connected(h: ReturnType<typeof clientWith>) {
   const connecting = h.client.connect();
   await flush();
-  h.ws(0).open();
+  h.ws(0).authenticate();
   await connecting;
   return h.ws(0);
 }
@@ -70,10 +70,9 @@ describe("CallsClient", () => {
   it("rings on call.received and answers into a bridged media socket", async () => {
     const h = clientWith();
     const life = await connected(h);
-    expect(h.api.socketTicket).toHaveBeenCalledWith(
-      "support",
-      expect.any(AbortSignal),
-    );
+    expect(life.url).toBe("wss://api.example/voip/ws");
+    // No credential in the URL: the first frame authenticates.
+    expect(life.texts[0]).toEqual({ type: "auth", token: "pmfa_ct_test" });
 
     const incoming: Call[] = [];
     h.client.on("incoming", (call) => incoming.push(call));
@@ -89,13 +88,22 @@ describe("CallsClient", () => {
 
     const answering = call.answer();
     await flush();
-    expect(h.api.accept).toHaveBeenCalledWith("CALL-1", { video: false });
+    expect(h.api.accept).toHaveBeenCalledWith("CALL-1", {
+      exclusive: false,
+      video: false,
+    });
     expect(call.state).toBe("connecting");
     const media = await bridge(h);
     await answering;
     expect(call.state).toBe("connected");
-    // The ticket rides the subprotocol slot; browsers cannot set headers.
-    expect(media.protocols).toEqual(["pmfa.ticket.pmfa_at_CALL-1"]);
+    expect(media.url).toBe("wss://api.example/voip/calls/CALL-1/media");
+    expect(media.protocols).toEqual(["pmfa.calls.v2"]);
+    expect(media.texts[0]).toEqual({
+      type: "auth",
+      token: "pmfa_ct_test",
+      connectionId: call.connectionId,
+    });
+    expect(call.connectionId).toMatch(/^[A-Za-z0-9_-]{8,64}$/);
 
     // WA -> us
     const heard: Int16Array[] = [];
@@ -109,9 +117,8 @@ describe("CallsClient", () => {
 
     const ended: string[] = [];
     call.on("ended", (reason) => ended.push(reason));
-    await call.hangup();
-    expect(h.api.hangup).toHaveBeenCalledWith("CALL-1");
-    expect(media.lastText).toEqual({ type: "hangup" });
+    await call.end();
+    expect(h.api.end).toHaveBeenCalledWith("CALL-1");
     expect(ended).toEqual(["hangup"]);
     expect(call.audio.write(new Int16Array([1]))).toBe(false);
     expect(h.client.calls).toEqual([]);
@@ -124,8 +131,7 @@ describe("CallsClient", () => {
     h.client.on("incoming", (c) => (call = c));
     ring(life);
     await call!.reject();
-    expect(h.api.reject).toHaveBeenCalledWith("CALL-1");
-    expect(h.api.mediaTicket).not.toHaveBeenCalled();
+    expect(h.api.reject).toHaveBeenCalledWith("CALL-1", undefined, undefined);
     expect(call!.endReason).toBe("rejected");
     expect(FakeWebSocket.instances).toHaveLength(1);
   });
@@ -190,13 +196,40 @@ describe("CallsClient", () => {
     });
     await flush();
     expect(call!.state).toBe("ended");
-    expect(h.api.mediaTicket).not.toHaveBeenCalled();
+    expect(FakeWebSocket.instances).toHaveLength(1);
     // Call ids are unique per call, so the same id ringing again is a
     // duplicate of the ended call — it must not ring the application twice.
     let again: Call | undefined;
     h.client.on("incoming", (c) => (again = c));
     ring(life);
     expect(again).toBeUndefined();
+    expect(h.client.calls).toEqual([]);
+  });
+
+  it.each([
+    ["call_restricted", "call_restricted"],
+    ["a_future_end_reason", "unknown"],
+  ])("maps lifecycle end reason %s to %s", async (reason, expected) => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (value) => (call = value));
+    ring(life);
+    const ended = vi.fn();
+    const clientEnded = vi.fn();
+    call!.on("ended", ended);
+    h.client.on("ended", clientEnded);
+    life.text({
+      type: "event",
+      event: "call.ended",
+      callId: "CALL-1",
+      payload: { reason },
+      timestamp: "",
+    });
+    expect(call!.endReason).toBe(expected);
+    expect(call!.state).toBe("ended");
+    expect(ended).toHaveBeenCalledExactlyOnceWith(expected);
+    expect(clientEnded).toHaveBeenCalledExactlyOnceWith(call, expected);
     expect(h.client.calls).toEqual([]);
   });
 
@@ -217,7 +250,7 @@ describe("CallsClient", () => {
     expect(call!.state).toBe("connected");
   });
 
-  it("drops a lifecycle socket that stops answering pings and reconnects with a fresh ticket", async () => {
+  it("drops a lifecycle socket that stops answering pings and reconnects", async () => {
     const h = clientWith();
     const life = await connected(h);
     const states: boolean[] = [];
@@ -232,102 +265,82 @@ describe("CallsClient", () => {
     expect(states).toEqual([false]);
     h.t.fireTimeouts();
     await flush();
-    expect(h.api.socketTicket).toHaveBeenCalledTimes(2);
     expect(FakeWebSocket.instances).toHaveLength(2);
     h.client.disconnect();
   });
 
-  it("claims the sdk answer mode before opening the lifecycle stream", async () => {
-    const order: string[] = [];
+  it("does not open a socket when disconnect() lands while the token is pending", async () => {
     const api = fakeApi();
-    api.setMode.mockImplementation(async (session: string, mode: string) => {
-      order.push(`mode:${session}:${mode}`);
-    });
-    api.socketTicket.mockImplementation(async (session: string) => {
-      order.push("ticket");
-      return {
-        ticket: "t",
-        expiresAt: 1,
-        url: `wss://api.example/voip/ws?s=${session}`,
-      };
-    });
-    const h = clientWith(api);
-    const connecting = h.client.connect();
-    await flush();
-    h.ws(0).open();
-    await connecting;
-    // Without the claim, inbound calls would be auto-answered elsewhere and
-    // never ring here — so it goes first.
-    expect(order).toEqual(["mode:support:sdk", "ticket"]);
-    await h.client.disconnect();
-  });
-
-  it("opens no socket when the mode claim fails, and can opt out of claiming", async () => {
-    const api = fakeApi();
-    api.setMode.mockRejectedValue(new Error("403 voip_answer required"));
-    const h = clientWith(api);
-    await expect(h.client.connect()).rejects.toThrow("voip_answer required");
-    expect(FakeWebSocket.instances).toHaveLength(0);
-    expect(api.socketTicket).not.toHaveBeenCalled();
-
-    FakeWebSocket.instances = [];
-    const quiet = fakeApi();
-    const t = timers();
-    const client = new CallsClient({
-      session: "support",
-      api: quiet,
-      claimMode: false,
-      WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
-      setInterval: t.setInterval,
-      clearInterval: t.clearInterval,
-      setTimeout: t.setTimeout,
-      clearTimeout: t.clearTimeout,
-    });
-    const connecting = client.connect();
-    await flush();
-    FakeWebSocket.instances[0]!.open();
-    await connecting;
-    expect(quiet.setMode).not.toHaveBeenCalled();
-    await client.disconnect();
-  });
-
-  it("does not open a socket when disconnect() lands while the mode claim is pending", async () => {
-    const api = fakeApi();
-    let resolveClaim: () => void = () => undefined;
-    api.setMode.mockImplementation(
-      () =>
-        new Promise<void>((resolve) => {
-          resolveClaim = resolve;
-        }),
+    let resolveToken: (v: { value: string }) => void = () => undefined;
+    api.token.mockImplementationOnce(
+      () => new Promise((resolve) => (resolveToken = resolve)),
     );
     const h = clientWith(api);
     const connecting = h.client.connect();
     await flush();
     await h.client.disconnect();
-    resolveClaim();
+    resolveToken({ value: "pmfa_ct_test" });
     await connecting;
     await flush();
     expect(FakeWebSocket.instances).toHaveLength(0);
-    expect(api.socketTicket).not.toHaveBeenCalled();
     expect(h.client.connected).toBe(false);
   });
 
-  it("keeps a socket opened by a later connect() while an earlier disconnect() awaits hang-ups", async () => {
-    const api = fakeApi();
-    let releaseHangup: () => void = () => undefined;
-    api.hangup.mockImplementation(
-      () =>
-        new Promise<void>((resolve) => {
-          releaseHangup = resolve;
-        }),
-    );
-    const h = clientWith(api);
+  it("reports connected only after the platform answers the auth frame", async () => {
+    const h = clientWith();
     const connecting = h.client.connect();
     await flush();
-    h.ws(0).open();
+    const life = h.ws(0);
+    life.open();
+    expect(life.texts).toEqual([{ type: "auth", token: "pmfa_ct_test" }]);
+    expect(h.client.connected).toBe(false);
+    // Nothing but ready is processed before authentication.
+    ring(life);
+    expect(h.client.calls).toEqual([]);
+    life.text({ type: "ready", session: "support" });
+    await connecting;
+    expect(h.client.connected).toBe(true);
+    await h.client.disconnect();
+  });
+
+  it("names the session in the query for server credentials only", async () => {
+    const client = clientWith();
+    await connected(client);
+    // Client tokens send no query parameters.
+    expect(client.ws(0).url).toBe("wss://api.example/voip/ws");
+    await client.client.disconnect();
+
+    const api = fakeApi();
+    api.token.mockResolvedValue({ value: "pmfa_live_server" });
+    const h = clientWith(api);
+    await connected(h);
+    expect(h.ws(0).url).toBe("wss://api.example/voip/ws?session=support");
+    // The auth frame is exactly { type, token }.
+    expect(h.ws(0).texts[0]).toEqual({
+      type: "auth",
+      token: "pmfa_live_server",
+    });
+    expect(h.client.participantReference).toBe("server:default");
+    await h.client.disconnect();
+  });
+
+  it("keeps a socket opened by a later connect() while an earlier disconnect() awaits leaves", async () => {
+    const api = fakeApi();
+    let releaseLeave: () => void = () => undefined;
+    api.leave.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseLeave = resolve;
+        }),
+    );
+    const h = clientWith(api, { mediaMode: "external" });
+    const connecting = h.client.connect();
+    await flush();
+    h.ws(0).authenticate();
     await connecting;
     ring(h.ws(0), "C1");
     await flush();
+    await h.client.calls[0]!.answer();
     expect(h.client.calls).toHaveLength(1);
 
     const disconnecting = h.client.disconnect(); // hang-up is deferred
@@ -335,9 +348,9 @@ describe("CallsClient", () => {
     expect(h.client.connected).toBe(false);
     const reconnecting = h.client.connect();
     await flush();
-    h.ws(1).open();
+    h.ws(1).authenticate();
     await reconnecting;
-    releaseHangup();
+    releaseLeave();
     await disconnecting;
     await flush();
     // The later connection survives the earlier disconnect settling.
@@ -346,18 +359,25 @@ describe("CallsClient", () => {
     await h.client.disconnect();
   });
 
-  it("hangs up live calls on disconnect", async () => {
+  it("leaves joined calls on disconnect without ending or declining any call", async () => {
     const h = clientWith();
     const life = await connected(h);
-    let call: Call | undefined;
-    h.client.on("incoming", (c) => (call = c));
-    ring(life);
-    const answering = call!.answer();
-    await bridge(h);
+    const calls: Call[] = [];
+    h.client.on("incoming", (c) => calls.push(c));
+    ring(life, "CALL-1");
+    ring(life, "CALL-2");
+    const answering = calls[0]!.answer();
+    const media = await bridge(h);
     await answering;
     await h.client.disconnect();
-    expect(h.api.hangup).toHaveBeenCalledWith("CALL-1");
-    expect(call!.ended).toBe(true);
+    // The joined call is left over its media connection; nobody else loses it.
+    expect(media.lastText).toEqual({ type: "leave" });
+    expect(calls[0]!.endReason).toBe("left");
+    // The ringing call is not declined on the application's behalf.
+    expect(h.api.reject).not.toHaveBeenCalled();
+    expect(h.api.end).not.toHaveBeenCalled();
+    expect(h.api.leave).not.toHaveBeenCalled();
+    expect(calls[1]!.endReason).toBe("left");
     expect(h.client.connected).toBe(false);
   });
 
@@ -484,7 +504,7 @@ describe("CallsClient", () => {
     expect(left).toEqual(["p1"]);
   });
 
-  it("ignores lifecycle roster events for socket-media calls and ended calls", async () => {
+  it("applies lifecycle roster events to socket-media calls and ignores ended calls", async () => {
     const h = clientWith();
     const life = await connected(h);
     let call: Call | undefined;
@@ -507,7 +527,7 @@ describe("CallsClient", () => {
       timestamp: "",
     };
     life.text(event);
-    expect(call!.participants).toEqual([]);
+    expect(call!.participants.map((p) => p.id)).toEqual(["p1"]);
 
     const external = clientWith(fakeApi(), { mediaMode: "external" });
     const externalLife = await connected(external);
@@ -699,7 +719,7 @@ describe("CallsClient", () => {
   });
 
   it("refuses to construct without a credential or an api seam", () => {
-    expect(() => new CallsClient({ session: "s" })).toThrow(/apiKey/);
+    expect(() => createInternalCallsClient({ session: "s" })).toThrow(/token/);
   });
 });
 
@@ -730,7 +750,6 @@ describe("CallsClient — review round one", () => {
 
   it("ends the call, rather than returning to incoming, when media fails after a successful accept", async () => {
     const api = fakeApi();
-    api.mediaTicket.mockRejectedValueOnce(new Error("no ticket"));
     const h = clientWith(api);
     const life = await connected(h);
     let call: Call | undefined;
@@ -738,12 +757,13 @@ describe("CallsClient — review round one", () => {
     ring(life);
     const errors: string[] = [];
     call!.on("error", (e) => errors.push(e.code));
-    await expect(call!.answer()).rejects.toThrow("no ticket");
+    api.token.mockRejectedValueOnce(new Error("no token"));
+    await expect(call!.answer()).rejects.toThrow("no token");
     // The platform already accepted: a second accept or a reject would be wrong.
     expect(api.accept).toHaveBeenCalledTimes(1);
     expect(call!.state).toBe("ended");
     expect(call!.endReason).toBe("connection_failed");
-    expect(errors).toEqual(["media_failed"]);
+    expect(errors).toEqual(["token_failed"]);
     await expect(call!.reject()).rejects.toThrow(/ended/);
   });
 
@@ -758,12 +778,12 @@ describe("CallsClient — review round one", () => {
     const media = h.ws(1);
     media.open();
     media.text({ type: "error", code: "pod_refused", message: "no" });
-    await expect(answering).rejects.toThrow(/pod_refused/);
+    media.drop(1008, "unauthorized");
+    await expect(answering).rejects.toThrow("no");
     expect(media.readyState).toBe(FakeWebSocket.CLOSED);
-    // The lifecycle heartbeat is still live; the media socket's — the last one
-    // registered — must have been cleared with the socket.
-    expect(h.t.intervals.at(-1)?.cleared).toBe(true);
-    expect(h.t.intervals.at(0)?.cleared).not.toBe(true);
+    // The media heartbeat starts only after `ready`; the lifecycle one stays live.
+    expect(h.t.intervals).toHaveLength(1);
+    expect(h.t.intervals[0]?.cleared).not.toBe(true);
   });
 
   it("applies lifecycle events that arrive before place() resolves", async () => {
@@ -795,7 +815,7 @@ describe("CallsClient — review round one", () => {
     const api = fakeApi();
     FakeWebSocket.instances = [];
     const t = timers();
-    const client = new CallsClient({
+    const client = createInternalCallsClient({
       session: "support",
       api,
       WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
@@ -807,7 +827,7 @@ describe("CallsClient — review round one", () => {
     });
     const connecting = client.connect();
     await flush();
-    FakeWebSocket.instances[0]!.open();
+    FakeWebSocket.instances[0]!.authenticate();
     await connecting;
     let call: Call | undefined;
     client.on("incoming", (c) => (call = c));
@@ -823,7 +843,7 @@ describe("CallsClient — review round one", () => {
     await answering;
     now = 25_000;
     expect(call!.duration).toBe(15);
-    await call!.hangup();
+    await call!.end();
     now = 99_000;
     expect(call!.duration).toBe(15);
     expect(call!.endedAt).toBe(25_000);
@@ -854,7 +874,7 @@ describe("CallsClient — review round one", () => {
     const api = fakeApi();
     FakeWebSocket.instances = [];
     const t = timers();
-    const client = new CallsClient({
+    const client = createInternalCallsClient({
       session: "support",
       api,
       WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
@@ -911,7 +931,7 @@ describe("CallsClient — review round two", () => {
     const call = await placing;
     await flush(20);
     expect(call.state).toBe("ended");
-    // The ticket was fetched by the accepted replay, but no socket may exist
+    // The token was fetched by the accepted replay, but no socket may exist
     // for a call that ended before the socket was created.
     expect(FakeWebSocket.instances).toHaveLength(1);
     expect(h.t.intervals.filter((i) => !i.cleared)).toHaveLength(1); // lifecycle heartbeat only
@@ -919,18 +939,14 @@ describe("CallsClient — review round two", () => {
 });
 
 describe("CallsClient — review round three", () => {
-  it("rejects answer() when the call ends while the media ticket is in flight", async () => {
+  it("rejects answer() when the call ends while the media token is in flight", async () => {
     const api = fakeApi();
-    let resolveTicket: (v: {
-      token: string;
-      expiresAt: number;
-      url: string;
-    }) => void = () => undefined;
-    api.mediaTicket.mockImplementationOnce(
-      () => new Promise((r) => (resolveTicket = r)),
-    );
+    let resolveToken: (v: { value: string }) => void = () => undefined;
     const h = clientWith(api);
     const life = await connected(h);
+    api.token.mockImplementationOnce(
+      () => new Promise((r) => (resolveToken = r)),
+    );
     let call: Call | undefined;
     h.client.on("incoming", (c) => (call = c));
     ring(life);
@@ -943,13 +959,9 @@ describe("CallsClient — review round three", () => {
       payload: { reason: "user_hangup" },
       timestamp: "",
     });
-    resolveTicket({
-      token: "t",
-      expiresAt: 1,
-      url: "wss://pod.example/voip/sdk?callId=CALL-1",
-    });
+    resolveToken({ value: "pmfa_ct_test" });
     // Resolving here would tell the caller the call connected; it ended.
-    await expect(answering).rejects.toThrow(/ended before media/);
+    await expect(answering).rejects.toThrow(/closed before media/);
     expect(call!.endReason).toBe("remote_hangup"); // not rewritten to connection_failed
     expect(FakeWebSocket.instances).toHaveLength(1); // no media socket was created
   });
@@ -964,12 +976,15 @@ describe("CallsClient — review round three", () => {
     expect(h.t.timeouts.filter((x) => x.cleared !== true)).toHaveLength(0);
   });
 
-  it("does not report ticket_failed for a ticket request that close() aborted", async () => {
+  it("does not report token_failed for a token request that close() aborted", async () => {
     const api = fakeApi();
-    api.socketTicket.mockImplementationOnce(
-      (_s: string, signal?: AbortSignal) =>
+    api.token.mockImplementationOnce(async () => ({ value: "pmfa_ct_test" }));
+    api.token.mockImplementationOnce(
+      (request?: { signal?: AbortSignal }) =>
         new Promise((_r, reject) =>
-          signal?.addEventListener("abort", () => reject(new Error("aborted"))),
+          request?.signal?.addEventListener("abort", () =>
+            reject(new Error("aborted")),
+          ),
         ),
     );
     const h = clientWith(api);
@@ -1008,11 +1023,9 @@ describe("CallsClient — review round four", () => {
     FakeWebSocket.instances = [];
     const t = timers();
     const media = new MediaSocket({
-      ticket: {
-        token: "t",
-        expiresAt: 1,
-        url: "wss://pod.example/voip/sdk?callId=X",
-      },
+      api: fakeApi(),
+      callId: "X",
+      connectionId: "conn-0001",
       WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
       setInterval: t.setInterval,
       clearInterval: t.clearInterval,
@@ -1023,6 +1036,7 @@ describe("CallsClient — review round four", () => {
       throw new Error("consumer bug");
     });
     const connecting = media.connect();
+    await flush();
     const ws = FakeWebSocket.instances[0]!;
     ws.open();
     expect(() =>
@@ -1040,7 +1054,8 @@ describe("CallsClient — review round four", () => {
     });
     const connecting = h.client.connect();
     await flush();
-    expect(() => h.ws(0).open()).toThrow("ready handler bug");
+    h.ws(0).open();
+    expect(() => h.ws(0).text({ type: "ready" })).toThrow("ready handler bug");
     await expect(connecting).resolves.toBeUndefined();
     h.client.on("disconnected", () => {
       throw new Error("disconnected handler bug");
@@ -1277,6 +1292,449 @@ describe("participant departure metadata", () => {
       });
       expect(call.participants).toEqual([]);
       expect(departed).toBe("p1");
+    },
+  );
+});
+
+describe("CallsClient — concurrent answers", () => {
+  it("resolves a second answer() only once media is connected", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const first = call!.answer();
+    const second = call!.join();
+    let settled = false;
+    void second.then(() => (settled = true));
+    await flush();
+    // The platform accepted the call, but media is not attached yet.
+    expect(h.api.accept).toHaveBeenCalledTimes(1);
+    expect(settled).toBe(false);
+    await bridge(h);
+    await expect(first).resolves.toBeUndefined();
+    await expect(second).resolves.toBeUndefined();
+    expect(call!.state).toBe("connected");
+  });
+
+  it("rejects a second answer() when media fails after acceptance", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const first = call!.answer();
+    const second = call!.answer();
+    await flush();
+    h.ws(1).open(); // no ready frame: the media attempt times out
+    h.t.fireTimeouts();
+    await expect(first).rejects.toThrow(/did not report media ready/);
+    await expect(second).rejects.toThrow(/did not report media ready/);
+    expect(call!.state).toBe("ended");
+  });
+});
+
+describe("CallsClient — releasing a call whose media failed", () => {
+  async function answered(
+    exclusive: boolean,
+    fail: (h: ReturnType<typeof clientWith>) => void,
+  ) {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const seen: string[] = [];
+    const record = (kind: string) => async () => {
+      seen.push(`${kind}:${call!.state}`);
+    };
+    h.api.leave.mockImplementation(record("leave"));
+    h.api.end.mockImplementation(record("end"));
+    h.api.accept.mockImplementationOnce(async () => ({
+      answered: true,
+      answeredBy: "client:self",
+      exclusive,
+    }));
+    const errors: string[] = [];
+    call!.on("error", (e) => errors.push(e.code));
+    fail(h);
+    const answering = call!.answer({ exclusive });
+    return { h, call: call!, answering, seen, errors };
+  }
+
+  const tokenFailure = (h: ReturnType<typeof clientWith>) =>
+    h.api.token.mockRejectedValue(new Error("token service down"));
+
+  it.each([
+    [true, "end"],
+    [false, "leave"],
+  ] as const)(
+    "releases (exclusive: %s → %s) before ending locally when the media token fails",
+    async (exclusive, kind) => {
+      const r = await answered(exclusive, tokenFailure);
+      await expect(r.answering).rejects.toThrow();
+      // Released while the call was still live here.
+      expect(r.seen).toEqual([`${kind}:connecting`]);
+      if (kind === "leave")
+        expect(r.h.api.leave).toHaveBeenCalledWith(
+          "CALL-1",
+          r.call.connectionId,
+          expect.any(AbortSignal),
+          undefined,
+        );
+      else
+        expect(r.h.api.end).toHaveBeenCalledWith(
+          "CALL-1",
+          expect.any(AbortSignal),
+        );
+      expect(r.call.state).toBe("ended");
+      expect(r.call.endReason).toBe("connection_failed");
+    },
+  );
+
+  it.each([
+    [true, "end"],
+    [false, "leave"],
+  ] as const)(
+    "releases (exclusive: %s → %s) when the media-ready timeout expires",
+    async (exclusive, kind) => {
+      const r = await answered(exclusive, () => undefined);
+      await flush();
+      r.h.ws(1).open(); // no ready frame
+      r.h.t.fireTimeouts();
+      await expect(r.answering).rejects.toThrow(/did not report media ready/);
+      expect(r.seen).toEqual([`${kind}:connecting`]);
+      expect(r.call.endReason).toBe("connection_failed");
+    },
+  );
+
+  it("reports the media error when the release fails, and bounds a release that hangs", async () => {
+    const failing = await answered(false, tokenFailure);
+    failing.h.api.leave.mockRejectedValue(new Error("release refused"));
+    await expect(failing.answering).rejects.not.toThrow("release refused");
+    expect(failing.call.endReason).toBe("connection_failed");
+
+    const hanging = await answered(true, tokenFailure);
+    hanging.h.api.end.mockImplementation(() => new Promise(() => {}));
+    let settled = false;
+    void hanging.answering.catch(() => (settled = true));
+    await flush(20);
+    expect(settled).toBe(false);
+    expect(hanging.call.state).toBe("connecting");
+    // The release timeout fires; the call ends locally anyway.
+    hanging.h.t.fireTimeouts();
+    await flush(20);
+    expect(settled).toBe(true);
+    expect(hanging.call.endReason).toBe("connection_failed");
+  });
+
+  it("ends a call placed exclusively when its media fails after the callee answers", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    const call = await h.client.place("+15550100", { exclusive: true });
+    h.api.token.mockRejectedValue(new Error("token service down"));
+    life.text({
+      type: "event",
+      event: "call.accepted",
+      callId: call.id,
+      payload: {},
+      timestamp: "",
+    });
+    await flush(20);
+    expect(h.api.end).toHaveBeenCalledWith(call.id, expect.any(AbortSignal));
+    expect(h.api.leave).not.toHaveBeenCalled();
+    expect(call.endReason).toBe("connection_failed");
+  });
+
+  it("leaves before ending when media reattachment is exhausted", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const answering = call!.answer();
+    const media = await bridge(h);
+    await answering;
+    const states: string[] = [];
+    h.api.leave.mockImplementation(async () => {
+      states.push(call!.state);
+    });
+    h.api.token.mockRejectedValue(new Error("token service down"));
+    media.drop(1006);
+    for (let i = 0; i < 6; i += 1) {
+      h.t.fireTimeouts();
+      await flush(20);
+    }
+    expect(states).toEqual(["reconnecting"]);
+    expect(call!.endReason).toBe("connection_failed");
+  });
+});
+
+describe("CallsClient — terminal events that arrive before call.received", () => {
+  it.each([
+    ["call.ended", "remote_hangup"],
+    ["call.missed", "missed"],
+    ["call.rejected", "rejected"],
+  ] as const)(
+    "does not ring for a call whose %s was buffered first",
+    async (event, reason) => {
+      const h = clientWith();
+      const life = await connected(h);
+      const incoming: Call[] = [];
+      const ended: [Call, string][] = [];
+      h.client.on("incoming", (call) => incoming.push(call));
+      h.client.on("ended", (call, why) => ended.push([call, why]));
+      life.text({
+        type: "event",
+        event,
+        callId: "CALL-1",
+        payload: { reason: "user_hangup" },
+        timestamp: "",
+      });
+      ring(life);
+      expect(incoming).toEqual([]);
+      const call = h.client.getCall("CALL-1");
+      expect(call?.ended).toBe(true);
+      expect(call?.endReason).toBe(reason);
+      expect(ended.map(([c, why]) => [c.id, why])).toEqual([
+        ["CALL-1", reason],
+      ]);
+      expect(h.client.calls).not.toContain(call);
+      // A duplicate call.received for the retained ended id is still ignored.
+      ring(life);
+      expect(incoming).toEqual([]);
+    },
+  );
+});
+
+describe("CallsClient — capabilities reported on call.accepted", () => {
+  function accepted(
+    life: FakeWebSocket,
+    callId: string,
+    payload: Record<string, unknown>,
+  ) {
+    life.text({
+      type: "event",
+      event: "call.accepted",
+      callId,
+      payload,
+      timestamp: "",
+    });
+  }
+
+  it("updates an outbound call's capabilities from the answer", async () => {
+    const h = clientWith(undefined, { mediaMode: "external" });
+    const life = await connected(h);
+    const call = await h.client.place("+15550100", { video: true });
+    expect(call.capabilities).toEqual({ video: true, invite: true });
+    expect(call.hasVideo).toBe(true);
+    const reported: unknown[] = [];
+    call.on("capabilities", (c) => reported.push(c));
+    accepted(life, call.id, { capabilities: { video: false, invite: false } });
+    await flush();
+    expect(call.capabilities).toEqual({ video: false, invite: false });
+    expect(call.hasVideo).toBe(false);
+    expect(reported).toEqual([{ video: false, invite: false }]);
+    expect(call.state).toBe("connecting");
+  });
+
+  it.each([
+    ["absent", {}, { video: true, invite: true }],
+    ["malformed", { capabilities: "none" }, { video: true, invite: true }],
+    [
+      "partial",
+      { capabilities: { invite: false, video: "no" } },
+      { video: true, invite: false },
+    ],
+  ] as const)(
+    "keeps current values for %s reports",
+    async (_label, payload, expected) => {
+      const h = clientWith(undefined, { mediaMode: "external" });
+      const life = await connected(h);
+      const call = await h.client.place("+15550100");
+      accepted(life, call.id, payload);
+      await flush();
+      expect(call.capabilities).toEqual(expected);
+    },
+  );
+
+  it("applies capabilities from an answer that arrived before placement returned", async () => {
+    const api = fakeApi();
+    let resolvePlace!: (value: { callId: string }) => void;
+    api.place.mockImplementationOnce(
+      () => new Promise((resolve) => (resolvePlace = resolve)),
+    );
+    const h = clientWith(api, { mediaMode: "external" });
+    const life = await connected(h);
+    const placing = h.client.place("+15550100");
+    await flush();
+    accepted(life, "CALL-FAST", {
+      capabilities: { video: false, invite: false },
+    });
+    resolvePlace({ callId: "CALL-FAST" });
+    const call = await placing;
+    expect(call.capabilities).toEqual({ video: false, invite: false });
+  });
+
+  it("updates an inbound call's capabilities when it is answered elsewhere", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    accepted(life, "CALL-1", {
+      answeredBy: "client:other",
+      capabilities: { video: true, invite: false },
+    });
+    await flush();
+    expect(call!.capabilities).toEqual({ video: true, invite: false });
+    expect(call!.canJoin).toBe(true);
+  });
+});
+
+describe("Call.leave()", () => {
+  it("ends a placed call that is still ringing instead of leaving it", async () => {
+    const h = clientWith(undefined, { mediaMode: "external" });
+    await connected(h);
+    const call = await h.client.place("+15550100");
+    expect(call.state).toBe("ringing");
+    await call.leave();
+    expect(h.api.end).toHaveBeenCalledWith(call.id);
+    expect(h.api.leave).not.toHaveBeenCalled();
+    expect(call.endReason).toBe("hangup");
+  });
+
+  it("keeps the call live and retryable when the leave request fails", async () => {
+    const h = clientWith(undefined, { mediaMode: "external" });
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    await call!.answer();
+    h.api.leave.mockRejectedValueOnce(new Error("network down"));
+    await expect(call!.leave()).rejects.toThrow("network down");
+    expect(call!.ended).toBe(false);
+    expect(h.client.calls).toContain(call);
+    await call!.leave();
+    expect(h.api.leave).toHaveBeenCalledTimes(2);
+    expect(call!.endReason).toBe("left");
+  });
+});
+
+describe("CallsClient — answering a settled call", () => {
+  it("rejects answer() and join() once the call is connected or ended", async () => {
+    const h = clientWith();
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const answering = call!.answer();
+    await bridge(h);
+    await answering;
+    expect(call!.state).toBe("connected");
+    await expect(call!.answer()).rejects.toMatchObject({
+      code: "invalid_state",
+    });
+    await expect(call!.join()).rejects.toMatchObject({ code: "invalid_state" });
+    await call!.end();
+    await expect(call!.answer()).rejects.toMatchObject({
+      code: "invalid_state",
+    });
+    expect(h.api.accept).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("CallsClient — disconnecting during an answer", () => {
+  it.each([false, true])(
+    "leaves a call whose answer (exclusive: %s) succeeds after disconnect()",
+    async (exclusive) => {
+      const api = fakeApi();
+      let finish!: () => void;
+      api.accept.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = () =>
+              resolve({ answered: true, answeredBy: "client:self", exclusive });
+          }),
+      );
+      const h = clientWith(api, { mediaMode: "external" });
+      const life = await connected(h);
+      let call: Call | undefined;
+      h.client.on("incoming", (c) => (call = c));
+      ring(life);
+      const answering = call!.answer({ exclusive }).catch(() => undefined);
+      await flush();
+      const disconnecting = h.client.disconnect();
+      await flush();
+      // Nothing is sent before the accept settles.
+      expect(api.leave).not.toHaveBeenCalled();
+      finish();
+      await disconnecting;
+      await answering;
+      expect(api.leave).toHaveBeenCalledWith(
+        "CALL-1",
+        call!.connectionId,
+        undefined,
+        undefined,
+      );
+      expect(call!.endReason).toBe("left");
+    },
+  );
+
+  it("only stops tracking when the in-flight answer is refused", async () => {
+    const api = fakeApi();
+    let refuse!: (cause: Error) => void;
+    api.accept.mockImplementationOnce(
+      () =>
+        new Promise((_resolve, reject) => {
+          refuse = reject;
+        }),
+    );
+    const h = clientWith(api, { mediaMode: "external" });
+    const life = await connected(h);
+    let call: Call | undefined;
+    h.client.on("incoming", (c) => (call = c));
+    ring(life);
+    const answering = call!.answer().catch(() => undefined);
+    await flush();
+    const disconnecting = h.client.disconnect();
+    refuse(new Error("offline"));
+    await disconnecting;
+    await answering;
+    expect(api.leave).not.toHaveBeenCalled();
+    expect(call!.ended).toBe(true);
+  });
+});
+
+describe("CallsClient — claim state of a placed call", () => {
+  it.each([
+    [false, {}, { answered: true, exclusive: false }],
+    [true, {}, { answered: true, exclusive: true }],
+    [
+      false,
+      { answeredBy: "15550100", exclusive: true },
+      { answered: true, answeredBy: "15550100", exclusive: true },
+    ],
+  ] as const)(
+    "records the answer (placed exclusive: %s, event %j)",
+    async (exclusive, payload, expected) => {
+      const h = clientWith(undefined, { mediaMode: "external" });
+      const life = await connected(h);
+      const call = await h.client.place("+15550100", { exclusive });
+      expect(call.claim.answered).toBe(false);
+      const claims: unknown[] = [];
+      call.on("claim", (claim) => claims.push(claim));
+      life.text({
+        type: "event",
+        event: "call.accepted",
+        callId: call.id,
+        payload,
+        timestamp: "",
+      });
+      await flush();
+      expect(call.claim).toMatchObject(expected);
+      expect(claims).toHaveLength(1);
+      expect(call.state).toBe("connecting");
     },
   );
 });

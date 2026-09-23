@@ -1,3 +1,4 @@
+import type { MessageRoutingMetadata } from "../messaging/types.js";
 export type HttpMethod =
   "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
 
@@ -21,7 +22,7 @@ export interface RawRequest extends RequestOptions {
   readonly body?: unknown;
 }
 
-export interface ResponseMetadata {
+export interface ResponseMetadata extends MessageRoutingMetadata {
   readonly status: number;
   readonly requestId?: string;
   readonly apiVersion?: string;
@@ -31,6 +32,27 @@ export interface ResponseMetadata {
 
 export interface ApiResponse<T> {
   readonly data: T;
+  readonly metadata: ResponseMetadata;
+}
+
+export interface StreamResponse {
+  /** The unbuffered response body. Read it once, or cancel it. */
+  readonly body: ReadableStream<Uint8Array>;
+  readonly contentType?: string;
+  readonly contentLength?: number;
+  /** Decoded from `Content-Disposition`, preferring RFC 6266 `filename*`. */
+  readonly filename?: string;
+  /** The Polymorfa API URL that was requested. Never a signed storage URL. */
+  readonly url: string;
+  /** True when the body came from the API's redirect target. */
+  readonly redirected: boolean;
+  /** Metadata of the Polymorfa API response. */
+  readonly metadata: ResponseMetadata;
+}
+
+export interface StreamRedirect {
+  /** Absolute redirect target. Treat it as a short-lived bearer secret. */
+  readonly location: string;
   readonly metadata: ResponseMetadata;
 }
 

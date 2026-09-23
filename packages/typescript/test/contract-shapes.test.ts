@@ -9,13 +9,27 @@ import type {
   Customer,
   CustomerSummary,
   EmbeddedSignupRequest,
+  QuickLink,
+  QuickLinkStatus,
+  HybridRoutingPolicy,
+  SetHybridRoutingPolicyRequest,
+  HybridLinkState,
+  HybridQuickLinkAvailability,
+  MessageOperation,
+  MessageReceipt,
+  MessageTransport,
+  MessageRoutingReason,
+  EditMessageRequest,
   ProjectQuickLinkSettings,
   UpdateCustomerRequest,
   UpdateQuickLinkSettingsInput,
 } from "../src/index.js";
 
 interface Schema {
-  readonly properties?: Readonly<Record<string, unknown>>;
+  readonly properties?: Readonly<Record<string, Schema>>;
+  readonly enum?: readonly unknown[];
+  readonly required?: readonly string[];
+  readonly deprecated?: boolean;
 }
 
 function schemas(file: string): Readonly<Record<string, Schema>> {
@@ -46,6 +60,14 @@ function keys<T>(record: { readonly [K in keyof Required<T>]: true }) {
 }
 
 describe("SDK types match the pinned contract snapshots", () => {
+  it("keeps HMS provider references transport-specific with a deprecated alias", () => {
+    for (const name of ["HistoryMessageSummary", "HistoryMessage"]) {
+      const schema = messaging[name];
+      expect(schema?.required).toContain("whatsapp_ids");
+      expect(schema?.required).not.toContain("whatsapp_id");
+      expect(schema?.properties?.whatsapp_id?.deprecated).toBe(true);
+    }
+  });
   it("keeps QuickLink settings aligned with the management schema", () => {
     expect(
       keys<ProjectQuickLinkSettings>({
@@ -170,6 +192,10 @@ describe("SDK types match the pinned contract snapshots", () => {
   it("keeps QuickLink creation and Cloud onboarding request fields", () => {
     expect(
       keys<CreateQuickLinkRequest>({
+        purpose: true,
+        connectionGoal: true,
+        session: true,
+        addConnection: true,
         projectId: true,
         customerId: true,
         externalId: true,
@@ -192,5 +218,123 @@ describe("SDK types match the pinned contract snapshots", () => {
         historySync: true,
       }),
     ).toEqual(properties(messaging, "EmbeddedSignupResult"));
+  });
+
+  it("keeps Hybrid ownership, progress, policy, and recovery shapes aligned", () => {
+    expect(
+      keys<QuickLink>({
+        purpose: true,
+        connectionGoal: true,
+        addConnection: true,
+        id: true,
+        url: true,
+        session: true,
+        expiresAt: true,
+      }),
+    ).toEqual(properties(messaging, "QuickLink"));
+    expect(
+      keys<QuickLinkStatus>({
+        purpose: true,
+        connectionGoal: true,
+        addConnection: true,
+        hybridPhase: true,
+        onboarding: true,
+        id: true,
+        status: true,
+        session: true,
+        expiresAt: true,
+        openedAt: true,
+        connectedAt: true,
+        phone: true,
+        errorCode: true,
+      }),
+    ).toEqual(properties(messaging, "QuickLinkStatus"));
+    expect(
+      keys<HybridRoutingPolicy>({
+        scope: true,
+        revision: true,
+        prefer: true,
+        allowedTransports: true,
+      }),
+    ).toEqual(properties(messaging, "HybridRoutingPolicy"));
+    expect(
+      keys<SetHybridRoutingPolicyRequest>({
+        expectedRevision: true,
+        prefer: true,
+        allowedTransports: true,
+      }),
+    ).toEqual(properties(messaging, "SetHybridRoutingPolicy"));
+    expect(
+      keys<HybridLinkState>({
+        revision: true,
+        paused: true,
+        connections: true,
+      }),
+    ).toEqual(properties(messaging, "HybridLinkState"));
+    expect(
+      keys<MessageOperation>({
+        operationId: true,
+        status: true,
+        transport: true,
+        rejectionCode: true,
+        receipt: true,
+      }),
+    ).toEqual(properties(messaging, "MessageOperation"));
+    expect(
+      keys<HybridQuickLinkAvailability>({
+        allowed: true,
+        addConnection: true,
+        connections: true,
+        resumeQuickLinkId: true,
+      }),
+    ).toEqual(
+      properties(
+        {
+          Availability:
+            messaging.HybridQuickLinkAvailabilityResponse!.properties!.data!,
+        },
+        "Availability",
+      ),
+    );
+  });
+
+  it("preserves transport choices and selected-provider receipt metadata", () => {
+    const transports: Record<MessageTransport, true> = {
+      auto: true,
+      linked_devices: true,
+      official_api: true,
+    };
+    expect(Object.keys(transports).sort()).toEqual(
+      [...messaging.SendMessageRequest!.properties!.transport!.enum!].sort(),
+    );
+    const reasons: Record<MessageRoutingReason, true> = {
+      explicit_transport: true,
+      template: true,
+      target_reference: true,
+      only_eligible_transport: true,
+      session_rule: true,
+      project_rule: true,
+      team_rule: true,
+      default_linked_devices: true,
+    };
+    expect(Object.keys(reasons).sort()).toEqual(
+      [...messaging.MessageReceipt!.properties!.routingReason!.enum!].sort(),
+    );
+    expect(
+      keys<MessageReceipt>({
+        id: true,
+        whatsapp_ids: true,
+        whatsapp_id: true,
+        conversation: true,
+        timestamp: true,
+        status: true,
+        transport: true,
+        routingReason: true,
+        operationId: true,
+      }),
+    ).toEqual(properties(messaging, "MessageReceipt"));
+    expect(keys<EditMessageRequest>({ text: true, transport: true })).toEqual(
+      properties(messaging, "EditMessageRequest"),
+    );
   });
 });

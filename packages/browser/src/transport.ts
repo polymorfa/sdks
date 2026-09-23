@@ -32,6 +32,7 @@ export interface BrowserRequest {
 export interface BrowserResponseMetadata {
   readonly status: number;
   readonly requestId?: string;
+  readonly operationId?: string;
   readonly attempts: number;
   readonly headers: Readonly<Record<string, string>>;
 }
@@ -55,6 +56,8 @@ export interface BrowserTransportOptions {
   readonly now?: () => number;
   readonly onDiagnostic?: BrowserDiagnosticSink;
 }
+
+const NATIVE_API_VERSION = "2026-09-22";
 
 const SAFE_METHODS = new Set<BrowserHttpMethod>(["GET", "HEAD", "OPTIONS"]);
 
@@ -100,6 +103,16 @@ export class BrowserTransport {
     this.#onDiagnostic = options.onDiagnostic;
   }
 
+  /**
+   * The client token requests use, for authenticating sockets. `refresh: true`
+   * asks the token provider for a new token.
+   */
+  token(
+    options: { readonly refresh?: boolean } = {},
+  ): Promise<{ readonly value: string; readonly expiresAt?: number }> {
+    return this.#tokens.token(options);
+  }
+
   async request<T = unknown>(
     request: BrowserRequest,
   ): Promise<BrowserResponse<T>> {
@@ -114,6 +127,7 @@ export class BrowserTransport {
     let attempt = 0;
     while (true) {
       attempt += 1;
+      let response: Response | undefined;
       const startedAt = this.#now();
       this.#emit({
         type: "request.started",
@@ -123,8 +137,11 @@ export class BrowserTransport {
         attempt,
       });
       try {
-        const response = await this.#perform(request);
-        const data = await decodeBody(response);
+        const data = await this.#perform(request, (received) => {
+          response = received;
+        });
+        if (response === undefined)
+          throw new Error("Missing browser response.");
         const metadata = responseMetadata(response, attempt);
         if (response.ok) {
           this.#emit({
@@ -144,7 +161,9 @@ export class BrowserTransport {
         if (
           retryableMethod &&
           attempt <= retries &&
-          isRetryableStatus(response.status)
+          isRetryableStatus(response.status) &&
+          !isIdempotentReplay(response) &&
+          metadata.operationId === undefined
         ) {
           await this.#sleep(
             retryDelay(response, attempt, this.#random),
@@ -154,10 +173,43 @@ export class BrowserTransport {
         }
         throw httpError(response, data, metadata);
       } catch (cause) {
-        const error = classifyFailure(cause, request.signal);
+        let error = classifyFailure(cause, request.signal);
+        const receivedMetadata =
+          response === undefined
+            ? undefined
+            : responseMetadata(response, attempt);
+        if (receivedMetadata?.operationId !== undefined) {
+          const options = {
+            category: error.category,
+            ...(error.code === undefined ? {} : { code: error.code }),
+            status: receivedMetadata.status,
+            ...(receivedMetadata.requestId === undefined
+              ? {}
+              : { requestId: receivedMetadata.requestId }),
+            metadata: receivedMetadata,
+            cause,
+          };
+          if (error instanceof BrowserConnectionError) {
+            error = new BrowserConnectionError(
+              "The response body could not be read. Query the operation status before retrying.",
+              { ...options, category: "connection", code: "connection_error" },
+            );
+          } else if (error instanceof BrowserTimeoutError) {
+            error = new BrowserTimeoutError(error.message, {
+              ...options,
+              category: "timeout",
+            });
+          } else if (error instanceof BrowserCancelledError) {
+            error = new BrowserCancelledError(error.message, {
+              ...options,
+              category: "cancelled",
+            });
+          }
+        }
         if (
           (error instanceof BrowserConnectionError ||
             error instanceof BrowserTimeoutError) &&
+          receivedMetadata?.operationId === undefined &&
           retryableMethod &&
           attempt <= retries
         ) {
@@ -185,11 +237,21 @@ export class BrowserTransport {
     }
   }
 
-  async #perform(request: BrowserRequest): Promise<Response> {
+  async #perform(
+    request: BrowserRequest,
+    onResponse: (response: Response) => void,
+  ): Promise<unknown> {
     throwIfAborted(request.signal);
     const token = await this.#tokens.get();
     throwIfAborted(request.signal);
+    const url = requestUrl(this.#baseUrl, request);
     const headers = new Headers(request.headers);
+    if (
+      !headers.has("polymorfa-version") &&
+      /^\/(?:messaging|platform)(?:\/|$)/.test(url.pathname)
+    ) {
+      headers.set("polymorfa-version", NATIVE_API_VERSION);
+    }
     headers.set("accept", "application/json");
     headers.set("authorization", `Bearer ${token}`);
     headers.set("x-polymorfa-client", "browser/0.1.0-dev.0");
@@ -213,12 +275,14 @@ export class BrowserTransport {
     const cancel = () => controller.abort(request.signal?.reason);
     request.signal?.addEventListener("abort", cancel, { once: true });
     try {
-      return await this.#fetch(requestUrl(this.#baseUrl, request), {
+      const response = await this.#fetch(url, {
         method: request.method,
         headers,
         ...(body === undefined ? {} : { body }),
         signal: controller.signal,
       });
+      onResponse(response);
+      return await decodeBody(response);
     } catch (cause) {
       if (timedOut) throw new RequestTimeout(timeoutMs, cause);
       throw cause;
@@ -290,11 +354,14 @@ function responseMetadata(
     response.headers.get("x-request-id") ??
     response.headers.get("request-id") ??
     undefined;
+  const operationId =
+    response.headers.get("x-polymorfa-operation-id") ?? undefined;
   return Object.freeze({
     status: response.status,
     attempts,
     headers: Object.freeze(headers),
     ...(requestId === undefined ? {} : { requestId }),
+    ...(operationId === undefined ? {} : { operationId }),
   });
 }
 
@@ -317,20 +384,50 @@ function httpError(
               : response.status >= 500
                 ? "server"
                 : "http";
+  const fields = errorFields(details);
+  // Cross-origin callers cannot always read X-Request-Id; the body repeats it.
+  const requestId = fields.requestId ?? metadata.requestId;
   return new BrowserHttpError(errorMessage(details, response.status), {
     category,
     status: response.status,
     details,
     metadata,
-    ...(metadata.requestId === undefined
-      ? {}
-      : { requestId: metadata.requestId }),
+    ...(fields.code === undefined ? {} : { code: fields.code }),
+    ...(requestId === undefined ? {} : { requestId }),
+    ...(fields.docUrl === undefined ? {} : { docUrl: fields.docUrl }),
   });
+}
+
+function errorFields(details: unknown): {
+  readonly code?: string;
+  readonly requestId?: string;
+  readonly docUrl?: string;
+} {
+  if (typeof details !== "object" || details === null) return {};
+  const record = details as Record<string, unknown>;
+  const error =
+    typeof record.error === "object" && record.error !== null
+      ? (record.error as Record<string, unknown>)
+      : undefined;
+  const text = (value: unknown) =>
+    typeof value === "string" && value.length > 0 ? value : undefined;
+  const code = text(error ? error.code : record.code);
+  const requestId = text(error?.request_id);
+  const docUrl = text(record.docs);
+  return {
+    ...(code === undefined ? {} : { code }),
+    ...(requestId === undefined ? {} : { requestId }),
+    ...(docUrl === undefined ? {} : { docUrl }),
+  };
 }
 
 function errorMessage(details: unknown, status: number): string {
   if (typeof details === "object" && details !== null) {
     const record = details as Record<string, unknown>;
+    if (typeof record.error === "object" && record.error !== null) {
+      const message = (record.error as Record<string, unknown>).message;
+      if (typeof message === "string") return message;
+    }
     if (typeof record.message === "string") return record.message;
     if (typeof record.error === "string") return record.error;
   }
@@ -364,6 +461,14 @@ function classifyFailure(
       cause,
     },
   );
+}
+
+/**
+ * A replayed Idempotency-Key result is final: retrying returns the same
+ * recorded response, so a replayed failure is surfaced immediately.
+ */
+function isIdempotentReplay(response: Response): boolean {
+  return response.headers.get("idempotent-replayed") === "true";
 }
 
 function isRetryableStatus(status: number): boolean {

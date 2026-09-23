@@ -7,6 +7,7 @@ import {
   type ApiResponse,
   type CancelQuickLinkResponse,
   type CreateQuickLinkResponse,
+  type CreateQuickLinkRequest,
   type GetQuickLinkResponse,
 } from "../src/index.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
@@ -19,6 +20,18 @@ afterEach(async () => {
 });
 
 describe("MessagingClient.quickLinks", () => {
+  it("requires an existing session for supplementary setup at compile time", () => {
+    const initial = {} satisfies CreateQuickLinkRequest;
+    const supplement = {
+      purpose: "add_connection",
+      session: "existing/number",
+    } satisfies CreateQuickLinkRequest;
+    // @ts-expect-error supplementary setup requires an existing Number session
+    const invalid: CreateQuickLinkRequest = { purpose: "add_connection" };
+    expect(initial).toEqual({});
+    expect(supplement.session).toBe("existing/number");
+    expect(invalid.purpose).toBe("add_connection");
+  });
   it("creates, retrieves, and cancels the exact hosted QuickLink resource", async () => {
     const server = await startTestServer((request) => {
       if (request.method === "POST") {
@@ -38,8 +51,12 @@ describe("MessagingClient.quickLinks", () => {
       }
       if (request.method === "DELETE") {
         return {
+          status: 202,
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ success: true, message: "cancelled" }),
+          body: JSON.stringify({
+            success: true,
+            message: "QuickLink cancellation requested",
+          }),
         };
       }
       return {
@@ -93,7 +110,8 @@ describe("MessagingClient.quickLinks", () => {
     >();
     expect(created.data.data.id).toBe("ql_123");
     expect(retrieved.data.data.status).toBe("pending");
-    expect(cancelled.data.message).toBe("cancelled");
+    expect(cancelled.data.message).toBe("QuickLink cancellation requested");
+    expect(cancelled.metadata.status).toBe(202);
     expect(
       server.requests.map(({ method, path }) => `${method} ${path}`),
     ).toEqual([
@@ -110,6 +128,48 @@ describe("MessagingClient.quickLinks", () => {
     expect(server.requests[2]?.headers["idempotency-key"]).toBe(
       "cancel-quicklink-123",
     );
+  });
+
+  it("serializes supplementary Hybrid setup and scoped availability without replacing the Number", async () => {
+    const server = await startTestServer(() => ({
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        success: true,
+        data: {
+          allowed: false,
+          addConnection: null,
+          connections: [],
+          resumeQuickLinkId: null,
+        },
+      }),
+    }));
+    servers.push(server);
+    const client = new MessagingClient({
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: server.url,
+    });
+    await client.quickLinks.create({
+      projectId: "project-1",
+      purpose: "add_connection",
+      connectionGoal: "hybrid",
+      session: "existing/number",
+      addConnection: "linked_devices",
+    });
+    const availability = await client.quickLinks.availability({
+      projectId: "project-1",
+      session: "existing/number",
+    });
+    expect(JSON.parse(server.requests[0]!.body)).toEqual({
+      projectId: "project-1",
+      purpose: "add_connection",
+      connectionGoal: "hybrid",
+      session: "existing/number",
+      addConnection: "linked_devices",
+    });
+    expect(server.requests[1]!.path).toBe(
+      "/messaging/quicklinks/availability?projectId=project-1&session=existing%2Fnumber",
+    );
+    expect(availability.data.data.allowed).toBe(false);
   });
 
   it("accepts a project token as a server-only Messaging credential", async () => {
@@ -173,6 +233,12 @@ describe("MessagingClient.quickLinks", () => {
     expect(() => client.quickLinks.retrieve("ql_123")).toThrow(
       PolymorfaConfigurationError,
     );
+    expect(() =>
+      client.quickLinks.availability({
+        projectId: "project-1",
+        session: "number",
+      }),
+    ).toThrow(PolymorfaConfigurationError);
     expect(fetch).not.toHaveBeenCalled();
   });
 });

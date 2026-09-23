@@ -104,6 +104,7 @@ export class PlatformSessionsResource {
     });
   }
 
+  /** Removes a testing Number. Production Numbers return HTTP 409. */
   delete(
     sessionId: string,
     options: RequestOptions = {},
@@ -115,7 +116,10 @@ export class PlatformSessionsResource {
     });
   }
 
-  /** Permanently removes the matching 1 through 100 sessions. */
+  /**
+   * Removes matching testing Numbers. If any matched Number is production,
+   * the API returns HTTP 409 before removing any Number in the batch.
+   */
   deleteMany(
     body: SessionBatchRequest,
     options: RequestOptions = {},

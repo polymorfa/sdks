@@ -37,6 +37,32 @@ describe("BrowserMessagingClient", () => {
     expect(image).toHaveProperty("image");
     expect(mixed).toHaveProperty("text");
   });
+  it("adds an Idempotency-Key to sends and reactions", async () => {
+    const headers: Headers[] = [];
+    const client = new BrowserMessagingClient({
+      session: "support",
+      getClientToken: async () => "pmfa_ct_fixture",
+      baseUrl: "https://api.example.test",
+      maxNetworkRetries: 0,
+      fetch: vi.fn(async (_url, init) => {
+        headers.push(new Headers(init?.headers));
+        return Response.json({ success: true, data: {} });
+      }),
+    });
+    const conversation = { id: "739182640518203" };
+    await client.messages.send({ conversation, content: { text: "Hi" } });
+    await client.messages.react({
+      conversation,
+      id: "739182640518204",
+      reaction: "👍",
+    });
+    await client.messages.markSeen({ conversation, id: "739182640518204" });
+    const keys = headers.map((value) => value.get("idempotency-key"));
+    expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/);
+    expect(keys[1]).toMatch(/^[0-9a-f-]{36}$/);
+    expect(keys[0]).not.toBe(keys[1]);
+    expect(keys[2]).toBeNull();
+  });
   it("binds message actions to one encoded session", async () => {
     const requests: Array<{
       url: string;

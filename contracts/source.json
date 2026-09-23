@@ -1,16 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "aca849cda44ad8582d7ae87489404d2483173a53",
+  "commit": "5cba4237fcec1ef776e8d3727c7ecc4d8f0207a3",
+  "branch": "dev",
+  "published": true,
+  "note": "Exact merged API dev commit integrating Hybrid Link and campaign.launched, campaign.resumed, and campaign.stopped webhook schemas from feature source 3558c289ec35aba45a498a8794a94b4919365899. Both snapshots are byte-identical to the authoritative source files. SDK package publication is separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "edd237e2663001f163ce9f75783f21deefe1e6582fad082ff75bc225178609fc"
+      "sha256": "7291c6001b8d5f53c368b8775d46d137868d6c75b9ed63f673d8c255242d62ab"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "2a30e8e0af8902703609f8ed0f5bb2c108b39c5c11863d5ebd8907e56a9f25d2"
+      "sha256": "4e5aa9b8890b8963d704df22efbbce7c6bd9ac09b9253f5c8215bb3966b2f2cc"
     }
   }
 }
