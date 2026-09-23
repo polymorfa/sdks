@@ -26,7 +26,7 @@ published SDK package before updating their pinned dependency.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at unmerged `polymorfa/polymorfa` Hybrid Link branch commit
-`662e9876b8590544d9da514427a51f778dae51eb`. This revision includes Hybrid Link, Beta HMS retained-history reads,
+`4e147ef7865a3a3481e38e14a9bbe45448d2ea97`. This revision includes Hybrid Link, Beta HMS retained-history reads,
 and Voice audio on top of usage gates, Calls analytics, Campaigns P0 and Functions. `source.json`
 records the source paths and SHA-256 hashes. The snapshots and ledger use
 the same revision; it does not establish package publication, deployed
