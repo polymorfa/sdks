@@ -70,6 +70,15 @@ export {
   type BridgeSignal,
 } from "./bridge.js";
 export { ChatsResource } from "./messaging/chats.js";
+export type {
+  HistoryChat,
+  HistoryMedia,
+  HistoryMessage,
+  HistoryMessageSummary,
+  HistoryPage,
+  ListHistoryChatsParams,
+  ListHistoryMessagesParams,
+} from "./messaging/history.js";
 export { ChannelsResource } from "./messaging/channels.js";
 export { BusinessResource } from "./messaging/business.js";
 export { CallsResource } from "./messaging/calls.js";

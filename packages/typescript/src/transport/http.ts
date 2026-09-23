@@ -926,6 +926,7 @@ const SAFE_RESPONSE_HEADERS = [
   "x-ratelimit-remaining",
   "polymorfa-ratelimit-reason",
   "polymorfa-next-cursor",
+  "polymorfa-data-region",
 ] as const;
 
 function apiError(

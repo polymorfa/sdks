@@ -535,7 +535,9 @@ check.data.data.refusal; // null, or the first reason a call would fail
   `call_recipient_opted_out`, `call_destination_blocked`,
   `call_permission_required`, or `call_limit_reached`. `permission` is `null`
   on linked-device Numbers. A placement made afterwards runs the same checks
-  again.
+  again. If required check state is unavailable, it raises
+  `PolymorfaServerError` (`503 service_unavailable`) without an allow or
+  refusal result.
 - Both require a server credential. `retrieveCallPermission` fails with
   `409 unsupported_for_connection` on a linked-device Number; `check` supports
   linked-device Numbers and returns `permission: null` for them.
@@ -969,7 +971,43 @@ await messaging.messages.send(
 
 Reply context uses `quotedMessage`; forwarding is represented by
 `isForwarded`. Neither is a separate endpoint. The pinned contract exposes no
-message history, list, search, or standalone forward/reply route.
+message list, search, or standalone forward/reply route in `messages`. Hosted
+message history is read through `MessagingClient.chats` as described below.
+
+### Hosted message history beta
+
+`MessagingClient.chats.list(session, params)` lists stored conversations;
+`retrieve(session, conversation)` reads one. `listMessages(session,
+conversation, params)` and `retrieveMessage(session, conversation, messageId)`
+read stored messages. A conversation can be a public ID or E.164 phone number;
+the SDK encodes it in the path. Keep message IDs and cursors as opaque strings.
+
+```ts
+const page = await messaging.chats.listMessages("support", "+14155550123", {
+  limit: 50,
+  order: "desc",
+  types: "text,image",
+});
+for (const message of page.data.data) console.log(message.id, message.text);
+if (page.data.nextCursor) {
+  const older = await messaging.chats.listMessages("support", "+14155550123", {
+    cursor: page.data.nextCursor,
+    order: "desc",
+    types: "text,image",
+  });
+  console.log(older.data.previousCursor);
+}
+console.log(page.metadata.headers["polymorfa-data-region"]);
+```
+
+These four reads require an organization key or project token, a visible
+Number with hosted message storage enabled, team enrollment in
+`messaging.history`, and `chats:read` or `messages:read` as appropriate. The
+feature is an unreleased enrolled beta; an SDK method does not grant access.
+Client tokens are refused before transport. A disabled HMS Number yields
+`404 hms_not_enabled`; absent beta access yields `403 permission_denied`, and
+an unavailable regional read yields `503 service_unavailable`. Media entries
+carry an API download path, not a signed URL; downloading requires `media:read`.
 
 Client tokens can call all five Messages operations only when the corresponding
 live rule is enabled: `send_message` for send and star, `send_reaction` for
@@ -2334,7 +2372,7 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. `Client.callPolicy` and
 `Client.callOptOuts` cover consent controls. The contract snapshot is pinned
-to pending API #226 head `a33b77988f411220bb69d9bb6d030899f182a721`.
+to merged API `dev` commit `e72b51348e16e704f17b3e681ee60d02fcca8c7f`.
 
 ## Functions
 

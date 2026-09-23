@@ -2,10 +2,10 @@
 
 ## Test-event supplement
 
-The pending consent overlay uses API #226 head
-`a33b77988f411220bb69d9bb6d030899f182a721`. It includes the merged
-campaign, usage, and voice API contracts. The snapshots remain unpublished;
-re-pin to the final merged monorepo `dev` commit before SDK publication.
+The consent overlay uses merged API `dev` commit
+`e72b51348e16e704f17b3e681ee60d02fcca8c7f`. It includes the merged
+campaign, usage, voice, and HMS history API contracts. SDK package publication
+remains separate.
 `Client.callPolicy` and `Client.callOptOuts` cover six team-policy operations;
 `MessagingClient.voip.retrieveCallPermission` and `.check` cover two Messaging
 operations. The six Console counterparts are excluded. Message content and
@@ -19,18 +19,18 @@ Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
 and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
-below use the pending API #226 consent revision. CLI consumers require a
+below use the merged API `dev` consent revision. CLI consumers require a
 published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at pending `polymorfa/polymorfa` API #226 head
-`a33b77988f411220bb69d9bb6d030899f182a721`. This revision includes
+files at merged `polymorfa/polymorfa` API `dev` commit
+`e72b51348e16e704f17b3e681ee60d02fcca8c7f`. This revision includes
 Voice audio and provider credentials on top of merged usage gates, Calls
-analytics, Campaigns P0 and Functions. The snapshots, ledger and revision
+analytics, Campaigns P0, Functions, and HMS history. The snapshots, ledger and revision
 tests have been reconciled. `source.json` records the source paths and
-SHA-256 hashes; re-pin to the merged API `dev` commit before publication.
+SHA-256 hashes.
 
 The preceding refresh added 17 operation rows and removes eight. Eight removed Console
 operation routes moved to `/platform/operations` and
@@ -42,8 +42,19 @@ from SDK `dev`. The three public Calls analytics operations are covered by
 `Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
 `Client.calls.exportAll` walks export pages. The 13 public Voice operations are
 covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
-13 Console counterparts are excluded. The full 499-operation snapshot includes
+13 Console counterparts are excluded. The full 503-operation snapshot includes
 all 15 Functions routes already merged to API `dev`.
+
+HMS history adds four server-only Messaging reads under
+`MessagingClient.chats`: `list`, `retrieve`, `listMessages`, and
+`retrieveMessage`. All four are covered; they require an organization key or
+project token, their respective `chats:read` or `messages:read` scope, HMS on
+the Number, and `messaging.history` beta enrollment. Client tokens are refused
+locally. Pagination retains both cursors and the data-region response header.
+The only pre-existing schema change is `hms_not_enabled` in the shared public
+error enum, which changes 166 Messaging and 46 Platform fingerprints. Those
+fingerprints were reconciled against the source specs; no pre-existing route or
+response shape changed.
 
 SDK `dev` through `8392f66` adds `Client.sipTrunks.endpoint()` for
 `GET /platform/sip/endpoint`. Its `SipEndpoint` result is a discriminated union:
@@ -119,12 +130,12 @@ too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        369 |
+| Covered             |        373 |
 | Missing             |          0 |
 | Excluded            |        130 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        499 |
+| Total               |        503 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -267,7 +278,7 @@ Functions is tracked separately in `functions/openapi.json`, with its exact
 monorepo source commit and extraction hash in `functions/source.json`. This
 snapshot contains only the 15 Functions operations and their transitive schemas.
 `npm run check:functions` verifies their ledger; SDK tests exercise every method.
-The main consent snapshots remain on the pending API #226 revision; the
+The main consent snapshots use the merged API `dev` revision; the
 Functions subset retains its separate source revision.
 
 All 15 Functions methods require `client.project(projectId).functions` and an

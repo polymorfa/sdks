@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added typed hosted message history reads to `MessagingClient.chats`:
+  `list`, `retrieve`, `listMessages`, and `retrieveMessage`. Server credentials
+  need the relevant read scope, HMS enabled on the Number, and enrollment in
+  the message history beta. Pages retain both cursors and responses expose the
+  data region. `PolymorfaErrorCode` includes `hms_not_enabled`.
+
 - Call consent. `Client.callPolicy` (`retrieve`, `update`) reads and replaces
   the team's blocked country codes with an optional `expectedRevision` guard,
   and `Client.callOptOuts` (`list`, `create`, `import`, `delete`) manages the

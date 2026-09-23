@@ -7,6 +7,7 @@ import {
   PolymorfaConfigurationError,
   PolymorfaConflictError,
   PolymorfaRateLimitError,
+  PolymorfaServerError,
   PolymorfaValidationError,
   type CallOptOut,
   type CallPermission,
@@ -535,6 +536,30 @@ describe("call permissions", () => {
     expect(sent.body).toEqual({ session: "support", to: "+14155550123" });
   });
 
+  it("surfaces unavailable call-check state as a typed server error", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json(
+        errorBody(
+          "service_unavailable",
+          "Required call-check state is unavailable.",
+          "api_error",
+        ),
+        { status: 503 },
+      ),
+    );
+    const failure = await messagingClient(fetch)
+      .voip.check({ session: "support", to: "+14155550123" })
+      .catch((error: unknown) => error);
+
+    expect(failure).toBeInstanceOf(PolymorfaServerError);
+    expect(failure).toMatchObject({
+      status: 503,
+      code: "service_unavailable",
+      metadata: { status: 503, attempts: 1 },
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
   it("refuses an incomplete check and a client token", () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     const messaging = messagingClient(fetch);
@@ -629,6 +654,31 @@ describe("call permissions", () => {
     expect((failure as PolymorfaConflictError).code).toBe(
       "call_permission_granted",
     );
+  });
+
+  it("reports a linked-device refusal as a typed conflict", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json(
+        errorBody(
+          "unsupported_for_connection",
+          "Call permission requests require a Cloud API number.",
+          "conflict_error",
+        ),
+        { status: 409 },
+      ),
+    );
+    const failure = await messagingClient(fetch)
+      .messages.send("support", {
+        conversation: { phoneNumber: "+14155550123" },
+        content: { callPermissionRequest: { body: "May we call you?" } },
+      })
+      .catch((error: unknown) => error);
+
+    expect(failure).toBeInstanceOf(PolymorfaConflictError);
+    expect(failure).toMatchObject({
+      status: 409,
+      code: "unsupported_for_connection",
+    });
   });
 });
 

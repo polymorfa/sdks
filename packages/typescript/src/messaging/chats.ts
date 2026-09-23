@@ -1,6 +1,15 @@
+import type { MessagingCredential } from "../credentials.js";
+import { PolymorfaConfigurationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import { withIdempotencyKey } from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
+import type {
+  HistoryChat,
+  HistoryMessage,
+  HistoryPage,
+  ListHistoryChatsParams,
+  ListHistoryMessagesParams,
+} from "./history.js";
 import type {
   DisappearingTimerRequest,
   EditMessageRequest,
@@ -8,7 +17,74 @@ import type {
 } from "./types.js";
 
 export class ChatsResource {
-  constructor(private readonly transport: HttpTransport) {}
+  constructor(
+    private readonly transport: HttpTransport,
+    private readonly credentialType: MessagingCredential["type"],
+  ) {}
+
+  /** Lists one page of stored conversations. Requires `chats:read` and enrolled HMS history access. */
+  list(
+    session: string,
+    params: ListHistoryChatsParams = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<HistoryPage<HistoryChat>>> {
+    this.assertHistoryCredential();
+    return this.transport.request({
+      method: "GET",
+      path: `/messaging/${encodeURIComponent(session)}/chats`,
+      query: { ...params },
+      ...options,
+    });
+  }
+
+  /** Reads a stored conversation by public ID or E.164 phone number. */
+  retrieve(
+    session: string,
+    conversation: string,
+    options: RequestOptions = {},
+  ): Promise<
+    ApiResponse<{ readonly success: true; readonly data: HistoryChat }>
+  > {
+    this.assertHistoryCredential();
+    return this.transport.request({
+      method: "GET",
+      path: chatPath(session, conversation),
+      ...options,
+    });
+  }
+
+  /** Lists stored messages, newest first unless `order: "asc"` is supplied. */
+  listMessages(
+    session: string,
+    conversation: string,
+    params: ListHistoryMessagesParams = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<HistoryPage<HistoryMessage>>> {
+    this.assertHistoryCredential();
+    return this.transport.request({
+      method: "GET",
+      path: `${chatPath(session, conversation)}/messages`,
+      query: { ...params },
+      ...options,
+    });
+  }
+
+  /** Reads one stored message by its opaque Polymorfa ID. */
+  retrieveMessage(
+    session: string,
+    conversation: string,
+    messageId: string,
+    options: RequestOptions = {},
+  ): Promise<
+    ApiResponse<{ readonly success: true; readonly data: HistoryMessage }>
+  > {
+    this.assertHistoryCredential();
+    return this.transport.request({
+      method: "GET",
+      path: chatMessagePath(session, conversation, messageId),
+      ...options,
+    });
+  }
 
   editMessage(
     session: string,
@@ -79,6 +155,15 @@ export class ChatsResource {
       path: `${chatPath(session, chatId)}/${action}`,
       ...options,
     });
+  }
+
+  private assertHistoryCredential(): void {
+    if (this.credentialType === "clientToken") {
+      throw new PolymorfaConfigurationError(
+        "Hosted message history requires a server credential.",
+        "credential",
+      );
+    }
   }
 }
 

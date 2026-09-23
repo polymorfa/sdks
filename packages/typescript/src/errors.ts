@@ -13,6 +13,7 @@ export const POLYMORFA_ERROR_CODES = [
   "permission_denied",
   "missing_scope",
   "resource_not_found",
+  "hms_not_enabled",
   "media_fetch_failed",
   "resource_gone",
   "state_conflict",

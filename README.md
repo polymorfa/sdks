@@ -5,10 +5,14 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts at pending Calls consent API #226
-revision `a33b77988f411220bb69d9bb6d030899f182a721`. Re-pin to the
-merged API `dev` commit before publication. Graph-compatible
+the Messaging and Platform contracts at merged API `dev` commit
+`e72b51348e16e704f17b3e681ee60d02fcca8c7f`. Graph-compatible
 APIs are outside this SDK's initial scope.
+
+The same API revision adds an enrolled hosted message history beta.
+`MessagingClient.chats` has typed conversation and message reads for server
+credentials. These methods do not make the beta available before enrollment,
+HMS enablement, deployment, and SDK publication.
 
 ## Package architecture
 
@@ -422,7 +426,9 @@ when WhatsApp could not be reached and the stored state is returned with
 a call or reserving anything. Both need a server credential.
 `retrieveCallPermission` answers `409 unsupported_for_connection` on a
 linked-device Number; `check` supports linked-device Numbers and returns
-`permission: null` for them.
+`permission: null` for them. If required call-check state is unavailable,
+`check` raises `PolymorfaServerError` (`503 service_unavailable`); no allow or
+refusal result is returned.
 
 A send refused by WhatsApp's request limit raises `PolymorfaRateLimitError`
 with `code` `call_permission_request_limited`, `rateLimitReason`
@@ -836,4 +842,4 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 covers the three public call analytics and export operations. `Client.voice`
 covers the Voice audio and credential operations. `Client.callPolicy` and
 `Client.callOptOuts` cover consent controls. The contract snapshot is pinned
-to pending API #226 head `a33b77988f411220bb69d9bb6d030899f182a721`.
+to merged API `dev` commit `e72b51348e16e704f17b3e681ee60d02fcca8c7f`.

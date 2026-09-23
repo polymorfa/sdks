@@ -196,7 +196,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("a33b77988f411220bb69d9bb6d030899f182a721");
+    expect(source.commit).toBe("e72b51348e16e704f17b3e681ee60d02fcca8c7f");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -208,6 +208,25 @@ describe("reconciled coverage evidence", () => {
         .digest("hex");
       expect(hash, contract.snapshotPath).toBe(contract.sha256);
     }
+  });
+
+  it("maps all four hosted-history reads to the server SDK", () => {
+    expect(entry("listChats").typescript).toEqual({
+      status: "covered",
+      method: "MessagingClient.chats.list",
+    });
+    expect(entry("getChat").typescript).toEqual({
+      status: "covered",
+      method: "MessagingClient.chats.retrieve",
+    });
+    expect(entry("listChatMessages").typescript).toEqual({
+      status: "covered",
+      method: "MessagingClient.chats.listMessages",
+    });
+    expect(entry("getChatMessage").typescript).toEqual({
+      status: "covered",
+      method: "MessagingClient.chats.retrieveMessage",
+    });
   });
 
   it.each(calls)(

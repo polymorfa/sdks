@@ -228,7 +228,8 @@ export class VoipResource {
    * call policy (`call_recipient_opted_out`, `call_destination_blocked`), the
    * session's calling switch (`calls_disabled`), or WhatsApp
    * (`call_permission_required`, `call_limit_reached`). Requires a server
-   * credential.
+   * credential. If required call-check state is unavailable, the API answers
+   * `503 service_unavailable` rather than a possibly incomplete check.
    */
   check(
     body: VoipCheckCallRequest,

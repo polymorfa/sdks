@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "a33b77988f411220bb69d9bb6d030899f182a721",
-  "branch": "t3code/calls-consent",
-  "published": false,
-  "note": "Pending API PR #226 Calls consent head after merging Voice and current API dev; snapshots are byte-identical to this branch. Re-pin to the merged API dev commit before SDK publication.",
+  "commit": "e72b51348e16e704f17b3e681ee60d02fcca8c7f",
+  "branch": "dev",
+  "published": true,
+  "note": "Exact merged API dev commit containing Calls consent and HMS history; both snapshots are byte-identical to the authoritative source files. SDK package publication is separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "12fb70fc61bdaa6d97adbac67fda6646c4dc1a7c050de924bfc6b8f49fc89431"
+      "sha256": "0943aa46871e280dc1a714e0dd167e26b7f35a86a4a23fe50e981c620ab83df0"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "1444813bebc2754aa561916da2fb8466d574b65b970685621f16dc72f087dd76"
+      "sha256": "8804d1249763a470bb1cb145c6697ac12381e17edd7aa0ea82b6f916ee8223db"
     }
   }
 }
