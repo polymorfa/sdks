@@ -67,7 +67,6 @@ export const POLYMORFA_ERROR_CODES = [
   "sip_unavailable",
   "unsupported_for_connection",
   "voice_not_enabled",
-  "gate_limit_reached",
   "provider_credential_invalid",
   "provider_unavailable",
   "asset_not_ready",
