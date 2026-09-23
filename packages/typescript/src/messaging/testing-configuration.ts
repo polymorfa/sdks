@@ -74,7 +74,7 @@ export interface TestEventOverrides {
     | "lost_connection"
     | "rejected"
     | "call_restricted";
-  /** session.restriction_updated: whether the reachout restriction is active. */
+  /** session.restriction_updated: whether the restriction starts (true) or ends (false). */
   restrictionActive?: boolean;
   /** session.status: status. */
   status?: "CONNECTING" | "CONNECTED" | "DISCONNECTED";

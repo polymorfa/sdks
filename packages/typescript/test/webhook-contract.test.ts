@@ -8,6 +8,7 @@ import {
   constructWebhookEvent,
   isEvent,
   type KnownWebhookEventType,
+  type BanSafeHealthBandName,
   type ProjectWebhookDeliveryAttempt,
   type OrganizationWebhookDeliveryAttempt,
   type SessionLoggedOutPayload,
@@ -197,11 +198,15 @@ const PAYLOADS: {
     },
     ["phone", "source", "keyword", "session"],
   ),
+  "session.logged_out": shape<P["session.logged_out"]>()(
+    { reason: "banned", code: 401 },
+    ["reason", "code"],
+  ),
   "session.restriction_updated": shape<P["session.restriction_updated"]>()(
     {
       type: "reachout_timelock",
       active: true,
-      enforcementType: "DEFAULT",
+      enforcementType: null,
       expiresAt: null,
       observedAt: AT,
     },
@@ -643,6 +648,8 @@ type LegacyEventType = Exclude<
   | "message.failed"
   | "session.restriction_updated"
   | "template.status"
+  | "session.logged_out"
+  | "session.restriction_updated"
 >;
 
 function specEvents(): Map<string, string> {
@@ -722,6 +729,9 @@ describe("webhook catalog contract", () => {
     expectTypeOf<P["bansafe.action"]["previousRung"]>().toEqualTypeOf<
       "none" | "notify" | "throttle" | "block_cold" | "suspend" | null
     >();
+    expectTypeOf<
+      P["bansafe.health_changed"]["previousBand"]
+    >().toEqualTypeOf<BanSafeHealthBandName | null>();
   });
 
   it("types logged-out reasons and the required integer code from the pinned contract", async () => {

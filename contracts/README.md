@@ -42,19 +42,18 @@ Their types match the contract, including `session.restriction_updated` and
 the Hybrid refusal codes. The retired `premium_required` code is no longer
 listed; unrecognized API error codes remain readable as strings.
 
-Five Calls operations remain missing: record listing, statistics, export,
-and retention get/update. Their ledger rows name the
-gaps. Console equivalents stay excluded because they require dashboard identity.
+Three Calls analytics operations remain missing: record listing, statistics,
+and export. The merged SDK covers retention get/update. Console equivalents
+stay excluded because they require dashboard identity.
 
-The later campaign compliance merge adds eight operations that this SDK branch
-does not implement. The ledger marks those methods missing and leaves 16 changed
-campaign or audience fingerprints unresolved. The global
+The merged SDK implements the campaign compliance operations, but 16 changed
+campaign or audience fingerprints remain unresolved against this API source.
+The global
 `campaign_throughput_capped` error code changes other operation fingerprints;
 the SDK's error type already accepts unrecognized codes as strings. This snapshot
 records the source contract without claiming campaign parity.
 
-The Functions merge adds 15 public Platform operations. They are recorded as
-missing until the SDK exposes them. Production-number deletion now returns 409;
+The merged SDK exposes all 15 public Functions operations. Production-number deletion now returns 409;
 the existing `Client.sessions.delete` and `deleteMany` methods still use the
 same routes and surface that response as a conflict error.
 
@@ -80,8 +79,8 @@ analytics adds `GET /platform/calls`, `/platform/calls/stats`, and
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        307 |
-| Missing             |         28 |
+| Covered             |        332 |
+| Missing             |          3 |
 | Excluded            |        111 |
 | Partial             |          0 |
 | Changed fingerprint |         16 |

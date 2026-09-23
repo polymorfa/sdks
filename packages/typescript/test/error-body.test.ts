@@ -191,7 +191,13 @@ describe("error codes", () => {
         .properties.code.enum,
       ...documentedInProse,
     ]);
-    expect([...POLYMORFA_ERROR_CODES].sort()).toEqual([...published].sort());
+    // Older API deployments returned this code; keep recognizing it even
+    // though the pinned API contract no longer advertises it.
+    const legacyCodes = ["premium_required"];
+    expect([...POLYMORFA_ERROR_CODES].sort()).toEqual(
+      [...published, ...legacyCodes].sort(),
+    );
+    expect(isKnownPolymorfaErrorCode("premium_required")).toBe(true);
   });
 
   it("accepts codes added by a newer API", () => {

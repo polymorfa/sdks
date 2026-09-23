@@ -132,6 +132,91 @@ export interface CreateCampaignRequest {
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Epoch milliseconds. */
   readonly scheduledAt?: number;
+  /**
+   * Up to 1,000 recipients to queue with the draft. Invalid entries reject the
+   * whole request; use `campaigns.addRecipients` for partial acceptance.
+   */
+  readonly recipients?: readonly CampaignRecipientInput[];
+}
+
+export type CampaignRecipientStatus =
+  "queued" | "sending" | "sent" | "delivered" | "read" | "failed" | "skipped";
+
+export type InvalidRecipientReason =
+  "missing_phone" | "invalid_phone" | "invalid_variables" | "invalid_entry";
+
+/** One rejected entry, reported without aborting an append. */
+export interface InvalidRecipientRow {
+  /** 1-based position in the request, or the spreadsheet row for a file import. */
+  readonly row: number;
+  readonly reason: InvalidRecipientReason;
+}
+
+export type CampaignRecipientVariables = Readonly<
+  Record<string, string | number | boolean>
+>;
+
+export interface CampaignRecipientInput {
+  /** International format. Separators are ignored and a leading `00` reads as `+`. */
+  readonly phone: string;
+  /** At most 50 template variables, stored as strings of at most 1,024 characters. */
+  readonly variables?: CampaignRecipientVariables;
+}
+
+/** One queued or settled recipient of a campaign. */
+export interface CampaignRecipient {
+  readonly id: string;
+  readonly phone: string;
+  readonly variables: Readonly<Record<string, unknown>>;
+  readonly variantKey: string | null;
+  readonly status: CampaignRecipientStatus;
+  readonly attempts: number;
+  /** `opted_out` means the phone is on the organization's opt-out list. */
+  readonly lastError: string | null;
+  readonly externalMessageId: string | null;
+  /** Epoch milliseconds, or null while the transition has not happened. */
+  readonly queuedAt: number;
+  readonly sentAt: number | null;
+  readonly deliveredAt: number | null;
+  readonly readAt: number | null;
+  readonly failedAt: number | null;
+  readonly respondedAt: number | null;
+}
+
+export interface CampaignRecipientPage {
+  readonly nextCursor: string | null;
+  readonly hasMore: boolean;
+}
+
+export interface ListCampaignRecipientsParams {
+  readonly status?: CampaignRecipientStatus;
+  readonly cursor?: string;
+  /** 1 to 100; the API defaults to 25. */
+  readonly limit?: number;
+}
+
+export interface AddCampaignRecipientsRequest {
+  readonly recipients: readonly CampaignRecipientInput[];
+}
+
+export interface AddCampaignRecipientsResult {
+  readonly campaignId: string;
+  readonly added: number;
+  /** Recipients on the campaign after the append. */
+  readonly recipientCount: number;
+  /** Valid entries skipped as repeated in the request or already on the campaign. */
+  readonly duplicateCount: number;
+  readonly invalidCount: number;
+  /** At most 20 rejected entries. */
+  readonly invalidRows: readonly InvalidRecipientRow[];
+}
+
+/**
+ * Stop answers with a null `operationId` when the campaign had no active
+ * delivery run: it was cancelled immediately and no remaining recipient is sent.
+ */
+export interface CampaignStopOperation extends Campaign {
+  readonly operationId: string | null;
 }
 
 export interface LaunchCampaignRequest {
@@ -158,6 +243,15 @@ export type CreateCampaignResponse = SuccessEnvelope<Campaign>;
 export type CampaignAnalyticsResponse = SuccessEnvelope<CampaignAnalytics>;
 export type CampaignOperationResponse = SuccessEnvelope<CampaignOperation>;
 export type CampaignRequeueResponse = SuccessEnvelope<CampaignRequeueResult>;
+export type CampaignStopResponse = SuccessEnvelope<CampaignStopOperation>;
+export type AddCampaignRecipientsResponse =
+  SuccessEnvelope<AddCampaignRecipientsResult>;
+
+export interface ListCampaignRecipientsResponse {
+  readonly success: true;
+  readonly data: readonly CampaignRecipient[];
+  readonly page: CampaignRecipientPage;
+}
 
 export interface RejectCallRequest {
   /** JID of the incoming caller. */

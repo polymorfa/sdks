@@ -1,3 +1,4 @@
+import { FunctionsResource } from "./platform/functions.js";
 import { SessionConfigurationResource } from "./platform/session-configuration.js";
 import {
   assertServerRuntime,
@@ -18,6 +19,7 @@ import { AudiencesResource } from "./platform/audiences.js";
 import { AuditLogsResource } from "./platform/audit-logs.js";
 import { BillingResource } from "./platform/billing.js";
 import { BanSafeResource } from "./platform/bansafe.js";
+import { CallRetentionResource } from "./platform/call-retention.js";
 import { CampaignsResource } from "./platform/campaigns.js";
 import { CustomersResource } from "./platform/customers.js";
 import {
@@ -57,6 +59,7 @@ export interface ClientBase<O extends ClientOwner> {
   readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<O>;
   readonly sipTrunks: SipTrunksResource<O>;
+  readonly callRetention: CallRetentionResource;
   readonly raw: RawResourceFor<O>;
   project(projectId: string): Client<"project">;
 }
@@ -80,8 +83,14 @@ export interface OrganizationControlPlaneResources {
   readonly sessions: PlatformSessionsResource;
 }
 
+export interface ProjectControlPlaneResources {
+  readonly functions: FunctionsResource;
+}
+
 export type Client<O extends ClientOwner = "organization"> = ClientBase<O> &
-  (O extends "organization" ? OrganizationControlPlaneResources : object);
+  (O extends "organization"
+    ? OrganizationControlPlaneResources
+    : ProjectControlPlaneResources);
 
 export interface ClientConstructor {
   new (options: OrganizationClientOptions): Client<"organization">;
@@ -89,6 +98,8 @@ export interface ClientConstructor {
 }
 
 class ClientImplementation implements ClientBase<ClientOwner> {
+  /** Installed only for project instances; the public conditional type reflects that. */
+  declare readonly functions: FunctionsResource;
   readonly owner: ClientOwner;
   readonly projectId: string | null;
   readonly events: EventsResource<ClientOwner>;
@@ -98,6 +109,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   readonly sessionConfiguration: SessionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<ClientOwner>;
   readonly sipTrunks: SipTrunksResource<ClientOwner>;
+  readonly callRetention: CallRetentionResource;
   readonly raw: RawClient | ProjectScopedRawClient;
   readonly #transport: HttpTransport;
   readonly #credential: ClientOptions["credential"];
@@ -154,10 +166,16 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       projectId,
       projectId !== null && credential.type !== "projectToken",
     );
+    this.callRetention = new CallRetentionResource(this.#transport);
     this.raw =
       projectId === null
         ? new RawClient(this.#transport)
         : new ConfinedProjectRawClient(this.#transport, projectId);
+
+    if (projectId !== null)
+      Object.assign(this, {
+        functions: new FunctionsResource(this.#transport, projectId),
+      });
 
     if (this.owner === "organization") {
       Object.assign(this, {

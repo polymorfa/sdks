@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { afterEach, expect, it, vi } from "vitest";
 import {
   MessagingClient,
@@ -27,6 +28,17 @@ const json = (body: unknown, status = 200) =>
     status,
     headers: { "content-type": "application/json" },
   });
+
+const apiContract = JSON.parse(
+  readFileSync(
+    new URL("../../../contracts/testing-events.json", import.meta.url),
+    "utf8",
+  ),
+) as {
+  schemas: {
+    TriggerTestEventRequest: { properties: { event: { enum: string[] } } };
+  };
+};
 
 it("triggers a typed test event with overrides", async () => {
   const accepted = {
@@ -69,30 +81,68 @@ it("lists fixtures", async () => {
   expect(fetcher.mock.calls[0]![1]?.method).toBe("GET");
 });
 
-it("serializes restriction fixtures and call termination overrides", async () => {
-  const { client: messaging, fetcher } = client(
-    json({ event: "session.restriction_updated", session: "test-a" }, 202),
+it("matches the public fixture catalog at API f4a340da3b74248232ebea73f3e72b42f667beef", () => {
+  expect(TEST_EVENT_FIXTURES).toEqual(
+    apiContract.schemas.TriggerTestEventRequest.properties.event.enum,
   );
-  await messaging.testing.triggerEvent("project-a", {
-    session: "test-a",
-    event: "session.restriction_updated",
-    overrides: { restrictionActive: false },
-  });
-  expect(JSON.parse(String(fetcher.mock.calls[0]![1]?.body))).toEqual({
-    session: "test-a",
-    event: "session.restriction_updated",
-    overrides: { restrictionActive: false },
-  });
+});
+
+it("resolves every local schema reference in the focused contract", () => {
+  const visit = (value: unknown): void => {
+    if (typeof value !== "object" || value === null) return;
+    if ("$ref" in value) {
+      const ref = String(value.$ref);
+      expect(ref).toMatch(/^#\//);
+      const resolved = ref
+        .slice(2)
+        .split("/")
+        .reduce<unknown>((current, part) => {
+          const key = part.replace(/~1/g, "/").replace(/~0/g, "~");
+          return typeof current === "object" && current !== null
+            ? (current as Record<string, unknown>)[key]
+            : undefined;
+        }, apiContract);
+      expect(resolved, ref).toBeDefined();
+    }
+    for (const nested of Object.values(value)) visit(nested);
+  };
+  visit(apiContract);
+});
+
+it.each([true, false])(
+  "sends the restriction fixture with restrictionActive=%s",
+  async (restrictionActive) => {
+    const accepted = {
+      event: "session.restriction_updated",
+      session: "test-a",
+      delivery: "generated",
+      eventId: "0199f1c2-7a4e-7c55-9d1e-3f0b8a2c6d10",
+      source: "test",
+    };
+    const { client: messaging, fetcher } = client(json(accepted, 202));
+    const input: TriggerTestEventRequest = {
+      session: "test-a",
+      event: "session.restriction_updated",
+      overrides: { restrictionActive },
+    };
+    expect(
+      (await messaging.testing.triggerEvent("project-a", input)).data,
+    ).toEqual(accepted);
+    expect(JSON.parse(String(fetcher.mock.calls[0]![1]?.body))).toEqual(input);
+  },
+);
+
+it("sends a call restriction outcome supported by the API fixture", async () => {
+  const { client: messaging, fetcher } = client(
+    json({ event: "call.ended" }, 202),
+  );
   const input: TriggerTestEventRequest = {
     session: "test-a",
     event: "call.ended",
     overrides: { callEndReason: "call_restricted" },
   };
-  const call = client(json({ event: "call.ended", session: "test-a" }, 202));
-  await call.client.testing.triggerEvent("project-a", input);
-  expect(JSON.parse(String(call.fetcher.mock.calls[0]![1]?.body))).toEqual(
-    input,
-  );
+  await messaging.testing.triggerEvent("project-a", input);
+  expect(JSON.parse(String(fetcher.mock.calls[0]![1]?.body))).toEqual(input);
 });
 
 it("surfaces a real-session refusal as an invalid request", async () => {
@@ -211,4 +261,34 @@ it("omits Idempotency-Key when none is given", async () => {
   });
   const init = fetcher.mock.calls[0]![1];
   expect(new Headers(init?.headers).has("idempotency-key")).toBe(false);
+});
+
+it("serializes restriction fixtures and restricted call endings", async () => {
+  for (const input of [
+    {
+      session: "test-a",
+      event: "session.restriction_updated",
+      overrides: { restrictionActive: true },
+    },
+    {
+      session: "test-a",
+      event: "call.ended",
+      overrides: { callEndReason: "call_restricted" },
+    },
+  ] satisfies TriggerTestEventRequest[]) {
+    const { client: messaging, fetcher } = client(
+      json(
+        {
+          event: input.event,
+          session: input.session,
+          delivery: "generated",
+          eventId: null,
+          source: "test",
+        },
+        202,
+      ),
+    );
+    await messaging.testing.triggerEvent("project-a", input);
+    expect(JSON.parse(String(fetcher.mock.calls[0]![1]?.body))).toEqual(input);
+  }
 });
