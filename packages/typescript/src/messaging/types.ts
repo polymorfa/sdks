@@ -1773,6 +1773,96 @@ export interface UpdateSessionCallSettingsRequest {
 
 export type SessionCallSettingsResponse = SuccessEnvelope<SessionCallSettings>;
 
+/** A person's call permission on a Cloud API number. */
+export type CallPermissionStatus =
+  "none" | "temporary" | "permanent" | "revoked";
+
+/**
+ * How the last change was learned: the person's reply (`user_action`),
+ * WhatsApp acting on its own (`automatic`), asking WhatsApp (`sync`), or a
+ * call WhatsApp refused for lack of permission (`call_refused`).
+ */
+export type CallPermissionSource =
+  "user_action" | "automatic" | "sync" | "call_refused";
+
+/** One of WhatsApp's limits on an action, for example one request per day. */
+export interface CallPermissionLimit {
+  /** ISO 8601 duration of the window, for example `PT24H` or `P7D`. */
+  readonly period: string;
+  readonly maxAllowed: number;
+  readonly used: number;
+  /** When the window resets, when WhatsApp reports it. */
+  readonly resetsAt: string | null;
+}
+
+export interface CallPermissionAction {
+  /** Whether WhatsApp allows the action now. */
+  readonly allowed: boolean;
+  readonly limits: readonly CallPermissionLimit[];
+}
+
+/** A person's call permission, without the conversation it belongs to. */
+export interface CallPermissionState {
+  /**
+   * `none`: no permission. `temporary`: granted until `expiresAt`.
+   * `permanent`: granted without expiry. `revoked`: the person declined or
+   * withdrew permission, or WhatsApp withdrew it after unanswered calls.
+   */
+  readonly status: CallPermissionStatus;
+  /** When a temporary permission ends; `null` otherwise. */
+  readonly expiresAt: string | null;
+  /** `null` when nothing is recorded. */
+  readonly source: CallPermissionSource | null;
+  readonly updatedAt: string | null;
+  /** When WhatsApp was last asked, or `null`. */
+  readonly checkedAt: string | null;
+  /**
+   * `true` when WhatsApp was asked during this request. `false` returns the
+   * stored state because WhatsApp could not be reached.
+   */
+  readonly fresh: boolean;
+  /** WhatsApp's limits, present when `fresh` is `true`. */
+  readonly actions: {
+    /** Whether this number can send the person a call permission request now. */
+    readonly requestPermission: CallPermissionAction | null;
+    /** Whether this number can call the person now. */
+    readonly startCall: CallPermissionAction | null;
+  } | null;
+}
+
+/** `GET /messaging/{session}/call-permissions/{to}`. */
+export interface CallPermission extends CallPermissionState {
+  readonly conversation: ConversationIdentity;
+}
+
+export type CallPermissionResponse = SuccessEnvelope<CallPermission>;
+
+/** Body for `POST /messaging/voip/calls/check`. */
+export interface VoipCheckCallRequest {
+  /** The session (number) that would place the call. */
+  readonly session: string;
+  /** User ID or phone number in E.164 format. */
+  readonly to: string;
+}
+
+/** The first reason a call placed now would be refused. */
+export type VoipCallRefusal =
+  | "calls_disabled"
+  | "call_recipient_opted_out"
+  | "call_destination_blocked"
+  | "call_permission_required"
+  | "call_limit_reached";
+
+export interface VoipCallCheck {
+  /** Whether a call placed now would pass every check Polymorfa and WhatsApp report. */
+  readonly allowed: boolean;
+  readonly refusal: VoipCallRefusal | null;
+  /** The person's call permission on a Cloud API number; `null` on linked-device numbers. */
+  readonly permission: CallPermissionState | null;
+}
+
+export type VoipCheckCallResponse = SuccessEnvelope<VoipCallCheck>;
+
 export type ListSessionsResponse = SuccessEnvelope<readonly Session[]>;
 export type GetSessionResponse = SuccessEnvelope<Session>;
 export type UpdateSessionResponse = SuccessEnvelope<Session>;
@@ -1794,7 +1884,8 @@ export type MessageKind =
   | "list"
   | "buttons"
   | "address_message"
-  | "flow";
+  | "flow"
+  | "call_permission_request";
 
 export interface QuotedMessage {
   readonly id: string;
@@ -2056,6 +2147,21 @@ export interface SendFlowMessageRequest extends MessageSendContext {
   readonly content: { readonly flow: FlowMessageContent };
 }
 
+/**
+ * Asks the person for permission to call them. Cloud API numbers only;
+ * WhatsApp limits how often you can ask.
+ */
+export interface CallPermissionRequestMessageContent {
+  /** Why you want to call, shown above WhatsApp's allow and decline buttons. 1 to 1,024 characters. */
+  readonly body: string;
+}
+
+export interface SendCallPermissionRequestMessageRequest extends MessageSendContext {
+  readonly content: {
+    readonly callPermissionRequest: CallPermissionRequestMessageContent;
+  };
+}
+
 export interface SendTemplateMessageRequest extends MessageSendContext {
   readonly content: { readonly template: MessageTemplateSend };
 }
@@ -2074,6 +2180,7 @@ export type SendMessageRequest =
   | SendButtonsMessageRequest
   | SendAddressMessageRequest
   | SendFlowMessageRequest
+  | SendCallPermissionRequestMessageRequest
   | SendTemplateMessageRequest;
 
 export interface MessageReceipt {

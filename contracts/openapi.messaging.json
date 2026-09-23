@@ -2616,6 +2616,127 @@
           "payload"
         ]
       },
+      "ConversationIdentity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{1,14}$"
+          },
+          "bsuid": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}\\.[A-Za-z0-9]{1,128}$"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "CallPermissionChangedPayload": {
+        "type": "object",
+        "properties": {
+          "conversation": {
+            "$ref": "#/components/schemas/ConversationIdentity"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "none",
+              "temporary",
+              "permanent",
+              "revoked"
+            ],
+            "description": "`temporary`: granted until `expiresAt`. `permanent`: granted without expiry. `revoked`: declined or withdrawn. `none`: no permission."
+          },
+          "previousStatus": {
+            "type": "string",
+            "enum": [
+              "none",
+              "temporary",
+              "permanent",
+              "revoked"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When a temporary permission ends; null otherwise. No event is sent when it ends."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "user_action",
+              "automatic",
+              "sync",
+              "call_refused"
+            ],
+            "description": "`user_action`: the person answered a call permission request or changed it in WhatsApp. `automatic`: WhatsApp granted it when the person called you, or withdrew it after unanswered calls. `sync`: a permission read found a different state. `call_refused`: WhatsApp refused a call for lack of permission."
+          },
+          "changedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "conversation",
+          "status",
+          "previousStatus",
+          "expiresAt",
+          "source",
+          "changedAt"
+        ]
+      },
+      "CallPermissionChangedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "call.permission_changed"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CallPermissionChangedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
       "CallConnectionLeftPayload": {
         "type": "object",
         "properties": {
@@ -7459,35 +7580,6 @@
           "phone"
         ]
       },
-      "ConversationIdentity": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^[1-9][0-9]{0,18}$",
-            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
-            "example": "739182640518203"
-          },
-          "phoneNumber": {
-            "type": "string",
-            "pattern": "^\\+[1-9]\\d{1,14}$"
-          },
-          "bsuid": {
-            "type": "string",
-            "pattern": "^[A-Z]{2}\\.[A-Za-z0-9]{1,128}$"
-          },
-          "username": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 256
-          }
-        },
-        "required": [
-          "id"
-        ],
-        "additionalProperties": false,
-        "description": "The message's conversation, including its public ID and known aliases."
-      },
       "SentMessage": {
         "type": "object",
         "properties": {
@@ -7502,7 +7594,14 @@
             "minLength": 1
           },
           "conversation": {
-            "$ref": "#/components/schemas/ConversationIdentity"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConversationIdentity"
+              },
+              {
+                "description": "The message's conversation, including its public ID and known aliases."
+              }
+            ]
           },
           "timestamp": {
             "type": "string",
@@ -7606,6 +7705,7 @@
                   "permission_denied",
                   "missing_scope",
                   "resource_not_found",
+                  "hms_not_enabled",
                   "media_fetch_failed",
                   "resource_gone",
                   "feature_unavailable",
@@ -7624,6 +7724,11 @@
                   "call_permission_required",
                   "invalid_sip_trunk",
                   "calls_disabled",
+                  "call_recipient_opted_out",
+                  "call_destination_blocked",
+                  "call_permission_request_limited",
+                  "call_permission_granted",
+                  "call_opt_out_limit",
                   "number_restricted",
                   "sip_trunk_in_use",
                   "sip_trunk_revision_conflict",
@@ -8638,6 +8743,31 @@
           {
             "type": "object",
             "properties": {
+              "callPermissionRequest": {
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1024,
+                    "description": "Why you want to call, shown above WhatsApp's allow and decline buttons. 1 to 1,024 Unicode characters."
+                  }
+                },
+                "required": [
+                  "body"
+                ],
+                "additionalProperties": false,
+                "description": "Ask the person for permission to call them. Cloud API numbers only; WhatsApp limits how often you can ask."
+              }
+            },
+            "required": [
+              "callPermissionRequest"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
               "template": {
                 "type": "object",
                 "properties": {
@@ -8782,7 +8912,14 @@
             "minLength": 1
           },
           "conversation": {
-            "$ref": "#/components/schemas/ConversationIdentity"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConversationIdentity"
+              },
+              {
+                "description": "The message's conversation, including its public ID and known aliases."
+              }
+            ]
           },
           "timestamp": {
             "type": "string",
@@ -8913,6 +9050,352 @@
           "durationSeconds"
         ]
       },
+      "HistoryMessageSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "whatsapp_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "inbound",
+              "outbound"
+            ]
+          },
+          "type": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "whatsapp_id",
+          "direction",
+          "type",
+          "timestamp"
+        ]
+      },
+      "HistoryChat": {
+        "type": "object",
+        "properties": {
+          "conversation": {
+            "$ref": "#/components/schemas/ConversationIdentity"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "direct",
+              "group",
+              "channel",
+              "broadcast"
+            ]
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastMessage": {
+            "$ref": "#/components/schemas/HistoryMessageSummary"
+          }
+        },
+        "required": [
+          "conversation",
+          "kind",
+          "lastActivityAt",
+          "lastMessage"
+        ]
+      },
+      "ListChatsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryChat"
+            }
+          },
+          "hasMore": {
+            "type": "boolean",
+            "description": "True when `nextCursor` returns more items."
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "previousCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor for the items before this page. Always null for conversations."
+          }
+        },
+        "required": [
+          "success",
+          "data",
+          "hasMore",
+          "nextCursor",
+          "previousCursor"
+        ]
+      },
+      "GetChatResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/HistoryChat"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "HistoryConversation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ConversationIdentity"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "sender": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ConversationIdentity"
+                  },
+                  {
+                    "description": "Author of an inbound group message."
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "HistoryMedia": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Media ID. Download it with `GET /messaging/media/{id}` and a credential with `media:read`."
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "fileLength": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "url": {
+            "type": "string",
+            "description": "Path of the media download method.",
+            "example": "/messaging/media/0e6f1c3a-5a55-4f3c-9d4f-0b1f8f2a9c11"
+          }
+        },
+        "required": [
+          "id",
+          "mimeType",
+          "fileLength",
+          "url"
+        ]
+      },
+      "HistoryMessage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "whatsapp_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "conversation": {
+            "$ref": "#/components/schemas/HistoryConversation"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "inbound",
+              "outbound"
+            ]
+          },
+          "fromMe": {
+            "type": "boolean",
+            "description": "True when the Number sent the message, including from another linked device."
+          },
+          "type": {
+            "type": "string",
+            "description": "Message type as delivered in `message.received`, for example `text` or `image`."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When WhatsApp reported the message."
+          },
+          "pushName": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "caption": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "ptt": {
+            "type": "boolean"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "reaction": {
+            "type": "string"
+          },
+          "reactionTo": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "edited": {
+            "type": "boolean"
+          },
+          "unavailable": {
+            "type": "boolean"
+          },
+          "unavailableReason": {
+            "type": "string"
+          },
+          "pollOptions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "hash": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "hash"
+              ]
+            }
+          },
+          "media": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryMedia"
+            },
+            "description": "Downloadable media for image, video, audio, document, and sticker messages. Empty when no copy is available."
+          }
+        },
+        "required": [
+          "id",
+          "whatsapp_id",
+          "conversation",
+          "direction",
+          "fromMe",
+          "type",
+          "timestamp"
+        ]
+      },
+      "ListChatMessagesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryMessage"
+            }
+          },
+          "hasMore": {
+            "type": "boolean",
+            "description": "True when `nextCursor` returns more items."
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "previousCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor for the items before this page. Always null for conversations."
+          }
+        },
+        "required": [
+          "success",
+          "data",
+          "hasMore",
+          "nextCursor",
+          "previousCursor"
+        ]
+      },
+      "GetChatMessageResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/HistoryMessage"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
       "RejectCallRequest": {
         "type": "object",
         "properties": {
@@ -8925,6 +9408,318 @@
         "required": [
           "from"
         ]
+      },
+      "CallPermissionLimit": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "string",
+            "description": "ISO 8601 duration of the window, for example `PT24H` or `P7D`."
+          },
+          "maxAllowed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "used": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "resetsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When the window resets, when WhatsApp reports it."
+          }
+        },
+        "required": [
+          "period",
+          "maxAllowed",
+          "used",
+          "resetsAt"
+        ],
+        "additionalProperties": false
+      },
+      "CallPermissionAction": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "allowed": {
+            "type": "boolean",
+            "description": "Whether WhatsApp allows the action now."
+          },
+          "limits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CallPermissionLimit"
+            }
+          }
+        },
+        "required": [
+          "allowed",
+          "limits"
+        ],
+        "additionalProperties": false,
+        "description": "Whether this number can send the person a call permission request now, with WhatsApp's limits."
+      },
+      "CallPermission": {
+        "type": "object",
+        "properties": {
+          "conversation": {
+            "$ref": "#/components/schemas/ConversationIdentity"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "none",
+              "temporary",
+              "permanent",
+              "revoked"
+            ],
+            "description": "`none`: no permission. `temporary`: granted until `expiresAt`. `permanent`: granted without expiry. `revoked`: the person declined or withdrew permission, or WhatsApp withdrew it after unanswered calls."
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When a temporary permission ends; null otherwise."
+          },
+          "source": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "user_action",
+              "automatic",
+              "sync",
+              "call_refused",
+              null
+            ],
+            "description": "How the last change was learned: the person's reply (`user_action`), WhatsApp acting on its own (`automatic`), asking WhatsApp (`sync`), or a call WhatsApp refused for lack of permission (`call_refused`). Null when nothing is recorded."
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When the status last changed, or null."
+          },
+          "checkedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When WhatsApp was last asked, or null."
+          },
+          "fresh": {
+            "type": "boolean",
+            "description": "True when WhatsApp was asked during this request. False means the stored state is returned because WhatsApp could not be reached."
+          },
+          "actions": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "requestPermission": {
+                "$ref": "#/components/schemas/CallPermissionAction"
+              },
+              "startCall": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CallPermissionAction"
+                  },
+                  {
+                    "description": "Whether this number can call the person now, with WhatsApp's limits."
+                  }
+                ]
+              }
+            },
+            "required": [
+              "requestPermission",
+              "startCall"
+            ],
+            "additionalProperties": false,
+            "description": "WhatsApp's limits, present when `fresh` is true."
+          }
+        },
+        "required": [
+          "conversation",
+          "status",
+          "expiresAt",
+          "source",
+          "updatedAt",
+          "checkedAt",
+          "fresh",
+          "actions"
+        ],
+        "additionalProperties": false
+      },
+      "GetCallPermissionResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/CallPermission"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "CallCheck": {
+        "type": "object",
+        "properties": {
+          "allowed": {
+            "type": "boolean",
+            "description": "Whether a call placed now would pass every check Polymorfa and WhatsApp report."
+          },
+          "refusal": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "calls_disabled",
+              "call_recipient_opted_out",
+              "call_destination_blocked",
+              "call_permission_required",
+              "call_limit_reached",
+              null
+            ],
+            "description": "The first reason the call would be refused, or null."
+          },
+          "permission": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "temporary",
+                  "permanent",
+                  "revoked"
+                ],
+                "description": "`none`: no permission. `temporary`: granted until `expiresAt`. `permanent`: granted without expiry. `revoked`: the person declined or withdrew permission, or WhatsApp withdrew it after unanswered calls."
+              },
+              "expiresAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time",
+                "description": "When a temporary permission ends; null otherwise."
+              },
+              "source": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "user_action",
+                  "automatic",
+                  "sync",
+                  "call_refused",
+                  null
+                ],
+                "description": "How the last change was learned: the person's reply (`user_action`), WhatsApp acting on its own (`automatic`), asking WhatsApp (`sync`), or a call WhatsApp refused for lack of permission (`call_refused`). Null when nothing is recorded."
+              },
+              "updatedAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time",
+                "description": "When the status last changed, or null."
+              },
+              "checkedAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time",
+                "description": "When WhatsApp was last asked, or null."
+              },
+              "fresh": {
+                "type": "boolean",
+                "description": "True when WhatsApp was asked during this request. False means the stored state is returned because WhatsApp could not be reached."
+              },
+              "actions": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "requestPermission": {
+                    "$ref": "#/components/schemas/CallPermissionAction"
+                  },
+                  "startCall": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/CallPermissionAction"
+                      },
+                      {
+                        "description": "Whether this number can call the person now, with WhatsApp's limits."
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "requestPermission",
+                  "startCall"
+                ],
+                "additionalProperties": false,
+                "description": "WhatsApp's limits, present when `fresh` is true."
+              }
+            },
+            "required": [
+              "status",
+              "expiresAt",
+              "source",
+              "updatedAt",
+              "checkedAt",
+              "fresh",
+              "actions"
+            ],
+            "additionalProperties": false,
+            "description": "The person's call permission on a Cloud API number; null on linked-device numbers."
+          }
+        },
+        "required": [
+          "allowed",
+          "refusal",
+          "permission"
+        ],
+        "additionalProperties": false
+      },
+      "CheckCallResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/CallCheck"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "CallCheckRequest": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "The session (number) that would place the call."
+          },
+          "to": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "User ID or phone number in E.164 format."
+          }
+        },
+        "required": [
+          "session",
+          "to"
+        ],
+        "additionalProperties": false
       },
       "ICEServer": {
         "type": "object",
@@ -17598,7 +18393,14 @@
             }
           },
           "409": {
-            "description": "The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`unsupported_for_connection`: call permission requests need a Cloud API number; `call_permission_granted`: the person already granted permanent permission. Also: the Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            },
             "headers": {
               "Retry-After": {
                 "description": "Seconds to wait before retrying `idempotency_in_progress`.",
@@ -17616,27 +18418,38 @@
                   ]
                 }
               }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "conflict_error",
-                    "code": "idempotency_conflict",
-                    "message": "This Idempotency-Key was already used with a different request. Use a new key for a different request.",
-                    "param": null
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#idempotency-conflict"
-                }
-              }
             }
           },
           "422": {
             "description": "The supplied media URL could not be fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`call_permission_request_limited`: WhatsApp limits how often this person can be asked for call permission.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the limiting window resets, when WhatsApp reports a reset time.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "Polymorfa-RateLimit-Reason": {
+                "description": "The limit that blocked the request.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "call_permission_request"
+                  ]
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -18796,6 +19609,128 @@
           "Linked Device API"
         ],
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `chats:manage`"
+      },
+      "get": {
+        "operationId": "getChatMessage",
+        "tags": [
+          "Chats"
+        ],
+        "summary": "Get a stored message",
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `messages:read`\n\nReturns one stored message. Beta: requires team enrollment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "messages:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Number ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Conversation ID or E.164 phone number."
+            },
+            "required": true,
+            "name": "conversation",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$",
+              "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+              "example": "739182640518203"
+            },
+            "required": true,
+            "name": "messageId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The message",
+            "headers": {
+              "Polymorfa-Data-Region": {
+                "description": "Data region that served the stored history.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetChatMessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A filter or cursor is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The credential is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credential lacks the scope, is a client token, or the team is not enrolled in the beta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Number or conversation is unavailable, or hosted message storage is not enabled (`hms_not_enabled`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The history service for the Number's data region is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">messages:read</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ]
       }
     },
     "/messaging/{session}/chats/{conversation}/archive": {
@@ -19278,6 +20213,479 @@
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `chats:manage`"
       }
     },
+    "/messaging/{session}/chats": {
+      "get": {
+        "operationId": "listChats",
+        "tags": [
+          "Chats"
+        ],
+        "summary": "List stored conversations",
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `chats:read`\n\nLists conversations with stored messages for a Number with hosted message storage, most recent activity first. Beta: requires team enrollment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "chats:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Number ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "description": "Page size, from 1 through 100.",
+              "example": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "description": "Opaque cursor from `nextCursor` or `previousCursor`. Reuse it only with the same path and filters."
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "direct",
+                "group",
+                "channel",
+                "broadcast"
+              ],
+              "description": "Return only conversations of this kind."
+            },
+            "required": false,
+            "name": "kind",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Return conversations with activity at or after this time (ISO 8601)."
+            },
+            "required": false,
+            "name": "activeSince",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Return conversations whose latest activity is before this time (ISO 8601)."
+            },
+            "required": false,
+            "name": "activeBefore",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of conversations",
+            "headers": {
+              "Polymorfa-Data-Region": {
+                "description": "Data region that served the stored history.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListChatsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A filter or cursor is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The credential is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credential lacks the scope, is a client token, or the team is not enrolled in the beta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Number or conversation is unavailable, or hosted message storage is not enabled (`hms_not_enabled`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The history service for the Number's data region is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">chats:read</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ]
+      }
+    },
+    "/messaging/{session}/chats/{conversation}": {
+      "get": {
+        "operationId": "getChat",
+        "tags": [
+          "Chats"
+        ],
+        "summary": "Get a stored conversation",
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `chats:read`\n\nReturns one conversation with stored messages. Beta: requires team enrollment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "chats:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Number ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Conversation ID or E.164 phone number."
+            },
+            "required": true,
+            "name": "conversation",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The conversation",
+            "headers": {
+              "Polymorfa-Data-Region": {
+                "description": "Data region that served the stored history.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetChatResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A filter or cursor is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The credential is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credential lacks the scope, is a client token, or the team is not enrolled in the beta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Number or conversation is unavailable, or hosted message storage is not enabled (`hms_not_enabled`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The history service for the Number's data region is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">chats:read</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ]
+      }
+    },
+    "/messaging/{session}/chats/{conversation}/messages": {
+      "get": {
+        "operationId": "listChatMessages",
+        "tags": [
+          "Chats"
+        ],
+        "summary": "List stored messages in a conversation",
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `messages:read`\n\nLists stored messages in one conversation, newest first by default. Page in either direction with `nextCursor` and `previousCursor`. Beta: requires team enrollment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "messages:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Number ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Conversation ID or E.164 phone number."
+            },
+            "required": true,
+            "name": "conversation",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "description": "Page size, from 1 through 100.",
+              "example": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "description": "Opaque cursor from `nextCursor` or `previousCursor`. Reuse it only with the same path and filters."
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "desc",
+                "asc"
+              ],
+              "default": "desc",
+              "description": "`desc` returns newest messages first; `asc` returns oldest first."
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Return messages sent at or after this time (ISO 8601)."
+            },
+            "required": false,
+            "name": "since",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Return messages sent before this time (ISO 8601)."
+            },
+            "required": false,
+            "name": "until",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "inbound",
+                "outbound"
+              ],
+              "description": "`inbound` returns messages from contacts; `outbound` returns messages sent by the Number."
+            },
+            "required": false,
+            "name": "direction",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z_]{0,31}(?:,[a-z][a-z_]{0,31}){0,15}$",
+              "description": "Comma-separated message types, for example `text,image`. Up to 16 types.",
+              "example": "text,image"
+            },
+            "required": false,
+            "name": "types",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of messages",
+            "headers": {
+              "Polymorfa-Data-Region": {
+                "description": "Data region that served the stored history.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListChatMessagesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A filter or cursor is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The credential is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credential lacks the scope, is a client token, or the team is not enrolled in the beta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Number or conversation is unavailable, or hosted message storage is not enabled (`hms_not_enabled`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The history service for the Number's data region is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">messages:read</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ]
+      }
+    },
     "/messaging/{session}/calls/{callId}/reject": {
       "post": {
         "operationId": "rejectCall",
@@ -19444,6 +20852,352 @@
           "Linked Device API"
         ],
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `chats:manage`"
+      }
+    },
+    "/messaging/{session}/call-permissions/{to}": {
+      "get": {
+        "operationId": "getCallPermission",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Get a person's call permission",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `sessions:read`\n\nReturns whether the person has allowed this number to call them. On Cloud API numbers WhatsApp is asked on every request and the answer includes its limits on permission requests and calls. Linked-device numbers return `409 unsupported_for_connection`.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID or phone number in E.164 format (URL-encode `+` as `%2B`)."
+            },
+            "required": true,
+            "name": "to",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The call permission.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCallPermissionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`unsupported_for_connection`: the number is not a Cloud API number.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "unsupported_for_connection",
+                    "message": "The session's connection does not support this call operation.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#unsupported-for-connection"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        },
+        "x-protocols": [
+          "Meta Cloud API"
+        ]
+      }
+    },
+    "/messaging/voip/calls/check": {
+      "post": {
+        "operationId": "checkCall",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Check whether a call can be placed",
+        "description": "**Required scope:** `sessions:read`\n\nRuns the checks a call placement runs, without calling: the number's calling switch, the team's do-not-call list and blocked country codes, and on Cloud API numbers the person's call permission and WhatsApp's call limits. If WhatsApp's permission status is unavailable and no other refusal is known, returns 503 service_unavailable. Server credentials only.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallCheckRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Check result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckCallResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "`service_unavailable`: required call-check state is unavailable; retry later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        }
       }
     },
     "/messaging/voip/calls/{id}/offer": {
@@ -47440,6 +49194,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CallConnectionJoinedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "call.permission_changed": {
+      "post": {
+        "operationId": "onCallPermissionChanged",
+        "summary": "Call permission changed",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallPermissionChangedEvent"
               }
             }
           }

@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f",
+  "commit": "e72b51348e16e704f17b3e681ee60d02fcca8c7f",
   "branch": "dev",
   "published": true,
-  "note": "Merged polymorfa/polymorfa dev revision including Voice audio and provider credentials, usage gates, Calls analytics, Campaigns P0 and Functions. Both public OpenAPI snapshots are byte-identical to the authoritative files at this commit.",
+  "note": "Exact merged API dev commit containing Calls consent and HMS history; both snapshots are byte-identical to the authoritative source files. SDK package publication is separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "b6c851d9286e6ca4bae900246fdcd7a9d9c0bef8bf06fa4b18e9fac34ce6bd94"
+      "sha256": "0943aa46871e280dc1a714e0dd167e26b7f35a86a4a23fe50e981c620ab83df0"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "ddef8989a1542d24ea2dcfccf242fe2d61999fc0ccf44b35121ec312c8eed7ba"
+      "sha256": "8804d1249763a470bb1cb145c6697ac12381e17edd7aa0ea82b6f916ee8223db"
     }
   }
 }

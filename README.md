@@ -5,9 +5,14 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts at merged API `dev` revision
-`087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`. Graph-compatible
+the Messaging and Platform contracts at merged API `dev` commit
+`e72b51348e16e704f17b3e681ee60d02fcca8c7f`. Graph-compatible
 APIs are outside this SDK's initial scope.
+
+The same API revision adds an enrolled hosted message history beta.
+`MessagingClient.chats` has typed conversation and message reads for server
+credentials. These methods do not make the beta available before enrollment,
+HMS enablement, deployment, and SDK publication.
 
 ## Package architecture
 
@@ -94,7 +99,7 @@ const messaging = new MessagingClient({
     type: "apiKey",
     value: process.env.POLYMORFA_MESSAGING_API_KEY!,
   },
-  apiVersion: "2026-03-20",
+  apiVersion: "1.0.0",
 });
 
 const sessions = await messaging.sessions.list();
@@ -131,7 +136,8 @@ The handwritten Messaging resources in this milestone are:
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call
 - `voip`: place, accept, reject, leave, and end Polymorfa Calls, add
-  participants, and read or update a session's call settings
+  participants, read a person's call permission on a Cloud API Number, check a
+  destination before dialing, and read or update a session's call settings
 - `campaigns`: list, create (with inline recipients), retrieve, inspect
   analytics, launch, pause, resume, stop, requeue, and page or append campaign
   recipients through the Messaging control plane
@@ -299,6 +305,9 @@ The organization view also exposes these management resources:
   retrieve, delete, create an upload URL, and add, page, or remove members
 - `optOuts`: list, create one, create a batch, delete by phone number, and read
   or replace the organization's STOP/START keyword settings
+- `callPolicy`: retrieve and replace the team's blocked country codes for calls
+- `callOptOuts`: list, add one, import up to 5,000, and remove entries on the
+  team's do-not-call list
 - `media`: retrieve a URL, delete, and create an upload URL
 
 Customer creation and pairing-link creation require caller-supplied
@@ -337,6 +346,101 @@ Platform template and Flow endpoints require a live dashboard bearer and reject
 organization server keys. They are intentionally absent from `Client`;
 browser template tooling must reach them through an application-owned server
 adapter that authorizes the signed-in user.
+
+## Call consent
+
+Polymorfa checks every call against the team's call policy before the
+destination rings. The policy is team-wide and needs an organization key;
+project tokens and client tokens receive `403`.
+
+```ts
+import { Client, MessagingClient } from "@polymorfa/sdk";
+
+const client = new Client({
+  credential: {
+    type: "organizationApiKey",
+    value: process.env.POLYMORFA_ORG_KEY!,
+  },
+});
+
+const policy = await client.callPolicy.retrieve();
+await client.callPolicy.update({
+  blockedCountryCodes: ["44", "1876"],
+  expectedRevision: policy.data.revision,
+});
+
+const added = await client.callOptOuts.create({
+  phoneNumber: "+14155550123",
+  note: "Asked not to be called on 2026-09-18",
+});
+added.metadata.status; // 201 for a new entry, 200 when already listed
+
+for await (const entry of await client.callOptOuts.list({ limit: 100 })) {
+  console.log(entry.phoneNumber ?? entry.bsuid, entry.source);
+}
+```
+
+Blocked codes are country calling codes or longer dialing prefixes, 1 to 4
+digits without `+`. `update` replaces the whole list; send `[]` to allow every
+country. Pass the `revision` you read as `expectedRevision` to refuse an
+overwrite (`409 state_conflict`). `import` adds up to 5,000 entries at once and
+reports invalid ones in `rejected`. A full list (100,000 entries) fails with
+`409 call_opt_out_limit`.
+
+A Cloud API Number can call a person only after that person grants permission.
+Ask with `callPermissionRequest` content, then read the answer:
+
+```ts
+const messaging = new MessagingClient({
+  credential: {
+    type: "apiKey",
+    value: process.env.POLYMORFA_MESSAGING_API_KEY!,
+  },
+});
+
+await messaging.messages.send("support", {
+  conversation: { phoneNumber: "+14155550123" },
+  content: {
+    callPermissionRequest: {
+      body: "We would like to call you about order 1522.",
+    },
+  },
+});
+
+const permission = await messaging.voip.retrieveCallPermission(
+  "support",
+  "+14155550123",
+);
+permission.data.data.status; // "none" | "temporary" | "permanent" | "revoked"
+
+const check = await messaging.voip.check({
+  session: "support",
+  to: "+14155550123",
+});
+check.data.data.refusal; // null, or the first reason a call would fail
+```
+
+`retrieveCallPermission` asks WhatsApp during the request: `fresh` is `false`
+when WhatsApp could not be reached and the stored state is returned with
+`actions: null`. `check` runs the same checks a placement runs without placing
+a call or reserving anything. Both need a server credential.
+`retrieveCallPermission` answers `409 unsupported_for_connection` on a
+linked-device Number; `check` supports linked-device Numbers and returns
+`permission: null` for them. If required call-check state is unavailable,
+`check` raises `PolymorfaServerError` (`503 service_unavailable`); no allow or
+refusal result is returned.
+
+A send refused by WhatsApp's request limit raises `PolymorfaRateLimitError`
+with `code` `call_permission_request_limited`, `rateLimitReason`
+`call_permission_request`, and the `retry-after` header in
+`error.metadata.headers`. An already permanent permission raises
+`PolymorfaConflictError` (`call_permission_granted`). A refused placement
+raises `PolymorfaAuthorizationError` with `call_recipient_opted_out` or
+`call_destination_blocked`.
+
+Permission changes arrive as the `call.permission_changed` webhook event, typed
+as `CallPermissionChangedPayload`. No event is sent when a temporary permission
+reaches `expiresAt`.
 
 ## System and Bridge clients
 
@@ -421,7 +525,10 @@ try {
 `PolymorfaErrorCode` lists the documented codes, including
 `recipient_not_on_whatsapp`, `conversation_window_closed`,
 `template_not_approved`, `media_too_large`, `whatsapp_rate_limited`,
-`new_chat_limit_reached`, `whatsapp_account_restricted`, the BanSafe codes, and the Calls and SIP trunk codes,
+`new_chat_limit_reached`, `whatsapp_account_restricted`, the BanSafe codes, the Calls and SIP trunk codes,
+and the call consent codes (`call_recipient_opted_out`,
+`call_destination_blocked`, `call_permission_request_limited`,
+`call_permission_granted`, `call_opt_out_limit`),
 and still accepts codes a newer API adds. `POLYMORFA_ERROR_CODES` and
 `isKnownPolymorfaErrorCode()` are exported. `requestLogUrl` is absent for
 client tokens and for requests the API did not log. `BrowserError` exposes
@@ -507,7 +614,7 @@ also accepts the `sha256=<hex>` compatibility form. Verification uses
 HMAC-SHA256 and constant-time comparison over the unmodified bytes. Recognized
 events narrow to exported payload types, including messages, sessions, groups,
 presence, contacts, chats, calls, labels, history sync, Meta Cloud API contact
-sync and Business app echoes, command results, and business quick replies. Unknown event names and payloads are preserved for
+sync and Business app echoes, command results, call permission changes, and business quick replies. Unknown event names and payloads are preserved for
 forward compatibility.
 `webhooks.verifySignature()` returns a boolean without parsing.
 `webhooks.createFixture()` creates exact-byte local fixtures, and
@@ -733,5 +840,6 @@ fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
 `Client.callRetention` covers the team call-retention settings. `Client.calls`
 covers the three public call analytics and export operations. `Client.voice`
-covers the Voice audio and credential operations. The contract snapshot
-is pinned to merged API `dev` commit `087d0e34b53eec82ebc5d04c5b4c75eaaa556b4f`.
+covers the Voice audio and credential operations. `Client.callPolicy` and
+`Client.callOptOuts` cover consent controls. The contract snapshot is pinned
+to merged API `dev` commit `e72b51348e16e704f17b3e681ee60d02fcca8c7f`.
