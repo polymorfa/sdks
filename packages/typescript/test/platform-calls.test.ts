@@ -316,6 +316,38 @@ describe("Platform call analytics", () => {
     expect(sent.url.searchParams.get("format")).toBe("ndjson");
   });
 
+  it("rejects a successful export response with the wrong media type", async () => {
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(
+        new Response("<html>proxy error</html>", {
+          headers: { "content-type": "text/html; charset=utf-8" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response('{"callId":"call-1"}\n', {
+          headers: { "content-type": "text/csv" },
+        }),
+      )
+      .mockResolvedValueOnce(new Response("callId\r\n"));
+    const client = teamClient(fetch);
+
+    await expect(client.calls.export()).rejects.toMatchObject({
+      code: "invalid_response",
+      status: 200,
+    });
+    await expect(
+      client.calls.export({ format: "ndjson" }),
+    ).rejects.toMatchObject({
+      code: "invalid_response",
+      status: 200,
+    });
+    await expect(client.calls.export()).rejects.toMatchObject({
+      code: "invalid_response",
+      status: 200,
+    });
+  });
+
   it("walks every export page and drops repeated CSV headers", async () => {
     const fetch = vi
       .fn<typeof globalThis.fetch>()

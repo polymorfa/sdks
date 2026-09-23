@@ -282,6 +282,23 @@ export class PlatformCallsResource<O extends ClientOwner> {
         CONTENT_TYPES[resolved],
       )
       .then((response) => {
+        const contentType = response.metadata.headers["content-type"];
+        if (
+          contentType?.split(";", 1)[0]?.trim().toLowerCase() !==
+          CONTENT_TYPES[resolved]
+        ) {
+          throw new PolymorfaServerError(
+            "The Polymorfa API returned an unexpected call export content type.",
+            {
+              code: "invalid_response",
+              status: response.metadata.status,
+              ...(response.metadata.requestId === undefined
+                ? {}
+                : { requestId: response.metadata.requestId }),
+              metadata: response.metadata,
+            },
+          );
+        }
         if (typeof response.data !== "string") {
           throw new PolymorfaServerError(
             "The Polymorfa API returned an invalid export body.",
