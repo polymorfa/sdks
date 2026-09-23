@@ -19,7 +19,7 @@ Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
 It adds `session.restriction_updated`, its boolean `restrictionActive` override,
 and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
-below use the merged API #228 revision. CLI consumers require a
+below use the pinned API source revision. CLI consumers require a
 published SDK package before updating their pinned dependency.
 
 ## Whole-API snapshot

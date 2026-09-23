@@ -43,7 +43,7 @@ upgrade or resend. Raw Graph-compatible paths and same-origin application
 handlers receive no default native version header. Client-token permissions and
 Hybrid preview restrictions still apply.
 
-Requests expose status, request ID, response headers, and attempt count. Safe reads retry transient failures; mutations retry only when supplied an idempotency key. Caller cancellation and timeouts use distinct exported error types.
+Requests expose status, request ID, response headers, and attempt count. Safe reads retry transient failures; mutations retry only when supplied an idempotency key. A response carrying `X-Polymorfa-Operation-Id` is never retried. If its body cannot be read, the error retains the receipt in `error.metadata.operationId` so an authorized server client can check the operation before another send. Caller cancellation and timeouts use distinct exported error types.
 
 Product controllers use immutable snapshots and `subscribe()`/`getSnapshot()` so Web Components and framework bindings share the same behavior.
 

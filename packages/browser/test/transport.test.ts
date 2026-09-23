@@ -218,6 +218,86 @@ describe("BrowserTransport", () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
+  it("does not retry a conflict carrying an operation receipt", async () => {
+    const fetcher = vi.fn<typeof fetch>(async () =>
+      Response.json(
+        { error: { code: "operation_in_progress", message: "In progress" } },
+        {
+          status: 409,
+          headers: { "x-polymorfa-operation-id": "op_in_progress" },
+        },
+      ),
+    );
+    const transport = new BrowserTransport({
+      getClientToken: async () => "pmfa_ct_fixture",
+      fetch: fetcher,
+      maxNetworkRetries: 2,
+      sleep: async () => undefined,
+    });
+
+    await expect(
+      transport.request({
+        method: "POST",
+        path: "/messaging/number/messages/send",
+        body: { text: "hello" },
+        idempotencyKey: "send-accepted",
+      }),
+    ).rejects.toMatchObject({
+      status: 409,
+      metadata: { operationId: "op_in_progress", attempts: 1 },
+    });
+    expect(fetcher).toHaveBeenCalledOnce();
+  });
+
+  it("preserves an operation receipt when response body reading fails", async () => {
+    const diagnostics: BrowserDiagnosticEvent[] = [];
+    const fetcher = vi.fn<typeof fetch>(
+      async () =>
+        new Response(
+          new ReadableStream({
+            start(controller) {
+              controller.error(new Error("body disconnected"));
+            },
+          }),
+          {
+            status: 202,
+            headers: {
+              "content-type": "application/json",
+              "x-polymorfa-operation-id": "op_accepted",
+              "x-request-id": "req_accepted",
+            },
+          },
+        ),
+    );
+    const transport = new BrowserTransport({
+      getClientToken: async () => "pmfa_ct_fixture",
+      fetch: fetcher,
+      maxNetworkRetries: 2,
+      sleep: async () => undefined,
+      onDiagnostic: (event) => diagnostics.push(event),
+    });
+
+    await expect(
+      transport.request({
+        method: "POST",
+        path: "/messaging/number/messages/send",
+        body: { text: "hello" },
+        idempotencyKey: "send-accepted",
+      }),
+    ).rejects.toMatchObject({
+      category: "connection",
+      code: "connection_error",
+      status: 202,
+      requestId: "req_accepted",
+      metadata: { operationId: "op_accepted", attempts: 1 },
+    });
+    expect(fetcher).toHaveBeenCalledOnce();
+    expect(diagnostics.map(({ type }) => type)).toEqual([
+      "request.started",
+      "request.failed",
+    ]);
+  });
+
   it("distinguishes caller cancellation from timeout", async () => {
     const pendingFetch: typeof fetch = async (_url, init) =>
       new Promise((_resolve, reject) =>

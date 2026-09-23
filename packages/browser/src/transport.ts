@@ -32,6 +32,7 @@ export interface BrowserRequest {
 export interface BrowserResponseMetadata {
   readonly status: number;
   readonly requestId?: string;
+  readonly operationId?: string;
   readonly attempts: number;
   readonly headers: Readonly<Record<string, string>>;
 }
@@ -126,6 +127,7 @@ export class BrowserTransport {
     let attempt = 0;
     while (true) {
       attempt += 1;
+      let response: Response | undefined;
       const startedAt = this.#now();
       this.#emit({
         type: "request.started",
@@ -135,9 +137,9 @@ export class BrowserTransport {
         attempt,
       });
       try {
-        const response = await this.#perform(request);
-        const data = await decodeBody(response);
+        response = await this.#perform(request);
         const metadata = responseMetadata(response, attempt);
+        const data = await decodeBody(response);
         if (response.ok) {
           this.#emit({
             type: "request.completed",
@@ -157,7 +159,8 @@ export class BrowserTransport {
           retryableMethod &&
           attempt <= retries &&
           isRetryableStatus(response.status) &&
-          !isIdempotentReplay(response)
+          !isIdempotentReplay(response) &&
+          metadata.operationId === undefined
         ) {
           await this.#sleep(
             retryDelay(response, attempt, this.#random),
@@ -167,10 +170,33 @@ export class BrowserTransport {
         }
         throw httpError(response, data, metadata);
       } catch (cause) {
-        const error = classifyFailure(cause, request.signal);
+        let error = classifyFailure(cause, request.signal);
+        const receivedMetadata =
+          response === undefined
+            ? undefined
+            : responseMetadata(response, attempt);
+        if (
+          error instanceof BrowserConnectionError &&
+          receivedMetadata?.operationId !== undefined
+        ) {
+          error = new BrowserConnectionError(
+            "The response body could not be read. Query the operation status before retrying.",
+            {
+              category: "connection",
+              code: "connection_error",
+              status: receivedMetadata.status,
+              ...(receivedMetadata.requestId === undefined
+                ? {}
+                : { requestId: receivedMetadata.requestId }),
+              metadata: receivedMetadata,
+              cause,
+            },
+          );
+        }
         if (
           (error instanceof BrowserConnectionError ||
             error instanceof BrowserTimeoutError) &&
+          receivedMetadata?.operationId === undefined &&
           retryableMethod &&
           attempt <= retries
         ) {
@@ -310,11 +336,14 @@ function responseMetadata(
     response.headers.get("x-request-id") ??
     response.headers.get("request-id") ??
     undefined;
+  const operationId =
+    response.headers.get("x-polymorfa-operation-id") ?? undefined;
   return Object.freeze({
     status: response.status,
     attempts,
     headers: Object.freeze(headers),
     ...(requestId === undefined ? {} : { requestId }),
+    ...(operationId === undefined ? {} : { operationId }),
   });
 }
 
