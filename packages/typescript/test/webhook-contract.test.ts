@@ -758,6 +758,27 @@ describe("webhook catalog contract", () => {
     expectTypeOf(event.payload).toEqualTypeOf<SessionLoggedOutPayload>();
     expect(event.payload).toEqual({ reason: "device_removed", code: 401 });
   });
+
+  it("limits the previous BanSafe health band to the published values", () => {
+    expectTypeOf<P["bansafe.health_changed"]["previousBand"]>().toEqualTypeOf<
+      "good" | "fair" | "poor" | "failing" | "unknown" | null
+    >();
+    const schema = messaging.components.schemas.BanSafeHealthChangedPayload!;
+    expect(schema.properties?.previousBand?.enum).toEqual([
+      "good",
+      "fair",
+      "poor",
+      "failing",
+      "unknown",
+      null,
+    ]);
+    expect(
+      violations(messaging, schema, {
+        ...PAYLOADS["bansafe.health_changed"].value,
+        previousBand: "other",
+      }),
+    ).toContain('$.previousBand="other" is outside the enum');
+  });
 });
 
 describe("webhook delivery attempt contract", () => {
