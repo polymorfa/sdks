@@ -177,6 +177,26 @@ type P = WebhookPayloadMap;
 const PAYLOADS: {
   readonly [K in Exclude<KnownWebhookEventType, LegacyEventType>]: Shape<P[K]>;
 } = {
+  "contact.opted_in": shape<P["contact.opted_in"]>()(
+    {
+      phone: "+15551234567",
+      source: "stop-keyword",
+      keyword: "START",
+      session: "support",
+      projectId: IDS.project,
+    },
+    ["phone", "source", "keyword", "session"],
+  ),
+  "contact.opted_out": shape<P["contact.opted_out"]>()(
+    {
+      phone: "+15551234567",
+      source: "stop-keyword",
+      keyword: "STOP",
+      session: "support",
+      projectId: IDS.project,
+    },
+    ["phone", "source", "keyword", "session"],
+  ),
   "session.restriction_updated": shape<P["session.restriction_updated"]>()(
     {
       type: "reachout_timelock",
@@ -616,6 +636,8 @@ const PAYLOADS: {
 type LegacyEventType = Exclude<
   KnownWebhookEventType,
   | `customer.${string}`
+  | "contact.opted_in"
+  | "contact.opted_out"
   | `bansafe.${string}`
   | `campaign.${string}`
   | "message.failed"

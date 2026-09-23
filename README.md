@@ -6,9 +6,12 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`e50d2d69f0b6bec6da2b0b6719a5a498a20bf34b` on the dev-based monorepo branch
+`5cc85a22898a8f41b03b1d2fc4976d1cb1dbdc74` on the dev-based monorepo branch
 `t3code/hybrid-link-support`. Graph-compatible APIs are outside
 this SDK's initial scope.
+The matching source revision also includes campaign compliance changes. Eight
+new operations are missing here, and 16 changed campaign or audience contracts
+still need review; the Hybrid operation-status contract is covered.
 
 ## Package architecture
 
@@ -717,9 +720,11 @@ coverage. Routing details appear in response `metadata.transport`,
 
 An accepted uncertain send raises `send_outcome_unknown` with its operation ID.
 The SDK stops automatic retries when a response carries an accepted operation ID.
-Read `messages.operationStatus(session, operationId)` until the outcome is known;
-do not submit a new key or switch transports. `pending` is not permission to send
-again. Receipt reads use the original issuing server principal.
+Read `messages.operationStatus(session, operationId)` with the original issuing
+server principal. `pending` and `unknown` do not permit another send or a
+transport switch. A terminal `rejected` result carries
+`rejectionCode: "hybrid_authority_unavailable"` and proves that this operation
+ended before the provider effect. Fix the cause before starting a new operation.
 
 `hybridLink.getPolicy(scope)` and `setPolicy(scope, body)` preserve team, project,
 or Number authority. Writes require the exact `expectedRevision`, `prefer`, and

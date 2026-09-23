@@ -795,6 +795,7 @@ export {
   type CommandResultPayload,
   type ContactsSyncPayload,
   type ContactUpdatePayload,
+  type ContactOptPayload,
   type ConversationReference as WebhookConversationReference,
   type GroupParticipantPayload,
   type GroupUpdatePayload,

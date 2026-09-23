@@ -41,6 +41,8 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "chat.mute",
   "chat.read",
   "command.result",
+  "contact.opted_in",
+  "contact.opted_out",
   "contact.sync",
   "contact.update",
   "customer.archived",
@@ -281,6 +283,15 @@ export interface ContactUpdatePayload {
   readonly pictureId?: string;
   readonly pictureRemoved?: boolean;
   readonly username?: string;
+}
+
+/** Keyword-based campaign suppression change. The reply body is not delivered. */
+export interface ContactOptPayload {
+  readonly phone: string;
+  readonly source: "stop-keyword";
+  readonly keyword: string;
+  readonly session: string;
+  readonly projectId?: string;
 }
 
 export interface ChatArchivePayload {
@@ -947,6 +958,8 @@ export interface WebhookPayloadMap {
   readonly "chat.mute": ChatMutePayload;
   readonly "chat.read": ChatReadPayload;
   readonly "command.result": CommandResultPayload;
+  readonly "contact.opted_in": ContactOptPayload;
+  readonly "contact.opted_out": ContactOptPayload;
   readonly "contact.sync": ContactsSyncPayload;
   readonly "contact.update": ContactUpdatePayload;
   readonly "customer.archived": CustomerArchivedPayload;

@@ -16,7 +16,7 @@ activation availability is implied by this identifier revision.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`e50d2d69f0b6bec6da2b0b6719a5a498a20bf34b` on the dev-based branch
+`5cc85a22898a8f41b03b1d2fc4976d1cb1dbdc74` on the dev-based branch
 `t3code/hybrid-link-support`. `source.json`
 records the original paths and SHA-256 hashes. `coverage.json` uses the same
 source revision. The source branch is published to Git; this does not establish
@@ -45,6 +45,13 @@ listed; unrecognized API error codes remain readable as strings.
 Five Calls operations remain missing: record listing, statistics, export,
 and retention get/update. Their ledger rows name the
 gaps. Console equivalents stay excluded because they require dashboard identity.
+
+The later campaign compliance merge adds eight operations that this SDK branch
+does not implement. The ledger marks those methods missing and leaves 16 changed
+campaign or audience fingerprints unresolved. The global
+`campaign_throughput_capped` error code changes other operation fingerprints;
+the SDK's error type already accepts unrecognized codes as strings. This snapshot
+records the source contract without claiming campaign parity.
 
 `Client.sipTrunks.endpoint` covers `GET /platform/sip/endpoint` for organization
 keys and project tokens. Its response distinguishes `hosted`, with a host,

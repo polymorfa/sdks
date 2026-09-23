@@ -2008,9 +2008,11 @@ export type SendMessageRequest =
 
 export interface MessageOperation {
   readonly operationId: string;
-  /** Neither pending nor unknown permits another send. Read status again. */
-  readonly status: "pending" | "unknown" | "completed";
+  /** Pending and unknown remain fenced; rejected proves no provider attempt. */
+  readonly status: "pending" | "unknown" | "completed" | "rejected";
   readonly transport?: Exclude<MessageTransport, "auto">;
+  /** Present for a terminal rejection before the provider effect. */
+  readonly rejectionCode?: "hybrid_authority_unavailable";
   readonly receipt?: {
     readonly whatsapp_ids: WhatsAppMessageIds;
     readonly timestamp: string;

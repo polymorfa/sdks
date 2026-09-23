@@ -52,6 +52,7 @@ export {
   type CloudMessagePayload,
   type CommandResultPayload,
   type ContactUpdatePayload,
+  type ContactOptPayload,
   type ContactsSyncPayload,
   type ConversationReference,
   type CustomerArchivedPayload,

@@ -266,6 +266,7 @@ describe("SDK types match the pinned contract snapshots", () => {
         operationId: true,
         status: true,
         transport: true,
+        rejectionCode: true,
         receipt: true,
       }),
     ).toEqual(properties(messaging, "MessageOperation"));

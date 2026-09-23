@@ -45,6 +45,7 @@ export const POLYMORFA_ERROR_CODES = [
   "bansafe_daily_allowance_reached",
   "bansafe_accounting_unavailable",
   "bansafe_send_outcome_unknown",
+  "campaign_throughput_capped",
   "campaigns_not_entitled",
   "idempotency_completed",
   "idempotency_conflict",

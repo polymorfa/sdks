@@ -173,15 +173,43 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "e50d2d69f0b6bec6da2b0b6719a5a498a20bf34b",
-      total: 439,
-      covered: 323,
+      sourceCommit: "5cc85a22898a8f41b03b1d2fc4976d1cb1dbdc74",
+      total: 447,
+      covered: 307,
       partial: 0,
-      // Calls records and retention remain explicit gaps.
-      missing: 5,
+      // Five Calls and eight newer campaign operations remain explicit gaps.
+      missing: 13,
       excluded: 111,
-      changed: 0,
+      changed: 16,
     });
+    const gaps = (result.report?.gaps ?? []) as Array<{
+      status: string;
+      operationId: string;
+    }>;
+    const changed = gaps
+      .filter((gap) => gap.status === "changed")
+      .map((gap) => gap.operationId)
+      .sort();
+    expect(changed).toEqual(
+      [
+        "createAudience",
+        "createCampaign",
+        "createPlatformCampaign",
+        "deleteCampaign",
+        "getPlatformCampaign",
+        "getPlatformCampaignAnalytics",
+        "launchPlatformCampaign",
+        "listCampaignEvents",
+        "listCampaignRecipients",
+        "pauseCampaign",
+        "pausePlatformCampaign",
+        "resumeCampaign",
+        "resumePlatformCampaign",
+        "stopCampaign",
+        "stopPlatformCampaign",
+        "updateCampaign",
+      ].sort(),
+    );
     // Monorepo dev now carries the merged Calls diagnostics route the SDK
     // already implements, so there is no unresolved removal left.
     const resolutions = (result.report?.resolutions ?? []) as Array<{
