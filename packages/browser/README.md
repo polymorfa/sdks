@@ -36,6 +36,13 @@ await messaging.messages.send({
 });
 ```
 
+Native Messaging requests default to `Polymorfa-Version: 2026-09-22`, matching
+the `whatsapp_ids` message-reference object. An explicit version header in request
+options is preserved; retired versions return the API error without an automatic
+upgrade or resend. Raw Graph-compatible paths and same-origin application
+handlers receive no default native version header. Client-token permissions and
+Hybrid preview restrictions still apply.
+
 Requests expose status, request ID, response headers, and attempt count. Safe reads retry transient failures; mutations retry only when supplied an idempotency key. Caller cancellation and timeouts use distinct exported error types.
 
 Product controllers use immutable snapshots and `subscribe()`/`getSnapshot()` so Web Components and framework bindings share the same behavior.

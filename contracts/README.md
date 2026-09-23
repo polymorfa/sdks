@@ -16,11 +16,18 @@ activation availability is implied by this identifier revision.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` commit
-`c087e3496f3fcc8977d94fcba60904158c7550cf` on the dev-based branch
+`e50d2d69f0b6bec6da2b0b6719a5a498a20bf34b` on the dev-based branch
 `t3code/hybrid-link-support`. `source.json`
 records the original paths and SHA-256 hashes. `coverage.json` uses the same
 source revision. The source branch is published to Git; this does not establish
 package publication, deployed availability, or Hybrid Link enrollment.
+
+Native Messaging and Platform calls default to API revision `2026-09-22`,
+which requires `whatsapp_ids` in place of the singular provider reference.
+The browser Messaging transport pins the same date without importing server code;
+its explicit request headers and client-token restrictions remain in force.
+Explicit older pins remain explicit and are rejected by the API; Graph keeps
+its path-based version.
 
 This revision adds six typed server methods: `quickLinks.availability`,
 `messages.operationStatus`, and `hybridLink.getPolicy`, `setPolicy`, `state`,

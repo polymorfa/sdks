@@ -14,7 +14,7 @@ import {
   PolymorfaValidationError,
   type PolymorfaErrorOptions,
 } from "../errors.js";
-import { SDK_VERSION } from "../version.js";
+import { NATIVE_API_VERSION, SDK_VERSION } from "../version.js";
 import { decodeResponseBody, encodeRequestBody } from "./body.js";
 import { parseContentDispositionFilename } from "./content-disposition.js";
 import {
@@ -235,6 +235,19 @@ export class HttpTransport {
     }
   }
 
+  #requestApiVersion(request: RawRequest): string | undefined {
+    const explicitVersion =
+      request.apiVersion ??
+      this.#apiVersion ??
+      new Headers(request.headers).get("polymorfa-version") ??
+      undefined;
+    if (explicitVersion !== undefined) return explicitVersion;
+    const pathname = new URL(request.path, `${this.#baseUrl}/`).pathname;
+    return /^\/(?:messaging|platform)(?:\/|$)/.test(pathname)
+      ? NATIVE_API_VERSION
+      : undefined;
+  }
+
   #headers(request: RawRequest, accept: string): Headers {
     const headers = new Headers(request.headers);
     if (!headers.has("accept")) headers.set("accept", accept);
@@ -242,7 +255,7 @@ export class HttpTransport {
       headers.set("authorization", this.#authorization);
     }
     headers.set("user-agent", `polymorfa-node/${SDK_VERSION}`);
-    const apiVersion = request.apiVersion ?? this.#apiVersion;
+    const apiVersion = this.#requestApiVersion(request);
     if (apiVersion !== undefined) {
       headers.set("polymorfa-version", apiVersion);
     }
@@ -425,7 +438,7 @@ export class HttpTransport {
       headers.set("authorization", this.#authorization);
     }
     headers.set("user-agent", `polymorfa-node/${SDK_VERSION}`);
-    const apiVersion = request.apiVersion ?? this.#apiVersion;
+    const apiVersion = this.#requestApiVersion(request);
     if (apiVersion !== undefined) {
       headers.set("polymorfa-version", apiVersion);
     }

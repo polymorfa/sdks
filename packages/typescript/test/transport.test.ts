@@ -102,6 +102,118 @@ describe("HttpTransport", () => {
     );
   });
 
+  it("pins native JSON, binary and streaming requests to the supported contract", async () => {
+    const server = await serverFor(() => ({ body: '{"ok":true}' }));
+    const transport = makeTransport(server.url);
+    await transport.request({
+      method: "GET",
+      path: "/messaging/number/hybrid-link",
+    });
+    await transport.requestBinary({
+      method: "GET",
+      path: "/messaging/number/media/id",
+    });
+    const stream = await transport.requestStream({
+      method: "GET",
+      path: "/messaging/number/media/id",
+    });
+    await stream.body.cancel();
+    await transport.request({ method: "GET", path: "/platform/projects" });
+    expect(
+      server.requests.map((request) => request.headers["polymorfa-version"]),
+    ).toEqual(Array(4).fill("2026-09-22"));
+  });
+
+  it("does not inject the native contract version into raw Graph requests", async () => {
+    const server = await serverFor(() => ({ body: '{"ok":true}' }));
+    const transport = makeTransport(server.url);
+    await transport.request({
+      method: "POST",
+      path: "/graph/whatsapp/v26.0/123/messages",
+      body: {},
+    });
+    const stream = await transport.requestStream({
+      method: "GET",
+      path: "/graph/whatsapp/v26.0/media",
+    });
+    await stream.body.cancel();
+    expect(
+      server.requests.map((request) => request.headers["polymorfa-version"]),
+    ).toEqual([undefined, undefined]);
+  });
+
+  it("propagates an explicit retired revision rejection without upgrading or resending", async () => {
+    const server = await serverFor(() => ({
+      status: 400,
+      headers: {
+        "content-type": "application/json",
+        "polymorfa-version": "2026-08-19",
+      },
+      body: JSON.stringify({
+        error: {
+          code: "invalid_parameter",
+          message: "This API version is no longer supported.",
+          param: "Polymorfa-Version",
+        },
+      }),
+    }));
+    await expect(
+      makeTransport(server.url, {
+        apiVersion: "2026-08-19",
+        maxNetworkRetries: 2,
+      }).request({ method: "GET", path: "/messaging/number/hybrid-link" }),
+    ).rejects.toMatchObject({ code: "invalid_parameter", status: 400 });
+    expect(server.requests).toHaveLength(1);
+    expect(server.requests[0]?.headers["polymorfa-version"]).toBe("2026-08-19");
+  });
+
+  it("preserves a retired explicit raw header and surfaces rejection without resend", async () => {
+    const server = await serverFor(() => ({
+      status: 400,
+      headers: {
+        "content-type": "application/json",
+        "polymorfa-version": "2026-08-19",
+      },
+      body: JSON.stringify({
+        error: {
+          code: "invalid_parameter",
+          message:
+            "API version 2026-08-19 is no longer supported. Minimum: 2026-09-22",
+          param: "Polymorfa-Version",
+        },
+      }),
+    }));
+    await expect(
+      makeTransport(server.url, { maxNetworkRetries: 2 }).request({
+        method: "GET",
+        path: "/messaging/number/hybrid-link",
+        headers: { "Polymorfa-Version": "2026-08-19" },
+      }),
+    ).rejects.toMatchObject({ code: "invalid_parameter", status: 400 });
+    expect(server.requests).toHaveLength(1);
+    expect(server.requests[0]?.headers["polymorfa-version"]).toBe("2026-08-19");
+  });
+
+  it("keeps API version options ahead of raw headers for JSON and streaming calls", async () => {
+    const server = await serverFor(() => ({ body: '{"ok":true}' }));
+    const transport = makeTransport(server.url, { apiVersion: "2026-09-22" });
+    await transport.request({
+      method: "GET",
+      path: "/messaging/number/hybrid-link",
+      headers: { "Polymorfa-Version": "2026-08-19" },
+    });
+    const stream = await transport.requestStream({
+      method: "GET",
+      path: "/messaging/number/media/id",
+      headers: { "Polymorfa-Version": "2026-08-19" },
+      apiVersion: "2026-09-23",
+    });
+    await stream.body.cancel();
+    expect(
+      server.requests.map((request) => request.headers["polymorfa-version"]),
+    ).toEqual(["2026-09-22", "2026-09-23"]);
+  });
+
   it("encodes query arrays, JSON bodies, and per-request API versions", async () => {
     const server = await serverFor(() => ({
       status: 201,

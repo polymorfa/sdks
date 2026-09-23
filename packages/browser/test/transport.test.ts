@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   BrowserCancelledError,
+  BrowserConfigurationError,
+  BrowserMessagingClient,
   BrowserHttpError,
   BrowserTimeoutError,
   BrowserTransport,
@@ -47,6 +49,111 @@ describe("BrowserTransport", () => {
       "request.completed",
     ]);
   });
+
+  it("pins browser message receipts to the native whatsapp_ids contract", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({
+        success: true,
+        data: {
+          id: "pmfa_msg_1",
+          whatsapp_ids: { linked_devices: "provider-1" },
+          timestamp: 123,
+        },
+      }),
+    );
+    const client = new BrowserMessagingClient({
+      session: "number/1",
+      getClientToken: async () => "pmfa_ct_fixture",
+      fetch,
+    });
+    const response = await client.messages.send({
+      conversation: { phoneNumber: "+15551234567" },
+      content: { text: "Hello" },
+    });
+    expect(new URL(String(fetch.mock.calls[0]?.[0])).pathname).toBe(
+      "/messaging/number%2F1/messages/send",
+    );
+    const headers = new Headers(fetch.mock.calls[0]?.[1]?.headers);
+    expect(headers.get("polymorfa-version")).toBe("2026-09-22");
+    expect(headers.get("authorization")).toBe("Bearer pmfa_ct_fixture");
+    expect(response.data.data).toMatchObject({
+      whatsapp_ids: { linked_devices: "provider-1" },
+    });
+  });
+
+  it("preserves an explicit retired version header and reports rejection without upgrading or retrying", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json(
+        {
+          error: {
+            code: "invalid_parameter",
+            message:
+              "API version 2026-08-19 is no longer supported. Minimum: 2026-09-22",
+            param: "Polymorfa-Version",
+          },
+        },
+        { status: 400 },
+      ),
+    );
+    const client = new BrowserMessagingClient({
+      session: "number",
+      getClientToken: async () => "pmfa_ct_fixture",
+      fetch,
+      maxNetworkRetries: 2,
+    });
+    await expect(
+      client.messages.send(
+        {
+          conversation: { phoneNumber: "+15551234567" },
+          content: { text: "Hello" },
+        },
+        { headers: { "Polymorfa-Version": "2026-08-19" } },
+      ),
+    ).rejects.toMatchObject({ code: "invalid_parameter", status: 400 });
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(
+      new Headers(fetch.mock.calls[0]?.[1]?.headers).get("polymorfa-version"),
+    ).toBe("2026-08-19");
+  });
+
+  it("excludes raw Graph and application routes from the native default", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () => Response.json({}));
+    const transport = new BrowserTransport({
+      getClientToken: async () => "pmfa_ct_fixture",
+      fetch,
+    });
+    await transport.request({
+      method: "GET",
+      path: "/graph/whatsapp/v26.0/123",
+    });
+    await transport.request({
+      method: "GET",
+      path: "/api/application-adapter",
+    });
+    expect(
+      fetch.mock.calls.map(([, init]) =>
+        new Headers(init?.headers).get("polymorfa-version"),
+      ),
+    ).toEqual([null, null]);
+  });
+
+  it.each([`pmfa_${"A".repeat(72)}`, `pmfa_pt_${"A".repeat(94)}`])(
+    "continues rejecting server credentials before native requests: %s",
+    async (credential) => {
+      const fetch = vi.fn<typeof globalThis.fetch>();
+      const transport = new BrowserTransport({
+        getClientToken: async () => credential,
+        fetch,
+      });
+      await expect(
+        transport.request({
+          method: "GET",
+          path: "/messaging/number/contacts",
+        }),
+      ).rejects.toBeInstanceOf(BrowserConfigurationError);
+      expect(fetch).not.toHaveBeenCalled();
+    },
+  );
 
   it("retries safe requests but requires an idempotency key for mutations", async () => {
     const getFetch = vi

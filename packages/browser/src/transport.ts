@@ -56,6 +56,8 @@ export interface BrowserTransportOptions {
   readonly onDiagnostic?: BrowserDiagnosticSink;
 }
 
+const NATIVE_API_VERSION = "2026-09-22";
+
 const SAFE_METHODS = new Set<BrowserHttpMethod>(["GET", "HEAD", "OPTIONS"]);
 
 export class BrowserTransport {
@@ -200,7 +202,14 @@ export class BrowserTransport {
     throwIfAborted(request.signal);
     const token = await this.#tokens.get();
     throwIfAborted(request.signal);
+    const url = requestUrl(this.#baseUrl, request);
     const headers = new Headers(request.headers);
+    if (
+      !headers.has("polymorfa-version") &&
+      /^\/(?:messaging|platform)(?:\/|$)/.test(url.pathname)
+    ) {
+      headers.set("polymorfa-version", NATIVE_API_VERSION);
+    }
     headers.set("accept", "application/json");
     headers.set("authorization", `Bearer ${token}`);
     headers.set("x-polymorfa-client", "browser/0.1.0-dev.0");
@@ -224,7 +233,7 @@ export class BrowserTransport {
     const cancel = () => controller.abort(request.signal?.reason);
     request.signal?.addEventListener("abort", cancel, { once: true });
     try {
-      return await this.#fetch(requestUrl(this.#baseUrl, request), {
+      return await this.#fetch(url, {
         method: request.method,
         headers,
         ...(body === undefined ? {} : { body }),

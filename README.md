@@ -6,7 +6,8 @@ The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. It follows
 the Messaging and Platform contracts recorded at source revision
-`cdc7ec09a32309ee8233d9f8a3007eea18203c6e` on monorepo `dev`. Graph-compatible APIs are outside
+`e50d2d69f0b6bec6da2b0b6719a5a498a20bf34b` on the dev-based monorepo branch
+`t3code/hybrid-link-support`. Graph-compatible APIs are outside
 this SDK's initial scope.
 
 ## Package architecture
@@ -94,7 +95,7 @@ const messaging = new MessagingClient({
     type: "apiKey",
     value: process.env.POLYMORFA_MESSAGING_API_KEY!,
   },
-  apiVersion: "1.0.0",
+  apiVersion: "2026-09-22",
 });
 
 const sessions = await messaging.sessions.list();
@@ -413,8 +414,15 @@ honors `Retry-After`, then uses bounded exponential backoff with jitter.
 
 ## API versions and raw requests
 
-Set `apiVersion` on a client or a single request. The SDK sends it as the
-`Polymorfa-Version` header.
+Native Messaging and Platform requests default to `Polymorfa-Version: 2026-09-22`.
+The independent browser Messaging transport pins the same revision and preserves
+explicit request headers.
+This revision uses the `whatsapp_ids` object. Set `apiVersion` on a client or a
+single request to send an explicit revision; a request override takes precedence.
+An explicit raw `Polymorfa-Version` header is preserved when no `apiVersion`
+option is set. The API rejects retired revisions, and the SDK reports that error without
+upgrading or resending. Raw Graph-compatible requests receive no default native
+version header; their version remains part of the Graph path.
 
 Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 
