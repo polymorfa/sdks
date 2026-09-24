@@ -46,7 +46,8 @@ export async function configureCallsExampleRules(
     await messaging.clientTokens.updateRules(session, {
       recipientMode: "none",
       allowedActions: "voip_place,voip_answer,voip_signal",
-      rateLimit: 60,
+      // Per token per minute: signaling, candidates and diagnostics share it.
+      rateLimit: 600,
       maxDaily: 0,
       allowedOrigins: LOCAL_ORIGIN,
       enabled: true,

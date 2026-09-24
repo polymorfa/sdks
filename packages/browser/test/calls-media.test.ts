@@ -227,6 +227,42 @@ describe("WebRtcMediaFactory candidate handling", () => {
     expect(peer.addIceCandidate).toHaveBeenCalledTimes(2);
   });
 
+  it("holds local candidates until the offer is answered, then sends them", async () => {
+    const peer = peerConnection();
+    let releaseAnswer: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      releaseAnswer = resolve;
+    });
+    const s = signaling({
+      offer: vi.fn(async () => {
+        // Gathering starts at setLocalDescription, before the platform answers.
+        peer.onicecandidate?.({
+          candidate: { toJSON: () => ({ candidate: "candidate:1" }) },
+        } as unknown as RTCPeerConnectionIceEvent);
+        await gate;
+        return { sdp: "v=0", iceServers: [] };
+      }),
+    } as never);
+    const opening = factoryFor({ peer, signaling: s }).open(
+      "call-1",
+      false,
+      callbacks,
+      new AbortController().signal,
+    );
+
+    for (let i = 0; i < 20; i += 1) await Promise.resolve();
+    expect(s["offer"]).toHaveBeenCalled();
+    expect(s["candidate"]).not.toHaveBeenCalled();
+    releaseAnswer();
+    const session = await opening;
+    expect(s["candidate"]).toHaveBeenCalledWith(
+      "call-1",
+      { candidate: "candidate:1" },
+      session.connectionId,
+      expect.any(AbortSignal),
+    );
+  });
+
   it("drops the transport subscription when setup fails", async () => {
     const t = transport();
     const peer = peerConnection();

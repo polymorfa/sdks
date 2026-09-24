@@ -315,14 +315,23 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       peer.addTransceiver("video", { direction: "recvonly" });
 
     const transport = this.#candidateTransport;
-    peer.onicecandidate = (event) => {
-      if (event.candidate === null) return;
-      const candidate = candidateFrom(event.candidate.toJSON());
+    const sendCandidate = (candidate: TrickleCandidate) => {
       if (transport?.sendCandidate(callId, candidate, connectionId) === true)
         return;
       void this.#signaling
         .candidate(callId, candidate, connectionId, signal)
         .catch(() => undefined);
+    };
+    // Gathering starts at setLocalDescription, but the platform has no media
+    // session to take candidates until it answers the offer: one sent earlier
+    // is refused as not ready and lost. Hold them until the answer.
+    let answered = false;
+    const localCandidates: TrickleCandidate[] = [];
+    peer.onicecandidate = (event) => {
+      if (event.candidate === null) return;
+      const candidate = candidateFrom(event.candidate.toJSON());
+      if (answered) sendCandidate(candidate);
+      else localCandidates.push(candidate);
     };
     // Pushed candidates can arrive before the answer; addIceCandidate rejects
     // until the remote description exists, so hold them.
@@ -502,6 +511,9 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         { sdp: peer.localDescription?.sdp ?? offer.sdp ?? "", connectionId },
         signal,
       );
+      answered = true;
+      for (const candidate of localCandidates.splice(0))
+        sendCandidate(candidate);
       applyIceServers(peer, answer);
       await peer.setRemoteDescription({ type: "answer", sdp: answer.sdp });
       negotiatedSlots = videoTransceivers().length;
