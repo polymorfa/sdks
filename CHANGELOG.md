@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added `Client.sessions.getCapabilities(sessionId)` and the
+  `SessionCapabilities` types. It reads which WhatsApp features and limits
+  WhatsApp has enabled for a number, as of the number's last configuration sync;
+  `status` is `unknown` and every value null before the first sync. It needs
+  `sessions:read` and enrollment in the number capabilities beta (403 until
+  then).
 - Browser Calls hold locally gathered ICE candidates until the platform
   answers the call's offer, then send them. Candidates sent earlier were
   refused with `409` because no media session existed yet, and were lost.

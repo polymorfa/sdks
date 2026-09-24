@@ -41,7 +41,14 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
-The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
+Feature pin: the snapshots are currently byte-identical copies of the API
+feature source `4cdf9fc280df7ad0d74668a8ce8897a08908f432` (branch
+`t3code/abprops-number-capabilities`, stacked on API PR #317), which adds only
+`getSessionCapabilities` (`Client.sessions.getCapabilities`) to the Platform
+contract; the Messaging snapshot is unchanged. `source.json` marks it
+unpublished. Repin to the merged API `dev` commit before this SDK change merges.
+
+Before that feature pin, the snapshots were byte-identical copies of the Messaging and Platform OpenAPI
 files at merged `polymorfa/polymorfa` API `dev` commit
 `5cba4237fcec1ef776e8d3727c7ecc4d8f0207a3`. This revision integrates
 Hybrid Link and the `campaign.launched`, `campaign.resumed`, and

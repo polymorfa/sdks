@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "5cba4237fcec1ef776e8d3727c7ecc4d8f0207a3",
+  "sourceCommit": "4cdf9fc280df7ad0d74668a8ce8897a08908f432",
   "excludedContracts": [
     {
       "family": "graph",
@@ -3777,6 +3777,17 @@
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.getSafeMode"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/capabilities",
+      "operationId": "getSessionCapabilities",
+      "fingerprint": "aa2a21c98e2ab50159c4d3340dac07a4006f392f31ddfaf4453439351e0b9643",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.sessions.getCapabilities"
       }
     },
     {

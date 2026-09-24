@@ -1181,6 +1181,45 @@ export interface SafeModeApplied {
   readonly pacing: string | null;
 }
 
+/** `feature`: `value` is a boolean. `limit`: `value` is an integer in `unit`. */
+export type SessionCapabilityKind = "feature" | "limit";
+export type SessionCapabilityUnit =
+  "seconds" | "count" | "characters" | "members";
+/**
+ * `server`: WhatsApp sent a setting the value depends on. `client_default`:
+ * WhatsApp sent none, so its default applies. `account_type`: the capability
+ * does not apply to this account type.
+ */
+export type SessionCapabilitySource =
+  "server" | "client_default" | "account_type";
+
+export interface SessionCapability {
+  /** Stable key such as `channels` or `messageEdit.windowSeconds`. New keys can be added. */
+  readonly key: string;
+  readonly kind: SessionCapabilityKind;
+  /** Null for a feature. */
+  readonly unit: SessionCapabilityUnit | null;
+  /** Boolean for a feature, integer for a limit, null when unknown. */
+  readonly value: boolean | number | null;
+  /** Null when `value` is null. */
+  readonly source: SessionCapabilitySource | null;
+}
+
+/**
+ * WhatsApp features and limits WhatsApp has enabled for one number, as of the
+ * number's last configuration sync (`syncedAt`). Beta: teams must enroll.
+ */
+export interface SessionCapabilities {
+  readonly session: string;
+  readonly projectId: string;
+  /** `unknown` before the first sync; every value is then null. */
+  readonly status: "synced" | "unknown";
+  readonly syncedAt: string | null;
+  readonly checkedAt: string | null;
+  readonly accountType: "business" | "personal" | null;
+  readonly capabilities: readonly SessionCapability[];
+}
+
 export interface SessionSafeMode {
   readonly session: string;
   readonly projectId: string;

@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "5cba4237fcec1ef776e8d3727c7ecc4d8f0207a3",
-  "branch": "dev",
-  "published": true,
-  "note": "Exact merged API dev commit integrating Hybrid Link and campaign.launched, campaign.resumed, and campaign.stopped webhook schemas from feature source 3558c289ec35aba45a498a8794a94b4919365899. Both snapshots are byte-identical to the authoritative source files. SDK package publication is separate.",
+  "commit": "4cdf9fc280df7ad0d74668a8ce8897a08908f432",
+  "branch": "t3code/abprops-number-capabilities",
+  "published": false,
+  "note": "Feature source for the number capabilities beta (GET /platform/sessions/{sessionId}/capabilities), stacked on API PR #317. Both snapshots are byte-identical to the authoritative source files at this commit. Repin to the merged API dev commit before merging.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "4e5aa9b8890b8963d704df22efbbce7c6bd9ac09b9253f5c8215bb3966b2f2cc"
+      "sha256": "927a8cc75d1473eea4411221ca74c5848fd55e184bfa0f4d5f33d6b95549b610"
     }
   }
 }
