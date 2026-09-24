@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Browser Calls hold locally gathered ICE candidates until the platform
+  answers the call's offer, then send them. Candidates sent earlier were
+  refused with `409` because no media session existed yet, and were lost.
 - Fixed browser requests failing before they were sent. `BrowserTransport`
   called the page's `fetch` with the transport as its receiver, which browsers
   reject with `TypeError: Illegal invocation`. Every request, including Calls
