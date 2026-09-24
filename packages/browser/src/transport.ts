@@ -96,7 +96,11 @@ export class BrowserTransport {
       "maxNetworkRetries",
       true,
     );
-    this.#fetch = options.fetch ?? globalThis.fetch;
+    // Called as `this.#fetch(...)`, a native fetch would receive the transport
+    // as its receiver; browsers and Workers reject that with "Illegal
+    // invocation" before sending anything. Invoke it without one.
+    const fetch = options.fetch ?? globalThis.fetch;
+    this.#fetch = (input, init) => fetch(input, init);
     this.#sleep = options.sleep ?? defaultSleep;
     this.#random = options.random ?? Math.random;
     this.#now = options.now ?? Date.now;
