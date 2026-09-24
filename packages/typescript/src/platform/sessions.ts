@@ -132,12 +132,28 @@ export class PlatformSessionsResource {
     });
   }
 
-  /** Review the returned charge and effective time before confirming this quote. */
+  /**
+   * Review the returned charge and effective time before confirming this quote.
+   *
+   * A Hybrid Link Number leaving Pro needs `hybridResolution` (keep one
+   * connection or split the Number); without it the API returns
+   * `hybrid_resolution_required`. An upgrade to Pro can merge a same-number
+   * pair with `hybridMerge`; `sessionId` keeps its ID. The quote echoes the
+   * plan in `quote.hybridTransition`.
+   */
   quoteTierChange(
     sessionId: string,
     body: NumberTierQuoteRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
+    if (
+      body?.hybridResolution !== undefined &&
+      body?.hybridMerge !== undefined
+    ) {
+      throw new PolymorfaValidationError(
+        "Send hybridResolution or hybridMerge in a tier quote, not both.",
+      );
+    }
     return this.transport.request({
       method: "POST",
       path: `${sessionPath(sessionId)}/tier-quotes`,

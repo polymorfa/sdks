@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (218 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (219 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -12696,7 +12696,7 @@
           "sessions"
         ],
         "summary": "Preview a number tier change",
-        "description": "Returns the full credit charge and effective time before confirmation. Null tierOverride restores project inheritance. Creating a quote does not change the number or consume credit. Quotes expire after ten minutes and are invalidated when the number or price changes.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Returns the full credit charge and effective time before confirmation. Null tierOverride restores project inheritance. Creating a quote does not change the number or consume credit. Quotes expire after ten minutes and are invalidated when the number or price changes.\n\n**Hybrid Link.** A Hybrid Link Number leaving Pro requires `hybridResolution`: keep one connection, or split the Number into two Standard Numbers; without it the quote returns `409` with code `hybrid_resolution_required`. The choice runs when the paid Pro window ends. An upgrade to Pro can merge two same-number Numbers with `hybridMerge`; the Number in the path keeps its ID. An ineligible change returns `409` with code `hybrid_transition_ineligible`.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -12789,7 +12789,7 @@
           "sessions"
         ],
         "summary": "Read a number tier change",
-        "description": "Reads the quote and durable result for a number in the authenticated project scope.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "description": "Reads the quote and durable result for a number in the authenticated project scope.\n\n**Hybrid Link.** For a Hybrid Link change, `quote.hybridTransition.status` reports the connection change separately from the tier change: `scheduled`, `running`, `completed`, `failed` or `cancelled`.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -20123,7 +20123,7 @@
           "projects"
         ],
         "summary": "Update project settings",
-        "description": "Updates the display name, icon, or default number plan without changing the project ID, URL, stage, or individual number overrides.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Updates the display name, icon, or default number plan without changing the project ID, URL, stage, or individual number overrides.\n\n**Hybrid Link.** A default plan without Hybrid Link returns `409` with code `hybrid_resolution_required` while a Hybrid Link Number inherits the project plan. Change each such Number's tier first and choose which connection it keeps.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -20260,6 +20260,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -20726,6 +20729,83 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/platform/projects/{projectId}/hybrid-merge-candidates": {
+      "get": {
+        "operationId": "listHybridMergeCandidates",
+        "tags": [
+          "projects"
+        ],
+        "summary": "List Numbers that can merge into Hybrid Link",
+        "description": "Lists pairs of Numbers in the project that are the same WhatsApp Business number: one connected through Linked Devices and one through the Official API with the WhatsApp Business app (coexistence). Merge an eligible pair with a Pro tier quote on the Number you want to keep and `hybridMerge.absorbNumberId` set to the other Number. Neither side needs to pair or sign up again.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/HybridMergeCandidateList"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -36543,6 +36623,9 @@
                 "type": "string",
                 "format": "uuid",
                 "nullable": true
+              },
+              "hybridTransition": {
+                "$ref": "#/components/schemas/NumberHybridTransition"
               }
             },
             "required": [
@@ -36580,11 +36663,207 @@
               null
             ],
             "nullable": true
+          },
+          "hybridResolution": {
+            "$ref": "#/components/schemas/HybridResolution"
+          },
+          "hybridMerge": {
+            "$ref": "#/components/schemas/HybridMerge"
           }
         },
         "required": [
           "tierOverride"
         ]
+      },
+      "HybridTransport": {
+        "type": "string",
+        "enum": [
+          "linked_devices",
+          "official_api"
+        ]
+      },
+      "HybridResolution": {
+        "description": "Required when a Hybrid Link Number moves to a tier without Hybrid Link. `keep` retires the other connection. `split` keeps `existingNumberTransport` on this Number and moves the other connection to a new Standard Number named `newNumberName`, without pairing or signing up again.",
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "keep"
+                ]
+              },
+              "transport": {
+                "$ref": "#/components/schemas/HybridTransport"
+              }
+            },
+            "required": [
+              "action",
+              "transport"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "split"
+                ]
+              },
+              "existingNumberTransport": {
+                "$ref": "#/components/schemas/HybridTransport"
+              },
+              "newNumberName": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$"
+              }
+            },
+            "required": [
+              "action",
+              "existingNumberTransport",
+              "newNumberName"
+            ]
+          }
+        ],
+        "discriminator": {
+          "propertyName": "action"
+        }
+      },
+      "HybridMerge": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Merges another Number into this one as a Hybrid Link Number. The other Number's connection moves here and the other Number is removed.",
+        "properties": {
+          "absorbNumberId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "absorbNumberId"
+        ]
+      },
+      "NumberHybridTransition": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "keep",
+              "split",
+              "merge"
+            ]
+          },
+          "keepTransport": {
+            "$ref": "#/components/schemas/HybridTransport"
+          },
+          "existingNumberTransport": {
+            "$ref": "#/components/schemas/HybridTransport"
+          },
+          "newNumberName": {
+            "type": "string"
+          },
+          "absorbNumberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "survivingNumberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "newNumberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The Number created by a completed split."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "running",
+              "completed",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "metaDisconnectRequired": {
+            "type": "boolean",
+            "description": "True after an Official API connection that shares the number with the WhatsApp Business app is dropped. Polymorfa has stopped using it; disconnect it in the WhatsApp Business app under Settings > Account > Business Platform."
+          },
+          "effectiveAtMs": {
+            "type": "integer",
+            "nullable": true
+          }
+        },
+        "required": [
+          "action",
+          "survivingNumberId"
+        ]
+      },
+      "HybridMergeCandidateList": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "numbers": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "transport": {
+                    "$ref": "#/components/schemas/HybridTransport"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "transport",
+                  "status"
+                ]
+              }
+            },
+            "eligible": {
+              "type": "boolean"
+            },
+            "ineligibleReason": {
+              "type": "string",
+              "enum": [
+                "deletion_in_progress",
+                "not_coexistence",
+                "different_customer",
+                "connection_disabled",
+                "not_connected"
+              ]
+            }
+          },
+          "required": [
+            "numbers",
+            "eligible"
+          ]
+        }
       },
       "SessionBatchRequest": {
         "type": "object",

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "5cba4237fcec1ef776e8d3727c7ecc4d8f0207a3",
+  "sourceCommit": "feaf0734a99e24124e06cc04af52b46fdc5158f1",
   "excludedContracts": [
     {
       "family": "graph",
@@ -3784,7 +3784,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/tier-quotes/{quoteId}",
       "operationId": "getSessionTierChange",
-      "fingerprint": "26a366bd27b1e77700ca427f137f3f01c99c398f41f95edb8008af2bcb19aefe",
+      "fingerprint": "602247de1ae72206a3207b1cd8d7ce65fec0a7b386716f6b5e24fd85f79b5454",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.retrieveTierChange"
@@ -4050,7 +4050,7 @@
       "method": "PATCH",
       "path": "/console/projects/{projectId}",
       "operationId": "updateProject",
-      "fingerprint": "1d124460d20e14953ecf03af3372e69a31b59c512a4b27568c8537d936a9ed17",
+      "fingerprint": "17294266cd2773fd99470bd94aab7b9a01adba28b3718c31a312a8ac00e36985",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -4150,7 +4150,7 @@
       "method": "PATCH",
       "path": "/platform/sessions/{sessionId}",
       "operationId": "setSessionTierOverride",
-      "fingerprint": "a28a3700b2e1ca7362a57de40598959640bbf31d709d929623206bc3ecd45f1d",
+      "fingerprint": "42e924cd6ea94896fa447071dfa78b152f06475f06d5be200ed9d5cffdab1f96",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.setTierOverride"
@@ -5189,7 +5189,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/tier-quotes",
       "operationId": "quoteSessionTierChange",
-      "fingerprint": "7bd49359f1b8a15cd21477573209924c7ea1532d0f4b258eb0022a30a8c4593a",
+      "fingerprint": "a9e13a9e870e108da6669c7a1bd79655df499ab2c03f22f5e4bcea89f621d185",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.quoteTierChange"
@@ -5558,6 +5558,17 @@
       "typescript": {
         "status": "covered",
         "method": "Client.projects.updateWarmupPlan"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/hybrid-merge-candidates",
+      "operationId": "listHybridMergeCandidates",
+      "fingerprint": "a8a890a75308fba2e51b5b4ae50c2958c0256a02e30eaffda495032ed2b0fd0f",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.projects.listHybridMergeCandidates"
       }
     },
     {

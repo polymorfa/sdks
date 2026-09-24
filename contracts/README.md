@@ -41,7 +41,24 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
-The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
+The current snapshots are byte-identical copies of the Messaging and Platform
+OpenAPI files at `polymorfa/polymorfa` commit
+`feaf0734a99e24124e06cc04af52b46fdc5158f1` on the coordinated API branch
+`t3code/hybrid-pro-downgrade` (not yet merged to API `dev`; based on merged
+API `dev` commit `4d1d47fad`). The Messaging file is unchanged from
+`5cba4237`. The Platform file adds Hybrid Link tier transitions:
+`hybridResolution` and `hybridMerge` on `NumberTierQuoteRequest`,
+`quote.hybridTransition` on `NumberTierChange`, and
+`GET /platform/projects/{projectId}/hybrid-merge-candidates`, covered by
+`Client.projects.listHybridMergeCandidates`. Four fingerprints changed:
+`quoteSessionTierChange`, `getSessionTierChange` and `setSessionTierOverride`
+(the shared request and result schemas; each keeps its typed method) and the
+excluded Console `updateProject` (a new `409`). `hybrid_resolution_required`
+and `hybrid_transition_ineligible` are documented in operation prose rather
+than the public error enum; `POLYMORFA_ERROR_CODES` lists both. Repin to the
+merged API `dev` commit before merging this SDK change.
+
+The preceding snapshots were byte-identical copies of the Messaging and Platform OpenAPI
 files at merged `polymorfa/polymorfa` API `dev` commit
 `5cba4237fcec1ef776e8d3727c7ecc4d8f0207a3`. This revision integrates
 Hybrid Link and the `campaign.launched`, `campaign.resumed`, and
@@ -160,12 +177,12 @@ too, with their payload types.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        379 |
+| Covered             |        380 |
 | Missing             |          0 |
 | Excluded            |        130 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        509 |
+| Total               |        510 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

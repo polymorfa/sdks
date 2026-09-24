@@ -2118,6 +2118,60 @@ purchase a replacement. Set `tierOverride: null` when quoting to restore project
 inheritance. The old `setTierOverride({tierOverride})` request and
 `billing.updateReminderSettings` method are removed.
 
+#### Hybrid Link Numbers
+
+A Hybrid Link Number (Linked Devices and Official API on one Number) needs a
+choice before it leaves Pro. Without `hybridResolution`, the quote fails with
+`PolymorfaConflictError` and `code === "hybrid_resolution_required"`. This
+includes `tierOverride: null` when the project default lacks Hybrid Link.
+
+```ts
+// Keep one connection; the other is disconnected when Pro ends.
+await platform.sessions.quoteTierChange(sessionId, {
+  tierOverride: "standard",
+  hybridResolution: { action: "keep", transport: "linked_devices" },
+});
+
+// Split into two Standard Numbers. This Number keeps the Official API; Linked
+// Devices moves to a new Number named "support-linked" without re-pairing.
+await platform.sessions.quoteTierChange(sessionId, {
+  tierOverride: "standard",
+  hybridResolution: {
+    action: "split",
+    existingNumberTransport: "official_api",
+    newNumberName: "support-linked",
+  },
+});
+```
+
+The choice runs when the paid Pro window ends. To merge two Numbers that are
+the same WhatsApp Business number into one Hybrid Link Number, list the pairs
+and quote Pro on the Number that keeps its ID:
+
+```ts
+const pairs = await platform.projects.listHybridMergeCandidates(projectId);
+const pair = pairs.data.data.find((candidate) => candidate.eligible);
+if (pair) {
+  const [keep, absorb] = pair.numbers;
+  await platform.sessions.quoteTierChange(keep.id, {
+    tierOverride: "pro",
+    hybridMerge: { absorbNumberId: absorb.id },
+  });
+}
+```
+
+Send either `hybridResolution` or `hybridMerge`, never both; the SDK rejects
+both before sending. `quote.hybridTransition` echoes the plan (`keep`, `split`
+or `merge`), the surviving Number and the effective time. After confirmation,
+`retrieveTierChange` reports `hybridTransition.status` (`scheduled`, `running`,
+`completed`, `failed` or `cancelled`) separately from the tier change status,
+plus `failureReason`, `newNumberId` for a completed split, and
+`metaDisconnectRequired`. When that flag is true, disconnect the Official API in
+the WhatsApp Business app under Settings > Account > Business Platform. An
+ineligible pair or Number fails with `hybrid_transition_ineligible`; the reason
+appears only in the error message. Merging requires Hybrid Link access; the API
+enforces it.
+
 ## Organization access and security
 
 The organization view exposes key metadata, members, audit logs, session bans,

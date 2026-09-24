@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "5cba4237fcec1ef776e8d3727c7ecc4d8f0207a3",
-  "branch": "dev",
-  "published": true,
-  "note": "Exact merged API dev commit integrating Hybrid Link and campaign.launched, campaign.resumed, and campaign.stopped webhook schemas from feature source 3558c289ec35aba45a498a8794a94b4919365899. Both snapshots are byte-identical to the authoritative source files. SDK package publication is separate.",
+  "commit": "feaf0734a99e24124e06cc04af52b46fdc5158f1",
+  "branch": "t3code/hybrid-pro-downgrade",
+  "published": false,
+  "note": "Coordinated API feature commit for Hybrid Link tier transitions (downgrade resolution, same-number merge and merge candidates), based on merged API dev commit 4d1d47fad. The Messaging snapshot is unchanged from API dev 5cba4237; the Platform snapshot adds the tier-transition contract. Both snapshots are byte-identical to the authoritative source files at this commit. SDK package publication is separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "4e5aa9b8890b8963d704df22efbbce7c6bd9ac09b9253f5c8215bb3966b2f2cc"
+      "sha256": "412fe7af0a84791ddb21957727af34ec8c9f2a95ad9b6cd8d0f22df325173d2c"
     }
   }
 }
