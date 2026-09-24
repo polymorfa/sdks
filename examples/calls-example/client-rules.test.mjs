@@ -110,7 +110,7 @@ test("configure helper uses bounded Calls-only rules when GET returns 404", asyn
   assert.deepEqual(write[1], {
     recipientMode: "none",
     allowedActions: "voip_place,voip_answer,voip_signal",
-    rateLimit: 60,
+    rateLimit: 600,
     maxDaily: 0,
     allowedOrigins: "http://127.0.0.1:5273",
     enabled: true,
