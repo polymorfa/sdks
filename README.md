@@ -295,10 +295,11 @@ The organization view also exposes these management resources:
   customer incidents
 - `projects`: list, create, request production enrollment, approve, and cancel;
   retrieve and update Safe Mode, warm-up, Ban Insurance evidence, and Health
-  policy settings
+  policy settings; list same-number pairs that can merge into Hybrid Link
 - `sessions`: list, start, stop, or delete one session; stop or delete a bounded
-  batch; review and confirm a tier change; create a testing session; and
-  retrieve or update the session Safe Mode override
+  batch; review and confirm a tier change, including the Hybrid Link
+  resolution or merge; create a testing session; and retrieve or update the
+  session Safe Mode override
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and paged or appended recipients. The single-campaign
   operations require the owning `projectId`. This resource is available only
