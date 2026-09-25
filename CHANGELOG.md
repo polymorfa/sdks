@@ -7,6 +7,16 @@
   test-event fixtures. The typed `bansafe.incident`, `bansafe.action`,
   `bansafe.health_threshold`, and `bansafe.claim` events remain available.
 
+- Browser Calls hold locally gathered ICE candidates until the platform
+  answers the call's offer, then send them. Candidates sent earlier were
+  refused with `409` because no media session existed yet, and were lost.
+- Fixed browser requests failing before they were sent. `BrowserTransport`
+  called the page's `fetch` with the transport as its receiver, which browsers
+  reject with `TypeError: Illegal invocation`. Every request, including Calls
+  placement, Answer, and Reject, surfaced as a `connection` error and no
+  request reached the network. `HttpTransport` had the same defect in browsers,
+  Cloudflare Workers, and Deno. Both transports now call the default or supplied
+  `fetch` without a receiver.
 - Added typed hosted message history reads to `MessagingClient.chats`:
   `list`, `retrieve`, `listMessages`, and `retrieveMessage`. Server credentials
   need the relevant read scope, HMS enabled on the Number, and enrollment in
