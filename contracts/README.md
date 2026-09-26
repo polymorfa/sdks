@@ -42,7 +42,7 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API commit `592d63c48f780c5bdb7eaa1aa70cb7eae788de8c` on
+files at API commit `7578bef785305bc3c67459256b48e3474d5be84a` on
 `codex/calls-continuation-20260926`. This unreleased revision adds ad-hoc and group-ID placement
 and participant re-ring, and documents automatic SIP caller identity when no
 From user override is set. `source.json` records source paths and SHA-256 hashes.

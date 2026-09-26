@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "592d63c48f780c5bdb7eaa1aa70cb7eae788de8c",
+  "commit": "7578bef785305bc3c67459256b48e3474d5be84a",
   "branch": "codex/calls-continuation-20260926",
   "published": false,
   "note": "Unreleased combined Calls contract: controls, groups, reactions, SIP caller identity and scoped call record detail. Snapshots match the exact API commit. Publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
@@ -8,12 +8,12 @@
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "cafa402ee4fef4ef12e6336bcd9316a432b8c30df156d70fd090405e831f6adb"
+      "sha256": "5575a8c730985be3fafec3a50d00d05207f3b3640c3bfc80d4427f07d5380711"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "5cb91e1f3b53967e50f3cd27ee6f89e01ee16780d1fdc2244372f621b90f59e0"
+      "sha256": "c9529409f72492b55c831856c9942048b1e02fcff0830737f59268131e951b5e"
     }
   }
 }

@@ -45157,27 +45157,6 @@
               }
             }
           },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
-                }
-              }
-            }
-          },
           "403": {
             "description": "Authenticated but not permitted (missing scope or rule violation)",
             "content": {
@@ -45283,7 +45262,7 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
         },
-        "description": "**Required scope:** `campaigns:manage`"
+        "description": "**Required scope:** `campaigns:manage`\n\nCreates a draft campaign on any plan. `senderConfig.sessionIds` may name numbers that are not yet on a plan that includes Campaigns; launch checks the selection. It is refused with `403 bansafe_org_suspended` while the team is suspended and `400` when `senderConfig.sessionIds` is malformed or a per-number cap is above its safety ceiling."
       }
     },
     "/messaging/projects/{projectSlug}/campaigns/{id}": {
@@ -45366,27 +45345,6 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
                 }
               }
             }
@@ -45545,27 +45503,6 @@
               }
             }
           },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
-                }
-              }
-            }
-          },
           "403": {
             "description": "Authenticated but not permitted (missing scope or rule violation)",
             "content": {
@@ -45643,7 +45580,7 @@
           "Campaigns"
         ],
         "summary": "Launch a campaign",
-        "description": "**Required scope:** `campaigns:manage`\n\nStarts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. The response returns the campaign as it was when the launch was accepted.",
+        "description": "**Required scope:** `campaigns:manage`\n\nStarts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the saved sender selection against live plans: `402 campaigns_not_entitled` when a selected number is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.sessionIds` when a selected number is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. The response returns the campaign as it was when the launch was accepted.",
         "security": [
           {
             "BearerAuth": []
@@ -45742,7 +45679,7 @@
             }
           },
           "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
+            "description": "`campaigns_not_entitled`: a selected number is missing or its plan does not include Campaigns, or the project has no number on such a plan. Drafts are saved on every plan.",
             "content": {
               "application/json": {
                 "schema": {
@@ -45751,13 +45688,13 @@
                 "example": {
                   "error": {
                     "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
+                    "code": "campaigns_not_entitled",
+                    "message": "This campaign needs a selected number on a plan that includes Campaigns.",
                     "param": null,
                     "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
+                  "docs": "https://docs.polymorfa.com/api/errors#campaigns-not-entitled"
                 }
               }
             }
@@ -45805,7 +45742,7 @@
             }
           },
           "409": {
-            "description": "`state_conflict`: The campaign is not a draft, or it is already launched and waiting for its start time. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`state_conflict`: The campaign is not a draft, it is already launched and waiting for its start time, or its sending numbers changed during the launch. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {
@@ -45860,6 +45797,27 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "`service_unavailable`: the selected numbers' plans could not be checked; retry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "The selected numbers' plans could not be checked. Nothing was launched; retry the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
                 }
               }
             }
@@ -45962,27 +45920,6 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
                 }
               }
             }
@@ -46191,27 +46128,6 @@
               }
             }
           },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
-                }
-              }
-            }
-          },
           "403": {
             "description": "Authenticated but not permitted (missing scope or rule violation)",
             "content": {
@@ -46416,27 +46332,6 @@
               }
             }
           },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
-                }
-              }
-            }
-          },
           "403": {
             "description": "Authenticated but not permitted (missing scope or rule violation)",
             "content": {
@@ -46634,27 +46529,6 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
                 }
               }
             }
