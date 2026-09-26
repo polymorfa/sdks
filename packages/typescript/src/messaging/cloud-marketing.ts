@@ -34,7 +34,9 @@ export class CloudMarketingResource {
       );
     }
     if (!wabaId.trim() || !params.version.trim()) {
-      throw new PolymorfaConfigurationError("Provide a WABA ID and Graph version.");
+      throw new PolymorfaConfigurationError(
+        "Provide a WABA ID and Graph version.",
+      );
     }
     return this.transport.request({
       method: "GET",

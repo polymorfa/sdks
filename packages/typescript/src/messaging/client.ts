@@ -112,7 +112,10 @@ export class MessagingClient {
     this.templates = new TemplatesResource(transport);
     this.cloudTemplates = new CloudTemplatesResource(transport);
     this.cloudCatalogs = new CloudCatalogsResource(transport, credential.type);
-    this.cloudMarketing = new CloudMarketingResource(transport, credential.type);
+    this.cloudMarketing = new CloudMarketingResource(
+      transport,
+      credential.type,
+    );
     this.flowEncryption = new FlowEncryptionResource(
       transport,
       credential.type,
