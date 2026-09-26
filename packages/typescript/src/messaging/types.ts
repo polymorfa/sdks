@@ -224,14 +224,22 @@ export interface LaunchCampaignRequest {
   readonly scheduledAt?: number;
 }
 
-/** At least one draft field must be supplied; the API rejects an empty object. */
-export interface UpdateCampaignRequest {
+interface UpdateCampaignChanges {
   readonly name?: string;
   readonly recipientListId?: string | null;
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Epoch milliseconds, or null to start at launch. */
   readonly scheduledAt?: number | null;
 }
+
+/** At least one draft field must be supplied. */
+export type UpdateCampaignRequest =
+  | (UpdateCampaignChanges & { readonly name: string })
+  | (UpdateCampaignChanges & { readonly recipientListId: string | null })
+  | (UpdateCampaignChanges & {
+      readonly senderConfig: Readonly<Record<string, unknown>>;
+    })
+  | (UpdateCampaignChanges & { readonly scheduledAt: number | null });
 
 export interface RescheduleCampaignRequest {
   /** Epoch milliseconds, or null to start a waiting campaign now. */

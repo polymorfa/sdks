@@ -247,6 +247,17 @@ describe("MessagingClient campaigns", () => {
     );
   });
 
+  it("requires an update field at compile time", () => {
+    const client = new MessagingClient({
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    });
+    const invalidUpdate = () => {
+      // @ts-expect-error the API rejects an empty campaign update
+      client.campaigns.update("launch/eu", campaign.id, {});
+    };
+    expect(invalidUpdate).toBeTypeOf("function");
+  });
+
   it("submits durable lifecycle commands with operation IDs", async () => {
     const { client, requests } = await campaignsServer();
 

@@ -25,7 +25,7 @@ export const WEBHOOK_EVENTS = [
   "session.logged_out",
   "template.status",
   "campaign.completed",
-  "bansafe.enforcement",
+  "bansafe.action",
   "customer.created",
 ];
 
