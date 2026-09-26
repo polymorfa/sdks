@@ -1,6 +1,7 @@
 # `@polymorfa/sdk`
 
-The handwritten Polymorfa server SDK for TypeScript and Node.js.
+The handwritten Polymorfa server SDK for TypeScript, Node.js, and server-side
+edge runtimes.
 
 Install the development prerelease from npm:
 
@@ -33,8 +34,11 @@ import {
 ```
 
 See the repository README for the complete development contract and current
-typed-resource coverage. This package has no runtime dependencies and requires
-Node.js 20 or newer.
+typed-resource coverage. This package has no runtime dependencies. On Node.js,
+it requires version 20 or newer. The package root also runs in Cloudflare
+Workers, Deno, and Bun with native `fetch` and `crypto.subtle`; keep server
+credentials in the runtime's secret store. Import `@polymorfa/sdk/node` only in
+Node.js applications that need its file helpers.
 
 ## Management client and project views
 
