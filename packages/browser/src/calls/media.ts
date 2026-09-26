@@ -815,6 +815,7 @@ export class WebRtcMediaFactory implements CallMediaFactory {
     };
 
     const poll = this.#setInterval(() => {
+      if (closed || signal.aborted) return;
       // The socket delivers remote candidates while it is up.
       if (transport?.connected === true) return;
       void drainCandidates(this.#signaling, callId, peer, signal);

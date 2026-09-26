@@ -226,6 +226,35 @@ function factoryFor(options: {
 }
 
 describe("WebRtcMediaFactory candidate handling", () => {
+  it("stops candidate polling as soon as a call ends, before media close settles", async () => {
+    const peer = peerConnection();
+    const s = signaling();
+    const abort = new AbortController();
+    let tick: (() => void) | undefined;
+    const factory = new WebRtcMediaFactory({
+      signaling: s,
+      mediaDevices: {
+        getUserMedia: vi.fn(async () => new FakeStream([new FakeTrack("audio")])),
+      } as unknown as MediaDevices,
+      createPeerConnection: () => peer,
+      setInterval: ((callback: () => void) => {
+        tick = callback;
+        return 1;
+      }) as never,
+      clearInterval: vi.fn() as never,
+    });
+    const session = await factory.open("call-1", false, callbacks, abort.signal);
+    tick!();
+    expect(s["candidates"]).toHaveBeenCalledTimes(1);
+
+    abort.abort();
+    tick!();
+    expect(s["candidates"]).toHaveBeenCalledTimes(1);
+    await session.close({ leave: false });
+    tick!();
+    expect(s["candidates"]).toHaveBeenCalledTimes(1);
+  });
+
   it("holds pushed candidates until the answer is applied, then drains them", async () => {
     const peer = peerConnection();
     const t = transport();
