@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "229bbbb873bd1e08e888479a7951e8345378bae0",
-  "branch": "codex/calls-continuation-20260926",
+  "commit": "18e285de80add7c0f32dca1ac812116bf61b8836",
+  "branch": "codex/calls-records-20260926",
   "published": false,
-  "note": "Unreleased integrated Calls group, media controls, screen sharing, reactions, raised hands and SIP caller identity contract. Snapshots match the exact API commit. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
+  "note": "Unreleased integrated Calls contract plus scoped public record detail. Snapshots match the exact API commit. Publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "694a96f3f02bfc167e7e7b1e5baafa504f909e1683ed2b716a38c2dab6034805"
+      "sha256": "5cb91e1f3b53967e50f3cd27ee6f89e01ee16780d1fdc2244372f621b90f59e0"
     }
   }
 }

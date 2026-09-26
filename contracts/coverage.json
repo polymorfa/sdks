@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "229bbbb873bd1e08e888479a7951e8345378bae0",
+  "sourceCommit": "18e285de80add7c0f32dca1ac812116bf61b8836",
   "excludedContracts": [
     {
       "family": "graph",
@@ -1630,6 +1630,17 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/messaging/voip/calls/{id}/hand",
+      "operationId": "setCallHandRaised",
+      "fingerprint": "65c68e95b86c19c75e9f7c7c8de6b4f58cc1ef537711a7570a48a37e9e7b6ca8",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.voip.setHandRaised"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/messaging/voip/calls/{id}/leave",
       "operationId": "voipLeaveCall",
       "fingerprint": "f7c2aec2289eec2eb3f0429f3f2ae75c4bf86c31de54600403395677e6d05aa9",
@@ -1669,6 +1680,17 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.ringParticipant"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/reaction",
+      "operationId": "sendCallReaction",
+      "fingerprint": "4ba89adf4ee046bb37aff1c45dcb0762fb47957ebb7fa15196325b241ff27b0b",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.voip.sendReaction"
       }
     },
     {
@@ -3137,6 +3159,17 @@
       "typescript": {
         "status": "covered",
         "method": "Client.calls.list"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls/{callId}",
+      "operationId": "getCallRecord",
+      "fingerprint": "f1a34d2b0028a96b067c770b5f798c662107b58723305ffa9d67dcda2c695c40",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.calls.retrieve"
       }
     },
     {
@@ -5635,28 +5668,6 @@
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.updateSafeMode"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/voip/calls/{id}/hand",
-      "operationId": "setCallHandRaised",
-      "fingerprint": "65c68e95b86c19c75e9f7c7c8de6b4f58cc1ef537711a7570a48a37e9e7b6ca8",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.voip.setHandRaised"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/voip/calls/{id}/reaction",
-      "operationId": "sendCallReaction",
-      "fingerprint": "4ba89adf4ee046bb37aff1c45dcb0762fb47957ebb7fa15196325b241ff27b0b",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.voip.sendReaction"
       }
     }
   ]
