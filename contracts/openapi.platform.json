@@ -44327,7 +44327,7 @@
           "fromUser": {
             "type": "string",
             "nullable": true,
-            "description": "User part of the From header on calls sent to your PBX, or null to send `whatsapp`."
+            "description": "Optional override for the From header user on calls sent to your PBX. Null uses the incoming caller identity: E.164 phone number when known, a non-phone LID address otherwise, or `whatsapp` when unknown."
           }
         },
         "required": [
@@ -44565,7 +44565,7 @@
             "type": "string",
             "nullable": true,
             "pattern": "^[A-Za-z0-9+._-]{1,64}$",
-            "description": "User part of the From header on calls sent to your PBX. Null sends `whatsapp`, which is also the default for a new trunk."
+            "description": "Optional override for the From header user on calls sent to your PBX. Omit or set null to use the incoming caller identity: E.164 phone number when known, a non-phone LID address otherwise, or `whatsapp` when unknown."
           }
         },
         "required": [
@@ -44733,7 +44733,7 @@
             "type": "string",
             "nullable": true,
             "pattern": "^[A-Za-z0-9+._-]{1,64}$",
-            "description": "User part of the From header on calls sent to your PBX. Null sends `whatsapp`, which is also the default for a new trunk."
+            "description": "Optional override for the From header user on calls sent to your PBX. Omit or set null to use the incoming caller identity: E.164 phone number when known, a non-phone LID address otherwise, or `whatsapp` when unknown."
           }
         },
         "additionalProperties": false,

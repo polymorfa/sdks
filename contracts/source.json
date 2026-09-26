@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "b29481baac495366b532d44d2445c7da94c5292a",
-  "branch": "codex/calls-group-links-20260926",
+  "commit": "827969e8633bef13d96fa9c9ead9b4c8082d4fbf",
+  "branch": "codex/sip-caller-identity-20260926",
   "published": false,
-  "note": "Unreleased Calls group origination and participant re-ring contract. Full snapshots are byte-identical to this API commit. SDK publication, CLI registry pinning and deployment remain separate release gates.",
+  "note": "Unreleased Calls group origination, participant re-ring and automatic SIP caller identity contract. Full snapshots are byte-identical to this API commit. SDK publication, CLI registry pinning and deployment remain separate release gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "4e5aa9b8890b8963d704df22efbbce7c6bd9ac09b9253f5c8215bb3966b2f2cc"
+      "sha256": "694a96f3f02bfc167e7e7b1e5baafa504f909e1683ed2b716a38c2dab6034805"
     }
   }
 }
