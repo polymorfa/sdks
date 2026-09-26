@@ -211,6 +211,11 @@ export interface PlatformCampaignParams {
   readonly projectId: string;
 }
 
+export interface ReschedulePlatformCampaignRequest extends PlatformCampaignParams {
+  /** Epoch milliseconds, or null to start a waiting campaign now. */
+  readonly scheduledAt: number | null;
+}
+
 /**
  * Body accepted by `campaigns.update`.
  *

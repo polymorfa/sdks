@@ -19,6 +19,10 @@ import type {
   ListCampaignRecipientsResponse,
   ListCampaignsResponse,
   RequeueCampaignRequest,
+  RescheduleCampaignRequest,
+  RescheduleCampaignResponse,
+  UpdateCampaignRequest,
+  UpdateCampaignResponse,
 } from "./types.js";
 
 /** Exact project-slug campaign workflow exposed by the Messaging API. */
@@ -61,6 +65,20 @@ export class MessagingCampaignsResource {
     });
   }
 
+  update(
+    projectSlug: string,
+    campaignId: string,
+    body: UpdateCampaignRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<UpdateCampaignResponse>> {
+    return this.transport.request({
+      method: "PATCH",
+      path: campaignPath(projectSlug, campaignId),
+      body,
+      ...withoutAutomaticRetry(options),
+    });
+  }
+
   analytics(
     projectSlug: string,
     campaignId: string,
@@ -82,6 +100,20 @@ export class MessagingCampaignsResource {
     return this.transport.request({
       method: "POST",
       path: `${campaignPath(projectSlug, campaignId)}/launch`,
+      body,
+      ...withIdempotencyKey(options),
+    });
+  }
+
+  reschedule(
+    projectSlug: string,
+    campaignId: string,
+    body: RescheduleCampaignRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<RescheduleCampaignResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(projectSlug, campaignId)}/reschedule`,
       body,
       ...withIdempotencyKey(options),
     });

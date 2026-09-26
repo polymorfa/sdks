@@ -4,6 +4,7 @@ import {
   Client,
   PolymorfaConflictError,
   type CreatePlatformCampaignRequest,
+  type ReschedulePlatformCampaignRequest,
 } from "../src/index.js";
 import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
@@ -156,4 +157,34 @@ it("returns the archive receipt and surfaces an active-campaign conflict", async
     ["POST", "/platform/campaigns/campaign-1/archive"],
     ["POST", "/platform/campaigns/campaign-2/archive"],
   ]);
+});
+
+it("reschedules a waiting campaign with its project and safe retry key", async () => {
+  const server = await startTestServer(() => ({
+    status: 200,
+    body: JSON.stringify({
+      data: { id: "campaign-1", status: "running", operationId: "operation-1" },
+    }),
+  }));
+  servers.push(server);
+  const client = new Client({
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    baseUrl: server.url,
+  });
+  const request: ReschedulePlatformCampaignRequest = {
+    projectId: body.projectId,
+    scheduledAt: null,
+  };
+  const result = await client.campaigns.reschedule("campaign-1", request, {
+    idempotencyKey: "reschedule-campaign-1",
+  });
+  expect(server.requests[0]).toMatchObject({
+    method: "POST",
+    path: "/platform/campaigns/campaign-1/reschedule",
+    body: JSON.stringify(request),
+  });
+  expect(server.requests[0]?.headers["idempotency-key"]).toBe(
+    "reschedule-campaign-1",
+  );
+  expect(result.data.data).toMatchObject({ operationId: "operation-1" });
 });

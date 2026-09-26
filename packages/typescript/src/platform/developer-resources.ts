@@ -41,6 +41,7 @@ import type {
   OrganizationWebhookMutationReceipt,
   OrganizationWebhookSecretRotationReceipt,
   OrganizationWebhookTestReceipt,
+  OrganizationWebhookTestInput,
   ProjectEvent,
   ProjectEventReplayReceipt,
   ProjectWebhook,
@@ -112,6 +113,9 @@ type WebhookRotationFor<O extends ClientOwner> = O extends "project"
 type WebhookTestFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookTestReceipt
   : OrganizationWebhookTestReceipt;
+type WebhookTestInputFor<O extends ClientOwner> = O extends "project"
+  ? TestWebhookInput
+  : OrganizationWebhookTestInput;
 type DeliveryFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookDelivery
   : OrganizationWebhookDelivery;
@@ -422,7 +426,7 @@ export class WebhooksResource<O extends ClientOwner> extends ResourceBase {
   }
   test(
     webhookId: string,
-    input: TestWebhookInput = {},
+    input: WebhookTestInputFor<O> = {} as WebhookTestInputFor<O>,
     options: RequestOptions = {},
   ): Promise<ApiResponse<WebhookTestFor<O>>> {
     return this.mutate(

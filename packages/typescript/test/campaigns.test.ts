@@ -16,6 +16,8 @@ import {
   type GetCampaignResponse,
   type ListCampaignRecipientsResponse,
   type ListCampaignsResponse,
+  type RescheduleCampaignResponse,
+  type UpdateCampaignResponse,
 } from "../src/index.js";
 import {
   startTestServer,
@@ -117,6 +119,7 @@ async function campaignsServer(): Promise<{
                   request.path.endsWith("/launch") ||
                   request.path.endsWith("/pause") ||
                   request.path.endsWith("/resume") ||
+                  request.path.endsWith("/reschedule") ||
                   request.path.endsWith("/stop")
                     ? {
                         ...campaign,
@@ -202,6 +205,45 @@ describe("MessagingClient campaigns", () => {
     });
     expect(requests[0]?.headers["idempotency-key"]).toBe(
       "campaign-create-august",
+    );
+  });
+
+  it("updates a draft and reschedules a waiting campaign with the exact request bodies", async () => {
+    const { client, requests } = await campaignsServer();
+    const updated = await client.campaigns.update("launch/eu", campaign.id, {
+      name: "Autumn launch",
+      scheduledAt: null,
+    });
+    const rescheduled = await client.campaigns.reschedule(
+      "launch/eu",
+      campaign.id,
+      { scheduledAt: null },
+      { idempotencyKey: "campaign-reschedule-autumn" },
+    );
+
+    expectTypeOf(updated).toEqualTypeOf<ApiResponse<UpdateCampaignResponse>>();
+    expectTypeOf(rescheduled).toEqualTypeOf<
+      ApiResponse<RescheduleCampaignResponse>
+    >();
+    expect(
+      requests.map(({ method, path, body }) => ({ method, path, body })),
+    ).toEqual([
+      {
+        method: "PATCH",
+        path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}`,
+        body: '{"name":"Autumn launch","scheduledAt":null}',
+      },
+      {
+        method: "POST",
+        path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}/reschedule`,
+        body: '{"scheduledAt":null}',
+      },
+    ]);
+    expect(requests[1]?.headers["idempotency-key"]).toBe(
+      "campaign-reschedule-autumn",
+    );
+    expect(rescheduled.data.data.operationId).toBe(
+      "018f0000-0000-7000-8000-000000000003",
     );
   });
 

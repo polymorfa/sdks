@@ -224,6 +224,20 @@ export interface LaunchCampaignRequest {
   readonly scheduledAt?: number;
 }
 
+/** At least one draft field must be supplied; the API rejects an empty object. */
+export interface UpdateCampaignRequest {
+  readonly name?: string;
+  readonly recipientListId?: string | null;
+  readonly senderConfig?: Readonly<Record<string, unknown>>;
+  /** Epoch milliseconds, or null to start at launch. */
+  readonly scheduledAt?: number | null;
+}
+
+export interface RescheduleCampaignRequest {
+  /** Epoch milliseconds, or null to start a waiting campaign now. */
+  readonly scheduledAt: number | null;
+}
+
 export interface RequeueCampaignRequest {
   readonly includeSkippedError?: boolean;
 }
@@ -240,8 +254,10 @@ export interface CampaignRequeueResult {
 export type ListCampaignsResponse = SuccessEnvelope<readonly Campaign[]>;
 export type GetCampaignResponse = SuccessEnvelope<Campaign>;
 export type CreateCampaignResponse = SuccessEnvelope<Campaign>;
+export type UpdateCampaignResponse = SuccessEnvelope<Campaign>;
 export type CampaignAnalyticsResponse = SuccessEnvelope<CampaignAnalytics>;
 export type CampaignOperationResponse = SuccessEnvelope<CampaignOperation>;
+export type RescheduleCampaignResponse = SuccessEnvelope<CampaignOperation>;
 export type CampaignRequeueResponse = SuccessEnvelope<CampaignRequeueResult>;
 export type CampaignStopResponse = SuccessEnvelope<CampaignStopOperation>;
 export type AddCampaignRecipientsResponse =
