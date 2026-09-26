@@ -378,6 +378,15 @@ requires `sessions:read` and Graph access. The response retains opaque cursors;
 it does not expose upstream pagination URLs or grant merchant ownership. Use
 an organization API key or project token, with the latter confined to its project.
 
+`messaging.flowEncryption.retrieve(phoneNumberId, { version: "v26.0" })` reads
+the registered public key and Meta signature status with `sessions:read`.
+`messaging.flowEncryption.register(phoneNumberId,
+{ businessPublicKey: publicKeyPem }, { version: "v26.0" })` replaces the key
+with `sessions:manage` on an eligible Official API Number. It makes one
+upstream attempt. Retain the matching private key on your endpoint and read the
+registered key after an uncertain outcome. Registration affects every dynamic
+Flow on the phone number; it does not enable dynamic Flow publishing.
+
 `messaging.cloudTemplates.update(number, name, { components }, { language })`
 submits an edit to one template language. A `202` response contains
 `{ accepted: true, name, language }`; it does not establish approval to send.
