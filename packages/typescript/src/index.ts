@@ -24,6 +24,11 @@ export {
 } from "./client.js";
 export type * from "./platform/developer-types.js";
 export {
+  FlowsResource,
+  type FlowDraft,
+  type FlowSummary,
+} from "./platform/flows.js";
+export {
   EventStream,
   eventStreamSource,
   type EventStreamAcknowledgement,

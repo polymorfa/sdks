@@ -41,6 +41,14 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
+The two public Flow draft reads in the pinned Platform snapshot are covered by
+`Client.project(projectId).flows.list` and `.retrieve`. The prior ledger marked
+them dashboard-only, but API source commit `9b64c70b622593aeda7364b7603ba6790144594e`
+declares both public, project-bound, and `sessions:read`. The merged API runtime
+at `2fb3eec8624c5785f72f81f163a27c1ce4e19767` still registers them with
+server-key authentication. That later API revision adds unrelated campaign
+reschedule operations; this Flow change retains the exact pinned snapshot.
+
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` API `dev` commit
 `9b64c70b622593aeda7364b7603ba6790144594e`. Team webhook tests now use
