@@ -99,6 +99,9 @@ export const ENGLISH_MESSAGES = {
   "calls.connected": "Connected",
   "calls.ended": "Call ended",
   "calls.failed": "Call failed",
+  "calls.mediaControlFailed":
+    "Media control was not confirmed. Check the call before trying again.",
+  "calls.remoteMuted": "Their microphone is muted",
   "calls.controlFailed": "Could not end the call. Try again.",
   "calls.answerFailed": "Could not connect the call. Try again.",
   "calls.previousFailed": "The previous call could not be connected.",

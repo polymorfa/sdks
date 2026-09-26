@@ -59,6 +59,9 @@ function peerConnection(overrides: Partial<Record<string, unknown>> = {}) {
     label: string;
     init: unknown;
     onmessage: ((event: { data: unknown }) => void) | null;
+    onopen: (() => void) | null;
+    readyState: string;
+    send: ReturnType<typeof vi.fn>;
   }[] = [];
   const peer = {
     connectionState: "new",
@@ -93,7 +96,32 @@ function peerConnection(overrides: Partial<Record<string, unknown>> = {}) {
     ),
     getTransceivers: () => [...transceivers],
     createDataChannel: vi.fn((label: string, init: unknown) => {
-      const channel = { label, init, onmessage: null };
+      const channel: (typeof channels)[number] = {
+        label,
+        init,
+        onmessage: null,
+        onopen: null,
+        readyState: "open",
+        send: vi.fn((data: string) => {
+          const frame = JSON.parse(data) as {
+            type: string;
+            requestId: string;
+            audioMuted?: boolean;
+            videoEnabled?: boolean;
+          };
+          if (frame.type === "media_state")
+            queueMicrotask(() =>
+              channel.onmessage?.({
+                data: JSON.stringify({
+                  type: "media_state",
+                  requestId: frame.requestId,
+                  audioMuted: frame.audioMuted ?? false,
+                  videoEnabled: frame.videoEnabled ?? true,
+                }),
+              }),
+            );
+        }),
+      };
       channels.push(channel);
       return channel;
     }),
@@ -840,5 +868,68 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
     await second.session.close({ leave: false });
     expect(second.signaling["leave"]).not.toHaveBeenCalled();
     expect(second.signaling["end"]).not.toHaveBeenCalled();
+  });
+});
+
+describe("connection media control", () => {
+  it("sends a microphone state change and preserves remote reception", async () => {
+    const peer = peerConnection();
+    const muted = vi.fn();
+    const local = new FakeStream([new FakeTrack("audio")]);
+    const session = await factoryFor({
+      peer,
+      signaling: signaling(),
+      stream: local,
+    }).open(
+      "call-1",
+      false,
+      { ...callbacks, onRemoteMute: muted },
+      new AbortController().signal,
+    );
+    session.setMuted({ audio: true });
+    await Promise.resolve();
+    expect(
+      JSON.parse(peer.channels[0]!.send.mock.calls[0]![0] as string),
+    ).toMatchObject({
+      type: "media_state",
+      audioMuted: true,
+      videoEnabled: false,
+    });
+    control(peer, { type: "remote_media", audioMuted: true });
+    expect(muted).toHaveBeenCalledWith(true);
+    control(peer, { type: "remote_media", audioMuted: null });
+    expect(muted).toHaveBeenLastCalledWith(null);
+    expect(local.getVideoTracks()).toHaveLength(0);
+    await session.close();
+  });
+  it("reports a refused publisher and switches off local capture", async () => {
+    const peer = peerConnection();
+    const failure = vi.fn();
+    const video = new FakeTrack("video");
+    const session = await factoryFor({
+      peer,
+      signaling: signaling(),
+      stream: new FakeStream([new FakeTrack("audio"), video]),
+    }).open(
+      "call-1",
+      true,
+      { ...callbacks, onMediaControlError: failure },
+      new AbortController().signal,
+    );
+    peer.channels[0]!.send.mockImplementation((data: string) => {
+      const request = JSON.parse(data) as { requestId: string };
+      control(peer, {
+        type: "media_error",
+        requestId: request.requestId,
+        code: "video_publisher_busy",
+      });
+    });
+    session.setMuted({ video: false });
+    for (let i = 0; i < 8; i++) await Promise.resolve();
+    expect(video.enabled).toBe(false);
+    expect(failure).toHaveBeenCalledWith(
+      expect.objectContaining({ code: "video_publisher_busy" }),
+    );
+    await session.close();
   });
 });

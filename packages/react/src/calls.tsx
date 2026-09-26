@@ -1041,9 +1041,11 @@ export function CallStage({
       live={live}
       ringingLine={ringingLine}
       errorLine={
-        snapshot.error?.code === "call_control_failed"
-          ? t(locale, "calls.controlFailed")
-          : null
+        snapshot.error?.code === "media_control_failed"
+          ? t(locale, "calls.mediaControlFailed")
+          : snapshot.error?.code === "call_control_failed"
+            ? t(locale, "calls.controlFailed")
+            : null
       }
       flashPeer={flashPeer}
       seconds={seconds}
@@ -1057,6 +1059,9 @@ export function CallStage({
       dir={root.dir}
       data-pmfa="call"
     >
+      {snapshot.remoteAudioMuted === true && (
+        <p role="status">{t(locale, "calls.remoteMuted")}</p>
+      )}
       <div
         className={`pmfa-calls-stage${className === undefined ? "" : ` ${className}`}`}
       >

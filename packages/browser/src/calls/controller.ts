@@ -258,6 +258,8 @@ export interface CallsSnapshot extends ControllerSnapshot {
   readonly capabilities: CallCapabilities;
   readonly video: boolean;
   readonly audioMuted: boolean;
+  /** Remote microphone observation for a direct call; absent when unknown or in a group. */
+  readonly remoteAudioMuted?: boolean;
   readonly videoMuted: boolean;
   /** Set once media connected; drives the call duration display. */
   readonly connectedAt?: number;
@@ -1172,6 +1174,48 @@ export class CallsController extends ObservableController<CallsSnapshot> {
                 status: current.status,
               });
           },
+          onRemoteMute: (muted) => {
+            if (media !== undefined && this.#media !== media) return;
+            const current = this.getSnapshot();
+            if (
+              current.callId !== callId ||
+              current.status === "ended" ||
+              current.status === "error"
+            )
+              return;
+            const fields = callFields(current);
+            const { remoteAudioMuted: previousMute, ...rest } = fields;
+            void previousMute;
+            this.transition({
+              ...rest,
+              status: current.status,
+              ...(muted === null ? {} : { remoteAudioMuted: muted }),
+            });
+          },
+          onMediaControlError: (cause) => {
+            if (media !== undefined && this.#media !== media) return;
+            const current = this.getSnapshot();
+            if (
+              current.callId !== callId ||
+              current.status === "ended" ||
+              current.status === "error"
+            )
+              return;
+            this.transition({
+              ...callFields(current),
+              status: current.status,
+              videoMuted: true,
+              error: {
+                code: "media_control_failed",
+                message:
+                  cause instanceof Error
+                    ? cause.message
+                    : "Media control was not confirmed.",
+                recoverable: true,
+                callId,
+              },
+            });
+          },
           onRemoteVideos: (videos) => {
             const current = this.getSnapshot();
             if (current.callId !== callId || this.#media !== media) return;
@@ -1770,6 +1814,9 @@ function callFields(
     capabilities: snapshot.capabilities,
     video: snapshot.video,
     audioMuted: snapshot.audioMuted,
+    ...(snapshot.remoteAudioMuted === undefined
+      ? {}
+      : { remoteAudioMuted: snapshot.remoteAudioMuted }),
     videoMuted: snapshot.videoMuted,
     ...(snapshot.connectedAt === undefined
       ? {}

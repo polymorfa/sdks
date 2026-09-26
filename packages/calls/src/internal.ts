@@ -90,3 +90,10 @@ export {
   type CallReportClient,
   type CallReporterOptions,
 } from "./diagnostics.js";
+
+export {
+  MediaStateCommands,
+  type MediaState,
+  type MediaStateUpdate,
+  type MediaStateReply,
+} from "./media-state.js";

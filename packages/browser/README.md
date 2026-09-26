@@ -280,3 +280,14 @@ await templates.refreshPreview();
 The same-origin transport sends application actions with browser cookies. It
 does not accept a server credential, project slug, or Cloud API session. The
 application route resolves those values after authorizing the request.
+
+Microphone and camera controls synchronize the connection's media preferences
+with the call. `enableVideo()` confirms the publishing request after the local
+WebRTC negotiation; peer acceptance remains independent. A local camera preview
+is not confirmation that the phone receives video. A refused or unconfirmed
+request surfaces `media_control_failed` and switches off local video capture.
+Incoming phone video never turns on the local camera.
+
+`controller.getSnapshot().remoteAudioMuted` reports a known remote microphone
+state for a direct call and is absent for unknown or group state. React and
+Elements display this state without changing local mute controls.

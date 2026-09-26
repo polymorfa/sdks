@@ -1330,3 +1330,24 @@ describe("unified calls UI", () => {
     f.controller.dispose();
   });
 });
+
+it("shows direct remote mute without changing local capture", async () => {
+  const f = fixture();
+  await act(async () => {
+    await f.controller.place("+15550100");
+  });
+  const host = mount(
+    <PolymorfaProvider>
+      <CallStage controller={f.controller} />
+    </PolymorfaProvider>,
+  );
+  const callbacks = vi.mocked(f.media.open).mock.calls[0]![2];
+  act(() => callbacks.onRemoteMute?.(true));
+  expect(host.textContent).toContain("Their microphone is muted");
+  expect(f.session.setMuted).not.toHaveBeenCalled();
+  act(() => callbacks.onRemoteMute?.(null));
+  expect(host.textContent).not.toContain("Their microphone is muted");
+  await act(async () => {
+    await f.controller.dispose();
+  });
+});

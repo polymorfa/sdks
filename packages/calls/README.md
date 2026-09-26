@@ -170,3 +170,26 @@ The package entry point exports `CallsClient`, `Call`, `AudioTrack`,
 `CallClaimedError`, `CallsDisabledError`, `DEFAULT_SAMPLE_RATE`, and their option, event, token and
 media types. Everything else is internal to the Polymorfa packages and has no
 stability guarantee.
+
+## Connection media state
+
+Mute or unmute only the media connection held by this call:
+
+```ts
+await call.setMediaState({ audioMuted: true });
+await call.setMediaState({ videoEnabled: true });
+// Write H.264 frames only after the start is acknowledged.
+await call.setMediaState({ videoEnabled: false });
+```
+
+These methods require the matching media-control server revision. The response
+confirms local media preferences; it does not prove the peer accepted a video
+upgrade. Another active video publisher causes `video_publisher_busy`. Stopping
+your video keeps inbound video active and cannot stop another connection's
+publisher. An unconfirmed request times out after five seconds and is not
+replayed automatically.
+
+`call.remoteAudioMuted` and the `remoteMute` event report the remote microphone
+in a direct call. `null` means unknown, including group calls. They do not
+change your microphone or camera. A reconnect restores acknowledged local
+preferences on the new connection.
