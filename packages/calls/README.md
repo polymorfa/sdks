@@ -170,3 +170,21 @@ The package entry point exports `CallsClient`, `Call`, `AudioTrack`,
 `CallClaimedError`, `CallsDisabledError`, `DEFAULT_SAMPLE_RATE`, and their option, event, token and
 media types. Everything else is internal to the Polymorfa packages and has no
 stability guarantee.
+
+## Group controls in this source revision
+
+This revision adds ad-hoc group placement and participant re-ring. Release is
+pending the matching API and SDK publication recorded in `contracts/source.json`.
+
+```ts
+const call = await client.place(["+15550100", "+15550101"]);
+await call.ringParticipant("+15550101");
+```
+
+Pass 2 to 31 distinct phone numbers or public user IDs. The server checks each
+recipient's destination policy and the Number's calling restrictions before
+placing the group call. Cloud API Numbers refuse group origination and re-ring.
+Re-ring applies to a non-connected participant already in the call roster;
+a successful request does not change the roster until WhatsApp reports it.
+The browser controller exposes the same `place` array input and
+`ringParticipant` method for custom React, Elements and Next.js interfaces.

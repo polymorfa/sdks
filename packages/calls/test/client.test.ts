@@ -136,6 +136,31 @@ describe("CallsClient", () => {
     expect(FakeWebSocket.instances).toHaveLength(1);
   });
 
+  it("places an ad-hoc group through one request and does not invent roster state", async () => {
+    const h = clientWith();
+    await connected(h);
+    const call = await h.client.place(["+15550100", "+15550101"], {
+      video: true,
+    });
+    expect(h.api.place).toHaveBeenCalledTimes(1);
+    expect(h.api.place).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "+15550100",
+        participants: ["+15550100", "+15550101"],
+        video: true,
+      }),
+    );
+    expect(call.participants).toEqual([]);
+    await call.ringParticipant("+15550100");
+    expect(h.api.ringParticipant).toHaveBeenCalledWith(call.id, "+15550100");
+    expect(call.participants).toEqual([]);
+    await call.end();
+    await expect(call.ringParticipant("+15550100")).rejects.toThrow(
+      "ended call",
+    );
+    expect(h.api.ringParticipant).toHaveBeenCalledTimes(1);
+  });
+
   it("places a call and bridges media when the remote accepts", async () => {
     const h = clientWith();
     const life = await connected(h);

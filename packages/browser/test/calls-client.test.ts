@@ -100,6 +100,24 @@ function event(
 }
 
 describe("browser widget and shared calls client", () => {
+  it("places a group through the shared controller and exposes re-ring", async () => {
+    const f = fixture();
+    await f.connect();
+    await f.calls.controller.place(["+15550100", "+15550101"]);
+    const placed = f.fetch.mock.calls.find(([url]) =>
+      String(url).endsWith("/messaging/voip/calls"),
+    )!;
+    expect(JSON.parse(String(placed[1]?.body))).toEqual({
+      participants: ["+15550100", "+15550101"],
+      video: false,
+    });
+    await f.calls.controller.ringParticipant("+15550101");
+    const ring = f.fetch.mock.calls.find(([url]) =>
+      String(url).endsWith("/participants/ring"),
+    )!;
+    expect(JSON.parse(String(ring[1]?.body))).toEqual({ to: "+15550101" });
+  });
+
   it("adopts a call that ended before placement returned without opening media", async () => {
     const f = fixture();
     const socket = await f.connect();
@@ -878,6 +896,36 @@ describe("browser widget and shared calls client", () => {
 });
 
 describe("BrowserCallsApi", () => {
+  it("serializes group recipients without a primary to or client-controlled identity", async () => {
+    const fetch = vi.fn(async () =>
+      Response.json({ data: { callId: "group-1" } }),
+    );
+    const api = new BrowserCallsApi(
+      new BrowserTransport({
+        getClientToken: async () => "pmfa_ct_test",
+        baseUrl: "https://api.example.test",
+        fetch,
+      }),
+    );
+    await api.place({
+      session: "ignored",
+      participant: "ignored",
+      to: "+15550100",
+      participants: ["+15550100", "+15550101"],
+      video: false,
+      idempotencyKey: "group-key",
+    });
+    const request = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(JSON.parse(request[1].body as string)).toEqual({
+      participants: ["+15550100", "+15550101"],
+      video: false,
+    });
+    await api.ringParticipant("group/1", "+15550100");
+    const ring = fetch.mock.calls[1] as unknown as [string, RequestInit];
+    expect(String(ring[0])).toContain("/group%2F1/participants/ring");
+    expect(JSON.parse(ring[1].body as string)).toEqual({ to: "+15550100" });
+  });
+
   it.each(["phoneNumber", "bsuid", "username"])(
     "validates optional participant %s",
     async (field) => {

@@ -125,7 +125,7 @@ export function createBrowserCalls(
         throw new Error("Finish the active call before placing another.");
       placing = true;
       try {
-        const call = await client.place(input.to, {
+        const call = await client.place(input.participants ?? input.to, {
           video: input.video,
           idempotencyKey: input.idempotencyKey,
           ...(input.exclusive === undefined

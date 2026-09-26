@@ -1587,7 +1587,9 @@ export type VoipParticipantReference = string;
 /** Body for `POST /messaging/voip/calls`. */
 export interface VoipPlaceCallRequest {
   /** Phone number in E.164 form or a WhatsApp user ID. */
-  readonly to: string;
+  readonly to?: string;
+  /** Ad-hoc group of 2 to 31 distinct people. Mutually exclusive with to. */
+  readonly participants?: readonly string[];
   /** Session that places the call. Required with a server credential. */
   readonly session?: string;
   readonly video?: boolean;

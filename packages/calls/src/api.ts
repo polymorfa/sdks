@@ -47,6 +47,7 @@ export interface PlaceCallRequest {
   /** Source session. Sent for server credentials; client tokens are bound to one. */
   readonly session: string;
   readonly to: string;
+  readonly participants?: readonly string[];
   readonly video: boolean;
   /** Claim the call for the placing participant. Default `false`. */
   readonly exclusive?: boolean;
@@ -103,6 +104,11 @@ export interface CallsApi {
   report?(
     callId: string,
     report: CallReport,
+    signal?: AbortSignal,
+  ): Promise<void>;
+  ringParticipant?(
+    callId: string,
+    to: string,
     signal?: AbortSignal,
   ): Promise<void>;
   addParticipant(
@@ -221,7 +227,9 @@ export class HttpCallsApi implements CallsApi {
       "/messaging/voip/calls",
       async (token) => ({
         ...(isClientToken(token) ? {} : { session: input.session }),
-        to: input.to,
+        ...(input.participants === undefined
+          ? { to: input.to }
+          : { participants: input.participants }),
         video: input.video,
         ...(input.exclusive === undefined
           ? {}
@@ -317,6 +325,19 @@ export class HttpCallsApi implements CallsApi {
     await this.#request("DELETE", callPath(callId), undefined, signal, {
       "idempotency-key": `voip-end:${callId}`,
     });
+  }
+
+  async ringParticipant(
+    callId: string,
+    to: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#request(
+      "POST",
+      callPath(callId, "/participants/ring"),
+      async () => ({ to }),
+      signal,
+    );
   }
 
   async addParticipant(

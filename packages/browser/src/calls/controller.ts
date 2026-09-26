@@ -194,6 +194,7 @@ export type CallLifecycleEvent =
     };
 export interface PlaceCallInput {
   readonly to: string;
+  readonly participants?: readonly string[];
   readonly video: boolean;
   readonly idempotencyKey: string;
   /** Claim the placed call. Default `false`. */
@@ -448,7 +449,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   }
 
   async place(
-    to: string,
+    to: string | readonly string[],
     options: {
       readonly video?: boolean;
       /** Claim the placed call. Default `false`. */
@@ -456,6 +457,14 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     } = {},
   ): Promise<void> {
     this.assertActive();
+    if (
+      typeof to !== "string" &&
+      (to.length < 2 ||
+        to.length > 31 ||
+        new Set(to).size !== to.length ||
+        to.some((value) => !value.trim()))
+    )
+      throw new Error("A group call needs 2 to 31 distinct participants.");
     if (this.#placing)
       throw new Error("A call placement is already in progress.");
     this.#assertNotAnswering("place a call");
@@ -474,7 +483,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     try {
       const { callId } = await this.#backend.place(
         {
-          to,
+          to: typeof to === "string" ? to : to[0]!,
+          ...(typeof to === "string" ? {} : { participants: to }),
           video,
           idempotencyKey: this.#createKey(),
           ...(options.exclusive === undefined
@@ -503,7 +513,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         ...this.#baseFields(),
         status: answered ? "accepted" : "ringing",
         callId,
-        peer: to,
+        peer: typeof to === "string" ? to : to[0]!,
         direction: "outgoing",
         capabilities,
         video: offered,
@@ -528,6 +538,13 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     } finally {
       this.#placing = false;
     }
+  }
+
+  /** Ring a non-connected participant in the displayed call's upstream roster. */
+  async ringParticipant(to: string): Promise<void> {
+    this.assertActive();
+    if (!this.call) throw new Error("No active call is selected.");
+    await this.call.ringParticipant(to);
   }
 
   /**

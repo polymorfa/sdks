@@ -250,13 +250,26 @@ export class CallsClient extends Emitter<ClientEvents> {
    * Place an outbound call. Resolves once the platform has accepted the
    * request; listen for `connected` (or `ended`) on the returned call.
    */
-  async place(to: string, options: PlaceOptions = {}): Promise<Call> {
+  async place(
+    to: string | readonly string[],
+    options: PlaceOptions = {},
+  ): Promise<Call> {
+    if (
+      typeof to !== "string" &&
+      (to.length < 2 ||
+        to.length > 31 ||
+        new Set(to).size !== to.length ||
+        to.some((value) => !value.trim()))
+    )
+      throw new Error("A group call needs 2 to 31 distinct participants.");
+    const primary = typeof to === "string" ? to : to[0]!;
     const generation = this.#connectGeneration;
     options.signal?.throwIfAborted();
     const video = options.video ?? false;
     const input = {
       session: this.session,
-      to,
+      to: primary,
+      ...(typeof to === "string" ? {} : { participants: [...to] }),
       video,
       ...(options.exclusive === undefined
         ? {}
@@ -273,7 +286,7 @@ export class CallsClient extends Emitter<ClientEvents> {
     const call = this.#newCall(
       callId,
       "outbound",
-      to,
+      primary,
       video,
       undefined,
       options.exclusive === true,

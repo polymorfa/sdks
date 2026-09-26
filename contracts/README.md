@@ -42,14 +42,13 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` API source commit
-`6839976e7ad54e044c4d789fd296edc44772a907` on API `dev`. This revision retires the three unproduced BanSafe event names
-and their synthetic test fixtures. The four live BanSafe events remain typed.
-The two changed Testing operation fingerprints have been reconciled against
-the fixture catalog. Four webhook create/update fingerprints now match the
-Platform source's HTTP field pattern, which was already present on API `dev`.
-Operation mappings are unchanged. `source.json` records the source paths and
-SHA-256 hashes. SDK package publication and deployment remain separate.
+files at API commit `b29481baac495366b532d44d2445c7da94c5292a` on
+`codex/calls-group-links-20260926`. This unreleased revision adds group placement
+and participant re-ring. `source.json` records source paths and SHA-256 hashes.
+The refresh also carries an audio-codec description and corrects an escaped
+webhook-header control-character pattern in the previous snapshot; no header
+fields or SDK serialization changed. SDK publication, deployment and the CLI's
+exact registry pin remain separate release gates.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no

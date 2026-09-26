@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "6839976e7ad54e044c4d789fd296edc44772a907",
-  "branch": "dev",
-  "published": true,
-  "note": "Merged API source commit retiring three unproduced BanSafe webhook names and test fixtures; Messaging and Platform snapshots are byte-identical to the authoritative OpenAPI files. SDK publication and deployment are separate.",
+  "commit": "b29481baac495366b532d44d2445c7da94c5292a",
+  "branch": "codex/calls-group-links-20260926",
+  "published": false,
+  "note": "Unreleased Calls group origination and participant re-ring contract. Full snapshots are byte-identical to this API commit. SDK publication, CLI registry pinning and deployment remain separate release gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "79543bf719017598c3e2497004d761056e919b3200abdaae1560893542816cc7"
+      "sha256": "19f0de5526a3053e97732fa6d19a0086fc11e53be88bbbab50d39e057f6f7eb0"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "7eca4148c2f1fbda47c26a67c42e2da6b74e47e5edf38d749e30a5fc3f1d7fe8"
+      "sha256": "4e5aa9b8890b8963d704df22efbbce7c6bd9ac09b9253f5c8215bb3966b2f2cc"
     }
   }
 }
