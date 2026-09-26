@@ -70,6 +70,15 @@ export {
   type BridgeSignal,
 } from "./bridge.js";
 export { ChatsResource } from "./messaging/chats.js";
+export type {
+  CustomerServiceWindow,
+  MetaPricingParams,
+  MetaPricingGroup,
+  MetaPricingSummary,
+  CloudCredentialFailureCode,
+  CloudCredentialHealth,
+  CloudReauthorization,
+} from "./messaging/cloud-types.js";
 export type { DeleteMessageOptions } from "./messaging/chats.js";
 export type {
   HistoryChat,
@@ -243,6 +252,15 @@ export {
 } from "./messaging/quicklinks.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
+export {
+  CloudTemplatesResource,
+  type CloudTemplate,
+  type CloudTemplateStatus,
+  type CreateCloudTemplateRequest,
+  type RetrieveCloudTemplateParams,
+  type CloudTemplateResponse,
+  type ListCloudTemplatesResponse,
+} from "./messaging/cloud-templates.js";
 export { UsersResource } from "./messaging/users.js";
 export type {
   AddressMessageContent,
@@ -993,6 +1011,7 @@ export {
   type LinkedDeviceMessageType,
   type LinkedHistorySyncPayload,
   type MessageAckPayload,
+  type MetaPricingReport,
   type MessageDeletePayload,
   type MessageEchoPayload,
   type MessagePayload,

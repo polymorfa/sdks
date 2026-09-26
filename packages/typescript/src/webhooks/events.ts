@@ -205,6 +205,14 @@ export interface MessageSentPayload {
   readonly timestamp: number;
 }
 
+/** Meta classification copied from a status notification; contains no price. */
+export interface MetaPricingReport {
+  readonly billable?: boolean;
+  readonly pricing_model?: string;
+  readonly category?: string;
+  readonly type?: string;
+}
+
 export interface MessageAckPayload {
   readonly messages: readonly {
     readonly id: string;
@@ -217,6 +225,7 @@ export interface MessageAckPayload {
   readonly sender?: IdentityReference;
   readonly type: string;
   readonly timestamp: number;
+  readonly pricing?: MetaPricingReport;
 }
 
 export interface MessageDeletePayload {

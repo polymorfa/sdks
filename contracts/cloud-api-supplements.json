@@ -1,0 +1,25 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "note": "Pending API dependencies for new SDK consumers. Full coverage snapshots remain at contracts/source.json until these branches merge into one verified API revision. OA11 also defines MessageAckPayload.pricing in src/lib/webhook-schemas.ts. No SDK package or availability claim.",
+  "sources": [
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/344",
+      "commit": "8fb8c12c1ea61032f46cb7465958a79f4a4e42bf",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "fd226ba3a09271f19ba27249e5e960a9530b32d131702c8d2f2dd5c7110747c6",
+      "operationIds": ["getCustomerServiceWindow", "getMetaPricingSummary"],
+      "merged": false
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/345",
+      "commit": "2cbb0226ae90c853ccdfaa29711de7b908fea3ad",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "09eb10379e449e8e0acc76c8899e4a454d4c02c77595ae3cf8085f3055488185",
+      "operationIds": [
+        "getCloudCredentialHealth",
+        "reauthorizeCloudCredentials"
+      ],
+      "merged": false
+    }
+  ]
+}

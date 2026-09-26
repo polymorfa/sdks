@@ -15442,6 +15442,174 @@
           "data"
         ]
       },
+      "WaTemplate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "session": {
+            "type": "string"
+          },
+          "wabaId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "UTILITY",
+              "MARKETING",
+              "AUTHENTICATION"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "PAUSED",
+              "DISABLED",
+              "DELETED",
+              "ARCHIVED",
+              "IN_APPEAL",
+              "LIMIT_EXCEEDED",
+              "PENDING_DELETION"
+            ]
+          },
+          "components": {
+            "type": "array",
+            "items": {}
+          },
+          "metaTemplateId": {
+            "type": "string"
+          },
+          "rejectionReason": {
+            "type": "string"
+          },
+          "qualityScore": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "session",
+          "wabaId",
+          "name",
+          "language",
+          "category",
+          "status",
+          "components",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ListTemplatesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaTemplate"
+            }
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "GetTemplateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/WaTemplate"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "CreateTemplateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/WaTemplate"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "CreateTemplateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9_]+$"
+          },
+          "language": {
+            "type": "string",
+            "minLength": 2
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "UTILITY",
+              "MARKETING",
+              "AUTHENTICATION"
+            ]
+          },
+          "components": {
+            "type": "array",
+            "items": {},
+            "minItems": 1
+          }
+        },
+        "required": [
+          "name",
+          "language",
+          "category",
+          "components"
+        ]
+      },
       "MessageTemplate": {
         "type": "object",
         "properties": {
@@ -43695,6 +43863,778 @@
           "Linked Device API"
         ],
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `media:manage`"
+      }
+    },
+    "/messaging/{session}/templates": {
+      "get": {
+        "operationId": "listTemplates",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "List Meta templates for a Number",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `messages:write`\n\nReads the complete template catalog of the Number's WhatsApp Business Account from Meta, stores it, and returns it. Only a Number created on an official connection is supported; a Linked Devices Number, including one that later added an official connection, receives 400. If Meta does not return a complete catalog, the request fails with 502 and the stored templates are unchanged.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "messages:write",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Template list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListTemplatesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Meta did not return a complete template catalog; the stored templates are unchanged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Number's WhatsApp Business Account is not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge>"
+        },
+        "x-protocols": [
+          "Meta Cloud API"
+        ]
+      },
+      "post": {
+        "operationId": "createTemplate",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Submit a Meta template for approval",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `messages:write`\n\nSubmits the template to Meta for the Number's WhatsApp Business Account and stores Meta's receipt. The returned status is the one in Meta's response, or `PENDING` when Meta returns none. Later approval, rejection and quality changes arrive as `template.status` webhook events and appear in the next list. Only a Number created on an official connection is supported; a Linked Devices Number, including one that later added an official connection, receives 400.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "messages:write",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTemplateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Template submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTemplateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Meta did not complete the request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Number's WhatsApp Business Account is not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge>"
+        },
+        "x-protocols": [
+          "Meta Cloud API"
+        ]
+      }
+    },
+    "/messaging/{session}/templates/{name}": {
+      "get": {
+        "operationId": "getTemplate",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Get a Meta template by name",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `messages:write`\n\nRefreshes the Number's template catalog from Meta and returns the template with this name and language. `language` defaults to `en_US`. Fails with 502 if Meta does not return a complete catalog. Only a Number created on an official connection is supported; a Linked Devices Number, including one that later added an official connection, receives 400.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "messages:write",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "name",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "language",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Template detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTemplateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Meta did not return a complete template catalog; the stored templates are unchanged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Number's WhatsApp Business Account is not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge>"
+        },
+        "x-protocols": [
+          "Meta Cloud API"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteTemplate",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Delete a Meta template",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `messages:write`\n\nDeletes every language of the named template in Meta, then removes the stored copies. If Meta rejects the deletion or its result is unknown, the stored templates are kept. Only a Number created on an official connection is supported; a Linked Devices Number, including one that later added an official connection, receives 400.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "messages:write",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "name",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Template deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Meta did not complete the request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge>"
+        },
+        "x-protocols": [
+          "Meta Cloud API"
+        ]
       }
     },
     "/messaging/projects/{projectSlug}/templates": {

@@ -28,6 +28,7 @@ import { QuickRepliesResource } from "./quick-replies.js";
 import { QuickLinksResource } from "./quicklinks.js";
 import { SessionsResource } from "./sessions.js";
 import { TemplatesResource } from "./templates.js";
+import { CloudTemplatesResource } from "./cloud-templates.js";
 import { UsersResource } from "./users.js";
 import { VoipResource } from "./voip.js";
 import { WebhooksResource } from "./webhooks.js";
@@ -57,6 +58,7 @@ export class MessagingClient {
   readonly testing: TestingResource;
   readonly quickLinks: QuickLinksResource;
   readonly templates: TemplatesResource;
+  readonly cloudTemplates: CloudTemplatesResource;
   readonly users: UsersResource;
   readonly voip: VoipResource;
   readonly webhooks: WebhooksResource;
@@ -102,6 +104,7 @@ export class MessagingClient {
     this.testing = new TestingResource(transport, credential.type);
     this.quickLinks = new QuickLinksResource(transport, credential.type);
     this.templates = new TemplatesResource(transport);
+    this.cloudTemplates = new CloudTemplatesResource(transport);
     this.users = new UsersResource(transport);
     this.voip = new VoipResource(transport, credential.type);
     this.webhooks = new WebhooksResource(transport);

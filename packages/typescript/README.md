@@ -310,6 +310,53 @@ await messaging.templates.preview("support", created.data.data.id, {
 Keep this client on the server. Browser builders use an application-owned
 route, such as `createTemplateBuilderRoute` from `@polymorfa/nextjs`.
 
+## Official API Numbers
+
+These server methods require the matching API deployment and the team's beta
+access. An SDK method does not enroll a team. Keep server credentials out of
+browser code.
+
+`messaging.cloudTemplates` lists, retrieves, creates and deletes Meta templates
+for a Number. It is separate from `messaging.templates`, which manages project
+drafts. The native template API requires a Number created with an Official API
+connection. A Number created with Linked Devices that later added an Official
+API connection is rejected with `400` by this API revision. Retrieval accepts
+an optional language; the API defaults to `en_US`.
+Deleting a name deletes all its languages. Create and delete make one attempt,
+even if an idempotency key or a retry override is supplied. Reconcile an
+uncertain result before submitting another write.
+
+```ts
+const catalog = await messaging.cloudTemplates.list("support");
+const template = await messaging.cloudTemplates.retrieve(
+  "support",
+  "order_update",
+  {
+    language: "pt_BR",
+  },
+);
+```
+
+`messaging.chats.getServiceWindow(number, conversation)` reads `open`, `closed`
+or `unknown` with observation timestamps. It requires `chats:read` and service
+window beta enrollment, without requiring HMS. `unknown` does not establish
+permission to send; Meta still decides.
+
+`messaging.sessions.getMetaPricing(number, { since, until })` returns counts
+grouped by Meta's reported pricing classification. It requires `sessions:read`
+and the same beta access. Dates are ISO 8601, the default period is 30 days and
+the maximum is 93 days. Counts contain no invoice amounts or Polymorfa charges.
+Official API `message.ack` events can include `pricing`, typed as
+`MetaPricingReport`, preserving Meta's field names and optional values.
+
+`messaging.sessions.getCloudCredentialHealth(number)` returns redacted token,
+permission, registration and subscription checks with `sessions:read`.
+`messaging.sessions.reauthorizeCloudCredentials(number)` creates a QuickLink
+for the same Number and phone with `quicklink:manage`. The Number must already
+be stopped or disconnected and use a standalone Official API connection;
+the method never stops it. Reauthorization makes one attempt and does not
+automatically open or share the returned URL.
+
 ## Contacts
 
 `MessagingClient.contacts` exposes the complete Linked Device contact surface.

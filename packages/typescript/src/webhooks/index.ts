@@ -79,6 +79,7 @@ export {
   type LinkedDeviceMessageType,
   type LinkedHistorySyncPayload,
   type MessageAckPayload,
+  type MetaPricingReport,
   type MessageDeletePayload,
   type MessageEchoPayload,
   type MessageFailedPayload,

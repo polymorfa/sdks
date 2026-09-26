@@ -135,6 +135,8 @@ The handwritten Messaging resources in this milestone are:
 - `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions
 - `cloudOnboarding`: continue an issued Meta Cloud API QuickLink from a trusted
   server
+- `cloudTemplates`: list, retrieve, create and delete Meta templates for a
+  Number with an Official API connection; separate from project template drafts
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "6839976e7ad54e044c4d789fd296edc44772a907",
+  "sourceCommit": "d25ddad0c48c3444f235bc2d6ce5c23e736d3318",
   "excludedContracts": [
     {
       "family": "graph",
@@ -105,6 +105,17 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.profile.deletePicture"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/templates/{name}",
+      "operationId": "deleteTemplate",
+      "fingerprint": "fd81558b70fcd861a0005d048a021c156d125961dbd9e568b20fce3dfae8b024",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.cloudTemplates.delete"
       }
     },
     {
@@ -633,6 +644,28 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.banSafe.getSessionSafeMode"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/templates",
+      "operationId": "listTemplates",
+      "fingerprint": "0e4fb03a957b63354c8c50d6046529f444b6093d8a1a61857975e21ea49ab320",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.cloudTemplates.list"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/templates/{name}",
+      "operationId": "getTemplate",
+      "fingerprint": "8d222acf68c34a5173c19b8869eb14595896d39f801031e1e5af913f908ecc0a",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.cloudTemplates.retrieve"
       }
     },
     {
@@ -1416,6 +1449,17 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.presence.subscribe"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/templates",
+      "operationId": "createTemplate",
+      "fingerprint": "03ae820a0ac6d1b178df82fe9e7c296a22e53ac258f19f3e8d76225269a89c5a",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.cloudTemplates.create"
       }
     },
     {
@@ -4139,7 +4183,7 @@
       "method": "PATCH",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
       "operationId": "updateProjectWebhook",
-      "fingerprint": "dd063cb877e87bdd9c02df55decca2c72e5eed162d7c91fcb6d1d4ca93566714",
+      "fingerprint": "97736d6e9e6a5bdd5106f8a8bfdfa8d93cc4871b1fa3361bcf850b2bd614ceaa",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).webhooks.update"
@@ -4195,7 +4239,7 @@
       "method": "PATCH",
       "path": "/platform/webhooks/{webhookId}",
       "operationId": "updateOrganizationWebhook",
-      "fingerprint": "c2202ed0f4068cee38ece298a963ece9fc10b8e68afd6d771a152d779285481b",
+      "fingerprint": "defd2bb51f7ae7e5162e2d5c19f3f8f9b8b5ad989dc0516f0f1860f9563a54cc",
       "typescript": {
         "status": "covered",
         "method": "Client.webhooks.update"
@@ -5076,7 +5120,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks",
       "operationId": "createProjectWebhook",
-      "fingerprint": "d1da775d2aba25802eb5573fa48e6555d161d717f83e23fee02605265da386a0",
+      "fingerprint": "776f24ac17854feac94ed6c5db42cd0aa7b8141dfac47245755f4571f35a5c74",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).webhooks.create"
@@ -5334,7 +5378,7 @@
       "method": "POST",
       "path": "/platform/webhooks",
       "operationId": "createOrganizationWebhook",
-      "fingerprint": "b20438679f669bb141b5e333afae3fe669b55a9e9363f945ccb684ee1bc677ac",
+      "fingerprint": "37a88593419abbb8bfc1355e709908ed2bbf601d8c67e6b6c5f834a6ce0756b7",
       "typescript": {
         "status": "covered",
         "method": "Client.webhooks.create"
