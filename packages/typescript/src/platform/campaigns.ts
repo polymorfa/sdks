@@ -19,6 +19,10 @@ import type {
 } from "./types.js";
 
 type CampaignResponse = Promise<ApiResponse<DataEnvelope<PlatformPayload>>>;
+type CreateCampaignOptions = Omit<
+  RequestOptions,
+  "idempotencyKey" | "maxNetworkRetries"
+>;
 type CampaignAction =
   "launch" | "pause" | "resume" | "stop" | "archive" | "duplicate" | "requeue";
 type CampaignRead = "analytics" | "events";
@@ -45,13 +49,21 @@ export class CampaignsResource {
 
   create(
     body: CreatePlatformCampaignRequest,
-    options: RequestOptions = {},
+    options: CreateCampaignOptions = {},
   ): CampaignResponse {
     return this.transport.request({
       method: "POST",
       path: "/platform/campaigns",
       body,
-      ...options,
+      ...(options.apiVersion === undefined
+        ? {}
+        : { apiVersion: options.apiVersion }),
+      ...(options.headers === undefined ? {} : { headers: options.headers }),
+      ...(options.signal === undefined ? {} : { signal: options.signal }),
+      ...(options.timeoutMs === undefined
+        ? {}
+        : { timeoutMs: options.timeoutMs }),
+      maxNetworkRetries: 0,
     });
   }
 

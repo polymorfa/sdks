@@ -90,6 +90,10 @@ it("requires the organization project and body at compile time", () => {
       // @ts-expect-error senderConfig is an object, unlike the opaque JSON fields
       senderConfig: false,
     });
+    // @ts-expect-error the Platform create route has no replay contract
+    client.campaigns.create(body, { idempotencyKey: "not-supported" });
+    // @ts-expect-error the Platform create route must not be retried
+    client.campaigns.create(body, { maxNetworkRetries: 2 });
   };
   expect(invalidCalls).toBeTypeOf("function");
 });
@@ -107,21 +111,37 @@ it("sends the required scope and preserves every JSON field to the Platform rout
     credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
     baseUrl: server.url,
   });
-  const result = await client.campaigns.create(body, {
-    idempotencyKey: "create-august",
-  });
+  const result = await client.campaigns.create(body);
   expect(server.requests).toHaveLength(1);
   expect(server.requests[0]).toMatchObject({
     method: "POST",
     path: "/platform/campaigns",
   });
   expect(JSON.parse(server.requests[0]!.body)).toEqual(body);
-  expect(server.requests[0]!.headers["idempotency-key"]).toBe("create-august");
+  expect(server.requests[0]!.headers["idempotency-key"]).toBeUndefined();
   expect(result.data.data).toEqual({
     id: "campaign-1",
     name: body.name,
     recipientCount: 1,
   });
+});
+
+it("never retries a Platform create after an uncertain server response", async () => {
+  const server = await startTestServer(() => ({
+    status: 503,
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      error: { code: "temporarily_unavailable", message: "Try later" },
+    }),
+  }));
+  servers.push(server);
+  const client = new Client({
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    baseUrl: server.url,
+    maxNetworkRetries: 3,
+  });
+  await expect(client.campaigns.create(body)).rejects.toThrow();
+  expect(server.requests).toHaveLength(1);
 });
 
 it("returns the archive receipt and surfaces an active-campaign conflict", async () => {

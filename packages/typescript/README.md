@@ -1771,19 +1771,22 @@ listing and append also require `projectId`. Platform
 `recipients` uses the same cursor-page shape. `Client.audiences` manages audience
 members, and `Client.optOuts` reads and replaces team keyword settings.
 
-`launch` and `reschedule` generate an `Idempotency-Key` for each call. Supply a
-key for `create` when replay protection is needed. A supplied key is preserved
-across retries within the API's 24-hour replay window. If the
-outcome remains uncertain after that window, reconcile campaign state before
-starting another request; see [Idempotent sends](#idempotent-sends).
+`launch` and `reschedule` generate an `Idempotency-Key` for each call. The
+Platform `create` route has no replay contract, so the SDK sends it once and
+does not accept an idempotency key or retry setting. After a lost create
+response, inspect the campaign list before creating another draft. For launch
+and reschedule, a supplied key is preserved across retries within the API's
+24-hour replay window. If the outcome remains uncertain after that window,
+reconcile campaign state before starting another request; see
+[Idempotent sends](#idempotent-sends).
 `archive` returns a receipt for a completed, failed, or cancelled campaign;
 other states return `409`. A pending final event or active delivery run also
 returns `409`; retry after both finish. Platform `delete` accepts draft,
 completed, failed, cancelled, or archived campaigns. A completed or failed
 campaign with a pending final event or active delivery run returns `409`.
-The Messaging API has no campaign update, deletion, archive, duplicate, or
-campaign event history method. The SDK does not substitute Platform routes for
-those operations.
+The Messaging API has no campaign deletion, archive, duplicate, or campaign
+event history method. The SDK does not substitute Platform routes for those
+operations.
 
 ## Chats
 

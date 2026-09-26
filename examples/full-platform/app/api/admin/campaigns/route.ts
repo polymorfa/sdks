@@ -22,12 +22,11 @@ export const POST = route("admin", async ({ body, request }) => {
   const payload = (body.payload ?? {}) as Body;
   const name = action(body);
   if (name === "create") {
-    return campaigns.create(
-      { ...payload, name: text(payload, "name"), projectId: env.projectId() },
-      {
-        idempotencyKey: idempotencyKey(request),
-      },
-    );
+    return campaigns.create({
+      ...payload,
+      name: text(payload, "name"),
+      projectId: env.projectId(),
+    });
   }
   const id = text(body, "campaignId");
   const scope = { projectId: env.projectId() };
