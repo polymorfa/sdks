@@ -16076,7 +16076,24 @@
           "lastError": {
             "type": "string",
             "nullable": true,
-            "description": "Why the recipient failed or was skipped. `opted_out` means the phone is on the organization's opt-out list."
+            "description": "Internal classifier of the last unsuccessful attempt. Use `failureReason` instead: it is the stable, documented code for the same fact."
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "opted_out",
+              "cold_held",
+              "campaign_cancelled",
+              "invalid_recipient",
+              "session_not_connected",
+              "ack_timeout",
+              "blocked_by_safety",
+              "send_failed",
+              "other",
+              null
+            ],
+            "description": "Why the recipient was not sent, or why its last attempt did not succeed. Null when nothing went wrong. `opted_out`: the number is on the team's opt-out list. `cold_held`: the number never wrote to the sending number and the campaign holds cold sends. `campaign_cancelled`: the campaign was stopped before this recipient was sent. `invalid_recipient`: the number is not a valid WhatsApp address. `session_not_connected`: the sending number was not connected. `ack_timeout`: WhatsApp did not acknowledge the send in time. `blocked_by_safety`: a safety check refused the send before it was attempted; the recipient waits for the campaign to resume. `send_failed`: WhatsApp refused the send, or its outcome could not be confirmed. `other`: any other reason. New codes may be added."
           },
           "externalMessageId": {
             "type": "string",
@@ -16114,6 +16131,7 @@
           "status",
           "attempts",
           "lastError",
+          "failureReason",
           "externalMessageId",
           "queuedAt",
           "sentAt",
@@ -46608,7 +46626,7 @@
           "Campaigns"
         ],
         "summary": "List campaign recipients",
-        "description": "**Required scope:** `campaigns:read`\n\nLists a campaign's recipients in queue order with cursor pagination. Filter by `status` to find, for example, recipients skipped because they opted out.",
+        "description": "**Required scope:** `campaigns:read`\n\nLists a campaign's recipients in queue order with cursor pagination. Filter by `status`, by `reason`, or both: for example `status=skipped&reason=opted_out` lists recipients skipped because they opted out. `failureReason` gives the stable reason a recipient was not sent.",
         "security": [
           {
             "BearerAuth": []
@@ -46647,6 +46665,26 @@
             },
             "required": false,
             "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "opted_out",
+                "cold_held",
+                "campaign_cancelled",
+                "invalid_recipient",
+                "session_not_connected",
+                "ack_timeout",
+                "blocked_by_safety",
+                "send_failed",
+                "other"
+              ],
+              "description": "Only recipients whose `failureReason` is this code."
+            },
+            "required": false,
+            "name": "reason",
             "in": "query"
           },
           {
@@ -46971,6 +47009,229 @@
         },
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
+        }
+      }
+    },
+    "/messaging/projects/{projectSlug}/campaigns/{id}/recipients/export": {
+      "get": {
+        "operationId": "exportProjectCampaignRecipients",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Export campaign recipients",
+        "description": "**Required scope:** `campaigns:read`\n\nReturns up to 1,000 recipients per request as CSV, in queue order, with the same filters as List campaign recipients. Each page starts with a header row. When more recipients match, the `Polymorfa-Next-Cursor` response header carries the cursor for the next page; it is absent on the last page. Each page is read when it is requested, so a recipient appears once, with the outcome it had when its page was read. The export contains outcomes and `failureReason` codes only, never message content or template variables.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "campaigns:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectSlug",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "queued",
+                "sending",
+                "sent",
+                "delivered",
+                "read",
+                "failed",
+                "skipped"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "opted_out",
+                "cold_held",
+                "campaign_cancelled",
+                "invalid_recipient",
+                "session_not_connected",
+                "ack_timeout",
+                "blocked_by_safety",
+                "send_failed",
+                "other"
+              ],
+              "description": "Only recipients whose `failureReason` is this code."
+            },
+            "required": false,
+            "name": "reason",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "description": "The `Polymorfa-Next-Cursor` value from the previous page. Send the same filters."
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "description": "Recipients per page, up to 1,000. Default 1,000."
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of recipients.",
+            "headers": {
+              "Polymorfa-Next-Cursor": {
+                "schema": {
+                  "type": "string",
+                  "description": "Cursor for the next page. Absent on the last page."
+                },
+                "required": false
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "description": "Header row, then one row per recipient. Columns: recipientId, phone, status, failureReason, attempts, variantKey, queuedAt, sentAt, deliveredAt, readAt, failedAt, respondedAt. Times are ISO 8601 in UTC. Empty fields are null. Text that begins with =, +, -, @, tab or carriage return is prefixed with an apostrophe, except a phone number in international format."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:read</Badge>"
         }
       }
     },

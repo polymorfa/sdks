@@ -1,5 +1,6 @@
 import type {
   CampaignRecipient,
+  CampaignRecipientFailureReason,
   CampaignRecipientInput,
   CampaignRecipientStatus,
   InvalidRecipientRow,
@@ -229,8 +230,20 @@ export interface ListPlatformCampaignRecipientsParams {
   /** Owning project for this organization-client request. */
   readonly projectId: string;
   readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
   readonly cursor?: string;
   /** 1 to 100; the API defaults to 25. */
+  readonly limit?: number;
+}
+
+export interface ExportPlatformCampaignRecipientsParams {
+  /** Required with a team API key; project tokens are bound to one project. */
+  readonly projectId: string;
+  readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
+  /** Cursor from the previous page's `nextCursor`. Keep the same filters. */
+  readonly cursor?: string;
+  /** 1 to 1,000; the API defaults to 1,000. */
   readonly limit?: number;
 }
 

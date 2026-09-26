@@ -1,4 +1,5 @@
 import { HttpTransport } from "../transport/http.js";
+import { campaignRecipientExportPage } from "../transport/campaign-recipient-export.js";
 import {
   withIdempotencyKey,
   withoutAutomaticRetry,
@@ -7,12 +8,14 @@ import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   AddCampaignRecipientsRequest,
   AddCampaignRecipientsResponse,
+  CampaignRecipientsCsvPage,
   CampaignAnalyticsResponse,
   CampaignOperationResponse,
   CampaignRequeueResponse,
   CampaignStopResponse,
   CreateCampaignRequest,
   CreateCampaignResponse,
+  ExportCampaignRecipientsParams,
   GetCampaignResponse,
   LaunchCampaignRequest,
   ListCampaignRecipientsParams,
@@ -131,11 +134,35 @@ export class MessagingCampaignsResource {
       path: recipientsPath(projectSlug, campaignId),
       query: {
         ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.reason === undefined ? {} : { reason: params.reason }),
         ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
         ...(params.limit === undefined ? {} : { limit: params.limit }),
       },
       ...options,
     });
+  }
+
+  /**
+   * Export one CSV page. Continue with `nextCursor` and the same filters;
+   * each page carries its own header row and reflects outcomes when read.
+   */
+  exportRecipients(
+    projectSlug: string,
+    campaignId: string,
+    params: ExportCampaignRecipientsParams = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CampaignRecipientsCsvPage>> {
+    return campaignRecipientExportPage(
+      this.transport,
+      `${recipientsPath(projectSlug, campaignId)}/export`,
+      {
+        ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.reason === undefined ? {} : { reason: params.reason }),
+        ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
+        ...(params.limit === undefined ? {} : { limit: params.limit }),
+      },
+      options,
+    );
   }
 
   /**

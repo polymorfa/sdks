@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "6839976e7ad54e044c4d789fd296edc44772a907",
-  "branch": "dev",
-  "published": true,
-  "note": "Merged API source commit retiring three unproduced BanSafe webhook names and test fixtures; Messaging and Platform snapshots are byte-identical to the authoritative OpenAPI files. SDK publication and deployment are separate.",
+  "commit": "a73c19db9144fe4ee20d6e379429da5d11b51a7a",
+  "branch": "t3code/campaigns-recipient-export",
+  "published": false,
+  "note": "API PR polymorfa/polymorfa#331 exact head: recipient failure reasons, filtered list and paged CSV export. Re-pin to the merged API dev commit before SDK merge; SDK publication and CLI registry pin are separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "79543bf719017598c3e2497004d761056e919b3200abdaae1560893542816cc7"
+      "sha256": "5d0c5f986e3bb9c2d9111546a85a84e159cc661b319b128dc55187e13f1d2a07"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "7eca4148c2f1fbda47c26a67c42e2da6b74e47e5edf38d749e30a5fc3f1d7fe8"
+      "sha256": "f9b1b29d6e140094d34861f5d2102f4b09957eb6fa49cf6396f9c064b0b2556c"
     }
   }
 }

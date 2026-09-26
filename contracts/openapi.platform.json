@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (218 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (219 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -17105,7 +17105,7 @@
           "campaigns"
         ],
         "summary": "List campaign recipients",
-        "description": "Lists a campaign's recipients in queue order with cursor pagination. Filter by `status`; a recipient skipped because the number opted out has `status` `skipped` and `lastError` `opted_out`.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
+        "description": "Lists a campaign's recipients in queue order with cursor pagination. Filter by `status`, by `reason`, or both: for example `status=skipped&reason=opted_out` lists recipients skipped because the number opted out. `failureReason` gives the stable reason a recipient was not sent.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -17153,6 +17153,15 @@
                 "failed",
                 "skipped"
               ]
+            }
+          },
+          {
+            "name": "reason",
+            "in": "query",
+            "required": false,
+            "description": "Only recipients whose `failureReason` is this code.",
+            "schema": {
+              "$ref": "#/components/schemas/CampaignRecipientFailureReason"
             }
           },
           {
@@ -17338,6 +17347,143 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/platform/campaigns/{campaignId}/recipients/export": {
+      "get": {
+        "operationId": "exportCampaignRecipients",
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Export campaign recipients",
+        "description": "Returns up to 1,000 recipients per request as CSV, in queue order, with the same filters as List campaign recipients. Each page starts with a header row. When more recipients match, the `Polymorfa-Next-Cursor` response header carries the cursor for the next page; it is absent on the last page. Each page is read when it is requested, so a recipient appears once, with the outcome it had when its page was read. The export contains outcomes and `failureReason` codes only, never message content or template variables.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project the campaign belongs to. Required with a team API key; a project token is bound to its own project and omits it.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Project that owns the campaign. Required for team API keys; a project token is bound to its own project."
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "queued",
+                "sending",
+                "sent",
+                "delivered",
+                "read",
+                "failed",
+                "skipped"
+              ]
+            }
+          },
+          {
+            "name": "reason",
+            "in": "query",
+            "required": false,
+            "description": "Only recipients whose `failureReason` is this code.",
+            "schema": {
+              "$ref": "#/components/schemas/CampaignRecipientFailureReason"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "description": "The `Polymorfa-Next-Cursor` value from the previous page. Send the same filters."
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 1000,
+              "description": "Recipients per page, up to 1,000."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One CSV page.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              },
+              "Polymorfa-Next-Cursor": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Cursor for the next page. Absent on the last page."
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "description": "Header row, then one row per recipient. Columns: recipientId, phone, status, failureReason, attempts, variantKey, queuedAt, sentAt, deliveredAt, readAt, failedAt, respondedAt. Times are ISO 8601 in UTC. Empty fields are null. Text that begins with =, +, -, @, tab or carriage return is prefixed with an apostrophe, except a phone number in international format."
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -37733,7 +37879,15 @@
           "lastError": {
             "type": "string",
             "nullable": true,
-            "description": "Why the recipient failed or was skipped. `opted_out` means the number is on the team's opt-out list."
+            "description": "Internal classifier of the last unsuccessful attempt. Use `failureReason` instead: it is the stable, documented code for the same fact."
+          },
+          "failureReason": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CampaignRecipientFailureReason"
+              }
+            ]
           },
           "externalMessageId": {
             "type": "string",
@@ -37771,6 +37925,7 @@
           "status",
           "attempts",
           "lastError",
+          "failureReason",
           "externalMessageId",
           "queuedAt",
           "sentAt",
@@ -37779,6 +37934,21 @@
           "failedAt",
           "respondedAt"
         ]
+      },
+      "CampaignRecipientFailureReason": {
+        "type": "string",
+        "enum": [
+          "opted_out",
+          "cold_held",
+          "campaign_cancelled",
+          "invalid_recipient",
+          "session_not_connected",
+          "ack_timeout",
+          "blocked_by_safety",
+          "send_failed",
+          "other"
+        ],
+        "description": "Why the recipient was not sent, or why its last attempt did not succeed. Null when nothing went wrong. `opted_out`: the number is on the team's opt-out list. `cold_held`: the number never wrote to the sending number and the campaign holds cold sends. `campaign_cancelled`: the campaign was stopped before this recipient was sent. `invalid_recipient`: the number is not a valid WhatsApp address. `session_not_connected`: the sending number was not connected. `ack_timeout`: WhatsApp did not acknowledge the send in time. `blocked_by_safety`: a safety check refused the send before it was attempted; the recipient waits for the campaign to resume. `send_failed`: WhatsApp refused the send, or its outcome could not be confirmed. `other`: any other reason. New codes may be added."
       },
       "CampaignRecipientAppendResult": {
         "type": "object",
@@ -40666,7 +40836,7 @@
           "value": {
             "type": "string",
             "maxLength": 4096,
-            "pattern": "^(?![\\s\\S]*[\\^@-\\^H\\u000A-\\^_\\u007F])[\\s\\S]*$",
+            "pattern": "^(?![\\s\\S]*[\\u0000-\\u0008\\u000A-\\u001F\\u007F])[\\s\\S]*$",
             "x-polymorfa-max-utf8-bytes": 4096,
             "writeOnly": true,
             "description": "Encrypted write-only HTTP field value. Limited to 4096 UTF-8 bytes. Line breaks, NUL, and other control characters except horizontal tab are rejected."

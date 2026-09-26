@@ -1685,7 +1685,7 @@ message identifiers are URL-encoded by the SDK.
 ## Messaging campaigns
 
 `MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `analytics`,
-`listRecipients`, `addRecipients`, `launch`, `pause`, `resume`, `stop`, and
+`listRecipients`, `exportRecipients`, `addRecipients`, `launch`, `pause`, `resume`, `stop`, and
 `requeue`. Reads require `campaigns:read`; writes require `campaigns:manage`.
 Pass the project's slug as the first argument. Campaigns accept organization
 API keys or project tokens; browser client tokens cannot use these methods.
@@ -1727,12 +1727,21 @@ once by default, generates no key, and requires both `maxNetworkRetries` and
 successful first attempt as duplicates. List recipients before appending again
 after a lost response.
 
-`listRecipients(projectSlug, campaignId, { status, cursor, limit })` returns
+`listRecipients(projectSlug, campaignId, { status, reason, cursor, limit })` returns
 `{ data, page }` inside the response's `data`. Read recipients from
 `response.data.data` and pass `response.data.page.nextCursor` into the next
-request while `page.hasMore` is true. Each recipient includes its send,
-delivery, read, failure and reply timestamps. Campaign `list` returns a complete
+request while `page.hasMore` is true. Each recipient includes a stable
+`failureReason` code, plus its send, delivery, read, failure and reply
+timestamps. Use `reason` to filter by that code. Campaign `list` returns a complete
 array; recipient pagination does not change that method.
+
+`exportRecipients(projectSlug, campaignId, { status, reason, cursor, limit })`
+returns `{ csv, nextCursor }`. The CSV contains a header and up to 1,000 rows;
+pass `nextCursor` with the same filters to fetch another page. Each page reads
+outcomes when requested. The Platform method takes `campaignId` and a params
+object with `projectId` and the same filters. A failed request raises an SDK
+error; an unexpected success content type is rejected instead of returned as
+CSV.
 
 Launch, pause and resume return the campaign state with an `operationId`.
 They accept the transition without waiting for sending to finish. Stop always
