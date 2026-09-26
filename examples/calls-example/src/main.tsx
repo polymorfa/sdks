@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { createInternalBrowserCalls } from "@polymorfa/browser/internal";
 import {
   CallNumberPicker,
   CallSurface,
@@ -17,6 +18,7 @@ const apiBaseUrl = "https://api.polymorfastaging.com";
 interface Feedback {
   readonly error?: string;
   readonly requestFailure?: string;
+  readonly rateLimit?: string;
 }
 
 function App() {
@@ -30,6 +32,55 @@ function App() {
   const [, redraw] = useState(0);
   const numbersRef = useRef<readonly NumberConnection[]>([]);
   const subscriptions = useRef(new Map<string, () => void>());
+  const peers = useRef(new Map<string, RTCPeerConnection>());
+  const [audioProbes, setAudioProbes] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const timer = window.setInterval(async () => {
+      for (const [id, peer] of peers.current) {
+        try {
+          const stats = await peer.getStats();
+          const lines = [
+            `Connection: ${peer.connectionState}; ICE: ${peer.iceConnectionState}`,
+          ];
+          for (const sender of peer.getSenders()) {
+            const track = sender.track;
+            if (track?.kind === "audio")
+              lines.push(
+                `Microphone: ${track.readyState}; enabled=${track.enabled}; muted=${track.muted}`,
+              );
+          }
+          stats.forEach((stat) => {
+            if (stat.kind !== "audio" && stat.mediaType !== "audio") return;
+            if (stat.type === "media-source")
+              lines.push(
+                `Mic signal: level=${stat.audioLevel ?? "unknown"}; energy=${stat.totalAudioEnergy ?? "unknown"}`,
+              );
+            if (stat.type === "outbound-rtp")
+              lines.push(
+                `Audio sent: packets=${stat.packetsSent ?? 0}; bytes=${stat.bytesSent ?? 0}`,
+              );
+            if (stat.type === "inbound-rtp")
+              lines.push(
+                `Audio received: packets=${stat.packetsReceived ?? 0}; bytes=${stat.bytesReceived ?? 0}`,
+              );
+            if (stat.type === "remote-inbound-rtp")
+              lines.push(
+                `Server reception: lost=${stat.packetsLost ?? "unknown"}; RTT=${stat.roundTripTime ?? "unknown"}`,
+              );
+          });
+          if (peers.current.get(id) === peer)
+            setAudioProbes((old) => ({ ...old, [id]: lines.join("\n") }));
+        } catch {
+          /* Retain the last safe sample from a closing connection. */
+        }
+      }
+    }, 1000);
+    return () => {
+      window.clearInterval(timer);
+      peers.current.clear();
+    };
+  }, []);
 
   useEffect(() => {
     const timer = window.setInterval(() => redraw((value) => value + 1), 500);
@@ -75,6 +126,30 @@ function App() {
             });
           },
         },
+        (options) =>
+          createInternalBrowserCalls({
+            ...options,
+            fetch: async (input, init) => {
+              const response = await globalThis.fetch(input, init);
+              if (response.status === 429) {
+                const reason =
+                  response.headers.get("Polymorfa-RateLimit-Reason") ??
+                  "unknown";
+                const retry = response.headers.get("Retry-After") ?? "";
+                update({
+                  rateLimit: `Rate limit: ${/^[a-z_]{1,64}$/.test(reason) ? reason : "unknown"}; retry after: ${/^[0-9]{1,8}$/.test(retry) ? `${retry} seconds` : "not supplied"}`,
+                });
+              }
+              return response;
+            },
+            media: {
+              createPeerConnection: (configuration) => {
+                const peer = new RTCPeerConnection(configuration);
+                peers.current.set(id, peer);
+                return peer;
+              },
+            },
+          }),
       );
     } catch (cause) {
       setError(
@@ -110,6 +185,12 @@ function App() {
     if (hasActiveCall(numbersRef.current)) return;
     subscriptions.current.get(number.id)?.();
     subscriptions.current.delete(number.id);
+    peers.current.delete(number.id);
+    setAudioProbes((old) => {
+      const next = { ...old };
+      delete next[number.id];
+      return next;
+    });
     const next = numbersRef.current.filter((entry) => entry !== number);
     numbersRef.current = next;
     setNumbers(next);
@@ -254,6 +335,17 @@ function App() {
                 </p>
               )}
               <CallSurface controller={number.calls.controller} />
+              {feedback[number.id]?.rateLimit && (
+                <p role="status">{feedback[number.id]!.rateLimit}</p>
+              )}
+              <details open>
+                <summary>Temporary audio diagnostic</summary>
+                <pre
+                  style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
+                >
+                  {audioProbes[number.id] ?? "No media connection yet"}
+                </pre>
+              </details>
             </section>
           );
         })}
