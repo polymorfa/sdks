@@ -222,7 +222,7 @@ While a call's media is open, the controller sends call diagnostics for this
 browser's connection to `POST /messaging/voip/calls/{id}/reports`, where
 they appear with the call in the Console:
 
-- Every 15 seconds, and once when the connection closes: round-trip time,
+- Every 15 seconds, and when the connection closes if the last report was at least five seconds earlier: round-trip time,
   audio jitter, packets lost and received, the audio and video codecs, the
   ICE candidate type (`relay` means a TURN relay), and how many times the
   connection reconnected. Figures come from `RTCPeerConnection.getStats()`.

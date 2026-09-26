@@ -1090,7 +1090,7 @@ export class Call extends Emitter<CallEvents> {
     // The connection's final figure: how often it reconnected. Only real
     // measurements are sent, and socket media measures nothing else.
     if (this.#mediaAttached)
-      this.#reporter?.quality({ reconnects: this.#reconnects }, true);
+      this.#reporter?.quality({ reconnects: this.#reconnects });
     this.#reporter?.stop();
     const media = this.#media;
     this.#media = undefined;
