@@ -501,7 +501,7 @@ function assertPlacementTargets(
   }
   const valid = (value: unknown): value is string =>
     typeof value === "string" &&
-    /^(?:\+[1-9]\d{1,14}|[1-9][0-9]{0,18})$/.test(value.trim());
+    /^(?:\+[1-9]\d{1,14}|[1-9][0-9]{0,18})$/.test(value);
   if (
     participants === undefined
       ? !valid(to)
@@ -510,8 +510,7 @@ function assertPlacementTargets(
         participants.length < 2 ||
         participants.length > 31 ||
         !participants.every(valid) ||
-        new Set(participants.map((value) => value.trim())).size !==
-          participants.length
+        new Set(participants).size !== participants.length
   ) {
     throw new PolymorfaValidationError(
       "Provide to or 2 to 31 distinct participants as E.164 numbers or user IDs.",
