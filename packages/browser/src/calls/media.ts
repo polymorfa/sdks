@@ -16,6 +16,7 @@ import type {
   TrickleCandidate,
 } from "./signaling.js";
 import type { CallDevice, SelectedCallDevices } from "./controller.js";
+import { BrowserError } from "../errors.js";
 
 /** Label and id of the control data channel, negotiated out of band. */
 export const CALLS_DATA_CHANNEL = { label: "pmfa.calls", id: 0 } as const;
@@ -271,7 +272,7 @@ export class WebRtcMediaFactory implements CallMediaFactory {
           throw unsupported("This browser does not support WebRTC calls.");
         return new RTCPeerConnection(configuration);
       });
-    this.#pollIntervalMs = options.pollIntervalMs ?? 1_000;
+    this.#pollIntervalMs = options.pollIntervalMs ?? 5_000;
     this.#maxVideoSlots = Math.max(
       1,
       Math.min(
@@ -814,10 +815,27 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       });
     };
 
+    let pollPending = false;
+    let pollAfter = 0;
     const poll = this.#setInterval(() => {
       // The socket delivers remote candidates while it is up.
-      if (transport?.connected === true) return;
-      void drainCandidates(this.#signaling, callId, peer, signal);
+      if (
+        closed ||
+        signal.aborted ||
+        transport?.connected === true ||
+        pollPending ||
+        Date.now() < pollAfter
+      )
+        return;
+      pollPending = true;
+      void drainCandidates(this.#signaling, callId, peer, signal)
+        .catch((cause: unknown) => {
+          if (cause instanceof BrowserError && cause.status === 429)
+            pollAfter = Date.now() + 60_000;
+        })
+        .finally(() => {
+          pollPending = false;
+        });
     }, this.#pollIntervalMs);
     return {
       connectionId,
@@ -969,16 +987,12 @@ async function drainCandidates(
   peer: RTCPeerConnection,
   signal: AbortSignal,
 ): Promise<void> {
-  try {
-    for (const candidate of await signaling.candidates(callId, signal)) {
-      try {
-        await peer.addIceCandidate(candidate);
-      } catch {
-        // Ignore stale candidates and continue draining.
-      }
+  for (const candidate of await signaling.candidates(callId, signal)) {
+    try {
+      await peer.addIceCandidate(candidate);
+    } catch {
+      // Ignore stale candidates and continue draining.
     }
-  } catch {
-    // Polling retries on the next interval.
   }
 }
 function stopTracks(stream: MediaStream): void {

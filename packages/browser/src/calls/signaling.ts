@@ -148,6 +148,9 @@ export class CallsSignalingClient implements CallsSignaling {
     }>({
       method: "GET",
       path: this.#path(callId, "/candidates"),
+      // The media poller owns retries. Transport retries can overlap the next
+      // poll and keep consuming the shared REST request budget after a 429.
+      maxNetworkRetries: 0,
       ...(signal === undefined ? {} : { signal }),
     });
     return response.data.data.candidates;
