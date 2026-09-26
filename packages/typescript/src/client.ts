@@ -27,6 +27,7 @@ import { PlatformCallsResource } from "./platform/calls.js";
 import { CallRetentionResource } from "./platform/call-retention.js";
 import { CampaignsResource } from "./platform/campaigns.js";
 import { CustomersResource } from "./platform/customers.js";
+import { FlowsResource } from "./platform/flows.js";
 import {
   EventsResource,
   OperationsResource,
@@ -101,6 +102,7 @@ export interface OrganizationControlPlaneResources {
 
 export interface ProjectControlPlaneResources {
   readonly functions: FunctionsResource;
+  readonly flows: FlowsResource;
 }
 
 export type Client<O extends ClientOwner = "organization"> = ClientBase<O> &
@@ -116,6 +118,7 @@ export interface ClientConstructor {
 class ClientImplementation implements ClientBase<ClientOwner> {
   /** Installed only for project instances; the public conditional type reflects that. */
   declare readonly functions: FunctionsResource;
+  declare readonly flows: FlowsResource;
   readonly owner: ClientOwner;
   readonly projectId: string | null;
   readonly events: EventsResource<ClientOwner>;
@@ -201,6 +204,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
     if (projectId !== null)
       Object.assign(this, {
         functions: new FunctionsResource(this.#transport, projectId),
+        flows: new FlowsResource(this.#transport, projectId),
       });
 
     if (this.owner === "organization") {

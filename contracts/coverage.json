@@ -3366,9 +3366,8 @@
       "operationId": "listFlows",
       "fingerprint": "ff24f726f7fe3f814e69848fa194b76fbe86b75ceef971dc42b96aeaf376805e",
       "typescript": {
-        "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
-        "milestone": "credential-boundary"
+        "status": "covered",
+        "method": "Client.project(projectId).flows.list"
       }
     },
     {
@@ -3378,9 +3377,8 @@
       "operationId": "getFlow",
       "fingerprint": "e50867709ca7af62570c6a70c1ab6dfe2e3d8a7e4ce7bb2f8080b1766afca109",
       "typescript": {
-        "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
-        "milestone": "credential-boundary"
+        "status": "covered",
+        "method": "Client.project(projectId).flows.retrieve"
       }
     },
     {

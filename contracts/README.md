@@ -41,6 +41,13 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
+The two public Flow draft reads in the pinned Platform snapshot are covered by
+`Client.project(projectId).flows.list` and `.retrieve`. The API declares both
+public, project-bound, and `sessions:read`. The merged API runtime at
+`2fb3eec8624c5785f72f81f163a27c1ce4e19767` registers them with server-key
+authentication. The SDK snapshot below also includes the later campaign
+reschedule operations, which are tracked separately by SDK PR #310.
+
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at API commit `cb5c2464960ed8cb413afc97e3f705000c703625` on
 `codex/calls-continuation-20260926`. This unreleased revision adds ad-hoc and group-ID placement,
@@ -163,9 +170,9 @@ signed events with these names still decode as unknown events.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        385 |
+| Covered             |        387 |
 | Missing             |          0 |
-| Excluded            |        132 |
+| Excluded            |        130 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
 | Total               |        517 |
