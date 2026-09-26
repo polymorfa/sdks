@@ -243,12 +243,12 @@ describe("durable developer resources", () => {
       contentType: "application/json",
       data: "e30=",
     } as const;
-    expect(() =>
+    await expect(
       client.webhooks.test("team-hook", {
         body,
         sessionId: "session-id",
       } as unknown as TestOrganizationWebhookInput),
-    ).toThrow(PolymorfaValidationError);
+    ).rejects.toBeInstanceOf(PolymorfaValidationError);
     expect(requests).toEqual([]);
 
     await client.webhooks.test(

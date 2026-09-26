@@ -433,8 +433,10 @@ export class WebhooksResource<O extends ClientOwner> extends ResourceBase {
       this.prefix === "/platform" &&
       ("body" in input || "sessionId" in input)
     ) {
-      throw new PolymorfaValidationError(
-        "Organization webhook tests do not accept body or sessionId.",
+      return Promise.reject(
+        new PolymorfaValidationError(
+          "Organization webhook tests do not accept body or sessionId.",
+        ),
       );
     }
     return this.mutate(
