@@ -142,6 +142,17 @@ export interface CreateCampaignRequest {
 export type CampaignRecipientStatus =
   "queued" | "sending" | "sent" | "delivered" | "read" | "failed" | "skipped";
 
+export type CampaignRecipientFailureReason =
+  | "opted_out"
+  | "cold_held"
+  | "campaign_cancelled"
+  | "invalid_recipient"
+  | "session_not_connected"
+  | "ack_timeout"
+  | "blocked_by_safety"
+  | "send_failed"
+  | "other";
+
 export type InvalidRecipientReason =
   "missing_phone" | "invalid_phone" | "invalid_variables" | "invalid_entry";
 
@@ -171,8 +182,10 @@ export interface CampaignRecipient {
   readonly variantKey: string | null;
   readonly status: CampaignRecipientStatus;
   readonly attempts: number;
-  /** `opted_out` means the phone is on the organization's opt-out list. */
+  /** Legacy alias of `failureReason`; raw stored errors are never returned. */
   readonly lastError: string | null;
+  /** Stable, documented code for the last unsuccessful attempt. */
+  readonly failureReason: CampaignRecipientFailureReason | null;
   readonly externalMessageId: string | null;
   /** Epoch milliseconds, or null while the transition has not happened. */
   readonly queuedAt: number;
@@ -190,9 +203,26 @@ export interface CampaignRecipientPage {
 
 export interface ListCampaignRecipientsParams {
   readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
   readonly cursor?: string;
   /** 1 to 100; the API defaults to 25. */
   readonly limit?: number;
+}
+
+export interface ExportCampaignRecipientsParams {
+  readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
+  /** Cursor from the previous page's `nextCursor`. Keep the same filters. */
+  readonly cursor?: string;
+  /** 1 to 1,000; the API defaults to 1,000. */
+  readonly limit?: number;
+}
+
+export interface CampaignRecipientsCsvPage {
+  /** CSV header and up to 1,000 recipient rows. */
+  readonly csv: string;
+  /** Null after the last page. */
+  readonly nextCursor: string | null;
 }
 
 export interface AddCampaignRecipientsRequest {

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "6839976e7ad54e044c4d789fd296edc44772a907",
+  "sourceCommit": "ff5f3db97db8b915981be46affd58bc85688e91b",
   "excludedContracts": [
     {
       "family": "graph",
@@ -794,10 +794,21 @@
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
       "operationId": "listProjectCampaignRecipients",
-      "fingerprint": "1da5e8f138bd3870846848812374cf30e2da251a12e27a7c259e0f3e16a56730",
+      "fingerprint": "e2237171370681b4ac6b2a1d911dfc11d122ee13a0bb425f1c8f7736d111daa1",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.listRecipients"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients/export",
+      "operationId": "exportProjectCampaignRecipients",
+      "fingerprint": "1ef1fc54c29ae67c38617eb38202113e6664909c82605eb5ad49407d6cc2dc21",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.campaigns.exportRecipients"
       }
     },
     {
@@ -3199,10 +3210,21 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/recipients",
       "operationId": "listCampaignRecipients",
-      "fingerprint": "3fc27f45197d97447db90e3f4344e2c600aabbfc30746b9b61bd552472442505",
+      "fingerprint": "6c1380c4f94338ee41e14872fb8691743646a2d38f5b09ed56dd5c6e48a8dc26",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.recipients"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/recipients/export",
+      "operationId": "exportCampaignRecipients",
+      "fingerprint": "cc7cdbfbeaac8a67ba878b5c6f2d580bbb42744d25d9710032d76ce2de4dc2bd",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.campaigns.exportRecipients"
       }
     },
     {
@@ -4139,7 +4161,7 @@
       "method": "PATCH",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
       "operationId": "updateProjectWebhook",
-      "fingerprint": "dd063cb877e87bdd9c02df55decca2c72e5eed162d7c91fcb6d1d4ca93566714",
+      "fingerprint": "97736d6e9e6a5bdd5106f8a8bfdfa8d93cc4871b1fa3361bcf850b2bd614ceaa",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).webhooks.update"
@@ -4195,7 +4217,7 @@
       "method": "PATCH",
       "path": "/platform/webhooks/{webhookId}",
       "operationId": "updateOrganizationWebhook",
-      "fingerprint": "c2202ed0f4068cee38ece298a963ece9fc10b8e68afd6d771a152d779285481b",
+      "fingerprint": "defd2bb51f7ae7e5162e2d5c19f3f8f9b8b5ad989dc0516f0f1860f9563a54cc",
       "typescript": {
         "status": "covered",
         "method": "Client.webhooks.update"
@@ -5076,7 +5098,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks",
       "operationId": "createProjectWebhook",
-      "fingerprint": "d1da775d2aba25802eb5573fa48e6555d161d717f83e23fee02605265da386a0",
+      "fingerprint": "776f24ac17854feac94ed6c5db42cd0aa7b8141dfac47245755f4571f35a5c74",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).webhooks.create"
@@ -5334,7 +5356,7 @@
       "method": "POST",
       "path": "/platform/webhooks",
       "operationId": "createOrganizationWebhook",
-      "fingerprint": "b20438679f669bb141b5e333afae3fe669b55a9e9363f945ccb684ee1bc677ac",
+      "fingerprint": "37a88593419abbb8bfc1355e709908ed2bbf601d8c67e6b6c5f834a6ce0756b7",
       "typescript": {
         "status": "covered",
         "method": "Client.webhooks.create"

@@ -56,6 +56,7 @@ const recipient = {
   status: "skipped",
   attempts: 0,
   lastError: "opted_out",
+  failureReason: "opted_out",
   externalMessageId: null,
   queuedAt: 1_724_000_000_000,
   sentAt: null,
@@ -289,13 +290,18 @@ describe("MessagingClient campaigns", () => {
 });
 
 describe("MessagingClient campaign recipients", () => {
-  it("pages recipients and filters them by status", async () => {
+  it("pages recipients and filters them by status and stable failure reason", async () => {
     const { client, requests } = await campaignsServer();
 
     const page = await client.campaigns.listRecipients(
       "launch/eu",
       campaign.id,
-      { status: "skipped", cursor: "cursor-1", limit: 100 },
+      {
+        status: "skipped",
+        reason: "opted_out",
+        cursor: "cursor-1",
+        limit: 100,
+      },
     );
     await client.campaigns.listRecipients("launch/eu", campaign.id);
 
@@ -306,11 +312,12 @@ describe("MessagingClient campaign recipients", () => {
       CampaignRecipient | undefined
     >();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      `GET /messaging/projects/launch%2Feu/campaigns/${campaign.id}/recipients?status=skipped&cursor=cursor-1&limit=100`,
+      `GET /messaging/projects/launch%2Feu/campaigns/${campaign.id}/recipients?status=skipped&reason=opted_out&cursor=cursor-1&limit=100`,
       `GET /messaging/projects/launch%2Feu/campaigns/${campaign.id}/recipients`,
     ]);
     expect(page.data.page).toEqual({ nextCursor: "cursor-2", hasMore: true });
     expect(page.data.data[0]?.lastError).toBe("opted_out");
+    expect(page.data.data[0]?.failureReason).toBe("opted_out");
   });
 
   it("reports duplicate and invalid entries when appending recipients", async () => {

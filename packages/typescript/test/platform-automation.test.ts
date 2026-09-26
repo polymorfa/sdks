@@ -338,6 +338,7 @@ describe("Client campaigns", () => {
     await client.campaigns.recipients("campaign/a", {
       projectId: "project/a",
       status: "skipped",
+      reason: "opted_out",
       cursor: "cur/1",
       limit: 100,
     });
@@ -348,7 +349,7 @@ describe("Client campaigns", () => {
     );
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /platform/campaigns/campaign%2Fa/recipients?projectId=project%2Fa&status=skipped&cursor=cur%2F1&limit=100",
+      "GET /platform/campaigns/campaign%2Fa/recipients?projectId=project%2Fa&status=skipped&reason=opted_out&cursor=cur%2F1&limit=100",
       "POST /platform/campaigns/campaign%2Fa/recipients",
     ]);
     expect(requests[1]?.body).toBe(

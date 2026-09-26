@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Campaign recipient lists expose a typed `failureReason` and can filter by
+  status and reason. Messaging and Platform campaign resources add
+  `exportRecipients`, which returns one CSV page and its continuation cursor.
+
 - Retired the unproduced `bansafe.risk_changed`,
   `bansafe.health_changed`, and `bansafe.enforcement` webhook names and their
   test-event fixtures. The typed `bansafe.incident`, `bansafe.action`,
