@@ -94,10 +94,15 @@ full snapshot or establish live catalog access.
 API PR #333 at `5044826d122759aaa8be3e2c2d0f120a326fda81` adds the
 Official API message-media retrieval status and stored-copy download route.
 `cloud-api-supplements.json` records its exact Messaging OpenAPI hash.
+API PR #333 merged into `dev` as `0f2f01f6726c167fe7d7cffc3cf5238d0b3b22e0`;
+the history-media path and `HistoryMedia`, `HistoryMediaRetrieval`, and
+`HistoryMessage` schemas are unchanged from the pinned PR head. The complete
+OpenAPI file changed with unrelated API work, so full-snapshot consolidation
+remains a separate publication gate.
 `MessagingClient.chats` now exposes the typed retrieval status and buffered or
 streamed message-scoped download. API PR #385 adds a final authority recheck
-before history metadata responses; it changes no OpenAPI shape. These branches
-do not establish deployed HMS beta access or SDK package publication.
+before history metadata responses; it changes no OpenAPI shape. This merge
+does not establish deployed HMS beta access or SDK package publication.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
