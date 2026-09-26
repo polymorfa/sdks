@@ -56,6 +56,12 @@ const events = await project.events.list({ limit: 25 });
 console.log(events.items, events.response.metadata.requestId);
 ```
 
+When the API applies its per-team request limit, response and error metadata
+expose `x-ratelimit-limit`, `x-ratelimit-remaining`, and `x-ratelimit-reset` in
+`metadata.headers`. The reset value is a Unix timestamp in seconds. On a
+rejected request, follow `retry-after` before retrying; the reset timestamp
+does not override it.
+
 A project token can construct only a project view and requires `projectId`:
 
 ```ts
