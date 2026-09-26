@@ -7,6 +7,7 @@ import {
   type CandidateTransport,
   type TrickleCandidate,
 } from "../src/internal.js";
+import { BrowserHttpError } from "../src/errors.js";
 
 // The factory builds its own remote `MediaStream`; everything else is injected.
 class FakeStream {
@@ -207,6 +208,8 @@ function factoryFor(options: {
   candidateTransport?: CandidateTransport;
   stream?: FakeStream;
   getUserMedia?: ReturnType<typeof vi.fn>;
+  setInterval?: typeof globalThis.setInterval;
+  clearInterval?: typeof globalThis.clearInterval;
 }) {
   const getUserMedia =
     options.getUserMedia ??
@@ -220,12 +223,62 @@ function factoryFor(options: {
       : { candidateTransport: options.candidateTransport }),
     mediaDevices: { getUserMedia } as unknown as MediaDevices,
     createPeerConnection: () => options.peer,
-    setInterval: (() => 0) as never,
-    clearInterval: (() => undefined) as never,
+    setInterval: options.setInterval ?? ((() => 0) as never),
+    clearInterval: options.clearInterval ?? ((() => undefined) as never),
   });
 }
 
 describe("WebRtcMediaFactory candidate handling", () => {
+  it("serializes fallback polls and pauses them after a shared-budget 429", async () => {
+    let tick: () => void = () => undefined;
+    let interval = 0;
+    let rejectPoll: (cause: unknown) => void = () => undefined;
+    const s = signaling({
+      candidates: vi.fn(
+        () =>
+          new Promise<readonly TrickleCandidate[]>((_, reject) => {
+            rejectPoll = reject;
+          }),
+      ),
+    });
+    const now = vi.spyOn(Date, "now").mockReturnValue(1_000);
+    const session = await factoryFor({
+      peer: peerConnection(),
+      signaling: s,
+      candidateTransport: {
+        connected: false,
+        sendCandidate: () => false,
+        onCandidate: () => () => undefined,
+      },
+      setInterval: ((fn: () => void, ms: number) => {
+        tick = fn;
+        interval = ms;
+        return 1;
+      }) as typeof globalThis.setInterval,
+    }).open("call-1", false, callbacks, new AbortController().signal);
+    try {
+      expect(interval).toBe(5_000);
+      tick();
+      tick();
+      expect(s["candidates"]).toHaveBeenCalledTimes(1);
+      rejectPoll(
+        new BrowserHttpError("rate limited", {
+          category: "rate_limit",
+          status: 429,
+        }),
+      );
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+      tick();
+      expect(s["candidates"]).toHaveBeenCalledTimes(1);
+      now.mockReturnValue(62_000);
+      tick();
+      expect(s["candidates"]).toHaveBeenCalledTimes(2);
+    } finally {
+      now.mockRestore();
+      await session.close({ leave: false });
+    }
+  });
+
   it("holds pushed candidates until the answer is applied, then drains them", async () => {
     const peer = peerConnection();
     const t = transport();
