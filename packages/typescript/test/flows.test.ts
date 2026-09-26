@@ -1,6 +1,11 @@
-import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
+import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import {
   Client,
+  PolymorfaAuthorizationError,
+  PolymorfaValidationError,
+  type FlowDraft,
+  type FlowSummary,
+  type FlowsResource,
   type FlowProviderResult,
   type CreateFlowRequest,
   type FlowProviderRequest,
@@ -29,7 +34,9 @@ describe("project Flow lifecycle", () => {
     servers.push(server);
     const flows = client(server).flows;
     await flows.list();
-    expect((await flows.retrieve("flow/eu")).data).toBeNull();
+    expect(
+      (await flows.retrieve("20000000-0000-4000-8000-000000000002")).data,
+    ).toBeNull();
     await flows.create({ name: "Booking", definition: { version: "7.1" } });
     await flows.update("flow/eu", { expectedUpdatedAt: 42, name: "Booking 2" });
     await flows.delete("flow/eu");
@@ -49,7 +56,7 @@ describe("project Flow lifecycle", () => {
     await flows.receipts("flow/eu");
     expect(server.requests.map((r) => `${r.method} ${r.path}`)).toEqual([
       `GET /platform/flows?projectId=${projectId}`,
-      `GET /platform/flows/flow%2Feu?projectId=${projectId}`,
+      `GET /platform/flows/20000000-0000-4000-8000-000000000002?projectId=${projectId}`,
       "POST /platform/flows",
       "PATCH /platform/flows/flow%2Feu",
       `DELETE /platform/flows/flow%2Feu?projectId=${projectId}`,
@@ -131,5 +138,88 @@ describe("project Flow lifecycle", () => {
     expectTypeOf(response.data).toEqualTypeOf<FlowProviderResult>();
     expect(response.data).toEqual(data);
     expectTypeOf(response.data.operation!.flowName).toEqualTypeOf<string>();
+  });
+});
+
+const readFlowId = "20000000-0000-4000-8000-000000000002";
+const summary: FlowSummary = {
+  id: readFlowId,
+  name: "Registration",
+  status: "draft",
+  version: "7.1",
+  screenCount: 1,
+  metaLinks: [],
+  createdAt: 1,
+  updatedAt: 2,
+};
+
+describe("project Flow reads", () => {
+  it("binds reads to the selected project and unwraps list and nullable get responses", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async (request) => {
+      const url = new URL(String(request));
+      return Response.json({
+        data:
+          url.pathname === "/platform/flows"
+            ? [summary]
+            : url.pathname.endsWith(readFlowId)
+              ? { ...summary, definition: { version: "7.1", screens: [] } }
+              : null,
+      });
+    });
+    const sdk = new Client({
+      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      fetch,
+    });
+    expect("flows" in sdk).toBe(false);
+    const flows = sdk.project(projectId).flows;
+    expectTypeOf(flows).toEqualTypeOf<FlowsResource>();
+    const listed = await flows.list();
+    const retrieved = await flows.retrieve(readFlowId);
+    const absent = await flows.retrieve("30000000-0000-4000-8000-000000000003");
+    expectTypeOf(listed.data).toEqualTypeOf<readonly FlowSummary[]>();
+    expectTypeOf(retrieved.data).toEqualTypeOf<FlowDraft | null>();
+    expect(listed.data).toEqual([summary]);
+    expect(retrieved.data?.definition).toEqual({ version: "7.1", screens: [] });
+    expect(absent.data).toBeNull();
+    expect(
+      fetch.mock.calls.map(([url, init]) => [String(url), init?.method]),
+    ).toEqual([
+      [
+        `https://api.polymorfa.com/platform/flows?projectId=${projectId}`,
+        "GET",
+      ],
+      [
+        `https://api.polymorfa.com/platform/flows/${readFlowId}?projectId=${projectId}`,
+        "GET",
+      ],
+      [
+        `https://api.polymorfa.com/platform/flows/30000000-0000-4000-8000-000000000003?projectId=${projectId}`,
+        "GET",
+      ],
+    ]);
+  });
+
+  it("keeps project tokens bound, rejects malformed IDs locally, and preserves API authorization errors", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json(
+        { error: { code: "forbidden", message: "Missing sessions:read" } },
+        { status: 403 },
+      ),
+    );
+    const sdk = new Client({
+      credential: { type: "projectToken", value: PROJECT_TOKEN },
+      projectId,
+      fetch,
+      maxNetworkRetries: 0,
+    });
+    expect(() => sdk.project("other-project")).toThrow();
+    expect(() => sdk.flows.retrieve("../other")).toThrow(
+      PolymorfaValidationError,
+    );
+    expect(fetch).not.toHaveBeenCalled();
+    await expect(sdk.flows.list()).rejects.toBeInstanceOf(
+      PolymorfaAuthorizationError,
+    );
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 });
