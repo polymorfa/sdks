@@ -1,7 +1,10 @@
 import type {
+  CampaignTestSendRequest,
+  CampaignVariableMapping,
   CampaignRecipient,
   CampaignRecipientInput,
   CampaignRecipientStatus,
+  CampaignSendWindowRequest,
   InvalidRecipientRow,
 } from "../messaging/types.js";
 
@@ -172,24 +175,54 @@ export interface TransferCustomerNumberRequest {
   readonly confirm: true;
 }
 
+/** One composed message in a campaign sequence. */
+export interface CampaignMessage {
+  readonly version?: 2;
+  readonly source?: string;
+  readonly media?: {
+    readonly kind: "image" | "video" | "audio" | "document";
+    /** Public HTTPS attachment URL. */
+    readonly url: string;
+    readonly filename?: string;
+    readonly caption?: string;
+    readonly [field: string]: unknown;
+  };
+  readonly buttons?: readonly {
+    readonly kind: "reply" | "link" | "call";
+    readonly label: string;
+    readonly url?: string;
+    readonly phone?: string;
+    readonly [field: string]: unknown;
+  }[];
+  readonly footer?: string;
+  /** Minimum seconds after the previous accepted message; ignored on the first. 0–86400. */
+  readonly delayAfterSec?: number;
+  readonly [field: string]: unknown;
+}
+
 /** Create a campaign through the organization client's Platform resource. */
 export interface CreatePlatformCampaignRequest {
   /** Owning project; organization API keys are not bound to one project. */
   readonly projectId: string;
   /** Trimmed by the API; 1 to 200 characters and must not be blank. */
   readonly name: string;
+  /** Template in the project to send instead of composed messages. */
   readonly templateId?: string;
+  readonly variableMapping?: CampaignVariableMapping;
   readonly recipientListId?: string;
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Scheduled start time in Unix milliseconds. */
   readonly scheduledAt?: number;
+  /** Omit for any-time sending. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   /** At most 1,000 recipients. */
   readonly recipients?: readonly CampaignRecipientInput[];
   /** Ignored when inline recipients are supplied. */
   readonly recipientCount?: number;
   // The API deliberately leaves these JSON values opaque.
   readonly composerBlueprint?: unknown;
-  readonly messagesArray?: unknown;
+  /** Up to ten composed messages, sent in order when no template is selected. */
+  readonly messagesArray?: readonly CampaignMessage[];
   readonly audienceRef?: unknown;
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
@@ -211,6 +244,11 @@ export interface PlatformCampaignParams {
   readonly projectId: string;
 }
 
+/** Team keys supply `projectId`; a project credential already has it. */
+export interface PlatformCampaignTestSendRequest extends CampaignTestSendRequest {
+  readonly projectId?: string;
+}
+
 /**
  * Body accepted by `campaigns.update`.
  *
@@ -222,7 +260,33 @@ export interface PlatformCampaignParams {
  */
 export interface UpdatePlatformCampaignRequest {
   readonly recipientListId?: string | null;
+  /** Only drafts and paused campaigns may change the window; null removes it. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
+  /** Template to send, or null for the composed messages. Draft only. */
+  readonly templateId?: string | null;
+  /** Replaces the whole mapping; null clears it. Draft only. */
+  readonly variableMapping?: CampaignVariableMapping | null;
+  /** Replaces the composed sequence; at most ten messages. */
+  readonly messagesArray?: readonly CampaignMessage[];
   readonly [field: string]: unknown;
+}
+
+/** Body accepted by `campaigns.launch`. */
+export interface LaunchPlatformCampaignRequest {
+  /** Required with a team API key. */
+  readonly projectId?: string;
+  /** Scheduled start time in Unix milliseconds. */
+  readonly scheduledAt?: number;
+  /** Skip recipients missing a variable instead of failing with `campaign_variables_missing`. */
+  readonly skipMissingVariables?: boolean;
+  readonly [field: string]: unknown;
+}
+
+export interface ReschedulePlatformCampaignRequest {
+  /** Owning project for an organization API key. */
+  readonly projectId: string;
+  /** New start time in Unix milliseconds; null or a past time starts now. */
+  readonly scheduledAt: number | null;
 }
 
 export interface ListPlatformCampaignRecipientsParams {

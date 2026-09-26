@@ -17,16 +17,25 @@ const body = {
   name: "August launch",
   projectId: "018f0000-0000-7000-8000-000000000001",
   templateId: "018f0000-0000-7000-8000-000000000002",
+  variableMapping: { firstName: { source: "name", fallback: "friend" } },
   recipientListId: "018f0000-0000-7000-8000-000000000003",
   senderConfig: {
     retry: { enabled: true },
     nested: [null, { enabled: false }],
   },
   scheduledAt: 1_800_000_000_000,
+  sendWindow: {
+    timeZone: "America/Sao_Paulo",
+    days: ["monday"],
+    hours: [{ start: "09:00", end: "17:00" }],
+  },
   recipients: [{ phone: "+15551234567", variables: { plan: "pro" } }],
   recipientCount: 100,
   composerBlueprint: { steps: [null, { text: "Hello" }] },
-  messagesArray: [{ kind: "text", text: "Hello" }],
+  messagesArray: [
+    { version: 2, source: "Hello {{name}}", delayAfterSec: 0 },
+    { version: 2, source: "Next", delayAfterSec: 30 },
+  ],
   audienceRef: null,
   complianceConfig: false,
   variants: ["a", "b"],
@@ -53,7 +62,6 @@ it("covers exactly the pinned create request fields without closing opaque JSON"
   );
   for (const field of [
     "composerBlueprint",
-    "messagesArray",
     "audienceRef",
     "complianceConfig",
     "variants",
@@ -61,6 +69,9 @@ it("covers exactly the pinned create request fields without closing opaque JSON"
   ]) {
     expect(schema.properties[field]).toEqual({});
   }
+  expect(schema.properties.messagesArray.items.$ref).toBe(
+    "#/components/schemas/CampaignMessage",
+  );
   expectTypeOf<
     CreatePlatformCampaignRequest["composerBlueprint"]
   >().toEqualTypeOf<unknown>();

@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "9b64c70b622593aeda7364b7603ba6790144594e",
-  "branch": "dev",
-  "published": true,
-  "note": "Merged API dev source with owner-specific Platform webhook test inputs. Messaging and Platform snapshots are byte-identical to this revision; SDK package publication and deployment remain separate.",
+  "commit": "6d8adf864be6a8e0808620b87750bee103556c01",
+  "branch": "t3code/campaigns-stop-confirmation",
+  "published": false,
+  "note": "Coordinated Campaigns API branch snapshot; SDK publication and deployed availability remain separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "992b8a26ffb9ae3476fea4c1fca6ebaa662a0dac3e5bfcd31f1af6b7a01932e8"
+      "sha256": "0ceb1d92d8153bf778f03bf3058d646e60663551e95725a721c6df109cb963ae"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "6cf2ab1aa2a187553cc95a87bfa281613a2e0b047b81695c937c1b38b19c7218"
+      "sha256": "f2a19a5fb17dd40f77f07fa3aa8771275b5ecdedc8487e0e4e382787aba9ee58"
     }
   }
 }

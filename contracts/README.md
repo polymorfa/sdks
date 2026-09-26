@@ -42,8 +42,12 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` API `dev` commit
-`9b64c70b622593aeda7364b7603ba6790144594e`. Team webhook tests now use
+files at coordinated Campaigns API commit
+`6d8adf864be6a8e0808620b87750bee103556c01` (branch
+`t3code/campaigns-stop-confirmation`, not yet merged or published). Seven new
+Campaigns reschedule/test-send and STOP confirmation operations are covered.
+Existing fingerprints were reconciled against this exact revision; the SDK
+package is not yet published. Team webhook tests now use
 their own event-only input schema; project webhook tests still accept a paired
 body and session ID. The team test operation is covered by
 `Client.webhooks.test`, which rejects project-only fields before sending.
@@ -163,12 +167,12 @@ signed events with these names still decode as unknown events.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        379 |
+| Covered             |        386 |
 | Missing             |          0 |
 | Excluded            |        130 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        509 |
+| Total               |        516 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

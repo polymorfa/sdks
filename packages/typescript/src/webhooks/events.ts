@@ -47,6 +47,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "campaign.recipient_failed",
   "campaign.recipient_sent",
   "campaign.recipient_skipped",
+  "campaign.rescheduled",
   "campaign.resumed",
   "campaign.stopped",
   "campaign.throttled",
@@ -820,6 +821,16 @@ export interface CampaignPausedPayload {
   readonly pausedAt: number;
 }
 
+export interface CampaignRescheduledPayload {
+  readonly campaignId: string;
+  /** Replaced start time in Unix milliseconds, or null. */
+  readonly previousScheduledAt: number | null;
+  /** New start time in Unix milliseconds; equals rescheduledAt when starting now. */
+  readonly scheduledAt: number;
+  /** Unix milliseconds when the new start was accepted. */
+  readonly rescheduledAt: number;
+}
+
 export interface CampaignResumedPayload {
   readonly campaignId: string;
   readonly sentCount: number;
@@ -862,6 +873,8 @@ export interface CampaignRecipientSentPayload {
   readonly externalMessageId: string;
   readonly variantKey: string;
   readonly attempt: number;
+  /** Zero-based position in the campaign's message sequence. */
+  readonly messageIndex: number;
 }
 
 export interface CampaignRecipientFailedPayload {
@@ -871,6 +884,8 @@ export interface CampaignRecipientFailedPayload {
   readonly attempts: number;
   readonly error: string;
   readonly failedAt: number;
+  /** Zero-based position of the failed message. */
+  readonly messageIndex: number;
 }
 
 export interface CampaignRecipientSkippedPayload {
@@ -985,6 +1000,7 @@ export interface WebhookPayloadMap {
   readonly "campaign.recipient_failed": CampaignRecipientFailedPayload;
   readonly "campaign.recipient_sent": CampaignRecipientSentPayload;
   readonly "campaign.recipient_skipped": CampaignRecipientSkippedPayload;
+  readonly "campaign.rescheduled": CampaignRescheduledPayload;
   readonly "campaign.resumed": CampaignResumedPayload;
   readonly "campaign.stopped": CampaignStoppedPayload;
   readonly "campaign.throttled": CampaignThrottledPayload;

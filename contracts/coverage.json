@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "9b64c70b622593aeda7364b7603ba6790144594e",
+  "sourceCommit": "6d8adf864be6a8e0808620b87750bee103556c01",
   "excludedContracts": [
     {
       "family": "graph",
@@ -13,7 +13,7 @@
       "method": "DELETE",
       "path": "/messaging/{session}/business/collections/{collectionId}",
       "operationId": "deleteBusinessCollection",
-      "fingerprint": "359cc9498cc56b25e610192ad60ce5e9312c127d7f53f117bfa61b66f4547823",
+      "fingerprint": "6e06c749d3893cb812e1ce908b0e62141572f9dda67528bcc7ee650f1ae86234",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.deleteCollection"
@@ -24,7 +24,7 @@
       "method": "DELETE",
       "path": "/messaging/{session}/business/products/{productId}",
       "operationId": "deleteBusinessProduct",
-      "fingerprint": "b22e533c227f7a2cabf2d7e59d1f06d6034834e68bfbf487e2b96ffe86797498",
+      "fingerprint": "a0af3cdf1480da8ff8cc0989a1a4dd89d99f7d5711fcf19d5768fdd32027d093",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.deleteProduct"
@@ -35,7 +35,7 @@
       "method": "DELETE",
       "path": "/messaging/{session}/business/profile/cover-photo/{coverPhotoId}",
       "operationId": "deleteBusinessCoverPhoto",
-      "fingerprint": "c6cd9595dc9275fc5ed7347e14e322caedbf18e35027df5ab5f748241626b05a",
+      "fingerprint": "f40d41b85e917f6c6fab816e8498019c4e6dd1fcb60aa7299a65a73cf1998dee",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.deleteCoverPhoto"
@@ -46,7 +46,7 @@
       "method": "DELETE",
       "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
       "operationId": "deleteBusinessQuickReply",
-      "fingerprint": "d6f516e90c1ef08c0d88e118f475371c0b96f34caa268f924a8e17f937ceeef8",
+      "fingerprint": "f28f4a2a8238b5dc3df2e6836e46cab380f4d995d4a8e2be53ab24c7e2fbbadd",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickReplies.delete"
@@ -57,7 +57,7 @@
       "method": "DELETE",
       "path": "/messaging/{session}/channels/{id}",
       "operationId": "deleteChannel",
-      "fingerprint": "0e985fa6e1f2036a5110f3f434516b7679c804aa5ddb17e5a30d1801356ac6c9",
+      "fingerprint": "24193b29d0f3eaccc2f0bf9305c0a7eec767e46d05d824dab9fe1e7d8c59863b",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.delete"
@@ -68,7 +68,7 @@
       "method": "DELETE",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
       "operationId": "deleteMessage",
-      "fingerprint": "94193b84df0998d21761a3ca5a5a690701a87c758041b26e987ab8781605549e",
+      "fingerprint": "78fae7b678dd25bb8947e7c49f7c1343258777b41fbc7d862f30ea6a0c25ac28",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.chats.deleteMessage"
@@ -79,7 +79,7 @@
       "method": "DELETE",
       "path": "/messaging/{session}/groups/{id}",
       "operationId": "deleteGroup",
-      "fingerprint": "71714977bb192d333583ffe7fba9dbbc00bee4b6eec7f83b927fab41f0dbcee5",
+      "fingerprint": "508b45d10afdda23a8f5cb2e4e0492575b824ae0a3ac27626f315f0ef50edbcb",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.delete"
@@ -90,7 +90,7 @@
       "method": "DELETE",
       "path": "/messaging/{session}/labels/{labelId}",
       "operationId": "deleteLabel",
-      "fingerprint": "bcddc5e8385eb16682751b2073102772fb0790e76c264c49443056e7875fd95f",
+      "fingerprint": "796e4952eb10f1af3f19fd38321cc967ec50bf58147838eba3294017f83ea109",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.labels.delete"
@@ -101,7 +101,7 @@
       "method": "DELETE",
       "path": "/messaging/{session}/profile/picture",
       "operationId": "deleteProfilePicture",
-      "fingerprint": "d9d1df30dc425729ca2622d86163bd63f34dde26a71a6e4a479740438f06f22c",
+      "fingerprint": "dce7041982fda7cd2bd1ea267da1b6b850c4131351096eefd01461f93fce0965",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.profile.deletePicture"
@@ -112,7 +112,7 @@
       "method": "DELETE",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
       "operationId": "deleteProjectTemplate",
-      "fingerprint": "1b1be00f9b7bf5e6a664515b957766389abc6abff0539a82660506d9a41b3ce6",
+      "fingerprint": "6cac03fcf7631a1663fe2b8cb1f5092b2818f318f6bf63238918423d2a262df9",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.templates.delete"
@@ -123,7 +123,7 @@
       "method": "DELETE",
       "path": "/messaging/quicklinks/{id}",
       "operationId": "cancelQuickLink",
-      "fingerprint": "9c0176929aab87ab08edc96635e191d786e20cc1350883d950fbb90c703100db",
+      "fingerprint": "a1e3880e8049c964311009102aebf882e7a47db71d93907005545f67cb4017fa",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickLinks.cancel"
@@ -134,7 +134,7 @@
       "method": "DELETE",
       "path": "/messaging/voip/calls/{id}",
       "operationId": "voipTeardown",
-      "fingerprint": "9e56c6f7db04e1bc6357f9f333bbc9e82877e669ef7ce64ef4744186a76c4b74",
+      "fingerprint": "52995c64dda35557b08a0767b59de84248982704d9d0e6393a8a88f19699a6f4",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.end"
@@ -145,7 +145,7 @@
       "method": "DELETE",
       "path": "/messaging/webhooks/{id}",
       "operationId": "deleteWebhook",
-      "fingerprint": "42dc1f9c982baa5163313185ad44526260f08297625e636f80e047e62bdb8aa3",
+      "fingerprint": "6470432efcde369efbc5b3f67d0696f4b46cb585c1f61c392e6f5219132d2169",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.webhooks.delete"
@@ -167,7 +167,7 @@
       "method": "GET",
       "path": "/messaging/{session}/business/catalog",
       "operationId": "getBusinessCatalog",
-      "fingerprint": "0343669a80027d2b3a15ffa36b247fa64dae908dd6e4d44daff1885404aa2e7b",
+      "fingerprint": "b091795189d0e41d72acb7cbad3c477f54c87a44f625d17aa96e5cbe12e56c99",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.getCatalog"
@@ -178,7 +178,7 @@
       "method": "GET",
       "path": "/messaging/{session}/business/collections",
       "operationId": "getBusinessCollections",
-      "fingerprint": "d8dd52927e0d82edc771a4dc5e77876cd0556622ceffc58abdad71d13a78728d",
+      "fingerprint": "7dd60ee562dd0d7649fdab429c0d9744147c35d4a05e5841777bd90200a170b2",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.listCollections"
@@ -189,7 +189,7 @@
       "method": "GET",
       "path": "/messaging/{session}/business/collections/{collectionId}",
       "operationId": "getBusinessCollection",
-      "fingerprint": "b5a5c7f941eb9f6ff9040dcf89ca94166f933415af1cf55dde784098d00ec26c",
+      "fingerprint": "9360543bc023c337830452f180ee0a8815a3ac2917c7e6907960e2723d5f0c02",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.getCollection"
@@ -200,7 +200,7 @@
       "method": "GET",
       "path": "/messaging/{session}/business/compliance",
       "operationId": "getBusinessMerchantCompliance",
-      "fingerprint": "b6fbd1133265954a4108b4a222e9fa4128ac98e06327a12a092ff210c8070c3b",
+      "fingerprint": "56c6a3163a603f6bc310a5babe03f4220333ba4d38d402071ae2a8a69df30ed7",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.getMerchantCompliance"
@@ -211,7 +211,7 @@
       "method": "GET",
       "path": "/messaging/{session}/business/eligibility",
       "operationId": "getBusinessEligibility",
-      "fingerprint": "1b040b988e1c1ba072a3e83be4482b4078bffa1e273a4ae72222d0c67675af1f",
+      "fingerprint": "f1f8e196c0209cf30fe5e444a908e391fc6b6efb8961034af2ca99d03bfb829e",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.getEligibility"
@@ -222,7 +222,7 @@
       "method": "GET",
       "path": "/messaging/{session}/business/linked-accounts",
       "operationId": "getBusinessLinkedAccounts",
-      "fingerprint": "e0dbebc8e3df452862769a0d20e44d939f576143cc70f4f03a97e62bfbc0da39",
+      "fingerprint": "d7f8457e855ef1e20293ea9d0dc87584379a432ef57d46ce19255a1b0ecc37bc",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.getLinkedAccounts"
@@ -233,7 +233,7 @@
       "method": "GET",
       "path": "/messaging/{session}/business/products/{productId}",
       "operationId": "getBusinessProduct",
-      "fingerprint": "f8f826f843688fbdb9145870cd23dec351d886d45f46110531edda81ba01fd3c",
+      "fingerprint": "6184bc90ce4152914fa3bd7f677d739c8f7cdce291c9a6065da9622f95025ea3",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.getProduct"
@@ -244,7 +244,7 @@
       "method": "GET",
       "path": "/messaging/{session}/business/profile",
       "operationId": "getOwnBusinessProfile",
-      "fingerprint": "a2d6752596ac3949ce4a58d0a61e925e694043f93e7c473451a2c117acdd154e",
+      "fingerprint": "6aa85b555f085d9abd645a140c13b87b21bf7ae5416fd53038591efb20f395aa",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.getProfile"
@@ -255,7 +255,7 @@
       "method": "GET",
       "path": "/messaging/{session}/business/quick-replies",
       "operationId": "listBusinessQuickReplies",
-      "fingerprint": "bd9c3cab1c8cad3a8681ccea4b5394f190fa3a36c6c72edb8991ecfbfba11623",
+      "fingerprint": "7bc0917fdbf24f78f076897a1891dedfb703b6ca6cf6a823468166ab06503281",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickReplies.list"
@@ -266,7 +266,7 @@
       "method": "GET",
       "path": "/messaging/{session}/call-permissions/{to}",
       "operationId": "getCallPermission",
-      "fingerprint": "7ddf19fca942e2cb1bb6238002f25befd40bb09527e28d8be8b43d80f82130cf",
+      "fingerprint": "5b2979fed0b0259bb90c6e773fe5d33e172fc066d205f13508f6e12e4f284795",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.retrieveCallPermission"
@@ -277,7 +277,7 @@
       "method": "GET",
       "path": "/messaging/{session}/channels",
       "operationId": "listChannels",
-      "fingerprint": "69c7395ff270a61853006079f6ea13d9cbe5d56077961ea4a906d52f6d2c8c1f",
+      "fingerprint": "f51b7b9ddabc388bad8087805ef2ed138e8fba3f11522c6d91a3fc2275b8b435",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.list"
@@ -288,7 +288,7 @@
       "method": "GET",
       "path": "/messaging/{session}/channels/{id}",
       "operationId": "getChannel",
-      "fingerprint": "47a3626b8efe58e590dcffafced6cde94dd5a195d7fc2c302809d6fa4224f2bc",
+      "fingerprint": "07796aa771745497f3ca9ac238da99b2bb6e99827f771e8a4e364561392cb440",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.retrieve"
@@ -299,7 +299,7 @@
       "method": "GET",
       "path": "/messaging/{session}/channels/{id}/message-updates",
       "operationId": "listChannelMessageUpdates",
-      "fingerprint": "d0a8540ab7d9d475638a1f30a3ab8a2e4b292a72b12d4c373375461e07c8a110",
+      "fingerprint": "fe72c9d5cbd74adb0ef250399611dde6b45352119173cd8b4f6b6afbd1a970a5",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.listMessageUpdates"
@@ -310,7 +310,7 @@
       "method": "GET",
       "path": "/messaging/{session}/channels/{id}/messages",
       "operationId": "listChannelMessages",
-      "fingerprint": "4435249048d4acb36667bd7e14ac2d7a8d17b06059aa8ca3610e9d3794b4d646",
+      "fingerprint": "f1584d4685dbc4d7bda9dc1ae5a1cf3129062ed0037a080515ff4dec14475c2c",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.listMessages"
@@ -321,7 +321,7 @@
       "method": "GET",
       "path": "/messaging/{session}/chats",
       "operationId": "listChats",
-      "fingerprint": "efb75aef9b2cd4349d3627680dcfb5215958c700413abc233af7406dacf743ed",
+      "fingerprint": "9d968f0dcc032a67677d7c4526b7c0b179bb119490b6ea5fd6efe9f6f52fe0d1",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.chats.list"
@@ -332,7 +332,7 @@
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}",
       "operationId": "getChat",
-      "fingerprint": "4c7093395b06165fa3de12f0855fe07bfb0d613ac35e792e878093b9dada7768",
+      "fingerprint": "0bbe4faba1d6ae6530831dcb794aa9defc44d3e892a2e8a62f7f37905cf9d108",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.chats.retrieve"
@@ -343,7 +343,7 @@
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/messages",
       "operationId": "listChatMessages",
-      "fingerprint": "eedca694e77953c840f19e0999be9aafd3f4ec67c08ec6c6653e4d31debc9a57",
+      "fingerprint": "59747d7aa78677e5690644bdfa06d2da1f2d897ea2aa0336265aeebe9adf78d8",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.chats.listMessages"
@@ -354,7 +354,7 @@
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
       "operationId": "getChatMessage",
-      "fingerprint": "40dadd9f752d0fe5231120f5ebc385751bb8d8eaf228070581055ba5c94e6987",
+      "fingerprint": "f4521b8de47113b9ced8bdc70b04b95c44231ab174f5c01dc07ba883225c4ab4",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.chats.retrieveMessage"
@@ -365,7 +365,7 @@
       "method": "GET",
       "path": "/messaging/{session}/contacts",
       "operationId": "listContacts",
-      "fingerprint": "97c8ed2eefae451c08722ecfa04018239943371732f53e79a846275eb3f9cdbb",
+      "fingerprint": "6ae8e531c7469bd09c2e00bfc70e624d343333426329aa143654ce87cb559983",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.contacts.list"
@@ -376,7 +376,7 @@
       "method": "GET",
       "path": "/messaging/{session}/contacts/{contactId}",
       "operationId": "getContact",
-      "fingerprint": "630edd70de0a1812b2904db8562455c2df2225eda80d04b845f0b08e9ddb6be7",
+      "fingerprint": "dd92cbfd00580ba47239102fe19e0fe33b61e0c067c31bae51ac3acaf5b5b8e7",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.contacts.retrieve"
@@ -387,7 +387,7 @@
       "method": "GET",
       "path": "/messaging/{session}/contacts/{contactId}/business-profile",
       "operationId": "getBusinessProfile",
-      "fingerprint": "6243cac1a451121d42001d57877e51abba54c452d1c8c57b21225ec61a303bba",
+      "fingerprint": "a01c38936301e447547fba98474b4ea59bb54fd431d87caebd4493a93ab4da1b",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.contacts.businessProfile"
@@ -398,7 +398,7 @@
       "method": "GET",
       "path": "/messaging/{session}/contacts/{contactId}/devices",
       "operationId": "getUserDevices",
-      "fingerprint": "6653eed239848a27d05b35a971bb050737e418c5f818bacedd2e86a035126bda",
+      "fingerprint": "53147aad84722f861dfe0096262d0aeebb1ced626325c0c4b0708255295c851a",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.contacts.devices"
@@ -409,7 +409,7 @@
       "method": "GET",
       "path": "/messaging/{session}/contacts/{contactId}/info",
       "operationId": "getUserInfo",
-      "fingerprint": "90653344655bcd6533e4262223c9eb94679e7490f7d6672df3808c31f528c6a2",
+      "fingerprint": "02703f1ff4d3c970e8f6a1b0241caf8b605adaca1e8c976575fe9a4268f8774f",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.contacts.info"
@@ -420,7 +420,7 @@
       "method": "GET",
       "path": "/messaging/{session}/contacts/{contactId}/picture",
       "operationId": "getContactPicture",
-      "fingerprint": "447e93829c67b47b5a5ef5a1f3dbe6428db0e985743a3f49627597190ef3725f",
+      "fingerprint": "8ff974a967de932ba5f2c9da56decec46fa549158bfe93ad08059f2f901d6a33",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.contacts.picture"
@@ -431,7 +431,7 @@
       "method": "GET",
       "path": "/messaging/{session}/contacts/blocked",
       "operationId": "getBlocklist",
-      "fingerprint": "827304a10677b72d262692ef64e13c37f86ea3792c944ff8bf3c96640674e21d",
+      "fingerprint": "37cc8baa6352e743aa275045884e7b39cec6eda1ae26ed81473c2cd496f65f4c",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.contacts.blocklist"
@@ -442,7 +442,7 @@
       "method": "GET",
       "path": "/messaging/{session}/contacts/check",
       "operationId": "checkContacts",
-      "fingerprint": "41d3f2a9f031820d2535e65e1c1556bf63e107d78b8dc8defa1560c098996f19",
+      "fingerprint": "0c97cabe10c4cc4bdb94931d5999855fac74b5ade1e8dc8945a14727fbaa1349",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.contacts.check"
@@ -453,7 +453,7 @@
       "method": "GET",
       "path": "/messaging/{session}/groups",
       "operationId": "listGroups",
-      "fingerprint": "557fdaae3fd9c9b5053f9a7ca03741232f446415ba0a8372f38744eca263ee76",
+      "fingerprint": "34b766b31c0a0296ffa4682958012c2b9353d48900f0c487f6fd1c6eb124a2e4",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.list"
@@ -464,7 +464,7 @@
       "method": "GET",
       "path": "/messaging/{session}/groups/{id}",
       "operationId": "getGroup",
-      "fingerprint": "051c41c85fff332132442add73be7d97d48690de74099bee5589343d0e0fea69",
+      "fingerprint": "dab8eeb9ec91102acb38634e05d03224f0eb666aaf19bea6d897b270879b4e90",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.retrieve"
@@ -475,7 +475,7 @@
       "method": "GET",
       "path": "/messaging/{session}/groups/{id}/invite-code",
       "operationId": "getGroupInviteCode",
-      "fingerprint": "a9dcd0a74eb65a8acae7b75e0f8b921b292343a1fdd054965195fc04afa6ece7",
+      "fingerprint": "0565297547b188342617326323d4f067a96cefad49642779941bb172331fcf02",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.getInviteCode"
@@ -486,7 +486,7 @@
       "method": "GET",
       "path": "/messaging/{session}/groups/{id}/participants",
       "operationId": "getGroupParticipants",
-      "fingerprint": "85d01079ab4c01f365f1a09a3d95fb47dab7b8f9c18438b2eb566f6dd6ddceb0",
+      "fingerprint": "fbd50fd777a41d05fdbedeb447743aefbc9eee27cb60956da1293dbdcefb1288",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.listParticipants"
@@ -497,7 +497,7 @@
       "method": "GET",
       "path": "/messaging/{session}/groups/join-info",
       "operationId": "getGroupJoinInfo",
-      "fingerprint": "df9e90196753b285abe9cd2220f8b9c52070cae3803739eb3ba2f54c11089518",
+      "fingerprint": "287e637f561911d01fb4363634c99c426dec5eea52d266ec87eccccad1d9d09c",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.getJoinInfo"
@@ -508,7 +508,7 @@
       "method": "GET",
       "path": "/messaging/{session}/hybrid-link",
       "operationId": "getHybridLinkState",
-      "fingerprint": "5856d04e61b223199fdc4577aaba39da07b0692c88466d95b99b03217e44570c",
+      "fingerprint": "d66d0df6d71c182cee7bd6fcc2b9fcfbfec35e201ce7e8a292d9471962e3ba33",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.hybridLink.state"
@@ -519,7 +519,7 @@
       "method": "GET",
       "path": "/messaging/{session}/identities/resolve",
       "operationId": "resolveIdentity",
-      "fingerprint": "b4f5f2df9f32dc446dd03f1ef2ebe2a08d8b54e9136c2d3eabb4dc2777054e7a",
+      "fingerprint": "e6e8aae62c6c83fe03099e777bf89d9b598cc389eb618bec673e965d2ac6d088",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.identities.resolve"
@@ -530,7 +530,7 @@
       "method": "GET",
       "path": "/messaging/{session}/labels",
       "operationId": "listLabels",
-      "fingerprint": "62b43c0f75936f3218a2905eba98d4ebd4ba7cb1ba073e6760dfbfe19349ea00",
+      "fingerprint": "1d015f30e96e58f9ba2d7541faec9ac1285dcc280ed6d480373568df3dbd2db1",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.labels.list"
@@ -541,7 +541,7 @@
       "method": "GET",
       "path": "/messaging/{session}/labels/chats/{conversation}",
       "operationId": "getChatLabels",
-      "fingerprint": "9c1718d2c9779681a1477f805b395f04fc39a044a8d9721858db68b434d84176",
+      "fingerprint": "cd5188ec0eb01a1fcffe7f1ea8562ffbf9f9106eea5ba062fdba6abe4c938fb9",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.labels.listForChat"
@@ -552,7 +552,7 @@
       "method": "GET",
       "path": "/messaging/{session}/observation-policy",
       "operationId": "getSessionObservationPolicy",
-      "fingerprint": "f682652452cd459b275c58d4702fa8451f3fe1e86a4d2c90150fc22d8af52c3e",
+      "fingerprint": "e881408c39db5fccbcbcabd618af114c1fac609bb2d12a69c1a4add4131da059",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.observationPolicies.retrieveForSession"
@@ -563,7 +563,7 @@
       "method": "GET",
       "path": "/messaging/{session}/operations/{operationId}",
       "operationId": "getMessageOperation",
-      "fingerprint": "6cd745f7d7be9072271658936369ec0fac1a3db6d35f75d2feb603772b39a520",
+      "fingerprint": "230561aafa742b5913d064ac0670985a72080983270d4c89179b8a787c950e20",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.operationStatus"
@@ -574,7 +574,7 @@
       "method": "GET",
       "path": "/messaging/{session}/pair/qr",
       "operationId": "getQRCode",
-      "fingerprint": "50fd6b66daa47375025cb30f122aeaccf996335d4e8ad6f29256dc31c8fdcf35",
+      "fingerprint": "5fe548542e5151899dcc4931dcbf287617f1d10adb2a9df567c7c5e3fff12bc7",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.sessions.qr"
@@ -585,7 +585,7 @@
       "method": "GET",
       "path": "/messaging/{session}/presence",
       "operationId": "getPresence",
-      "fingerprint": "92e889a548d108d46b9e5300dfec1216dc816d5ccaf44eb5f6f2817ab8ee13c9",
+      "fingerprint": "54a7f726185976d276254ee06741c42dac5900029837b24c9c12162c77d7aa6c",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.presence.get"
@@ -596,7 +596,7 @@
       "method": "GET",
       "path": "/messaging/{session}/presence/{conversation}",
       "operationId": "getChatPresence",
-      "fingerprint": "3477e117477fb53842d89c3076e157c4947cd8a1fab509d3677496e5b8407f1b",
+      "fingerprint": "36d419c3be06d4dd287e45f6462ec65c9adb818f51fe7b6c428d8d2daefba23c",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.presence.getForChat"
@@ -607,7 +607,7 @@
       "method": "GET",
       "path": "/messaging/{session}/privacy",
       "operationId": "getPrivacySettings",
-      "fingerprint": "ea2f0ab02f5669ce4971ba218cd8b247449901c283d2cd22318cd5472c01ce1a",
+      "fingerprint": "cdb68bd6fb50be6e6e6f843f3a7ad57ad38b22d5c1a8fa71a3bb7d26c82b5dbf",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.privacy.get"
@@ -618,7 +618,7 @@
       "method": "GET",
       "path": "/messaging/{session}/profile",
       "operationId": "getProfile",
-      "fingerprint": "2d179fe40f833323b19fa33fb773822ab239973a913c91c368883e04ae426799",
+      "fingerprint": "b9085a0bb425f02018e1164a1cccee65ec18dfd99ae48ed3405753c289e82ba0",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.profile.get"
@@ -629,7 +629,7 @@
       "method": "GET",
       "path": "/messaging/{session}/safe-mode",
       "operationId": "getSessionSafeMode",
-      "fingerprint": "13d0467c725ae1eb95694355d55891ac9a186ab4de5fec97facfc17e759c010e",
+      "fingerprint": "95e3ec79b4c53be213d9578b59266b81df484c7e734c829ec4d49f50d6460c43",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.banSafe.getSessionSafeMode"
@@ -640,7 +640,7 @@
       "method": "GET",
       "path": "/messaging/{session}/users/{id}/security-code",
       "operationId": "getUserSecurityCode",
-      "fingerprint": "e92fdd0e50a078e31049d6a9fd25ba6cc313c0e19a454281f9adcc768e6b6a07",
+      "fingerprint": "8b844263e40849bc202709c552f44fab59f07f4b213046bab6e5b853bacfea9b",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.users.getSecurityCode"
@@ -651,7 +651,7 @@
       "method": "GET",
       "path": "/messaging/bridge/route",
       "operationId": "getBridgeRoute",
-      "fingerprint": "d321c70c2e126a58784a01def440996c3d756569bcbcc7681c714928eecbb28f",
+      "fingerprint": "08ab02d0912927981f7d395868f9dd53c160f88a1254d7f8feefe58490bdeedb",
       "typescript": {
         "status": "covered",
         "method": "BridgeClient.routes.resolve"
@@ -684,7 +684,7 @@
       "method": "GET",
       "path": "/messaging/media/{id}",
       "operationId": "downloadMedia",
-      "fingerprint": "adc79c6f62c2a11bc0fa37ac118616a60257012b11311fe6cb5ab0132b9b528f",
+      "fingerprint": "23cf1c96aadc7e1d7a4f0a26a6d813440b4924d3bb3ec55afec1867e06756e00",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.media.download"
@@ -695,7 +695,7 @@
       "method": "GET",
       "path": "/messaging/media/{id}/info",
       "operationId": "getMediaInfo",
-      "fingerprint": "9bccf0601b961098d8c725210f43936a1c7ce9790db5f22e1f7adf06d7f02c13",
+      "fingerprint": "5d1efb86b977da53afd3ef72cc23851e5e8bc8ad12b1acd5ed0a0e465f34415f",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.media.retrieve"
@@ -706,7 +706,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectId}/health-policy",
       "operationId": "getProjectHealthPolicy",
-      "fingerprint": "8afc3e8389aaaf89b7403647becc6816fb057f4b5f526a6188becdcbc4fe29f1",
+      "fingerprint": "bc1fbd7a1b1ee0f89a34ea385ea50fb1b512c95e8856108b482542d38c8d0366",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.banSafe.getProjectHealthPolicy"
@@ -717,7 +717,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectId}/insurance-evidence",
       "operationId": "getProjectInsuranceEvidence",
-      "fingerprint": "d79ac812a1f9333fd529622287f73225805280fe48830672d7649b3385b109b0",
+      "fingerprint": "a1e2f45149d28a4c32c5782262a7acd923adf86efcd5af97fbb37a2996824da2",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.banSafe.getProjectInsuranceEvidence"
@@ -728,7 +728,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectId}/observation-policy",
       "operationId": "getProjectObservationPolicy",
-      "fingerprint": "611d31d626aefb74eba190298af0b5212beb954851a5094f95d28369af6ebcc5",
+      "fingerprint": "9a90c80bc201a08bf3f87c64b19ede46302a16852e478d52de518c8e1f9584b6",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.observationPolicies.retrieveForProject"
@@ -739,7 +739,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectId}/safe-mode",
       "operationId": "getProjectSafeMode",
-      "fingerprint": "5eaf19a1bdd63c685ca5cb270c23f67cac02dbcaa674c0d1ca3c7a55553f1148",
+      "fingerprint": "05c1dbc9e665dc2189c129bb5bba1d11f6d46e793bdefacb87af8db23bdd1a81",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.banSafe.getProjectSafeMode"
@@ -750,7 +750,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectId}/warmup-plan",
       "operationId": "getProjectWarmupPlan",
-      "fingerprint": "dc6009d92678ff376975e8627dbdc1e6def436cbd043e548ecd73568cd59e59c",
+      "fingerprint": "417fb9c5ab00fe91fcb897ce5c956b978e39b8f287f76f031dddb76551d33329",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.banSafe.getProjectWarmupPlan"
@@ -761,7 +761,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns",
       "operationId": "listCampaigns",
-      "fingerprint": "1534749a9e881ebec81bc42e58586f1224b9cc854dc8f39bba50bb59bb383c76",
+      "fingerprint": "df9f4e79a4c81fadaef089f5e778bc44402d5daa0a6ece710aaa216e6616355e",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.list"
@@ -772,7 +772,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
       "operationId": "getCampaign",
-      "fingerprint": "df0afb657e91437629b726fc004b1c769343ee277d1dcbe235955d6dc1432d9b",
+      "fingerprint": "9eb27f02963074ad90e59fb1ac7c34f829efaa180d357130b28c7d5d84df0597",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.retrieve"
@@ -783,7 +783,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/analytics",
       "operationId": "getCampaignAnalytics",
-      "fingerprint": "7060015a6c91559b6ae6a0b7e8212219ddaf4c00675e0f9c3fbb7c3ceccdb00b",
+      "fingerprint": "e95f76e018eb8c1acdc7f04a506437456e4c05174d3fbc6126cab88e3f13fa90",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.analytics"
@@ -794,7 +794,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
       "operationId": "listProjectCampaignRecipients",
-      "fingerprint": "1da5e8f138bd3870846848812374cf30e2da251a12e27a7c259e0f3e16a56730",
+      "fingerprint": "821cd6c88c04c68fdfe4980cbe9b92d13f69951383f2d0bf9a9637e385cff02f",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.listRecipients"
@@ -805,7 +805,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/templates",
       "operationId": "listProjectTemplates",
-      "fingerprint": "3f2c770aa94cb0bb961a8b186008e8c79a0beb406377772ab081afa13b954dd6",
+      "fingerprint": "d1a4410e340656b940af10c181066ffd1d00cc3207eec72b0296bedd532ccbe1",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.templates.list"
@@ -816,7 +816,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
       "operationId": "getProjectTemplate",
-      "fingerprint": "e8ea66776eb1e7b2c1150a0dc2983595a72d5e967d5ab635a002bbac09b2c5d8",
+      "fingerprint": "136148f16b79ad006899a6079cdf9756aac5b27a901274e38ebf5c3610843948",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.templates.retrieve"
@@ -827,7 +827,7 @@
       "method": "GET",
       "path": "/messaging/quicklinks/{id}",
       "operationId": "getQuickLink",
-      "fingerprint": "ec5b9d70c6fa59f17906ad1c2691792167238971734260c354d0dc5e24e7675d",
+      "fingerprint": "9a94a8e8d283e0cbfdd87bba3d6673820c952fa86a34fb2c4dd14f7a3e14e829",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickLinks.retrieve"
@@ -838,7 +838,7 @@
       "method": "GET",
       "path": "/messaging/quicklinks/availability",
       "operationId": "getHybridQuickLinkAvailability",
-      "fingerprint": "6cab8df0433d215f00bb441220ced92b53cf2989fefec133041a87b02e70b300",
+      "fingerprint": "d21e1dbde305d9497afbb710d93307dded0beb3d0ba8189e52f22ce4ed43525e",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickLinks.availability"
@@ -849,7 +849,7 @@
       "method": "GET",
       "path": "/messaging/routing/hybrid",
       "operationId": "getHybridRoutingPolicy",
-      "fingerprint": "7f61cfbe908fbe8a1efd4f03c3ec185233b138bcb54c0ad82aab769a751d4e1a",
+      "fingerprint": "a8f839480705b654eb729a3f5df4928baa0569233a863595be824436240fb3f3",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.hybridLink.getPolicy"
@@ -860,7 +860,7 @@
       "method": "GET",
       "path": "/messaging/testing/{projectId}/events/fixtures",
       "operationId": "listTestEventFixtures",
-      "fingerprint": "05b7145174ef35215dd9b6f51b83927279d12a1281e4f142f882e13c27fb5361",
+      "fingerprint": "8338c1403ab20ad0adf67032e49e7c91dd1cbe11d53b8ff389eef6758a1fb9ec",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.testing.listEventFixtures"
@@ -871,7 +871,7 @@
       "method": "GET",
       "path": "/messaging/voip/calls/{id}/candidates",
       "operationId": "voipCandidates",
-      "fingerprint": "74f0e421efb2e1a53eaf7f7001161e13b43977b5aa452420955a2b3c02cb1aef",
+      "fingerprint": "49f5c34eff03874f42c3a1f6ac4541abf8f82a528c982bc0731431c3e63b761d",
       "typescript": {
         "status": "excluded",
         "reason": "used internally by the Calls SDK; not part of the public API"
@@ -882,7 +882,7 @@
       "method": "GET",
       "path": "/messaging/webhooks",
       "operationId": "listWebhooks",
-      "fingerprint": "4e9ad674048dc686894889047b19d1bb23619ccb912b0e70c6cc0489c37b6c87",
+      "fingerprint": "1ab11db9b4419604cb0e7791b35ef073f0c372e85d03377ce7ffabfa3aa73369",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.webhooks.list"
@@ -893,7 +893,7 @@
       "method": "GET",
       "path": "/messaging/webhooks/{id}",
       "operationId": "getWebhook",
-      "fingerprint": "d8c7a12bca9355b3efaf3dcc7d144718bd7ffcde0afeb1969890e92cde2ae6af",
+      "fingerprint": "c0c16aa0b5d691d6525432b40f2996628b02d38f32f699d9f75de2f18c16294a",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.webhooks.retrieve"
@@ -939,7 +939,7 @@
       "method": "PATCH",
       "path": "/messaging/{session}/business/catalog/cart",
       "operationId": "setBusinessCartEnabled",
-      "fingerprint": "f7f94339bab5331a0323282442e040e46bf70aeaaf09ab6b3a887de3cdf2c2e0",
+      "fingerprint": "09425a36e22e657b642b8cdc5670eda05d2bfd06124e04cce8b04ed7b24ddc33",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.setCartEnabled"
@@ -950,7 +950,7 @@
       "method": "PATCH",
       "path": "/messaging/{session}/business/collections/{collectionId}",
       "operationId": "updateBusinessCollection",
-      "fingerprint": "a7a9ea3f60c4700989177c97cb629788334199e945fda811b4a7e86e387e0692",
+      "fingerprint": "ebf4171027d58c981cbfe585b5a27db1e0a8bd84f087ee12447a3b90d7c32ce5",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.updateCollection"
@@ -961,7 +961,7 @@
       "method": "PATCH",
       "path": "/messaging/{session}/business/products/{productId}/visibility",
       "operationId": "setBusinessProductVisibility",
-      "fingerprint": "ce7c0a1832119bdd5f253f005b9a5acf4accf3c509670d318d62137d7f51350f",
+      "fingerprint": "4a4d0340f7dcb050b019f360878486b359de29f906c65e5b366db56659677426",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.setProductVisibility"
@@ -972,7 +972,7 @@
       "method": "PATCH",
       "path": "/messaging/{session}/business/profile",
       "operationId": "updateBusinessProfile",
-      "fingerprint": "9ab8d9a6567afcd5d04a8394fd3368100e138a07e53e431ffe383648d8b95111",
+      "fingerprint": "227bcad07d97d0153f2c7f5f875bda0bd6b8c9d1f5ddb05610b5bc82b5dfc267",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.updateProfile"
@@ -983,7 +983,7 @@
       "method": "PATCH",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
       "operationId": "updateProjectTemplate",
-      "fingerprint": "f32b61e565755f6c4c8e2abf76caee79466801323add172f5ba02d630e8b2603",
+      "fingerprint": "d0580ce72ba2f78cf5265ca94b3f1e6ae43bfd108833d7235023edf498876b1b",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.templates.update"
@@ -1005,7 +1005,7 @@
       "method": "POST",
       "path": "/messaging/{session}/business/catalog",
       "operationId": "createBusinessCatalog",
-      "fingerprint": "088834ce309b050c5de43571db571deb3f601aa6e9fcbc944e007f390d751dce",
+      "fingerprint": "0b386eb4ed9e49d398788898cf9e36ebb2fb578ba58633f7caff3de3332214db",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.createCatalog"
@@ -1016,7 +1016,7 @@
       "method": "POST",
       "path": "/messaging/{session}/business/collections",
       "operationId": "createBusinessCollection",
-      "fingerprint": "6566fce9d0136fa20ed2c506f3288d2d8736ee44baf4ca982a858590f4545862",
+      "fingerprint": "cdea37e991c0c7cd8d44f252d65483b33330c7bef96b19a8781acf116b2bde8a",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.createCollection"
@@ -1027,7 +1027,7 @@
       "method": "POST",
       "path": "/messaging/{session}/business/collections/{collectionId}/appeal",
       "operationId": "appealBusinessCollection",
-      "fingerprint": "f0f9d43290b94408fcdcc9a5134dce1af245e71efbf157cab31dc470c4cf5345",
+      "fingerprint": "4f0ce265fe000cea89101c41d0c9db284976a2dcaa9cb2344881ec5faccef517",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.appealCollection"
@@ -1038,7 +1038,7 @@
       "method": "POST",
       "path": "/messaging/{session}/business/collections/reorder",
       "operationId": "reorderBusinessCollections",
-      "fingerprint": "f2efe88f22d443cdf16e1e76c48752ab01b64e9381e8c7edadc83f4790b932b2",
+      "fingerprint": "ca4263f0578c8920ec13789706c6b201299b0adfbc824097c01272d6eda69602",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.reorderCollections"
@@ -1049,7 +1049,7 @@
       "method": "POST",
       "path": "/messaging/{session}/business/orders/{orderId}/lookup",
       "operationId": "getBusinessOrder",
-      "fingerprint": "1f7f11b1acbac7b43b8991b379526a2db723e4b0a3c0d5c0a02a08a1ec7e7964",
+      "fingerprint": "a6c70a4c106a77b9bed832024cbf3e186b427f8671d8021a5d0c105b9e82f0e9",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.getOrder"
@@ -1060,7 +1060,7 @@
       "method": "POST",
       "path": "/messaging/{session}/business/products",
       "operationId": "createBusinessProduct",
-      "fingerprint": "e41fc9fe18d68eb7fa869c39346c557c852b66b9bde60604bcbcd6434adfb1cb",
+      "fingerprint": "f2e167028cbadc978c1b6c6650eec8bfc8a827b54c7b166c7bc59a8c5b16f32a",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.createProduct"
@@ -1071,7 +1071,7 @@
       "method": "POST",
       "path": "/messaging/{session}/business/products/{productId}/appeal",
       "operationId": "appealBusinessProduct",
-      "fingerprint": "a6b97f4924e240033e024a750ad77f4c6449af74a34bbd28282bf65602a2bc20",
+      "fingerprint": "bc8f4685691c76dd9cddf7d69867bf0d2aeb110c1255baef787998a992169310",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.appealProduct"
@@ -1082,7 +1082,7 @@
       "method": "POST",
       "path": "/messaging/{session}/business/quick-replies",
       "operationId": "createBusinessQuickReply",
-      "fingerprint": "959776cbfe2e691d99444f71333fae3bf15d75d498e245972c3895f77f1beebc",
+      "fingerprint": "a97294340f9e013271b83e8f5b3a1098edd2f6aa606f1c8853d80467c1df708b",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickReplies.create"
@@ -1093,7 +1093,7 @@
       "method": "POST",
       "path": "/messaging/{session}/calls/{callId}/reject",
       "operationId": "rejectCall",
-      "fingerprint": "c21ae7e470d76f56c65947ad4bdfd4177d9f5abff4ee679a26bd2cf7efb6b95b",
+      "fingerprint": "057e0fdce00915d40b90cafff5a02c1604fcd373ce0f5e6a04995d4bcae0f6ba",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.calls.reject"
@@ -1104,7 +1104,7 @@
       "method": "POST",
       "path": "/messaging/{session}/channels",
       "operationId": "createChannel",
-      "fingerprint": "bf2d992433f546d4f2256145bdc2d235c06b42d2932d7b8e30118db35aab4401",
+      "fingerprint": "1741455edaa7ae4628d935e6e58b7a843f3773e210c1d1e64257b693c4df657c",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.create"
@@ -1115,7 +1115,7 @@
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/follow",
       "operationId": "followChannel",
-      "fingerprint": "61ecc0d3f176000f10259d708a95a035b691a870fb6d0ed48d5c242c0637fbf4",
+      "fingerprint": "e89926752c6a1c91812b6951e792db20eba9636b24ef91a91ebd450b04ef22ac",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.follow"
@@ -1126,7 +1126,7 @@
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/live-updates",
       "operationId": "subscribeChannelLiveUpdates",
-      "fingerprint": "88d0f5b8f3fb51bc0bf2182aad6ff7efb439e6c771386fdc567333e742ad7507",
+      "fingerprint": "93d4f398964c4901492411c47da148bb21a534b31cf9f8b7ccdb527576070386",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.subscribeToLiveUpdates"
@@ -1137,7 +1137,7 @@
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/messages/{messageId}/reaction",
       "operationId": "reactToChannelMessage",
-      "fingerprint": "5071d9e728d5a6180aa869117a15635ec21b3d70bfeb35da92c595fd04989570",
+      "fingerprint": "bace0fdc357f0fec249622f7d1b8129c764f6a38aaadfebbd860b04c76f76fb9",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.reactToMessage"
@@ -1148,7 +1148,7 @@
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/messages/{messageId}/viewed",
       "operationId": "markChannelMessageViewed",
-      "fingerprint": "4f10d434be12fe3f5e7c5122c771b5403770c8b8ba5dcca72a59b94c8fc9c775",
+      "fingerprint": "48fda9987f25d8b95cbe6964ee91d5a4f4f9a97ae78bf441102038a37f44b7be",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.markMessageViewed"
@@ -1159,7 +1159,7 @@
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/mute",
       "operationId": "muteChannel",
-      "fingerprint": "c84e7240619e58893a1803625883cbd0ddeb87e287b89faafd3ec0a614da32af",
+      "fingerprint": "085321f8bd3458dbf9e4226d3a279858f6d92fe619ea009734ffee1dc99f8015",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.mute"
@@ -1170,7 +1170,7 @@
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/unfollow",
       "operationId": "unfollowChannel",
-      "fingerprint": "ff93e18f76d9922c6a4b86f1848dfd7b51d5fe91aacc688a26671b13325dba6f",
+      "fingerprint": "7ad68be4e9ef12e429569e192e142d18b1395a3712ef5d7f0b479ae5bf59de9d",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.unfollow"
@@ -1181,7 +1181,7 @@
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/unmute",
       "operationId": "unmuteChannel",
-      "fingerprint": "e0b530177041e79f290550005cf7521cbb2b5b78c6209d3e3fd1534ffb9d69ba",
+      "fingerprint": "e244ace36b9e120780fbd31496065afbc85e37125b7f4a0d16882715da53eee7",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.channels.unmute"
@@ -1192,7 +1192,7 @@
       "method": "POST",
       "path": "/messaging/{session}/chats/{conversation}/archive",
       "operationId": "archiveChat",
-      "fingerprint": "17a641b261ab588793d255167acbeeb1710dbd84c99e7975f5d24ec16632a091",
+      "fingerprint": "9c246e420a91b73846c182f2d32bb19f6d72e7c338cd53a884b8641a95a85009",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.chats.archive"
@@ -1203,7 +1203,7 @@
       "method": "POST",
       "path": "/messaging/{session}/chats/{conversation}/unarchive",
       "operationId": "unarchiveChat",
-      "fingerprint": "8acec6b0233c47893c31a324ab5be8cefcf7c57e939f16c6fa36d9a1318e34f8",
+      "fingerprint": "b61f6861b1fbb2a4489c4ba6cde1d002979f1e056a0501f98ae15a3361275aef",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.chats.unarchive"
@@ -1214,7 +1214,7 @@
       "method": "POST",
       "path": "/messaging/{session}/contacts/{contactId}/block",
       "operationId": "blockContact",
-      "fingerprint": "9655fd43e2f1b3f4576168db1695cc13de7d4acd20658c1b5aac0e284fc996a7",
+      "fingerprint": "26a8199267aa647a84941235e3fa75c6d095e97e1cce234ed08f57954e1f8b48",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.contacts.block"
@@ -1225,7 +1225,7 @@
       "method": "POST",
       "path": "/messaging/{session}/contacts/{contactId}/unblock",
       "operationId": "unblockContact",
-      "fingerprint": "1d0693fe2753ebd2589ee8d17373ed06b9c9c9896a807574c407966965136308",
+      "fingerprint": "d38dff8c4cf6d71e90a397dd1cb0d92188a8d2fee71e9a3fa1775ec1f0e22d30",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.contacts.unblock"
@@ -1236,7 +1236,7 @@
       "method": "POST",
       "path": "/messaging/{session}/groups",
       "operationId": "createGroup",
-      "fingerprint": "a9ca7842f2d3bcd46ca833ba0b77d131624e326ba0e5c66424468c7c19a3a051",
+      "fingerprint": "dabe45f9a3ce916d17f4e8eec4603dc884275bd004fd615812910fa07cf7d605",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.create"
@@ -1247,7 +1247,7 @@
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/admin/demote",
       "operationId": "demoteGroupAdmin",
-      "fingerprint": "d183bfae19ef39857f5d132c3b3e9ef8a15ef47de50ae64029461f41a6423624",
+      "fingerprint": "4a1c7e73ad3253ac0da03e4b7476878302805945336e9056a3cfc58c88b0f8e4",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.demoteParticipants"
@@ -1258,7 +1258,7 @@
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/admin/promote",
       "operationId": "promoteGroupAdmin",
-      "fingerprint": "36fa11e9425656bbe721d02bf46d931a763e119c00c05fe5c523056e73041d56",
+      "fingerprint": "22bac454aab8c560b86202c8056eea9a9573b24def13957e2ef420133c8defff",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.promoteParticipants"
@@ -1269,7 +1269,7 @@
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/invite-code/revoke",
       "operationId": "revokeGroupInviteCode",
-      "fingerprint": "2e0933c7bcf8ec4b2820162b127f0f9a2029971af59c65e6abc092d2c00b5142",
+      "fingerprint": "3c176a0b12ef35a1af05e28da0cf5a627376b949c75ae9d3d1afea20b37e3612",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.revokeInviteCode"
@@ -1280,7 +1280,7 @@
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/leave",
       "operationId": "leaveGroup",
-      "fingerprint": "f5634a097ef324614c7d503d9d0da851681ff3a767a8aea90fc6e52ac28b5b88",
+      "fingerprint": "44307d4cc04253e6fa033ef245ece79b5073dcaa598cbccc8180953db9a00e6d",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.leave"
@@ -1291,7 +1291,7 @@
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/participants/add",
       "operationId": "addGroupParticipants",
-      "fingerprint": "fbf5c232d456fa516ac90ede4804b9e4ba052de4036c283bd665282767311490",
+      "fingerprint": "9fa6cfc31f96fc8317d532724bc5a179f6c50fe675a9cee9662c4f579eada59f",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.addParticipants"
@@ -1302,7 +1302,7 @@
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/participants/remove",
       "operationId": "removeGroupParticipants",
-      "fingerprint": "0483bed4b31a574a8d8516a5f40162ba40390c9fe94d801f1a59ad5f5b50f7a8",
+      "fingerprint": "dd0b4ac9ebacccccdc949b1784cc9e45ca611e7cc96abbec855258ed8dabd719",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.removeParticipants"
@@ -1313,7 +1313,7 @@
       "method": "POST",
       "path": "/messaging/{session}/groups/join",
       "operationId": "joinGroup",
-      "fingerprint": "505f491cd538f6ebc33e8102f235161664193255a10219376a91435ba6bc1f88",
+      "fingerprint": "0da46a343a953e7f72670ee3756c94251e17b526ee6c76e5c82e907307c89f5d",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.join"
@@ -1324,7 +1324,7 @@
       "method": "POST",
       "path": "/messaging/{session}/labels",
       "operationId": "createLabel",
-      "fingerprint": "142e907aff3544c82b091694402a545e941e56af7e8dd480e9a3f0216646232a",
+      "fingerprint": "a957a8590eb928ea7933bdac8371cd4aec4eb31b42ffd2873ee3e314748bece5",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.labels.create"
@@ -1335,7 +1335,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/react",
       "operationId": "sendReaction",
-      "fingerprint": "79deb5f04a3d6b0de7b5331f0148a96336ae44d829625f96516faade20407bcd",
+      "fingerprint": "e7562d90de83fb41e7fe118e48d4d8b15c48d1b22247f9b34e2740a365f363e8",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.react"
@@ -1346,7 +1346,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/seen",
       "operationId": "sendSeen",
-      "fingerprint": "fecffceb6a3f570c5777674c352d20ce5acb56e2f57fbd59fba705e261a4830a",
+      "fingerprint": "e638911e44502bfed46315c31d53f6c0bbf9c8f074d7aa8f8b09451ceeecec76",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.markSeen"
@@ -1357,7 +1357,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/send",
       "operationId": "sendMessage",
-      "fingerprint": "a231c6095b087ba06d5d5db608c25ad428d49ed412ebec25855c5d0e841fbe32",
+      "fingerprint": "022444d3c508ab58764df92d3a070686d6c576ab7d3c9894ecc228a5005687fc",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.send"
@@ -1368,7 +1368,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/star",
       "operationId": "starMessage",
-      "fingerprint": "d06112be793c2bc0cfcf3f45af1d4c1e5a8a392797ec36dedf66ac1028a37584",
+      "fingerprint": "29960c39664854d69f977ee8358074fad7a23971548a9d49873b0a0ede85c6b5",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.star"
@@ -1379,7 +1379,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/typing",
       "operationId": "setTyping",
-      "fingerprint": "8d5ddd310b46743def73f9f51d01053b0cc585fcf161a87ec1c5acba4b8fbe33",
+      "fingerprint": "c8019a2a22e16159d9175019366978a898c1b43901df2d42eb0098eade573e9e",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.setTyping"
@@ -1390,7 +1390,7 @@
       "method": "POST",
       "path": "/messaging/{session}/pair/code",
       "operationId": "requestPairCode",
-      "fingerprint": "548e42da84b680c442fa9f08038a0cbbdc4a7c5ef484254b21c025fce462e6b4",
+      "fingerprint": "62bc402c7f3183599ed12993e9b7a8d16821fee9330ac93055033855267310cf",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.sessions.requestPairingCode"
@@ -1401,7 +1401,7 @@
       "method": "POST",
       "path": "/messaging/{session}/presence",
       "operationId": "setPresence",
-      "fingerprint": "81b63d0f825dd57b40e5162ab0a8b2f78ce613aa11c43842f2bcb4a6c64d25da",
+      "fingerprint": "20e658204249339188f9b01aeca416c4e224c7f93fa13af9a8703984713a8700",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.presence.set"
@@ -1412,7 +1412,7 @@
       "method": "POST",
       "path": "/messaging/{session}/presence/{conversation}/subscribe",
       "operationId": "subscribePresence",
-      "fingerprint": "a833659c1e9f2f79414e846b7b2a01707800b24282379e5e371d5dddbd032002",
+      "fingerprint": "1619e96f0bc39a304441cb050ba4163f997e5e9548ed85b82b4c099d19909e7e",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.presence.subscribe"
@@ -1423,7 +1423,7 @@
       "method": "POST",
       "path": "/messaging/cloud-api/embedded-signup",
       "operationId": "embeddedSignup",
-      "fingerprint": "ca09251cb32425a1dc7368c7c5c6af630ebd41dcec25e01717b89cd48cfabc0b",
+      "fingerprint": "2a3a62588bd50f93bb2486d001ad6b9dcbf12667065a927de032822b772024a5",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.cloudOnboarding.advance"
@@ -1434,7 +1434,7 @@
       "method": "POST",
       "path": "/messaging/features/evaluate",
       "operationId": "evaluateFeatures",
-      "fingerprint": "552c29c31cd255e674168226ef182a837b657036bc706b8ccb8e1a90bd530d22",
+      "fingerprint": "a0f822883921a2d39ac1f7b7a92e984a55f4b5fdab1614dcac2145458cbccb39",
       "typescript": {
         "status": "excluded",
         "reason": "Host-runtime feature evaluation is not a customer messaging operation in this SDK."
@@ -1445,7 +1445,7 @@
       "method": "POST",
       "path": "/messaging/media/{id}/download-and-save",
       "operationId": "downloadAndSaveMedia",
-      "fingerprint": "e3a5e9517ce5d654de83ec103972697c1a097a08c90b552738a188cd5a98e7c3",
+      "fingerprint": "c765cfa3dce78cb65f607f69f83219b1b46a609bea4b5853260069863de05e9c",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.media.persist"
@@ -1456,7 +1456,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns",
       "operationId": "createCampaign",
-      "fingerprint": "4cedd525607544d02d4b31481358510b2ecb8b9c54cc6b0f749799e1011ff3f0",
+      "fingerprint": "4590ed3105ad3b8ed230ce809981d8342185ed1f056bebf7c445333e837a7815",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.create"
@@ -1467,7 +1467,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/launch",
       "operationId": "launchCampaign",
-      "fingerprint": "4af01830d796ffcfe37f6397cccc188c4546caf643b586a9925f137df9c7b4c2",
+      "fingerprint": "c639c3ae68eecce344c2a8bc06cd373baa551705401dcb30343841103d464116",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.launch"
@@ -1478,7 +1478,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/pause",
       "operationId": "pauseCampaign",
-      "fingerprint": "cd056dc9925cf81e94b47a9a345e08287dd4d765ce9beb31ba13d78de5fd51ef",
+      "fingerprint": "435c6746709a1967ddef5ea79fdd63703a56519a791f89842e14a87219602546",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.pause"
@@ -1489,7 +1489,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
       "operationId": "addProjectCampaignRecipients",
-      "fingerprint": "943eefb8894a64fe72b01c6d16a7d8721e1ad1281a936acb6082c3cbd2fec855",
+      "fingerprint": "65b100b8003e834f1de6d3288e58bfcfdb5c3a8071abd3c13336abe9c96fa360",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.addRecipients"
@@ -1500,7 +1500,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/requeue",
       "operationId": "requeueCampaign",
-      "fingerprint": "0ed764141ea7484211a62c62c4496c37572548109cc0a5355c94cb02661c4f7d",
+      "fingerprint": "6405870f920b0234a54c670882e4993af4fb01966d459eb70e3b69ad254c93b2",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.requeue"
@@ -1509,9 +1509,20 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reschedule",
+      "operationId": "rescheduleCampaign",
+      "fingerprint": "2c530c59da0ea3a002b5b66690db259c9e8556fbda54138158d324343576480f",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.campaigns.reschedule"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/resume",
       "operationId": "resumeCampaign",
-      "fingerprint": "9c0636666ce2e8678efc4a33a9b2fdac42435008f9a12486b57253c11df0764e",
+      "fingerprint": "5f8967faa53f813796ff73f5767c724497d1da3b454a220a765e26cf276bc68a",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.resume"
@@ -1522,7 +1533,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/stop",
       "operationId": "stopCampaign",
-      "fingerprint": "6a09b0d2a67631403abfcd8b4eac52c29b25cfeb873f91d3a7f82236e8ced7d1",
+      "fingerprint": "cee1da52e7d6567d7ac42f824f11a74d6a2f8cb820b83c783fd4c06e49832bf9",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.stop"
@@ -1531,9 +1542,20 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/test-send",
+      "operationId": "testSendCampaign",
+      "fingerprint": "b6d124f317c48a577162d319c818370437f9dcf69208d038eeee51a3c2569fcf",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.campaigns.testSend"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates",
       "operationId": "createProjectTemplate",
-      "fingerprint": "7a023b3c396651a3dfa6b6bb09a5fa458127bc0ce719b3af7a1953dccf232026",
+      "fingerprint": "25ea32fb94860601e8fe3dd5284a88074e139f3472796492645284259f620cf4",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.templates.create"
@@ -1544,7 +1566,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates/{id}/preview",
       "operationId": "previewProjectTemplate",
-      "fingerprint": "c8681de0b498d25368e0d3a101af25a7675c599a6d25c505cc2df74123755433",
+      "fingerprint": "ea2b36ce9ad86f79512e6f282550873335488b9d4cfdae6aa7d78902c68c1034",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.templates.preview"
@@ -1555,7 +1577,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates/{id}/submit",
       "operationId": "submitProjectTemplateToMeta",
-      "fingerprint": "22b195a6b593bb675f6b52477feab92a60bd41d7069ddc7b43229889ba35dd57",
+      "fingerprint": "667f3cedfef91e96e1ddad7e61012d151c2ac08890dd46ad0d549bbc5d303225",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.templates.submit"
@@ -1566,7 +1588,7 @@
       "method": "POST",
       "path": "/messaging/quicklinks",
       "operationId": "createQuickLink",
-      "fingerprint": "ea9ebff159f89abaa65fe3e03549b43c95b3d9521d95f651e1307561030595ca",
+      "fingerprint": "39865f13d73d77a60ab9c5b46cc2c5ecd6c8a02775087a2c2fbd6e095d44abce",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickLinks.create"
@@ -1577,7 +1599,7 @@
       "method": "POST",
       "path": "/messaging/testing/{projectId}/events",
       "operationId": "triggerTestEvent",
-      "fingerprint": "b5257525dd5d250dd5df292894bf43b30c663c55a85c4c664033611e6f959118",
+      "fingerprint": "cb77fe14cc3e401db30dd5383e97a398dc555b0667c36be661c6770a0043315c",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.testing.triggerEvent"
@@ -1588,7 +1610,7 @@
       "method": "POST",
       "path": "/messaging/testing/{projectId}/history-fixtures",
       "operationId": "createTestingHistoryFixture",
-      "fingerprint": "cc82bc67e848516a5a8169c3ab66a0d66b91d7885003434ba140bdaa8d02a7cd",
+      "fingerprint": "cb844a104c74f84b7e608d5dcd4365946e99219131d622508fb8dda7ddf5d88c",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.testing.createHistoryFixture"
@@ -1599,7 +1621,7 @@
       "method": "POST",
       "path": "/messaging/voip/calls",
       "operationId": "voipPlaceCall",
-      "fingerprint": "5e83b2f8992788ac0f500b69782b47a5063f24cf2bbe103451b3c696d262cdf9",
+      "fingerprint": "3c9c76a83a9319bfd765afdddbfec2dbc0030e76686a902e8562a035b2718293",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.place"
@@ -1610,7 +1632,7 @@
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/accept",
       "operationId": "voipAcceptCall",
-      "fingerprint": "86db3378c2d5fb58b7e2494c6ae2d00762d73d8817126fadc0f77f9b342fed73",
+      "fingerprint": "606523665d834683d7a31f5e5bc30b8dde48a9b98ec21c3072ee1e769ca693dc",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.accept"
@@ -1621,7 +1643,7 @@
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/candidate",
       "operationId": "voipCandidate",
-      "fingerprint": "0d2c93046c09e15213b7b42a2c87d512034ad536866cfab97049e0cfb3a25b15",
+      "fingerprint": "5810a9019fbf1159d5cee8628ad2ac044fdf1cf9af70d03987d24e7bfea5e422",
       "typescript": {
         "status": "excluded",
         "reason": "used internally by the Calls SDK; not part of the public API"
@@ -1632,7 +1654,7 @@
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/leave",
       "operationId": "voipLeaveCall",
-      "fingerprint": "f7c2aec2289eec2eb3f0429f3f2ae75c4bf86c31de54600403395677e6d05aa9",
+      "fingerprint": "9db9e009a407da4313e81fe7ed5836d04de61171dd75459f712cf3e32a386517",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.leave"
@@ -1643,7 +1665,7 @@
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/offer",
       "operationId": "voipOffer",
-      "fingerprint": "d32154df56b41060a43b933d473ef211fad6d9cceae7a9abd5fd83781cf5c7b0",
+      "fingerprint": "9e7d308af4aecd814a648b46dcf0805c63fc8935ce8c81dfb787c8f08ed49d22",
       "typescript": {
         "status": "excluded",
         "reason": "used internally by the Calls SDK; not part of the public API"
@@ -1654,7 +1676,7 @@
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/participants",
       "operationId": "voipAddParticipant",
-      "fingerprint": "1c2964f6b2f7f1922bb5baad49363fbcdba2e0d805546b9923cdf9e05483c243",
+      "fingerprint": "69300f2d4916f7c049f8d54cf09c1789dd6eac52a0f745e1f8dc5a793dc8c55a",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.addParticipant"
@@ -1665,7 +1687,7 @@
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/reject",
       "operationId": "voipRejectCall",
-      "fingerprint": "aac9ebc9522a756f68841ae99e9daa5e157f1af5e7151474401acfaa76da1aa1",
+      "fingerprint": "fa32c0e4159403980fd31f2b1fd36207ab90233110852af6effafd5721c198b7",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.reject"
@@ -1676,7 +1698,7 @@
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/renegotiate",
       "operationId": "voipRenegotiate",
-      "fingerprint": "484038a1951bd5aafa95a7e96186d6934d3e8fcb980448ba67aa5a8563ae4016",
+      "fingerprint": "bb0d55815e40163e0ffb231e20644c4f7049c6a43ce35229b74bbefec65aa898",
       "typescript": {
         "status": "excluded",
         "reason": "used internally by the Calls SDK; not part of the public API"
@@ -1687,7 +1709,7 @@
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/reports",
       "operationId": "voipReportCallDiagnostics",
-      "fingerprint": "12d0fd1b28b4ba0ab61e9645308e3e898ccfa5384f2b195c0330d03cd618d0c7",
+      "fingerprint": "c7090b96559c693aa98b830c895f28b0dc228fae377b4037eab2d37614b6bcf7",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.report"
@@ -1698,7 +1720,7 @@
       "method": "POST",
       "path": "/messaging/voip/calls/check",
       "operationId": "checkCall",
-      "fingerprint": "33adf8f2983a23af927b99e7b427aad6780668daa6195e78b0219117e592d64a",
+      "fingerprint": "4403e5f9578fd4d4d67cf45d535631be26e8728d9546dc1092816428c728f0e3",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.check"
@@ -1709,7 +1731,7 @@
       "method": "POST",
       "path": "/messaging/webhooks",
       "operationId": "createWebhook",
-      "fingerprint": "1ebca9abc706acd43d17d62c4365b340457bea04e903fbbe06bcacedab1266d6",
+      "fingerprint": "c37c580dddf97db854a35a7d2f0934425531ad148ffb77ff8cc80d618b3f5f62",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.webhooks.create"
@@ -1822,7 +1844,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/business/compliance",
       "operationId": "setBusinessMerchantCompliance",
-      "fingerprint": "fc52465c0481189a44411c710cac8a7aaf8ea2812770165140dff3404724c79f",
+      "fingerprint": "3fc1d99d320344777a0cf92638489c2b82f29e3db7f55fa31b78e4beb9e3e545",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.setMerchantCompliance"
@@ -1833,7 +1855,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/business/products/{productId}",
       "operationId": "updateBusinessProduct",
-      "fingerprint": "2c0b47a2e44111dc69f96cb26974d2a52c055950e9a5f5ec2c1b28f4364a5dd0",
+      "fingerprint": "b1018d47e1ddd3b1dd5de4d88de1a210fe2521fbbea958a4629d9e676e9e908d",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.updateProduct"
@@ -1844,7 +1866,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/business/profile/cover-photo",
       "operationId": "setBusinessCoverPhoto",
-      "fingerprint": "6dd89e9ae297cf36e6a8e381752297a22175793e12434579001316602237c497",
+      "fingerprint": "9ae9db78a6000e769a495cef5c2e437426cd4f8d62602da1fda1574d29d0e8d9",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.business.setCoverPhoto"
@@ -1855,7 +1877,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
       "operationId": "setBusinessQuickReply",
-      "fingerprint": "46d9bc72756dcc534bcfc947009a873e4aa24cbbde49885fb9b52392d2aba643",
+      "fingerprint": "33cd8ad3f8e94d1dd59f97b709e68c08f1d4e5f62f689bc47cc5b3e2aac10205",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickReplies.replace"
@@ -1866,7 +1888,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/chats/{conversation}/disappearing",
       "operationId": "setChatDisappearingTimer",
-      "fingerprint": "5b401e12339f853a42040d73a93504705d1cdcebee91a5ecc775c2ceec8cd860",
+      "fingerprint": "aa8029d5798cd863df18a90daad35da63d289a2f0c5a0eddab8a3000404b9d56",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.chats.setDisappearingTimer"
@@ -1877,7 +1899,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
       "operationId": "editMessage",
-      "fingerprint": "a7a0c3e45a94bb77a8e6ea2fae1bf343cfd8972e65dff0cb1eab91a7b7e6ce2c",
+      "fingerprint": "4cf3b77bf3110198ac29eea91c1328c76109d79e9eb55af0792980f412d09ab1",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.chats.editMessage"
@@ -1888,7 +1910,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/description",
       "operationId": "setGroupDescription",
-      "fingerprint": "33dc8f018ee4337dfd778849d0be81eb6582774b9c8449818ae58cc54760bf16",
+      "fingerprint": "711de8d47f27221ee91645d6f000d1f5b5611bb7992ee97f9550ec23e32e3837",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.setDescription"
@@ -1899,7 +1921,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/picture",
       "operationId": "setGroupPicture",
-      "fingerprint": "8c58d71c69cf249d2c4311a0a60e445222fad6f0e5149e41fccb9d7a158cfc1c",
+      "fingerprint": "f428c12ae6193dd3a3b74de6799d505ae03c4d0ac36aca7afcf2aee1267a00f0",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.setPicture"
@@ -1910,7 +1932,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/settings/info-edit",
       "operationId": "setGroupInfoEditing",
-      "fingerprint": "185bca6336adbb00a704fd52676b0ebf4f5284c9f3e2d4561f17935f33796f37",
+      "fingerprint": "1481572db27398c0ea48420bc1cb6c613fc5142c6463314704904aebfc75dda1",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.setInfoEditing"
@@ -1921,7 +1943,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/settings/join-approval",
       "operationId": "setGroupJoinApproval",
-      "fingerprint": "de669123d6e9437c876946bccc1f1581c996717e6397533ff02ec0e705e7a8fa",
+      "fingerprint": "c38785f4bc80937dda4b336eb21c127677af591ef11de6632a6d7992f195acad",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.setJoinApproval"
@@ -1932,7 +1954,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/settings/member-add",
       "operationId": "setGroupMemberAddMode",
-      "fingerprint": "fc6eda81991c5374bf357a20fe0155a5af5e7217b88d05e6d17e8924ab772ea8",
+      "fingerprint": "417f9710ad788c45af026a0859014a1544f6824bb99dc331d520b32789e240e6",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.setMemberAddMode"
@@ -1943,7 +1965,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/settings/messages",
       "operationId": "setGroupMessaging",
-      "fingerprint": "04f34bdc92f41e31a4677f8b51233777b2fb6def14bdc2c653b1b6474108180b",
+      "fingerprint": "aa6b0db2e39dac316bbaad5e448744c7a78bff0fc8461c81a0d2a9fdbbab793c",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.setMessaging"
@@ -1954,7 +1976,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/subject",
       "operationId": "setGroupSubject",
-      "fingerprint": "3cd0941470ffd1035a050df59517f0a4ac943d58d6b4550f3e54f9ff6040c619",
+      "fingerprint": "cc22390055a0e574084ea2a2f30efb97f3d1e8289238378a3591764cbdb434ac",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.groups.setSubject"
@@ -1965,7 +1987,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/hybrid-link",
       "operationId": "setHybridLinkPaused",
-      "fingerprint": "6281b7e34d8c0ee20e785b04cc380a918ac976a68fe1850c9f6ba7fec06991b7",
+      "fingerprint": "b1ab0aa99c8674afa1e23e9682c3a7b358a9e5e54848461aba214f053b798104",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.hybridLink.setPaused"
@@ -1976,7 +1998,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/labels/{labelId}",
       "operationId": "updateLabel",
-      "fingerprint": "a6fdea356455eff684918cf0dfaca2af8743122c8715e1248f7ad37fac95f27e",
+      "fingerprint": "90f86dbf5acd7b021d7a5138e696894a42560384be21271bf487a7c407dc9799",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.labels.update"
@@ -1987,7 +2009,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/labels/chats/{conversation}",
       "operationId": "setChatLabels",
-      "fingerprint": "41a067475d83bed90abe1b26a789673d3d006f933680bf12999b3752196c329d",
+      "fingerprint": "7904d560703bdf64e7f163d2adeec9574b0e386d9e2ab51c710599a71d263e83",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.labels.replaceForChat"
@@ -1998,7 +2020,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/privacy/{setting}",
       "operationId": "setPrivacySetting",
-      "fingerprint": "30625dcfeb33711221e8a78813da1eca499f3743246696b074cd0bc9bee8f448",
+      "fingerprint": "85e7b32013ad5e6dc03a48b8c2a496b7283ce81d84e35e8b99a75159d733f448",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.privacy.set"
@@ -2009,7 +2031,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/privacy/disappearing/default",
       "operationId": "setDefaultDisappearingTimer",
-      "fingerprint": "e4f2dacf3600aa8a27196ad945cce5f34e938f5ee30f270666b3f7343fac3eac",
+      "fingerprint": "02536e4e2c1e0f6ac577a519f323a2f3b01d007c573080ef6eda66c21bb9a9ee",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.privacy.setDefaultDisappearingTimer"
@@ -2020,7 +2042,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/profile/name",
       "operationId": "setProfileName",
-      "fingerprint": "0d065c4792104b6f964fab2ca4dd758240f9324abc58a2534207203f96e0681e",
+      "fingerprint": "ef158c7661cd84578206c99d12069064afd6563c70b05acc878458aa49abcad8",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.profile.setName"
@@ -2031,7 +2053,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/profile/picture",
       "operationId": "setProfilePicture",
-      "fingerprint": "e7e9bcbde6e6fc829d5f4bbe6bd180c5e84b007b7307c10a79ae7c5d849abf87",
+      "fingerprint": "3c666d3fffa134276f23f332c8746a4d651cff4482448207e9d960f2e611e772",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.profile.setPicture"
@@ -2042,7 +2064,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/profile/status",
       "operationId": "setProfileStatus",
-      "fingerprint": "371c99863bf82cc1cc82f21ab02b1a37e666283058ebaaafb3f19e149e7fe658",
+      "fingerprint": "7fcf6f4990f923b4e8176c8b9b27170c4b8ea77abdcf6813a662c1f152498102",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.profile.setStatus"
@@ -2053,7 +2075,7 @@
       "method": "PUT",
       "path": "/messaging/{session}/safe-mode",
       "operationId": "updateSessionSafeMode",
-      "fingerprint": "6ccf24b2d751b3c08da762dfd662c9f033710110537ddb8462d137a7a9bb9f53",
+      "fingerprint": "d76cba0235e580f8125bfaff70bd67dfc3342dfc8a2425594dae833e791d2b5e",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.banSafe.updateSessionSafeMode"
@@ -2064,7 +2086,7 @@
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/health-policy",
       "operationId": "updateProjectHealthPolicy",
-      "fingerprint": "48aea0f68aa03ac48436cab07ffa64bdfa0dfe2fee8444e8af8d948dabec0bf3",
+      "fingerprint": "1bd51e2593eb1fe717c9b09be70b40514f6581cb8bd07262989bc4e5bb2383d4",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.banSafe.updateProjectHealthPolicy"
@@ -2075,7 +2097,7 @@
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/insurance-evidence",
       "operationId": "updateProjectInsuranceEvidence",
-      "fingerprint": "8941aa7b26599f010cca39770b7bf68e9a7040ec005909cc62181f1e74e056d0",
+      "fingerprint": "ce500b290e05b3390f7d2e166a86ce10561dae5ce6c99879264afcf8f02b98d8",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.banSafe.updateProjectInsuranceEvidence"
@@ -2086,7 +2108,7 @@
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/safe-mode",
       "operationId": "updateProjectSafeMode",
-      "fingerprint": "5faf7acf5065c3de739be5bb8e7746f232627af8ecd836d55bc3e03a0a07ef26",
+      "fingerprint": "1fb043ea429a16b4bca5e7635dfe16545b0ca093c14eedb73d4fd7d394178a31",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.banSafe.updateProjectSafeMode"
@@ -2097,7 +2119,7 @@
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/warmup-plan",
       "operationId": "updateProjectWarmupPlan",
-      "fingerprint": "2b9c4f34bd2ea503f953e3a6411a46a0f21ef40e684e2bd1ec9c7dd948ebb9a5",
+      "fingerprint": "5ff03746cd2168349f3a534b726ad230ce97e953574f14721bdc21af317fb72b",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.banSafe.updateProjectWarmupPlan"
@@ -2108,7 +2130,7 @@
       "method": "PUT",
       "path": "/messaging/routing/hybrid",
       "operationId": "setHybridRoutingPolicy",
-      "fingerprint": "87335686e11577e2c6c68f4dc57051756af08cbbafd95b21355979af86763c54",
+      "fingerprint": "64013af56a59d5513a0af565bb4c55d87bc358d18b5f1ea63f6759ed22acb13f",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.hybridLink.setPolicy"
@@ -2119,7 +2141,7 @@
       "method": "PUT",
       "path": "/messaging/webhooks/{id}",
       "operationId": "updateWebhook",
-      "fingerprint": "0a1a8b6de76e6ab824e9f60bf179a2403348a69c24e9ae564829187dfc325694",
+      "fingerprint": "062bc7c6ad3504cd6a9b3f6fd0a12f7470f82008dafe426cb59e2dd94f222fb1",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.webhooks.update"
@@ -2295,7 +2317,7 @@
       "method": "DELETE",
       "path": "/platform/call-opt-outs/{optOutId}",
       "operationId": "deleteCallOptOut",
-      "fingerprint": "cf2c14da2016dd90327b480fcf758ba3ac733ec9c78bb423d885b7f9376841fb",
+      "fingerprint": "4e6bbc8c1935a528e977452e70deecdda9d06482e501bb4e967e05694c97d73e",
       "typescript": {
         "status": "covered",
         "method": "Client.callOptOuts.delete"
@@ -2406,7 +2428,7 @@
       "method": "DELETE",
       "path": "/platform/sessions/{session}/client-rules",
       "operationId": "deleteClientRules",
-      "fingerprint": "0244a31a6978d23f8bde1f96ec97693c51fcfba857a6907dc0a705cca07c3899",
+      "fingerprint": "b94d0acfecb0e50440866a9bae1f9ed15860e6a503d78d2702438391870ade9a",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.clientTokens.deleteRules"
@@ -2428,7 +2450,7 @@
       "method": "DELETE",
       "path": "/platform/sip-trunks/{trunkId}",
       "operationId": "deleteSipTrunk",
-      "fingerprint": "5ec2c1ad81eed4e835b1b9ad6288d53490a8747883d1e13e03217814cec85b1e",
+      "fingerprint": "150ed58eccde8184c18815747bc75bbeb73854204c7f56efb23d19c8a218a698",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.delete"
@@ -2451,7 +2473,7 @@
       "method": "DELETE",
       "path": "/platform/voice/audio/{assetId}",
       "operationId": "deleteVoiceAudio",
-      "fingerprint": "628b9421a3c1e60c13f9f96d7cdef30d2a85db84451ca27b8b2d11897f4b75f3",
+      "fingerprint": "a9dd96e34fdb678c5779e28193fe8f4e18cede403c4bdcb1833a87fdbda9b224",
       "typescript": {
         "status": "covered",
         "method": "Client.voice.audio.delete"
@@ -2462,7 +2484,7 @@
       "method": "DELETE",
       "path": "/platform/voice/provider-credentials/{credentialId}",
       "operationId": "deleteVoiceProviderCredential",
-      "fingerprint": "7f8da96bfd047ec605a33e1c74735b24765498e5d6e437f0c7bbea92b4068989",
+      "fingerprint": "52e7d2f0a46d4496b01ff10c2677e87d856dc1a34780affa849d1595ca763fc4",
       "typescript": {
         "status": "covered",
         "method": "Client.voice.providerCredentials.delete"
@@ -3089,7 +3111,7 @@
       "method": "GET",
       "path": "/platform/call-opt-outs",
       "operationId": "listCallOptOuts",
-      "fingerprint": "c29dfe633323b8e56b0967a35e92a1969d34503326114b4e390259236d8186aa",
+      "fingerprint": "8ddf665dc8ca2020623c07e27f3e49cb5e28c0560a16de0cb48145266fa3195b",
       "typescript": {
         "status": "covered",
         "method": "Client.callOptOuts.list"
@@ -3100,7 +3122,7 @@
       "method": "GET",
       "path": "/platform/call-policy",
       "operationId": "getCallPolicy",
-      "fingerprint": "86dd41e85ca27799e9ef18e94acb766ff78dc873c7f453ac6e9bdc3ed5f663e2",
+      "fingerprint": "c8d752ba198e198d28c74a60ccd704ab351cd15c331efaa263534c953408fafd",
       "typescript": {
         "status": "covered",
         "method": "Client.callPolicy.retrieve"
@@ -3111,7 +3133,7 @@
       "method": "GET",
       "path": "/platform/call-retention",
       "operationId": "getCallRetention",
-      "fingerprint": "06c1f95e5115d0c7d7c2f9f2d28b843d06f59a72f4c5a46fdc3d5f28cbb322da",
+      "fingerprint": "740e716b5c757927aba3ee2ce697735ebc0f79034b41239cc03de50e5157c92d",
       "typescript": {
         "status": "covered",
         "method": "Client.callRetention.retrieve"
@@ -3133,7 +3155,7 @@
       "method": "GET",
       "path": "/platform/calls/export",
       "operationId": "exportCallRecords",
-      "fingerprint": "4fdb20df1a28ecb1be5d59346cfbb1e6daca9178b21bc47205530747d3ce358f",
+      "fingerprint": "1f6f0eaad355081c4d2bb414206dcca4722c1f37f6fc7aa7645a097de3afdbf2",
       "typescript": {
         "status": "covered",
         "method": "Client.calls.export"
@@ -3199,7 +3221,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/recipients",
       "operationId": "listCampaignRecipients",
-      "fingerprint": "3fc27f45197d97447db90e3f4344e2c600aabbfc30746b9b61bd552472442505",
+      "fingerprint": "7708a792e8cd0022e3e5125ab6796227c24ce967c8115f2eae9ca377fe9c2ade",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.recipients"
@@ -3485,6 +3507,28 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/platform/optouts/confirmation-settings",
+      "operationId": "getStopConfirmationSettings",
+      "fingerprint": "7ce61653f59ebf4864f323af86e0b94709225f4572d8d5ba6f397863ce77d383",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.optOuts.getConfirmationSettings"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/optouts/confirmation-summary",
+      "operationId": "getStopConfirmationSummary",
+      "fingerprint": "0fcf0ab6a73cf703092c7224512ed0e42d01e670e8c4dd455385b1f16a98d585",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.optOuts.getConfirmationSummary"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/platform/optouts/settings",
       "operationId": "getOptOutSettings",
       "fingerprint": "3ae15933960cb7c604e6e70c61992d39ee457b8f74591d780f17c643849063a8",
@@ -3542,7 +3586,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/events/stream",
       "operationId": "streamProjectEvents",
-      "fingerprint": "6197fbd6989c873ddbe6e5c945c82e39a8b3ee3a00eb8926ecb43c7430aa242c",
+      "fingerprint": "28b3d23a4d7f48fde21f0ee8eb35b3067a08aaf8a04dbb42af573da7552023ce",
       "typescript": {
         "status": "covered",
         "method": "Client.events.stream"
@@ -3729,7 +3773,7 @@
       "method": "GET",
       "path": "/platform/sessions/{session}/call-settings",
       "operationId": "getCallSettings",
-      "fingerprint": "7c2c41cd18b135b0d6cb0ce11bedd5a756897685a20039a0c9b81c56cf6e8a7b",
+      "fingerprint": "ec1146ef24dce3e9e1153991ddcea5878184f9c8d47e2cda93ce91feb28ebc32",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.retrieveCallSettings"
@@ -3740,7 +3784,7 @@
       "method": "GET",
       "path": "/platform/sessions/{session}/client-rules",
       "operationId": "getClientRules",
-      "fingerprint": "865abbf3829b3217056a65140f7b47f1af64031559f6dbf3d765f35c8c5945cf",
+      "fingerprint": "b2ef6d54d33c61df8015b5f190ed07dd264960e089c2e4db795bb24731c960b1",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.clientTokens.retrieveRules"
@@ -3751,7 +3795,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}",
       "operationId": "getSession",
-      "fingerprint": "6b2f8f7f1496ad329d38cb2101521cf30cf9f75a9f882dc0556a3e24607f3f1c",
+      "fingerprint": "1389fa94cdd2191a430c4c1e04ca6edeeba642c3f6ebf836f46b53b2f1b31155",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.retrieve"
@@ -3762,7 +3806,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/me",
       "operationId": "getSessionAccount",
-      "fingerprint": "b2c6e4b2a125054993ba08d2453edd2986caf8aa3deb690dfa51a28cbb32df32",
+      "fingerprint": "b7722792af72e347d09659cd9badbecba1654ce89497acb2dd010ae2b0b90176",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.sessions.account"
@@ -3795,7 +3839,7 @@
       "method": "GET",
       "path": "/platform/sip-trunks",
       "operationId": "listSipTrunks",
-      "fingerprint": "1dcd5b0db6c5db32ee4a3473bb727ec55f7081eca98f91734e836a0fd6ec19f9",
+      "fingerprint": "6deee7646cf4e4fe124bb6c41e27e193bf705788fc4bb1b0fb1d44aa20302463",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.list"
@@ -3806,7 +3850,7 @@
       "method": "GET",
       "path": "/platform/sip-trunks/{trunkId}",
       "operationId": "getSipTrunk",
-      "fingerprint": "6a73d5b4a51f45d35e122506a4762d2e8e0aeeccf918f75dca737cd18e5f9826",
+      "fingerprint": "074712a686100006b6f1860891f40c017f2f05d3911fdac956a2229bd4b06a68",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.retrieve"
@@ -3817,7 +3861,7 @@
       "method": "GET",
       "path": "/platform/sip/endpoint",
       "operationId": "getSipEndpoint",
-      "fingerprint": "fc06fe9600f15fdffcd6b5b115faaae377ff3229d6235b9fed62114ed22a00d9",
+      "fingerprint": "be20d416ab7b3827cc38ec7c634afa3f7a88c0ce2babe7a2f3fc2944b46bb752",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.endpoint"
@@ -3896,7 +3940,7 @@
       "method": "GET",
       "path": "/platform/voice/audio",
       "operationId": "listVoiceAudio",
-      "fingerprint": "441531ea1a922ef65b8e43d84988f6e0a1916cffc325ad146cbd842a16fd7ad4",
+      "fingerprint": "4cbed53a06529b389890f8038df1bbbc4c92c4d72fb3e43cf49dc8c3ff7e5c70",
       "typescript": {
         "status": "covered",
         "method": "Client.voice.audio.list"
@@ -3907,7 +3951,7 @@
       "method": "GET",
       "path": "/platform/voice/audio/{assetId}",
       "operationId": "getVoiceAudio",
-      "fingerprint": "692966998fc60c01a79f8dc3dde724a6a0a7fbffd041cf58daa2514b82c21115",
+      "fingerprint": "5079c7ec82102a0c38f7b750281c793ca098de596f501b27ed8ede8c13944ad2",
       "typescript": {
         "status": "covered",
         "method": "Client.voice.audio.retrieve"
@@ -3918,7 +3962,7 @@
       "method": "GET",
       "path": "/platform/voice/audio/{assetId}/preview",
       "operationId": "getVoiceAudioPreview",
-      "fingerprint": "a9e96bd7922b2377118eb001ee25da93ef777e4192e68da8b1289cbd8e0f9f96",
+      "fingerprint": "9cd3006de03b11954ef863416331b0f89933072b587f42b8f510aeb3d17a40d9",
       "typescript": {
         "status": "covered",
         "method": "Client.voice.audio.previewUrl"
@@ -3929,7 +3973,7 @@
       "method": "GET",
       "path": "/platform/voice/provider-credentials",
       "operationId": "listVoiceProviderCredentials",
-      "fingerprint": "d3880ee66a9cb86cc09c5b7bd1539c055c778ffa8c74132fd641b130ad98aa02",
+      "fingerprint": "a1a63a0acf7da4f48c1391b28d39caf8ab625550f38eae574c77ffa98b5a6e2b",
       "typescript": {
         "status": "covered",
         "method": "Client.voice.providerCredentials.list"
@@ -3940,7 +3984,7 @@
       "method": "GET",
       "path": "/platform/voice/provider-credentials/{credentialId}",
       "operationId": "getVoiceProviderCredential",
-      "fingerprint": "3fc923e06ba764f92289880a0915e2014db432de101b210d4a914b2daa3b9c1e",
+      "fingerprint": "f5e35a834629c32a8514550495d4ebc149c1133b8f6a477bcea57935c6a8fca3",
       "typescript": {
         "status": "covered",
         "method": "Client.voice.providerCredentials.retrieve"
@@ -4094,7 +4138,7 @@
       "method": "PATCH",
       "path": "/platform/campaigns/{campaignId}",
       "operationId": "updateCampaign",
-      "fingerprint": "b7af610a57c1f24db76241bd0bf60dce7528c2b4f6e7b2c9a9da68f23ab0d380",
+      "fingerprint": "256b1544b69b6cdd5078798ffa582a16a67fd49eb17f1d6962c3d913dac2aa4d",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.update"
@@ -4161,7 +4205,7 @@
       "method": "PATCH",
       "path": "/platform/sip-trunks/{trunkId}",
       "operationId": "updateSipTrunk",
-      "fingerprint": "6315e726ab8b64dd320a5bb25107eb8e6ec599fb39240f918b265326889d800c",
+      "fingerprint": "ea1d3b01076782890f619779822618a27889960b19fd3c0504e9d211d6873957",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.update"
@@ -4184,7 +4228,7 @@
       "method": "PATCH",
       "path": "/platform/voice/audio/{assetId}",
       "operationId": "updateVoiceAudio",
-      "fingerprint": "f0cff58ca5e16ca4c26e433eee8ad7274efeeee1f7641376dd697cafa5cb9b4b",
+      "fingerprint": "c456accd16f397b6ec783c652c8d6f690611ac100352b9c60dbfbc569a0097e4",
       "typescript": {
         "status": "covered",
         "method": "Client.voice.audio.update"
@@ -4668,7 +4712,7 @@
       "method": "POST",
       "path": "/platform/call-opt-outs",
       "operationId": "createCallOptOut",
-      "fingerprint": "66e4e06f946a6391f4b7d1956de339f883009a50c4ec0efa9b93cdde367a7830",
+      "fingerprint": "0b50e24ef521346d4b6f4dc478169abc6abc6d7105fcbc24cae55f8a6f9b9310",
       "typescript": {
         "status": "covered",
         "method": "Client.callOptOuts.create"
@@ -4679,7 +4723,7 @@
       "method": "POST",
       "path": "/platform/call-opt-outs/import",
       "operationId": "importCallOptOuts",
-      "fingerprint": "2d94c647923f4e66dd1323e3fede119a01b1644b26abf8cac16abce11099fa47",
+      "fingerprint": "a6187a160cd92afaab1ea0044cad1e43513a628a7aa0d3ec7f28bd34796aae04",
       "typescript": {
         "status": "covered",
         "method": "Client.callOptOuts.import"
@@ -4690,7 +4734,7 @@
       "method": "POST",
       "path": "/platform/campaigns",
       "operationId": "createPlatformCampaign",
-      "fingerprint": "78e845758e756676217319c79cd02e6cdaf9ebbb5b034e5fe3f04b87a1398fc7",
+      "fingerprint": "68491e141feb821c4cca6c51640dd9bc2f3e28d6067cd572f42449c50ab38561",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.create"
@@ -4723,7 +4767,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/launch",
       "operationId": "launchPlatformCampaign",
-      "fingerprint": "5769e0021324bd63c9d63a8a72c1094c228e5911c7ea1184e1d9bafc3928475a",
+      "fingerprint": "ed25f00627cc0c91a5cc3159c473cca33105e3f3ee00c6af2f981becfab13ceb",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.launch"
@@ -4765,6 +4809,17 @@
     {
       "family": "platform",
       "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/reschedule",
+      "operationId": "reschedulePlatformCampaign",
+      "fingerprint": "21878cc0e7fed1e5f4c0f983a4899a70dd5fa4a410b1d293962a8ddccabe2f23",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.campaigns.reschedule"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
       "path": "/platform/campaigns/{campaignId}/resume",
       "operationId": "resumePlatformCampaign",
       "fingerprint": "0c0d1c4d481aab6363b8eb4b77ab44765c252524c971d9869efd248a797995b8",
@@ -4787,9 +4842,20 @@
     {
       "family": "platform",
       "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/test-send",
+      "operationId": "testSendPlatformCampaign",
+      "fingerprint": "035501f7578fdbbfb7a15ae405d11dc514e6c0362b60a4c1a8da42823d00f618",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.campaigns.testSend"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
       "path": "/platform/client-tokens",
       "operationId": "mintClientToken",
-      "fingerprint": "cac531399a855f9159b8686b033e6a55e099e9f681f8719f8b075b0d91bbe844",
+      "fingerprint": "fad0f8b270d5a7253c8efa12f6a83b3e0bd3b974f4763e0bceffd4f065ae8763",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.clientTokens.mint"
@@ -5010,7 +5076,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/events/stream/{streamId}/ack",
       "operationId": "acknowledgeProjectEventStream",
-      "fingerprint": "5681f4181c434dc08e6da60f3d024d1e1ef8975e9e1f1d4b8093aa3e00031b4d",
+      "fingerprint": "aead66a7a93c6e2e7ee34ef46597f4f287f54a9054af6f84837c5939b4e8e1ec",
       "typescript": {
         "status": "covered",
         "method": "Client.events.acknowledgeStream"
@@ -5109,7 +5175,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/handoff-ack",
       "operationId": "sessionHandoffAck",
-      "fingerprint": "da3f871558dde7b0e566247931a2306cf2ec56326296b3e5051a16a377a9a5b6",
+      "fingerprint": "583850b5e4a234bc3c6f3884af287bec4f63d35f17f3654e08dad85ce01a62e3",
       "typescript": {
         "status": "excluded",
         "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
@@ -5121,7 +5187,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/handoff-import",
       "operationId": "sessionHandoffImport",
-      "fingerprint": "a770d810789bcba6f8f599a7bf27c269670392fd9f4db5de898f5a7d579368df",
+      "fingerprint": "ede275d1b1d6e4cb9772ba1623cecde641f8c256ff5665dac7172f7213f2d69e",
       "typescript": {
         "status": "excluded",
         "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
@@ -5133,7 +5199,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/handoff-keys",
       "operationId": "sessionHandoffKeys",
-      "fingerprint": "7a2b66940c18b1ec2947ff2d085132128eff7bfb58f976c1456234d13a06d125",
+      "fingerprint": "b7ef34febda6aa21f4fa32e9fe8b2746d91559a4cdea162c0efe923350a94061",
       "typescript": {
         "status": "excluded",
         "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
@@ -5145,7 +5211,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/logout",
       "operationId": "logoutSession",
-      "fingerprint": "6d3125bc828d3ada5baf9de74d9b3b7c20b159923ec9172dfce6ce88378c3569",
+      "fingerprint": "065febf34153f12811f213bd17da961efbf52efe7e96516fa95e25b2cf733f01",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.sessions.logout"
@@ -5156,7 +5222,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/restart",
       "operationId": "restartSession",
-      "fingerprint": "c3c5385ad68c96388f927d5edf0976548b4d1dbd6a0a56b656038e0a0a489299",
+      "fingerprint": "fdd8f8fc7cad7aea8e25d772810ce61b533e84b3487e0bc7945be6bf255bd267",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.sessions.restart"
@@ -5200,7 +5266,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/upload-appstate-keys",
       "operationId": "sessionUploadAppStateKeys",
-      "fingerprint": "6e901c9f8f049dcebcf4cf551a78141cc485424565e86768afe284f2329dd9e8",
+      "fingerprint": "9379cfa556c560dbd73d60a58c82bd77f74e8521419278eb341696ac39530333",
       "typescript": {
         "status": "excluded",
         "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
@@ -5234,7 +5300,7 @@
       "method": "POST",
       "path": "/platform/sip-trunks",
       "operationId": "createSipTrunk",
-      "fingerprint": "329d5890f952398891e1068e21a570142f239fb80e92ce99e4cedd45765b3aa5",
+      "fingerprint": "faeb55b3a9cc00429e9fdc70d39d4eea91bc75b188907487fd2fd1ad3e7ae4b1",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.create"
@@ -5245,7 +5311,7 @@
       "method": "POST",
       "path": "/platform/sip-trunks/{trunkId}/credentials",
       "operationId": "rotateSipTrunkCredentials",
-      "fingerprint": "3f11f2b9edc9d3df1fd9373254660d46a4003a83c514bd46c538b39fb29eba5b",
+      "fingerprint": "2c8d97eaa72cafed69a41dc6fc93250a399520af075e36bb447c581eae703566",
       "typescript": {
         "status": "covered",
         "method": "Client.sipTrunks.rotateCredentials"
@@ -5268,7 +5334,7 @@
       "method": "POST",
       "path": "/platform/voice/audio",
       "operationId": "createVoiceAudioUpload",
-      "fingerprint": "396a9d4824b7432de8c3a9ffa3d3dcbd1ca2a28382f66508de25f729ec8ea067",
+      "fingerprint": "6a5c2478ad7bebdcb8da9724abe3ffc7dead5f0eff993aff46042645f6364fb1",
       "typescript": {
         "status": "covered",
         "method": "Client.voice.audio.createUpload"
@@ -5279,7 +5345,7 @@
       "method": "POST",
       "path": "/platform/voice/audio/{assetId}/complete",
       "operationId": "completeVoiceAudioUpload",
-      "fingerprint": "90bdd3c5b155f6ca7b6995d41fbd7f6829f308dad67cfebf1237ca55d37592b9",
+      "fingerprint": "10bbc52815363739bafede7bb8a3d8f8ec8ad9ae88a48a16bd3c68ce57225678",
       "typescript": {
         "status": "covered",
         "method": "Client.voice.audio.complete"
@@ -5290,7 +5356,7 @@
       "method": "POST",
       "path": "/platform/voice/audio/tts",
       "operationId": "synthesizeVoiceAudio",
-      "fingerprint": "07d35d10391d0c415b931d72be40f4ff379ea2c1a9612d0650f1e36448b8675a",
+      "fingerprint": "0c24f96eb9182125020781492ede39db9dd4243920aa1d3a2dbd34d436481260",
       "typescript": {
         "status": "covered",
         "method": "Client.voice.audio.synthesize"
@@ -5301,7 +5367,7 @@
       "method": "POST",
       "path": "/platform/voice/provider-credentials",
       "operationId": "createVoiceProviderCredential",
-      "fingerprint": "e477c153316c4867166cb5f6cf76bafda9861ef84759f66ab58b9776d9633381",
+      "fingerprint": "3812d00370b49b30b0fa85fe3977bf8aa05ee4c910157dd26a4e56411c4ee774",
       "typescript": {
         "status": "covered",
         "method": "Client.voice.providerCredentials.create"
@@ -5312,7 +5378,7 @@
       "method": "POST",
       "path": "/platform/voice/provider-credentials/{credentialId}/verify",
       "operationId": "verifyVoiceProviderCredential",
-      "fingerprint": "51f0135ffae48493414f934cff7eff9f7a8b7d88cc2a825d1a9f9d145793f5f3",
+      "fingerprint": "a5d7c7ad3b58b0bc60a1e19f388307346ed3b8464ea0bb20c7e0e830c20fd6d5",
       "typescript": {
         "status": "covered",
         "method": "Client.voice.providerCredentials.verify"
@@ -5477,7 +5543,7 @@
       "method": "PUT",
       "path": "/platform/call-policy",
       "operationId": "updateCallPolicy",
-      "fingerprint": "27eecc385aa3dc2fda442e5d213b0005d8bc4381c38c9ad17d8ce959c367ae75",
+      "fingerprint": "ee79c3d11e0ec081aa7fca28e65c57c8ccb7dd20fc1e3c894928cc1a85159e82",
       "typescript": {
         "status": "covered",
         "method": "Client.callPolicy.update"
@@ -5488,7 +5554,7 @@
       "method": "PUT",
       "path": "/platform/call-retention",
       "operationId": "updateCallRetention",
-      "fingerprint": "f9055157722cdf330a3554c635e5a2ab15eac0779ecd08e5a491e598523063a2",
+      "fingerprint": "86e96479c02cb887e984c60e7b9596e2c2f3eb3c97f57d148a7d1b6315222ee2",
       "typescript": {
         "status": "covered",
         "method": "Client.callRetention.update"
@@ -5503,6 +5569,17 @@
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).functions.deployments.promote"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/optouts/confirmation-settings",
+      "operationId": "updateStopConfirmationSettings",
+      "fingerprint": "089b038c657664116a06a314e786ad14d38f51149048ac307410f3a36d48902b",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.optOuts.updateConfirmationSettings"
       }
     },
     {
@@ -5587,7 +5664,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{session}/call-settings",
       "operationId": "updateCallSettings",
-      "fingerprint": "a19912633c51d8faab3fc1eaf94b51c4bce6c5bc73c55ba307c202f0fac9cd22",
+      "fingerprint": "3699e52593bd77cf66de75d6c3950dc9f32281f0a05e782ceec5059d99b90bbc",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.updateCallSettings"
@@ -5598,7 +5675,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{session}/client-rules",
       "operationId": "setClientRules",
-      "fingerprint": "ef3d20c9aecf22a9c46e8a8a812a247e20d52a2acc988714ae0c78d79c5b4c53",
+      "fingerprint": "935e559283c16c632a1020d1752394b032cfc4cd81ff1a32fb602152b142585d",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.clientTokens.updateRules"
@@ -5609,7 +5686,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}",
       "operationId": "updateSession",
-      "fingerprint": "cb8c0c0a85e4e798694eb76a2df436cfc091602542686f5b586718eae348816a",
+      "fingerprint": "85b44a8e1b14f86515c340fdc9a685c51ada8c1f4bc0c93226f7516630b8d61f",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.update"

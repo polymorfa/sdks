@@ -14,6 +14,7 @@ import {
   type CampaignRecipient,
   type CampaignRequeueResponse,
   type CampaignStopResponse,
+  type CampaignTestSendResponse,
   type CreateCampaignResponse,
   type GetCampaignResponse,
   type ListCampaignRecipientsResponse,
@@ -65,6 +66,9 @@ const recipient = {
   readAt: null,
   failedAt: null,
   respondedAt: null,
+  messagesSent: 0,
+  nextMessageAt: null,
+  sequenceError: null,
 };
 
 async function campaignsServer(): Promise<{
@@ -76,56 +80,74 @@ async function campaignsServer(): Promise<{
       "content-type": "application/json",
       "x-request-id": "req_messaging_campaigns",
     },
-    body: request.path.includes("/recipients")
-      ? request.method === "GET"
-        ? JSON.stringify({
-            success: true,
-            data: [recipient],
-            page: { nextCursor: "cursor-2", hasMore: true },
-          })
-        : JSON.stringify({
-            success: true,
-            data: {
-              campaignId: campaign.id,
-              added: 2,
-              recipientCount: 52,
-              duplicateCount: 1,
-              invalidCount: 1,
-              invalidRows: [{ row: 4, reason: "invalid_phone" }],
+    body: request.path.endsWith("/test-send")
+      ? JSON.stringify({
+          success: true,
+          data: {
+            id: "018f0000-0000-7000-8000-000000000005",
+            campaignId: campaign.id,
+            status: "sent",
+            from: {
+              sessionId: "018f0000-0000-7000-8000-000000000006",
+              phone: "+15550100001",
             },
-          })
-      : request.path.endsWith("/analytics")
-        ? JSON.stringify({
-            success: true,
-            data: {
-              campaignId: campaign.id,
-              recipientCount: 50,
-              sentCount: 30,
-              deliveredCount: 25,
-              readCount: 20,
-              failedCount: 2,
-              skippedCount: 1,
-              respondedCount: 5,
-              responseRate: 0.1,
-            },
-          })
-        : request.path.endsWith("/requeue")
-          ? '{"success":true,"data":{"requeued":3}}'
-          : request.method === "GET" && !request.path.endsWith(campaign.id)
-            ? JSON.stringify({ success: true, data: [campaign] })
-            : JSON.stringify({
-                success: true,
-                data:
-                  request.path.endsWith("/launch") ||
-                  request.path.endsWith("/pause") ||
-                  request.path.endsWith("/resume") ||
-                  request.path.endsWith("/stop")
-                    ? {
-                        ...campaign,
-                        operationId: "018f0000-0000-7000-8000-000000000003",
-                      }
-                    : campaign,
-              }),
+            to: "+15550100002",
+            messageId: "wamid.test",
+            variables: { firstName: "Ada" },
+            createdAt: 1_724_000_000_000,
+          },
+        })
+      : request.path.includes("/recipients")
+        ? request.method === "GET"
+          ? JSON.stringify({
+              success: true,
+              data: [recipient],
+              page: { nextCursor: "cursor-2", hasMore: true },
+            })
+          : JSON.stringify({
+              success: true,
+              data: {
+                campaignId: campaign.id,
+                added: 2,
+                recipientCount: 52,
+                duplicateCount: 1,
+                invalidCount: 1,
+                invalidRows: [{ row: 4, reason: "invalid_phone" }],
+              },
+            })
+        : request.path.endsWith("/analytics")
+          ? JSON.stringify({
+              success: true,
+              data: {
+                campaignId: campaign.id,
+                recipientCount: 50,
+                sentCount: 30,
+                deliveredCount: 25,
+                readCount: 20,
+                failedCount: 2,
+                skippedCount: 1,
+                respondedCount: 5,
+                responseRate: 0.1,
+              },
+            })
+          : request.path.endsWith("/requeue")
+            ? '{"success":true,"data":{"requeued":3}}'
+            : request.method === "GET" && !request.path.endsWith(campaign.id)
+              ? JSON.stringify({ success: true, data: [campaign] })
+              : JSON.stringify({
+                  success: true,
+                  data:
+                    request.path.endsWith("/launch") ||
+                    request.path.endsWith("/pause") ||
+                    request.path.endsWith("/reschedule") ||
+                    request.path.endsWith("/resume") ||
+                    request.path.endsWith("/stop")
+                      ? {
+                          ...campaign,
+                          operationId: "018f0000-0000-7000-8000-000000000003",
+                        }
+                      : campaign,
+                }),
   }));
   servers.push(server);
   return {
@@ -180,12 +202,43 @@ describe("MessagingClient campaigns", () => {
     expect(server.requests).toHaveLength(2);
   });
 
+  it("sends a draft test once with a stable idempotency key and typed receipt", async () => {
+    const { client, requests } = await campaignsServer();
+    const result = await client.campaigns.testSend(
+      "launch/eu",
+      campaign.id,
+      {
+        sessionId: "018f0000-0000-7000-8000-000000000006",
+        to: "+15550100002",
+        sampleRecipientId: "018f0000-0000-7000-8000-000000000004",
+        variables: { firstName: "Ada" },
+      },
+      { idempotencyKey: "campaign-test-1" },
+    );
+
+    expectTypeOf(result).toEqualTypeOf<ApiResponse<CampaignTestSendResponse>>();
+    expect(result.data.data.status).toBe("sent");
+    expect(requests[0]).toMatchObject({
+      method: "POST",
+      path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}/test-send`,
+      body: JSON.stringify({
+        sessionId: "018f0000-0000-7000-8000-000000000006",
+        to: "+15550100002",
+        sampleRecipientId: "018f0000-0000-7000-8000-000000000004",
+        variables: { firstName: "Ada" },
+      }),
+    });
+    expect(requests[0]?.headers["idempotency-key"]).toBe("campaign-test-1");
+  });
   it("exports the exact resource and live campaign contracts", () => {
     expectTypeOf<
       MessagingClient["campaigns"]
     >().toEqualTypeOf<MessagingCampaignsResource>();
     expectTypeOf<Campaign>().toHaveProperty("recipientCount");
     expectTypeOf<Campaign>().toHaveProperty("scheduledAt");
+    expectTypeOf<CampaignRecipient>().toHaveProperty("messagesSent");
+    expectTypeOf<CampaignRecipient>().toHaveProperty("nextMessageAt");
+    expectTypeOf<CampaignRecipient>().toHaveProperty("sequenceError");
     expectTypeOf<CampaignAnalytics>().toHaveProperty("responseRate");
   });
 
@@ -221,6 +274,7 @@ describe("MessagingClient campaigns", () => {
       {
         name: "August launch",
         templateId: "template/a",
+        variableMapping: { firstName: { source: "name", fallback: "friend" } },
         recipientListId: "audience/a",
         senderConfig: { retry: { maxAttempts: 5 } },
         scheduledAt: 1_724_086_800_000,
@@ -235,6 +289,7 @@ describe("MessagingClient campaigns", () => {
       body: JSON.stringify({
         name: "August launch",
         templateId: "template/a",
+        variableMapping: { firstName: { source: "name", fallback: "friend" } },
         recipientListId: "audience/a",
         senderConfig: { retry: { maxAttempts: 5 } },
         scheduledAt: 1_724_086_800_000,
@@ -300,6 +355,69 @@ describe("MessagingClient campaigns", () => {
     );
     expect(launched.data.data.operationId).toBe(
       "018f0000-0000-7000-8000-000000000003",
+    );
+  });
+
+  it("reschedules a waiting launch with the exact body and stable retry key", async () => {
+    const { client, requests } = await campaignsServer();
+    const response = await client.campaigns.reschedule(
+      "launch/eu",
+      campaign.id,
+      { scheduledAt: null },
+      { idempotencyKey: "start-now-august" },
+    );
+
+    expectTypeOf(response).toEqualTypeOf<
+      ApiResponse<CampaignOperationResponse>
+    >();
+    expect(requests[0]).toMatchObject({
+      method: "POST",
+      path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}/reschedule`,
+      body: '{"scheduledAt":null}',
+    });
+    expect(requests[0]?.headers["idempotency-key"]).toBe("start-now-august");
+    expect(response.data.data.operationId).toBe(
+      "018f0000-0000-7000-8000-000000000003",
+    );
+  });
+
+  it("returns a known reschedule conflict without replaying the write", async () => {
+    const server = await startTestServer(() => ({
+      status: 409,
+      body: JSON.stringify({
+        error: {
+          code: "campaign_state_conflict",
+          message: "Campaign already started.",
+        },
+      }),
+    }));
+    servers.push(server);
+    const client = new MessagingClient({
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: server.url,
+      maxNetworkRetries: 2,
+    });
+
+    await expect(
+      client.campaigns.reschedule("launch/eu", campaign.id, {
+        scheduledAt: null,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(server.requests).toHaveLength(1);
+  });
+
+  it("sends an explicit skip policy for recipients missing variables", async () => {
+    const { client, requests } = await campaignsServer();
+    await client.campaigns.launch(
+      "launch/eu",
+      campaign.id,
+      { skipMissingVariables: true },
+      { idempotencyKey: "campaign-skip-missing" },
+    );
+
+    expect(requests[0]?.body).toBe('{"skipMissingVariables":true}');
+    expect(requests[0]?.headers["idempotency-key"]).toBe(
+      "campaign-skip-missing",
     );
   });
 

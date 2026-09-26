@@ -559,6 +559,15 @@ const PAYLOADS: {
     { ...campaign, sentCount: 10, remainingCount: 5, pausedAt: 1 },
     ["campaignId", "sentCount", "remainingCount", "pausedAt"],
   ),
+  "campaign.rescheduled": shape<P["campaign.rescheduled"]>()(
+    {
+      ...campaign,
+      previousScheduledAt: null,
+      scheduledAt: 1_790_000_003_000,
+      rescheduledAt: 1_790_000_003_000,
+    },
+    ["campaignId", "previousScheduledAt", "scheduledAt", "rescheduledAt"],
+  ),
   "campaign.resumed": shape<P["campaign.resumed"]>()(
     {
       ...campaign,
@@ -614,6 +623,7 @@ const PAYLOADS: {
       externalMessageId: "msg_1",
       variantKey: "a",
       attempt: 1,
+      messageIndex: 0,
     },
     [
       "campaignId",
@@ -623,6 +633,7 @@ const PAYLOADS: {
       "externalMessageId",
       "variantKey",
       "attempt",
+      "messageIndex",
     ],
   ),
   "campaign.recipient_failed": shape<P["campaign.recipient_failed"]>()(
@@ -633,8 +644,17 @@ const PAYLOADS: {
       attempts: 3,
       error: "send_failed",
       failedAt: 4,
+      messageIndex: 1,
     },
-    ["campaignId", "recipientId", "phone", "attempts", "error", "failedAt"],
+    [
+      "campaignId",
+      "recipientId",
+      "phone",
+      "attempts",
+      "error",
+      "failedAt",
+      "messageIndex",
+    ],
   ),
   "campaign.recipient_skipped": shape<P["campaign.recipient_skipped"]>()(
     {

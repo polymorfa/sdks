@@ -4,16 +4,20 @@ import {
   withoutAutomaticRetry,
 } from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
+import type { CampaignTestSend } from "../messaging/types.js";
 import type {
   AddPlatformCampaignRecipientsRequest,
   AddPlatformCampaignRecipientsResult,
   CreatePlatformCampaignRequest,
+  LaunchPlatformCampaignRequest,
   DataEnvelope,
   ListCampaignsParams,
   ListPlatformCampaignRecipientsParams,
   PlatformCampaignParams,
   PlatformCampaignRecipientsEnvelope,
+  PlatformCampaignTestSendRequest,
   PlatformPayload,
+  ReschedulePlatformCampaignRequest,
   UpdatePlatformCampaignRequest,
 } from "./types.js";
 
@@ -100,12 +104,44 @@ export class CampaignsResource {
     });
   }
 
+  /**
+   * Start a draft. Fails with `422 campaign_variables_missing` when recipients
+   * lack a value and fallback, unless `skipMissingVariables` is true.
+   */
   launch(
     campaignId: string,
-    body?: PlatformPayload,
+    body?: LaunchPlatformCampaignRequest,
     options: RequestOptions = {},
   ): CampaignResponse {
     return this.action(campaignId, "launch", body, options);
+  }
+
+  /** Move a launched campaign that has not started sending, or start it now. */
+  reschedule(
+    campaignId: string,
+    body: ReschedulePlatformCampaignRequest,
+    options: RequestOptions = {},
+  ): CampaignResponse {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(campaignId)}/reschedule`,
+      body,
+      ...withoutAutomaticRetry(withIdempotencyKey(options)),
+    });
+  }
+
+  /** Sends one copy of a draft to a team number. Use the same idempotency key to reconcile an uncertain result. */
+  testSend(
+    campaignId: string,
+    body: PlatformCampaignTestSendRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<CampaignTestSend>>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(campaignId)}/test-send`,
+      body,
+      ...withoutAutomaticRetry(withIdempotencyKey(options)),
+    });
   }
 
   pause(

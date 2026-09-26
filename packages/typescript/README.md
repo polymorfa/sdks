@@ -1685,8 +1685,9 @@ message identifiers are URL-encoded by the SDK.
 ## Messaging campaigns
 
 `MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `analytics`,
-`listRecipients`, `addRecipients`, `launch`, `pause`, `resume`, `stop`, and
-`requeue`. Reads require `campaigns:read`; writes require `campaigns:manage`.
+`listRecipients`, `addRecipients`, `launch`, `reschedule`, `testSend`, `pause`,
+`resume`, `stop`, and `requeue`. Reads require `campaigns:read`; writes require
+`campaigns:manage`.
 Pass the project's slug as the first argument. Campaigns accept organization
 API keys or project tokens; browser client tokens cannot use these methods.
 
@@ -1731,7 +1732,8 @@ after a lost response.
 `{ data, page }` inside the response's `data`. Read recipients from
 `response.data.data` and pass `response.data.page.nextCursor` into the next
 request while `page.hasMore` is true. Each recipient includes its send,
-delivery, read, failure and reply timestamps. Campaign `list` returns a complete
+delivery, read, failure and reply timestamps, plus `messagesSent`,
+`nextMessageAt`, and `sequenceError`. Campaign `list` returns a complete
 array; recipient pagination does not change that method.
 
 Launch, pause and resume return the campaign state with an `operationId`.
@@ -1739,7 +1741,9 @@ They accept the transition without waiting for sending to finish. Stop always
 cancels; its `operationId` is null when the campaign had no active delivery run
 and was cancelled immediately. Check for null before calling
 `Client.operations.wait(operationId)`. A launched campaign waiting for its
-scheduled start can be stopped, but its start time cannot be changed.
+scheduled start can be moved with `reschedule(projectSlug, campaignId,
+{ scheduledAt })`. Pass `null` to start now. Once sending starts, rescheduling
+returns `409`.
 Launch, pause, resume, and stop generate one idempotency key per call unless you
 pass one. Automatic retries reuse that key; a completed replay returns the
 API's `idempotency_completed` conflict, so inspect the campaign state after a
@@ -1751,12 +1755,23 @@ unentitled campaigns with `402`, suspension with `403`, and invalid lifecycle
 transitions with `409`. Throughput above the eligible number pool's ceiling is
 `400 campaign_throughput_capped`.
 
+`testSend` sends a draft to a number connected to your team without enrolling
+that seed as a campaign recipient. Supply a selected, entitled `sessionId`, the
+seed phone in `to`, and optionally `sampleRecipientId` and variable overrides.
+The API applies the campaign's variable mapping and fallbacks. Missing values
+return `422 campaign_variables_missing` before a send is admitted. Use a stable
+idempotency key and check the seed phone after a timeout; the SDK does not
+automatically replay this write.
+
 `Client.campaigns` provides the Platform campaign methods. Its single-campaign
 reads, updates and deletion take a `PlatformCampaignParams` argument: a team
 API key must supply the owning `projectId`. This resource is available only
 on organization clients, not project views or project-token clients. Recipient
 listing and append also require `projectId`. Platform
-`recipients` uses the same cursor-page shape. `Client.audiences` manages audience
+`recipients` uses the same cursor-page shape. `CreatePlatformCampaignRequest`
+accepts up to ten typed `messagesArray` entries with `delayAfterSec` from 0 to
+86400, and `UpdatePlatformCampaignRequest` can replace them. `sendWindow` sets
+local weekdays and hours, with optional recipient time zones. `Client.audiences` manages audience
 members, and `Client.optOuts` reads and replaces team keyword settings.
 
 `create` and `launch` generate an `Idempotency-Key` for each call. A supplied
@@ -2039,8 +2054,9 @@ console.log(campaign.data.data, campaign.metadata.requestId);
 `name` and the owning `projectId`. It accepts `templateId`, `recipientListId`,
 `senderConfig`, `scheduledAt`, inline `recipients` (at most 1,000), and
 `recipientCount` (ignored when inline recipients are supplied). The named
-`composerBlueprint`, `messagesArray`, `audienceRef`, `complianceConfig`,
-`variants`, and `variantStrategy` values remain opaque JSON. Extra top-level
+`composerBlueprint`, `audienceRef`, `complianceConfig`, `variants`, and
+`variantStrategy` values remain opaque JSON. `messagesArray` accepts typed
+`CampaignMessage` entries, including `delayAfterSec`. Extra top-level
 fields are not part of the create contract. Lifecycle action payloads remain
 open `PlatformPayload` objects. Launch, pause, resume, and stop generate one
 idempotency key per call unless you pass one. Archive, duplicate, and requeue

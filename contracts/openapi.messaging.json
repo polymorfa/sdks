@@ -6450,6 +6450,76 @@
           "payload"
         ]
       },
+      "CampaignRescheduledPayload": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "Campaign id",
+            "example": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11"
+          },
+          "previousScheduledAt": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "description": "The start time that was replaced, in Unix milliseconds"
+          },
+          "scheduledAt": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "The new start time in Unix milliseconds. Equal to `rescheduledAt` when the campaign was asked to start now."
+          },
+          "rescheduledAt": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Unix timestamp in milliseconds when the new start time was accepted"
+          }
+        },
+        "required": [
+          "campaignId",
+          "previousScheduledAt",
+          "scheduledAt",
+          "rescheduledAt"
+        ]
+      },
+      "CampaignRescheduledEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "campaign.rescheduled"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CampaignRescheduledPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
       "CampaignCompletedPayload": {
         "type": "object",
         "properties": {
@@ -6647,6 +6717,12 @@
             "exclusiveMinimum": true,
             "description": "Attempt number that succeeded",
             "example": 1
+          },
+          "messageIndex": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Position of this message in the campaign's message sequence, from 0. One event is sent per message; 0 is the recipient's first message.",
+            "example": 0
           }
         },
         "required": [
@@ -6656,7 +6732,8 @@
           "sessionKey",
           "externalMessageId",
           "variantKey",
-          "attempt"
+          "attempt",
+          "messageIndex"
         ]
       },
       "CampaignRecipientSentEvent": {
@@ -6730,6 +6807,12 @@
             "minimum": 0,
             "description": "Unix timestamp in seconds when the recipient was marked failed",
             "example": 1757161200
+          },
+          "messageIndex": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Position of the failed message in the campaign's message sequence, from 0. Above 0, the earlier messages were sent and the recipient stays sent; its remaining messages are not sent.",
+            "example": 0
           }
         },
         "required": [
@@ -6738,7 +6821,8 @@
           "phone",
           "attempts",
           "error",
-          "failedAt"
+          "failedAt",
+          "messageIndex"
         ]
       },
       "CampaignRecipientFailedEvent": {
@@ -7440,7 +7524,8 @@
                   "bansafe_accounting_unavailable",
                   "bansafe_send_outcome_unknown",
                   "campaigns_not_entitled",
-                  "campaign_throughput_capped"
+                  "campaign_throughput_capped",
+                  "campaign_variables_missing"
                 ]
               },
               "message": {
@@ -15678,6 +15763,91 @@
           "session"
         ]
       },
+      "CampaignSendWindowRange": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+            "description": "Local start time, `HH:MM` in 24-hour time, inclusive.",
+            "example": "09:00"
+          },
+          "end": {
+            "type": "string",
+            "pattern": "^(([01][0-9]|2[0-3]):[0-5][0-9]|24:00)$",
+            "description": "Local end time, `HH:MM` in 24-hour time or `24:00`, exclusive. Must be later than `start`.",
+            "example": "18:00"
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ],
+        "additionalProperties": false
+      },
+      "CampaignSendWindow": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "timeZone": {
+            "type": "string",
+            "description": "IANA time zone the window is written in.",
+            "example": "America/Sao_Paulo"
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 7,
+            "description": "Weekdays the campaign may send on, in the window's time zone. At least one; no repeats.",
+            "example": [
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday"
+            ]
+          },
+          "hours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignSendWindowRange"
+            },
+            "minItems": 1,
+            "maxItems": 4,
+            "description": "Local time ranges the campaign may send in on those days, at most 4. Ranges must not overlap. A range cannot cross midnight; use two ranges instead."
+          },
+          "recipientTimeZone": {
+            "type": "boolean",
+            "description": "Evaluate the window in each recipient's own time zone. The zone comes from the recipient variable named by `timeZoneVariable` when it holds a valid IANA zone, otherwise from the phone number's country when that country uses one UTC offset, otherwise `timeZone`."
+          },
+          "timeZoneVariable": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$",
+            "description": "Recipient variable holding the recipient's IANA time zone, used when `recipientTimeZone` is true.",
+            "example": "timeZone"
+          }
+        },
+        "required": [
+          "timeZone",
+          "days",
+          "hours",
+          "recipientTimeZone",
+          "timeZoneVariable"
+        ],
+        "description": "When the campaign may send; null sends at any time."
+      },
       "Campaign": {
         "type": "object",
         "properties": {
@@ -15692,7 +15862,30 @@
           },
           "templateId": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "Template the campaign sends. When set, the template replaces composed messages."
+          },
+          "variableMapping": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "maxLength": 64,
+                  "description": "Recipient variable that fills this variable, for example a column mapped when the audience was imported. Defaults to the recipient variable with the same name."
+                },
+                "fallback": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1024,
+                  "description": "Sent when a recipient has no value for the source variable, or only whitespace. Must not be blank."
+                }
+              },
+              "additionalProperties": false
+            },
+            "description": "How each `{{variable}}` in the campaign's template or composed messages is filled, keyed by the variable name used in the content. At most 50 entries. A variable is filled from the recipient's value, then `fallback`, then an inline `{{name | fallback}}` written in a composed message. A recipient with none of them is refused at launch (`campaign_variables_missing`) or, when launched with `skipMissingVariables`, skipped with `missing_variable`. Null when the campaign has no mapping."
           },
           "recipientListId": {
             "type": "string",
@@ -15733,6 +15926,9 @@
           },
           "updatedAt": {
             "type": "number"
+          },
+          "sendWindow": {
+            "$ref": "#/components/schemas/CampaignSendWindow"
           }
         },
         "required": [
@@ -15751,7 +15947,8 @@
           "launchedAt",
           "completedAt",
           "createdAt",
-          "updatedAt"
+          "updatedAt",
+          "sendWindow"
         ]
       },
       "ListCampaignsResponse": {
@@ -15830,6 +16027,92 @@
           "data"
         ]
       },
+      "CampaignVariableMapping": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "Recipient variable that fills this variable, for example a column mapped when the audience was imported. Defaults to the recipient variable with the same name."
+            },
+            "fallback": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024,
+              "description": "Sent when a recipient has no value for the source variable, or only whitespace. Must not be blank."
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "How each `{{variable}}` in the campaign's template or composed messages is filled, keyed by the variable name used in the content. At most 50 entries. A variable is filled from the recipient's value, then `fallback`, then an inline `{{name | fallback}}` written in a composed message. A recipient with none of them is refused at launch (`campaign_variables_missing`) or, when launched with `skipMissingVariables`, skipped with `missing_variable`."
+      },
+      "CampaignSendWindowRequest": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "timeZone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "IANA time zone the window is written in, such as `America/Sao_Paulo`. When omitted, the team's time zone is stored, or `UTC` when the team has none.",
+            "example": "America/Sao_Paulo"
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 7,
+            "description": "Weekdays the campaign may send on, in the window's time zone. At least one; no repeats.",
+            "example": [
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday"
+            ]
+          },
+          "hours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignSendWindowRange"
+            },
+            "minItems": 1,
+            "maxItems": 4,
+            "description": "Local time ranges the campaign may send in on those days, at most 4. Ranges must not overlap. A range cannot cross midnight; use two ranges instead."
+          },
+          "recipientTimeZone": {
+            "type": "boolean",
+            "default": false,
+            "description": "Evaluate the window in each recipient's own time zone. The zone comes from the recipient variable named by `timeZoneVariable` when it holds a valid IANA zone, otherwise from the phone number's country when that country uses one UTC offset, otherwise `timeZone`."
+          },
+          "timeZoneVariable": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$",
+            "default": "timeZone",
+            "description": "Recipient variable holding the recipient's IANA time zone, used when `recipientTimeZone` is true.",
+            "example": "timeZone"
+          }
+        },
+        "required": [
+          "days",
+          "hours"
+        ],
+        "additionalProperties": false,
+        "description": "When the campaign may send. Recipients outside the window stay `queued` and are sent when it next opens. `null` sends at any time."
+      },
       "CampaignRecipientInput": {
         "type": "object",
         "properties": {
@@ -15869,7 +16152,11 @@
             "minLength": 1
           },
           "templateId": {
-            "type": "string"
+            "type": "string",
+            "description": "Template in this project to send instead of composed messages. On Cloud API numbers it must be approved by WhatsApp on every number the campaign can send from before launch."
+          },
+          "variableMapping": {
+            "$ref": "#/components/schemas/CampaignVariableMapping"
           },
           "recipientListId": {
             "type": "string"
@@ -15880,6 +16167,9 @@
           },
           "scheduledAt": {
             "type": "number"
+          },
+          "sendWindow": {
+            "$ref": "#/components/schemas/CampaignSendWindowRequest"
           },
           "recipients": {
             "type": "array",
@@ -15936,6 +16226,10 @@
         "properties": {
           "scheduledAt": {
             "type": "number"
+          },
+          "skipMissingVariables": {
+            "type": "boolean",
+            "description": "Launch even when some recipients have no value and no fallback for a variable. Those recipients are skipped with `lastError` `missing_variable` before the first send. Without it, such a launch is refused with `422 campaign_variables_missing`."
           }
         }
       },
@@ -16013,6 +16307,168 @@
           "success",
           "data"
         ]
+      },
+      "CampaignTestSend": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The test send's ID."
+          },
+          "campaignId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "sent"
+            ]
+          },
+          "from": {
+            "type": "object",
+            "properties": {
+              "sessionId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "phone": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "sessionId",
+              "phone"
+            ],
+            "description": "The number the test was sent from."
+          },
+          "to": {
+            "type": "string",
+            "description": "The seed recipient, in E.164 format."
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The WhatsApp message ID, when the send path returned one."
+          },
+          "variables": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "The variable values the content was rendered with."
+          },
+          "createdAt": {
+            "type": "number",
+            "description": "When the test was admitted, in epoch milliseconds."
+          }
+        },
+        "required": [
+          "id",
+          "campaignId",
+          "status",
+          "from",
+          "to",
+          "messageId",
+          "variables",
+          "createdAt"
+        ]
+      },
+      "TestSendCampaignResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/CampaignTestSend"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "CampaignTestSendRequest": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The number to send the test from. It must be connected, on a plan that includes Campaigns, and, when the campaign selects numbers, one of them."
+          },
+          "to": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The seed recipient in international format. It must be the phone of a number connected to your team.",
+            "example": "+5511999990000"
+          },
+          "sampleRecipientId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "A recipient of this campaign whose variables fill the content. Without it and without `variables`, the campaign's first recipient, or its audience's first member, is the sample."
+          },
+          "variables": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "description": "Variable values for the test, at most 50. They override the sample recipient's values; without `sampleRecipientId`, only these values are used."
+          }
+        },
+        "required": [
+          "sessionId",
+          "to"
+        ]
+      },
+      "RescheduleCampaignResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/CampaignOperation"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "RescheduleCampaignRequest": {
+        "type": "object",
+        "properties": {
+          "scheduledAt": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 8640000000000000,
+            "description": "The new start time as a Unix timestamp in milliseconds. `null`, or a time that is not in the future, starts the campaign now."
+          }
+        },
+        "required": [
+          "scheduledAt"
+        ],
+        "additionalProperties": false
       },
       "RequeueCampaignResponse": {
         "type": "object",
@@ -16104,6 +16560,21 @@
           "respondedAt": {
             "type": "number",
             "nullable": true
+          },
+          "messagesSent": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Messages of the campaign's message sequence this recipient has been sent. `status`, `sentAt`, `deliveredAt` and `readAt` describe the first message."
+          },
+          "nextMessageAt": {
+            "type": "number",
+            "nullable": true,
+            "description": "Earliest time the next message is sent, in Unix milliseconds. Null when no message is waiting."
+          },
+          "sequenceError": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why the remaining messages will not be sent: `opted_out`, `campaign_cancelled`, `sender_unavailable`, or the failure class of the message that failed, such as `conversation_window_closed`. Null otherwise."
           }
         },
         "required": [
@@ -16120,7 +16591,10 @@
           "deliveredAt",
           "readAt",
           "failedAt",
-          "respondedAt"
+          "respondedAt",
+          "messagesSent",
+          "nextMessageAt",
+          "sequenceError"
         ]
       },
       "CampaignRecipientPageInfo": {
@@ -44940,6 +45414,7 @@
           "Campaigns"
         ],
         "summary": "Create a campaign",
+        "description": "**Required scope:** `campaigns:manage`\n\nCreates a draft campaign on any plan. `senderConfig.sessionIds` may name numbers that are not yet on a plan that includes Campaigns; launch checks the selection. It is refused with `403 bansafe_org_suspended` while the team is suspended and `400` when `senderConfig.sessionIds` is malformed or a per-number cap is above its safety ceiling.",
         "security": [
           {
             "BearerAuth": []
@@ -45133,8 +45608,7 @@
         },
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
-        },
-        "description": "**Required scope:** `campaigns:manage`\n\nCreates a draft campaign on any plan. `senderConfig.sessionIds` may name numbers that are not yet on a plan that includes Campaigns; launch checks the selection. It is refused with `403 bansafe_org_suspended` while the team is suspended and `400` when `senderConfig.sessionIds` is malformed or a per-number cap is above its safety ceiling."
+        }
       }
     },
     "/messaging/projects/{projectSlug}/campaigns/{id}": {
@@ -45452,7 +45926,7 @@
           "Campaigns"
         ],
         "summary": "Launch a campaign",
-        "description": "**Required scope:** `campaigns:manage`\n\nStarts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the saved sender selection against live plans: `402 campaigns_not_entitled` when a selected number is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.sessionIds` when a selected number is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. The response returns the campaign as it was when the launch was accepted.",
+        "description": "**Required scope:** `campaigns:manage`\n\nStarts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks live sender plans, connection and throughput, and refuses a selection that changed while it was being checked. The template must be complete and approved on every Cloud API number; every recipient needs a value or fallback for each variable unless `skipMissingVariables` is true.",
         "security": [
           {
             "BearerAuth": []
@@ -45561,7 +46035,7 @@
                   "error": {
                     "type": "permission_error",
                     "code": "campaigns_not_entitled",
-                    "message": "This campaign needs a selected number on a plan that includes Campaigns.",
+                    "message": "This number’s plan does not include Campaigns.",
                     "param": null,
                     "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
@@ -45614,7 +46088,7 @@
             }
           },
           "409": {
-            "description": "`state_conflict`: The campaign is not a draft, it is already launched and waiting for its start time, or its sending numbers changed during the launch. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`state_conflict`: The campaign is not a draft, is already launched and waiting for its start time, or its sending numbers changed during the launch. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {
@@ -45652,6 +46126,27 @@
               }
             }
           },
+          "422": {
+            "description": "`campaign_variables_missing`: some recipients have no value and no fallback for a variable. The message names the variables and counts the recipients.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "campaign_variables_missing",
+                    "message": "Some recipients have no value and no fallback for a variable in the campaign content.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#campaign-variables-missing"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
             "content": {
@@ -45684,7 +46179,7 @@
                   "error": {
                     "type": "api_error",
                     "code": "service_unavailable",
-                    "message": "The selected numbers' plans could not be checked. Nothing was launched; retry the request.",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
                     "param": null,
                     "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
@@ -46248,6 +46743,475 @@
           },
           "409": {
             "description": "`state_conflict`: The campaign is already finished or cancelled. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response reports the recorded outcome of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
+        }
+      }
+    },
+    "/messaging/projects/{projectSlug}/campaigns/{id}/test-send": {
+      "post": {
+        "operationId": "testSendCampaign",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Send a test of a draft campaign",
+        "description": "**Required scope:** `campaigns:manage`\n\nSends one copy of a draft campaign's content to a seed recipient, through the same rendering, sending, and BanSafe checks as a launched campaign. The seed recipient must be a number connected to your team. A test is not a campaign recipient and is not counted in the campaign's statistics or webhooks. A team can send 20 tests an hour, and at most 5 an hour to one seed recipient.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "campaigns:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectSlug",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again: it returns `409 idempotency_completed` when the original succeeded, or the original server error, with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignTestSendRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestSendCampaignResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`state_conflict`: The campaign is not a draft or has A/B variants, the sending number is a Hybrid Link number, or the seed recipient opted out. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response reports the recorded outcome of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The team or seed recipient reached its test-send limit (`rate_limit_exceeded`), or BanSafe is pacing the sending number. Follow `Retry-After`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "rate_limit_error",
+                    "code": "rate_limit_exceeded",
+                    "message": "The request limit was reached. Follow Retry-After when supplied.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#rate-limit-exceeded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "`result_unknown`: the outcome was not received in time. The test may still arrive.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "result_unknown",
+                    "message": "The result was not obtained before the deadline. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#result-unknown"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
+        }
+      }
+    },
+    "/messaging/projects/{projectSlug}/campaigns/{id}/reschedule": {
+      "post": {
+        "operationId": "rescheduleCampaign",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Reschedule a campaign",
+        "description": "**Required scope:** `campaigns:manage`\n\nMoves the start of a launched campaign that is still waiting for it. Set `scheduledAt` to a later or earlier time, or to `null` to start now. The response returns the campaign with its new `scheduledAt`. Sending the current start time again changes nothing. A campaign that has started, finished, is being stopped, or was never launched is refused with `409`; launch a draft with `scheduledAt` instead.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "campaigns:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectSlug",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again: it returns `409 idempotency_completed` when the original succeeded, or the original server error, with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleCampaignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RescheduleCampaignResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`state_conflict`: The campaign has already started, is finished or being stopped, or was never launched. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {
@@ -51610,6 +52574,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CampaignStoppedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "campaign.rescheduled": {
+      "post": {
+        "operationId": "onCampaignRescheduled",
+        "summary": "A scheduled campaign's start time moved",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignRescheduledEvent"
               }
             }
           }

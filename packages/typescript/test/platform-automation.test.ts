@@ -215,6 +215,105 @@ describe("Client audiences", () => {
 });
 
 describe("Client campaigns", () => {
+  it("reschedules with the owning project in the body and an idempotency key", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.reschedule(
+      "campaign/a",
+      { projectId: "project/a", scheduledAt: 1_790_000_003_000 },
+      { idempotencyKey: "move-campaign-a" },
+    );
+    expect(requests[0]).toMatchObject({
+      method: "POST",
+      path: "/platform/campaigns/campaign%2Fa/reschedule",
+      body: '{"projectId":"project/a","scheduledAt":1790000003000}',
+    });
+    expect(requests[0]?.headers["idempotency-key"]).toBe("move-campaign-a");
+  });
+  it("does not replay a Platform reschedule on a known conflict", async () => {
+    const server = await startTestServer(() => ({
+      status: 409,
+      body: JSON.stringify({
+        error: {
+          code: "campaign_state_conflict",
+          message: "Campaign already started.",
+        },
+      }),
+    }));
+    servers.push(server);
+    const client = new Client({
+      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: server.url,
+      maxNetworkRetries: 2,
+    });
+
+    await expect(
+      client.campaigns.reschedule("campaign/a", {
+        projectId: "project/a",
+        scheduledAt: null,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(server.requests).toHaveLength(1);
+  });
+
+  it("sends a draft test with team project scope and the caller's idempotency key", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.testSend(
+      "campaign/a",
+      {
+        projectId: "project/a",
+        sessionId: "018f0000-0000-7000-8000-000000000006",
+        to: "+15550100002",
+        variables: { firstName: "Ada" },
+      },
+      { idempotencyKey: "campaign-test-platform-1" },
+    );
+    expect(requests[0]).toMatchObject({
+      method: "POST",
+      path: "/platform/campaigns/campaign%2Fa/test-send",
+      body: JSON.stringify({
+        projectId: "project/a",
+        sessionId: "018f0000-0000-7000-8000-000000000006",
+        to: "+15550100002",
+        variables: { firstName: "Ada" },
+      }),
+    });
+    expect(requests[0]?.headers["idempotency-key"]).toBe(
+      "campaign-test-platform-1",
+    );
+  });
+
+  it("serializes template mappings, clearing, and missing-variable launch policy", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.create({
+      projectId: "project/a",
+      name: "August",
+      templateId: "template/a",
+      variableMapping: { firstName: { source: "name", fallback: "friend" } },
+    });
+    await client.campaigns.update(
+      "campaign/a",
+      { templateId: null, variableMapping: null },
+      { projectId: "project/a" },
+    );
+    await client.campaigns.launch("campaign/a", {
+      projectId: "project/a",
+      skipMissingVariables: true,
+    });
+
+    expect(JSON.parse(requests[0]!.body!)).toMatchObject({
+      templateId: "template/a",
+      variableMapping: { firstName: { source: "name", fallback: "friend" } },
+    });
+    expect(JSON.parse(requests[1]!.body!)).toEqual({
+      templateId: null,
+      variableMapping: null,
+    });
+    expect(JSON.parse(requests[2]!.body!)).toEqual({
+      projectId: "project/a",
+      skipMissingVariables: true,
+    });
+  });
+
   it("maps collection, encoded item, and project query operations", async () => {
     const { client, requests } = await platformServer();
     await client.campaigns.list({

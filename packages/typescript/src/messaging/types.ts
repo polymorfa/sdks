@@ -83,13 +83,73 @@ export interface SuccessResponse {
   readonly message?: string;
 }
 
+export type CampaignSendWindowDay =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
+
+export interface CampaignSendWindowRange {
+  /** Inclusive local start, HH:MM in 24-hour time. */
+  readonly start: string;
+  /** Exclusive local end, HH:MM or 24:00; later than start. */
+  readonly end: string;
+}
+
+/** A campaign's stored window. The API fills omitted defaults on create. */
+export interface CampaignSendWindow {
+  readonly timeZone: string;
+  readonly days: readonly CampaignSendWindowDay[];
+  readonly hours: readonly CampaignSendWindowRange[];
+  readonly recipientTimeZone: boolean;
+  readonly timeZoneVariable: string;
+}
+
+/** The window supplied on create or update; null removes it on update. */
+export interface CampaignSendWindowRequest {
+  /** IANA name; defaults to the team's zone, or UTC. */
+  readonly timeZone?: string;
+  /** One to seven distinct weekdays. */
+  readonly days: readonly CampaignSendWindowDay[];
+  /** One to four non-overlapping local ranges; none crosses midnight. */
+  readonly hours: readonly CampaignSendWindowRange[];
+  /** Resolve each recipient's own IANA zone before falling back to timeZone. */
+  readonly recipientTimeZone?: boolean;
+  /** Recipient variable name; defaults to timeZone. */
+  readonly timeZoneVariable?: string;
+}
+
+/** How one `{{variable}}` in a campaign's template or messages is filled. */
+export interface CampaignVariableBinding {
+  /** Recipient variable that fills it. Defaults to the variable of the same name. */
+  readonly source?: string;
+  /** Sent when the recipient has no value (blank counts as none). 1 to 1,024 characters. */
+  readonly fallback?: string;
+}
+
+/**
+ * Variable name used in the content → how it is filled. At most 50 entries.
+ * A variable is filled from the recipient's value, then `fallback`, then an
+ * inline `{{name | fallback}}`. Launch refuses recipients with none of them
+ * (`campaign_variables_missing`) unless `skipMissingVariables` is set.
+ */
+export type CampaignVariableMapping = Readonly<
+  Record<string, CampaignVariableBinding>
+>;
+
 /** Project-scoped campaign summary returned by the Messaging API. */
 export interface Campaign {
   readonly id: string;
   readonly name: string;
   /** The pinned contract deliberately leaves campaign states forward-compatible. */
   readonly status: string;
+  /** Template sent instead of composed messages, or null. */
   readonly templateId: string | null;
+  /** Null when the campaign has no mapping. */
+  readonly variableMapping?: CampaignVariableMapping | null;
   readonly recipientListId: string | null;
   readonly recipientCount: number;
   readonly sentCount: number;
@@ -99,6 +159,7 @@ export interface Campaign {
   readonly skippedCount: number;
   /** Epoch milliseconds, or null when the lifecycle timestamp is absent. */
   readonly scheduledAt: number | null;
+  readonly sendWindow: CampaignSendWindow | null;
   readonly launchedAt: number | null;
   readonly completedAt: number | null;
   readonly createdAt: number;
@@ -127,11 +188,18 @@ export interface CampaignAnalytics {
 
 export interface CreateCampaignRequest {
   readonly name: string;
+  /**
+   * Template in this project to send instead of composed messages. On Cloud
+   * API numbers WhatsApp must approve it before launch.
+   */
   readonly templateId?: string;
+  readonly variableMapping?: CampaignVariableMapping;
   readonly recipientListId?: string;
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Epoch milliseconds. */
   readonly scheduledAt?: number;
+  /** Omit for any-time sending; null also removes the window on update. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   /**
    * Up to 1,000 recipients to queue with the draft. Invalid entries reject the
    * whole request; use `campaigns.addRecipients` for partial acceptance.
@@ -181,6 +249,12 @@ export interface CampaignRecipient {
   readonly readAt: number | null;
   readonly failedAt: number | null;
   readonly respondedAt: number | null;
+  /** Number of messages accepted in this recipient's sequence. */
+  readonly messagesSent: number;
+  /** Earliest Unix-millisecond time for the next message, or null. */
+  readonly nextMessageAt: number | null;
+  /** Reason the remaining messages will not be sent, or null. */
+  readonly sequenceError: string | null;
 }
 
 export interface CampaignRecipientPage {
@@ -222,6 +296,41 @@ export interface CampaignStopOperation extends Campaign {
 export interface LaunchCampaignRequest {
   /** Epoch milliseconds. */
   readonly scheduledAt?: number;
+  /**
+   * Launch even when some recipients have no value and no fallback for a
+   * variable; they are skipped with `lastError` `missing_variable`. Without it
+   * such a launch fails with `422 campaign_variables_missing`.
+   */
+  readonly skipMissingVariables?: boolean;
+}
+
+export interface RescheduleCampaignRequest {
+  /** New start time in Unix milliseconds; null or a past time starts now. */
+  readonly scheduledAt: number | null;
+}
+
+/** One real send of a draft's content to a number connected to the same team. */
+export interface CampaignTestSendRequest {
+  /** Connected, Campaigns-entitled sending number selected by the draft. */
+  readonly sessionId: string;
+  /** Seed recipient in international format. It must be a team number. */
+  readonly to: string;
+  /** Recipient whose values fill the content. */
+  readonly sampleRecipientId?: string;
+  /** Explicit values override the sample values. At most 50 entries. */
+  readonly variables?: Readonly<Record<string, string | number | boolean>>;
+}
+
+export interface CampaignTestSend {
+  readonly id: string;
+  readonly campaignId: string;
+  readonly status: "sent";
+  readonly from: { readonly sessionId: string; readonly phone: string };
+  readonly to: string;
+  readonly messageId: string | null;
+  readonly variables: Readonly<Record<string, string>>;
+  /** Admission time in epoch milliseconds. */
+  readonly createdAt: number;
 }
 
 export interface RequeueCampaignRequest {
@@ -244,6 +353,7 @@ export type CampaignAnalyticsResponse = SuccessEnvelope<CampaignAnalytics>;
 export type CampaignOperationResponse = SuccessEnvelope<CampaignOperation>;
 export type CampaignRequeueResponse = SuccessEnvelope<CampaignRequeueResult>;
 export type CampaignStopResponse = SuccessEnvelope<CampaignStopOperation>;
+export type CampaignTestSendResponse = SuccessEnvelope<CampaignTestSend>;
 export type AddCampaignRecipientsResponse =
   SuccessEnvelope<AddCampaignRecipientsResult>;
 

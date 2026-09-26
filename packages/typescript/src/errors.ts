@@ -49,6 +49,7 @@ export const POLYMORFA_ERROR_CODES = [
   "bansafe_accounting_unavailable",
   "bansafe_send_outcome_unknown",
   "campaign_throughput_capped",
+  "campaign_variables_missing",
   "addon_required",
   "campaigns_not_entitled",
   "idempotency_completed",
@@ -88,7 +89,6 @@ export const POLYMORFA_ERROR_CODES = [
 
 export type KnownPolymorfaErrorCode = (typeof POLYMORFA_ERROR_CODES)[number];
 // `string & {}` keeps editor completion for known codes without rejecting new ones.
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type PolymorfaErrorCode = KnownPolymorfaErrorCode | (string & {});
 
 /** Values of the `Polymorfa-RateLimit-Reason` header on a 429. */
@@ -103,7 +103,6 @@ export type PolymorfaRateLimitReason =
   | "credential_mint"
   | "call_permission_request"
   | "unspecified"
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   | (string & {});
 
 export function isKnownPolymorfaErrorCode(
