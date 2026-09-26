@@ -108,6 +108,15 @@
       "sha256": "6e4c1fca51eab78b5a21527cacf8f39e7c27da4a2fd7e46bc5f06c2cc3bf3ba1",
       "operationIds": ["graphGetFlowEncryptionKey", "graphRegisterFlowEncryptionKey"],
       "merged": false
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/363",
+      "commit": "e6976f75cb62ef43ba8d04cfc95a513f0af1e152",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "ff0907be44882f78644797ec3700545843bf8e17b81c868c7ca12cfaa672882e",
+      "operationIds": [],
+      "schemas": ["CloudMessagePayload"],
+      "merged": false
     }
   ]
 }

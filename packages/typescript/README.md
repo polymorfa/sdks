@@ -1929,6 +1929,12 @@ Use `webhooks.verify` with the exact raw request bytes before inspecting an
 inbound Messaging delivery. `isEvent` narrows known event names to their
 exported payload types:
 
+For an inbound Official API `message.received` event,
+`CloudMessagePayload.referral` contains Meta's optional `source_type`,
+`source_id`, `source_url`, and `ctwa_clid` strings. These fields identify a
+provider-reported referral source. They do not establish a conversion, order
+payment, or revenue.
+
 ```ts
 const event = await webhooks.verify({
   body: rawBody,

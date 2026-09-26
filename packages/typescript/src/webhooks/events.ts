@@ -189,6 +189,13 @@ export interface CloudMessagePayload {
   readonly senderName?: string;
   readonly nativeFlowResponse?: NativeFlowResponse;
   readonly interactive?: Readonly<Record<string, unknown>>;
+  /** Provider referral source only; it does not establish a conversion or payment. */
+  readonly referral?: Readonly<{
+    source_type?: string;
+    source_id?: string;
+    source_url?: string;
+    ctwa_clid?: string;
+  }>;
   readonly [key: string]: unknown;
 }
 
