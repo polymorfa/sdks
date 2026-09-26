@@ -267,7 +267,8 @@ export interface RuntimeSessionStatusPayload {
 /** A Meta account notification, not a runtime connection-state transition. */
 export interface CloudAccountStatusPayload {
   readonly source: "meta";
-  readonly kind: "account_alerts" | "account_update";
+  readonly kind:
+    "account_alerts" | "account_update" | "phone_number_name_update";
   readonly wabaId?: string;
   readonly value: Readonly<Record<string, unknown>>;
 }

@@ -120,6 +120,15 @@
       "operationIds": [],
       "schemas": ["CloudMessagePayload"],
       "merged": false
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/373",
+      "commit": "b6e820f612a63d54bc4c733fc670a06b6a4cc656",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "9aed1d4a5ecf7c17ba05701cf57c1a219fcc4521330faa1ef7a34fb9b6df7232",
+      "operationIds": [],
+      "schemas": ["CloudAccountStatusPayload"],
+      "merged": false
     }
   ]
 }

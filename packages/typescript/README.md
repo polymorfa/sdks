@@ -1935,6 +1935,11 @@ For an inbound Official API `message.received` event,
 provider-reported referral source. They do not establish a conversion, order
 payment, or revenue.
 
+`CloudAccountStatusPayload.kind` also distinguishes
+`phone_number_name_update` from other Meta account notices. Its `value` retains
+the provider's display phone, decision, requested name, and rejection reason;
+the notice is not a runtime connection-state transition.
+
 ```ts
 const event = await webhooks.verify({
   body: rawBody,
