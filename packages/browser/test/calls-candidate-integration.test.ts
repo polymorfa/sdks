@@ -10,7 +10,7 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-it("uses the authenticated lifecycle socket for browser candidates and REST during a drop", async () => {
+it("drains queued browser candidates after a lifecycle socket drop and reconnect", async () => {
   class Stream {
     getTracks() {
       return [];
@@ -36,6 +36,7 @@ it("uses the authenticated lifecycle socket for browser candidates and REST duri
     close() {},
     onicecandidate: undefined as ((event: unknown) => void) | undefined,
   };
+  const queued = { candidate: "candidate:queued", sdpMid: "0" };
   let tick: (() => void) | undefined;
   const fetch = vi.fn<typeof globalThis.fetch>(async (input) => {
     const path = new URL(String(input)).pathname;
@@ -44,7 +45,7 @@ it("uses the authenticated lifecycle socket for browser candidates and REST duri
       : path.endsWith("/accept")
         ? { answered: true, answeredBy: "client:self", exclusive: false }
         : path.endsWith("/candidates")
-          ? { candidates: [] }
+          ? { candidates: [queued] }
           : {};
     return new Response(JSON.stringify({ data }), {
       headers: { "content-type": "application/json" },
@@ -112,6 +113,12 @@ it("uses the authenticated lifecycle socket for browser candidates and REST duri
   expect(peer.addIceCandidate).toHaveBeenCalledTimes(1);
   socket.drop();
   peer.onicecandidate?.({ candidate: { toJSON: () => candidate } });
+  // The lifecycle socket recovers before the next five-second poll tick.
+  await vi.waitFor(() => expect(FakeWebSocket.instances).toHaveLength(2), {
+    timeout: 3_000,
+  });
+  FakeWebSocket.instances[1]!.authenticate();
+  expect(calls.connected).toBe(true);
   tick?.();
   await vi.waitFor(() => {
     expect(
@@ -120,5 +127,6 @@ it("uses the authenticated lifecycle socket for browser candidates and REST duri
     expect(
       fetch.mock.calls.some(([url]) => String(url).endsWith("/candidates")),
     ).toBe(true);
+    expect(peer.addIceCandidate).toHaveBeenCalledWith(queued);
   });
 });

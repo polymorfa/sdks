@@ -197,6 +197,16 @@ export function createBrowserCalls(
           client._onCandidate((event) =>
             listener(event.callId, event.candidate, event.connectionId),
           ),
+        onConnectionChange: (listener) => {
+          const stopReady = client.on("ready", () => listener(true));
+          const stopDisconnected = client.on("disconnected", () =>
+            listener(false),
+          );
+          return () => {
+            stopReady();
+            stopDisconnected();
+          };
+        },
       },
     });
   const controller = new CallsController(backend, media, {

@@ -155,7 +155,8 @@ export interface CallMediaCallbacks {
  * A push channel for ICE candidates (the calls WebSocket). When `send`
  * returns true the candidate travelled over it and REST is skipped; remote
  * candidates arrive through `onCandidate` and REST polling pauses while
- * `connected` is true.
+ * `connected` is true. A reconnect needs one REST drain for candidates queued
+ * during the outage, even if it completed between poll ticks.
  */
 export interface CandidateTransport {
   readonly connected: boolean;
@@ -171,6 +172,8 @@ export interface CandidateTransport {
       connectionId?: string,
     ) => void,
   ): () => void;
+  /** Report authenticated socket state changes for recovery polling. */
+  onConnectionChange(listener: (connected: boolean) => void): () => void;
 }
 export interface CallMediaSession {
   /** This connection's id; reused for reconnects and sent with `leave`. */
@@ -383,6 +386,16 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       peer.addTransceiver("video", { direction: "recvonly" });
 
     const transport = this.#candidateTransport;
+    let wasDisconnected = transport?.connected === false;
+    let recoveryGeneration = 0;
+    let drainedGeneration = 0;
+    const unsubscribeConnection = transport?.onConnectionChange((connected) => {
+      if (!connected) wasDisconnected = true;
+      else if (wasDisconnected) {
+        wasDisconnected = false;
+        recoveryGeneration += 1;
+      }
+    });
     const sendCandidate = (candidate: TrickleCandidate) => {
       if (transport?.sendCandidate(callId, candidate, connectionId) === true)
         return;
@@ -610,6 +623,7 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         void peer.addIceCandidate(candidate).catch(() => undefined);
     } catch (cause) {
       unsubscribeCandidates?.();
+      unsubscribeConnection?.();
       closePeer(peer, local, control);
       throw cause;
     }
@@ -818,17 +832,23 @@ export class WebRtcMediaFactory implements CallMediaFactory {
     let pollPending = false;
     let pollAfter = 0;
     const poll = this.#setInterval(() => {
-      // The socket delivers remote candidates while it is up.
+      // A reconnect may have occurred between ticks. Drain once afterward;
+      // the interval, pending guard and 429 cooldown still bound requests.
       if (
         closed ||
         signal.aborted ||
-        transport?.connected === true ||
+        (transport?.connected === true &&
+          drainedGeneration >= recoveryGeneration) ||
         pollPending ||
         Date.now() < pollAfter
       )
         return;
       pollPending = true;
+      const generation = recoveryGeneration;
       void drainCandidates(this.#signaling, callId, peer, signal)
+        .then(() => {
+          drainedGeneration = Math.max(drainedGeneration, generation);
+        })
         .catch((cause: unknown) => {
           if (cause instanceof BrowserError && cause.status === 429)
             pollAfter = Date.now() + 60_000;
@@ -922,6 +942,7 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         }
         this.#clearInterval(poll);
         unsubscribeCandidates?.();
+        unsubscribeConnection?.();
         videos.clear();
         closePeer(peer, local, control);
         if (options.leave === false) return;

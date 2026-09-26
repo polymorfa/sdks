@@ -171,23 +171,40 @@ function signaling(
 
 function transport(): CandidateTransport & {
   deliver: (callId: string, candidate: TrickleCandidate) => void;
+  setConnected: (connected: boolean) => void;
   listeners: number;
+  connectionListeners: number;
 } {
   const listeners = new Set<
     (callId: string, candidate: TrickleCandidate) => void
   >();
+  const connectionListeners = new Set<(connected: boolean) => void>();
+  let connected = true;
   return {
-    connected: true,
+    get connected() {
+      return connected;
+    },
     sendCandidate: () => true,
     onCandidate: (listener) => {
       listeners.add(listener);
       return () => listeners.delete(listener);
+    },
+    onConnectionChange: (listener) => {
+      connectionListeners.add(listener);
+      return () => connectionListeners.delete(listener);
+    },
+    setConnected: (value) => {
+      connected = value;
+      for (const listener of connectionListeners) listener(value);
     },
     deliver: (callId, candidate) => {
       for (const listener of [...listeners]) listener(callId, candidate);
     },
     get listeners() {
       return listeners.size;
+    },
+    get connectionListeners() {
+      return connectionListeners.size;
     },
   };
 }
@@ -229,6 +246,45 @@ function factoryFor(options: {
 }
 
 describe("WebRtcMediaFactory candidate handling", () => {
+  it("drains queued candidates after a socket outage shorter than one poll interval", async () => {
+    let tick: () => void = () => undefined;
+    const peer = peerConnection();
+    const t = transport();
+    const candidate = { candidate: "candidate:queued" };
+    const s = signaling({
+      candidates: vi.fn(async () => [candidate]),
+    });
+    const session = await factoryFor({
+      peer,
+      signaling: s,
+      candidateTransport: t,
+      setInterval: ((fn: () => void) => {
+        tick = fn;
+        return 1;
+      }) as typeof globalThis.setInterval,
+    }).open("call-1", false, callbacks, new AbortController().signal);
+    try {
+      tick();
+      expect(s["candidates"]).not.toHaveBeenCalled();
+      t.setConnected(false);
+      t.setConnected(true);
+      tick();
+      await vi.waitFor(() =>
+        expect(peer.addIceCandidate).toHaveBeenCalledWith(candidate),
+      );
+      expect(s["candidates"]).toHaveBeenCalledTimes(1);
+      tick();
+      expect(s["candidates"]).toHaveBeenCalledTimes(1);
+      t.setConnected(false);
+      t.setConnected(true);
+      tick();
+      expect(s["candidates"]).toHaveBeenCalledTimes(2);
+    } finally {
+      await session.close({ leave: false });
+      expect(t.connectionListeners).toBe(0);
+    }
+  });
+
   it("serializes fallback polls and pauses them after a shared-budget 429", async () => {
     let tick: () => void = () => undefined;
     let interval = 0;
@@ -242,14 +298,12 @@ describe("WebRtcMediaFactory candidate handling", () => {
       ),
     });
     const now = vi.spyOn(Date, "now").mockReturnValue(1_000);
+    const t = transport();
+    t.setConnected(false);
     const session = await factoryFor({
       peer: peerConnection(),
       signaling: s,
-      candidateTransport: {
-        connected: false,
-        sendCandidate: () => false,
-        onCandidate: () => () => undefined,
-      },
+      candidateTransport: t,
       setInterval: ((fn: () => void, ms: number) => {
         tick = fn;
         interval = ms;
@@ -268,6 +322,7 @@ describe("WebRtcMediaFactory candidate handling", () => {
         }),
       );
       await new Promise<void>((resolve) => setTimeout(resolve, 0));
+      t.setConnected(true);
       tick();
       expect(s["candidates"]).toHaveBeenCalledTimes(1);
       now.mockReturnValue(62_000);
