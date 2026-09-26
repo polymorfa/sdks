@@ -29,6 +29,10 @@ HMS enablement, deployment, and SDK publication.
 | `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
 | `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
 
+The separate [Python source package](packages/python/README.md) implements only
+authenticated Platform project listing. It is not part of the npm workspace or
+the npm `dev` release, and is not published to PyPI.
+
 The public packages are complete development artifacts on `dev`. They
 publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
 Polymorfa npm organization. No mobile-native binding is part of this milestone.

@@ -1,4 +1,7 @@
 node_modules/
+packages/python/.venv/
+packages/python/build/
+packages/python/src/*.egg-info/
 packages/*/dist/
 examples/calls-example/dist/
 coverage/

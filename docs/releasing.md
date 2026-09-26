@@ -24,6 +24,11 @@ manual dispatch. The workflow has two jobs:
 
 The `latest` dist-tag is never changed.
 
+The Python source package in `packages/python` is outside this npm workflow.
+It has no PyPI publishing workflow or published-version claim. Review its
+distribution name, version scheme, trusted publisher, and release checks before
+any Python package publication.
+
 ### Packages
 
 Published, in order: `@polymorfa/sdk`, `@polymorfa/browser`, `@polymorfa/ui`,

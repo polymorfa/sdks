@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "polymorfa-sdk"
+version = "0.1.0.dev0"
+description = "Small server-side Python client for the Polymorfa Platform API"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Polymorfa" }]
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/polymorfa/sdks"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+polymorfa_sdk = ["py.typed"]
