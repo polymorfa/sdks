@@ -69,7 +69,30 @@ describe("Cloud templates", () => {
     );
   });
 
-  it.each(["create", "delete"] as const)(
+  it("edits one language and preserves acceptance without claiming approval", async () => {
+    const data = { accepted: true, name: "order/update", language: "pt_BR" };
+    const server = await startTestServer(() => ({
+      status: 202,
+      body: JSON.stringify({ success: true, data }),
+    }));
+    servers.push(server);
+    const body = { components: [{ type: "BODY", text: "Ready" }] };
+    const response = await client(server).cloudTemplates.update(
+      "support/eu",
+      "order/update",
+      body,
+      { language: "pt_BR" },
+    );
+    expect(response.data.data).toEqual(data);
+    expect(response.metadata.status).toBe(202);
+    expect(server.requests[0]).toMatchObject({
+      method: "PATCH",
+      path: "/messaging/support%2Feu/templates/order%2Fupdate?language=pt_BR",
+    });
+    expect(JSON.parse(server.requests[0]!.body)).toEqual(body);
+  });
+
+  it.each(["create", "update", "delete"] as const)(
     "does not replay an uncertain %s, even with a key and retry override",
     async (method) => {
       const server = await startTestServer(() => ({
@@ -96,7 +119,15 @@ describe("Cloud templates", () => {
               },
               options,
             )
-          : resource.delete("support", "delivery", options);
+          : method === "update"
+            ? resource.update(
+                "support",
+                "delivery",
+                { components: [{}] },
+                { language: "en_US" },
+                options,
+              )
+            : resource.delete("support", "delivery", options);
       await expect(request).rejects.toMatchObject({ status: 502 });
       expect(server.requests).toHaveLength(1);
     },

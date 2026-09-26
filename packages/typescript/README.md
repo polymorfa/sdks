@@ -310,19 +310,54 @@ await messaging.templates.preview("support", created.data.data.id, {
 Keep this client on the server. Browser builders use an application-owned
 route, such as `createTemplateBuilderRoute` from `@polymorfa/nextjs`.
 
+## Flow drafts and provider lifecycle
+
+Use `client.project(projectId).flows` for project Flow drafts. A client created
+with a project token exposes the same resource for its configured project.
+`list`, `retrieve`, `create`, `update`, and `delete` manage local drafts. Retrieval
+returns `null` when the API has no matching draft; updates require the observed
+`expectedUpdatedAt` value. Draft methods and provider methods remain distinct.
+
+```ts
+const flows = client.project(projectId).flows;
+const draft = await flows.create({
+  name: "Booking",
+  definition: flowJson,
+});
+const uploaded = await flows.upload(draft.data.id, {
+  sessionId: "support",
+  categories: ["APPOINTMENT_BOOKING"],
+  requestId: crypto.randomUUID(),
+});
+console.log(uploaded.data.operation?.state);
+```
+
+`upload`, `publish`, `deprecate`, `discard`, and `sync` operate on a Number in the
+same project; `receipts` reads its recorded operations. Reads require
+`sessions:read`; mutations require `sessions:manage`. Provider actions require
+the API's beta access and a compatible Number. Publishing uses the validated
+upload. Discard removes a provider draft; delete removes the local draft.
+
+Writes make one transport attempt even with retry options or an Idempotency-Key.
+The optional body `requestId` identifies one provider operation. A response can
+contain an `uncertain` receipt with HTTP 200; inspect its state. Use `sync` to
+reconcile provider state, preserving the original request identity. Do not repeat
+an uncertain write with a new ID. No provider lifecycle method enrolls a project
+or establishes deployed availability.
+
 ## Official API Numbers
 
 These server methods require the matching API deployment and the team's beta
 access. An SDK method does not enroll a team. Keep server credentials out of
 browser code.
 
-`messaging.cloudTemplates` lists, retrieves, creates and deletes Meta templates
+`messaging.cloudTemplates` lists, retrieves, creates, edits and deletes Meta templates
 for a Number. It is separate from `messaging.templates`, which manages project
-drafts. The native template API requires a Number created with an Official API
-connection. A Number created with Linked Devices that later added an Official
-API connection is rejected with `400` by this API revision. Retrieval accepts
+drafts. The native template API requires an enabled Official API connection. For a
+Hybrid Number it uses that exact connection and its WABA; a retired or disabled
+Official connection cannot supply authority. Retrieval accepts
 an optional language; the API defaults to `en_US`.
-Deleting a name deletes all its languages. Create and delete make one attempt,
+Deleting a name deletes all its languages. Create, edit and delete make one attempt,
 even if an idempotency key or a retry override is supplied. Reconcile an
 uncertain result before submitting another write.
 
@@ -336,6 +371,35 @@ const template = await messaging.cloudTemplates.retrieve(
   },
 );
 ```
+
+`messaging.cloudCatalogs.list(wabaId, { version: "v26.0", limit: 25, after })`
+reads catalog IDs and names visible to the connected WABA credentials. It
+requires `sessions:read` and Graph access. The response retains opaque cursors;
+it does not expose upstream pagination URLs or grant merchant ownership. Use
+an organization API key or project token, with the latter confined to its project.
+
+`messaging.cloudTemplates.update(number, name, { components }, { language })`
+submits an edit to one template language. A `202` response contains
+`{ accepted: true, name, language }`; it does not establish approval to send.
+Read the template again to inspect its status.
+
+`messaging.messages.setTyping(number, { conversation, state: "typing", id })`
+requires an inbound message ID on Official Numbers. It marks that message read
+and displays typing until a reply is sent or 25 seconds pass. Official Numbers
+reject `recording` and `paused`; Linked Device Numbers retain those states and
+do not require `id`.
+
+`messaging.quickLinks.retrieve(id)` preserves `onboarding.sync` request receipts
+and history-delivery observations. A connected Number does not establish that
+contacts or history were delivered. Accepted requests and `unknown` outcomes
+remain distinct; do not repeat a one-time sync request based on an unknown state.
+
+Narrow `session.status` payloads by `source: "meta"` before reading account
+notifications. They have `kind`, optional `wabaId`, and `value`, without a runtime
+`status`. Cloud `template.status` payloads have `kind` and optional provider
+fields such as `event`, `language`, `previousQualityScore`, and `newQualityScore`.
+Runtime notifications retain their own typed payloads. Webhook envelope IDs
+identify an occurrence; retain them when deduplicating a delivery retry.
 
 `messaging.chats.getServiceWindow(number, conversation)` reads `open`, `closed`
 or `unknown` with observation timestamps. It requires `chats:read` and service

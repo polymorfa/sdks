@@ -247,10 +247,26 @@ export interface PollVotePayload {
   readonly timestamp: number;
 }
 
-export interface SessionStatusPayload {
+export interface RuntimeSessionStatusPayload {
   readonly status: string;
   readonly statusReason?: string;
+  readonly banCode?: number;
+  readonly banReason?: string;
+  /** Unix seconds. */
+  readonly banExpiresAt?: number;
+  readonly detail?: string;
 }
+
+/** A Meta account notification, not a runtime connection-state transition. */
+export interface CloudAccountStatusPayload {
+  readonly source: "meta";
+  readonly kind: "account_alerts" | "account_update";
+  readonly wabaId?: string;
+  readonly value: Readonly<Record<string, unknown>>;
+}
+
+export type SessionStatusPayload =
+  RuntimeSessionStatusPayload | CloudAccountStatusPayload;
 
 export type SessionRestrictionType = "reachout_timelock";
 
@@ -804,7 +820,7 @@ export interface MessageFailedPayload {
   readonly timestamp: number;
 }
 
-export interface TemplateStatusPayload {
+export interface RuntimeTemplateStatusPayload {
   readonly templateName: string;
   readonly templateId: string;
   readonly status: string;
@@ -812,6 +828,22 @@ export interface TemplateStatusPayload {
   readonly reason: string;
   readonly qualityRating: string;
 }
+
+export interface CloudTemplateStatusPayload {
+  readonly kind:
+    "message_template_status_update" | "message_template_quality_update";
+  readonly event?: string;
+  readonly templateId?: string;
+  readonly templateName?: string;
+  readonly language?: string;
+  readonly reason?: string;
+  readonly previousQualityScore?: string;
+  readonly newQualityScore?: string;
+  readonly wabaId?: string;
+}
+
+export type TemplateStatusPayload =
+  RuntimeTemplateStatusPayload | CloudTemplateStatusPayload;
 
 export interface CampaignLaunchedPayload {
   readonly campaignId: string;

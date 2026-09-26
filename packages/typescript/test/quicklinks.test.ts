@@ -20,6 +20,38 @@ afterEach(async () => {
 });
 
 describe("MessagingClient.quickLinks", () => {
+  it("preserves a sync request receipt separately from unknown delivery", async () => {
+    const sync = {
+      contacts: { request: "accepted", receiptRecorded: true },
+      history: {
+        request: "unknown",
+        receiptRecorded: false,
+        delivery: "unconfirmed",
+      },
+    };
+    const server = await startTestServer(() => ({
+      body: JSON.stringify({
+        success: true,
+        data: {
+          id: "ql_1",
+          status: "connected",
+          onboarding: { stage: "connected", sync },
+        },
+      }),
+    }));
+    servers.push(server);
+    const client = new MessagingClient({
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: server.url,
+    });
+    const response = await client.quickLinks.retrieve("ql_1");
+    expect(response.data.data.onboarding?.sync).toEqual(sync);
+    expectTypeOf(
+      response.data.data.onboarding!.sync.history.delivery,
+    ).toEqualTypeOf<import("../src/index.js").CloudSyncDelivery>();
+    expect(server.requests).toHaveLength(1);
+  });
+
   it("requires an existing session for supplementary setup at compile time", () => {
     const initial = {} satisfies CreateQuickLinkRequest;
     const supplement = {

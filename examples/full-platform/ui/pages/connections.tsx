@@ -202,7 +202,7 @@ export function ConnectionsPage() {
     "session.status": (event) =>
       setData((current) =>
         current?.map((connection) =>
-          connection.id === event.session
+          connection.id === event.session && "status" in event.payload
             ? { ...connection, status: event.payload.status }
             : connection,
         ),

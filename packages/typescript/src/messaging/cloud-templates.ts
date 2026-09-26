@@ -42,6 +42,16 @@ export interface CreateCloudTemplateRequest {
   readonly components: readonly unknown[];
 }
 
+export interface EditCloudTemplateRequest {
+  readonly components: readonly unknown[];
+}
+
+export type EditCloudTemplateResponse = SuccessEnvelope<{
+  readonly accepted: true;
+  readonly name: string;
+  readonly language: string;
+}>;
+
 export interface RetrieveCloudTemplateParams {
   /** Defaults to en_US at the API when omitted. */
   readonly language?: string;
@@ -91,6 +101,24 @@ export class CloudTemplatesResource {
     return this.transport.request({
       method: "POST",
       path: templatesPath(session),
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
+
+  /** Acceptance is not approval. Read the template before retrying an uncertain edit. */
+  update(
+    session: string,
+    name: string,
+    body: EditCloudTemplateRequest,
+    params: RetrieveCloudTemplateParams = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<EditCloudTemplateResponse>> {
+    return this.transport.request({
+      method: "PATCH",
+      path: templatePath(session, name),
+      query: { language: params.language },
       body,
       ...options,
       maxNetworkRetries: 0,

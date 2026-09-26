@@ -2250,6 +2250,8 @@ export interface SeenRequest {
 
 export interface TypingRequest {
   readonly conversation: ConversationReference;
+  /** Required on Official Numbers: an inbound message to mark read while showing typing. */
+  readonly id?: string;
   readonly state: "typing" | "recording" | "paused";
 }
 

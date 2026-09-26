@@ -44244,6 +44244,27 @@
                 }
               }
             }
+          },
+          "default": {
+            "description": "Meta returned a 400-599 error status; the mutation may have an unknown outcome",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
           }
         },
         "x-mint": {
@@ -44624,6 +44645,27 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Meta returned a 400-599 error status; the mutation may have an unknown outcome",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
                 }
               }
             }

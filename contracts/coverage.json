@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "d25ddad0c48c3444f235bc2d6ce5c23e736d3318",
+  "sourceCommit": "45e6a08c65821b484585f7b4f091a93b3a47ff43",
   "excludedContracts": [
     {
       "family": "graph",
-      "reason": "Graph-compatible APIs are outside the initial SDK scope."
+      "reason": "Full Graph API coverage is outside the initial ledger; cloudCatalogs.list is separately implemented and pinned in cloud-api-supplements.json."
     }
   ],
   "operations": [
@@ -112,7 +112,7 @@
       "method": "DELETE",
       "path": "/messaging/{session}/templates/{name}",
       "operationId": "deleteTemplate",
-      "fingerprint": "fd81558b70fcd861a0005d048a021c156d125961dbd9e568b20fce3dfae8b024",
+      "fingerprint": "c264de07bacb913a72c33898982627d9dbda9cf998eee7cde38e1a202fbbf531",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.cloudTemplates.delete"
@@ -1456,7 +1456,7 @@
       "method": "POST",
       "path": "/messaging/{session}/templates",
       "operationId": "createTemplate",
-      "fingerprint": "03ae820a0ac6d1b178df82fe9e7c296a22e53ac258f19f3e8d76225269a89c5a",
+      "fingerprint": "b0e120e3ae0f2741a1073415af2894d9fb0d458deb596b01faf855e1e2c2e977",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.cloudTemplates.create"

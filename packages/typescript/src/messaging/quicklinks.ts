@@ -27,7 +27,7 @@ export interface QuickLinkConfiguration extends SessionConfigurationOverrides {
   };
 }
 
-export type QuickLinkPurpose = "initial" | "add_connection";
+export type QuickLinkPurpose = "initial" | "add_connection" | "reauthorization";
 export type QuickLinkConnectionGoal = "single" | "hybrid";
 export type QuickLinkConnectionKind = "linked_devices" | "official_api";
 export type QuickLinkHybridPhase =
@@ -61,6 +61,36 @@ export interface QuickLink {
 export type QuickLinkStatusValue =
   "pending" | "opened" | "linked" | "connected" | "failed" | "cancelled";
 
+export type CloudSyncRequest =
+  | "not_applicable"
+  | "not_requested"
+  | "pending"
+  | "requesting"
+  | "accepted"
+  | "declined"
+  | "unknown";
+export type CloudSyncDelivery =
+  | "not_applicable"
+  | "not_requested"
+  | "unconfirmed"
+  | "partial"
+  | "complete"
+  | "declined";
+
+export interface CloudSyncStatus {
+  readonly contacts: {
+    /** An accepted request receipt does not prove all contacts were delivered. */
+    readonly request: CloudSyncRequest;
+    readonly receiptRecorded: boolean;
+  };
+  readonly history: {
+    readonly request: CloudSyncRequest;
+    readonly receiptRecorded: boolean;
+    /** Meta-reported delivery progress, independent of connection readiness. */
+    readonly delivery: CloudSyncDelivery;
+  };
+}
+
 export interface QuickLinkStatus {
   readonly purpose: QuickLinkPurpose;
   readonly connectionGoal: QuickLinkConnectionGoal;
@@ -73,6 +103,7 @@ export interface QuickLinkStatus {
     readonly contactsSync: string;
     readonly historySync: string;
     readonly historyProgress: number;
+    readonly sync: CloudSyncStatus;
     readonly errorCode: string | null;
   } | null;
   readonly id: string;

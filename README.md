@@ -4,13 +4,12 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
-Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts from API source commit
-`2dd0c1563b1fc4e6525f708afc12e0685110cfe0`, now merged into API `dev`
-by PR #260. Graph-compatible
-APIs are outside this SDK's initial scope.
+Next.js server helpers, and a production-gated developer assistant. The exact Messaging and Platform sources are pinned in
+`contracts/source.json`; pending Official API, Flows and catalog dependencies
+are recorded in `contracts/cloud-api-supplements.json`. Full Graph API parity
+is outside this SDK's scope; `cloudCatalogs.list` provides one typed read.
 
-The same API revision adds an enrolled hosted message history beta.
+The API includes an enrolled hosted message history beta.
 `MessagingClient.chats` has typed conversation and message reads for server
 credentials. These methods do not make the beta available before enrollment,
 HMS enablement, deployment, and SDK publication.
@@ -135,8 +134,9 @@ The handwritten Messaging resources in this milestone are:
 - `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions
 - `cloudOnboarding`: continue an issued Meta Cloud API QuickLink from a trusted
   server
-- `cloudTemplates`: list, retrieve, create and delete Meta templates for a
+- `cloudTemplates`: list, retrieve, create, edit and delete Meta templates for a
   Number with an Official API connection; separate from project template drafts
+- `cloudCatalogs`: read WABA product-catalog links through the Graph facade
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call
@@ -881,7 +881,7 @@ and readiness.
 Native send/reaction requests and edits accept `transport: "auto" |
 "linked_devices" | "official_api"`. `chats.deleteMessage` accepts the choice in
 its options. Explicit choices never fall back. Raw Graph-compatible requests can
-use `graphTransportHeaders(transport)`; Graph remains outside handwritten method
+use `graphTransportHeaders(transport)`; Other Graph operations remain outside handwritten method
 coverage. Routing details appear in response `metadata.transport`,
 `metadata.routingReason`, and `metadata.operationId` when supplied by the API.
 

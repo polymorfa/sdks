@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "d25ddad0c48c3444f235bc2d6ce5c23e736d3318",
+  "commit": "45e6a08c65821b484585f7b4f091a93b3a47ff43",
   "branch": "codex/oa-01-cloud-templates",
   "published": false,
   "note": "Coordinated API dependency PR310 adds four Number-scoped Cloud template operations. Snapshots are byte-identical to this exact API commit. Merge, SDK publication and deployed availability remain separate.",
@@ -8,7 +8,7 @@
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "1a1edd1d9623bba5939dc9473446a7d56b7448b84a0b5016645218a95c3d1d0c"
+      "sha256": "9267d9de742077395e774a688b52cbbdbc71b19bf1c71fc053f89164c7e0f157"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",

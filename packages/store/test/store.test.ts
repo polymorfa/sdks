@@ -9,6 +9,68 @@ import {
 import { BASE_TIME, chat, event, openStore, received } from "./helpers.js";
 
 describe("createPolymorfaStore routing", () => {
+  it("keeps Meta account notices separate and applies provider template status and quality", async () => {
+    const store = await openStore();
+    await store.ingest([
+      event("session.status", { status: "connected" }, { at: 1000 }),
+      event(
+        "session.status",
+        {
+          source: "meta",
+          kind: "account_alerts",
+          wabaId: "waba_1",
+          value: { alert_type: "info" },
+        },
+        { at: 2000 },
+      ),
+      event(
+        "template.status",
+        {
+          kind: "message_template_status_update",
+          templateId: "98765432109876543210",
+          templateName: "welcome",
+          event: "APPROVED",
+          language: "en_US",
+          wabaId: "waba_1",
+        },
+        { at: 2000 },
+      ),
+      event(
+        "template.status",
+        {
+          kind: "message_template_quality_update",
+          templateId: "98765432109876543210",
+          newQualityScore: "GREEN",
+        },
+        { at: 3000 },
+      ),
+      event(
+        "template.status",
+        {
+          kind: "message_template_quality_update",
+          templateId: "98765432109876543210",
+          newQualityScore: "RED",
+        },
+        { at: 2500 },
+      ),
+    ]);
+    expect(await store.sessions.get("support")).toMatchObject({
+      status: "connected",
+      cloudAccountNotification: {
+        kind: "account_alerts",
+        wabaId: "waba_1",
+        value: { alert_type: "info" },
+      },
+    });
+    expect(await store.templates.get("98765432109876543210")).toMatchObject({
+      status: "APPROVED",
+      qualityRating: "GREEN",
+      language: "en_US",
+      wabaId: "waba_1",
+    });
+    store.close();
+  });
+
   it("files messages and updates the conversation summary", async () => {
     const store = await openStore();
     expect(store.mode).toBe("indexeddb");

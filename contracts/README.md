@@ -42,15 +42,16 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 `cloud-api-supplements.json` records the exact pending API sources for service
-windows, pricing counts, acknowledgement pricing, and credential health and
-reauthorization. Their SDK consumers are implemented, but the full snapshots
+windows, pricing counts, acknowledgement pricing, credential health,
+reauthorization, lifecycle webhooks, QuickLink sync receipts, typing, Flow lifecycle,
+Hybrid template authority and WABA catalog discovery. Their SDK consumers are implemented, but the full snapshots
 below do not yet include those separate branches. Consolidating them onto one
 merged API revision remains a publication gate. These methods do not establish
 deployed access or package availability.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` API source commit
-`d25ddad0c48c3444f235bc2d6ce5c23e736d3318` in API PR #310. This is an
+`45e6a08c65821b484585f7b4f091a93b3a47ff43` in API PR #310. This is an
 unmerged API dependency. `MessagingClient.cloudTemplates` covers its four
 Number-scoped Meta template operations. Project template drafts remain under
 `MessagingClient.templates`. Template create and delete make one attempt even
@@ -329,3 +330,6 @@ organization enabled for Functions. The SDK never retries Function mutations or
 invocations automatically. Browser/client-token SDKs do not expose this server
 control plane. A local implementation or installed method does not establish
 hosted availability.
+
+The Graph coverage exclusion applies to the full Graph API, not the separately
+implemented `cloudCatalogs.list` subset recorded in cloud-api-supplements.json.
