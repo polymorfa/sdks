@@ -153,6 +153,15 @@
       "sha256": "1270c8fb32a09cb717f3ea8edd6bd657e8ff3110e03a6286e68d5e16affff474",
       "operationIds": ["graphGetMarketingStatus"],
       "merged": false
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/333",
+      "commit": "5044826d122759aaa8be3e2c2d0f120a326fda81",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "b7b79f399ce9f6944497a2970e184fe40c276dff9034726297ca18b2aab0bd41",
+      "operationIds": ["getChatMessageMedia"],
+      "schemas": ["HistoryMediaRetrieval", "HistoryMessage"],
+      "merged": false
     }
   ]
 }

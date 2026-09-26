@@ -1143,14 +1143,22 @@ if (page.data.nextCursor) {
 console.log(page.metadata.headers["polymorfa-data-region"]);
 ```
 
-These four reads require an organization key or project token, a visible
+These conversation and message reads require an organization key or project token, a visible
 Number with hosted message storage enabled, team enrollment in
 `messaging.history`, and `chats:read` or `messages:read` as appropriate. The
 feature is an unreleased enrolled beta; an SDK method does not grant access.
 Client tokens are refused before transport. A disabled HMS Number yields
 `404 hms_not_enabled`; absent beta access yields `403 permission_denied`, and
-an unavailable regional read yields `503 service_unavailable`. Media entries
-carry an API download path, not a signed URL; downloading requires `media:read`.
+an unavailable regional read yields `503 service_unavailable`.
+
+For Official API media, `message.mediaRetrieval.state` reports whether a copy
+is `pending`, `stored`, or in a final state without a copy. A `stored` message
+has a media entry whose `url` is a message-scoped API path, not a signed URL.
+Download that copy with `messaging.chats.downloadMessageMedia(session, conversation, message.id)`
+or stream it with `downloadMessageMediaStream(session, conversation, message.id)`. These reads
+require both `messages:read` and `media:read`; a missing copy returns 404.
+`downloadMessageMedia` buffers the whole file, so prefer the stream for large
+media. Linked-device media paths still use `messaging.media.download(mediaId)`.
 
 Client tokens can call all five Messages operations only when the corresponding
 live rule is enabled: `send_message` for send and star, `send_reaction` for

@@ -11,6 +11,7 @@ import type {
   ListHistoryChatsParams,
   ListHistoryMessagesParams,
 } from "./history.js";
+import type { MediaDownloadStream } from "./media.js";
 import type {
   DisappearingTimerRequest,
   EditMessageRequest,
@@ -112,6 +113,51 @@ export class ChatsResource {
       method: "GET",
       path: chatMessagePath(session, conversation, messageId),
       ...options,
+    });
+  }
+
+  /** Downloads a stored Official API message copy. Requires `messages:read`, `media:read`, and enrolled HMS history access. */
+  downloadMessageMedia(
+    session: string,
+    conversation: string,
+    messageId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<ArrayBuffer>> {
+    this.assertHistoryCredential();
+    return this.transport.requestBinary({
+      method: "GET",
+      path: `${chatMessagePath(session, conversation, messageId)}/media`,
+      ...options,
+    });
+  }
+
+  /** Streams a stored Official API message copy without buffering the file. */
+  async downloadMessageMediaStream(
+    session: string,
+    conversation: string,
+    messageId: string,
+    options: RequestOptions = {},
+  ): Promise<MediaDownloadStream> {
+    this.assertHistoryCredential();
+    const response = await this.transport.requestStream({
+      method: "GET",
+      path: `${chatMessagePath(session, conversation, messageId)}/media`,
+      ...options,
+    });
+    return Object.freeze({
+      body: response.body,
+      ...(response.contentType === undefined
+        ? {}
+        : { contentType: response.contentType }),
+      ...(response.contentLength === undefined
+        ? {}
+        : { contentLength: response.contentLength }),
+      ...(response.filename === undefined ? {} : { filename: response.filename }),
+      ...(response.metadata.requestId === undefined
+        ? {}
+        : { requestId: response.metadata.requestId }),
+      redirected: response.redirected,
+      metadata: response.metadata,
     });
   }
 

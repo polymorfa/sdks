@@ -78,6 +78,14 @@ its WABA and catalog path, `sessions:read` credential boundary, projected
 product fields, and opaque cursor response. This does not change the pinned
 full snapshot or establish live catalog access.
 
+API PR #333 at `5044826d122759aaa8be3e2c2d0f120a326fda81` adds the
+Official API message-media retrieval status and stored-copy download route.
+`cloud-api-supplements.json` records its exact Messaging OpenAPI hash.
+`MessagingClient.chats` now exposes the typed retrieval status and buffered or
+streamed message-scoped download. API PR #385 adds a final authority recheck
+before history metadata responses; it changes no OpenAPI shape. These branches
+do not establish deployed HMS beta access or SDK package publication.
+
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
 operation fingerprint or SDK method mapping.

@@ -100,6 +100,7 @@ export type { DeleteMessageOptions } from "./messaging/chats.js";
 export type {
   HistoryChat,
   HistoryMedia,
+  HistoryMediaRetrieval,
   HistoryMessage,
   HistoryMessageSummary,
   HistoryPage,
