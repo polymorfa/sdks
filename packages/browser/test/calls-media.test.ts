@@ -593,6 +593,7 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
       videoSlots?: number;
       maxVideoSlots?: number;
       onRemoteVideos?: (videos: readonly RemoteVideo[]) => void;
+      onControl?: CallMediaCallbacks["onControl"];
       connectionId?: string;
     } = {},
   ) {
@@ -624,6 +625,9 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
       options.video === true,
       {
         ...callbacks,
+        ...(options.onControl === undefined
+          ? {}
+          : { onControl: options.onControl }),
         ...(options.onRemoteVideos === undefined
           ? {}
           : { onRemoteVideos: options.onRemoteVideos }),
@@ -635,6 +639,21 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
     );
     return { peer, session, signaling: s, audio, camera, getUserMedia };
   }
+
+  it("delivers only validated social controls from the data channel and stops on close", async () => {
+    const onControl = vi.fn();
+    const { peer, session } = await opened({ onControl });
+    for (const frame of [
+      { type: "reaction", participantId: "123", emoji: "👍" },
+      { type: "hand_state", raised: true, supported: true },
+      { type: "reaction", participantId: "123@lid", emoji: "👍" },
+    ])
+      control(peer, frame);
+    expect(onControl).toHaveBeenCalledTimes(2);
+    await session.close();
+    control(peer, { type: "reaction", self: true, emoji: "👍" });
+    expect(onControl).toHaveBeenCalledTimes(2);
+  });
 
   it("offers audio, a negotiated control channel, the camera and three receive slots", async () => {
     const {

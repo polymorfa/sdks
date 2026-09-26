@@ -1715,6 +1715,7 @@ export interface VoipAddParticipantRequest {
 export type VoipParticipantState = "invited" | "ringing" | "connected" | "left";
 
 export interface VoipParticipant {
+  readonly handRaised?: boolean;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;

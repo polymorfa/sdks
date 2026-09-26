@@ -210,3 +210,17 @@ replayed automatically.
 in a direct call. `null` means unknown, including group calls. They do not
 change your microphone or camera. A reconnect restores acknowledged local
 preferences on the new connection.
+### Reactions and hands
+
+When `call.socialSupported` is true, `call.sendReaction("👍")` sends a transient
+reaction and `call.sendReaction("")` clears it. Listen for `reaction`; the sender
+is either `{self: true}` or a public `participantId`. Reconnection does not
+replay reactions. The SDK does not retry an uncertain send.
+
+`call.setHandRaised(true)` raises the Number's hand and `false` lowers it.
+`call.handRaised` and the `handState` event report the confirmed state. One
+Number shares its hand state across all application connections; remote hands
+are reported in `participant.handRaised` and disappear with the participant.
+These controls require an attached connection and runtime support. Cloud API
+calls refuse them. This source addition still needs a published package and
+matching API deployment before use.

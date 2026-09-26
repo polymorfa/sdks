@@ -1278,6 +1278,9 @@ export function ParticipantList({
                 <span className="pmfa-calls-others-state">
                   {[
                     state === undefined ? undefined : t(locale, state),
+                    participant.handRaised
+                      ? t(locale, "calls.handRaised")
+                      : undefined,
                     participant.audioMuted
                       ? t(locale, "calls.participantMuted")
                       : undefined,
@@ -1401,6 +1404,59 @@ export function CallControls({
         <div
           className={`pmfa-calls-dock${className === undefined ? "" : ` ${className}`}`}
         >
+          {live && snapshot.socialSupported && (
+            <>
+              <button
+                type="button"
+                className="pmfa-calls-btn pmfa-calls-btn-ctrl"
+                aria-pressed={snapshot.handRaised === true}
+                aria-label={t(
+                  locale,
+                  snapshot.handRaised ? "calls.lowerHand" : "calls.raiseHand",
+                )}
+                onClick={() =>
+                  void resolved
+                    .setHandRaised(!snapshot.handRaised)
+                    .catch(() => undefined)
+                }
+              >
+                ✋
+              </button>
+              <select
+                aria-label={t(locale, "calls.react")}
+                value=""
+                onChange={(event) => {
+                  const emoji = event.currentTarget.value;
+                  if (emoji)
+                    void resolved
+                      .sendReaction(
+                        emoji === "clear"
+                          ? ""
+                          : (emoji as "👍" | "❤️" | "😂" | "😮" | "😢" | "🙏"),
+                      )
+                      .catch(() => undefined);
+                }}
+              >
+                <option value="" disabled>
+                  {t(locale, "calls.react")}
+                </option>
+                {["👍", "❤️", "😂", "😮", "😢", "🙏"].map((emoji) => (
+                  <option key={emoji} value={emoji}>
+                    {emoji}
+                  </option>
+                ))}
+                <option value="clear">
+                  {t(locale, "calls.clearReaction")}
+                </option>
+              </select>
+            </>
+          )}
+          {snapshot.socialError && (
+            <span role="alert">{t(locale, "calls.socialFailed")}</span>
+          )}
+          {snapshot.reaction?.emoji && (
+            <span role="status">{snapshot.reaction.emoji}</span>
+          )}
           {showCamera && (
             <div
               className={`pmfa-calls-group${cameraReady ? "" : " pmfa-calls-disabled"}`}

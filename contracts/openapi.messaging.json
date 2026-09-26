@@ -10145,6 +10145,10 @@
               "connected",
               "left"
             ]
+          },
+          "handRaised": {
+            "type": "boolean",
+            "description": "Whether this participant has raised their hand."
           }
         },
         "required": [
@@ -17772,6 +17776,60 @@
           "event"
         ],
         "additionalProperties": false
+      },
+      "VoipReactionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "connectionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$"
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Server credentials only. Must own the connection."
+          },
+          "emoji": {
+            "type": "string",
+            "enum": [
+              "",
+              "👍",
+              "❤️",
+              "😂",
+              "😮",
+              "😢",
+              "🙏"
+            ],
+            "description": "Empty clears the previous reaction."
+          }
+        },
+        "required": [
+          "connectionId",
+          "emoji"
+        ]
+      },
+      "VoipHandRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "connectionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$"
+          },
+          "participant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:@-]{1,128}$",
+            "description": "Server credentials only. Must own the connection."
+          },
+          "raised": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "connectionId",
+          "raised"
+        ]
       }
     },
     "securitySchemes": {
@@ -50212,6 +50270,448 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#rate-limit-exceeded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/messaging/voip/calls/{id}/reaction": {
+      "post": {
+        "operationId": "sendCallReaction",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Send or clear a call reaction",
+        "description": "Requires an attached connection owned by the acting participant, sessions:manage, and voip_signal for client tokens. Linked-device calls only; unsupported backends return 409 unsupported_for_connection. Reactions are transient and are not replayed. Hand state is shared by the Number and restored on media reconnection. Do not automatically retry an uncertain result.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipReactionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Connection closed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_gone",
+                    "message": "The requested retained resource has expired or was removed.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-gone"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Call unavailable — the owning pod is at capacity or draining, or call authority cannot be verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+        }
+      }
+    },
+    "/messaging/voip/calls/{id}/hand": {
+      "post": {
+        "operationId": "setCallHandRaised",
+        "tags": [
+          "VoIP"
+        ],
+        "summary": "Raise or lower the Number's hand in a call",
+        "description": "Requires an attached connection owned by the acting participant, sessions:manage, and voip_signal for client tokens. Linked-device calls only; unsupported backends return 409 unsupported_for_connection. Reactions are transient and are not replayed. Hand state is shared by the Number and restored on media reconnection. Do not automatically retry an uncertain result.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "call-123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoipHandRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Connection closed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Call not ready — no media session on the owning pod yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Call ended — the pod that owned its media is gone (pod_lost)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_gone",
+                    "message": "The requested retained resource has expired or was removed.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-gone"
                 }
               }
             }

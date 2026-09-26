@@ -31,6 +31,12 @@ export type {
   CallsTokenProvider,
   CallsTokenRequest,
 } from "./token.js";
-export { DEFAULT_SAMPLE_RATE, type Participant } from "./protocol.js";
+export {
+  CALL_REACTION_EMOJI,
+  type CallReactionEmoji,
+  type CallReaction,
+  DEFAULT_SAMPLE_RATE,
+  type Participant,
+} from "./protocol.js";
 
 export type { MediaState, MediaStateUpdate } from "./media-state.js";

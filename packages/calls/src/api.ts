@@ -61,6 +61,20 @@ export interface PlaceCallRequest {
  * it and the browser package backs it with its client-token transport.
  */
 export interface CallsApi {
+  sendReaction?(
+    callId: string,
+    connectionId: string,
+    emoji: import("./protocol.js").CallReactionEmoji,
+    participant?: string,
+    signal?: AbortSignal,
+  ): Promise<void>;
+  setHandRaised?(
+    callId: string,
+    connectionId: string,
+    raised: boolean,
+    participant?: string,
+    signal?: AbortSignal,
+  ): Promise<void>;
   /** Credential for socket authentication frames. */
   token(request?: CallsTokenRequest): Promise<CallsToken>;
   /** Absolute `ws(s)://` URL for a socket path on the API host. */
@@ -325,6 +339,56 @@ export class HttpCallsApi implements CallsApi {
     await this.#request("DELETE", callPath(callId), undefined, signal, {
       "idempotency-key": `voip-end:${callId}`,
     });
+  }
+
+  async sendReaction(
+    callId: string,
+    connectionId: string,
+    emoji: import("./protocol.js").CallReactionEmoji,
+    participant?: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#social(
+      callId,
+      "/reaction",
+      { connectionId, emoji },
+      participant,
+      signal,
+    );
+  }
+  async setHandRaised(
+    callId: string,
+    connectionId: string,
+    raised: boolean,
+    participant?: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#social(
+      callId,
+      "/hand",
+      { connectionId, raised },
+      participant,
+      signal,
+    );
+  }
+  async #social(
+    callId: string,
+    suffix: string,
+    body: Record<string, unknown>,
+    participant?: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#request(
+      "POST",
+      callPath(callId, suffix),
+      async (token) => ({
+        ...body,
+        ...(participant === undefined || isClientToken(token)
+          ? {}
+          : { participant }),
+      }),
+      signal,
+    );
   }
 
   async ringParticipant(

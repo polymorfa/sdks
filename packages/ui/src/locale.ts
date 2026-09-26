@@ -87,6 +87,13 @@ export const ENGLISH_MESSAGES = {
   "calls.reject": "Reject",
   "calls.hangup": "Hang up",
   "calls.mute": "Mute",
+  "calls.raiseHand": "Raise hand",
+  "calls.lowerHand": "Lower hand",
+  "calls.react": "React",
+  "calls.socialFailed":
+    "Could not confirm the call interaction. Check the current state before trying again.",
+  "calls.clearReaction": "Clear reaction",
+  "calls.handRaised": "Hand raised",
   "calls.unmute": "Unmute",
   "calls.cameraOn": "Turn camera on",
   "calls.cameraOff": "Turn camera off",

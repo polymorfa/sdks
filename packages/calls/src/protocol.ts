@@ -248,7 +248,30 @@ export function decodeMediaFrame(
   return undefined;
 }
 
+export const CALL_REACTION_EMOJI = [
+  "",
+  "👍",
+  "❤️",
+  "😂",
+  "😮",
+  "😢",
+  "🙏",
+] as const;
+export type CallReactionEmoji = (typeof CALL_REACTION_EMOJI)[number];
+export function isCallReactionEmoji(
+  value: unknown,
+): value is CallReactionEmoji {
+  return (
+    typeof value === "string" &&
+    (CALL_REACTION_EMOJI as readonly string[]).includes(value)
+  );
+}
+export type CallReaction = { readonly emoji: CallReactionEmoji } & (
+  | { readonly self: true; readonly participantId?: undefined }
+  | { readonly participantId: string; readonly self?: undefined }
+);
 export interface Participant {
+  readonly handRaised?: boolean;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;
@@ -284,6 +307,12 @@ export type VideoSourceFrame = {
 export type MediaControlFrame =
   | MediaStateReply
   | { readonly type: "remote_media"; readonly audioMuted: boolean | null }
+  | ({ readonly type: "reaction" } & CallReaction)
+  | {
+      readonly type: "hand_state";
+      readonly raised: boolean;
+      readonly supported: boolean;
+    }
   | {
       readonly type: "ready";
       readonly callId?: string;
@@ -366,6 +395,19 @@ export function parseMediaControlValue(
         optionalString(f["connectionId"])
         ? (parsed as MediaControlFrame)
         : undefined;
+    case "reaction":
+      return isCallReactionEmoji(f["emoji"]) &&
+        ((f["self"] === true && f["participantId"] === undefined) ||
+          (typeof f["participantId"] === "string" &&
+            /^[1-9][0-9]{0,18}$/.test(f["participantId"]) &&
+            f["self"] === undefined))
+        ? (parsed as MediaControlFrame)
+        : undefined;
+    case "hand_state":
+      return typeof f["raised"] === "boolean" &&
+        typeof f["supported"] === "boolean"
+        ? (parsed as MediaControlFrame)
+        : undefined;
     case "participant_joined":
     case "participant_state":
       return isParticipant(f["participant"])
@@ -413,6 +455,13 @@ export function isSourceHandle(value: unknown): value is number {
 }
 
 export function isParticipant(value: unknown): value is Participant {
+  if (
+    value !== null &&
+    typeof value === "object" &&
+    "handRaised" in value &&
+    typeof value.handRaised !== "boolean"
+  )
+    return false;
   if (value === null || typeof value !== "object") return false;
   const p = value as Record<string, unknown>;
   return (

@@ -2,6 +2,8 @@ import {
   MediaStateCommands,
   parseMediaControlValue,
   type MediaStateReply,
+  parseMediaControl,
+  type MediaControlFrame,
   createConnectionId,
   isConnectionId,
   isParticipant,
@@ -125,6 +127,19 @@ export function parseDataChannelMessage(
 export interface CallMediaCallbacks {
   readonly onRemoteMute?: (muted: boolean | null) => void;
   readonly onMediaControlError?: (cause: unknown) => void;
+  readonly onControl?: (
+    frame: Extract<
+      MediaControlFrame,
+      {
+        type:
+          | "reaction"
+          | "hand_state"
+          | "participant_joined"
+          | "participant_state"
+          | "participant_left";
+      }
+    >,
+  ) => void;
   readonly onConnectionState: (state: RTCPeerConnectionState) => void;
   /** The merged call audio (and nothing else) arrived or changed. */
   readonly onRemoteStream: (stream: MediaStream) => void;
@@ -484,6 +499,19 @@ export class WebRtcMediaFactory implements CallMediaFactory {
     };
 
     control.onmessage = (event: MessageEvent) => {
+      const social = parseMediaControl(event.data);
+      if (
+        !closed &&
+        social !== undefined &&
+        (social.type === "reaction" ||
+          social.type === "hand_state" ||
+          social.type === "participant_joined" ||
+          social.type === "participant_state" ||
+          social.type === "participant_left")
+      ) {
+        callbacks.onControl?.(social);
+        return;
+      }
       const message = parseDataChannelMessage(event.data);
       if (message === undefined || closed) return;
       switch (message.type) {

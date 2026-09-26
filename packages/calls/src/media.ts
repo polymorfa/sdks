@@ -97,6 +97,8 @@ type Events = {
   videoSource: [MediaVideoSource];
   videoSourceRemoved: [source: number];
   keyframeRequest: [];
+  reaction: [import("./protocol.js").CallReaction];
+  handState: [boolean, boolean];
   participantJoined: [Participant];
   participantLeft: [participantId: string, reason: string | undefined];
   participantState: [Participant];
@@ -434,6 +436,12 @@ export class MediaSocket extends Emitter<Events> {
         return;
       case "pong":
         this.#awaitingPong = false;
+        return;
+      case "reaction":
+        this.emit("reaction", frame);
+        return;
+      case "hand_state":
+        this.emit("handState", frame.raised, frame.supported);
         return;
       case "participant_joined":
         this.emit("participantJoined", frame.participant);

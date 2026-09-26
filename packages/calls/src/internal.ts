@@ -97,3 +97,4 @@ export {
   type MediaStateUpdate,
   type MediaStateReply,
 } from "./media-state.js";
+export { isCallReactionEmoji } from "./protocol.js";

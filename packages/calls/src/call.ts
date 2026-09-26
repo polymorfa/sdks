@@ -245,6 +245,8 @@ type CallEvents = {
   claim: [CallClaim];
   /** The platform reported different capabilities (on `call.accepted`). */
   capabilities: [CallCapabilities];
+  reaction: [import("./protocol.js").CallReaction];
+  handState: [boolean, boolean];
   participantJoined: [Participant];
   participantLeft: [participantId: string, reason: string | undefined];
   participantState: [Participant];
@@ -386,6 +388,8 @@ export class Call extends Emitter<CallEvents> {
   readonly #departedParticipants = new Set<string>();
   readonly #participantRevisions = new Map<string, number>();
   #rosterRevision = 0;
+  #handRaised = false;
+  #socialSupported = false;
   #state: CallState;
   #media: MediaSocket | undefined;
   #endReason: CallEndReason | undefined;
@@ -699,6 +703,59 @@ export class Call extends Emitter<CallEvents> {
   }
 
   /** Invite another party, turning a 1:1 call into a group call. */
+  get handRaised(): boolean {
+    return this.#handRaised;
+  }
+  get socialSupported(): boolean {
+    return this.#socialSupported;
+  }
+  async sendReaction(
+    emoji: import("./protocol.js").CallReactionEmoji,
+  ): Promise<void> {
+    if (
+      this.#state !== "connected" ||
+      !this.#socialSupported ||
+      !this.#api.sendReaction
+    )
+      throw new CallsError("invalid_state", "Call reactions are unavailable.");
+    await this.#api.sendReaction(
+      this.id,
+      this.connectionId,
+      emoji,
+      this.#participant,
+    );
+  }
+  async setHandRaised(raised: boolean): Promise<void> {
+    if (
+      this.#state !== "connected" ||
+      !this.#socialSupported ||
+      !this.#api.setHandRaised
+    )
+      throw new CallsError(
+        "invalid_state",
+        "Call hand controls are unavailable.",
+      );
+    await this.#api.setHandRaised(
+      this.id,
+      this.connectionId,
+      raised,
+      this.#participant,
+    );
+  }
+  /** @internal Validated control from the active media connection. */
+  _remoteSocial(
+    frame: Extract<MediaControlFrame, { type: "reaction" | "hand_state" }>,
+  ): void {
+    if (this.ended) return;
+    if (frame.type === "reaction") {
+      this.emit("reaction", frame);
+      return;
+    }
+    this.#handRaised = frame.raised;
+    this.#socialSupported = frame.supported;
+    this.emit("handState", frame.raised, frame.supported);
+  }
+
   async addParticipant(to: string): Promise<Participant> {
     if (this.#state === "ended")
       throw new CallsError(
@@ -927,6 +984,12 @@ export class Call extends Emitter<CallEvents> {
       this.video._sourceRemoved(handle),
     );
     media.on("keyframeRequest", () => this.video._keyframeRequest());
+    media.on("reaction", (reaction) =>
+      this._remoteSocial({ ...reaction, type: "reaction" }),
+    );
+    media.on("handState", (raised, supported) =>
+      this._remoteSocial({ type: "hand_state", raised, supported }),
+    );
     media.on("participantJoined", (participant) =>
       this._remoteParticipant({ type: "participant_joined", participant }),
     );
@@ -1179,6 +1242,7 @@ function sameParticipant(a: Participant, b: Participant): boolean {
     a.phoneNumber === b.phoneNumber &&
     a.bsuid === b.bsuid &&
     a.username === b.username &&
+    a.handRaised === b.handRaised &&
     a.audioMuted === b.audioMuted &&
     a.video === b.video &&
     a.state === b.state
