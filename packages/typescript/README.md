@@ -1733,7 +1733,8 @@ after a lost response.
 request while `page.hasMore` is true. Each recipient includes a stable
 `failureReason` code, plus its send, delivery, read, failure and reply
 timestamps. Use `reason` to filter by that code. Campaign `list` returns a complete
-array; recipient pagination does not change that method.
+array; recipient pagination does not change that method. The legacy
+`lastError` field returns the same normalized code and never raw stored text.
 
 `exportRecipients(projectSlug, campaignId, { status, reason, cursor, limit })`
 returns `{ csv, nextCursor }`. The CSV contains a header and up to 1,000 rows;

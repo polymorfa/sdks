@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "a73c19db9144fe4ee20d6e379429da5d11b51a7a",
+  "commit": "40442bfb67de8cd86ad868c342c825aa4220831a",
   "branch": "t3code/campaigns-recipient-export",
   "published": false,
-  "note": "API PR polymorfa/polymorfa#331 exact head: recipient failure reasons, filtered list and paged CSV export. Re-pin to the merged API dev commit before SDK merge; SDK publication and CLI registry pin are separate.",
+  "note": "API PR polymorfa/polymorfa#331 exact head: normalized recipient failure reasons, filtered list and paged CSV export. Re-pin to merged API dev before SDK merge; SDK publication and CLI registry pin are separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "5d0c5f986e3bb9c2d9111546a85a84e159cc661b319b128dc55187e13f1d2a07"
+      "sha256": "c7343ed9cd81fb16bad2936b8e8844b7bd1440cef41b6cc56a4d55033d4edaaf"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "f9b1b29d6e140094d34861f5d2102f4b09957eb6fa49cf6396f9c064b0b2556c"
+      "sha256": "4319c0830b856547e8b602a4b838a53c0650dd252e4b7dac08295d62376bcb0a"
     }
   }
 }

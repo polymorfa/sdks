@@ -182,7 +182,7 @@ export interface CampaignRecipient {
   readonly variantKey: string | null;
   readonly status: CampaignRecipientStatus;
   readonly attempts: number;
-  /** `opted_out` means the phone is on the organization's opt-out list. */
+  /** Legacy alias of `failureReason`; raw stored errors are never returned. */
   readonly lastError: string | null;
   /** Stable, documented code for the last unsuccessful attempt. */
   readonly failureReason: CampaignRecipientFailureReason | null;

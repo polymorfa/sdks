@@ -16076,7 +16076,7 @@
           "lastError": {
             "type": "string",
             "nullable": true,
-            "description": "Internal classifier of the last unsuccessful attempt. Use `failureReason` instead: it is the stable, documented code for the same fact."
+            "description": "Legacy alias of the normalized `failureReason` code. Raw stored errors are never returned."
           },
           "failureReason": {
             "type": "string",
