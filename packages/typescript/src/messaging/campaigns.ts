@@ -1,8 +1,5 @@
 import { HttpTransport } from "../transport/http.js";
-import {
-  withIdempotencyKey,
-  withoutAutomaticRetry,
-} from "../transport/idempotency.js";
+import { withIdempotencyKey } from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   AddCampaignRecipientsRequest,
@@ -142,11 +139,10 @@ export class MessagingCampaignsResource {
    * Add up to 1,000 recipients to a campaign that has not started sending.
    * Repeated phones are skipped and invalid entries are reported, not added.
    *
-   * The API declares no idempotent replay for this append, so by default the
-   * SDK sends it once and does not retry it. Setting both `maxNetworkRetries`
-   * and `idempotencyKey` on the request re-enables retries, and a retry can be
-   * processed as a new append. After a lost response, list the recipients before
-   * appending again.
+   * Safe to retry: the SDK sends an `Idempotency-Key` (a generated one unless
+   * you pass `idempotencyKey`) and reuses it on every automatic retry. Within
+   * 24 hours a retry of a successful append returns its original counts with
+   * `Idempotent-Replayed: true` instead of adding the recipients again.
    */
   addRecipients(
     projectSlug: string,
@@ -158,7 +154,7 @@ export class MessagingCampaignsResource {
       method: "POST",
       path: recipientsPath(projectSlug, campaignId),
       body,
-      ...withoutAutomaticRetry(options),
+      ...withIdempotencyKey(options),
     });
   }
 

@@ -46820,6 +46820,17 @@
             "required": true,
             "name": "id",
             "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "required": false,
+            "description": "Optional key, 1 to 255 bytes of UTF-8, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request is not applied again: it returns the original `200` result with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`. A retry sent while the original is still running waits for it and then returns its result. A request that failed left no record, so retrying it with the same key runs it again. Access to the resource is checked again on every retry. A replay returns the original counts, even after the campaign has launched.",
+            "name": "Idempotency-Key",
+            "in": "header"
           }
         ],
         "requestBody": {
@@ -46834,6 +46845,17 @@
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -46927,7 +46949,7 @@
             }
           },
           "409": {
-            "description": "The campaign has started sending and no longer accepts recipients",
+            "description": "The campaign has started sending and no longer accepts recipients, or the Idempotency-Key was already used for a different request (`idempotency_conflict`)",
             "content": {
               "application/json": {
                 "schema": {

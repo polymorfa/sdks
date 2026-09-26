@@ -42,9 +42,12 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` API source commit
-`6839976e7ad54e044c4d789fd296edc44772a907` on API `dev`. This revision retires the three unproduced BanSafe event names
-and their synthetic test fixtures. The four live BanSafe events remain typed.
+files at `polymorfa/polymorfa` API PR #323 commit
+`470b1a065c714a05763501d20cc821871d4d9be7`. This revision adds
+`Idempotency-Key` replay to audience create, audience member append, and campaign
+recipient append. It includes the merged retirement of three unproduced BanSafe
+event names; the four live BanSafe events remain typed. Re-pin this snapshot to
+the merged API `dev` commit before the SDK change merges.
 The two changed Testing operation fingerprints have been reconciled against
 the fixture catalog. Four webhook create/update fingerprints now match the
 Platform source's HTTP field pattern, which was already present on API `dev`.

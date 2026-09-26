@@ -1721,11 +1721,11 @@ console.log(launched.data.data.operationId, launched.metadata.requestId);
 
 Create accepts inline recipients, an audience ID in `recipientListId`, or both.
 Each append accepts up to 1,000 recipients before launch and reports duplicates
-and invalid rows. Appends have no declared replay contract: the SDK sends them
-once by default, generates no key, and requires both `maxNetworkRetries` and
-`idempotencyKey` to opt back into retries. A retry can report rows from an unseen
-successful first attempt as duplicates. List recipients before appending again
-after a lost response.
+and invalid rows. Each append sends an idempotency key, generated unless you pass
+`idempotencyKey`, and automatic retries reuse it. Within 24 hours a retry of a
+successful append returns its original counts with `Idempotent-Replayed: true`,
+even after the campaign has launched. Pass your own key when you retry across
+process restarts.
 
 `listRecipients(projectSlug, campaignId, { status, cursor, limit })` returns
 `{ data, page }` inside the response's `data`. Read recipients from

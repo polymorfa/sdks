@@ -568,10 +568,11 @@ requests retry only when the caller supplies an idempotency key. The transport
 honors `Retry-After`, then uses bounded exponential backoff with jitter.
 
 Campaign recipient and audience member appends (`campaigns.addRecipients` on
-both clients and `audiences.addMembers`) are sent once. The API does not replay
-them, so a retry after a lost response would count the first attempt's rows as
-duplicates. They retry only when that request sets both `maxNetworkRetries`
-and `idempotencyKey`; the key does not make the API replay the append.
+both clients and `audiences.addMembers`) and `audiences.create` send an
+idempotency key, generated unless you pass `idempotencyKey`, and retry with it.
+Within 24 hours the API answers a retry of a successful request with the
+original result and `Idempotent-Replayed: true`, so the first attempt's rows are
+not added again or reported as duplicates.
 
 ## API versions and raw requests
 

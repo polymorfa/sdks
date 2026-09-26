@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "6839976e7ad54e044c4d789fd296edc44772a907",
-  "branch": "dev",
-  "published": true,
-  "note": "Merged API source commit retiring three unproduced BanSafe webhook names and test fixtures; Messaging and Platform snapshots are byte-identical to the authoritative OpenAPI files. SDK publication and deployment are separate.",
+  "commit": "470b1a065c714a05763501d20cc821871d4d9be7",
+  "branch": "t3code/campaigns-patch-idempotency",
+  "published": false,
+  "note": "API PR polymorfa/polymorfa#323 exact rebased head: successful audience create, audience member append, and campaign recipient append replay by Idempotency-Key. Re-pin to the merged dev commit before SDK merge. Both snapshots are byte-identical to the source files; SDK publication and deployment are separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "79543bf719017598c3e2497004d761056e919b3200abdaae1560893542816cc7"
+      "sha256": "250df0e99e390818c47bc6a639cb029c0550dec952e706472dcfe19b0feeb6e5"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "7eca4148c2f1fbda47c26a67c42e2da6b74e47e5edf38d749e30a5fc3f1d7fe8"
+      "sha256": "5603b915806d7043ae7717e247ccfcc7de985d78d153471e5b65f42b329990ec"
     }
   }
 }

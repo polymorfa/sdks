@@ -17259,6 +17259,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional key, 1 to 255 bytes of UTF-8, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request is not applied again: it returns the original `200` result with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`. A retry sent while the original is still running waits for it and then returns its result. A request that failed left no record, so retrying it with the same key runs it again. Access to the resource is checked again on every retry. A replay returns the original counts, even after the campaign has launched.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "requestBody": {
@@ -17305,6 +17316,15 @@
                   "type": "string"
                 },
                 "description": "API version applied to this response."
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
               }
             },
             "content": {
@@ -17417,6 +17437,19 @@
             "ConsoleSession": []
           }
         ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional key, 1 to 255 bytes of UTF-8, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request is not applied again: it returns the original `200` result with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`. A retry sent while the original is still running waits for it and then returns its result. A request that failed left no record, so retrying it with the same key runs it again. Access to the resource is checked again on every retry. A replay returns the audience as it is now, with the original import counts. If the audience was deleted after the original request, a replay returns `409 idempotency_completed`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -17442,6 +17475,15 @@
                   "type": "string"
                 },
                 "description": "API version applied to this response."
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
               }
             },
             "content": {
@@ -17472,6 +17514,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "413": {
             "$ref": "#/components/responses/PayloadTooLarge"
@@ -17707,6 +17752,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional key, 1 to 255 bytes of UTF-8, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request is not applied again: it returns the original `200` result with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`. A retry sent while the original is still running waits for it and then returns its result. A request that failed left no record, so retrying it with the same key runs it again. Access to the resource is checked again on every retry. A replay returns the original counts. The audience must still exist.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "requestBody": {
@@ -17749,6 +17805,15 @@
                   "type": "string"
                 },
                 "description": "API version applied to this response."
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
               }
             },
             "content": {
@@ -17779,6 +17844,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       },
@@ -40666,7 +40734,7 @@
           "value": {
             "type": "string",
             "maxLength": 4096,
-            "pattern": "^(?![\\s\\S]*[\\^@-\\^H\\u000A-\\^_\\u007F])[\\s\\S]*$",
+            "pattern": "^(?![\\s\\S]*[\\u0000-\\u0008\\u000A-\\u001F\\u007F])[\\s\\S]*$",
             "x-polymorfa-max-utf8-bytes": 4096,
             "writeOnly": true,
             "description": "Encrypted write-only HTTP field value. Limited to 4096 UTF-8 bytes. Line breaks, NUL, and other control characters except horizontal tab are rejected."
