@@ -42,7 +42,7 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API PR #331 head `40442bfb67de8cd86ad868c342c825aa4220831a`.
+files at API PR #331 head `ff5f3db97db8b915981be46affd58bc85688e91b`.
 This source is not merged or published. It adds the two paged recipient CSV
 export operations, and the recipient list accepts a stable `reason` filter and
 returns `failureReason`. `source.json` records the source paths and SHA-256

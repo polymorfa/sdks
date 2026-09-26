@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "40442bfb67de8cd86ad868c342c825aa4220831a",
+  "commit": "ff5f3db97db8b915981be46affd58bc85688e91b",
   "branch": "t3code/campaigns-recipient-export",
   "published": false,
   "note": "API PR polymorfa/polymorfa#331 exact head: normalized recipient failure reasons, filtered list and paged CSV export. Re-pin to merged API dev before SDK merge; SDK publication and CLI registry pin are separate.",
