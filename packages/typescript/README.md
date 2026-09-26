@@ -1774,7 +1774,8 @@ accepts up to ten typed `messagesArray` entries with `delayAfterSec` from 0 to
 local weekdays and hours, with optional recipient time zones. `Client.audiences` manages audience
 members, and `Client.optOuts` reads and replaces team keyword settings.
 
-`create` and `launch` generate an `Idempotency-Key` for each call. A supplied
+`launch`, `pause`, `resume`, and `stop` generate an `Idempotency-Key` for each
+call; `create` sends a key only when you provide one. A supplied
 key is preserved across retries within the API's 24-hour replay window. If the
 outcome remains uncertain after that window, reconcile campaign state before
 starting another request; see [Idempotent sends](#idempotent-sends).
