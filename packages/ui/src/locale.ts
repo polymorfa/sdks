@@ -95,6 +95,8 @@ export const ENGLISH_MESSAGES = {
   "calls.clearReaction": "Clear reaction",
   "calls.handRaised": "Hand raised",
   "calls.unmute": "Unmute",
+  "calls.outgoingNumber": "Outgoing Number",
+  "calls.chooseNumber": "Choose a Number",
   "calls.shareScreen": "Share screen",
   "calls.stopSharing": "Stop sharing",
   "calls.screenShareFailed":

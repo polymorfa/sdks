@@ -301,3 +301,17 @@ While an answer is in flight, the incoming card disables Answer, Join, Reject
 and its camera and microphone choices. A failed answer shows a notice on the
 incoming card: on the call itself when it is still ringing, or on the next
 waiting call when the answered call's media failed.
+
+### Choosing an outgoing Number
+
+`CallNumberPicker` selects an application-authorized Number. Each option has a
+unique `id`, a display `label`, and the `controller` of a separate
+`createBrowserCalls` instance. Supply `value` and `onChange`; use the selected
+instance for `DialPad` and keep each active `CallSurface` under its fixed Number
+label. The picker locks while any supplied client places, answers, or carries a
+call and rechecks state in its change handler.
+
+The component does not discover Numbers or mint credentials. Give each client
+its own token provider, authorized for that Number's session. Selection must
+never replace the token or session on an existing client. The session option
+does not override the session bound to the client token.
