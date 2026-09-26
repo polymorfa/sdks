@@ -145,6 +145,14 @@ export class FlowsResource {
     body: UpdateFlowRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<FlowDraft>> {
+    if (
+      typeof body?.expectedUpdatedAt !== "number" ||
+      !Number.isFinite(body.expectedUpdatedAt)
+    ) {
+      throw new PolymorfaValidationError(
+        "expectedUpdatedAt must be a finite number.",
+      );
+    }
     return this.request("PATCH", flowPath(flowId), body, options);
   }
   delete(
@@ -229,7 +237,7 @@ export class FlowsResource {
   }
 }
 function flowPath(id: string): string {
-  if (!id.trim())
+  if (typeof id !== "string" || !id.trim())
     throw new PolymorfaConfigurationError("Flow ID is required.", "flowId");
   return `/${encodeURIComponent(id)}`;
 }

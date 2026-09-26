@@ -27,6 +27,26 @@ function client(server: TestServer) {
 }
 
 describe("project Flow lifecycle", () => {
+  it("rejects malformed Flow path IDs and update revisions before transport", async () => {
+    const server = await startTestServer(() => ({ body: "{}" }));
+    servers.push(server);
+    const flows = client(server).flows;
+    expect(() => flows.delete(undefined as unknown as string)).toThrow(
+      "Flow ID is required",
+    );
+    expect(() =>
+      flows.upload(null as unknown as string, { sessionId: "support" }),
+    ).toThrow("Flow ID is required");
+    for (const expectedUpdatedAt of [undefined, NaN, Infinity, -Infinity]) {
+      expect(() =>
+        flows.update("flow", {
+          expectedUpdatedAt: expectedUpdatedAt as number,
+        }),
+      ).toThrow("expectedUpdatedAt must be a finite number");
+    }
+    expect(server.requests).toHaveLength(0);
+  });
+
   it("binds project identity on all draft and lifecycle paths", async () => {
     const server = await startTestServer(() => ({
       body: JSON.stringify({ data: null }),
