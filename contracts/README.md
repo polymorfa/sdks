@@ -71,6 +71,13 @@ are recorded in `cloud-api-supplements.json`. The existing typed
 including when callers supply an idempotency key or retry override. The full
 snapshot remains pinned to PR #310 until the API branches converge.
 
+API PR #380 at `bbfb2f4af3a8e1289074d9b7d0ed058b96881410` adds the
+read-only linked-catalog product page. `cloud-api-supplements.json` records the
+exact Graph OpenAPI hash. `MessagingClient.cloudCatalogs.listProducts` follows
+its WABA and catalog path, `sessions:read` credential boundary, projected
+product fields, and opaque cursor response. This does not change the pinned
+full snapshot or establish live catalog access.
+
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
 operation fingerprint or SDK method mapping.

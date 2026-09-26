@@ -387,6 +387,13 @@ requires `sessions:read` and Graph access. The response retains opaque cursors;
 it does not expose upstream pagination URLs or grant merchant ownership. Use
 an organization API key or project token, with the latter confined to its project.
 
+`messaging.cloudCatalogs.listProducts(wabaId, catalogId, { version: "v26.0", limit: 25, after })`
+reads a page of product IDs, optional retailer IDs, names, and availability
+from a catalog linked to that WABA. It has the same server-credential and
+`sessions:read` requirements. Use the returned opaque `paging.cursors.after`
+to request the next page. The API rejects catalogs it cannot verify as linked;
+listing products does not grant permission to send them.
+
 `messaging.flowEncryption.retrieve(phoneNumberId, { version: "v26.0" })` reads
 the registered public key and Meta signature status with `sessions:read`.
 `messaging.flowEncryption.register(phoneNumberId,

@@ -69,8 +69,11 @@ export type {
 } from "./messaging/flow-encryption.js";
 export type {
   CloudProductCatalog,
+  CloudCatalogProduct,
   ListCloudCatalogsParams,
   ListCloudCatalogsResponse,
+  ListCloudCatalogProductsParams,
+  ListCloudCatalogProductsResponse,
 } from "./messaging/cloud-catalogs.js";
 export {
   BridgeClient,

@@ -137,6 +137,14 @@
       "operationIds": [],
       "schemas": ["CloudAccountStatusPayload"],
       "merged": false
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/380",
+      "commit": "bbfb2f4af3a8e1289074d9b7d0ed058b96881410",
+      "sourcePath": "docs/api-reference/openapi.graph.json",
+      "sha256": "b9d3778f17a90fd0c58e0cb1b3f6ef689661980fa83ad7565bc55ae4ab93fab4",
+      "operationIds": ["graphListCatalogProducts"],
+      "merged": false
     }
   ]
 }
