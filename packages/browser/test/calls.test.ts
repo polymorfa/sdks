@@ -13,6 +13,7 @@ import {
 function fixture() {
   let emit: ((event: CallLifecycleEvent) => void) | undefined;
   let connection: ((state: RTCPeerConnectionState) => void) | undefined;
+  let mediaControlError: ((cause: unknown) => void) | undefined;
   const session: CallMediaSession = {
     localStream: {} as MediaStream,
     remoteStream: {} as MediaStream,
@@ -34,6 +35,7 @@ function fixture() {
   const media: CallMediaFactory = {
     open: vi.fn(async (_id, _video, callbacks) => {
       connection = callbacks.onConnectionState;
+      mediaControlError = callbacks.onMediaControlError;
       return session;
     }),
   };
@@ -43,10 +45,28 @@ function fixture() {
     session,
     emit: (event: CallLifecycleEvent) => emit?.(event),
     connect: (state: RTCPeerConnectionState) => connection?.(state),
+    controlError: (cause: unknown) => mediaControlError?.(cause),
   };
 }
 
 describe("CallsController (voip-v2 contract)", () => {
+  it("reports a control failure using the actual local camera state", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    await controller.place("+15550100");
+    f.connect("connected");
+    f.controlError(new Error("Microphone control was not confirmed."));
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "connected",
+      videoMuted: false,
+      error: { code: "media_control_failed" },
+    });
+    f.session.videoEnabled = () => false;
+    f.controlError(new Error("Video control was not confirmed."));
+    expect(controller.getSnapshot().videoMuted).toBe(true);
+    controller.dispose();
+  });
   it("keeps custom-backend calls active when a second placement is requested", async () => {
     const f = fixture();
     const controller = new CallsController(f.backend, f.media);

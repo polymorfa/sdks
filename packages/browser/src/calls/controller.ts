@@ -1422,7 +1422,10 @@ export class CallsController extends ObservableController<CallsSnapshot> {
             this.transition({
               ...callFields(current),
               status: current.status,
-              videoMuted: true,
+              videoMuted:
+                media === undefined
+                  ? current.videoMuted
+                  : !media.videoEnabled(),
               error: {
                 code: "media_control_failed",
                 message:

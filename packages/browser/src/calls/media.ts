@@ -359,6 +359,12 @@ export class WebRtcMediaFactory implements CallMediaFactory {
     const failedControl = (cause: unknown) => {
       // Capture is local; a rejected or uncertain publish must not look live.
       setTracks(local.getVideoTracks(), false);
+      if (screen !== undefined) {
+        screen.cameraEnabled = false;
+        void queueVideo(stopScreen).catch((cleanupError: unknown) => {
+          callbacks.onMediaControlError?.(cleanupError);
+        });
+      }
       callbacks.onMediaControlError?.(cause);
     };
     control.onopen = () => {
@@ -828,8 +834,20 @@ export class WebRtcMediaFactory implements CallMediaFactory {
           setTracks(local.getAudioTracks(), !muted.audio);
         if (muted.video !== undefined && screen === undefined)
           setTracks(local.getVideoTracks(), !muted.video);
-        if (control.readyState === "open")
-          void syncState().catch(failedControl);
+        if (control.readyState === "open") {
+          const changesVideo =
+            muted.video !== undefined && screen === undefined;
+          if (muted.audio === undefined && !changesVideo) return;
+          void mediaControls
+            .set({
+              ...(muted.audio === undefined ? {} : { audioMuted: muted.audio }),
+              ...(changesVideo ? { videoEnabled: !muted.video } : {}),
+            })
+            .catch((cause: unknown) => {
+              if (changesVideo) failedControl(cause);
+              else callbacks.onMediaControlError?.(cause);
+            });
+        }
       },
       getStats: () => peer.getStats(),
       audioEnabled: () => local.getAudioTracks().some(({ enabled }) => enabled),

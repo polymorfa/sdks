@@ -240,3 +240,8 @@ are reported in `participant.handRaised` and disappear with the participant.
 These controls require an attached connection and runtime support. Cloud API
 calls refuse them. This source addition still needs a published package and
 matching API deployment before use.
+
+Browser microphone updates affect microphone state only. A failed microphone
+control reports an error without stopping an already publishing camera or
+display. A refused or unconfirmed full video-publishing state stops display
+capture and leaves the saved camera off; the screen-sharing state is cleared.

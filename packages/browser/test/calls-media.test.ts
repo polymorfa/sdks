@@ -898,6 +898,40 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
 });
 
 describe("connection media control", () => {
+  it("does not interrupt confirmed camera publishing when microphone control fails", async () => {
+    const peer = peerConnection();
+    const failure = vi.fn();
+    const video = new FakeTrack("video");
+    const session = await factoryFor({
+      peer,
+      signaling: signaling(),
+      stream: new FakeStream([new FakeTrack("audio"), video]),
+    }).open(
+      "call-1",
+      true,
+      { ...callbacks, onMediaControlError: failure },
+      new AbortController().signal,
+    );
+    peer.channels[0]!.onopen?.();
+    await vi.waitFor(() =>
+      expect(peer.channels[0]!.send).toHaveBeenCalledTimes(1),
+    );
+    peer.channels[0]!.send.mockImplementation((raw: string) => {
+      const request = JSON.parse(raw) as { requestId: string };
+      control(peer, {
+        type: "media_error",
+        requestId: request.requestId,
+        code: "media_control_unknown",
+      });
+    });
+    session.setMuted({ audio: true });
+    await vi.waitFor(() => expect(failure).toHaveBeenCalled());
+    expect(video.enabled).toBe(true);
+    expect(
+      JSON.parse(peer.channels[0]!.send.mock.calls.at(-1)![0] as string),
+    ).not.toHaveProperty("videoEnabled");
+    await session.close();
+  });
   it("sends a microphone state change and preserves remote reception", async () => {
     const peer = peerConnection();
     const muted = vi.fn();
@@ -919,7 +953,6 @@ describe("connection media control", () => {
     ).toMatchObject({
       type: "media_state",
       audioMuted: true,
-      videoEnabled: false,
     });
     control(peer, { type: "remote_media", audioMuted: true });
     expect(muted).toHaveBeenCalledWith(true);
@@ -1041,6 +1074,44 @@ describe("display capture on the owned outgoing video stream", () => {
       expect.objectContaining({ videoEnabled: true, screenSharing: true }),
       expect.objectContaining({ videoEnabled: false, screenSharing: false }),
     ]);
+    await f.session.close();
+  });
+  it("preserves display publishing on a refused microphone-only update", async () => {
+    const f = await setup();
+    await f.session.startScreenShare!(new AbortController().signal);
+    f.peer.channels[0]!.send.mockImplementation((raw: string) => {
+      const request = JSON.parse(raw) as { requestId: string };
+      control(f.peer, {
+        type: "media_error",
+        requestId: request.requestId,
+        code: "media_control_unknown",
+      });
+    });
+    f.session.setMuted({ audio: true });
+    for (let i = 0; i < 12; i++) await Promise.resolve();
+    expect(f.display.enabled).toBe(true);
+    expect(f.session.screenSharing).toBe(true);
+    expect(f.display.stop).not.toHaveBeenCalled();
+    await f.session.close();
+  });
+  it("clears display capture and leaves the saved camera off after full-state refusal", async () => {
+    const camera = new FakeTrack("video");
+    const f = await setup(camera);
+    await f.session.startScreenShare!(new AbortController().signal);
+    f.peer.channels[0]!.send.mockImplementation((raw: string) => {
+      const request = JSON.parse(raw) as { requestId: string };
+      control(f.peer, {
+        type: "media_error",
+        requestId: request.requestId,
+        code: "video_publisher_busy",
+      });
+    });
+    f.peer.channels[0]!.onopen?.();
+    await vi.waitFor(() => expect(f.session.screenSharing).toBe(false));
+    expect(f.display.stop).toHaveBeenCalled();
+    expect(f.sharing).toHaveBeenLastCalledWith(false);
+    expect(camera.enabled).toBe(false);
+    expect(f.session.videoEnabled()).toBe(false);
     await f.session.close();
   });
   it("stops display capture and restores the camera on publisher refusal", async () => {

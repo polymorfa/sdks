@@ -44,8 +44,9 @@ published SDK package before updating their pinned dependency.
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at API commit `7578bef785305bc3c67459256b48e3474d5be84a` on
 `codex/calls-continuation-20260926`. This unreleased revision adds ad-hoc and group-ID placement
-and participant re-ring, and documents automatic SIP caller identity when no
-From user override is set. `source.json` records source paths and SHA-256 hashes.
+participant re-ring, connection media controls, emoji reactions, raised hands
+and scoped call record detail. It also documents automatic SIP caller identity
+when no From user override is set. `source.json` records source paths and SHA-256 hashes.
 The refresh also carries an audio-codec description and corrects an escaped
 webhook-header control-character pattern in the previous snapshot; no header
 fields or SDK serialization changed. SDK publication, deployment and the CLI's
@@ -72,7 +73,7 @@ from SDK `dev`. The three public Calls analytics operations are covered by
 `Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
 `Client.calls.exportAll` walks export pages. The 13 public Voice operations are
 covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
-13 Console counterparts are excluded. The full 509-operation snapshot includes
+13 Console counterparts are excluded. The full 513-operation snapshot includes
 all 15 Functions routes already merged to API `dev`.
 
 HMS history adds four server-only Messaging reads under
@@ -160,12 +161,12 @@ signed events with these names still decode as unknown events.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        379 |
+| Covered             |        383 |
 | Missing             |          0 |
 | Excluded            |        130 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        509 |
+| Total               |        513 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -317,3 +318,9 @@ organization enabled for Functions. The SDK never retries Function mutations or
 invocations automatically. Browser/client-token SDKs do not expose this server
 control plane. A local implementation or installed method does not establish
 hosted availability.
+
+The current dev reconciliation changes Campaigns error declarations only:
+draft reads/writes no longer declare a plan-related 402, and launch/live sender
+edits declare the existing public 503 envelope. Request and successful response
+shapes remain unchanged for all eleven refreshed fingerprints; the existing
+transport error handling applies. Focused Campaigns and contract checks pass.
