@@ -78,7 +78,11 @@ export class CloudCatalogsResource {
         "credential",
       );
     }
-    if (!wabaId.trim() || !/^[0-9]+$/.test(catalogId) || !params.version.trim()) {
+    if (
+      !wabaId.trim() ||
+      !/^[0-9]+$/.test(catalogId) ||
+      !params.version.trim()
+    ) {
       throw new PolymorfaConfigurationError(
         "Provide a WABA ID, numeric catalog ID, and Graph version.",
       );
