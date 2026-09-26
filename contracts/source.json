@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "6839976e7ad54e044c4d789fd296edc44772a907",
-  "branch": "dev",
-  "published": true,
-  "note": "Merged API source commit retiring three unproduced BanSafe webhook names and test fixtures; Messaging and Platform snapshots are byte-identical to the authoritative OpenAPI files. SDK publication and deployment are separate.",
+  "commit": "41f20e16e3c7928ed67e372902803df5c500030a",
+  "branch": "t3code/campaigns-messaging-patch",
+  "published": false,
+  "note": "API PR polymorfa/polymorfa#332 exact head, stacked on API PR #295: Messaging campaign PATCH route. Re-pin to the merged API dev commit before SDK merge. Both snapshots are byte-identical to source files; SDK publication and deployment are separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "79543bf719017598c3e2497004d761056e919b3200abdaae1560893542816cc7"
+      "sha256": "13566d8d39a05ef7f489cb73a0301f7395c9214090422429cac35f46a6f5a123"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "7eca4148c2f1fbda47c26a67c42e2da6b74e47e5edf38d749e30a5fc3f1d7fe8"
+      "sha256": "53d72fbfe0e05921eb137c8a92ad3e1aad9d056bd9799b78c145962cbcdf7741"
     }
   }
 }

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `MessagingClient.campaigns.update(projectSlug, campaignId, body)` updates a
+  campaign through the Messaging API. It accepts draft name, audience, sender,
+  and schedule fields; the API refuses audience and schedule changes after
+  launch.
 - Retired the unproduced `bansafe.risk_changed`,
   `bansafe.health_changed`, and `bansafe.enforcement` webhook names and their
   test-event fixtures. The typed `bansafe.incident`, `bansafe.action`,

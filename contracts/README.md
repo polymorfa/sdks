@@ -42,13 +42,16 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` API source commit
-`6839976e7ad54e044c4d789fd296edc44772a907` on API `dev`. This revision retires the three unproduced BanSafe event names
-and their synthetic test fixtures. The four live BanSafe events remain typed.
+files at `polymorfa/polymorfa` API PR #332 commit
+`41f20e16e3c7928ed67e372902803df5c500030a`, stacked on PR #295.
+This adds the Messaging campaign PATCH operation. It includes the merged
+retirement of three unproduced BanSafe event names; the four live BanSafe events
+remain typed. Re-pin to the merged API `dev` commit before SDK merge.
 The two changed Testing operation fingerprints have been reconciled against
 the fixture catalog. Four webhook create/update fingerprints now match the
 Platform source's HTTP field pattern, which was already present on API `dev`.
-Operation mappings are unchanged. `source.json` records the source paths and
+The new PATCH operation maps to `MessagingClient.campaigns.update`.
+`source.json` records the source paths and
 SHA-256 hashes. SDK package publication and deployment remain separate.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`

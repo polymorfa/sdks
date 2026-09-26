@@ -1684,7 +1684,7 @@ message identifiers are URL-encoded by the SDK.
 
 ## Messaging campaigns
 
-`MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `analytics`,
+`MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `update`, `analytics`,
 `listRecipients`, `addRecipients`, `launch`, `pause`, `resume`, `stop`, and
 `requeue`. Reads require `campaigns:read`; writes require `campaigns:manage`.
 Pass the project's slug as the first argument. Campaigns accept organization
@@ -1710,6 +1710,11 @@ const appended = await messaging.campaigns.addRecipients(
 );
 console.log(appended.data.data.added, appended.data.data.invalidRows);
 
+await messaging.campaigns.update("support", created.data.data.id, {
+  name: "August follow-up",
+  recipientListId: null,
+});
+
 const launched = await messaging.campaigns.launch(
   "support",
   created.data.data.id,
@@ -1720,6 +1725,11 @@ console.log(launched.data.data.operationId, launched.metadata.requestId);
 ```
 
 Create accepts inline recipients, an audience ID in `recipientListId`, or both.
+Update accepts `name`, `recipientListId`, `senderConfig`, and `scheduledAt`.
+Changing the audience or schedule is limited to an unlaunched draft. A sender
+change after launch must pass the live sender checks. The SDK sends PATCH once;
+after an uncertain response, retrieve the campaign before deciding on another
+write.
 Each append accepts up to 1,000 recipients before launch and reports duplicates
 and invalid rows. Appends have no declared replay contract: the SDK sends them
 once by default, generates no key, and requires both `maxNetworkRetries` and
