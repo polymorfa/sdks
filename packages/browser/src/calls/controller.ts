@@ -261,6 +261,8 @@ export interface CallsSnapshot extends ControllerSnapshot {
   /** Remote microphone observation for a direct call; absent when unknown or in a group. */
   readonly remoteAudioMuted?: boolean;
   readonly videoMuted: boolean;
+  /** The local outgoing source is display capture instead of the camera. */
+  readonly screenSharing?: boolean;
   /** Set once media connected; drives the call duration display. */
   readonly connectedAt?: number;
   readonly devices: readonly CallDevice[];
@@ -669,6 +671,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     readonly video?: boolean;
   }): void {
     this.assertActive();
+    if (this.getSnapshot().screenSharing && muted.video !== undefined) {
+      muted = muted.audio === undefined ? {} : { audio: muted.audio };
+    }
     this.#media?.setMuted(muted);
     const current = this.getSnapshot();
     this.transition({
@@ -730,6 +735,56 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       status: after.status,
       video: true,
       videoMuted: false,
+    });
+  }
+
+  get canShareScreen(): boolean {
+    return (
+      this.getSnapshot().capabilities.video &&
+      this.#media?.startScreenShare !== undefined
+    );
+  }
+
+  /** Call directly from a user gesture. Display permission is requested each time. */
+  async startScreenShare(): Promise<void> {
+    this.assertActive();
+    const media = this.#media;
+    if (
+      this.getSnapshot().status !== "connected" ||
+      !this.canShareScreen ||
+      media?.startScreenShare === undefined
+    )
+      return;
+    try {
+      await media.startScreenShare(this.#abort.signal);
+    } catch (cause) {
+      if (this.#media === media) this.#screenError();
+      throw cause;
+    }
+  }
+
+  /** Stop display capture and restore the prior camera preference. */
+  async stopScreenShare(): Promise<void> {
+    this.assertActive();
+    const media = this.#media;
+    try {
+      await media?.stopScreenShare?.();
+    } catch (cause) {
+      if (this.#media === media) this.#screenError();
+      throw cause;
+    }
+  }
+
+  #screenError(): void {
+    const current = this.getSnapshot();
+    this.transition({
+      ...callFields(current),
+      status: current.status,
+      error: {
+        code: "screen_share_failed",
+        message: "Screen sharing could not be confirmed.",
+        recoverable: true,
+      },
     });
   }
 
@@ -1173,6 +1228,23 @@ export class CallsController extends ObservableController<CallsSnapshot> {
                 ...callFields(current),
                 status: current.status,
               });
+          },
+          onScreenSharing: (sharing) => {
+            if (media === undefined || this.#media !== media) return;
+            const current = this.getSnapshot();
+            if (
+              current.callId !== callId ||
+              current.status === "ended" ||
+              current.status === "error"
+            )
+              return;
+            this.transition({
+              ...callFields(current),
+              status: current.status,
+              screenSharing: sharing,
+              video: media.localStream.getVideoTracks().length > 0,
+              videoMuted: !media.videoEnabled(),
+            });
           },
           onRemoteMute: (muted) => {
             if (media !== undefined && this.#media !== media) return;
@@ -1818,6 +1890,9 @@ function callFields(
       ? {}
       : { remoteAudioMuted: snapshot.remoteAudioMuted }),
     videoMuted: snapshot.videoMuted,
+    ...(snapshot.screenSharing === undefined
+      ? {}
+      : { screenSharing: snapshot.screenSharing }),
     ...(snapshot.connectedAt === undefined
       ? {}
       : { connectedAt: snapshot.connectedAt }),

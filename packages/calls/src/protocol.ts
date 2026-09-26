@@ -343,7 +343,9 @@ export function parseMediaControlValue(
     case "media_state":
       return isConnectionId(f["requestId"]) &&
         typeof f["audioMuted"] === "boolean" &&
-        typeof f["videoEnabled"] === "boolean"
+        typeof f["videoEnabled"] === "boolean" &&
+        (f["screenSharing"] === undefined ||
+          typeof f["screenSharing"] === "boolean")
         ? (parsed as MediaControlFrame)
         : undefined;
     case "media_error":

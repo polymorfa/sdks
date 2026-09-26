@@ -193,3 +193,10 @@ replayed automatically.
 in a direct call. `null` means unknown, including group calls. They do not
 change your microphone or camera. A reconnect restores acknowledged local
 preferences on the new connection.
+
+To publish screen content through the same H.264 writer, first await
+`call.setMediaState({ videoEnabled: true, screenSharing: true })`. Stop sharing
+with `screenSharing: false`; also set `videoEnabled: false` if no camera should
+resume. `screenSharing` is absent from confirmed state when false. The neutral
+client does not capture a display or encode it; browser callers use the browser
+controller's display picker.

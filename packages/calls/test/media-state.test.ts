@@ -25,6 +25,24 @@ describe("acknowledged media controls", () => {
       audioMuted: true,
     });
   });
+  it("refuses a response that did not apply the requested screen state", async () => {
+    let sent: MediaStateRequest | undefined;
+    const commands = new MediaStateCommands((frame) => {
+      sent = frame;
+      return true;
+    });
+    const result = commands.set({ videoEnabled: true, screenSharing: true });
+    await Promise.resolve();
+    commands.receive({
+      type: "media_state",
+      requestId: sent!.requestId,
+      audioMuted: false,
+      videoEnabled: true,
+    });
+    await expect(result).rejects.toMatchObject({
+      code: "media_control_failed",
+    });
+  });
   it("serializes updates and resolves only the matching acknowledgment", async () => {
     const sent: MediaStateRequest[] = [];
     const commands = new MediaStateCommands((frame) => {

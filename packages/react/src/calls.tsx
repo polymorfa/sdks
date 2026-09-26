@@ -134,6 +134,13 @@ const VideoOffIcon = (p: IconProps) => (
   </Icon>
 );
 
+const ScreenIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="2" y="3" width="20" height="14" rx="2" />
+    <path d="M8 21h8M12 17v4M8 10l4-4 4 4M12 6v8" />
+  </Icon>
+);
+
 const EraseIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" />
@@ -1041,11 +1048,13 @@ export function CallStage({
       live={live}
       ringingLine={ringingLine}
       errorLine={
-        snapshot.error?.code === "media_control_failed"
-          ? t(locale, "calls.mediaControlFailed")
-          : snapshot.error?.code === "call_control_failed"
-            ? t(locale, "calls.controlFailed")
-            : null
+        snapshot.error?.code === "screen_share_failed"
+          ? t(locale, "calls.screenShareFailed")
+          : snapshot.error?.code === "media_control_failed"
+            ? t(locale, "calls.mediaControlFailed")
+            : snapshot.error?.code === "call_control_failed"
+              ? t(locale, "calls.controlFailed")
+              : null
       }
       flashPeer={flashPeer}
       seconds={seconds}
@@ -1123,7 +1132,15 @@ export function CallStage({
             )}
             {showLocalVideo && !preAccept && (
               <div className="pmfa-calls-pip">
-                <video ref={localRef} autoPlay playsInline muted />
+                <video
+                  ref={localRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  style={
+                    snapshot.screenSharing ? { transform: "none" } : undefined
+                  }
+                />
               </div>
             )}
           </>
@@ -1347,7 +1364,10 @@ export function CallControls({
   // an upgrade the media session can actually perform. A session that cannot
   // renegotiate therefore shows the same disabled button as a call that has
   // not connected yet, instead of a live one that does nothing.
-  const cameraReady = live && (snapshot.video || resolved.canEnableVideo);
+  const cameraReady =
+    live &&
+    !snapshot.screenSharing &&
+    (snapshot.video || resolved.canEnableVideo);
   const cameraOff = !snapshot.video || snapshot.videoMuted;
   const onCamera = () => {
     // On a video call the button mutes/unmutes the outgoing track; on an
@@ -1429,6 +1449,29 @@ export function CallControls({
                 <ChevronDownIcon />
               </button>
             </div>
+          )}
+          {showCamera && resolved.canShareScreen && (
+            <button
+              type="button"
+              className="pmfa-calls-btn pmfa-calls-btn-ctrl"
+              disabled={!live}
+              aria-pressed={snapshot.screenSharing === true}
+              aria-label={t(
+                locale,
+                snapshot.screenSharing
+                  ? "calls.stopSharing"
+                  : "calls.shareScreen",
+              )}
+              onClick={() => {
+                void (
+                  snapshot.screenSharing
+                    ? resolved.stopScreenShare()
+                    : resolved.startScreenShare()
+                ).catch(() => undefined);
+              }}
+            >
+              <ScreenIcon />
+            </button>
           )}
           {snapshot.capabilities.mute && (
             <div className="pmfa-calls-group">

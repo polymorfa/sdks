@@ -74,11 +74,13 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
     // idle and ready are absent on purpose: nothing to announce, and this
     // region is assertive — a raw status identifier would be read out.
     const key =
-      snapshot?.error?.code === "media_control_failed"
-        ? "calls.mediaControlFailed"
-        : snapshot?.error?.code === "call_control_failed"
-          ? "calls.controlFailed"
-          : HEADINGS[status];
+      snapshot?.error?.code === "screen_share_failed"
+        ? "calls.screenShareFailed"
+        : snapshot?.error?.code === "media_control_failed"
+          ? "calls.mediaControlFailed"
+          : snapshot?.error?.code === "call_control_failed"
+            ? "calls.controlFailed"
+            : HEADINGS[status];
     const heading = key === undefined ? undefined : messages[key];
     if (heading !== undefined) {
       // Assertive on the heading, not the panel: this element re-renders
@@ -217,6 +219,7 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
       // because it survives `reconnecting`.
       if (
         snapshot.capabilities.video &&
+        !snapshot.screenSharing &&
         (snapshot.video ||
           (status === "connected" && controller?.canEnableVideo === true))
       )
@@ -238,6 +241,30 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
                 void controller?.enableVideo?.().catch(() => undefined);
               }),
         );
+      if (
+        snapshot.capabilities.video &&
+        status === "connected" &&
+        controller?.canShareScreen
+      ) {
+        const share = button(
+          messages[
+            snapshot.screenSharing ? "calls.stopSharing" : "calls.shareScreen"
+          ],
+          "screen-share",
+          () => {
+            void (
+              snapshot.screenSharing
+                ? controller.stopScreenShare()
+                : controller.startScreenShare()
+            ).catch(() => undefined);
+          },
+        );
+        share.setAttribute(
+          "aria-pressed",
+          String(snapshot.screenSharing === true),
+        );
+        panel.append(share);
+      }
       // Leave closes only this connection; hang-up ends the call for
       // everyone. Leave is offered where nobody claimed the call, except on
       // a call this client placed that has not connected: leaving it would

@@ -88,6 +88,10 @@ export const ENGLISH_MESSAGES = {
   "calls.hangup": "Hang up",
   "calls.mute": "Mute",
   "calls.unmute": "Unmute",
+  "calls.shareScreen": "Share screen",
+  "calls.stopSharing": "Stop sharing",
+  "calls.screenShareFailed":
+    "Screen sharing could not be confirmed. Try sharing again.",
   "calls.cameraOn": "Turn camera on",
   "calls.cameraOff": "Turn camera off",
   "calls.reconnecting": "Reconnecting",
