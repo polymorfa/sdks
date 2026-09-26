@@ -236,7 +236,7 @@ export class CampaignsResource {
     });
   }
 
-  /** One CSV page. Only unfiltered exports can continue with `nextCursor`. */
+  /** One CSV page, with one network attempt. Only unfiltered exports can continue with `nextCursor`. */
   exportRecipients(
     campaignId: string,
     params: ExportPlatformCampaignRecipientsParams,

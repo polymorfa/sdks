@@ -195,6 +195,7 @@ export class MessagingCampaignsResource {
   /**
    * Export one CSV page. Only unfiltered exports can continue with `nextCursor`.
    * Filtered exports contain at most 1,000 matches and reject larger results.
+   * Each export call makes one network attempt.
    */
   exportRecipients(
     projectSlug: string,

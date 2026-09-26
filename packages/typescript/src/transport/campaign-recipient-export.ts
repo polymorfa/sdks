@@ -3,7 +3,7 @@ import type { CampaignRecipientsCsvPage } from "../messaging/types.js";
 import type { HttpTransport } from "./http.js";
 import type { ApiResponse, QueryValue, RequestOptions } from "./types.js";
 
-/** Read one CSV page, preserving the API's opaque continuation cursor. */
+/** Read one CSV page without replaying deterministic filter conflicts. */
 export async function campaignRecipientExportPage(
   transport: HttpTransport,
   path: string,
@@ -11,7 +11,7 @@ export async function campaignRecipientExportPage(
   options: RequestOptions,
 ): Promise<ApiResponse<CampaignRecipientsCsvPage>> {
   const response = await transport.requestText(
-    { method: "GET", path, query, ...options },
+    { method: "GET", path, query, ...options, maxNetworkRetries: 0 },
     "text/csv",
   );
   if (

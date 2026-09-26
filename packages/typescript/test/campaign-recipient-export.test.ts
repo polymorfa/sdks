@@ -110,12 +110,12 @@ describe("campaign recipient CSV export", () => {
     const client = new MessagingClient({
       credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
       baseUrl: server.url,
-      maxNetworkRetries: 0,
     });
     await expect(
       client.campaigns.exportRecipients("shop", "campaign", {
         status: "skipped",
       }),
     ).rejects.toMatchObject({ status: 409 });
+    expect(server.requests).toHaveLength(1);
   });
 });
