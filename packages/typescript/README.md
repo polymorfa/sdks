@@ -708,8 +708,10 @@ The voice resources are available only in this TypeScript SDK.
 ## Call analytics and call records
 
 The source SDK adds `platform.calls.retrieve(callId)` for stored call detail.
-It requires the matching API deployment and SDK publication. The response's
-`data` includes bounded metadata history, participant and connection lifetimes,
+It requires the matching API deployment and SDK publication. The `callId`
+argument accepts 1 to 128 printable ASCII characters without spaces; the SDK
+encodes it as one path segment. The response's `data` includes bounded metadata
+history, participant and connection lifetimes,
 media measurements and app-reported diagnostics. It returns no media or webhook
 deliveries. Project clients remain pinned to the call's original owning project;
 client tokens cannot use this read. Unknown measurements are `null` and

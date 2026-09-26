@@ -26,8 +26,12 @@ function number(id: string) {
         return () => listeners.delete(listener);
       },
     } as unknown as CallsController,
-    set: (status: CallsSnapshot["status"], answering = false) => {
-      snapshot = { ...snapshot, status, answering };
+    set: (
+      status: CallsSnapshot["status"],
+      answering = false,
+      placing = false,
+    ) => {
+      snapshot = { ...snapshot, status, answering, placing };
       for (const listener of listeners) listener();
     },
     listeners,
@@ -96,5 +100,19 @@ describe("outgoing Number selection", () => {
     roots.splice(0);
     expect(support.listeners.size).toBe(0);
     expect(sales.listeners.size).toBe(0);
+  });
+  it("locks selection while placement is pending and the call remains ready", () => {
+    const support = number("support");
+    const sales = number("sales");
+    const view = mount([support, sales]);
+    act(() => support.set("ready", false, true));
+    expect(view.select.disabled).toBe(true);
+    act(() => {
+      view.select.value = "sales";
+      view.select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(view.onChange).not.toHaveBeenCalled();
+    act(() => support.set("error"));
+    expect(view.select.disabled).toBe(false);
   });
 });

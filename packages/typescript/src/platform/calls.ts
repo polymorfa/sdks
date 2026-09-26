@@ -359,9 +359,9 @@ export class PlatformCallsResource<O extends ClientOwner> {
     params: RetrieveCallRecordParamsFor<O> = {} as RetrieveCallRecordParamsFor<O>,
     options: RequestOptions = {},
   ): Promise<ApiResponse<CallRecordDetail>> {
-    if (typeof callId !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(callId)) {
+    if (typeof callId !== "string" || !/^[\x21-\x7e]{1,128}$/.test(callId)) {
       throw new PolymorfaConfigurationError(
-        "callId must contain 1 to 128 letters, digits, underscores or hyphens.",
+        "callId must contain 1 to 128 printable ASCII characters without spaces.",
         "callId",
       );
     }

@@ -506,11 +506,21 @@ describe("stored call detail", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
+  it("accepts printable call IDs and encodes path separators", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ data: { call: { callId: "call.v2:abc/def" } } }),
+    );
+    await teamClient(fetch).calls.retrieve("call.v2:abc/def");
+    expect(call(fetch, 0).url.pathname).toBe(
+      "/platform/calls/call.v2%3Aabc%2Fdef",
+    );
+  });
+
   it("rejects unsafe IDs before dispatch and maps an inaccessible record to not found", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       errorResponse(404, "resource_not_found"),
     );
-    for (const id of ["", "bad/id", "bad id", "x".repeat(129)])
+    for (const id of ["", "bad id", "bad\n", "é", "x".repeat(129)])
       expect(() => teamClient(fetch).calls.retrieve(id)).toThrow(
         PolymorfaConfigurationError,
       );

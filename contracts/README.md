@@ -49,7 +49,7 @@ authentication. The SDK snapshot below also includes the later campaign
 reschedule operations, which are tracked separately by SDK PR #310.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API commit `cb5c2464960ed8cb413afc97e3f705000c703625` on
+files at API commit `067ce4a4d4760b5835788ae570e41d060ee98a99` on
 `codex/calls-continuation-20260926`. This unreleased revision adds ad-hoc and group-ID placement,
 participant re-ring, connection media controls, emoji reactions, raised hands
 and scoped call record detail. It also documents automatic SIP caller identity
@@ -60,7 +60,8 @@ the `campaign.rescheduled` event in this pinned snapshot. `source.json` records 
 hashes. The refresh also carries an audio-codec description and corrects an
 escaped webhook-header control-character pattern; no header fields or SDK
 serialization changed. SDK publication, deployment and the CLI's exact
-registry pin remain separate release gates.
+registry pin remain separate release gates. The call-link preview request schema
+accepts `session` and `token` together while remaining a closed object.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no

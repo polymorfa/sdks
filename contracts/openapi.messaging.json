@@ -18067,29 +18067,28 @@
         "additionalProperties": false
       },
       "VoipPreviewCallLinkRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/VoipCreateCallLinkRequest"
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
           },
-          {
-            "type": "object",
-            "properties": {
-              "video": {
-                "type": "boolean",
-                "description": "True for a video link, false for a voice link. Must match the link."
-              },
-              "token": {
-                "type": "string",
-                "pattern": "^[A-Za-z0-9_-]{1,256}$",
-                "description": "Private token from the WhatsApp call link. Send it only in the request body."
-              }
-            },
-            "required": [
-              "token"
-            ],
-            "additionalProperties": false
+          "token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,256}$",
+            "description": "Private token from the WhatsApp call link. Send it only in the request body."
+          },
+          "video": {
+            "type": "boolean",
+            "description": "True for a video link, false for a voice link. Must match the link."
           }
-        ]
+        },
+        "required": [
+          "session",
+          "token"
+        ],
+        "additionalProperties": false
       },
       "VoipCreatedCallLinkEnvelope": {
         "type": "object",

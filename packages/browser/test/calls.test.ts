@@ -1,4 +1,5 @@
 import { CallClaimedError } from "@polymorfa/sdk/calls";
+import type { MediaControlFrame } from "@polymorfa/sdk/calls/internal";
 import { describe, expect, it, vi } from "vitest";
 import {
   BrowserTransport,
@@ -14,6 +15,7 @@ function fixture() {
   let emit: ((event: CallLifecycleEvent) => void) | undefined;
   let connection: ((state: RTCPeerConnectionState) => void) | undefined;
   let mediaControlError: ((cause: unknown) => void) | undefined;
+  let control: ((frame: MediaControlFrame) => void) | undefined;
   const session: CallMediaSession = {
     localStream: {} as MediaStream,
     remoteStream: {} as MediaStream,
@@ -36,6 +38,7 @@ function fixture() {
     open: vi.fn(async (_id, _video, callbacks) => {
       connection = callbacks.onConnectionState;
       mediaControlError = callbacks.onMediaControlError;
+      control = callbacks.onControl;
       return session;
     }),
   };
@@ -46,10 +49,83 @@ function fixture() {
     emit: (event: CallLifecycleEvent) => emit?.(event),
     connect: (state: RTCPeerConnectionState) => connection?.(state),
     controlError: (cause: unknown) => mediaControlError?.(cause),
+    control: (frame: MediaControlFrame) => control?.(frame),
   };
 }
 
 describe("CallsController (voip-v2 contract)", () => {
+  it("removes a participant whose state becomes left", async () => {
+    const f = fixture();
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    await controller.place("+15550100");
+    const participant = {
+      id: "p1",
+      phoneNumber: "+15550101",
+      audioMuted: false,
+      video: false,
+      state: "connected" as const,
+    };
+    f.control({ type: "participant_joined", participant });
+    expect(controller.getSnapshot().participants).toEqual([participant]);
+    f.control({
+      type: "participant_state",
+      participant: { ...participant, state: "left" },
+    });
+    expect(controller.getSnapshot().participants).toEqual([]);
+    controller.dispose();
+  });
+
+  it("publishes pending placement before the backend returns and clears it afterward", async () => {
+    const f = fixture();
+    let finish!: (value: { callId: string }) => void;
+    vi.mocked(f.backend.place).mockImplementationOnce(
+      () => new Promise((resolve) => (finish = resolve)),
+    );
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    const snapshots: Array<{ status: string; placing: boolean | undefined }> =
+      [];
+    const unsubscribe = controller.subscribe(() => {
+      const { status, placing } = controller.getSnapshot();
+      snapshots.push({ status, placing });
+    });
+    const placement = controller.place("+15550100");
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ready",
+      placing: true,
+    });
+    finish({ callId: "call-1" });
+    await placement;
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ringing",
+      placing: false,
+    });
+    expect(snapshots).toContainEqual({ status: "ready", placing: true });
+    unsubscribe();
+    controller.dispose();
+  });
+
+  it("clears pending placement when the backend refuses the call", async () => {
+    const f = fixture();
+    let fail!: (error: Error) => void;
+    vi.mocked(f.backend.place).mockImplementationOnce(
+      () => new Promise((_resolve, reject) => (fail = reject)),
+    );
+    const controller = new CallsController(f.backend, f.media);
+    controller.initialize();
+    const placement = controller.place("+15550100");
+    expect(controller.getSnapshot().placing).toBe(true);
+    fail(new Error("unavailable"));
+    await placement;
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "error",
+      placing: false,
+      error: { code: "place_failed" },
+    });
+    controller.dispose();
+  });
+
   it("reports a control failure using the actual local camera state", async () => {
     const f = fixture();
     const controller = new CallsController(f.backend, f.media);

@@ -300,6 +300,8 @@ export interface CallsSnapshot extends ControllerSnapshot {
   readonly reaction?: import("@polymorfa/sdk/calls/internal").CallReaction;
   /** Remote video tiles of the displayed call; streams are on the controller. */
   readonly remoteVideos: readonly RemoteVideoInfo[];
+  /** Placement is pending; the call may not have an ID yet. */
+  readonly placing?: boolean;
   /**
    * An answer or join is in progress. Until it settles, `answer()`, `join()`,
    * `reject()` and `place()` are refused; `select()` and `dismiss()` stay
@@ -428,6 +430,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         devices: [],
         selectedDevices: {},
         invitations: [],
+        placing: false,
         answering: false,
         ...EMPTY_CALL,
       },
@@ -513,6 +516,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     // Only a refused offer carries the pod's terminal hints.
     let offering = false;
     this.#placing = true;
+    this.transition({ ...callFields(current), status: current.status });
     try {
       const { callId } = await this.#backend.place(
         {
@@ -571,6 +575,10 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       this.#fail(cause, operation, "place_failed", offering);
     } finally {
       this.#placing = false;
+      if (!this.#disposed) {
+        const current = this.getSnapshot();
+        this.transition({ ...callFields(current), status: current.status });
+      }
     }
   }
 
@@ -1365,12 +1373,16 @@ export class CallsController extends ObservableController<CallsSnapshot> {
                   ? current.participants.filter(
                       (p) => p.id !== frame.participantId,
                     )
-                  : [
-                      ...current.participants.filter(
+                  : frame.participant.state === "left"
+                    ? current.participants.filter(
                         (p) => p.id !== frame.participant.id,
-                      ),
-                      frame.participant,
-                    ];
+                      )
+                    : [
+                        ...current.participants.filter(
+                          (p) => p.id !== frame.participant.id,
+                        ),
+                        frame.participant,
+                      ];
               this.transition({
                 ...callFields(this.getSnapshot()),
                 status: this.getSnapshot().status,
@@ -1931,13 +1943,14 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     else this.transition(failed);
   }
 
-  /** Keeps `invitations` and `answering` current on every transition. */
+  /** Keeps invitations and in-flight call actions current on every transition. */
   protected override transition(
     next: Omit<CallsSnapshot, "revision" | "updatedAt">,
   ): void {
     super.transition({
       ...next,
       invitations: [...this.#invitations.values()],
+      placing: this.#placing,
       answering: this.#answering !== undefined,
     });
   }

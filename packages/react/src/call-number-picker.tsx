@@ -22,6 +22,7 @@ function busy(numbers: readonly CallNumberOption[]): boolean {
   return numbers.some(({ controller }) => {
     const state = controller.getSnapshot();
     return (
+      state.placing === true ||
       state.answering === true ||
       [
         "ringing",

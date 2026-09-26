@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "cb5c2464960ed8cb413afc97e3f705000c703625",
+  "sourceCommit": "067ce4a4d4760b5835788ae570e41d060ee98a99",
   "excludedContracts": [
     {
       "family": "graph",
@@ -1203,7 +1203,7 @@
       "method": "POST",
       "path": "/messaging/voip/call-links/preview",
       "operationId": "voipPreviewCallLink",
-      "fingerprint": "b87456ee50c708960a6f069f8c1c89ce7c6b4f0991a5f167b4c232611b42be30",
+      "fingerprint": "a0575bfda3c92adf4ed6a9c58e69ba44cd9fff3552c7874e9f3e0a1e91453fcf",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.previewCallLink"
