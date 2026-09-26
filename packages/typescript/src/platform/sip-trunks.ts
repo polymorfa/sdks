@@ -19,6 +19,7 @@ export interface SipTrunkOutbound {
   readonly authUsername: string | null;
   /** Whether a password is stored for `authUsername`. Passwords are never returned. */
   readonly hasPassword: boolean;
+  /** Explicit SIP From user override; null uses the incoming caller identity. */
   readonly fromUser: string | null;
 }
 
@@ -119,6 +120,7 @@ export interface SipTrunkOutboundInput {
   readonly authUsername?: string | null;
   /** Write-only. Omit on update to keep the stored password. */
   readonly authPassword?: string;
+  /** Omit or pass null for automatic caller identity; set a fixed user for a PBX override. */
   readonly fromUser?: string | null;
 }
 

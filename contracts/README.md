@@ -42,9 +42,10 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API commit `b29481baac495366b532d44d2445c7da94c5292a` on
-`codex/calls-group-links-20260926`. This unreleased revision adds group placement
-and participant re-ring. `source.json` records source paths and SHA-256 hashes.
+files at API commit `827969e8633bef13d96fa9c9ead9b4c8082d4fbf` on
+`codex/sip-caller-identity-20260926`. This unreleased revision adds group placement
+and participant re-ring, and documents automatic SIP caller identity when no
+From user override is set. `source.json` records source paths and SHA-256 hashes.
 The refresh also carries an audio-codec description and corrects an escaped
 webhook-header control-character pattern in the previous snapshot; no header
 fields or SDK serialization changed. SDK publication, deployment and the CLI's
