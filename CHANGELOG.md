@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Browser Calls uses its authenticated lifecycle socket for ICE candidates and
+  pauses remote candidate polling while connected. It falls back to HTTP when
+  that socket disconnects. The Calls example also displays call-control errors
+  and failed request IDs.
+
 - Browser Calls hold locally gathered ICE candidates until the platform
   answers the call's offer, then send them. Candidates sent earlier were
   refused with `409` because no media session existed yet, and were lost.

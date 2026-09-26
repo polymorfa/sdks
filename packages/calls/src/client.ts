@@ -8,7 +8,11 @@ import {
 } from "./call.js";
 import type { CallsError } from "./errors.js";
 import { Emitter } from "./events.js";
-import { LifecycleSocket, type LifecycleEvent } from "./lifecycle.js";
+import {
+  LifecycleSocket,
+  type LifecycleEvent,
+  type LifecycleCandidate,
+} from "./lifecycle.js";
 import {
   isParticipantName,
   parseMediaControlValue,
@@ -175,6 +179,22 @@ export class CallsClient extends Emitter<ClientEvents> {
   get connected(): boolean {
     return this.#socket.connected;
   }
+  /** Candidate channel for the browser media adapter. @internal */
+  _sendCandidate(
+    event: LifecycleCandidate & { connectionId: string },
+  ): boolean {
+    return this.#socket.sendCandidate(
+      event.callId,
+      event.connectionId,
+      event.candidate,
+    );
+  }
+
+  /** Subscribe to the existing authenticated socket. @internal */
+  _onCandidate(listener: (event: LifecycleCandidate) => void): () => void {
+    return this.#socket.on("candidate", listener);
+  }
+
   /** Calls the client currently knows about that have not ended. */
   get calls(): readonly Call[] {
     return [...this.#calls.values()].filter((call) => !call.ended);

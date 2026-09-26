@@ -182,6 +182,17 @@ export function createBrowserCalls(
     new WebRtcMediaFactory({
       ...options.media,
       signaling: new CallsSignalingClient(transport),
+      candidateTransport: options.media?.candidateTransport ?? {
+        get connected() {
+          return client.connected;
+        },
+        sendCandidate: (callId, candidate, connectionId) =>
+          client._sendCandidate({ callId, candidate, connectionId }),
+        onCandidate: (listener) =>
+          client._onCandidate((event) =>
+            listener(event.callId, event.candidate, event.connectionId),
+          ),
+      },
     });
   const controller = new CallsController(backend, media, {
     ...options.controller,
