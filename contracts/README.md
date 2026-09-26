@@ -50,19 +50,24 @@ merged API revision remains a publication gate. These methods do not establish
 deployed access or package availability.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` API source commit
-`45e6a08c65821b484585f7b4f091a93b3a47ff43` in API PR #310. This is an
-unmerged API dependency. `MessagingClient.cloudTemplates` covers its four
-Number-scoped Meta template operations. Project template drafts remain under
-`MessagingClient.templates`. Template create and delete make one attempt even
-when an idempotency key or retry override is supplied; the API does not yet
-provide durable replay for these provider writes.
-
-The snapshot also fixes the JSON escape sequence in the Platform webhook header
-value pattern. The four create/update fingerprints were reviewed against that
-pattern correction; their request types and method mappings are unchanged.
-`source.json` records the source paths and SHA-256 hashes. API merge, SDK
-publication and deployed availability remain separate.
+files at `polymorfa/polymorfa` API PR #310 merge commit
+`296aba4baade933e7a5620cf36768750ec9ac6af`. This exact source combines
+the four Number-scoped Cloud template operations with the API `dev` campaign
+and webhook changes. `MessagingClient.cloudTemplates` covers the template
+operations. Project template drafts remain under `MessagingClient.templates`.
+Template create and delete make one attempt even when an idempotency key or
+retry override is supplied; the API does not yet provide durable replay for
+these provider writes. Team webhook tests now use
+their own event-only input schema; project webhook tests still accept a paired
+body and session ID. The team test operation is covered by
+`Client.webhooks.test`, which rejects project-only fields before sending.
+Eleven campaign fingerprints changed only in documented error responses. The
+existing SDK methods retain their route and success-response coverage; their
+shared transport preserves the `campaigns_not_entitled` 402 and
+`service_unavailable` 503 codes. Four webhook create/update fingerprints reflect
+the API's corrected HTTP header pattern. `source.json` records the source paths
+and SHA-256 hashes. API merge, SDK package publication and deployment remain
+separate.
 
 API PR #377 at `0f559ed7f89227fa220d6a0275fcc40b8e319a55` adds local
 validation before project-template submission. Its exact OpenAPI source and hash
@@ -336,7 +341,7 @@ Functions is tracked separately in `functions/openapi.json`, with its exact
 monorepo source commit and extraction hash in `functions/source.json`. This
 snapshot contains only the 15 Functions operations and their transitive schemas.
 `npm run check:functions` verifies their ledger; SDK tests exercise every method.
-The main Messaging and Platform snapshots use the pinned Hybrid Link API branch;
+The main Messaging and Platform snapshots use the pinned merged API `dev` commit;
 Functions subset retains its separate source revision.
 
 All 15 Functions methods require `client.project(projectId).functions` and an
