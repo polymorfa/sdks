@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (218 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (219 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -30315,6 +30315,98 @@
         }
       }
     },
+    "/platform/calls/{callId}": {
+      "get": {
+        "operationId": "getCallRecord",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Get a call record and history",
+        "description": "Returns one stored call with its participant and connection lifetimes, bounded event history, media measurements and app-reported diagnostics. Requires sessions:read. Project credentials can read only the call's original owning project, including after a number is deleted. Unknown measurements are null. Webhook deliveries require the separate webhook-deliveries:read endpoints. This read does not retrieve audio, video or event payloads and does not control a live call.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "callId",
+            "in": "path",
+            "required": true,
+            "description": "Call identifier.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[\\x21-\\x7e]+$"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CallRecordDetail"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
     "/console/calls": {
       "get": {
         "operationId": "listCalls",
@@ -47201,6 +47293,541 @@
           "error",
           "data",
           "docs"
+        ]
+      },
+      "CallRecordEndReason": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Why the call ended or was not answered. `code` is `other` for an unrecognized reason.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$",
+            "example": "user_hangup"
+          },
+          "label": {
+            "type": "string",
+            "example": "Hung up"
+          }
+        },
+        "required": [
+          "code",
+          "label"
+        ]
+      },
+      "CallRecordDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "call": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "callId": {
+                "type": "string"
+              },
+              "sessionId": {
+                "type": "string",
+                "description": "Session name."
+              },
+              "projectId": {
+                "type": "string",
+                "format": "uuid",
+                "nullable": true
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "inbound",
+                  "outbound"
+                ]
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "offered",
+                  "accepted",
+                  "rejected",
+                  "missed",
+                  "ended"
+                ],
+                "description": "Call outcome. `offered` and `accepted` calls may still be live. `rejected` is an incoming call a participant declined. `missed` is an incoming call that rang without an answer. Both keep that state after the call ends. `ended` covers every other finished call: answered calls, outgoing calls, and incoming calls the service could not host. `endReason` gives the cause."
+              },
+              "live": {
+                "type": "boolean"
+              },
+              "backend": {
+                "type": "string",
+                "description": "How the number reaches WhatsApp for this call."
+              },
+              "hasVideo": {
+                "type": "boolean"
+              },
+              "peerRef": {
+                "type": "string",
+                "nullable": true,
+                "description": "Team-scoped pseudonym of the remote party."
+              },
+              "startedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "connectedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "endedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "durationSeconds": {
+                "type": "integer",
+                "nullable": true
+              },
+              "endReason": {
+                "nullable": true,
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CallRecordEndReason"
+                  }
+                ]
+              },
+              "answeredBy": {
+                "type": "string",
+                "nullable": true,
+                "description": "Participant reference that answered: `client:<id>` or `server:<id>`."
+              },
+              "exclusive": {
+                "type": "boolean",
+                "nullable": true,
+                "description": "Whether the answering participant claimed the call. Null when unknown."
+              }
+            },
+            "required": [
+              "callId",
+              "sessionId",
+              "projectId",
+              "direction",
+              "state",
+              "live",
+              "backend",
+              "hasVideo",
+              "peerRef",
+              "startedAt",
+              "connectedAt",
+              "endedAt",
+              "durationSeconds",
+              "endReason",
+              "answeredBy",
+              "exclusive"
+            ]
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]{0,18}$",
+                  "description": "Public participant id, as call.participant_* webhooks report it."
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "invited",
+                    "ringing",
+                    "connected",
+                    "left"
+                  ]
+                },
+                "firstSeenAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "leftReason": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "state",
+                "firstSeenAt",
+                "updatedAt",
+                "leftReason"
+              ]
+            }
+          },
+          "connections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{8,64}$"
+                },
+                "participant": {
+                  "type": "string",
+                  "pattern": "^(client|server):[A-Za-z0-9._:@-]{1,128}$"
+                },
+                "transport": {
+                  "type": "string",
+                  "enum": [
+                    "webrtc",
+                    "socket",
+                    "sip",
+                    "unknown"
+                  ]
+                },
+                "joinedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true
+                },
+                "leftAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true
+                },
+                "reason": {
+                  "type": "string",
+                  "enum": [
+                    "left",
+                    "replaced",
+                    "claimed",
+                    "call_ended",
+                    "sip_busy",
+                    "sip_declined",
+                    "sip_no_answer",
+                    "sip_unavailable",
+                    "sip_auth_failed",
+                    null
+                  ],
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "participant",
+                "transport",
+                "joinedAt",
+                "leftAt",
+                "reason"
+              ]
+            }
+          },
+          "telemetry": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Media measurements reported by the call service. Measurements that were not taken are null.",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "reported",
+                  "unknown"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "media_server"
+                ]
+              },
+              "setupMs": {
+                "type": "number",
+                "nullable": true
+              },
+              "ringMs": {
+                "type": "number",
+                "nullable": true
+              },
+              "codec": {
+                "type": "string",
+                "nullable": true
+              },
+              "jitterMs": {
+                "type": "number",
+                "nullable": true
+              },
+              "packetsLost": {
+                "type": "number",
+                "nullable": true
+              },
+              "rttMs": {
+                "type": "number",
+                "nullable": true
+              },
+              "receivedKbps": {
+                "type": "number",
+                "nullable": true
+              },
+              "sentKbps": {
+                "type": "number",
+                "nullable": true
+              }
+            },
+            "required": [
+              "status",
+              "source",
+              "setupMs",
+              "ringMs",
+              "codec",
+              "jitterMs",
+              "packetsLost",
+              "rttMs",
+              "receivedKbps",
+              "sentKbps"
+            ]
+          },
+          "appReports": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Diagnostics your app sent with `POST /messaging/voip/calls/{id}/reports`, by connection. Figures the app did not report are null.",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "reported",
+                  "none"
+                ],
+                "description": "`none` when the app sent no report for the call."
+              },
+              "connections": {
+                "type": "array",
+                "maxItems": 200,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "connectionId": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]{8,64}$"
+                    },
+                    "participant": {
+                      "type": "string",
+                      "pattern": "^(client|server):[A-Za-z0-9._:@-]{1,128}$"
+                    },
+                    "client": {
+                      "type": "object",
+                      "nullable": true,
+                      "additionalProperties": false,
+                      "description": "The SDK named by the connection's most recent report. Null when that report named none.",
+                      "properties": {
+                        "sdk": {
+                          "type": "string",
+                          "pattern": "^[a-z0-9@/._-]{1,32}$"
+                        },
+                        "version": {
+                          "type": "string",
+                          "maxLength": 32
+                        },
+                        "platform": {
+                          "type": "string",
+                          "enum": [
+                            "browser",
+                            "node",
+                            "other"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "sdk",
+                        "version",
+                        "platform"
+                      ]
+                    },
+                    "quality": {
+                      "type": "object",
+                      "nullable": true,
+                      "additionalProperties": false,
+                      "description": "The connection's latest quality report. Null when it sent none.",
+                      "properties": {
+                        "reportedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "rttMs": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "jitterMs": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "packetsLost": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "packetsReceived": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "audioCodec": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "videoCodec": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "candidateType": {
+                          "type": "string",
+                          "enum": [
+                            "host",
+                            "srflx",
+                            "prflx",
+                            "relay",
+                            null
+                          ],
+                          "nullable": true
+                        },
+                        "reconnects": {
+                          "type": "integer",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "reportedAt",
+                        "rttMs",
+                        "jitterMs",
+                        "packetsLost",
+                        "packetsReceived",
+                        "audioCodec",
+                        "videoCodec",
+                        "candidateType",
+                        "reconnects"
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "maxItems": 50,
+                      "description": "Reported errors, newest first.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "media_permission_denied",
+                              "device_not_found",
+                              "device_in_use",
+                              "ice_failed",
+                              "negotiation_failed",
+                              "media_timeout",
+                              "reconnect_exhausted",
+                              "token_refresh_failed",
+                              "unsupported_browser",
+                              "other"
+                            ]
+                          },
+                          "reportedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "reportedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "connectionId",
+                    "participant",
+                    "client",
+                    "quality",
+                    "errors"
+                  ]
+                }
+              },
+              "truncated": {
+                "type": "boolean",
+                "description": "True when the call reached its limit of 200 stored reports or older errors are not shown."
+              }
+            },
+            "required": [
+              "status",
+              "connections",
+              "truncated"
+            ]
+          },
+          "history": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "events": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "eventId": {
+                      "type": "string",
+                      "description": "Event id, as the `id` of the matching webhook delivery."
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "eventId",
+                    "type",
+                    "occurredAt"
+                  ]
+                }
+              },
+              "truncated": {
+                "type": "boolean",
+                "description": "True when the call exceeded the recorded history limit."
+              }
+            },
+            "required": [
+              "events",
+              "truncated"
+            ]
+          },
+          "correlation": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "callId": {
+                "type": "string"
+              },
+              "sessionId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "callId",
+              "sessionId"
+            ]
+          }
+        },
+        "required": [
+          "call",
+          "participants",
+          "connections",
+          "telemetry",
+          "appReports",
+          "history",
+          "correlation"
         ]
       }
     },
