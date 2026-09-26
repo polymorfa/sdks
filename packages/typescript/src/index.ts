@@ -62,7 +62,10 @@ export {
 export { MessagingClient } from "./messaging/client.js";
 export { CloudCatalogsResource } from "./messaging/cloud-catalogs.js";
 export { CloudMarketingResource } from "./messaging/cloud-marketing.js";
-export type { CloudMarketingStatus, GetCloudMarketingStatusParams } from "./messaging/cloud-marketing.js";
+export type {
+  CloudMarketingStatus,
+  GetCloudMarketingStatusParams,
+} from "./messaging/cloud-marketing.js";
 export { FlowEncryptionResource } from "./messaging/flow-encryption.js";
 export type {
   FlowEncryptionKey,

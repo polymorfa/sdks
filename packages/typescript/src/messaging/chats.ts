@@ -152,7 +152,9 @@ export class ChatsResource {
       ...(response.contentLength === undefined
         ? {}
         : { contentLength: response.contentLength }),
-      ...(response.filename === undefined ? {} : { filename: response.filename }),
+      ...(response.filename === undefined
+        ? {}
+        : { filename: response.filename }),
       ...(response.metadata.requestId === undefined
         ? {}
         : { requestId: response.metadata.requestId }),
