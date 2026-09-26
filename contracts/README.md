@@ -161,9 +161,9 @@ The operation declares `409` for the refusal after launch, which the transport
 already maps to `PolymorfaConflictError`; no SDK change was needed for it.
 
 The webhook catalog adds `contact.opted_out` and `contact.opted_in` with the
-exported `ContactOptPayload`. `bansafe.health_changed` and
-`bansafe.risk_changed`, which the contract already defined, are now registered
-too, with their payload types.
+exported `ContactOptPayload`. That earlier revision registered
+`bansafe.health_changed` and `bansafe.risk_changed`; the current API source has
+retired both events and `bansafe.enforcement`.
 
 | Status              | Operations |
 | ------------------- | ---------: |

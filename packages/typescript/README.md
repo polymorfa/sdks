@@ -1024,7 +1024,7 @@ These methods send an `Idempotency-Key` on every call:
 - `messages.send` and `messages.react`
 - `chats.editMessage` and `chats.deleteMessage`
 - `channels.reactToMessage`
-- `campaigns.create` and `campaigns.launch`
+- `campaigns.create`, `campaigns.launch`, and `campaigns.reschedule`
 
 If you don't pass `idempotencyKey`, the SDK generates a random UUID for the
 call. Every automatic retry of that call reuses the key, so the API never
@@ -1719,6 +1719,16 @@ const launched = await messaging.campaigns.launch(
 console.log(launched.data.data.operationId, launched.metadata.requestId);
 ```
 
+Use `messaging.campaigns.update(projectSlug, campaignId, changes)` to change a
+draft's name, audience, sender selection, or start time. The SDK sends this
+write once by default because the route has no replay key. For a campaign that
+has launched and is waiting to start, call
+`messaging.campaigns.reschedule(projectSlug, campaignId, { scheduledAt })`.
+Set `scheduledAt` to a Unix millisecond timestamp or `null` to start now. The
+organization client has `client.campaigns.reschedule(campaignId, { projectId,
+scheduledAt })` for the Platform route. Both reschedule methods accept an
+optional idempotency key in request options.
+
 Create accepts inline recipients, an audience ID in `recipientListId`, or both.
 Each append accepts up to 1,000 recipients before launch and reports duplicates
 and invalid rows. Appends have no declared replay contract: the SDK sends them
@@ -1849,17 +1859,13 @@ if (isEvent(event, "history.sync")) {
 ```
 
 The catalog also types Customer lifecycle events (`customer.*`), BanSafe events
-(`bansafe.health_threshold`, `bansafe.health_changed`, `bansafe.risk_changed`,
-`bansafe.enforcement`, `bansafe.action`, `bansafe.incident`, and
-`bansafe.claim`), campaign progress and lifecycle events (`campaign.*`),
+(`bansafe.health_threshold`, `bansafe.action`, `bansafe.incident`, and
+`bansafe.claim`), campaign progress and lifecycle events (`campaign.*`, including
+`campaign.rescheduled`),
 `call.permission_changed`, `message.failed`, and `template.status`. `message.failed`
 reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
 and `retryAfter` in seconds. Unknown event names still parse as
 `UnknownWebhookEvent`.
-
-For `bansafe.health_changed`, `band` is a `BanSafeHealthBandName`:
-`good`, `fair`, `poor`, `failing`, or `unknown`. `previousBand` uses the same
-type, with `null` for the first evaluation.
 
 `contact.sync` delivers a Meta Cloud API contact batch as
 `{ kind: "contacts", value }`. `message.echo` reports a message sent from the
