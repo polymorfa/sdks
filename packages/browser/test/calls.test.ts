@@ -709,7 +709,7 @@ describe("CallsController resumption and terminal offers", () => {
     controller.dispose();
   });
 
-  it("upgrades an audio call to video through the media session", async () => {
+  it("marks an upgrade request unverified after local dispatch without peer acceptance", async () => {
     const f = fixture();
     const enableVideo = vi.fn(async () => undefined);
     Object.assign(f.session, { enableVideo });
@@ -728,6 +728,7 @@ describe("CallsController resumption and terminal offers", () => {
     expect(controller.getSnapshot()).toMatchObject({
       video: true,
       videoMuted: false,
+      videoDelivery: "unconfirmed",
     });
     await controller.enableVideo(); // idempotent
     expect(enableVideo).toHaveBeenCalledTimes(1);
