@@ -29,8 +29,8 @@ operations. The six Console counterparts are excluded. Message content and
 `call.permission_changed` are typed in server and browser packages where
 applicable.
 
-`testing-events.json` records the four test-event schemas from API commit
-`9c876c16c60b74370d934e1275f23ef6096bee12`, including the source path and file
+`testing-events.json` records the four test-event schemas from API source commit
+`6839976e7ad54e044c4d789fd296edc44772a907`, including the source path and file
 hash. The TypeScript test-event catalog and override types use that revision.
 Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
@@ -42,14 +42,14 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at merged `polymorfa/polymorfa` API `dev` commit
-`5cba4237fcec1ef776e8d3727c7ecc4d8f0207a3`. This revision integrates
-Hybrid Link and the `campaign.launched`, `campaign.resumed`, and
-`campaign.stopped` webhook schemas from API feature source
-`3558c289ec35aba45a498a8794a94b4919365899`. The three events change no
-operation fingerprint or SDK method mapping. The snapshots, ledger, and revision
-tests have been reconciled. `source.json` records the source paths and SHA-256
-hashes. SDK package publication remains separate.
+files at `polymorfa/polymorfa` API source commit
+`6839976e7ad54e044c4d789fd296edc44772a907` on API `dev`. This revision retires the three unproduced BanSafe event names
+and their synthetic test fixtures. The four live BanSafe events remain typed.
+The two changed Testing operation fingerprints have been reconciled against
+the fixture catalog. Four webhook create/update fingerprints now match the
+Platform source's HTTP field pattern, which was already present on API `dev`.
+Operation mappings are unchanged. `source.json` records the source paths and
+SHA-256 hashes. SDK package publication and deployment remain separate.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
@@ -153,10 +153,10 @@ names `recipientListId` and keeps an index signature for every other field.
 The operation declares `409` for the refusal after launch, which the transport
 already maps to `PolymorfaConflictError`; no SDK change was needed for it.
 
-The webhook catalog adds `contact.opted_out` and `contact.opted_in` with the
-exported `ContactOptPayload`. `bansafe.health_changed` and
-`bansafe.risk_changed`, which the contract already defined, are now registered
-too, with their payload types.
+The webhook catalog includes `contact.opted_out` and `contact.opted_in` with the
+exported `ContactOptPayload`. The unproduced `bansafe.health_changed`,
+`bansafe.risk_changed`, and `bansafe.enforcement` names are retired. Historical
+signed events with these names still decode as unknown events.
 
 | Status              | Operations |
 | ------------------- | ---------: |

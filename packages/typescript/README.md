@@ -1849,17 +1849,12 @@ if (isEvent(event, "history.sync")) {
 ```
 
 The catalog also types Customer lifecycle events (`customer.*`), BanSafe events
-(`bansafe.health_threshold`, `bansafe.health_changed`, `bansafe.risk_changed`,
-`bansafe.enforcement`, `bansafe.action`, `bansafe.incident`, and
+(`bansafe.health_threshold`, `bansafe.action`, `bansafe.incident`, and
 `bansafe.claim`), campaign progress and lifecycle events (`campaign.*`),
 `call.permission_changed`, `message.failed`, and `template.status`. `message.failed`
 reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
 and `retryAfter` in seconds. Unknown event names still parse as
 `UnknownWebhookEvent`.
-
-For `bansafe.health_changed`, `band` is a `BanSafeHealthBandName`:
-`good`, `fair`, `poor`, `failing`, or `unknown`. `previousBand` uses the same
-type, with `null` for the first evaluation.
 
 `contact.sync` delivers a Meta Cloud API contact batch as
 `{ kind: "contacts", value }`. `message.echo` reports a message sent from the

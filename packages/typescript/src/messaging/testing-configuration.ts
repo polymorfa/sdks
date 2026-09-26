@@ -33,8 +33,6 @@ export const TEST_EVENT_FIXTURES = [
   "session.status",
   "session.restriction_updated",
   "template.status",
-  "bansafe.enforcement",
-  "bansafe.risk_changed",
 ] as const;
 
 /** Named test-event fixtures. Each name is the event type it produces. */
@@ -94,11 +92,6 @@ export interface TestEventOverrides {
   templateStatus?: "APPROVED" | "REJECTED";
   /** template.status: rejection reason (REJECTED only). */
   reason?: string;
-  /** bansafe.enforcement: outcome kind. */
-  enforcementKind?:
-    "cap_warning" | "cap_reached" | "timelock" | "temporary_ban";
-  /** bansafe.risk_changed: new risk level. */
-  riskLevel?: "low" | "elevated" | "high" | "critical";
 }
 
 export interface TriggerTestEventRequest {

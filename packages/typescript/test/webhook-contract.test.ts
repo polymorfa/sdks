@@ -8,7 +8,6 @@ import {
   constructWebhookEvent,
   isEvent,
   type KnownWebhookEventType,
-  type BanSafeHealthBandName,
   type ProjectWebhookDeliveryAttempt,
   type OrganizationWebhookDeliveryAttempt,
   type SessionLoggedOutPayload,
@@ -307,75 +306,6 @@ const PAYLOADS: {
       "actionId",
     ],
   ),
-  "bansafe.risk_changed": shape<P["bansafe.risk_changed"]>()(
-    {
-      phoneNumber: "+15551234567",
-      level: "elevated",
-      previousLevel: "low",
-      score: 37,
-      forecast: { days7: 0.02, days14: 0.06, days30: 0.11 },
-      factors: [
-        {
-          key: "cold_send_ratio",
-          group: "cold_outreach",
-          label: "Share of messages sent to people who never messaged you",
-          direction: "raises",
-          strength: "strong",
-          impact: 42,
-          sentence:
-            "38 of the 51 people you messaged had never messaged this number",
-          hint: "Warm up the number before sending to new contacts",
-        },
-      ],
-      model: { version: "prior-v0", reliability: "prior" },
-      evaluatedAt: AT,
-    },
-    [
-      "phoneNumber",
-      "level",
-      "previousLevel",
-      "score",
-      "forecast",
-      "factors",
-      "model",
-      "evaluatedAt",
-    ],
-  ),
-  "bansafe.health_changed": shape<P["bansafe.health_changed"]>()(
-    {
-      phoneNumber: "+15551234567",
-      health: 62,
-      band: "fair",
-      previousBand: "good",
-      state: "measured",
-      penalties: { conduct: 12, restriction: 0, connection: 4 },
-      findings: [
-        {
-          key: "unsolicited_outreach",
-          title: "Messaging people who never wrote to you",
-          severity: "warning",
-          status: "open",
-          points: 8,
-        },
-      ],
-      measuredChecks: 14,
-      totalChecks: 18,
-      allowance: 240,
-      evaluatedAt: AT,
-    },
-    [
-      "phoneNumber",
-      "health",
-      "band",
-      "previousBand",
-      "state",
-      "penalties",
-      "findings",
-      "measuredChecks",
-      "totalChecks",
-      "evaluatedAt",
-    ],
-  ),
   "call.permission_changed": shape<P["call.permission_changed"]>()(
     {
       conversation: {
@@ -397,20 +327,6 @@ const PAYLOADS: {
       "source",
       "changedAt",
     ],
-  ),
-  "bansafe.enforcement": shape<P["bansafe.enforcement"]>()(
-    {
-      phoneNumber: "+15551234567",
-      kind: "temporary_ban",
-      source: "runtime",
-      code: 403,
-      subCode: 12,
-      reason: "Account restricted",
-      enforcementType: "reachout_timelock",
-      startedAt: AT,
-      endsAt: AT,
-    },
-    ["phoneNumber", "kind", "source", "startedAt"],
   ),
   "bansafe.action": shape<P["bansafe.action"]>()(
     {
@@ -866,9 +782,6 @@ describe("webhook catalog contract", () => {
     expectTypeOf<P["bansafe.action"]["previousRung"]>().toEqualTypeOf<
       "none" | "notify" | "throttle" | "block_cold" | "suspend" | null
     >();
-    expectTypeOf<
-      P["bansafe.health_changed"]["previousBand"]
-    >().toEqualTypeOf<BanSafeHealthBandName | null>();
   });
 
   it("types logged-out reasons and the required integer code from the pinned contract", async () => {
@@ -904,27 +817,6 @@ describe("webhook catalog contract", () => {
       throw new Error("Expected logged-out event");
     expectTypeOf(event.payload).toEqualTypeOf<SessionLoggedOutPayload>();
     expect(event.payload).toEqual({ reason: "device_removed", code: 401 });
-  });
-
-  it("limits the previous BanSafe health band to the published values", () => {
-    expectTypeOf<P["bansafe.health_changed"]["previousBand"]>().toEqualTypeOf<
-      "good" | "fair" | "poor" | "failing" | "unknown" | null
-    >();
-    const schema = messaging.components.schemas.BanSafeHealthChangedPayload!;
-    expect(schema.properties?.previousBand?.enum).toEqual([
-      "good",
-      "fair",
-      "poor",
-      "failing",
-      "unknown",
-      null,
-    ]);
-    expect(
-      violations(messaging, schema, {
-        ...PAYLOADS["bansafe.health_changed"].value,
-        previousBand: "other",
-      }),
-    ).toContain('$.previousBand="other" is outside the enum');
   });
 });
 

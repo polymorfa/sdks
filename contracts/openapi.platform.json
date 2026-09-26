@@ -40666,7 +40666,7 @@
           "value": {
             "type": "string",
             "maxLength": 4096,
-            "pattern": "^(?![\\s\\S]*[\\u0000-\\u0008\\u000A-\\u001F\\u007F])[\\s\\S]*$",
+            "pattern": "^(?![\\s\\S]*[\\^@-\\^H\\u000A-\\^_\\u007F])[\\s\\S]*$",
             "x-polymorfa-max-utf8-bytes": 4096,
             "writeOnly": true,
             "description": "Encrypted write-only HTTP field value. Limited to 4096 UTF-8 bytes. Line breaks, NUL, and other control characters except horizontal tab are rejected."
