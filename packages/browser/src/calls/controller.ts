@@ -263,6 +263,8 @@ export interface CallsSnapshot extends ControllerSnapshot {
   /** Remote microphone observation for a direct call; absent when unknown or in a group. */
   readonly remoteAudioMuted?: boolean;
   readonly videoMuted: boolean;
+  /** Local video request was sent; peer acceptance and delivery are unverified. */
+  readonly videoDelivery?: "unconfirmed";
   /** The local outgoing source is display capture instead of the camera. */
   readonly screenSharing?: boolean;
   /** Set once media connected; drives the call duration display. */
@@ -780,6 +782,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       status: after.status,
       video: true,
       videoMuted: false,
+      videoDelivery: "unconfirmed",
     });
   }
 
@@ -1390,6 +1393,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
               screenSharing: sharing,
               video: media.localStream.getVideoTracks().length > 0,
               videoMuted: !media.videoEnabled(),
+              ...(sharing ? { videoDelivery: "unconfirmed" as const } : {}),
             });
           },
           onRemoteMute: (muted) => {
@@ -2039,6 +2043,9 @@ function callFields(
       ? {}
       : { remoteAudioMuted: snapshot.remoteAudioMuted }),
     videoMuted: snapshot.videoMuted,
+    ...(snapshot.videoDelivery === undefined
+      ? {}
+      : { videoDelivery: snapshot.videoDelivery }),
     ...(snapshot.screenSharing === undefined
       ? {}
       : { screenSharing: snapshot.screenSharing }),

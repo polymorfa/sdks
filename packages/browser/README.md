@@ -284,7 +284,10 @@ application route resolves those values after authorizing the request.
 Microphone and camera controls synchronize the connection's media preferences
 with the call. `enableVideo()` confirms the publishing request after the local
 WebRTC negotiation; peer acceptance remains independent. A local camera preview
-is not confirmation that the phone receives video. A refused or unconfirmed
+is not confirmation that the phone receives video. After a camera upgrade or
+display request succeeds, `snapshot.videoDelivery` is `"unconfirmed"` for the
+rest of that call; React and Elements show that peer delivery is unverified.
+This is not a peer rejection or a delivery receipt. A refused or unconfirmed
 request surfaces `media_control_failed` and switches off local video capture.
 Incoming phone video never turns on the local camera.
 

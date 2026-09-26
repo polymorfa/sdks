@@ -99,6 +99,8 @@ export const ENGLISH_MESSAGES = {
   "calls.chooseNumber": "Choose a Number",
   "calls.shareScreen": "Share screen",
   "calls.stopSharing": "Stop sharing",
+  "calls.videoDeliveryUnconfirmed":
+    "Camera or screen request sent. Video delivery to the other device is unverified.",
   "calls.screenShareFailed":
     "Screen sharing could not be confirmed. Try sharing again.",
   "calls.cameraOn": "Turn camera on",

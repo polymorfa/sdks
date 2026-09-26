@@ -1352,6 +1352,22 @@ it("shows direct remote mute without changing local capture", async () => {
   });
 });
 
+it("labels local camera dispatch without a peer acceptance as unverified delivery", async () => {
+  const f = fixture();
+  f.session.enableVideo = vi.fn(async () => undefined);
+  const host = mount(
+    <PolymorfaProvider>
+      <CallStage controller={f.controller} />
+    </PolymorfaProvider>,
+  );
+  await act(async () => {
+    await f.controller.place("+15550100");
+    await f.controller.enableVideo();
+  });
+  expect(host.textContent).toContain("Video delivery to the other device is unverified");
+  f.controller.dispose();
+});
+
 it("starts display capture from the share control and disables the camera until stopped", async () => {
   const f = fixture();
   f.session.startScreenShare = vi.fn(() => Promise.resolve());

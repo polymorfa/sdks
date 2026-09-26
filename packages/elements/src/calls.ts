@@ -101,6 +101,15 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
       remoteMute.setAttribute("role", "status");
       panel.append(remoteMute);
     }
+    if (snapshot?.videoDelivery === "unconfirmed" && !snapshot.videoMuted) {
+      const notice = textElement(
+        "p",
+        messages["calls.videoDeliveryUnconfirmed"],
+        "video-delivery-unconfirmed",
+      );
+      notice.setAttribute("role", "status");
+      panel.append(notice);
+    }
     const controller = this.configuredController<CallsController>();
     if (status === "incoming" && snapshot !== undefined) {
       // An answer or join is in flight: the controller refuses these until it

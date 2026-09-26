@@ -1071,6 +1071,9 @@ export function CallStage({
       {snapshot.remoteAudioMuted === true && (
         <p role="status">{t(locale, "calls.remoteMuted")}</p>
       )}
+      {snapshot.videoDelivery === "unconfirmed" && !snapshot.videoMuted && (
+        <p role="status">{t(locale, "calls.videoDeliveryUnconfirmed")}</p>
+      )}
       <div
         className={`pmfa-calls-stage${className === undefined ? "" : ` ${className}`}`}
       >
