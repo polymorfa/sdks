@@ -195,6 +195,7 @@ export type CallLifecycleEvent =
 export interface PlaceCallInput {
   readonly to: string;
   readonly participants?: readonly string[];
+  readonly groupId?: string;
   readonly video: boolean;
   readonly idempotencyKey: string;
   /** Claim the placed call. Default `false`. */
@@ -459,8 +460,16 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     return id === undefined ? undefined : this.#backend.getCall?.(id);
   }
 
+  /** Place a call to an existing group; roster and permissions are resolved by the API. */
+  placeGroup(
+    groupId: string,
+    options: { readonly video?: boolean; readonly exclusive?: boolean } = {},
+  ): Promise<void> {
+    return this.place({ groupId }, options);
+  }
+
   async place(
-    to: string | readonly string[],
+    to: string | readonly string[] | { readonly groupId: string },
     options: {
       readonly video?: boolean;
       /** Claim the placed call. Default `false`. */
@@ -468,14 +477,25 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     } = {},
   ): Promise<void> {
     this.assertActive();
+    const participants = Array.isArray(to)
+      ? (to as readonly string[])
+      : undefined;
+    const groupId =
+      typeof to === "object" && !Array.isArray(to)
+        ? (to as { groupId: string }).groupId
+        : undefined;
+    if (groupId !== undefined && !/^[1-9][0-9]{0,18}$/.test(groupId))
+      throw new Error("A group call needs a public numeric group ID.");
     if (
-      typeof to !== "string" &&
-      (to.length < 2 ||
-        to.length > 31 ||
-        new Set(to).size !== to.length ||
-        to.some((value) => !value.trim()))
+      participants &&
+      (participants.length < 2 ||
+        participants.length > 31 ||
+        new Set(participants).size !== participants.length ||
+        participants.some((value) => !value.trim()))
     )
       throw new Error("A group call needs 2 to 31 distinct participants.");
+    const primary =
+      typeof to === "string" ? to : (groupId ?? participants![0]!);
     if (this.#placing)
       throw new Error("A call placement is already in progress.");
     this.#assertNotAnswering("place a call");
@@ -494,8 +514,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     try {
       const { callId } = await this.#backend.place(
         {
-          to: typeof to === "string" ? to : to[0]!,
-          ...(typeof to === "string" ? {} : { participants: to }),
+          to: primary,
+          ...(participants ? { participants } : {}),
+          ...(groupId ? { groupId } : {}),
           video,
           idempotencyKey: this.#createKey(),
           ...(options.exclusive === undefined
@@ -524,7 +545,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         ...this.#baseFields(),
         status: answered ? "accepted" : "ringing",
         callId,
-        peer: typeof to === "string" ? to : to[0]!,
+        peer: primary,
         direction: "outgoing",
         capabilities,
         video: offered,

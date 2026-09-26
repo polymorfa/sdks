@@ -47,9 +47,11 @@ export class BrowserCallsApi implements CallsApi {
         method: "POST",
         path: "/messaging/voip/calls",
         body: {
-          ...(input.participants === undefined
-            ? { to: input.to }
-            : { participants: input.participants }),
+          ...(input.groupId !== undefined
+            ? { groupId: input.groupId }
+            : input.participants === undefined
+              ? { to: input.to }
+              : { participants: input.participants }),
           video: input.video,
           ...(input.exclusive === undefined
             ? {}

@@ -250,26 +250,42 @@ export class CallsClient extends Emitter<ClientEvents> {
    * Place an outbound call. Resolves once the platform has accepted the
    * request; listen for `connected` (or `ended`) on the returned call.
    */
+  /** Call every remote member of an existing WhatsApp group after live policy checks. */
+  placeGroup(groupId: string, options: PlaceOptions = {}): Promise<Call> {
+    return this.place({ groupId }, options);
+  }
+
   async place(
-    to: string | readonly string[],
+    to: string | readonly string[] | { readonly groupId: string },
     options: PlaceOptions = {},
   ): Promise<Call> {
+    const participants = Array.isArray(to)
+      ? (to as readonly string[])
+      : undefined;
+    const groupId =
+      typeof to === "object" && !Array.isArray(to)
+        ? (to as { groupId: string }).groupId
+        : undefined;
+    if (groupId !== undefined && !/^[1-9][0-9]{0,18}$/.test(groupId))
+      throw new Error("A group call needs a public numeric group ID.");
     if (
-      typeof to !== "string" &&
-      (to.length < 2 ||
-        to.length > 31 ||
-        new Set(to).size !== to.length ||
-        to.some((value) => !value.trim()))
+      participants &&
+      (participants.length < 2 ||
+        participants.length > 31 ||
+        new Set(participants).size !== participants.length ||
+        participants.some((value) => !value.trim()))
     )
       throw new Error("A group call needs 2 to 31 distinct participants.");
-    const primary = typeof to === "string" ? to : to[0]!;
+    const primary =
+      typeof to === "string" ? to : (groupId ?? participants![0]!);
     const generation = this.#connectGeneration;
     options.signal?.throwIfAborted();
     const video = options.video ?? false;
     const input = {
       session: this.session,
       to: primary,
-      ...(typeof to === "string" ? {} : { participants: [...to] }),
+      ...(participants ? { participants: [...participants] } : {}),
+      ...(groupId ? { groupId } : {}),
       video,
       ...(options.exclusive === undefined
         ? {}

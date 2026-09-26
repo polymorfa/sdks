@@ -173,12 +173,13 @@ stability guarantee.
 
 ## Group controls in this source revision
 
-This revision adds ad-hoc group placement and participant re-ring. Release is
+This revision adds ad-hoc and existing-group placement plus participant re-ring. Release is
 pending the matching API and SDK publication recorded in `contracts/source.json`.
 
 ```ts
 const call = await client.place(["+15550100", "+15550101"]);
 await call.ringParticipant("+15550101");
+const groupCall = await client.placeGroup("9007199254740996");
 ```
 
 Pass 2 to 31 distinct phone numbers or public user IDs. The server checks each
@@ -188,6 +189,13 @@ Re-ring applies to a non-connected participant already in the call roster;
 a successful request does not change the roster until WhatsApp reports it.
 The browser controller exposes the same `place` array input and
 `ringParticipant` method for custom React, Elements and Next.js interfaces.
+
+`placeGroup(groupId)` uses the public group ID. The Number must be a member;
+the server obtains the live roster and checks every remote member. Groups must
+contain 2 to 31 remote members. Changed membership during placement refuses
+the call. The browser controller exposes the same `placeGroup` method; it does
+not send or optimistically create a participant roster.
+
 ## Connection media state
 
 Mute or unmute only the media connection held by this call:

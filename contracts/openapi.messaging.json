@@ -9975,6 +9975,10 @@
             "pattern": "^(?:\\+[1-9]\\d{1,14}|[1-9][0-9]{0,18})$",
             "example": "+15550100"
           },
+          "groupId": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
           "participants": {
             "type": "array",
             "items": {
@@ -9998,15 +10002,24 @@
             "example": "agent-7"
           }
         },
-        "description": "Provide exactly one of to or participants. Group calls require a Linked Device number and 2 to 31 distinct recipients.",
+        "description": "Provide exactly one of to, participants or groupId. Group calls require a Linked Device number and 2 to 31 remote recipients.",
         "oneOf": [
           {
             "required": [
               "to"
             ],
             "not": {
-              "required": [
-                "participants"
+              "anyOf": [
+                {
+                  "required": [
+                    "participants"
+                  ]
+                },
+                {
+                  "required": [
+                    "groupId"
+                  ]
+                }
               ]
             }
           },
@@ -10015,8 +10028,36 @@
               "participants"
             ],
             "not": {
-              "required": [
-                "to"
+              "anyOf": [
+                {
+                  "required": [
+                    "to"
+                  ]
+                },
+                {
+                  "required": [
+                    "groupId"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "required": [
+              "groupId"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "to"
+                  ]
+                },
+                {
+                  "required": [
+                    "participants"
+                  ]
+                }
               ]
             }
           }
@@ -23173,7 +23214,7 @@
           "VoIP"
         ],
         "summary": "Place an outbound call from a session",
-        "description": "**Required scope:** `sessions:manage`\n\nOriginates a WhatsApp call to `to`, or an ad-hoc group call to `participants` (2 to 31 distinct E.164 phone numbers or public user IDs). Provide exactly one destination form. Group calls require a Linked Device number and check every recipient against the team policy and number restrictions before dialing. The call is owned by the placing participant and rings on the callee's device: `call.accepted` follows when they pick up and `call.ended` when either side hangs up. Carry its audio and video with a Polymorfa Calls SDK. `exclusive: true` claims the call for the placing participant. Client tokens place from their bound session; server credentials must name one. Outbound starts share a rate limit per organization and source session across server credentials and client tokens; client-token rules also apply.",
+        "description": "**Required scope:** `sessions:manage`\n\nOriginates a WhatsApp call to `to`, an ad-hoc group call to `participants` (2 to 31 distinct E.164 phone numbers or public user IDs), or every remote member of `groupId` (a public group ID). Group rosters must contain 2 to 31 remote members; a membership change during placement refuses the call. Provide exactly one destination form. Group calls require a Linked Device number and check every recipient against the team policy and number restrictions before dialing. The call is owned by the placing participant and rings on the callee's device: `call.accepted` follows when they pick up and `call.ended` when either side hangs up. Carry its audio and video with a Polymorfa Calls SDK. `exclusive: true` claims the call for the placing participant. Client tokens place from their bound session; server credentials must name one. Outbound starts share a rate limit per organization and source session across server credentials and client tokens; client-token rules also apply.",
         "security": [
           {
             "BearerAuth": []

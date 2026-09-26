@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "18e285de80add7c0f32dca1ac812116bf61b8836",
+  "sourceCommit": "592d63c48f780c5bdb7eaa1aa70cb7eae788de8c",
   "excludedContracts": [
     {
       "family": "graph",
@@ -1599,7 +1599,7 @@
       "method": "POST",
       "path": "/messaging/voip/calls",
       "operationId": "voipPlaceCall",
-      "fingerprint": "e30264326a6ad058b248b26c1fa403a2e0748559d518be6d9574924de6402a9b",
+      "fingerprint": "d07d05691e3b47496930ad51e49dba55351a5af1f08621b3cdd8676332402c4a",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.place"

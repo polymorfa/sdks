@@ -1590,6 +1590,8 @@ export interface VoipPlaceCallRequest {
   readonly to?: string;
   /** Ad-hoc group of 2 to 31 distinct people. Mutually exclusive with to. */
   readonly participants?: readonly string[];
+  /** Public group ID; mutually exclusive with to and participants. */
+  readonly groupId?: string;
   /** Session that places the call. Required with a server credential. */
   readonly session?: string;
   readonly video?: boolean;

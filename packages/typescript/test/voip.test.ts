@@ -110,6 +110,26 @@ describe("VoipResource", () => {
     ]);
   });
 
+  it("serializes a stored group by public ID without recipient fields", async () => {
+    const server = await serve([
+      json(
+        {
+          success: true,
+          data: { callId: "stored-group", session: "support", video: false },
+        },
+        201,
+      ),
+    ]);
+    await client(server).voip.place({
+      session: "support",
+      groupId: "9007199254740996",
+    });
+    expect(JSON.parse(server.requests[0]!.body)).toEqual({
+      session: "support",
+      groupId: "9007199254740996",
+    });
+  });
+
   it("refuses ambiguous or invalid group destinations before a request", async () => {
     const sdk = client(await serve([]));
     for (const body of [
@@ -117,6 +137,9 @@ describe("VoipResource", () => {
       { participants: ["+15550100"] },
       { participants: ["+15550100", "+15550100"] },
       { participants: ["123@lid", "+15550100"] },
+      { groupId: "123@g.us" },
+      { groupId: "9007199254740996", to: "+15550100" },
+      { groupId: "9007199254740996", participants: ["+15550100", "+15550101"] },
     ])
       expect(() => sdk.voip.place({ session: "support", ...body })).toThrow(
         PolymorfaValidationError,

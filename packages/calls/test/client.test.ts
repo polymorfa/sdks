@@ -161,6 +161,18 @@ describe("CallsClient", () => {
     expect(h.api.ringParticipant).toHaveBeenCalledTimes(1);
   });
 
+  it("places a stored group by its public ID without inventing participants", async () => {
+    const h = clientWith();
+    await connected(h);
+    const call = await h.client.placeGroup("9007199254740996", {});
+    expect(h.api.place).toHaveBeenCalledWith(
+      expect.objectContaining({ groupId: "9007199254740996" }),
+    );
+    expect(call.participants).toEqual([]);
+    await expect(h.client.placeGroup("123@g.us", {})).rejects.toThrow();
+    expect(h.api.place).toHaveBeenCalledTimes(1);
+  });
+
   it("places a call and bridges media when the remote accepts", async () => {
     const h = clientWith();
     const life = await connected(h);

@@ -118,6 +118,21 @@ describe("browser widget and shared calls client", () => {
     expect(JSON.parse(String(ring[1]?.body))).toEqual({ to: "+15550101" });
   });
 
+  it("places a stored group through the controller using only its public ID", async () => {
+    const f = fixture();
+    await f.connect();
+    await f.calls.controller.placeGroup("9007199254740996");
+    const placed = f.fetch.mock.calls.find(([url]) =>
+      String(url).endsWith("/messaging/voip/calls"),
+    )!;
+    expect(JSON.parse(String(placed[1]?.body))).toEqual({
+      groupId: "9007199254740996",
+      video: false,
+    });
+    expect(f.calls.controller.call?.participants).toEqual([]);
+    await expect(f.calls.controller.placeGroup("123@g.us")).rejects.toThrow();
+  });
+
   it("adopts a call that ended before placement returned without opening media", async () => {
     const f = fixture();
     const socket = await f.connect();
