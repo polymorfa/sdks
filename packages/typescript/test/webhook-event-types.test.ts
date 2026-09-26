@@ -174,6 +174,7 @@ type ExpectedPayloads = {
       readonly phoneNumber?: string;
       readonly bsuid?: string;
       readonly username?: string;
+      readonly handRaised?: boolean;
       readonly audioMuted: false;
       readonly video: false;
       readonly state: "invited" | "ringing" | "connected" | "left";
@@ -191,6 +192,7 @@ type ExpectedPayloads = {
       readonly phoneNumber?: string;
       readonly bsuid?: string;
       readonly username?: string;
+      readonly handRaised?: boolean;
       readonly audioMuted: false;
       readonly video: false;
       readonly state: "invited" | "ringing" | "connected" | "left";
