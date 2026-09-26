@@ -1,3 +1,5 @@
+import type { MessagingCredential } from "../credentials.js";
+import { PolymorfaConfigurationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
@@ -64,13 +66,26 @@ export type ListCloudTemplatesResponse = SuccessEnvelope<
 
 /** Meta templates for a Number created on an Official API connection, separate from project drafts. */
 export class CloudTemplatesResource {
-  constructor(private readonly transport: HttpTransport) {}
+  constructor(
+    private readonly transport: HttpTransport,
+    private readonly credentialType: MessagingCredential["type"],
+  ) {}
+
+  private requireServerCredential(): void {
+    if (this.credentialType === "clientToken") {
+      throw new PolymorfaConfigurationError(
+        "Official API templates require an organization API key or project token.",
+        "credential",
+      );
+    }
+  }
 
   /** Refresh the complete Meta catalog before returning the saved templates. */
   list(
     session: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<ListCloudTemplatesResponse>> {
+    this.requireServerCredential();
     return this.transport.request({
       method: "GET",
       path: templatesPath(session),
@@ -84,6 +99,7 @@ export class CloudTemplatesResource {
     params: RetrieveCloudTemplateParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<CloudTemplateResponse>> {
+    this.requireServerCredential();
     return this.transport.request({
       method: "GET",
       path: templatePath(session, name),
@@ -98,6 +114,7 @@ export class CloudTemplatesResource {
     body: CreateCloudTemplateRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<CloudTemplateResponse>> {
+    this.requireServerCredential();
     return this.transport.request({
       method: "POST",
       path: templatesPath(session),
@@ -115,6 +132,7 @@ export class CloudTemplatesResource {
     params: RetrieveCloudTemplateParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<EditCloudTemplateResponse>> {
+    this.requireServerCredential();
     return this.transport.request({
       method: "PATCH",
       path: templatePath(session, name),
@@ -131,6 +149,7 @@ export class CloudTemplatesResource {
     name: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
+    this.requireServerCredential();
     return this.transport.request({
       method: "DELETE",
       path: templatePath(session, name),

@@ -353,8 +353,10 @@ browser code.
 
 `messaging.cloudTemplates` lists, retrieves, creates, edits and deletes Meta templates
 for a Number. It is separate from `messaging.templates`, which manages project
-drafts. The native template API requires an enabled Official API connection. For a
-Hybrid Number it uses that exact connection and its WABA; a retired or disabled
+drafts. Use an organization API key or project token; the SDK rejects browser
+client tokens before sending any of these requests. The native template API
+requires an enabled Official API connection. For a Hybrid Number it uses that
+exact connection and its WABA; a retired or disabled
 Official connection cannot supply authority. Retrieval accepts
 an optional language; the API defaults to `en_US`.
 Deleting a name deletes all its languages. Create, edit and delete make one attempt,
