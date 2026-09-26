@@ -139,6 +139,16 @@ export interface CreateCampaignRequest {
   readonly recipients?: readonly CampaignRecipientInput[];
 }
 
+/** Fields accepted by the Messaging API campaign update route. */
+export interface UpdateCampaignRequest {
+  readonly name?: string;
+  /** Attach an audience to an unlaunched draft, or detach it with null. */
+  readonly recipientListId?: string | null;
+  readonly senderConfig?: Readonly<Record<string, unknown>>;
+  /** Integer Unix milliseconds within the JavaScript Date range, or null to start at launch. Only editable before launch. */
+  readonly scheduledAt?: number | null;
+}
+
 export type CampaignRecipientStatus =
   "queued" | "sending" | "sent" | "delivered" | "read" | "failed" | "skipped";
 
@@ -240,6 +250,7 @@ export interface CampaignRequeueResult {
 export type ListCampaignsResponse = SuccessEnvelope<readonly Campaign[]>;
 export type GetCampaignResponse = SuccessEnvelope<Campaign>;
 export type CreateCampaignResponse = SuccessEnvelope<Campaign>;
+export type UpdateCampaignResponse = SuccessEnvelope<Campaign>;
 export type CampaignAnalyticsResponse = SuccessEnvelope<CampaignAnalytics>;
 export type CampaignOperationResponse = SuccessEnvelope<CampaignOperation>;
 export type CampaignRequeueResponse = SuccessEnvelope<CampaignRequeueResult>;

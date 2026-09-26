@@ -16,6 +16,7 @@ import {
   type GetCampaignResponse,
   type ListCampaignRecipientsResponse,
   type ListCampaignsResponse,
+  type UpdateCampaignResponse,
 } from "../src/index.js";
 import {
   startTestServer,
@@ -203,6 +204,28 @@ describe("MessagingClient campaigns", () => {
     expect(requests[0]?.headers["idempotency-key"]).toBe(
       "campaign-create-august",
     );
+  });
+
+  it("updates a draft through the project-scoped PATCH route", async () => {
+    const { client, requests } = await campaignsServer();
+    const updated = await client.campaigns.update("launch/eu", campaign.id, {
+      name: "Autumn launch",
+      recipientListId: null,
+      senderConfig: { sessionIds: ["session-1"] },
+      scheduledAt: null,
+    });
+
+    expectTypeOf(updated).toEqualTypeOf<ApiResponse<UpdateCampaignResponse>>();
+    expect(requests[0]).toMatchObject({
+      method: "PATCH",
+      path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}`,
+      body: JSON.stringify({
+        name: "Autumn launch",
+        recipientListId: null,
+        senderConfig: { sessionIds: ["session-1"] },
+        scheduledAt: null,
+      }),
+    });
   });
 
   it("submits durable lifecycle commands with operation IDs", async () => {

@@ -19,6 +19,8 @@ import type {
   ListCampaignRecipientsResponse,
   ListCampaignsResponse,
   RequeueCampaignRequest,
+  UpdateCampaignRequest,
+  UpdateCampaignResponse,
 } from "./types.js";
 
 /** Exact project-slug campaign workflow exposed by the Messaging API. */
@@ -57,6 +59,21 @@ export class MessagingCampaignsResource {
     return this.transport.request({
       method: "GET",
       path: campaignPath(projectSlug, campaignId),
+      ...options,
+    });
+  }
+
+  /** Update draft fields. The API rejects schedule changes after launch. */
+  update(
+    projectSlug: string,
+    campaignId: string,
+    body: UpdateCampaignRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<UpdateCampaignResponse>> {
+    return this.transport.request({
+      method: "PATCH",
+      path: campaignPath(projectSlug, campaignId),
+      body,
       ...options,
     });
   }

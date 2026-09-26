@@ -173,9 +173,9 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "6839976e7ad54e044c4d789fd296edc44772a907",
-      total: 509,
-      covered: 379,
+      sourceCommit: "e46c432dc4ef1003009b28606a4c026d8738a41b",
+      total: 510,
+      covered: 380,
       partial: 0,
       missing: 0,
       excluded: 130,
@@ -251,6 +251,7 @@ describe("coverage checker", () => {
       "listCampaigns",
       "createCampaign",
       "getCampaign",
+      "updateProjectCampaign",
       "getCampaignAnalytics",
       "launchCampaign",
       "pauseCampaign",
@@ -270,6 +271,7 @@ describe("coverage checker", () => {
       addProjectCampaignRecipients: "MessagingClient.campaigns.addRecipients",
       createCampaign: "MessagingClient.campaigns.create",
       getCampaign: "MessagingClient.campaigns.retrieve",
+      updateProjectCampaign: "MessagingClient.campaigns.update",
       getCampaignAnalytics: "MessagingClient.campaigns.analytics",
       launchCampaign: "MessagingClient.campaigns.launch",
       listCampaigns: "MessagingClient.campaigns.list",
