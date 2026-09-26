@@ -884,10 +884,20 @@ const templateStatus: StoreReducer = async (event, context) => {
       existing,
       pick({
         templateName: str(payload.templateName),
-        status: str(payload.status),
+        status: str(
+          payload.kind === "message_template_status_update"
+            ? payload.event
+            : payload.status,
+        ),
         category: str(payload.category),
         reason: str(payload.reason),
-        qualityRating: str(payload.qualityRating),
+        qualityRating: str(
+          payload.kind === "message_template_quality_update"
+            ? payload.newQualityScore
+            : payload.qualityRating,
+        ),
+        language: str(payload.language),
+        wabaId: str(payload.wabaId),
       }),
       context.time,
     ),
@@ -938,10 +948,20 @@ export const BUILT_IN_REDUCERS: Readonly<Record<string, StoreReducer>> = {
   "call.participant_left": callParticipant,
   "call.telemetry": callTelemetry,
   "labels.update": labelsUpdate,
-  "session.status": sessionEvent((payload) => ({
-    status: str(payload.status),
-    statusReason: str(payload.statusReason),
-  })),
+  "session.status": sessionEvent((payload) =>
+    payload.source === "meta"
+      ? {
+          cloudAccountNotification: {
+            kind: str(payload.kind),
+            wabaId: str(payload.wabaId),
+            value: payload.value,
+          },
+        }
+      : {
+          status: str(payload.status),
+          statusReason: str(payload.statusReason),
+        },
+  ),
   "session.connected": sessionEvent((payload) => ({
     status: "connected",
     phoneNumber: str(payload.phoneNumber),

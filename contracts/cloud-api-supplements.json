@@ -1,0 +1,105 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "note": "Pending API dependencies for new SDK consumers. Full coverage snapshots remain at contracts/source.json until these branches merge into one verified API revision. OA11 also defines MessageAckPayload.pricing in src/lib/webhook-schemas.ts. No SDK package or availability claim.",
+  "sources": [
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/344",
+      "commit": "1aa0c9b45e2cdcd15bdc6443524bdb9329ae1a6d",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "fd226ba3a09271f19ba27249e5e960a9530b32d131702c8d2f2dd5c7110747c6",
+      "operationIds": ["getCustomerServiceWindow", "getMetaPricingSummary"],
+      "merged": false
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/345",
+      "commit": "041f58465035ba49649430b59b118d98fef2dbc4",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "aefe5f3b39d5fb8f504d6f7c9694934189e4264893c238d7f6d53dfc01bfe8a4",
+      "operationIds": [
+        "getCloudCredentialHealth",
+        "reauthorizeCloudCredentials"
+      ],
+      "merged": false
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/347",
+      "commit": "e3d2767d29262dd8f4e0a215b495be9041a5f484",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "697209c49d97f2bc3230f17c3c40268cc60cefea5c7d7acb217fe53e261a2ca3",
+      "operationIds": ["editTemplate"],
+      "merged": false
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/348",
+      "commit": "d22930d2453c3ae428fac807f545277bb748594c",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "3d7c6662fd6033328498199b84b72b71f67217b9a3a3b668e84b62e62d9ea385",
+      "operationIds": ["getQuickLink"],
+      "merged": false
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/313",
+      "commit": "73965b10e25cbac9cf1d7bed0ceffd450f313da9",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "1f11869d6ca6b66a61b645d1e106d849a1cc6f6fc504e64d460e6445281a6c27",
+      "operationIds": [],
+      "merged": false,
+      "schemas": [
+        "SessionStatusPayload",
+        "CloudAccountStatusPayload",
+        "TemplateStatusPayload",
+        "CloudTemplateStatusPayload"
+      ]
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/315",
+      "commit": "cf124d15f31a917d92f25c34d9b2d7713b6ba8dd",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "d697ef59cfedc1d4dca9c721c198dbad084705a051afd68eee7aee236fc80a37",
+      "operationIds": ["setTyping"],
+      "merged": false
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/336",
+      "commit": "19ac219ce4676a2e54e8cc7a123ff4a66c453117",
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "sha256": "dba69d5cd570dd986083864b74769360d4a0c5eeeecf9fa7311cad0d189fa056",
+      "operationIds": [
+        "listFlows",
+        "createFlow",
+        "getFlow",
+        "updateFlow",
+        "deleteFlow",
+        "uploadFlow",
+        "publishFlow",
+        "deprecateFlow",
+        "discardFlow",
+        "syncFlow",
+        "listFlowOperations"
+      ],
+      "merged": false
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/349",
+      "commit": "ac3805dfa30d7efddf6e2f3a839c9fcdb7c27bfa",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "feafdba56b7014322be88e06180cae1b5d45da467b208ce7fd78832f90867196",
+      "operationIds": [
+        "listTemplates",
+        "createTemplate",
+        "getTemplate",
+        "editTemplate",
+        "deleteTemplate"
+      ],
+      "merged": false
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/354",
+      "commit": "22d38f144d4b7ab0fb9953a0aacd521b63a496bb",
+      "sourcePath": "docs/api-reference/openapi.graph.json",
+      "sha256": "a52432d517b67e733abd18fadd44fcf4efd5918a506ef2f036a4bb2c34bfdeb5",
+      "operationIds": ["graphListProductCatalogs"],
+      "merged": false
+    }
+  ]
+}

@@ -1,4 +1,10 @@
 import type { MessagingCredential } from "../credentials.js";
+import type {
+  CloudCredentialHealth,
+  CloudReauthorization,
+  MetaPricingParams,
+  MetaPricingSummary,
+} from "./cloud-types.js";
 import { PolymorfaConfigurationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
@@ -9,6 +15,7 @@ import type {
   OperationAccepted,
   PairCodeRequest,
   RequestPairCodeResponse,
+  SuccessEnvelope,
   UpdateSessionRequest,
   UpdateSessionResponse,
 } from "./types.js";
@@ -26,6 +33,48 @@ export class SessionsResource {
     private readonly transport: HttpTransport,
     private readonly credentialType: MessagingCredential["type"],
   ) {}
+
+  /** Official API beta. Requires sessions:read; counts carry no price or charge. */
+  getMetaPricing(
+    session: string,
+    params: MetaPricingParams = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessEnvelope<MetaPricingSummary>>> {
+    this.assertServerCredential();
+    return this.transport.request({
+      method: "GET",
+      path: `/messaging/${encodeURIComponent(session)}/meta-pricing`,
+      query: { ...params },
+      ...options,
+    });
+  }
+
+  /** Latest redacted provider checks; a healthy token does not grant beta access. */
+  getCloudCredentialHealth(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessEnvelope<CloudCredentialHealth>>> {
+    this.assertServerCredential();
+    return this.transport.request({
+      method: "GET",
+      path: `/messaging/${encodeURIComponent(session)}/cloud-credentials`,
+      ...options,
+    });
+  }
+
+  /** Create one reauthorization link for a stopped standalone Official API Number. Never stops it. */
+  reauthorizeCloudCredentials(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessEnvelope<CloudReauthorization>>> {
+    this.assertServerCredential();
+    return this.transport.request({
+      method: "POST",
+      path: `/messaging/${encodeURIComponent(session)}/cloud-credentials/reauthorize`,
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
 
   list(
     options: RequestOptions = {},

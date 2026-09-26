@@ -11,6 +11,7 @@ import {
   type ProjectWebhookDeliveryAttempt,
   type OrganizationWebhookDeliveryAttempt,
   type SessionLoggedOutPayload,
+  type RuntimeTemplateStatusPayload,
   type WebhookPayloadMap,
 } from "../src/index.js";
 
@@ -175,7 +176,11 @@ const campaign = { campaignId: "cmp_1" } as const;
 
 type P = WebhookPayloadMap;
 const PAYLOADS: {
-  readonly [K in Exclude<KnownWebhookEventType, LegacyEventType>]: Shape<P[K]>;
+  readonly [
+    K in Exclude<KnownWebhookEventType, LegacyEventType>
+  ]: K extends "template.status"
+    ? Shape<RuntimeTemplateStatusPayload>
+    : Shape<P[K]>;
 } = {
   "contact.opted_in": shape<P["contact.opted_in"]>()(
     {
@@ -527,7 +532,7 @@ const PAYLOADS: {
       "failureReason",
     ],
   ),
-  "template.status": shape<P["template.status"]>()(
+  "template.status": shape<RuntimeTemplateStatusPayload>()(
     {
       templateName: "order_update",
       templateId: "tpl_1",

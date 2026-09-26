@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "6839976e7ad54e044c4d789fd296edc44772a907",
-  "branch": "dev",
-  "published": true,
-  "note": "Merged API source commit retiring three unproduced BanSafe webhook names and test fixtures; Messaging and Platform snapshots are byte-identical to the authoritative OpenAPI files. SDK publication and deployment are separate.",
+  "commit": "45e6a08c65821b484585f7b4f091a93b3a47ff43",
+  "branch": "codex/oa-01-cloud-templates",
+  "published": false,
+  "note": "Coordinated API dependency PR310 adds four Number-scoped Cloud template operations. Snapshots are byte-identical to this exact API commit. Merge, SDK publication and deployed availability remain separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "79543bf719017598c3e2497004d761056e919b3200abdaae1560893542816cc7"
+      "sha256": "9267d9de742077395e774a688b52cbbdbc71b19bf1c71fc053f89164c7e0f157"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "7eca4148c2f1fbda47c26a67c42e2da6b74e47e5edf38d749e30a5fc3f1d7fe8"
+      "sha256": "4e5aa9b8890b8963d704df22efbbce7c6bd9ac09b9253f5c8215bb3966b2f2cc"
     }
   }
 }

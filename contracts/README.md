@@ -41,15 +41,28 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
+`cloud-api-supplements.json` records the exact pending API sources for service
+windows, pricing counts, acknowledgement pricing, credential health,
+reauthorization, lifecycle webhooks, QuickLink sync receipts, typing, Flow lifecycle,
+Hybrid template authority and WABA catalog discovery. Their SDK consumers are implemented, but the full snapshots
+below do not yet include those separate branches. Consolidating them onto one
+merged API revision remains a publication gate. These methods do not establish
+deployed access or package availability.
+
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` API source commit
-`6839976e7ad54e044c4d789fd296edc44772a907` on API `dev`. This revision retires the three unproduced BanSafe event names
-and their synthetic test fixtures. The four live BanSafe events remain typed.
-The two changed Testing operation fingerprints have been reconciled against
-the fixture catalog. Four webhook create/update fingerprints now match the
-Platform source's HTTP field pattern, which was already present on API `dev`.
-Operation mappings are unchanged. `source.json` records the source paths and
-SHA-256 hashes. SDK package publication and deployment remain separate.
+`45e6a08c65821b484585f7b4f091a93b3a47ff43` in API PR #310. This is an
+unmerged API dependency. `MessagingClient.cloudTemplates` covers its four
+Number-scoped Meta template operations. Project template drafts remain under
+`MessagingClient.templates`. Template create and delete make one attempt even
+when an idempotency key or retry override is supplied; the API does not yet
+provide durable replay for these provider writes.
+
+The snapshot also fixes the JSON escape sequence in the Platform webhook header
+value pattern. The four create/update fingerprints were reviewed against that
+pattern correction; their request types and method mappings are unchanged.
+`source.json` records the source paths and SHA-256 hashes. API merge, SDK
+publication and deployed availability remain separate.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
@@ -72,7 +85,7 @@ from SDK `dev`. The three public Calls analytics operations are covered by
 `Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
 `Client.calls.exportAll` walks export pages. The 13 public Voice operations are
 covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
-13 Console counterparts are excluded. The full 509-operation snapshot includes
+13 Console counterparts are excluded. The full 513-operation snapshot includes
 all 15 Functions routes already merged to API `dev`.
 
 HMS history adds four server-only Messaging reads under
@@ -160,12 +173,12 @@ signed events with these names still decode as unknown events.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        379 |
+| Covered             |        383 |
 | Missing             |          0 |
 | Excluded            |        130 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        509 |
+| Total               |        513 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -317,3 +330,6 @@ organization enabled for Functions. The SDK never retries Function mutations or
 invocations automatically. Browser/client-token SDKs do not expose this server
 control plane. A local implementation or installed method does not establish
 hosted availability.
+
+The Graph coverage exclusion applies to the full Graph API, not the separately
+implemented `cloudCatalogs.list` subset recorded in cloud-api-supplements.json.
