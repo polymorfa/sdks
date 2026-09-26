@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "45e6a08c65821b484585f7b4f091a93b3a47ff43",
+  "commit": "296aba4baade933e7a5620cf36768750ec9ac6af",
   "branch": "codex/oa-01-cloud-templates",
   "published": false,
-  "note": "Coordinated API dependency PR310 adds four Number-scoped Cloud template operations. Snapshots are byte-identical to this exact API commit. Merge, SDK publication and deployed availability remain separate.",
+  "note": "API PR310 merge ancestor incorporates dev campaign and webhook updates with four Number-scoped Cloud template operations. Both snapshots are byte-identical to this exact API commit. API merge, SDK publication and deployment remain separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "9267d9de742077395e774a688b52cbbdbc71b19bf1c71fc053f89164c7e0f157"
+      "sha256": "397f6d8f59e032ceb8bc520667f5a3c8eaf14d0995bbeabb61d5ca3493df44c5"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "4e5aa9b8890b8963d704df22efbbce7c6bd9ac09b9253f5c8215bb3966b2f2cc"
+      "sha256": "6cf2ab1aa2a187553cc95a87bfa281613a2e0b047b81695c937c1b38b19c7218"
     }
   }
 }
