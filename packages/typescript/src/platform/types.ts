@@ -2,6 +2,7 @@ import type {
   CampaignTestSendRequest,
   CampaignVariableMapping,
   CampaignRecipient,
+  CampaignRecipientFailureReason,
   CampaignRecipientInput,
   CampaignRecipientStatus,
   CampaignSendWindowRequest,
@@ -293,8 +294,20 @@ export interface ListPlatformCampaignRecipientsParams {
   /** Owning project for this organization-client request. */
   readonly projectId: string;
   readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
   readonly cursor?: string;
   /** 1 to 100; the API defaults to 25. */
+  readonly limit?: number;
+}
+
+export interface ExportPlatformCampaignRecipientsParams {
+  /** Required with a team API key; project tokens are bound to one project. */
+  readonly projectId: string;
+  readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
+  /** Cursor from the previous page's `nextCursor`. Keep the same filters. */
+  readonly cursor?: string;
+  /** 1 to 1,000; the API defaults to 1,000. */
   readonly limit?: number;
 }
 
@@ -315,7 +328,34 @@ export interface AddPlatformCampaignRecipientsResult {
   readonly invalidRows: readonly InvalidRecipientRow[];
 }
 
-export type AudienceSource = "csv" | "manual" | "api";
+export type AudienceSource = "csv" | "manual" | "api" | "campaign";
+
+export type AudienceRetargetOutcome =
+  | "delivered"
+  | "not_delivered"
+  | "read"
+  | "not_read"
+  | "replied"
+  | "not_replied"
+  | "failed";
+
+export interface CreateAudienceFromCampaignRequest {
+  /** New audience name, 1 to 200 characters. */
+  readonly name: string;
+  /** Campaign whose recipients supply the snapshot. */
+  readonly campaignId: string;
+  /** Optional extra bound: the campaign must belong to this project. */
+  readonly projectId?: string;
+  readonly outcome: AudienceRetargetOutcome;
+}
+
+export interface AudienceFromCampaignResult extends Audience {
+  readonly source: "campaign";
+  readonly sourceCampaignId: string;
+  readonly outcome: AudienceRetargetOutcome;
+  readonly matchedCount: number;
+  readonly optedOutCount: number;
+}
 
 /** Column names in an uploaded spreadsheet, mapped onto recipient fields. */
 export interface AudienceImportMapping {

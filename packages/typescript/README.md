@@ -1684,10 +1684,11 @@ message identifiers are URL-encoded by the SDK.
 
 ## Messaging campaigns
 
-`MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `analytics`,
-`listRecipients`, `addRecipients`, `launch`, `reschedule`, `testSend`, `pause`,
-`resume`, `stop`, and `requeue`. Reads require `campaigns:read`; writes require
-`campaigns:manage`.
+`MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `update`,
+`analytics`, `listRecipients`, `exportRecipients`, `addRecipients`, `launch`,
+`reschedule`, `testSend`, `pause`, `resume`, `stop`, and `requeue`. Reads require
+`campaigns:read`; writes require `campaigns:manage`. `testSend` requires both
+scopes because it can use stored recipient sample values.
 Pass the project's slug as the first argument. Campaigns accept organization
 API keys or project tokens; browser client tokens cannot use these methods.
 
@@ -1722,18 +1723,17 @@ console.log(launched.data.data.operationId, launched.metadata.requestId);
 
 Create accepts inline recipients, an audience ID in `recipientListId`, or both.
 Each append accepts up to 1,000 recipients before launch and reports duplicates
-and invalid rows. Appends have no declared replay contract: the SDK sends them
-once by default, generates no key, and requires both `maxNetworkRetries` and
-`idempotencyKey` to opt back into retries. A retry can report rows from an unseen
-successful first attempt as duplicates. List recipients before appending again
-after a lost response.
+and invalid rows. The SDK sends a stable `Idempotency-Key`; for 24 hours, the
+API replays the first successful result instead of appending twice.
 
-`listRecipients(projectSlug, campaignId, { status, cursor, limit })` returns
+`listRecipients(projectSlug, campaignId, { status, reason, cursor, limit })` returns
 `{ data, page }` inside the response's `data`. Read recipients from
 `response.data.data` and pass `response.data.page.nextCursor` into the next
 request while `page.hasMore` is true. Each recipient includes its send,
 delivery, read, failure and reply timestamps, plus `messagesSent`,
-`nextMessageAt`, and `sequenceError`. Campaign `list` returns a complete
+`nextMessageAt`, `sequenceError`, and `failureReason`. Use
+`exportRecipients(projectSlug, campaignId, { status, reason, cursor, limit })`
+to download one CSV page and its `nextCursor`. Campaign `list` returns a complete
 array; recipient pagination does not change that method.
 
 Launch, pause and resume return the campaign state with an `operationId`.

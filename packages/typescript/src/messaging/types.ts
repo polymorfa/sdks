@@ -207,8 +207,29 @@ export interface CreateCampaignRequest {
   readonly recipients?: readonly CampaignRecipientInput[];
 }
 
+/** Fields accepted by the Messaging API campaign update route. */
+export interface UpdateCampaignRequest {
+  readonly name?: string;
+  /** Attach an audience to an unlaunched draft, or detach it with null. */
+  readonly recipientListId?: string | null;
+  readonly senderConfig?: Readonly<Record<string, unknown>>;
+  /** Epoch milliseconds, or null to start at launch. Only editable before launch. */
+  readonly scheduledAt?: number | null;
+}
+
 export type CampaignRecipientStatus =
   "queued" | "sending" | "sent" | "delivered" | "read" | "failed" | "skipped";
+
+export type CampaignRecipientFailureReason =
+  | "opted_out"
+  | "cold_held"
+  | "campaign_cancelled"
+  | "invalid_recipient"
+  | "session_not_connected"
+  | "ack_timeout"
+  | "blocked_by_safety"
+  | "send_failed"
+  | "other";
 
 export type InvalidRecipientReason =
   "missing_phone" | "invalid_phone" | "invalid_variables" | "invalid_entry";
@@ -241,6 +262,8 @@ export interface CampaignRecipient {
   readonly attempts: number;
   /** `opted_out` means the phone is on the organization's opt-out list. */
   readonly lastError: string | null;
+  /** Stable, documented code for the last unsuccessful attempt. */
+  readonly failureReason: CampaignRecipientFailureReason | null;
   readonly externalMessageId: string | null;
   /** Epoch milliseconds, or null while the transition has not happened. */
   readonly queuedAt: number;
@@ -264,9 +287,26 @@ export interface CampaignRecipientPage {
 
 export interface ListCampaignRecipientsParams {
   readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
   readonly cursor?: string;
   /** 1 to 100; the API defaults to 25. */
   readonly limit?: number;
+}
+
+export interface ExportCampaignRecipientsParams {
+  readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
+  /** Cursor from the previous page's `nextCursor`. Keep the same filters. */
+  readonly cursor?: string;
+  /** 1 to 1,000; the API defaults to 1,000. */
+  readonly limit?: number;
+}
+
+export interface CampaignRecipientsCsvPage {
+  /** CSV header and up to 1,000 recipient rows. */
+  readonly csv: string;
+  /** Null after the last page. */
+  readonly nextCursor: string | null;
 }
 
 export interface AddCampaignRecipientsRequest {
@@ -349,6 +389,7 @@ export interface CampaignRequeueResult {
 export type ListCampaignsResponse = SuccessEnvelope<readonly Campaign[]>;
 export type GetCampaignResponse = SuccessEnvelope<Campaign>;
 export type CreateCampaignResponse = SuccessEnvelope<Campaign>;
+export type UpdateCampaignResponse = SuccessEnvelope<Campaign>;
 export type CampaignAnalyticsResponse = SuccessEnvelope<CampaignAnalytics>;
 export type CampaignOperationResponse = SuccessEnvelope<CampaignOperation>;
 export type CampaignRequeueResponse = SuccessEnvelope<CampaignRequeueResult>;

@@ -300,7 +300,7 @@ The organization view also exposes these management resources:
   batch; review and confirm a tier change; create a testing session; and
   retrieve or update the session Safe Mode override
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
-  analytics, events, and paged or appended recipients. The single-campaign
+  analytics, events, and paged, exported, or appended recipients. The single-campaign
   operations require the owning `projectId`. This resource is available only
   on organization clients. `create` requires `CreatePlatformCampaignRequest`
   with `name` and `projectId`; its named JSON fields pass through unchanged.
@@ -309,8 +309,9 @@ The organization view also exposes these management resources:
 - `customers`: enable Customers for a project; create, list, retrieve, update,
   archive, and restore Customers; inspect Numbers and events; create, list,
   and revoke pairing links; and transfer Numbers between Customers
-- `audiences`: list, create from inline members or a spreadsheet import,
-  retrieve, delete, create an upload URL, and add, page, or remove members
+- `audiences`: list, create from inline members, a spreadsheet import, or one
+  outcome from a prior campaign; retrieve, delete, create an upload URL, and
+  add, page, or remove members
 - `optOuts`: list, create one, create a batch, delete by phone number, and read
   or replace the organization's STOP/START keyword settings
 - `callPolicy`: retrieve and replace the team's blocked country codes for calls
@@ -329,8 +330,8 @@ expose their payloads as open objects in the pinned contract, so those methods
 use the exported `PlatformPayload` type instead of claiming fields the contract
 does not define.
 
-`Client.campaigns.recipients` returns a cursor page. `status` finds, for
-example, the recipients a campaign skipped because they opted out:
+`Client.campaigns.recipients` returns a cursor page. Filter by `status` and
+`reason` to find recipients a campaign skipped because they opted out:
 
 ```ts
 let cursor: string | undefined;
@@ -338,6 +339,7 @@ do {
   const page = await client.campaigns.recipients(campaignId, {
     projectId,
     status: "skipped",
+    reason: "opted_out",
     ...(cursor === undefined ? {} : { cursor }),
   });
   for (const recipient of page.data.data) {
@@ -347,6 +349,7 @@ do {
 } while (cursor !== undefined);
 ```
 
+`campaigns.exportRecipients` returns one CSV page and a cursor for the next.
 Appending recipients or audience members accepts partial success: the result
 reports `added`, `duplicateCount`, `invalidCount` and up to 20 `invalidRows`.
 
@@ -568,10 +571,11 @@ requests retry only when the caller supplies an idempotency key. The transport
 honors `Retry-After`, then uses bounded exponential backoff with jitter.
 
 Campaign recipient and audience member appends (`campaigns.addRecipients` on
-both clients and `audiences.addMembers`) are sent once. The API does not replay
-them, so a retry after a lost response would count the first attempt's rows as
-duplicates. They retry only when that request sets both `maxNetworkRetries`
-and `idempotencyKey`; the key does not make the API replay the append.
+both clients and `audiences.addMembers`) and `audiences.create` use a generated
+`Idempotency-Key` unless you pass one. Automatic retries reuse it. For 24 hours,
+the API replays the first successful result instead of applying the write again.
+`audiences.createFromCampaign` has no replay contract and sends once, even if
+you request network retries. Check the audience list after an uncertain result.
 
 ## API versions and raw requests
 
