@@ -72,14 +72,42 @@ credential needs the six delegation scopes listed above. The API also checks
 that the Number belongs to the credential's project. After the command
 succeeds, mint a client token with `mint-client-token.mjs`.
 
-Click **Connect** and wait
+Click **Connect Number** and wait
 for **Ready for calls** before dialing or receiving. Incoming calls appear in
-`CallSurface`; the dial pad places outbound calls. **Disconnect** releases the
+`CallSurface`; the dial pad places outbound calls. **Disconnect Number** releases that Number's
 socket and media. To reconnect after token expiry, disconnect and paste a new
 token.
+
+Enter an E.164 destination allowed by this Number's client rules before pressing
+the green handset. The dial button is unavailable during an incoming or active
+call. The example shows the controller's call error. For failed
+`/messaging/voip/` requests, it shows the diagnostic status or category and a
+request ID when available. The last failed request stays visible until another
+failure replaces it or you reconnect. If an answer fails without a request,
+the controller error helps distinguish a local call-state failure from a
+server refusal. Do not share browser tokens when reporting these details.
 
 The connection status follows the SDK's live socket state. A failed first
 attempt can continue reconnecting, and errors are shown on the page. A healthy
 API `/health` response or an open SIP port does not prove this browser call
 path. Staging must have the matching API revision, a connected Number, VoIP
 service, and working media path. This example does not configure SIP trunks.
+
+## Multiple authorized Numbers
+
+Connect each Number separately with its own session, display label and browser
+client token. The page keeps an independent Calls client and token provider per
+entry, only in memory. Choose **Outgoing Number** before dialing; **Call from**
+shows the selected source. Each Number has its own labeled incoming-call
+surface, so changing the outgoing choice never hides another Number's call.
+The selector and disconnect buttons lock while any Number is placing, answering
+or carrying a call. Finish that call before changing the outgoing Number.
+
+Use only entries already authorized by your application. This example does not
+prove that a pasted token belongs to the label you entered: the API uses the
+session bound to that token. Match each label/session to the token's authorized
+Number. A production application supplies this mapping and a per-Number token
+provider from its trusted server. Tokens never go into browser storage, URLs or
+files. Disconnecting removes only that Number and invalidates its in-memory
+provider. Reconnect it with a fresh token after expiry. No Number, rules, grant,
+SIP account or trunk is provisioned by the picker.

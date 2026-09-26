@@ -559,6 +559,15 @@ const PAYLOADS: {
     { ...campaign, sentCount: 10, remainingCount: 5, pausedAt: 1 },
     ["campaignId", "sentCount", "remainingCount", "pausedAt"],
   ),
+  "campaign.rescheduled": shape<P["campaign.rescheduled"]>()(
+    {
+      ...campaign,
+      previousScheduledAt: null,
+      scheduledAt: 1_790_000_003_000,
+      rescheduledAt: 1_790_000_003_000,
+    },
+    ["campaignId", "previousScheduledAt", "scheduledAt", "rescheduledAt"],
+  ),
   "campaign.resumed": shape<P["campaign.resumed"]>()(
     {
       ...campaign,
@@ -782,6 +791,43 @@ describe("webhook catalog contract", () => {
     expectTypeOf<P["bansafe.action"]["previousRung"]>().toEqualTypeOf<
       "none" | "notify" | "throttle" | "block_cold" | "suspend" | null
     >();
+  });
+
+  it("accepts raised-hand participant state in the pinned contract and signed delivery", async () => {
+    const participant = {
+      id: "participant-1",
+      audioMuted: false,
+      video: false,
+      state: "connected",
+      handRaised: true,
+    } as const;
+    const schema = messaging.components.schemas.CallParticipant!;
+    expect(violations(messaging, schema, participant)).toEqual([]);
+    expect(
+      violations(messaging, schema, { ...participant, handRaised: "yes" }),
+    ).toContain("$.handRaised is not a boolean");
+    const withoutHandRaised = {
+      id: participant.id,
+      audioMuted: participant.audioMuted,
+      video: participant.video,
+      state: participant.state,
+    };
+    expect(violations(messaging, schema, withoutHandRaised)).toEqual([]);
+
+    const body = Buffer.from(
+      JSON.stringify({
+        id: "evt_hand_raised",
+        session: "support",
+        timestamp: AT,
+        event: "call.participant_state",
+        payload: { callId: "call-1", participant },
+      }),
+    );
+    const event = await constructWebhookEvent(body, sign(body), secret);
+    if (!isEvent(event, "call.participant_state"))
+      throw new Error("Expected participant state event");
+    expectTypeOf(event.payload).toEqualTypeOf<P["call.participant_state"]>();
+    expect(event.payload.participant.handRaised).toBe(true);
   });
 
   it("types logged-out reasons and the required integer code from the pinned contract", async () => {

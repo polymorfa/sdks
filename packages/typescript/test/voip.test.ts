@@ -73,6 +73,171 @@ const participant = {
 } as const;
 
 describe("VoipResource", () => {
+  it("creates and previews call links with tokens confined to the POST body", async () => {
+    const token = "private_link_test_token";
+    const created = {
+      session: "support",
+      token,
+      url: `https://call.whatsapp.com/voice/${token}`,
+      video: false,
+    };
+    const previewed = {
+      session: "support",
+      creator: { id: "9007199254740993" },
+      video: false,
+      approvalRequired: true,
+      isAdmin: false,
+    };
+    const server = await serve([
+      json({ success: true, data: created }, 201),
+      json({ success: true, data: previewed }),
+    ]);
+    const sdk = client(server);
+    expect(
+      (await sdk.voip.createCallLink({ session: "support" })).data.data,
+    ).toEqual(created);
+    expect(
+      (await sdk.voip.previewCallLink({ session: "support", token })).data.data,
+    ).toEqual(previewed);
+    expect(
+      server.requests.map(({ method, path, body }) => ({
+        method,
+        path,
+        body: JSON.parse(body),
+      })),
+    ).toEqual([
+      {
+        method: "POST",
+        path: "/messaging/voip/call-links",
+        body: { session: "support" },
+      },
+      {
+        method: "POST",
+        path: "/messaging/voip/call-links/preview",
+        body: { session: "support", token },
+      },
+    ]);
+  });
+
+  it("refuses client tokens, invalid input and idempotency keys without transport", async () => {
+    const server = await serve([]);
+    const sdk = client(server);
+    expect(() =>
+      client(server, {
+        type: "clientToken",
+        value: "ct_test_token",
+      }).voip.createCallLink({ session: "support" }),
+    ).toThrow(PolymorfaConfigurationError);
+    expect(() => sdk.voip.createCallLink({ session: " " })).toThrow(
+      PolymorfaValidationError,
+    );
+    expect(() =>
+      sdk.voip.previewCallLink({ session: "support", token: "bad/token" }),
+    ).toThrow(PolymorfaValidationError);
+    expect(() =>
+      sdk.voip.createCallLink(
+        { session: "support" },
+        { idempotencyKey: "once" },
+      ),
+    ).toThrow(PolymorfaValidationError);
+    expect(() =>
+      sdk.voip.previewCallLink(
+        { session: "support", token: "test" },
+        { headers: { "Idempotency-Key": "once" } },
+      ),
+    ).toThrow(PolymorfaValidationError);
+    expect(server.requests).toHaveLength(0);
+  });
+
+  it("does not retry a failed link creation even when retries are requested", async () => {
+    const server = await serve([
+      json(
+        { error: { code: "upstream_failure", message: "Provider failed" } },
+        502,
+      ),
+    ]);
+    await expect(
+      client(server).voip.createCallLink(
+        { session: "support" },
+        { maxNetworkRetries: 3 },
+      ),
+    ).rejects.toThrow();
+    expect(server.requests).toHaveLength(1);
+  });
+
+  it("serializes ad-hoc group placement and re-ring without retries", async () => {
+    const server = await serve([
+      json(
+        {
+          success: true,
+          data: { callId: "group/1", session: "support", video: false },
+        },
+        201,
+      ),
+      json({ success: true }, 202),
+    ]);
+    const sdk = client(server);
+    await sdk.voip.place({
+      session: "support",
+      participants: ["+15550100", "+15550101"],
+    });
+    await sdk.voip.ringParticipant("group/1", { to: "+15550100" });
+    expect(
+      server.requests.map(({ method, path, body }) => ({
+        method,
+        path,
+        body: JSON.parse(body),
+      })),
+    ).toEqual([
+      {
+        method: "POST",
+        path: "/messaging/voip/calls",
+        body: { session: "support", participants: ["+15550100", "+15550101"] },
+      },
+      {
+        method: "POST",
+        path: "/messaging/voip/calls/group%2F1/participants/ring",
+        body: { to: "+15550100" },
+      },
+    ]);
+  });
+
+  it("serializes a stored group by public ID without recipient fields", async () => {
+    const server = await serve([
+      json(
+        {
+          success: true,
+          data: { callId: "stored-group", session: "support", video: false },
+        },
+        201,
+      ),
+    ]);
+    await client(server).voip.place({
+      session: "support",
+      groupId: "9007199254740996",
+    });
+    expect(JSON.parse(server.requests[0]!.body)).toEqual({
+      session: "support",
+      groupId: "9007199254740996",
+    });
+  });
+
+  it("refuses ambiguous or invalid group destinations before a request", async () => {
+    const sdk = client(await serve([]));
+    for (const body of [
+      { to: "+15550100", participants: ["+15550100", "+15550101"] },
+      { participants: ["+15550100"] },
+      { participants: ["+15550100", "+15550100"] },
+      { participants: ["123@lid", "+15550100"] },
+      { groupId: "123@g.us" },
+      { groupId: "9007199254740996", to: "+15550100" },
+      { groupId: "9007199254740996", participants: ["+15550100", "+15550101"] },
+    ])
+      expect(() => sdk.voip.place({ session: "support", ...body })).toThrow(
+        PolymorfaValidationError,
+      );
+  });
+
   it("places, accepts, adds participants, leaves, rejects, and ends calls", async () => {
     const server = await serve([
       {

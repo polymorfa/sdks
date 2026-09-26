@@ -716,6 +716,29 @@ that interoperate with the Custom Elements standard. `@polymorfa/react`
 provides idiomatic hooks and components, including controlled and SDK-owned
 controller lifecycles.
 
+### Call links in this source revision
+
+`MessagingClient.voip.createCallLink` and `previewCallLink` require a server
+credential with `sessions:manage` and a Linked Device Number with calling
+enabled. They are source additions pending matching API deployment and SDK
+publication; client tokens are refused. They do not place or join a call.
+
+```ts
+const created = await messaging.voip.createCallLink({ session: "support" });
+const preview = await messaging.voip.previewCallLink({
+  session: "support",
+  token: created.data.data.token,
+  video: created.data.data.video,
+});
+```
+
+Keep the returned URL and token private. Preview returns the creator's public
+identity, `approvalRequired` and WhatsApp's `isAdmin` report. It does not grant
+API permissions or change approvals. Both methods make one request and refuse
+`idempotencyKey`; do not retry an unknown creation outcome. The exported types
+are `VoipCreateCallLinkRequest`, `VoipPreviewCallLinkRequest`,
+`VoipCreatedCallLink`, and `VoipPreviewedCallLink`.
+
 ### Calls
 
 `createBrowserCalls` connects the shared `@polymorfa/sdk/calls` model to the

@@ -1587,7 +1587,11 @@ export type VoipParticipantReference = string;
 /** Body for `POST /messaging/voip/calls`. */
 export interface VoipPlaceCallRequest {
   /** Phone number in E.164 form or a WhatsApp user ID. */
-  readonly to: string;
+  readonly to?: string;
+  /** Ad-hoc group of 2 to 31 distinct people. Mutually exclusive with to. */
+  readonly participants?: readonly string[];
+  /** Public group ID; mutually exclusive with to and participants. */
+  readonly groupId?: string;
   /** Session that places the call. Required with a server credential. */
   readonly session?: string;
   readonly video?: boolean;
@@ -1603,6 +1607,37 @@ export interface VoipPlaceCallResult {
 }
 
 export type VoipPlaceCallResponse = SuccessEnvelope<VoipPlaceCallResult>;
+
+/** Server credentials only. Creates a reusable link without joining a call. */
+export interface VoipCreateCallLinkRequest {
+  readonly session: string;
+  readonly video?: boolean;
+}
+
+/** Keep the token private; send the media type that matches the link. */
+export interface VoipPreviewCallLinkRequest extends VoipCreateCallLinkRequest {
+  readonly token: string;
+}
+
+export interface VoipCreatedCallLink {
+  readonly session: string;
+  readonly token: string;
+  readonly url: string;
+  readonly video: boolean;
+}
+
+export interface VoipPreviewedCallLink {
+  readonly session: string;
+  readonly video: boolean;
+  readonly creator: ConversationIdentity;
+  readonly approvalRequired: boolean;
+  /** WhatsApp-reported role for this Number, not an API permission grant. */
+  readonly isAdmin: boolean;
+}
+
+export type VoipCreatedCallLinkResponse = SuccessEnvelope<VoipCreatedCallLink>;
+export type VoipPreviewedCallLinkResponse =
+  SuccessEnvelope<VoipPreviewedCallLink>;
 
 /** Body for `POST /messaging/voip/calls/{callId}/accept`. */
 export interface VoipAcceptCallRequest {
@@ -1713,6 +1748,7 @@ export interface VoipAddParticipantRequest {
 export type VoipParticipantState = "invited" | "ringing" | "connected" | "left";
 
 export interface VoipParticipant {
+  readonly handRaised?: boolean;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;

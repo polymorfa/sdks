@@ -42,29 +42,37 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The two public Flow draft reads in the pinned Platform snapshot are covered by
-`Client.project(projectId).flows.list` and `.retrieve`. The prior ledger marked
-them dashboard-only, but API source commit `9b64c70b622593aeda7364b7603ba6790144594e`
-declares both public, project-bound, and `sessions:read`. The merged API runtime
-at `2fb3eec8624c5785f72f81f163a27c1ce4e19767` still registers them with
-server-key authentication. That later API revision adds unrelated campaign
-reschedule operations; this Flow change retains the exact pinned snapshot.
+`Client.project(projectId).flows.list` and `.retrieve`. The API declares both
+public, project-bound, and `sessions:read`. The merged API runtime at
+`2fb3eec8624c5785f72f81f163a27c1ce4e19767` registers them with server-key
+authentication. The SDK snapshot below also includes the later campaign
+reschedule operations, which are tracked separately by SDK PR #310.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` API `dev` commit
-`9b64c70b622593aeda7364b7603ba6790144594e`. Team webhook tests now use
-their own event-only input schema; project webhook tests still accept a paired
-body and session ID. The team test operation is covered by
-`Client.webhooks.test`, which rejects project-only fields before sending.
-Eleven campaign fingerprints changed only in documented error responses. The
-existing SDK methods retain their route and success-response coverage; their
-shared transport preserves the `campaigns_not_entitled` 402 and
-`service_unavailable` 503 codes. Four webhook create/update fingerprints reflect
-the API's corrected HTTP header pattern. `source.json` records the source paths
-and SHA-256 hashes. SDK package publication and deployment remain separate.
+files at API `dev` merge commit `5f6a2b1470821c1a2b4077aa8de14214faede57a`. This revision adds ad-hoc and group-ID placement,
+participant re-ring, connection media controls, emoji reactions, raised hands
+and scoped call record detail. It also documents automatic SIP caller identity
+when no From user override is set. The API merge also adds campaign reschedule
+routes. SDK PR #310 owns their methods; the coverage ledger records both as
+excluded until that PR merges. The SDK webhook catalog and payload types include
+the `campaign.rescheduled` event in this pinned snapshot. `source.json` records source paths and SHA-256
+hashes. The refresh also carries an audio-codec description and corrects an
+escaped webhook-header control-character pattern; no header fields or SDK
+serialization changed. This revision also declares the optional `handRaised`
+boolean on webhook call participants, matching the existing SDK event types.
+SDK publication, deployment and the CLI's exact
+registry pin remain separate release gates. The call-link preview request schema
+accepts `session` and `token` together while remaining a closed object.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
 operation fingerprint or SDK method mapping.
+
+The API merge also incorporates two unrelated routes from API PRs #333 and
+#332. Hosted-history media download is assigned to SDK PR #316; Messaging
+campaign update is assigned to SDK PR #307. Both are intentional exclusions in
+this Calls ledger. Existing hosted-history message reads now type the optional
+`mediaRetrieval` status and remain covered.
 
 The Platform event-list contract adds `afterOffset` and indexed page metadata
 for both organization and project routes. `Client.events.list` and project-view
@@ -83,7 +91,7 @@ from SDK `dev`. The three public Calls analytics operations are covered by
 `Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
 `Client.calls.exportAll` walks export pages. The 13 public Voice operations are
 covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
-13 Console counterparts are excluded. The full 509-operation snapshot includes
+13 Console counterparts are excluded. The full 517-operation snapshot includes
 all 15 Functions routes already merged to API `dev`.
 
 HMS history adds four server-only Messaging reads under
@@ -171,12 +179,12 @@ signed events with these names still decode as unknown events.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        379 |
+| Covered             |        387 |
 | Missing             |          0 |
 | Excluded            |        130 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        509 |
+| Total               |        517 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -320,7 +328,7 @@ Functions is tracked separately in `functions/openapi.json`, with its exact
 monorepo source commit and extraction hash in `functions/source.json`. This
 snapshot contains only the 15 Functions operations and their transitive schemas.
 `npm run check:functions` verifies their ledger; SDK tests exercise every method.
-The main Messaging and Platform snapshots use the pinned merged API `dev` commit;
+The main Messaging and Platform snapshots use the pinned Hybrid Link API branch;
 Functions subset retains its separate source revision.
 
 All 15 Functions methods require `client.project(projectId).functions` and an
@@ -328,3 +336,9 @@ organization enabled for Functions. The SDK never retries Function mutations or
 invocations automatically. Browser/client-token SDKs do not expose this server
 control plane. A local implementation or installed method does not establish
 hosted availability.
+
+The current dev reconciliation changes Campaigns error declarations only:
+draft reads/writes no longer declare a plan-related 402, and launch/live sender
+edits declare the existing public 503 envelope. Request and successful response
+shapes remain unchanged for all eleven refreshed fingerprints; the existing
+transport error handling applies. Focused Campaigns and contract checks pass.
