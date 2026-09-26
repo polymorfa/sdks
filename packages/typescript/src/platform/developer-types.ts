@@ -165,7 +165,12 @@ export interface RotateWebhookSecretInput {
   readonly overlapSeconds?: number;
 }
 export type RetryWebhookDeliveryInput = Readonly<Record<string, never>>;
-export type TestWebhookInput =
+export interface TestOrganizationWebhookInput {
+  readonly eventType?: string;
+  readonly body?: never;
+  readonly sessionId?: never;
+}
+export type TestProjectWebhookInput =
   | {
       readonly eventType?: string;
       readonly body?: never;
