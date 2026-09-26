@@ -42,7 +42,7 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API PR #335 head `f7b212d5d49a4332dc4c912ed2fc7eb1099aa19f`.
+files at API PR #335 head `59edaad03b2d020240123c3873353f957478ee87`.
 This source is not merged or published. It adds the Platform
 `createAudienceFromCampaign` operation, mapped to
 `Client.audiences.createFromCampaign`. `source.json` records the source paths

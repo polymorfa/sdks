@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "f7b212d5d49a4332dc4c912ed2fc7eb1099aa19f",
+  "commit": "59edaad03b2d020240123c3873353f957478ee87",
   "branch": "t3code/campaigns-retarget",
   "published": false,
   "note": "API PR polymorfa/polymorfa#335 exact head: snapshot audience creation from a campaign outcome. Re-pin to merged API dev before SDK merge; SDK publication and CLI registry pin are separate.",
