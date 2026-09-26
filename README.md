@@ -237,6 +237,12 @@ Both organization and project views expose owner-bound resources:
 - `operations`: list, get, wait for, list transitions of, and cancel
   asynchronous operations
 
+Project views also expose `flows.list()` and `flows.retrieve(flowId)` for
+project-owned WhatsApp Flow drafts. Both require `sessions:read`; retrieve
+returns `data: null` if the draft is absent. These reads do not create or
+publish a Meta Flow. The methods are in SDK `dev` source; use a development
+prerelease containing them or authenticated HTTP until one is published.
+
 Cursor list methods return `CursorPage<T>`. With `afterOffset`,
 `project.events.list` returns a `FollowableIndexedEventPage`; use `nextOffset`
 and `nextPage()` to continue in ingestion order. Mutations return typed receipts
