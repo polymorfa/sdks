@@ -1,6 +1,10 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
-
 import { PolymorfaError, PolymorfaValidationError } from "../errors.js";
+import {
+  hexBytes,
+  verifyWebhookHmac,
+  webhookBodyBytes,
+  type WebhookBody,
+} from "./crypto.js";
 import {
   KNOWN_WEBHOOK_EVENT_TYPES,
   type KnownWebhookEvent,
@@ -8,7 +12,7 @@ import {
   type WebhookEvent,
 } from "./events.js";
 
-export type WebhookBody = string | ArrayBuffer | ArrayBufferView;
+export type { WebhookBody } from "./crypto.js";
 
 export class WebhookSignatureError extends PolymorfaError {
   constructor() {
@@ -28,11 +32,11 @@ export async function verifyWebhookSignature(
     : signatureHeader;
   if (!/^[a-fA-F0-9]{64}$/.test(normalized) || secret.length === 0)
     return false;
-  const expected = createHmac("sha256", secret)
-    .update(toBuffer(rawBody))
-    .digest();
-  const actual = Buffer.from(normalized, "hex");
-  return actual.length === expected.length && timingSafeEqual(actual, expected);
+  return verifyWebhookHmac(
+    webhookBodyBytes(rawBody),
+    hexBytes(normalized),
+    secret,
+  );
 }
 
 export async function constructWebhookEvent(
@@ -44,9 +48,15 @@ export async function constructWebhookEvent(
     throw new WebhookSignatureError();
   }
 
+  return parseVerifiedWebhookEvent(rawBody);
+}
+
+export function parseVerifiedWebhookEvent(rawBody: WebhookBody): WebhookEvent {
   let text: string;
   try {
-    text = new TextDecoder("utf-8", { fatal: true }).decode(toBuffer(rawBody));
+    text = new TextDecoder("utf-8", { fatal: true }).decode(
+      webhookBodyBytes(rawBody),
+    );
   } catch (cause) {
     throw new PolymorfaValidationError(
       "Webhook body must contain valid UTF-8.",
@@ -103,10 +113,4 @@ function isEventEnvelope(value: unknown): value is UnknownWebhookEvent {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.length > 0;
-}
-
-function toBuffer(body: WebhookBody): Buffer {
-  if (typeof body === "string") return Buffer.from(body, "utf8");
-  if (body instanceof ArrayBuffer) return Buffer.from(body);
-  return Buffer.from(body.buffer, body.byteOffset, body.byteLength);
 }
