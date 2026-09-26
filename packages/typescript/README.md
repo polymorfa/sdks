@@ -1685,8 +1685,9 @@ message identifiers are URL-encoded by the SDK.
 ## Messaging campaigns
 
 `MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `analytics`,
-`listRecipients`, `addRecipients`, `launch`, `pause`, `resume`, `stop`, and
-`requeue`. Reads require `campaigns:read`; writes require `campaigns:manage`.
+`listRecipients`, `addRecipients`, `update`, `launch`, `reschedule`, `pause`,
+`resume`, `stop`, and `requeue`. Reads require `campaigns:read`; writes require
+`campaigns:manage`.
 Pass the project's slug as the first argument. Campaigns accept organization
 API keys or project tokens; browser client tokens cannot use these methods.
 
@@ -1749,17 +1750,18 @@ They accept the transition without waiting for sending to finish. Stop always
 cancels; its `operationId` is null when the campaign had no active delivery run
 and was cancelled immediately. Check for null before calling
 `Client.operations.wait(operationId)`. A launched campaign waiting for its
-scheduled start can be stopped, but its start time cannot be changed.
-Launch, pause, resume, and stop generate one idempotency key per call unless you
+scheduled start can be stopped or rescheduled. Rescheduling after sending has
+started returns `409`.
+Launch, reschedule, pause, resume, and stop generate one idempotency key per call unless you
 pass one. Automatic retries reuse that key; a completed replay returns the
 API's `idempotency_completed` conflict, so inspect the campaign state after a
 lost response.
 
 `requeue` moves eligible failed recipients, and optionally recipients skipped
-with an error, back into the queue. It returns the number moved. The API refuses
-unentitled campaigns with `402`, suspension with `403`, and invalid lifecycle
-transitions with `409`. Throughput above the eligible number pool's ceiling is
-`400 campaign_throughput_capped`.
+with an error, back into the queue. It returns the number moved. Launch checks
+the selected numbers' Campaigns entitlement and returns `402` when it is absent.
+The API refuses suspension with `403` and invalid lifecycle transitions with
+`409`. Throughput above a number's ceiling is `400 campaign_throughput_capped`.
 
 `Client.campaigns` provides the Platform campaign methods. Its single-campaign
 reads, updates and deletion take a `PlatformCampaignParams` argument: a team
@@ -1769,8 +1771,9 @@ listing and append also require `projectId`. Platform
 `recipients` uses the same cursor-page shape. `Client.audiences` manages audience
 members, and `Client.optOuts` reads and replaces team keyword settings.
 
-`create` and `launch` generate an `Idempotency-Key` for each call. A supplied
-key is preserved across retries within the API's 24-hour replay window. If the
+`launch` and `reschedule` generate an `Idempotency-Key` for each call. Supply a
+key for `create` when replay protection is needed. A supplied key is preserved
+across retries within the API's 24-hour replay window. If the
 outcome remains uncertain after that window, reconcile campaign state before
 starting another request; see [Idempotent sends](#idempotent-sends).
 `archive` returns a receipt for a completed, failed, or cancelled campaign;
@@ -1872,6 +1875,11 @@ and `retryAfter` in seconds. Unknown event names still parse as
 WhatsApp Business app on a connected Meta Cloud API number as
 `{ source: "whatsapp_business_app", value }`. Events for a session created by a
 QuickLink include its optional `externalId`.
+
+Cloud API `message.received` payloads may include a `referral` object with
+`source_type`, `source_id`, `source_url`, and `ctwa_clid` from a Click-to-WhatsApp
+entry point. These fields describe the entry point; they do not establish a
+conversion or payment.
 
 Development builds also export `CallEndedPayload` and `CallTelemetryPayload`.
 For `call.ended`, check `from` before reading its identity: it is `null` when

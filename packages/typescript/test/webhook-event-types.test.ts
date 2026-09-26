@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type {
@@ -21,6 +22,7 @@ import type {
   ChatMutePayload,
   ChatReadPayload,
   CloudMessagePayload,
+  CloudMessageReferral,
   CommandResultPayload,
   ContactsSyncPayload,
   ContactUpdatePayload,
@@ -427,6 +429,34 @@ type ExportedPayloads = {
 };
 
 describe("webhook event payload types", () => {
+  it("types Meta Cloud referral fields from the public webhook contract", () => {
+    expectTypeOf<CloudMessagePayload["referral"]>().toEqualTypeOf<
+      CloudMessageReferral | undefined
+    >();
+    expectTypeOf<CloudMessageReferral["ctwa_clid"]>().toEqualTypeOf<
+      string | undefined
+    >();
+    const spec = JSON.parse(
+      readFileSync(
+        new URL("../../../contracts/openapi.messaging.json", import.meta.url),
+        "utf8",
+      ),
+    ) as {
+      components: { schemas: { CloudMessagePayload: unknown } };
+    };
+    const schema = (
+      spec.components.schemas.CloudMessagePayload as {
+        properties: { referral: { properties: Record<string, unknown> } };
+      }
+    ).properties.referral;
+    expect(Object.keys(schema.properties).sort()).toEqual([
+      "ctwa_clid",
+      "source_id",
+      "source_type",
+      "source_url",
+    ]);
+  });
+
   it("maps every formerly opaque event family to its contract payload", () => {
     expectTypeOf<IdentityReference>().toEqualTypeOf<ExpectedIdentityReference>();
     expectTypeOf<WebhookConversationReference>().toEqualTypeOf<ExpectedConversationReference>();

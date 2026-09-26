@@ -46,6 +46,7 @@ export {
   type ChatReadPayload,
   type CloudHistorySyncPayload,
   type CloudMessagePayload,
+  type CloudMessageReferral,
   type CommandResultPayload,
   type ContactOptPayload,
   type ContactUpdatePayload,

@@ -179,6 +179,15 @@ export interface LinkedDeviceMessagePayload {
 
 export type MessagePayload = LinkedDeviceMessagePayload;
 
+/** Meta-supplied Click-to-WhatsApp entry point; it does not prove a conversion. */
+export interface CloudMessageReferral {
+  readonly source_type?: string;
+  readonly source_id?: string;
+  readonly source_url?: string;
+  readonly ctwa_clid?: string;
+  readonly [key: string]: unknown;
+}
+
 export interface CloudMessagePayload {
   readonly id: string;
   readonly whatsapp_ids: WhatsAppMessageIds;
@@ -190,6 +199,7 @@ export interface CloudMessagePayload {
   readonly senderName?: string;
   readonly nativeFlowResponse?: NativeFlowResponse;
   readonly interactive?: Readonly<Record<string, unknown>>;
+  readonly referral?: CloudMessageReferral;
   readonly [key: string]: unknown;
 }
 

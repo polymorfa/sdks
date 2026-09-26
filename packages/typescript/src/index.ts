@@ -981,6 +981,7 @@ export {
   type ChatMutePayload,
   type ChatReadPayload,
   type CloudMessagePayload,
+  type CloudMessageReferral,
   type CloudHistorySyncPayload,
   type CommandResultPayload,
   type ContactsSyncPayload,
