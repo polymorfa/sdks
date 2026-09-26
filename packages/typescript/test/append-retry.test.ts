@@ -84,6 +84,17 @@ const appends: ReadonlyArray<
   ],
 ];
 
+it("never retries campaign audience creation without API replay support", async () => {
+  const { transport, requests } = await failingTransport();
+  await expect(
+    new AudiencesResource(transport).createFromCampaign(
+      { name: "Read follow-up", campaignId: "campaign", outcome: "read" },
+      { idempotencyKey: "not-a-replay-contract", maxNetworkRetries: 2 },
+    ),
+  ).rejects.toBeInstanceOf(PolymorfaServerError);
+  expect(requests).toHaveLength(1);
+});
+
 describe("appends without declared replay", () => {
   it.each(appends)(
     "%s sends once without a generated key on a retryable failure",

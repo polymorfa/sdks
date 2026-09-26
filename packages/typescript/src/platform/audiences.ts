@@ -5,8 +5,10 @@ import type {
   AddAudienceMembersRequest,
   AddAudienceMembersResult,
   AudienceImportResult,
+  AudienceFromCampaignResult,
   AudienceMembersEnvelope,
   CreateAudienceRequest,
+  CreateAudienceFromCampaignRequest,
   DataEnvelope,
   DeleteAudienceMemberResult,
   ListAudienceMembersParams,
@@ -40,6 +42,26 @@ export class AudiencesResource {
       path: "/platform/audiences",
       body,
       ...options,
+    });
+  }
+
+  /**
+   * Snapshot one outcome from a prior campaign into a new team audience.
+   * Opted-out numbers are omitted. If the response is lost, list audiences
+   * before retrying: this create has no idempotent replay contract.
+   */
+  createFromCampaign(
+    body: CreateAudienceFromCampaignRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<AudienceFromCampaignResult>>> {
+    return this.transport.request({
+      method: "POST",
+      path: "/platform/audiences/from-campaign",
+      body,
+      ...options,
+      // The API has no replay key for this create. A lost response must be
+      // reconciled through audience reads, even if the caller requested retries.
+      maxNetworkRetries: 0,
     });
   }
 

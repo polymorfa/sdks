@@ -2,7 +2,10 @@ import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { Client } from "../src/client.js";
-import type { CreateAudienceRequest } from "../src/index.js";
+import type {
+  CreateAudienceFromCampaignRequest,
+  CreateAudienceRequest,
+} from "../src/index.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -165,6 +168,31 @@ describe("Client audiences", () => {
     expect(requests[0]?.body).toBe(
       '{"name":"August","source":"csv","fileId":"upload_1","mapping":{"phone":"Phone","variables":{"firstName":"First name"}}}',
     );
+  });
+
+  it("creates a campaign-outcome audience with exact organization route and body", async () => {
+    const { client, requests } = await platformServer();
+    const response = await client.audiences.createFromCampaign({
+      name: "Read follow-up",
+      campaignId: "campaign/1",
+      projectId: "project/1",
+      outcome: "read",
+    });
+
+    expect(response.metadata.requestId).toBe("req_platform_automation");
+    expect(requests[0]).toMatchObject({
+      method: "POST",
+      path: "/platform/audiences/from-campaign",
+      body: '{"name":"Read follow-up","campaignId":"campaign/1","projectId":"project/1","outcome":"read"}',
+    });
+    expect(requests[0]?.headers["idempotency-key"]).toBeUndefined();
+    const invalid: CreateAudienceFromCampaignRequest = {
+      name: "x",
+      campaignId: "x",
+      // @ts-expect-error the API accepts only its seven named outcomes
+      outcome: "clicked",
+    };
+    expect(invalid.outcome).toBe("clicked");
   });
 
   it("types audience creation as members or a mapped file, never both", async () => {
