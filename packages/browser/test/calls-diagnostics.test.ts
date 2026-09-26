@@ -184,7 +184,7 @@ describe("browser call diagnostics", () => {
 
   const settle = () => vi.advanceTimersByTimeAsync(0);
 
-  it("reports figures every 15 seconds and once more when the connection closes", async () => {
+  it.each([0, 4_999, 5_000])("rate-limits a final report %i ms after a periodic report", async (delay) => {
     const f = fixture();
     await connected(f);
     f.receive(500);
@@ -214,13 +214,15 @@ describe("browser call diagnostics", () => {
     f.receive(900);
     await vi.advanceTimersByTimeAsync(15_000);
     expect(f.report).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(delay);
     await f.controller.hangup();
     await settle();
-    expect(f.report).toHaveBeenCalledTimes(3);
-    expect(f.reports()[2]!.body).toMatchObject({ kind: "quality" });
+    const expected = delay >= 5_000 ? 3 : 2;
+    expect(f.report).toHaveBeenCalledTimes(expected);
+    if (expected === 3) expect(f.reports()[2]!.body).toMatchObject({ kind: "quality" });
     // The loop stopped with the connection.
     await vi.advanceTimersByTimeAsync(60_000);
-    expect(f.report).toHaveBeenCalledTimes(3);
+    expect(f.report).toHaveBeenCalledTimes(expected);
     expect(vi.getTimerCount()).toBe(0);
   });
 

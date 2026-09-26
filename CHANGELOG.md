@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Calls quality diagnostics respect their five-second send interval when a
+  connection closes, avoiding an extra report that the API can rate-limit.
+
+- Browser Calls uses its authenticated lifecycle socket for ICE candidates and
+  pauses remote candidate polling while connected. It falls back to HTTP when
+  that socket disconnects. The Calls example also displays call-control errors
+  and failed request IDs.
+
 - Retired the unproduced `bansafe.risk_changed`,
   `bansafe.health_changed`, and `bansafe.enforcement` webhook names and their
   test-event fixtures. The typed `bansafe.incident`, `bansafe.action`,

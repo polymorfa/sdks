@@ -8,7 +8,11 @@ import {
 } from "./call.js";
 import type { CallsError } from "./errors.js";
 import { Emitter } from "./events.js";
-import { LifecycleSocket, type LifecycleEvent } from "./lifecycle.js";
+import {
+  LifecycleSocket,
+  type LifecycleEvent,
+  type LifecycleCandidate,
+} from "./lifecycle.js";
 import {
   isParticipantName,
   parseMediaControlValue,
@@ -175,6 +179,22 @@ export class CallsClient extends Emitter<ClientEvents> {
   get connected(): boolean {
     return this.#socket.connected;
   }
+  /** Candidate channel for the browser media adapter. @internal */
+  _sendCandidate(
+    event: LifecycleCandidate & { connectionId: string },
+  ): boolean {
+    return this.#socket.sendCandidate(
+      event.callId,
+      event.connectionId,
+      event.candidate,
+    );
+  }
+
+  /** Subscribe to the existing authenticated socket. @internal */
+  _onCandidate(listener: (event: LifecycleCandidate) => void): () => void {
+    return this.#socket.on("candidate", listener);
+  }
+
   /** Calls the client currently knows about that have not ended. */
   get calls(): readonly Call[] {
     return [...this.#calls.values()].filter((call) => !call.ended);
@@ -230,13 +250,42 @@ export class CallsClient extends Emitter<ClientEvents> {
    * Place an outbound call. Resolves once the platform has accepted the
    * request; listen for `connected` (or `ended`) on the returned call.
    */
-  async place(to: string, options: PlaceOptions = {}): Promise<Call> {
+  /** Call every remote member of an existing WhatsApp group after live policy checks. */
+  placeGroup(groupId: string, options: PlaceOptions = {}): Promise<Call> {
+    return this.place({ groupId }, options);
+  }
+
+  async place(
+    to: string | readonly string[] | { readonly groupId: string },
+    options: PlaceOptions = {},
+  ): Promise<Call> {
+    const participants = Array.isArray(to)
+      ? (to as readonly string[])
+      : undefined;
+    const groupId =
+      typeof to === "object" && !Array.isArray(to)
+        ? (to as { groupId: string }).groupId
+        : undefined;
+    if (groupId !== undefined && !/^[1-9][0-9]{0,18}$/.test(groupId))
+      throw new Error("A group call needs a public numeric group ID.");
+    if (
+      participants &&
+      (participants.length < 2 ||
+        participants.length > 31 ||
+        new Set(participants).size !== participants.length ||
+        participants.some((value) => !value.trim()))
+    )
+      throw new Error("A group call needs 2 to 31 distinct participants.");
+    const primary =
+      typeof to === "string" ? to : (groupId ?? participants![0]!);
     const generation = this.#connectGeneration;
     options.signal?.throwIfAborted();
     const video = options.video ?? false;
     const input = {
       session: this.session,
-      to,
+      to: primary,
+      ...(participants ? { participants: [...participants] } : {}),
+      ...(groupId ? { groupId } : {}),
       video,
       ...(options.exclusive === undefined
         ? {}
@@ -253,7 +302,7 @@ export class CallsClient extends Emitter<ClientEvents> {
     const call = this.#newCall(
       callId,
       "outbound",
-      to,
+      primary,
       video,
       undefined,
       options.exclusive === true,

@@ -74,6 +74,7 @@ export class VoipResource {
         "Placing a call with a server credential requires a session.",
       );
     }
+    assertPlacementTargets(body.to, body.participants, body.groupId);
     this.assertParticipant(body.participant);
     return this.transport.request({
       method: "POST",
@@ -176,6 +177,55 @@ export class VoipResource {
   }
 
   /** Invites another WhatsApp user into a call. */
+  /** Send one transient reaction, or an empty emoji to clear it. Never automatically retried. */
+  sendReaction(
+    callId: string,
+    body: {
+      connectionId: string;
+      participant?: string;
+      emoji: "" | "👍" | "❤️" | "😂" | "😮" | "😢" | "🙏";
+    },
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessResponse>> {
+    this.assertParticipant(body.participant);
+    if (
+      !CONNECTION_ID_PATTERN.test(body.connectionId) ||
+      !["", "👍", "❤️", "😂", "😮", "😢", "🙏"].includes(body.emoji)
+    )
+      throw new PolymorfaValidationError(
+        "Invalid call reaction or connection ID.",
+      );
+    return this.transport.request({
+      method: "POST",
+      path: `${callPath(callId)}/reaction`,
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
+  /** Set the Number's shared hand state on an attached call connection. */
+  setHandRaised(
+    callId: string,
+    body: { connectionId: string; participant?: string; raised: boolean },
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessResponse>> {
+    this.assertParticipant(body.participant);
+    if (
+      !CONNECTION_ID_PATTERN.test(body.connectionId) ||
+      typeof body.raised !== "boolean"
+    )
+      throw new PolymorfaValidationError(
+        "Invalid hand state or connection ID.",
+      );
+    return this.transport.request({
+      method: "POST",
+      path: `${callPath(callId)}/hand`,
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
+
   addParticipant(
     callId: string,
     body: VoipAddParticipantRequest,
@@ -184,6 +234,20 @@ export class VoipResource {
     return this.transport.request({
       method: "POST",
       path: `${callPath(callId)}/participants`,
+      body,
+      ...options,
+    });
+  }
+
+  /** Rings one non-connected participant already in the call's upstream roster. */
+  ringParticipant(
+    callId: string,
+    body: VoipAddParticipantRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${callPath(callId)}/participants/ring`,
       body,
       ...options,
     });
@@ -466,4 +530,40 @@ function callPath(callId: string): string {
 
 function callSettingsPath(session: string): string {
   return `/platform/sessions/${encodeURIComponent(session)}/call-settings`;
+}
+
+function assertPlacementTargets(
+  to: string | undefined,
+  participants: readonly string[] | undefined,
+  groupId: string | undefined,
+): void {
+  if (groupId !== undefined) {
+    if (
+      to !== undefined ||
+      participants !== undefined ||
+      !/^[1-9][0-9]{0,18}$/.test(groupId)
+    )
+      throw new PolymorfaValidationError(
+        "Provide one public groupId, without to or participants.",
+      );
+    return;
+  }
+  const valid = (value: unknown): value is string =>
+    typeof value === "string" &&
+    /^(?:\+[1-9]\d{1,14}|[1-9][0-9]{0,18})$/.test(value.trim());
+  if (
+    participants === undefined
+      ? !valid(to)
+      : to !== undefined ||
+        !Array.isArray(participants) ||
+        participants.length < 2 ||
+        participants.length > 31 ||
+        !participants.every(valid) ||
+        new Set(participants.map((value) => value.trim())).size !==
+          participants.length
+  ) {
+    throw new PolymorfaValidationError(
+      "Provide to or 2 to 31 distinct participants as E.164 numbers or user IDs.",
+    );
+  }
 }

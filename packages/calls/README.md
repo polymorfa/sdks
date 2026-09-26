@@ -170,3 +170,73 @@ The package entry point exports `CallsClient`, `Call`, `AudioTrack`,
 `CallClaimedError`, `CallsDisabledError`, `DEFAULT_SAMPLE_RATE`, and their option, event, token and
 media types. Everything else is internal to the Polymorfa packages and has no
 stability guarantee.
+
+## Group controls in this source revision
+
+This revision adds ad-hoc and existing-group placement plus participant re-ring. Release is
+pending the matching API and SDK publication recorded in `contracts/source.json`.
+
+```ts
+const call = await client.place(["+15550100", "+15550101"]);
+await call.ringParticipant("+15550101");
+const groupCall = await client.placeGroup("9007199254740996");
+```
+
+Pass 2 to 31 distinct phone numbers or public user IDs. The server checks each
+recipient's destination policy and the Number's calling restrictions before
+placing the group call. Cloud API Numbers refuse group origination and re-ring.
+Re-ring applies to a non-connected participant already in the call roster;
+a successful request does not change the roster until WhatsApp reports it.
+The browser controller exposes the same `place` array input and
+`ringParticipant` method for custom React, Elements and Next.js interfaces.
+
+`placeGroup(groupId)` uses the public group ID. The Number must be a member;
+the server obtains the live roster and checks every remote member. Groups must
+contain 2 to 31 remote members. Changed membership during placement refuses
+the call. The browser controller exposes the same `placeGroup` method; it does
+not send or optimistically create a participant roster.
+
+## Connection media state
+
+Mute or unmute only the media connection held by this call:
+
+```ts
+await call.setMediaState({ audioMuted: true });
+await call.setMediaState({ videoEnabled: true });
+// Write H.264 frames only after the start is acknowledged.
+await call.setMediaState({ videoEnabled: false });
+```
+
+These methods require the matching media-control server revision. The response
+confirms local media preferences; it does not prove the peer accepted a video
+upgrade. Another active video publisher causes `video_publisher_busy`. Stopping
+your video keeps inbound video active and cannot stop another connection's
+publisher. An unconfirmed request times out after five seconds and is not
+replayed automatically.
+
+`call.remoteAudioMuted` and the `remoteMute` event report the remote microphone
+in a direct call. `null` means unknown, including group calls. They do not
+change your microphone or camera. A reconnect restores acknowledged local
+preferences on the new connection.
+
+To publish screen content through the same H.264 writer, first await
+`call.setMediaState({ videoEnabled: true, screenSharing: true })`. Stop sharing
+with `screenSharing: false`; also set `videoEnabled: false` if no camera should
+resume. `screenSharing` is absent from confirmed state when false. The neutral
+client does not capture a display or encode it; browser callers use the browser
+controller's display picker.
+
+### Reactions and hands
+
+When `call.socialSupported` is true, `call.sendReaction("👍")` sends a transient
+reaction and `call.sendReaction("")` clears it. Listen for `reaction`; the sender
+is either `{self: true}` or a public `participantId`. Reconnection does not
+replay reactions. The SDK does not retry an uncertain send.
+
+`call.setHandRaised(true)` raises the Number's hand and `false` lowers it.
+`call.handRaised` and the `handState` event report the confirmed state. One
+Number shares its hand state across all application connections; remote hands
+are reported in `participant.handRaised` and disappear with the participant.
+These controls require an attached connection and runtime support. Cloud API
+calls refuse them. This source addition still needs a published package and
+matching API deployment before use.

@@ -74,9 +74,13 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
     // idle and ready are absent on purpose: nothing to announce, and this
     // region is assertive — a raw status identifier would be read out.
     const key =
-      snapshot?.error?.code === "call_control_failed"
-        ? "calls.controlFailed"
-        : HEADINGS[status];
+      snapshot?.error?.code === "screen_share_failed"
+        ? "calls.screenShareFailed"
+        : snapshot?.error?.code === "media_control_failed"
+          ? "calls.mediaControlFailed"
+          : snapshot?.error?.code === "call_control_failed"
+            ? "calls.controlFailed"
+            : HEADINGS[status];
     const heading = key === undefined ? undefined : messages[key];
     if (heading !== undefined) {
       // Assertive on the heading, not the panel: this element re-renders
@@ -88,6 +92,15 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
     }
     if (snapshot?.peer !== undefined)
       panel.append(textElement("p", snapshot.peer, "peer"));
+    if (snapshot?.remoteAudioMuted === true) {
+      const remoteMute = textElement(
+        "p",
+        messages["calls.remoteMuted"],
+        "remote-muted",
+      );
+      remoteMute.setAttribute("role", "status");
+      panel.append(remoteMute);
+    }
     const controller = this.configuredController<CallsController>();
     if (status === "incoming" && snapshot !== undefined) {
       // An answer or join is in flight: the controller refuses these until it
@@ -182,6 +195,47 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
       }
     }
     if (snapshot !== undefined && ACTIVE.has(status)) {
+      if (status === "connected" && snapshot.socialSupported) {
+        const hand = button(
+          snapshot.handRaised
+            ? messages["calls.lowerHand"]
+            : messages["calls.raiseHand"],
+          "hand",
+          () =>
+            void controller
+              ?.setHandRaised(!snapshot.handRaised)
+              .catch(() => undefined),
+        );
+        hand.setAttribute("aria-pressed", String(snapshot.handRaised === true));
+        panel.append(hand);
+        for (const emoji of ["👍", "❤️", "😂", "😮", "😢", "🙏"] as const)
+          panel.append(
+            button(
+              `${messages["calls.react"]} ${emoji}`,
+              "reaction",
+              () => void controller?.sendReaction(emoji).catch(() => undefined),
+            ),
+          );
+        panel.append(
+          button(
+            messages["calls.clearReaction"],
+            "clear-reaction",
+            () => void controller?.sendReaction("").catch(() => undefined),
+          ),
+        );
+      }
+      if (snapshot.socialError) {
+        const error = element("span", "social-error");
+        error.setAttribute("role", "alert");
+        error.textContent = messages["calls.socialFailed"];
+        panel.append(error);
+      }
+      if (snapshot.reaction?.emoji) {
+        const reaction = element("span", "reaction");
+        reaction.setAttribute("role", "status");
+        reaction.textContent = snapshot.reaction.emoji;
+        panel.append(reaction);
+      }
       // Gated like the camera: the element takes any controller, and one that
       // reports a line without mute must not be offered the control.
       if (snapshot.capabilities.mute)
@@ -206,6 +260,7 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
       // because it survives `reconnecting`.
       if (
         snapshot.capabilities.video &&
+        !snapshot.screenSharing &&
         (snapshot.video ||
           (status === "connected" && controller?.canEnableVideo === true))
       )
@@ -227,6 +282,30 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
                 void controller?.enableVideo?.().catch(() => undefined);
               }),
         );
+      if (
+        snapshot.capabilities.video &&
+        status === "connected" &&
+        controller?.canShareScreen
+      ) {
+        const share = button(
+          messages[
+            snapshot.screenSharing ? "calls.stopSharing" : "calls.shareScreen"
+          ],
+          "screen-share",
+          () => {
+            void (
+              snapshot.screenSharing
+                ? controller.stopScreenShare()
+                : controller.startScreenShare()
+            ).catch(() => undefined);
+          },
+        );
+        share.setAttribute(
+          "aria-pressed",
+          String(snapshot.screenSharing === true),
+        );
+        panel.append(share);
+      }
       // Leave closes only this connection; hang-up ends the call for
       // everyone. Leave is offered where nobody claimed the call, except on
       // a call this client placed that has not connected: leaving it would
@@ -264,7 +343,7 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
           list.append(
             textElement(
               "li",
-              participant.phoneNumber ?? participant.id,
+              `${participant.phoneNumber ?? participant.id}${participant.handRaised ? ` · ${messages["calls.handRaised"]}` : ""}`,
               participant.audioMuted ? "participant muted" : "participant",
             ),
           );

@@ -222,7 +222,7 @@ While a call's media is open, the controller sends call diagnostics for this
 browser's connection to `POST /messaging/voip/calls/{id}/reports`, where
 they appear with the call in the Console:
 
-- Every 15 seconds, and once when the connection closes: round-trip time,
+- Every 15 seconds, and when the connection closes if the last report was at least five seconds earlier: round-trip time,
   audio jitter, packets lost and received, the audio and video codecs, the
   ICE candidate type (`relay` means a TURN relay), and how many times the
   connection reconnected. Figures come from `RTCPeerConnection.getStats()`.
@@ -280,3 +280,24 @@ await templates.refreshPreview();
 The same-origin transport sends application actions with browser cookies. It
 does not accept a server credential, project slug, or Cloud API session. The
 application route resolves those values after authorizing the request.
+
+Microphone and camera controls synchronize the connection's media preferences
+with the call. `enableVideo()` confirms the publishing request after the local
+WebRTC negotiation; peer acceptance remains independent. A local camera preview
+is not confirmation that the phone receives video. A refused or unconfirmed
+request surfaces `media_control_failed` and switches off local video capture.
+Incoming phone video never turns on the local camera.
+
+`controller.getSnapshot().remoteAudioMuted` reports a known remote microphone
+state for a direct call and is absent for unknown or group state. React and
+Elements display this state without changing local mute controls.
+
+`controller.canShareScreen` is true when the connected media adapter supports
+display capture. Call `controller.startScreenShare()` directly from a click
+handler, and `controller.stopScreenShare()` to restore the previous camera and
+mute preference. `snapshot.screenSharing` identifies the local display source.
+React and Elements include the controls. The browser asks permission each time;
+system audio is not captured. Capture ending stops sharing. Leaving stops saved
+camera and display tracks, and a replacement connection does not reacquire the
+display. The source uses the existing single video publisher, so it cannot
+replace another connection's camera. Display and camera are not sent together.

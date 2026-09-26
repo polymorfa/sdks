@@ -1330,3 +1330,63 @@ describe("unified calls UI", () => {
     f.controller.dispose();
   });
 });
+
+it("shows direct remote mute without changing local capture", async () => {
+  const f = fixture();
+  await act(async () => {
+    await f.controller.place("+15550100");
+  });
+  const host = mount(
+    <PolymorfaProvider>
+      <CallStage controller={f.controller} />
+    </PolymorfaProvider>,
+  );
+  const callbacks = vi.mocked(f.media.open).mock.calls[0]![2];
+  act(() => callbacks.onRemoteMute?.(true));
+  expect(host.textContent).toContain("Their microphone is muted");
+  expect(f.session.setMuted).not.toHaveBeenCalled();
+  act(() => callbacks.onRemoteMute?.(null));
+  expect(host.textContent).not.toContain("Their microphone is muted");
+  await act(async () => {
+    await f.controller.dispose();
+  });
+});
+
+it("starts display capture from the share control and disables the camera until stopped", async () => {
+  const f = fixture();
+  f.session.startScreenShare = vi.fn(() => Promise.resolve());
+  f.session.stopScreenShare = vi.fn(() => Promise.resolve());
+  await act(async () => {
+    await f.controller.place("+15550100");
+  });
+  const callbacks = vi.mocked(f.media.open).mock.calls[0]![2];
+  act(() => callbacks.onConnectionState("connected"));
+  const host = mount(
+    <PolymorfaProvider>
+      <CallControls controller={f.controller} />
+    </PolymorfaProvider>,
+  );
+  const share = host.querySelector<HTMLButtonElement>(
+    '[aria-label="Share screen"]',
+  )!;
+  await act(async () => {
+    share.click();
+  });
+  expect(f.session.startScreenShare).toHaveBeenCalledOnce();
+  act(() => callbacks.onScreenSharing?.(true));
+  expect(
+    host.querySelector<HTMLButtonElement>('[aria-label="Turn camera on"]')!
+      .disabled,
+  ).toBe(true);
+  const stop = host.querySelector<HTMLButtonElement>(
+    '[aria-label="Stop sharing"]',
+  )!;
+  expect(stop.getAttribute("aria-pressed")).toBe("true");
+  await act(async () => {
+    stop.click();
+  });
+  expect(f.session.stopScreenShare).toHaveBeenCalledOnce();
+  await act(async () => {
+    await f.controller.dispose();
+  });
+});

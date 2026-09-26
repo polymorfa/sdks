@@ -66,3 +66,8 @@ export {
   type TemplateManagerProps,
 } from "./dropin.js";
 export { CallButton, type CallButtonProps } from "./call-button.js";
+export {
+  CallNumberPicker,
+  type CallNumberOption,
+  type CallNumberPickerProps,
+} from "./call-number-picker.js";

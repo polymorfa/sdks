@@ -1587,7 +1587,11 @@ export type VoipParticipantReference = string;
 /** Body for `POST /messaging/voip/calls`. */
 export interface VoipPlaceCallRequest {
   /** Phone number in E.164 form or a WhatsApp user ID. */
-  readonly to: string;
+  readonly to?: string;
+  /** Ad-hoc group of 2 to 31 distinct people. Mutually exclusive with to. */
+  readonly participants?: readonly string[];
+  /** Public group ID; mutually exclusive with to and participants. */
+  readonly groupId?: string;
   /** Session that places the call. Required with a server credential. */
   readonly session?: string;
   readonly video?: boolean;
@@ -1713,6 +1717,7 @@ export interface VoipAddParticipantRequest {
 export type VoipParticipantState = "invited" | "ringing" | "connected" | "left";
 
 export interface VoipParticipant {
+  readonly handRaised?: boolean;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;

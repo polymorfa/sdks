@@ -222,7 +222,6 @@ export class ConnectionDiagnostics {
     this.#lastReceived = sample.packetsReceived;
     this.#reporter.quality(
       { ...sample.figures, reconnects: this.#reconnects },
-      final,
     );
   }
 }

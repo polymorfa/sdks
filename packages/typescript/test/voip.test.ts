@@ -73,6 +73,79 @@ const participant = {
 } as const;
 
 describe("VoipResource", () => {
+  it("serializes ad-hoc group placement and re-ring without retries", async () => {
+    const server = await serve([
+      json(
+        {
+          success: true,
+          data: { callId: "group/1", session: "support", video: false },
+        },
+        201,
+      ),
+      json({ success: true }, 202),
+    ]);
+    const sdk = client(server);
+    await sdk.voip.place({
+      session: "support",
+      participants: ["+15550100", "+15550101"],
+    });
+    await sdk.voip.ringParticipant("group/1", { to: "+15550100" });
+    expect(
+      server.requests.map(({ method, path, body }) => ({
+        method,
+        path,
+        body: JSON.parse(body),
+      })),
+    ).toEqual([
+      {
+        method: "POST",
+        path: "/messaging/voip/calls",
+        body: { session: "support", participants: ["+15550100", "+15550101"] },
+      },
+      {
+        method: "POST",
+        path: "/messaging/voip/calls/group%2F1/participants/ring",
+        body: { to: "+15550100" },
+      },
+    ]);
+  });
+
+  it("serializes a stored group by public ID without recipient fields", async () => {
+    const server = await serve([
+      json(
+        {
+          success: true,
+          data: { callId: "stored-group", session: "support", video: false },
+        },
+        201,
+      ),
+    ]);
+    await client(server).voip.place({
+      session: "support",
+      groupId: "9007199254740996",
+    });
+    expect(JSON.parse(server.requests[0]!.body)).toEqual({
+      session: "support",
+      groupId: "9007199254740996",
+    });
+  });
+
+  it("refuses ambiguous or invalid group destinations before a request", async () => {
+    const sdk = client(await serve([]));
+    for (const body of [
+      { to: "+15550100", participants: ["+15550100", "+15550101"] },
+      { participants: ["+15550100"] },
+      { participants: ["+15550100", "+15550100"] },
+      { participants: ["123@lid", "+15550100"] },
+      { groupId: "123@g.us" },
+      { groupId: "9007199254740996", to: "+15550100" },
+      { groupId: "9007199254740996", participants: ["+15550100", "+15550101"] },
+    ])
+      expect(() => sdk.voip.place({ session: "support", ...body })).toThrow(
+        PolymorfaValidationError,
+      );
+  });
+
   it("places, accepts, adds participants, leaves, rejects, and ends calls", async () => {
     const server = await serve([
       {

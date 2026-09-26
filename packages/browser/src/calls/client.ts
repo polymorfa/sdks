@@ -125,14 +125,19 @@ export function createBrowserCalls(
         throw new Error("Finish the active call before placing another.");
       placing = true;
       try {
-        const call = await client.place(input.to, {
-          video: input.video,
-          idempotencyKey: input.idempotencyKey,
-          ...(input.exclusive === undefined
-            ? {}
-            : { exclusive: input.exclusive }),
-          signal,
-        });
+        const call = await client.place(
+          input.groupId
+            ? { groupId: input.groupId }
+            : (input.participants ?? input.to),
+          {
+            video: input.video,
+            idempotencyKey: input.idempotencyKey,
+            ...(input.exclusive === undefined
+              ? {}
+              : { exclusive: input.exclusive }),
+            signal,
+          },
+        );
         return { callId: call.id };
       } finally {
         placing = false;
@@ -182,6 +187,17 @@ export function createBrowserCalls(
     new WebRtcMediaFactory({
       ...options.media,
       signaling: new CallsSignalingClient(transport),
+      candidateTransport: options.media?.candidateTransport ?? {
+        get connected() {
+          return client.connected;
+        },
+        sendCandidate: (callId, candidate, connectionId) =>
+          client._sendCandidate({ callId, candidate, connectionId }),
+        onCandidate: (listener) =>
+          client._onCandidate((event) =>
+            listener(event.callId, event.candidate, event.connectionId),
+          ),
+      },
     });
   const controller = new CallsController(backend, media, {
     ...options.controller,

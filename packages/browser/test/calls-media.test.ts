@@ -30,10 +30,15 @@ class FakeStream {
     this.#tracks = this.#tracks.filter((t) => t !== track);
   }
 }
-class FakeTrack {
+class FakeTrack extends EventTarget {
   enabled = true;
-  readonly stop = vi.fn();
-  constructor(readonly kind: "audio" | "video") {}
+  readyState = "live";
+  readonly stop = vi.fn(() => {
+    this.readyState = "ended";
+  });
+  constructor(readonly kind: "audio" | "video") {
+    super();
+  }
 }
 
 beforeEach(() => {
@@ -59,6 +64,9 @@ function peerConnection(overrides: Partial<Record<string, unknown>> = {}) {
     label: string;
     init: unknown;
     onmessage: ((event: { data: unknown }) => void) | null;
+    onopen: (() => void) | null;
+    readyState: string;
+    send: ReturnType<typeof vi.fn>;
   }[] = [];
   const peer = {
     connectionState: "new",
@@ -93,7 +101,34 @@ function peerConnection(overrides: Partial<Record<string, unknown>> = {}) {
     ),
     getTransceivers: () => [...transceivers],
     createDataChannel: vi.fn((label: string, init: unknown) => {
-      const channel = { label, init, onmessage: null };
+      const channel: (typeof channels)[number] = {
+        label,
+        init,
+        onmessage: null,
+        onopen: null,
+        readyState: "open",
+        send: vi.fn((data: string) => {
+          const frame = JSON.parse(data) as {
+            type: string;
+            requestId: string;
+            audioMuted?: boolean;
+            videoEnabled?: boolean;
+            screenSharing?: boolean;
+          };
+          if (frame.type === "media_state")
+            queueMicrotask(() =>
+              channel.onmessage?.({
+                data: JSON.stringify({
+                  type: "media_state",
+                  requestId: frame.requestId,
+                  audioMuted: frame.audioMuted ?? false,
+                  videoEnabled: frame.videoEnabled ?? true,
+                  ...(frame.screenSharing ? { screenSharing: true } : {}),
+                }),
+              }),
+            );
+        }),
+      };
       channels.push(channel);
       return channel;
     }),
@@ -565,6 +600,7 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
       videoSlots?: number;
       maxVideoSlots?: number;
       onRemoteVideos?: (videos: readonly RemoteVideo[]) => void;
+      onControl?: CallMediaCallbacks["onControl"];
       connectionId?: string;
     } = {},
   ) {
@@ -575,10 +611,11 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
       options.video === true ? [audio, camera] : [audio],
     );
     const s = options.signaling ?? signaling();
+    const getUserMedia = vi.fn(async () => local);
     const factory = new WebRtcMediaFactory({
       signaling: s,
       mediaDevices: {
-        getUserMedia: vi.fn(async () => local),
+        getUserMedia,
       } as unknown as MediaDevices,
       createPeerConnection: () => peer,
       setInterval: (() => 0) as never,
@@ -595,6 +632,9 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
       options.video === true,
       {
         ...callbacks,
+        ...(options.onControl === undefined
+          ? {}
+          : { onControl: options.onControl }),
         ...(options.onRemoteVideos === undefined
           ? {}
           : { onRemoteVideos: options.onRemoteVideos }),
@@ -604,8 +644,23 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
         ? {}
         : { connectionId: options.connectionId },
     );
-    return { peer, session, signaling: s, audio, camera };
+    return { peer, session, signaling: s, audio, camera, getUserMedia };
   }
+
+  it("delivers only validated social controls from the data channel and stops on close", async () => {
+    const onControl = vi.fn();
+    const { peer, session } = await opened({ onControl });
+    for (const frame of [
+      { type: "reaction", participantId: "123", emoji: "👍" },
+      { type: "hand_state", raised: true, supported: true },
+      { type: "reaction", participantId: "123@lid", emoji: "👍" },
+    ])
+      control(peer, frame);
+    expect(onControl).toHaveBeenCalledTimes(2);
+    await session.close();
+    control(peer, { type: "reaction", self: true, emoji: "👍" });
+    expect(onControl).toHaveBeenCalledTimes(2);
+  });
 
   it("offers audio, a negotiated control channel, the camera and three receive slots", async () => {
     const {
@@ -666,7 +721,7 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
 
   it("maps video_source and video_source_removed to per-participant streams", async () => {
     const seen: (readonly RemoteVideo[])[] = [];
-    const { peer, session } = await opened({
+    const { peer, session, getUserMedia } = await opened({
       onRemoteVideos: (videos) => seen.push(videos),
     });
     const participant = {
@@ -704,6 +759,12 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
       ["connection:peer-conn-1", 9, "2"],
     ]);
     expect(videos[0]?.participant).toEqual(participant);
+    // Receiving the phone's video neither prompts for nor publishes a camera.
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+    expect(getUserMedia.mock.calls[0]).toEqual([
+      expect.objectContaining({ audio: true, video: false }),
+    ]);
+    expect(peer.transceivers[1]?.sender.track).toBeNull();
     expect(videos[1]?.connectionId).toBe("peer-conn-1");
     expect(videos[1]?.connectionParticipant).toBe("client:tab-2");
     // A connection source cannot also name a WhatsApp participant.
@@ -833,5 +894,197 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
     await second.session.close({ leave: false });
     expect(second.signaling["leave"]).not.toHaveBeenCalled();
     expect(second.signaling["end"]).not.toHaveBeenCalled();
+  });
+});
+
+describe("connection media control", () => {
+  it("sends a microphone state change and preserves remote reception", async () => {
+    const peer = peerConnection();
+    const muted = vi.fn();
+    const local = new FakeStream([new FakeTrack("audio")]);
+    const session = await factoryFor({
+      peer,
+      signaling: signaling(),
+      stream: local,
+    }).open(
+      "call-1",
+      false,
+      { ...callbacks, onRemoteMute: muted },
+      new AbortController().signal,
+    );
+    session.setMuted({ audio: true });
+    await Promise.resolve();
+    expect(
+      JSON.parse(peer.channels[0]!.send.mock.calls[0]![0] as string),
+    ).toMatchObject({
+      type: "media_state",
+      audioMuted: true,
+      videoEnabled: false,
+    });
+    control(peer, { type: "remote_media", audioMuted: true });
+    expect(muted).toHaveBeenCalledWith(true);
+    control(peer, { type: "remote_media", audioMuted: null });
+    expect(muted).toHaveBeenLastCalledWith(null);
+    expect(local.getVideoTracks()).toHaveLength(0);
+    await session.close();
+  });
+  it("reports a refused publisher and switches off local capture", async () => {
+    const peer = peerConnection();
+    const failure = vi.fn();
+    const video = new FakeTrack("video");
+    const session = await factoryFor({
+      peer,
+      signaling: signaling(),
+      stream: new FakeStream([new FakeTrack("audio"), video]),
+    }).open(
+      "call-1",
+      true,
+      { ...callbacks, onMediaControlError: failure },
+      new AbortController().signal,
+    );
+    peer.channels[0]!.send.mockImplementation((data: string) => {
+      const request = JSON.parse(data) as { requestId: string };
+      control(peer, {
+        type: "media_error",
+        requestId: request.requestId,
+        code: "video_publisher_busy",
+      });
+    });
+    session.setMuted({ video: false });
+    for (let i = 0; i < 8; i++) await Promise.resolve();
+    expect(video.enabled).toBe(false);
+    expect(failure).toHaveBeenCalledWith(
+      expect.objectContaining({ code: "video_publisher_busy" }),
+    );
+    await session.close();
+  });
+});
+
+describe("display capture on the owned outgoing video stream", () => {
+  async function setup(camera?: FakeTrack, capture?: Promise<FakeStream>) {
+    const display = new FakeTrack("video");
+    const mic = new FakeTrack("audio");
+    const local = new FakeStream(camera === undefined ? [mic] : [mic, camera]);
+    const getDisplayMedia = vi.fn(
+      () => capture ?? Promise.resolve(new FakeStream([display])),
+    );
+    const getUserMedia = vi.fn(() => Promise.resolve(local));
+    const peer = peerConnection();
+    const sharing = vi.fn();
+    const factory = new WebRtcMediaFactory({
+      signaling: signaling(),
+      mediaDevices: {
+        getUserMedia,
+        getDisplayMedia,
+      } as unknown as MediaDevices,
+      createPeerConnection: () => peer,
+      setInterval: (() => 0) as never,
+      clearInterval: (() => undefined) as never,
+    });
+    const session = await factory.open(
+      "call-screen",
+      camera !== undefined,
+      { ...callbacks, onScreenSharing: sharing },
+      new AbortController().signal,
+    );
+    return {
+      session,
+      display,
+      mic,
+      local,
+      peer,
+      sharing,
+      getDisplayMedia,
+      getUserMedia,
+    };
+  }
+  it.each([true, false])(
+    "restores the same camera and prior enabled=%s after display ends",
+    async (enabled) => {
+      const camera = new FakeTrack("video");
+      camera.enabled = enabled;
+      const f = await setup(camera);
+      const start = f.session.startScreenShare!(new AbortController().signal);
+      // Picker runs synchronously, preserving transient user activation.
+      expect(f.getDisplayMedia).toHaveBeenCalledWith({
+        video: true,
+        audio: false,
+      });
+      await start;
+      expect(f.session.screenSharing).toBe(true);
+      expect(f.peer.transceivers[1]!.sender.track).toBe(f.display);
+      expect(camera.enabled).toBe(false);
+      expect(f.local.getVideoTracks()).toEqual([f.display]);
+      expect(f.mic.enabled).toBe(true);
+      f.display.readyState = "ended";
+      f.display.dispatchEvent(new Event("ended"));
+      await vi.waitFor(() => expect(f.sharing).toHaveBeenLastCalledWith(false));
+      expect(f.peer.transceivers[1]!.sender.track).toBe(camera);
+      expect(camera.enabled).toBe(enabled);
+      expect(f.local.getVideoTracks()).toEqual([camera]);
+      expect(f.getUserMedia).toHaveBeenCalledTimes(1);
+      expect(f.display.stop).toHaveBeenCalled();
+      await f.session.close();
+    },
+  );
+  it("returns to audio-only without opening the camera", async () => {
+    const f = await setup();
+    await f.session.startScreenShare!(new AbortController().signal);
+    await f.session.stopScreenShare!();
+    expect(f.peer.transceivers[1]!.sender.track).toBeNull();
+    expect(f.local.getVideoTracks()).toHaveLength(0);
+    expect(f.getUserMedia).toHaveBeenCalledTimes(1);
+    const requests = f.peer.channels[0]!.send.mock.calls.map(
+      ([raw]) => JSON.parse(raw as string) as object,
+    );
+    expect(requests).toEqual([
+      expect.objectContaining({ videoEnabled: true, screenSharing: true }),
+      expect.objectContaining({ videoEnabled: false, screenSharing: false }),
+    ]);
+    await f.session.close();
+  });
+  it("stops display capture and restores the camera on publisher refusal", async () => {
+    const camera = new FakeTrack("video");
+    const f = await setup(camera);
+    f.peer.channels[0]!.send.mockImplementation((raw: string) => {
+      const request = JSON.parse(raw) as { requestId: string };
+      control(f.peer, {
+        type: "media_error",
+        requestId: request.requestId,
+        code: "video_publisher_busy",
+      });
+    });
+    await expect(
+      f.session.startScreenShare!(new AbortController().signal),
+    ).rejects.toMatchObject({ code: "video_publisher_busy" });
+    expect(f.display.stop).toHaveBeenCalled();
+    expect(camera.enabled).toBe(true);
+    expect(f.peer.transceivers[1]!.sender.track).toBe(camera);
+    expect(f.sharing).not.toHaveBeenCalledWith(true);
+    await f.session.close();
+  });
+  it("cleans late capture when the call closes while the picker is open", async () => {
+    let resolve!: (stream: FakeStream) => void;
+    const capture = new Promise<FakeStream>((r) => {
+      resolve = r;
+    });
+    const f = await setup(undefined, capture);
+    const start = f.session.startScreenShare!(new AbortController().signal);
+    await f.session.close({ leave: false });
+    resolve(new FakeStream([f.display]));
+    await start;
+    expect(f.display.stop).toHaveBeenCalled();
+    expect(f.peer.transceivers[1]!.sender.track).toBeNull();
+    expect(f.peer.channels[0]!.send).not.toHaveBeenCalled();
+  });
+  it("closes both saved camera and display without reacquiring on reconnect", async () => {
+    const camera = new FakeTrack("video");
+    const f = await setup(camera);
+    await f.session.startScreenShare!(new AbortController().signal);
+    await f.session.close({ leave: false });
+    expect(camera.stop).toHaveBeenCalled();
+    expect(f.display.stop).toHaveBeenCalled();
+    expect(f.session.screenSharing).toBe(false);
+    expect(f.getDisplayMedia).toHaveBeenCalledTimes(1);
   });
 });

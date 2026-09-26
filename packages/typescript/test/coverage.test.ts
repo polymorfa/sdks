@@ -173,9 +173,9 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "6839976e7ad54e044c4d789fd296edc44772a907",
-      total: 509,
-      covered: 379,
+      sourceCommit: "7578bef785305bc3c67459256b48e3474d5be84a",
+      total: 513,
+      covered: 383,
       partial: 0,
       missing: 0,
       excluded: 130,
@@ -235,6 +235,7 @@ describe("coverage checker", () => {
     );
     expect(mappings).toEqual({
       exportCallRecords: { status: "covered", method: "Client.calls.export" },
+      getCallRecord: { status: "covered", method: "Client.calls.retrieve" },
       getCallStats: { status: "covered", method: "Client.calls.stats" },
       listCallRecords: { status: "covered", method: "Client.calls.list" },
     });

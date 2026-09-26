@@ -114,17 +114,15 @@ export class CallReporter {
 
   /**
    * Report measured figures. Invalid or absent figures are dropped; nothing is
-   * sent without at least one. `force` sends even within 5 seconds of the
-   * previous quality report (the final report when a connection closes); the
-   * platform may then refuse it with 429, which is dropped.
+   * sent without at least one. Final reports share the same five-second
+   * budget as periodic reports, so ending a call cannot cause a report burst.
    */
-  quality(figures: CallQualityFigures, force = false): void {
+  quality(figures: CallQualityFigures): void {
     if (this.#stopped) return;
     const quality = cleanFigures(figures);
     if (quality === undefined) return;
     const now = this.#now();
     if (
-      !force &&
       this.#lastQuality !== undefined &&
       now - this.#lastQuality < QUALITY_INTERVAL_MS
     )
