@@ -1351,3 +1351,42 @@ it("shows direct remote mute without changing local capture", async () => {
     await f.controller.dispose();
   });
 });
+
+it("starts display capture from the share control and disables the camera until stopped", async () => {
+  const f = fixture();
+  f.session.startScreenShare = vi.fn(() => Promise.resolve());
+  f.session.stopScreenShare = vi.fn(() => Promise.resolve());
+  await act(async () => {
+    await f.controller.place("+15550100");
+  });
+  const callbacks = vi.mocked(f.media.open).mock.calls[0]![2];
+  act(() => callbacks.onConnectionState("connected"));
+  const host = mount(
+    <PolymorfaProvider>
+      <CallControls controller={f.controller} />
+    </PolymorfaProvider>,
+  );
+  const share = host.querySelector<HTMLButtonElement>(
+    '[aria-label="Share screen"]',
+  )!;
+  await act(async () => {
+    share.click();
+  });
+  expect(f.session.startScreenShare).toHaveBeenCalledOnce();
+  act(() => callbacks.onScreenSharing?.(true));
+  expect(
+    host.querySelector<HTMLButtonElement>('[aria-label="Turn camera on"]')!
+      .disabled,
+  ).toBe(true);
+  const stop = host.querySelector<HTMLButtonElement>(
+    '[aria-label="Stop sharing"]',
+  )!;
+  expect(stop.getAttribute("aria-pressed")).toBe("true");
+  await act(async () => {
+    stop.click();
+  });
+  expect(f.session.stopScreenShare).toHaveBeenCalledOnce();
+  await act(async () => {
+    await f.controller.dispose();
+  });
+});

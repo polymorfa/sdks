@@ -291,3 +291,13 @@ Incoming phone video never turns on the local camera.
 `controller.getSnapshot().remoteAudioMuted` reports a known remote microphone
 state for a direct call and is absent for unknown or group state. React and
 Elements display this state without changing local mute controls.
+
+`controller.canShareScreen` is true when the connected media adapter supports
+display capture. Call `controller.startScreenShare()` directly from a click
+handler, and `controller.stopScreenShare()` to restore the previous camera and
+mute preference. `snapshot.screenSharing` identifies the local display source.
+React and Elements include the controls. The browser asks permission each time;
+system audio is not captured. Capture ending stops sharing. Leaving stops saved
+camera and display tracks, and a replacement connection does not reacquire the
+display. The source uses the existing single video publisher, so it cannot
+replace another connection's camera. Display and camera are not sent together.

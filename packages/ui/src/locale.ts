@@ -95,6 +95,10 @@ export const ENGLISH_MESSAGES = {
   "calls.clearReaction": "Clear reaction",
   "calls.handRaised": "Hand raised",
   "calls.unmute": "Unmute",
+  "calls.shareScreen": "Share screen",
+  "calls.stopSharing": "Stop sharing",
+  "calls.screenShareFailed":
+    "Screen sharing could not be confirmed. Try sharing again.",
   "calls.cameraOn": "Turn camera on",
   "calls.cameraOff": "Turn camera off",
   "calls.reconnecting": "Reconnecting",

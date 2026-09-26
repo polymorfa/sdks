@@ -5,6 +5,8 @@ import { createConnectionId } from "./protocol.js";
 export interface MediaState {
   readonly audioMuted: boolean;
   readonly videoEnabled: boolean;
+  /** Absent or false when the outgoing source is the camera. */
+  readonly screenSharing?: boolean;
 }
 export type MediaStateUpdate = Partial<MediaState>;
 export type MediaStateRequest = MediaStateUpdate & {
@@ -36,20 +38,29 @@ export class MediaStateCommands {
           "Media controls are unavailable.",
         ),
       );
-    if (update.audioMuted === undefined && update.videoEnabled === undefined)
+    if (
+      update.audioMuted === undefined &&
+      update.videoEnabled === undefined &&
+      update.screenSharing === undefined
+    )
       return Promise.reject(
-        new TypeError("Specify audioMuted or videoEnabled."),
+        new TypeError("Specify audioMuted, videoEnabled or screenSharing."),
       );
     if (
       (update.audioMuted !== undefined &&
         typeof update.audioMuted !== "boolean") ||
       (update.videoEnabled !== undefined &&
-        typeof update.videoEnabled !== "boolean")
+        typeof update.videoEnabled !== "boolean") ||
+      (update.screenSharing !== undefined &&
+        typeof update.screenSharing !== "boolean")
     )
       return Promise.reject(
         new TypeError("Media preferences must be booleans."),
       );
     const requested: MediaStateUpdate = {
+      ...(update.screenSharing === undefined
+        ? {}
+        : { screenSharing: update.screenSharing }),
       ...(update.audioMuted === undefined
         ? {}
         : { audioMuted: update.audioMuted }),
@@ -84,15 +95,26 @@ export class MediaStateCommands {
       const finish = (reply?: MediaStateReply) => {
         clearTimeout(timer);
         this.#pending = undefined;
-        if (reply?.type === "media_state")
+        if (
+          reply?.type === "media_state" &&
+          (update.audioMuted === undefined ||
+            reply.audioMuted === update.audioMuted) &&
+          (update.videoEnabled === undefined ||
+            reply.videoEnabled === update.videoEnabled) &&
+          (update.screenSharing === undefined ||
+            (reply.screenSharing === true) === update.screenSharing)
+        )
           resolve({
             audioMuted: reply.audioMuted,
             videoEnabled: reply.videoEnabled,
+            ...(reply.screenSharing ? { screenSharing: true } : {}),
           });
         else
           reject(
             new CallsError(
-              reply?.code ?? "media_control_unknown",
+              reply?.type === "media_state"
+                ? "media_control_failed"
+                : (reply?.code ?? "media_control_unknown"),
               "Media control was not confirmed.",
             ),
           );

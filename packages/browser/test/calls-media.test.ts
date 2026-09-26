@@ -30,10 +30,15 @@ class FakeStream {
     this.#tracks = this.#tracks.filter((t) => t !== track);
   }
 }
-class FakeTrack {
+class FakeTrack extends EventTarget {
   enabled = true;
-  readonly stop = vi.fn();
-  constructor(readonly kind: "audio" | "video") {}
+  readyState = "live";
+  readonly stop = vi.fn(() => {
+    this.readyState = "ended";
+  });
+  constructor(readonly kind: "audio" | "video") {
+    super();
+  }
 }
 
 beforeEach(() => {
@@ -108,6 +113,7 @@ function peerConnection(overrides: Partial<Record<string, unknown>> = {}) {
             requestId: string;
             audioMuted?: boolean;
             videoEnabled?: boolean;
+            screenSharing?: boolean;
           };
           if (frame.type === "media_state")
             queueMicrotask(() =>
@@ -117,6 +123,7 @@ function peerConnection(overrides: Partial<Record<string, unknown>> = {}) {
                   requestId: frame.requestId,
                   audioMuted: frame.audioMuted ?? false,
                   videoEnabled: frame.videoEnabled ?? true,
+                  ...(frame.screenSharing ? { screenSharing: true } : {}),
                 }),
               }),
             );
@@ -950,5 +957,134 @@ describe("connection media control", () => {
       expect.objectContaining({ code: "video_publisher_busy" }),
     );
     await session.close();
+  });
+});
+
+describe("display capture on the owned outgoing video stream", () => {
+  async function setup(camera?: FakeTrack, capture?: Promise<FakeStream>) {
+    const display = new FakeTrack("video");
+    const mic = new FakeTrack("audio");
+    const local = new FakeStream(camera === undefined ? [mic] : [mic, camera]);
+    const getDisplayMedia = vi.fn(
+      () => capture ?? Promise.resolve(new FakeStream([display])),
+    );
+    const getUserMedia = vi.fn(() => Promise.resolve(local));
+    const peer = peerConnection();
+    const sharing = vi.fn();
+    const factory = new WebRtcMediaFactory({
+      signaling: signaling(),
+      mediaDevices: {
+        getUserMedia,
+        getDisplayMedia,
+      } as unknown as MediaDevices,
+      createPeerConnection: () => peer,
+      setInterval: (() => 0) as never,
+      clearInterval: (() => undefined) as never,
+    });
+    const session = await factory.open(
+      "call-screen",
+      camera !== undefined,
+      { ...callbacks, onScreenSharing: sharing },
+      new AbortController().signal,
+    );
+    return {
+      session,
+      display,
+      mic,
+      local,
+      peer,
+      sharing,
+      getDisplayMedia,
+      getUserMedia,
+    };
+  }
+  it.each([true, false])(
+    "restores the same camera and prior enabled=%s after display ends",
+    async (enabled) => {
+      const camera = new FakeTrack("video");
+      camera.enabled = enabled;
+      const f = await setup(camera);
+      const start = f.session.startScreenShare!(new AbortController().signal);
+      // Picker runs synchronously, preserving transient user activation.
+      expect(f.getDisplayMedia).toHaveBeenCalledWith({
+        video: true,
+        audio: false,
+      });
+      await start;
+      expect(f.session.screenSharing).toBe(true);
+      expect(f.peer.transceivers[1]!.sender.track).toBe(f.display);
+      expect(camera.enabled).toBe(false);
+      expect(f.local.getVideoTracks()).toEqual([f.display]);
+      expect(f.mic.enabled).toBe(true);
+      f.display.readyState = "ended";
+      f.display.dispatchEvent(new Event("ended"));
+      await vi.waitFor(() => expect(f.sharing).toHaveBeenLastCalledWith(false));
+      expect(f.peer.transceivers[1]!.sender.track).toBe(camera);
+      expect(camera.enabled).toBe(enabled);
+      expect(f.local.getVideoTracks()).toEqual([camera]);
+      expect(f.getUserMedia).toHaveBeenCalledTimes(1);
+      expect(f.display.stop).toHaveBeenCalled();
+      await f.session.close();
+    },
+  );
+  it("returns to audio-only without opening the camera", async () => {
+    const f = await setup();
+    await f.session.startScreenShare!(new AbortController().signal);
+    await f.session.stopScreenShare!();
+    expect(f.peer.transceivers[1]!.sender.track).toBeNull();
+    expect(f.local.getVideoTracks()).toHaveLength(0);
+    expect(f.getUserMedia).toHaveBeenCalledTimes(1);
+    const requests = f.peer.channels[0]!.send.mock.calls.map(
+      ([raw]) => JSON.parse(raw as string) as object,
+    );
+    expect(requests).toEqual([
+      expect.objectContaining({ videoEnabled: true, screenSharing: true }),
+      expect.objectContaining({ videoEnabled: false, screenSharing: false }),
+    ]);
+    await f.session.close();
+  });
+  it("stops display capture and restores the camera on publisher refusal", async () => {
+    const camera = new FakeTrack("video");
+    const f = await setup(camera);
+    f.peer.channels[0]!.send.mockImplementation((raw: string) => {
+      const request = JSON.parse(raw) as { requestId: string };
+      control(f.peer, {
+        type: "media_error",
+        requestId: request.requestId,
+        code: "video_publisher_busy",
+      });
+    });
+    await expect(
+      f.session.startScreenShare!(new AbortController().signal),
+    ).rejects.toMatchObject({ code: "video_publisher_busy" });
+    expect(f.display.stop).toHaveBeenCalled();
+    expect(camera.enabled).toBe(true);
+    expect(f.peer.transceivers[1]!.sender.track).toBe(camera);
+    expect(f.sharing).not.toHaveBeenCalledWith(true);
+    await f.session.close();
+  });
+  it("cleans late capture when the call closes while the picker is open", async () => {
+    let resolve!: (stream: FakeStream) => void;
+    const capture = new Promise<FakeStream>((r) => {
+      resolve = r;
+    });
+    const f = await setup(undefined, capture);
+    const start = f.session.startScreenShare!(new AbortController().signal);
+    await f.session.close({ leave: false });
+    resolve(new FakeStream([f.display]));
+    await start;
+    expect(f.display.stop).toHaveBeenCalled();
+    expect(f.peer.transceivers[1]!.sender.track).toBeNull();
+    expect(f.peer.channels[0]!.send).not.toHaveBeenCalled();
+  });
+  it("closes both saved camera and display without reacquiring on reconnect", async () => {
+    const camera = new FakeTrack("video");
+    const f = await setup(camera);
+    await f.session.startScreenShare!(new AbortController().signal);
+    await f.session.close({ leave: false });
+    expect(camera.stop).toHaveBeenCalled();
+    expect(f.display.stop).toHaveBeenCalled();
+    expect(f.session.screenSharing).toBe(false);
+    expect(f.getDisplayMedia).toHaveBeenCalledTimes(1);
   });
 });

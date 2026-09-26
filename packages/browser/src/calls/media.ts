@@ -125,6 +125,7 @@ export function parseDataChannelMessage(
 }
 
 export interface CallMediaCallbacks {
+  readonly onScreenSharing?: (sharing: boolean) => void;
   readonly onRemoteMute?: (muted: boolean | null) => void;
   readonly onMediaControlError?: (cause: unknown) => void;
   readonly onControl?: (
@@ -179,6 +180,10 @@ export interface CallMediaSession {
   /** One entry per remote video source. Optional for fakes. */
   readonly remoteVideos?: readonly RemoteVideo[];
   setMuted(muted: { readonly audio?: boolean; readonly video?: boolean }): void;
+  /** Display capture replaces this connection's camera; never captures system audio. */
+  startScreenShare?(signal: AbortSignal): Promise<void>;
+  stopScreenShare?(): Promise<void>;
+  readonly screenSharing?: boolean;
   audioEnabled(): boolean;
   videoEnabled(): boolean;
   /**
@@ -336,10 +341,20 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       control.send(JSON.stringify(frame));
       return true;
     });
+    let screen:
+      | {
+          track: MediaStreamTrack;
+          camera?: MediaStreamTrack;
+          cameraEnabled: boolean;
+          onEnded: () => void;
+        }
+      | undefined;
+    let screenPending = false;
     const syncState = () =>
       mediaControls.set({
         audioMuted: !local.getAudioTracks().some(({ enabled }) => enabled),
         videoEnabled: local.getVideoTracks().some(({ enabled }) => enabled),
+        screenSharing: screen !== undefined,
       });
     const failedControl = (cause: unknown) => {
       // Capture is local; a rejected or uncertain publish must not look live.
@@ -598,7 +613,10 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       switchSignal: AbortSignal,
     ): Promise<void> => {
       throwIfAborted(switchSignal);
-      const old = local.getTracks().find((t) => t.kind === kind);
+      const old =
+        kind === "video" && screen !== undefined
+          ? screen.camera
+          : local.getTracks().find((t) => t.kind === kind);
       if (old === undefined) {
         // Nothing of this kind is being sent — an audio-only call asked to
         // switch camera. enableVideo() starts the camera instead.
@@ -622,6 +640,11 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         return;
       }
       track.enabled = old.enabled;
+      if (kind === "video" && screen !== undefined) {
+        screen.camera = track;
+        old.stop();
+        return;
+      }
       const sender = peer.getSenders().find((s) => s.track === old);
       if (sender !== undefined) {
         try {
@@ -677,6 +700,114 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       }
     };
 
+    const stopScreen = async (): Promise<void> => {
+      const previous = screen;
+      if (previous === undefined) return;
+      // Stop display capture before any awaited signaling or track operation.
+      previous.track.removeEventListener("ended", previous.onEnded);
+      previous.track.stop();
+      local.removeTrack(previous.track);
+      const restore =
+        previous.camera?.readyState === "ended" ? undefined : previous.camera;
+      if (restore !== undefined) {
+        restore.enabled = previous.cameraEnabled;
+        local.addTrack(restore);
+      }
+      screen = undefined;
+      try {
+        await camera.sender.replaceTrack(restore ?? null);
+        camera.sender.setStreams?.(local);
+        if (!closed)
+          await mediaControls.set({
+            screenSharing: false,
+            videoEnabled: restore?.enabled === true,
+          });
+      } catch (cause) {
+        if (restore !== undefined) restore.enabled = false;
+        throw cause;
+      } finally {
+        callbacks.onScreenSharing?.(false);
+      }
+    };
+    const queueVideo = (operation: () => Promise<void>): Promise<void> => {
+      const run = upgrading.then(operation);
+      upgrading = run.catch(() => undefined);
+      return run;
+    };
+    const startScreen = (shareSignal: AbortSignal): Promise<void> => {
+      throwIfAborted(shareSignal);
+      if (closed || screen !== undefined || screenPending)
+        return Promise.resolve();
+      // Invoke capture in the caller's click handler, before any promise queue.
+      const capture = this.#mediaDevices.getDisplayMedia({
+        video: true,
+        audio: false,
+      });
+      void capture.catch(() => undefined);
+      screenPending = true;
+      return queueVideo(async () => {
+        const stream = await capture;
+        if (closed || shareSignal.aborted) {
+          stopTracks(stream);
+          return;
+        }
+        const track = stream.getVideoTracks()[0];
+        for (const extra of stream.getTracks())
+          if (extra !== track) extra.stop();
+        if (track === undefined)
+          throw new Error("No display video track was selected.");
+        const old = local.getVideoTracks()[0];
+        const cameraEnabled = old?.enabled === true;
+        const onEnded = () => {
+          void queueVideo(stopScreen).catch(failedControl);
+        };
+        let confirmed = false;
+        try {
+          await camera.sender.replaceTrack(track);
+          if (closed || shareSignal.aborted)
+            throw new Error("Screen sharing was canceled.");
+          if (old !== undefined) {
+            old.enabled = false;
+            local.removeTrack(old);
+          }
+          local.addTrack(track);
+          camera.sender.setStreams?.(local);
+          await renegotiate({}, shareSignal);
+          await mediaControls.set({ videoEnabled: true, screenSharing: true });
+          confirmed = true;
+          if (closed || shareSignal.aborted || track.readyState === "ended")
+            throw new Error("Screen sharing ended before it was confirmed.");
+          screen = {
+            track,
+            ...(old === undefined ? {} : { camera: old }),
+            cameraEnabled,
+            onEnded,
+          };
+          track.addEventListener("ended", onEnded, { once: true });
+          callbacks.onScreenSharing?.(true);
+        } catch (cause) {
+          track.stop();
+          local.removeTrack(track);
+          if (closed) old?.stop();
+          if (old !== undefined && !closed) {
+            old.enabled = cameraEnabled;
+            local.addTrack(old);
+          }
+          await camera.sender
+            .replaceTrack(closed ? null : (old ?? null))
+            .catch(() => undefined);
+          if (confirmed && !closed) {
+            await mediaControls
+              .set({ screenSharing: false, videoEnabled: cameraEnabled })
+              .catch(failedControl);
+          }
+          throw cause;
+        }
+      }).finally(() => {
+        screenPending = false;
+      });
+    };
+
     const poll = this.#setInterval(() => {
       // The socket delivers remote candidates while it is up.
       if (transport?.connected === true) return;
@@ -689,10 +820,13 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       get remoteVideos() {
         return [...videos.values()];
       },
+      get screenSharing() {
+        return screen !== undefined;
+      },
       setMuted: (muted) => {
         if (muted.audio !== undefined)
           setTracks(local.getAudioTracks(), !muted.audio);
-        if (muted.video !== undefined)
+        if (muted.video !== undefined && screen === undefined)
           setTracks(local.getVideoTracks(), !muted.video);
         if (control.readyState === "open")
           void syncState().catch(failedControl);
@@ -702,6 +836,8 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       videoEnabled: () => local.getVideoTracks().some(({ enabled }) => enabled),
       // Same-kind switches run one at a time so the last request wins.
       switchInput: (kind, deviceId, switchSignal) => {
+        if (kind === "video")
+          return queueVideo(() => swap(kind, deviceId, switchSignal));
         const run = (switching.get(kind) ?? Promise.resolve()).then(() =>
           swap(kind, deviceId, switchSignal),
         );
@@ -716,6 +852,12 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       ...(this.#signaling.renegotiate === undefined
         ? {}
         : {
+            ...(typeof this.#mediaDevices.getDisplayMedia === "function"
+              ? {
+                  startScreenShare: startScreen,
+                  stopScreenShare: () => queueVideo(stopScreen),
+                }
+              : {}),
             enableVideo: (
               enableSignal: AbortSignal,
               devices?: SelectedCallDevices,
@@ -731,6 +873,17 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         if (closed) return;
         closed = true;
         mediaControls.close();
+        if (screen !== undefined) {
+          screen.track.removeEventListener("ended", screen.onEnded);
+          local.removeTrack(screen.track);
+          screen.track.stop();
+          if (screen.camera !== undefined) {
+            local.addTrack(screen.camera);
+            screen.camera.stop();
+          }
+          screen = undefined;
+          callbacks.onScreenSharing?.(false);
+        }
         this.#clearInterval(poll);
         unsubscribeCandidates?.();
         videos.clear();

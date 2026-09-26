@@ -1531,3 +1531,39 @@ it("renders a remote mute observation independently of the local microphone", ()
   );
   node.remove();
 });
+
+it("offers the same screen start and stop controls without React", () => {
+  const snapshot = {
+    status: "connected",
+    revision: 0,
+    updatedAt: 0,
+    capabilities: { video: true, mute: true },
+    video: false,
+    audioMuted: false,
+    videoMuted: true,
+    screenSharing: false,
+    selectedDevices: {},
+    devices: [],
+  };
+  const fixture = fixtureController(snapshot);
+  const startScreenShare = vi.fn(() => Promise.resolve());
+  const stopScreenShare = vi.fn(() => Promise.resolve());
+  Object.assign(fixture.controller, {
+    canShareScreen: true,
+    startScreenShare,
+    stopScreenShare,
+  });
+  const node = document.createElement("pmfa-call") as PolymorfaCallElement;
+  node.controller = fixture.controller as never;
+  document.body.append(node);
+  const button = () =>
+    node.shadowRoot!.querySelector<HTMLButtonElement>('[part="screen-share"]')!;
+  expect(button().textContent).toBe("Share screen");
+  button().click();
+  expect(startScreenShare).toHaveBeenCalledOnce();
+  fixture.update({ ...snapshot, screenSharing: true });
+  expect(button().textContent).toBe("Stop sharing");
+  button().click();
+  expect(stopScreenShare).toHaveBeenCalledOnce();
+  node.remove();
+});
