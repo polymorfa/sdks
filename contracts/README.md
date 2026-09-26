@@ -42,14 +42,17 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` API source commit
-`6839976e7ad54e044c4d789fd296edc44772a907` on API `dev`. This revision retires the three unproduced BanSafe event names
-and their synthetic test fixtures. The four live BanSafe events remain typed.
-The two changed Testing operation fingerprints have been reconciled against
-the fixture catalog. Four webhook create/update fingerprints now match the
-Platform source's HTTP field pattern, which was already present on API `dev`.
-Operation mappings are unchanged. `source.json` records the source paths and
-SHA-256 hashes. SDK package publication and deployment remain separate.
+files at `polymorfa/polymorfa` API `dev` commit
+`9b64c70b622593aeda7364b7603ba6790144594e`. Team webhook tests now use
+their own event-only input schema; project webhook tests still accept a paired
+body and session ID. The team test operation is covered by
+`Client.webhooks.test`, which rejects project-only fields before sending.
+Eleven campaign fingerprints changed only in documented error responses. The
+existing SDK methods retain their route and success-response coverage; their
+shared transport preserves the `campaigns_not_entitled` 402 and
+`service_unavailable` 503 codes. Four webhook create/update fingerprints reflect
+the API's corrected HTTP header pattern. `source.json` records the source paths
+and SHA-256 hashes. SDK package publication and deployment remain separate.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
@@ -309,7 +312,7 @@ Functions is tracked separately in `functions/openapi.json`, with its exact
 monorepo source commit and extraction hash in `functions/source.json`. This
 snapshot contains only the 15 Functions operations and their transitive schemas.
 `npm run check:functions` verifies their ledger; SDK tests exercise every method.
-The main Messaging and Platform snapshots use the pinned Hybrid Link API branch;
+The main Messaging and Platform snapshots use the pinned merged API `dev` commit;
 Functions subset retains its separate source revision.
 
 All 15 Functions methods require `client.project(projectId).functions` and an

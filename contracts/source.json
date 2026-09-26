@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "6839976e7ad54e044c4d789fd296edc44772a907",
+  "commit": "9b64c70b622593aeda7364b7603ba6790144594e",
   "branch": "dev",
   "published": true,
-  "note": "Merged API source commit retiring three unproduced BanSafe webhook names and test fixtures; Messaging and Platform snapshots are byte-identical to the authoritative OpenAPI files. SDK publication and deployment are separate.",
+  "note": "Merged API dev source with owner-specific Platform webhook test inputs. Messaging and Platform snapshots are byte-identical to this revision; SDK package publication and deployment remain separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "79543bf719017598c3e2497004d761056e919b3200abdaae1560893542816cc7"
+      "sha256": "992b8a26ffb9ae3476fea4c1fca6ebaa662a0dac3e5bfcd31f1af6b7a01932e8"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "7eca4148c2f1fbda47c26a67c42e2da6b74e47e5edf38d749e30a5fc3f1d7fe8"
+      "sha256": "6cf2ab1aa2a187553cc95a87bfa281613a2e0b047b81695c937c1b38b19c7218"
     }
   }
 }
