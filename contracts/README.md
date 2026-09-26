@@ -55,7 +55,8 @@ participant re-ring, connection media controls, emoji reactions, raised hands
 and scoped call record detail. It also documents automatic SIP caller identity
 when no From user override is set. The API merge also adds campaign reschedule
 routes. SDK PR #310 owns their methods; the coverage ledger records both as
-excluded until that PR merges. `source.json` records source paths and SHA-256
+excluded until that PR merges. The SDK webhook catalog and payload types include
+the `campaign.rescheduled` event in this pinned snapshot. `source.json` records source paths and SHA-256
 hashes. The refresh also carries an audio-codec description and corrects an
 escaped webhook-header control-character pattern; no header fields or SDK
 serialization changed. SDK publication, deployment and the CLI's exact
