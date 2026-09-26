@@ -49,7 +49,7 @@ authentication. The SDK snapshot below also includes the later campaign
 reschedule operations, which are tracked separately by SDK PR #310.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API commit `067ce4a4d4760b5835788ae570e41d060ee98a99` on
+files at API commit `8193408813bc16b78d9317cdbeaf9805929e1b18` on
 `codex/calls-continuation-20260926`. This unreleased revision adds ad-hoc and group-ID placement,
 participant re-ring, connection media controls, emoji reactions, raised hands
 and scoped call record detail. It also documents automatic SIP caller identity
@@ -59,7 +59,9 @@ excluded until that PR merges. The SDK webhook catalog and payload types include
 the `campaign.rescheduled` event in this pinned snapshot. `source.json` records source paths and SHA-256
 hashes. The refresh also carries an audio-codec description and corrects an
 escaped webhook-header control-character pattern; no header fields or SDK
-serialization changed. SDK publication, deployment and the CLI's exact
+serialization changed. This revision also declares the optional `handRaised`
+boolean on webhook call participants, matching the existing SDK event types.
+SDK publication, deployment and the CLI's exact
 registry pin remain separate release gates. The call-link preview request schema
 accepts `session` and `token` together while remaining a closed object.
 

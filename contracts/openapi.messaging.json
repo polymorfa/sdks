@@ -2427,6 +2427,10 @@
           "username": {
             "type": "string"
           },
+          "handRaised": {
+            "type": "boolean",
+            "description": "Whether this participant has raised their hand when reported by the call roster."
+          },
           "audioMuted": {
             "type": "boolean",
             "enum": [

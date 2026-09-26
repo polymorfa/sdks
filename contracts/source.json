@@ -1,14 +1,14 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "067ce4a4d4760b5835788ae570e41d060ee98a99",
+  "commit": "8193408813bc16b78d9317cdbeaf9805929e1b18",
   "branch": "codex/calls-continuation-20260926",
   "published": false,
-  "note": "Unreleased integrated Calls and campaign reschedule contract. Snapshots match the exact API merge commit. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
+  "note": "Unreleased integrated Calls and campaign reschedule contract. Snapshots match the exact API PR head. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "bdeb7dd3525f5da1a845a3d5164edd3920ede24b5fd8f4b6b69d54dbe88a8573"
+      "sha256": "3b666255508c5d2ab1ff41682794a83e0937c895b79c3f76138b3185b2ee057d"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
