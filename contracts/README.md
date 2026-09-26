@@ -64,6 +64,13 @@ pattern correction; their request types and method mappings are unchanged.
 `source.json` records the source paths and SHA-256 hashes. API merge, SDK
 publication and deployed availability remain separate.
 
+API PR #377 at `0f559ed7f89227fa220d6a0275fcc40b8e319a55` adds local
+validation before project-template submission. Its exact OpenAPI source and hash
+are recorded in `cloud-api-supplements.json`. The existing typed
+`MessagingClient.templates.submit` method now makes one network attempt,
+including when callers supply an idempotency key or retry override. The full
+snapshot remains pinned to PR #310 until the API branches converge.
+
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
 operation fingerprint or SDK method mapping.

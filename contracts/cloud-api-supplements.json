@@ -30,6 +30,14 @@
       "merged": false
     },
     {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/377",
+      "commit": "0f559ed7f89227fa220d6a0275fcc40b8e319a55",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "7d2c6060f054eab6d4c60c9c58da41cc6f7282bc86c5098c234ec2a9dd3d0c8c",
+      "operationIds": ["submitProjectTemplateToMeta"],
+      "merged": false
+    },
+    {
       "pullRequest": "https://github.com/polymorfa/polymorfa/pull/348",
       "commit": "d22930d2453c3ae428fac807f545277bb748594c",
       "sourcePath": "apps/api/docs/openapi.json",
