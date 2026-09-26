@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "f41b8cdf93c86ab8e6a144574d60ed07eb96e17e",
+  "sourceCommit": "cb5c2464960ed8cb413afc97e3f705000c703625",
   "excludedContracts": [
     {
       "family": "graph",
@@ -1086,6 +1086,17 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.requeue"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reschedule",
+      "operationId": "rescheduleCampaign",
+      "fingerprint": "b6c239ea6b3e2dc5df21cccdde97afb239664089f6654170ae3db917d94e6676",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges."
       }
     },
     {
@@ -4826,6 +4837,17 @@
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.requeue"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/reschedule",
+      "operationId": "reschedulePlatformCampaign",
+      "fingerprint": "21878cc0e7fed1e5f4c0f983a4899a70dd5fa4a410b1d293962a8ddccabe2f23",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges."
       }
     },
     {

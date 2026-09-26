@@ -42,15 +42,17 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API commit `f41b8cdf93c86ab8e6a144574d60ed07eb96e17e` on
-`codex/calls-continuation-20260926`. This unreleased revision adds ad-hoc and group-ID placement
+files at API commit `cb5c2464960ed8cb413afc97e3f705000c703625` on
+`codex/calls-continuation-20260926`. This unreleased revision adds ad-hoc and group-ID placement,
 participant re-ring, connection media controls, emoji reactions, raised hands
 and scoped call record detail. It also documents automatic SIP caller identity
-when no From user override is set. `source.json` records source paths and SHA-256 hashes.
-The refresh also carries an audio-codec description and corrects an escaped
-webhook-header control-character pattern in the previous snapshot; no header
-fields or SDK serialization changed. SDK publication, deployment and the CLI's
-exact registry pin remain separate release gates.
+when no From user override is set. The API merge also adds campaign reschedule
+routes. SDK PR #310 owns their methods; the coverage ledger records both as
+excluded until that PR merges. `source.json` records source paths and SHA-256
+hashes. The refresh also carries an audio-codec description and corrects an
+escaped webhook-header control-character pattern; no header fields or SDK
+serialization changed. SDK publication, deployment and the CLI's exact
+registry pin remain separate release gates.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
@@ -73,7 +75,7 @@ from SDK `dev`. The three public Calls analytics operations are covered by
 `Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
 `Client.calls.exportAll` walks export pages. The 13 public Voice operations are
 covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
-13 Console counterparts are excluded. The full 515-operation snapshot includes
+13 Console counterparts are excluded. The full 517-operation snapshot includes
 all 15 Functions routes already merged to API `dev`.
 
 HMS history adds four server-only Messaging reads under
@@ -163,10 +165,10 @@ signed events with these names still decode as unknown events.
 | ------------------- | ---------: |
 | Covered             |        385 |
 | Missing             |          0 |
-| Excluded            |        130 |
+| Excluded            |        132 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        515 |
+| Total               |        517 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

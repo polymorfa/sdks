@@ -9,6 +9,9 @@
   pauses remote candidate polling while connected. It falls back to HTTP when
   that socket disconnects. The Calls example also displays call-control errors
   and failed request IDs.
+- Team webhook tests accept an optional event type. The SDK now rejects a
+  supplied body or session ID before making that request. Project webhook
+  tests keep the paired native body and session ID input.
 
 - Retired the unproduced `bansafe.risk_changed`,
   `bansafe.health_changed`, and `bansafe.enforcement` webhook names and their

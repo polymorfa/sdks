@@ -426,9 +426,19 @@ export class WebhooksResource<O extends ClientOwner> extends ResourceBase {
   }
   test(
     webhookId: string,
-    input: TestWebhookInputFor<O> = {} as TestWebhookInputFor<O>,
+    input: TestWebhookInputFor<O> = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<WebhookTestFor<O>>> {
+    if (
+      this.prefix === "/platform" &&
+      ("body" in input || "sessionId" in input)
+    ) {
+      return Promise.reject(
+        new PolymorfaValidationError(
+          "Organization webhook tests do not accept body or sessionId.",
+        ),
+      );
+    }
     return this.mutate(
       "POST",
       this.path(`/webhooks/${encodeURIComponent(webhookId)}/tests`),
