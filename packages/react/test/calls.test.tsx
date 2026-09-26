@@ -1364,7 +1364,9 @@ it("labels local camera dispatch without a peer acceptance as unverified deliver
     await f.controller.place("+15550100");
     await f.controller.enableVideo();
   });
-  expect(host.textContent).toContain("Video delivery to the other device is unverified");
+  expect(host.textContent).toContain(
+    "Video delivery to the other device is unverified",
+  );
   f.controller.dispose();
 });
 
