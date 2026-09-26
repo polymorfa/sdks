@@ -182,6 +182,47 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
       }
     }
     if (snapshot !== undefined && ACTIVE.has(status)) {
+      if (status === "connected" && snapshot.socialSupported) {
+        const hand = button(
+          snapshot.handRaised
+            ? messages["calls.lowerHand"]
+            : messages["calls.raiseHand"],
+          "hand",
+          () =>
+            void controller
+              ?.setHandRaised(!snapshot.handRaised)
+              .catch(() => undefined),
+        );
+        hand.setAttribute("aria-pressed", String(snapshot.handRaised === true));
+        panel.append(hand);
+        for (const emoji of ["👍", "❤️", "😂", "😮", "😢", "🙏"] as const)
+          panel.append(
+            button(
+              `${messages["calls.react"]} ${emoji}`,
+              "reaction",
+              () => void controller?.sendReaction(emoji).catch(() => undefined),
+            ),
+          );
+        panel.append(
+          button(
+            messages["calls.clearReaction"],
+            "clear-reaction",
+            () => void controller?.sendReaction("").catch(() => undefined),
+          ),
+        );
+      }
+      if (snapshot.socialError) {
+        const error = element("span", "social-error");
+        error.setAttribute("role", "alert");
+        error.textContent = messages["calls.socialFailed"];
+        panel.append(error);
+      }
+      if (snapshot.reaction?.emoji) {
+        const reaction = element("span", "reaction");
+        reaction.setAttribute("role", "status");
+        reaction.textContent = snapshot.reaction.emoji;
+        panel.append(reaction);
+      }
       // Gated like the camera: the element takes any controller, and one that
       // reports a line without mute must not be offered the control.
       if (snapshot.capabilities.mute)
@@ -264,7 +305,7 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
           list.append(
             textElement(
               "li",
-              participant.phoneNumber ?? participant.id,
+              `${participant.phoneNumber ?? participant.id}${participant.handRaised ? ` · ${messages["calls.handRaised"]}` : ""}`,
               participant.audioMuted ? "participant muted" : "participant",
             ),
           );

@@ -176,6 +176,55 @@ export class VoipResource {
   }
 
   /** Invites another WhatsApp user into a call. */
+  /** Send one transient reaction, or an empty emoji to clear it. Never automatically retried. */
+  sendReaction(
+    callId: string,
+    body: {
+      connectionId: string;
+      participant?: string;
+      emoji: "" | "👍" | "❤️" | "😂" | "😮" | "😢" | "🙏";
+    },
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessResponse>> {
+    this.assertParticipant(body.participant);
+    if (
+      !CONNECTION_ID_PATTERN.test(body.connectionId) ||
+      !["", "👍", "❤️", "😂", "😮", "😢", "🙏"].includes(body.emoji)
+    )
+      throw new PolymorfaValidationError(
+        "Invalid call reaction or connection ID.",
+      );
+    return this.transport.request({
+      method: "POST",
+      path: `${callPath(callId)}/reaction`,
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
+  /** Set the Number's shared hand state on an attached call connection. */
+  setHandRaised(
+    callId: string,
+    body: { connectionId: string; participant?: string; raised: boolean },
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessResponse>> {
+    this.assertParticipant(body.participant);
+    if (
+      !CONNECTION_ID_PATTERN.test(body.connectionId) ||
+      typeof body.raised !== "boolean"
+    )
+      throw new PolymorfaValidationError(
+        "Invalid hand state or connection ID.",
+      );
+    return this.transport.request({
+      method: "POST",
+      path: `${callPath(callId)}/hand`,
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
+
   addParticipant(
     callId: string,
     body: VoipAddParticipantRequest,

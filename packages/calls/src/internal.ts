@@ -90,3 +90,5 @@ export {
   type CallReportClient,
   type CallReporterOptions,
 } from "./diagnostics.js";
+
+export { isCallReactionEmoji } from "./protocol.js";

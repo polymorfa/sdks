@@ -120,6 +120,35 @@ export class BrowserCallsApi implements CallsApi {
     return this.#signaling.report(callId, report, signal);
   }
 
+  async sendReaction(
+    callId: string,
+    connectionId: string,
+    emoji: import("@polymorfa/sdk/calls/internal").CallReactionEmoji,
+    _participant?: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#transport.request({
+      method: "POST",
+      path: `/messaging/voip/calls/${encodeURIComponent(callId)}/reaction`,
+      body: { connectionId, emoji },
+      ...(signal === undefined ? {} : { signal }),
+    });
+  }
+  async setHandRaised(
+    callId: string,
+    connectionId: string,
+    raised: boolean,
+    _participant?: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#transport.request({
+      method: "POST",
+      path: `/messaging/voip/calls/${encodeURIComponent(callId)}/hand`,
+      body: { connectionId, raised },
+      ...(signal === undefined ? {} : { signal }),
+    });
+  }
+
   async addParticipant(
     callId: string,
     to: string,
