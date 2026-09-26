@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (218 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (219 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -17475,6 +17475,123 @@
           },
           "413": {
             "$ref": "#/components/responses/PayloadTooLarge"
+          }
+        }
+      }
+    },
+    "/platform/audiences/from-campaign": {
+      "post": {
+        "operationId": "createAudienceFromCampaign",
+        "tags": [
+          "audiences"
+        ],
+        "summary": "Create an audience from a campaign",
+        "description": "Creates an audience from the recipients of a previous campaign that had one `outcome`, to send them a follow-up campaign. The members are a snapshot taken when the request runs: later receipts, reads or replies on the source campaign do not change the audience. Numbers on the team's opt-out list are left out and counted in `optedOutCount`; each member keeps the template variables it had on the source campaign. Outcomes: `delivered` (the device confirmed delivery), `not_delivered` (sent, with no delivery confirmation), `read`, `not_read` (sent and not read, including sends never delivered), `replied`, `not_replied` (sent and no reply was attributed), and `failed` (the send failed after every attempt). Read outcomes depend on the recipient's read receipts. `404` means the campaign is not in your team (or not in `projectId` when given); `409` means no recipient that is not opted out has the outcome, and nothing is created.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "campaignId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The campaign whose recipients are selected."
+                  },
+                  "projectId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Optional. When given, the campaign must belong to this project."
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "enum": [
+                      "delivered",
+                      "not_delivered",
+                      "read",
+                      "not_read",
+                      "replied",
+                      "not_replied",
+                      "failed"
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "campaignId",
+                  "outcome"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AudienceFromCampaignResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -37625,6 +37742,101 @@
           "invalidRows"
         ]
       },
+      "AudienceFromCampaignResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "campaign"
+            ]
+          },
+          "recipientCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Members in the new audience."
+          },
+          "fileId": {
+            "type": "string",
+            "nullable": true
+          },
+          "columns": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "sampleRow": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "mapping": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "createdAt": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "integer"
+          },
+          "sourceCampaignId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "delivered",
+              "not_delivered",
+              "read",
+              "not_read",
+              "replied",
+              "not_replied",
+              "failed"
+            ]
+          },
+          "matchedCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Recipients of the source campaign with the outcome, before opt-outs were left out."
+          },
+          "optedOutCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Matched recipients left out because the number is on the team's opt-out list."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "source",
+          "recipientCount",
+          "fileId",
+          "columns",
+          "sampleRow",
+          "mapping",
+          "createdAt",
+          "updatedAt",
+          "sourceCampaignId",
+          "outcome",
+          "matchedCount",
+          "optedOutCount"
+        ]
+      },
       "AudienceMember": {
         "type": "object",
         "additionalProperties": false,
@@ -40666,7 +40878,7 @@
           "value": {
             "type": "string",
             "maxLength": 4096,
-            "pattern": "^(?![\\s\\S]*[\\^@-\\^H\\u000A-\\^_\\u007F])[\\s\\S]*$",
+            "pattern": "^(?![\\s\\S]*[\\u0000-\\u0008\\u000A-\\u001F\\u007F])[\\s\\S]*$",
             "x-polymorfa-max-utf8-bytes": 4096,
             "writeOnly": true,
             "description": "Encrypted write-only HTTP field value. Limited to 4096 UTF-8 bytes. Line breaks, NUL, and other control characters except horizontal tab are rejected."

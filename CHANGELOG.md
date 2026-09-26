@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `Client.audiences.createFromCampaign` creates a follow-up audience from one
+  previous campaign outcome. The response includes matched and opted-out counts.
+
 - Retired the unproduced `bansafe.risk_changed`,
   `bansafe.health_changed`, and `bansafe.enforcement` webhook names and their
   test-event fixtures. The typed `bansafe.incident`, `bansafe.action`,

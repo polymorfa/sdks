@@ -1759,6 +1759,17 @@ listing and append also require `projectId`. Platform
 `recipients` uses the same cursor-page shape. `Client.audiences` manages audience
 members, and `Client.optOuts` reads and replaces team keyword settings.
 
+`Client.audiences.createFromCampaign({ name, campaignId, outcome, projectId? })`
+creates a new audience from one previous campaign outcome. It requires a team
+API key with `campaigns:manage`; project tokens cannot use it. Outcomes are
+`delivered`, `not_delivered`, `read`, `not_read`, `replied`, `not_replied`, and
+`failed`. The result contains the new audience, `matchedCount`, and
+`optedOutCount`; opted-out numbers are omitted. The audience is a snapshot at
+the time of the request. A 404 means the source campaign is outside the team
+or optional project bound, and a 409 means no eligible recipient matched. This
+create has no idempotent replay contract, so after an uncertain response list
+audiences before trying again.
+
 `create` and `launch` generate an `Idempotency-Key` for each call. A supplied
 key is preserved across retries within the API's 24-hour replay window. If the
 outcome remains uncertain after that window, reconcile campaign state before

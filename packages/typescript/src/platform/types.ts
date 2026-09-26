@@ -251,7 +251,34 @@ export interface AddPlatformCampaignRecipientsResult {
   readonly invalidRows: readonly InvalidRecipientRow[];
 }
 
-export type AudienceSource = "csv" | "manual" | "api";
+export type AudienceSource = "csv" | "manual" | "api" | "campaign";
+
+export type AudienceRetargetOutcome =
+  | "delivered"
+  | "not_delivered"
+  | "read"
+  | "not_read"
+  | "replied"
+  | "not_replied"
+  | "failed";
+
+export interface CreateAudienceFromCampaignRequest {
+  /** New audience name, 1 to 200 characters. */
+  readonly name: string;
+  /** Campaign whose recipients supply the snapshot. */
+  readonly campaignId: string;
+  /** Optional extra bound: the campaign must belong to this project. */
+  readonly projectId?: string;
+  readonly outcome: AudienceRetargetOutcome;
+}
+
+export interface AudienceFromCampaignResult extends Audience {
+  readonly source: "campaign";
+  readonly sourceCampaignId: string;
+  readonly outcome: AudienceRetargetOutcome;
+  readonly matchedCount: number;
+  readonly optedOutCount: number;
+}
 
 /** Column names in an uploaded spreadsheet, mapped onto recipient fields. */
 export interface AudienceImportMapping {
