@@ -1,5 +1,12 @@
 # Contract coverage
 
+The reschedule draft pins both OpenAPI snapshots and the coverage ledger to
+API PR #321 commit `0566f1719b1e252b81093cbc37e234c1561a877f`.
+That commit is not merged or published. It adds Messaging and Platform
+reschedule actions, plus the `campaign.rescheduled` webhook payload. The
+TypeScript server client covers both actions and the payload. Re-pin to the
+merged API commit and verify registry publication before a CLI release.
+
 ## Message provider references
 
 Native message receipts, webhook references, acknowledgements, history, and
@@ -43,13 +50,13 @@ published SDK package before updating their pinned dependency.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` API source commit
-`6839976e7ad54e044c4d789fd296edc44772a907` on API `dev`. This revision retires the three unproduced BanSafe event names
-and their synthetic test fixtures. The four live BanSafe events remain typed.
-The two changed Testing operation fingerprints have been reconciled against
-the fixture catalog. Four webhook create/update fingerprints now match the
-Platform source's HTTP field pattern, which was already present on API `dev`.
-Operation mappings are unchanged. `source.json` records the source paths and
-SHA-256 hashes. SDK package publication and deployment remain separate.
+`0566f1719b1e252b81093cbc37e234c1561a877f` on PR #321. The preceding
+source revision `6839976e7ad54e044c4d789fd296edc44772a907` retired three
+unproduced BanSafe event names and their test fixtures. The four live BanSafe
+events remain typed. This draft adds two covered reschedule operations and
+updates fingerprints for 15 existing operations whose error or webhook
+contracts changed. `source.json` records the source paths and SHA-256 hashes.
+API merge, SDK publication and deployment remain separate.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
@@ -309,7 +316,7 @@ Functions is tracked separately in `functions/openapi.json`, with its exact
 monorepo source commit and extraction hash in `functions/source.json`. This
 snapshot contains only the 15 Functions operations and their transitive schemas.
 `npm run check:functions` verifies their ledger; SDK tests exercise every method.
-The main Messaging and Platform snapshots use the pinned Hybrid Link API branch;
+The main Messaging and Platform snapshots use the API PR #321 source commit;
 Functions subset retains its separate source revision.
 
 All 15 Functions methods require `client.project(projectId).functions` and an

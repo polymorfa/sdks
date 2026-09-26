@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (218 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (219 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -15814,7 +15814,7 @@
           "campaigns"
         ],
         "summary": "Create campaign",
-        "description": "Creates a draft campaign. It is refused with `403 bansafe_org_suspended` while the team is suspended, `402 campaigns_not_entitled` when no number the campaign can send from is on a plan that includes Campaigns, and `400 campaign_throughput_capped` when a requested throughput is above its safety ceiling.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Creates a draft campaign on any plan. `senderConfig.sessionIds` may name numbers that are not yet on a plan that includes Campaigns; launch checks the selection. It is refused with `403 bansafe_org_suspended` while the team is suspended, `400 invalid_parameter` when `senderConfig.sessionIds` is malformed, and `400 campaign_throughput_capped` when a per-number cap is above its safety ceiling.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -15877,9 +15877,6 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
-          },
-          "402": {
-            "$ref": "#/components/responses/PaymentRequired"
           },
           "403": {
             "$ref": "#/components/responses/Forbidden"
@@ -15971,7 +15968,7 @@
           "campaigns"
         ],
         "summary": "Update campaign",
-        "description": "Updates a campaign. A new `senderConfig` passes the same Campaigns plan and throughput checks as create. `recipientListId` points the campaign at another audience while it is still an unlaunched draft and replaces its existing recipients; after launch it answers `409`.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Updates a campaign. On an unlaunched draft, a new `senderConfig` passes the same checks as create and plans are checked at launch. Once the campaign has launched, including a scheduled launch that has not started, a new `senderConfig` passes the launch checks and can answer `402 campaigns_not_entitled` or `400 invalid_parameter`. `recipientListId` points the campaign at another audience while it is still an unlaunched draft and replaces its existing recipients; after launch it answers `409`. A sender edit to a draft that launches while the edit is being saved also answers `409`. A changed `scheduledAt` after launch answers `409`; use reschedule to move a scheduled start.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -16066,6 +16063,9 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/CampaignEligibilityUnavailable"
           }
         }
       },
@@ -16175,7 +16175,7 @@
           "campaigns"
         ],
         "summary": "Launch campaign",
-        "description": "Starts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. The launch passes the same suspension, Campaigns plan and throughput checks as create, against the campaign's stored settings. `409` means the campaign is not a draft or is already launched and waiting for its start time.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Starts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the stored sender selection against live plans: `402 campaigns_not_entitled` when a selected number is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.sessionIds` when a selected number is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. `409` means the campaign is not a draft, is already launched and waiting for its start time, or its sending numbers changed during the launch.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -16301,6 +16301,9 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/CampaignEligibilityUnavailable"
           }
         }
       }
@@ -16683,6 +16686,139 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/platform/campaigns/{campaignId}/reschedule": {
+      "post": {
+        "operationId": "reschedulePlatformCampaign",
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Reschedule campaign",
+        "description": "Moves the start of a launched campaign that is still waiting for it. Set `scheduledAt` to a later or earlier time, or to `null` to start now. The response returns the campaign with its new `scheduledAt`; sending the current start time again changes nothing. A suspended team is refused with `403 bansafe_org_suspended`. `409` means the campaign has already started, is finished or being stopped, or was never launched; launch a draft with `scheduledAt` instead.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again: it returns `409 idempotency_completed` when the original succeeded, or the original server error. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReschedulePlatformCampaignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "required": [
+                        "id",
+                        "status",
+                        "operationId"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "draft",
+                            "running",
+                            "paused",
+                            "cancelling",
+                            "cancelled",
+                            "completed",
+                            "failed",
+                            "archived"
+                          ]
+                        },
+                        "operationId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "The operation that carries this lifecycle action."
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -37478,6 +37614,26 @@
           "name"
         ]
       },
+      "ReschedulePlatformCampaignRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "scheduledAt": {
+            "type": "integer",
+            "minimum": 1,
+            "nullable": true,
+            "description": "The new start time in Unix milliseconds. `null`, or a time that is not in the future, starts the campaign now."
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Required when using a team API key. Project tokens derive the project from the credential."
+          }
+        },
+        "required": [
+          "scheduledAt"
+        ]
+      },
       "CreateAudienceRequest": {
         "type": "object",
         "additionalProperties": false,
@@ -40666,7 +40822,7 @@
           "value": {
             "type": "string",
             "maxLength": 4096,
-            "pattern": "^(?![\\s\\S]*[\\^@-\\^H\\u000A-\\^_\\u007F])[\\s\\S]*$",
+            "pattern": "^(?![\\s\\S]*[\\u0000-\\u0008\\u000A-\\u001F\\u007F])[\\s\\S]*$",
             "x-polymorfa-max-utf8-bytes": 4096,
             "writeOnly": true,
             "description": "Encrypted write-only HTTP field value. Limited to 4096 UTF-8 bytes. Line breaks, NUL, and other control characters except horizontal tab are rejected."
@@ -47399,6 +47555,30 @@
       },
       "CallStatsTooSlow": {
         "description": "`service_unavailable`: the statistics took too long to compute. Narrow the range or filters and retry.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stable request correlation identifier."
+          },
+          "Polymorfa-Version": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      },
+      "CampaignEligibilityUnavailable": {
+        "description": "`service_unavailable`: the selected numbers' plans could not be checked. Nothing was launched or saved; retry the request.",
         "headers": {
           "X-Request-Id": {
             "schema": {

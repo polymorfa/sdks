@@ -35,6 +35,7 @@ export {
   type CampaignRecipientFailedPayload,
   type CampaignRecipientSentPayload,
   type CampaignRecipientSkippedPayload,
+  type CampaignRescheduledPayload,
   type CampaignResumedPayload,
   type CampaignStoppedPayload,
   type CampaignThrottledPayload,

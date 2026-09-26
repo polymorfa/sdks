@@ -225,6 +225,13 @@ export interface UpdatePlatformCampaignRequest {
   readonly [field: string]: unknown;
 }
 
+export interface ReschedulePlatformCampaignRequest {
+  /** Owning project for an organization API key. */
+  readonly projectId: string;
+  /** New start time in Unix milliseconds; null or a past time starts now. */
+  readonly scheduledAt: number | null;
+}
+
 export interface ListPlatformCampaignRecipientsParams {
   /** Owning project for this organization-client request. */
   readonly projectId: string;
