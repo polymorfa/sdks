@@ -1012,6 +1012,7 @@ const SAFE_RESPONSE_HEADERS = [
   "polymorfa-data-region",
   "x-ratelimit-limit",
   "x-ratelimit-remaining",
+  "x-ratelimit-reset",
   "polymorfa-ratelimit-reason",
   "polymorfa-next-cursor",
   "polymorfa-data-region",
