@@ -74,7 +74,7 @@ export class VoipResource {
         "Placing a call with a server credential requires a session.",
       );
     }
-    assertPlacementTargets(body.to, body.participants);
+    assertPlacementTargets(body.to, body.participants, body.groupId);
     this.assertParticipant(body.participant);
     return this.transport.request({
       method: "POST",
@@ -486,7 +486,19 @@ function callSettingsPath(session: string): string {
 function assertPlacementTargets(
   to: string | undefined,
   participants: readonly string[] | undefined,
+  groupId: string | undefined,
 ): void {
+  if (groupId !== undefined) {
+    if (
+      to !== undefined ||
+      participants !== undefined ||
+      !/^[1-9][0-9]{0,18}$/.test(groupId)
+    )
+      throw new PolymorfaValidationError(
+        "Provide one public groupId, without to or participants.",
+      );
+    return;
+  }
   const valid = (value: unknown): value is string =>
     typeof value === "string" &&
     /^(?:\+[1-9]\d{1,14}|[1-9][0-9]{0,18})$/.test(value.trim());

@@ -48,6 +48,7 @@ export interface PlaceCallRequest {
   readonly session: string;
   readonly to: string;
   readonly participants?: readonly string[];
+  readonly groupId?: string;
   readonly video: boolean;
   /** Claim the call for the placing participant. Default `false`. */
   readonly exclusive?: boolean;
@@ -227,9 +228,11 @@ export class HttpCallsApi implements CallsApi {
       "/messaging/voip/calls",
       async (token) => ({
         ...(isClientToken(token) ? {} : { session: input.session }),
-        ...(input.participants === undefined
-          ? { to: input.to }
-          : { participants: input.participants }),
+        ...(input.groupId !== undefined
+          ? { groupId: input.groupId }
+          : input.participants === undefined
+            ? { to: input.to }
+            : { participants: input.participants }),
         video: input.video,
         ...(input.exclusive === undefined
           ? {}
