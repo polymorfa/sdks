@@ -74,6 +74,7 @@ export class VoipResource {
         "Placing a call with a server credential requires a session.",
       );
     }
+    assertPlacementTargets(body.to, body.participants);
     this.assertParticipant(body.participant);
     return this.transport.request({
       method: "POST",
@@ -184,6 +185,20 @@ export class VoipResource {
     return this.transport.request({
       method: "POST",
       path: `${callPath(callId)}/participants`,
+      body,
+      ...options,
+    });
+  }
+
+  /** Rings one non-connected participant already in the call's upstream roster. */
+  ringParticipant(
+    callId: string,
+    body: VoipAddParticipantRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${callPath(callId)}/participants/ring`,
       body,
       ...options,
     });
@@ -466,4 +481,28 @@ function callPath(callId: string): string {
 
 function callSettingsPath(session: string): string {
   return `/platform/sessions/${encodeURIComponent(session)}/call-settings`;
+}
+
+function assertPlacementTargets(
+  to: string | undefined,
+  participants: readonly string[] | undefined,
+): void {
+  const valid = (value: unknown): value is string =>
+    typeof value === "string" &&
+    /^(?:\+[1-9]\d{1,14}|[1-9][0-9]{0,18})$/.test(value.trim());
+  if (
+    participants === undefined
+      ? !valid(to)
+      : to !== undefined ||
+        !Array.isArray(participants) ||
+        participants.length < 2 ||
+        participants.length > 31 ||
+        !participants.every(valid) ||
+        new Set(participants.map((value) => value.trim())).size !==
+          participants.length
+  ) {
+    throw new PolymorfaValidationError(
+      "Provide to or 2 to 31 distinct participants as E.164 numbers or user IDs.",
+    );
+  }
 }

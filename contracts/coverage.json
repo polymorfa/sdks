@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "6839976e7ad54e044c4d789fd296edc44772a907",
+  "sourceCommit": "b29481baac495366b532d44d2445c7da94c5292a",
   "excludedContracts": [
     {
       "family": "graph",
@@ -1599,7 +1599,7 @@
       "method": "POST",
       "path": "/messaging/voip/calls",
       "operationId": "voipPlaceCall",
-      "fingerprint": "5e83b2f8992788ac0f500b69782b47a5063f24cf2bbe103451b3c696d262cdf9",
+      "fingerprint": "e30264326a6ad058b248b26c1fa403a2e0748559d518be6d9574924de6402a9b",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.place"
@@ -1658,6 +1658,17 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.voip.addParticipant"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/participants/ring",
+      "operationId": "voipRingParticipant",
+      "fingerprint": "1b273e5ddcdb6e2d57d3abcc2f05a01a51f93701f03579b9eec5928500e0a394",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.voip.ringParticipant"
       }
     },
     {
@@ -4139,7 +4150,7 @@
       "method": "PATCH",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
       "operationId": "updateProjectWebhook",
-      "fingerprint": "dd063cb877e87bdd9c02df55decca2c72e5eed162d7c91fcb6d1d4ca93566714",
+      "fingerprint": "97736d6e9e6a5bdd5106f8a8bfdfa8d93cc4871b1fa3361bcf850b2bd614ceaa",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).webhooks.update"
@@ -4195,7 +4206,7 @@
       "method": "PATCH",
       "path": "/platform/webhooks/{webhookId}",
       "operationId": "updateOrganizationWebhook",
-      "fingerprint": "c2202ed0f4068cee38ece298a963ece9fc10b8e68afd6d771a152d779285481b",
+      "fingerprint": "defd2bb51f7ae7e5162e2d5c19f3f8f9b8b5ad989dc0516f0f1860f9563a54cc",
       "typescript": {
         "status": "covered",
         "method": "Client.webhooks.update"
@@ -5076,7 +5087,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks",
       "operationId": "createProjectWebhook",
-      "fingerprint": "d1da775d2aba25802eb5573fa48e6555d161d717f83e23fee02605265da386a0",
+      "fingerprint": "776f24ac17854feac94ed6c5db42cd0aa7b8141dfac47245755f4571f35a5c74",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).webhooks.create"
@@ -5334,7 +5345,7 @@
       "method": "POST",
       "path": "/platform/webhooks",
       "operationId": "createOrganizationWebhook",
-      "fingerprint": "b20438679f669bb141b5e333afae3fe669b55a9e9363f945ccb684ee1bc677ac",
+      "fingerprint": "37a88593419abbb8bfc1355e709908ed2bbf601d8c67e6b6c5f834a6ce0756b7",
       "typescript": {
         "status": "covered",
         "method": "Client.webhooks.create"

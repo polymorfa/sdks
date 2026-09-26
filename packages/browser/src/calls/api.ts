@@ -47,7 +47,9 @@ export class BrowserCallsApi implements CallsApi {
         method: "POST",
         path: "/messaging/voip/calls",
         body: {
-          to: input.to,
+          ...(input.participants === undefined
+            ? { to: input.to }
+            : { participants: input.participants }),
           video: input.video,
           ...(input.exclusive === undefined
             ? {}
@@ -118,6 +120,23 @@ export class BrowserCallsApi implements CallsApi {
     signal?: AbortSignal,
   ): Promise<void> {
     return this.#signaling.report(callId, report, signal);
+  }
+
+  async ringParticipant(
+    callId: string,
+    to: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#transport
+      .request({
+        method: "POST",
+        path: `/messaging/voip/calls/${encodeURIComponent(callId)}/participants/ring`,
+        body: { to },
+        ...(signal === undefined ? {} : { signal }),
+      })
+      .catch((cause: unknown) => {
+        throw claimedError(cause);
+      });
   }
 
   async addParticipant(

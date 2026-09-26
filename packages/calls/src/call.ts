@@ -660,6 +660,21 @@ export class Call extends Emitter<CallEvents> {
     this.#end("hangup");
   }
 
+  /** Ring an existing non-connected WhatsApp participant again. Does not alter the roster optimistically. */
+  async ringParticipant(to: string): Promise<void> {
+    if (this.#state === "ended")
+      throw new CallsError(
+        "invalid_state",
+        "Cannot ring a participant in an ended call.",
+      );
+    if (this.#api.ringParticipant === undefined)
+      throw new CallsError(
+        "invalid_state",
+        "This transport does not support participant re-ring.",
+      );
+    await this.#api.ringParticipant(this.id, to);
+  }
+
   /** Invite another party, turning a 1:1 call into a group call. */
   async addParticipant(to: string): Promise<Participant> {
     if (this.#state === "ended")
