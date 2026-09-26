@@ -88,6 +88,8 @@ export const ENGLISH_MESSAGES = {
   "calls.hangup": "Hang up",
   "calls.mute": "Mute",
   "calls.unmute": "Unmute",
+  "calls.outgoingNumber": "Outgoing Number",
+  "calls.chooseNumber": "Choose a Number",
   "calls.shareScreen": "Share screen",
   "calls.stopSharing": "Stop sharing",
   "calls.screenShareFailed":
