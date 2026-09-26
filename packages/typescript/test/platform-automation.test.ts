@@ -314,6 +314,24 @@ describe("Client campaigns", () => {
     });
   });
 
+  it("replaces a composed message sequence with its per-message delays", async () => {
+    const { client, requests } = await platformServer();
+    const messagesArray = [
+      { version: 2 as const, source: "Hello {{name}}", delayAfterSec: 0 },
+      { version: 2 as const, source: "Follow-up", delayAfterSec: 60 },
+    ];
+    await client.campaigns.update(
+      "campaign/a",
+      { messagesArray },
+      { projectId: "project/a" },
+    );
+    expect(requests[0]).toMatchObject({
+      method: "PATCH",
+      path: "/platform/campaigns/campaign%2Fa?projectId=project%2Fa",
+      body: JSON.stringify({ messagesArray }),
+    });
+  });
+
   it("maps collection, encoded item, and project query operations", async () => {
     const { client, requests } = await platformServer();
     await client.campaigns.list({
