@@ -30,7 +30,7 @@ operations. The six Console counterparts are excluded. Message content and
 applicable.
 
 `testing-events.json` records the four test-event schemas from API source commit
-`8b1f4f9d52a618e6e032eaacf9bdc53108e6ecfd`, including the source path and file
+`475d329333ea9ad6a8bc957c83e0d37dcc452a1c`, including the source path and file
 hash. The TypeScript test-event catalog and override types use that revision.
 Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
@@ -43,7 +43,7 @@ published SDK package before updating their pinned dependency.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` API source commit
-`8b1f4f9d52a618e6e032eaacf9bdc53108e6ecfd`, based on the latest API
+`475d329333ea9ad6a8bc957c83e0d37dcc452a1c`, based on the latest API
 `dev` revision. This revision retires the three unproduced BanSafe event names
 and their synthetic test fixtures. The four live BanSafe events remain typed.
 The two changed Testing operation fingerprints have been reconciled against

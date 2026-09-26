@@ -196,7 +196,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("8b1f4f9d52a618e6e032eaacf9bdc53108e6ecfd");
+    expect(source.commit).toBe("475d329333ea9ad6a8bc957c83e0d37dcc452a1c");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
