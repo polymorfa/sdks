@@ -1,14 +1,14 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "b29481baac495366b532d44d2445c7da94c5292a",
-  "branch": "codex/calls-group-links-20260926",
+  "commit": "3223949038a4bbb999b317ce6346fd955c1b98fd",
+  "branch": "codex/calls-continuation-20260926",
   "published": false,
-  "note": "Unreleased Calls group origination and participant re-ring contract. Full snapshots are byte-identical to this API commit. SDK publication, CLI registry pinning and deployment remain separate release gates.",
+  "note": "Unreleased integrated Calls group, media-state, reactions and raised-hand contract. Snapshots match the exact API commit. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "19f0de5526a3053e97732fa6d19a0086fc11e53be88bbbab50d39e057f6f7eb0"
+      "sha256": "da3b1cca4032a1abcafacdd6921abbbdeeb42ebc763cda4bbc6bf6a85cb0ffd6"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",

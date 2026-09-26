@@ -434,7 +434,7 @@ export interface CallTelemetryPayload {
 
 export interface CallParticipant {
   /** Authoritative raised-hand state for a connected participant. */
-  handRaised?: boolean;
+  readonly handRaised?: boolean;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;
