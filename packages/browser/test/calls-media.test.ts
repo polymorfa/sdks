@@ -1135,6 +1135,53 @@ describe("connection media control", () => {
     );
     await session.close();
   });
+  it("keeps the latest unmute after an earlier media-state command fails", async () => {
+    const peer = peerConnection();
+    const failure = vi.fn();
+    const video = new FakeTrack("video");
+    const session = await factoryFor({
+      peer,
+      signaling: signaling(),
+      stream: new FakeStream([new FakeTrack("audio"), video]),
+    }).open(
+      "call-1",
+      true,
+      { ...callbacks, onMediaControlError: failure },
+      new AbortController().signal,
+    );
+    const channel = peer.channels[0]!;
+    channel.send.mockImplementation(() => undefined);
+
+    session.setMuted({ video: true });
+    session.setMuted({ video: false });
+    await vi.waitFor(() => expect(channel.send).toHaveBeenCalledTimes(1));
+    const first = JSON.parse(channel.send.mock.calls[0]![0] as string) as {
+      requestId: string;
+      videoEnabled: boolean;
+    };
+    expect(first.videoEnabled).toBe(false);
+    control(peer, {
+      type: "media_error",
+      requestId: first.requestId,
+      code: "media_control_unknown",
+    });
+    await vi.waitFor(() => expect(channel.send).toHaveBeenCalledTimes(2));
+    const second = JSON.parse(channel.send.mock.calls[1]![0] as string) as {
+      requestId: string;
+      videoEnabled: boolean;
+    };
+    expect(second.videoEnabled).toBe(true);
+    control(peer, {
+      type: "media_state",
+      requestId: second.requestId,
+      audioMuted: false,
+      videoEnabled: true,
+    });
+    await vi.waitFor(() => expect(failure).toHaveBeenCalledTimes(1));
+    expect(video.enabled).toBe(true);
+    expect(session.videoEnabled()).toBe(true);
+    await session.close();
+  });
 });
 
 describe("display capture on the owned outgoing video stream", () => {

@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "8193408813bc16b78d9317cdbeaf9805929e1b18",
-  "branch": "codex/calls-continuation-20260926",
-  "published": false,
-  "note": "Unreleased integrated Calls and campaign reschedule contract. Snapshots match the exact API PR head. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
+  "commit": "5f6a2b1470821c1a2b4077aa8de14214faede57a",
+  "branch": "dev",
+  "published": true,
+  "note": "Merged Calls contract on API dev. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "3b666255508c5d2ab1ff41682794a83e0937c895b79c3f76138b3185b2ee057d"
+      "sha256": "fd68e43f45aaead4733c7401810c7b01c2110fdd37f35d7b2595571bd24a5466"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "ad2313e6df15cf0d8114981003f96d1bfa8dbbb57afee764e3b8118051c4261b"
+      "sha256": "6ac6657501890b75a049f84d5ff4f0a843ccae0e0b40f9fde7eed0e6b4d5bc91"
     }
   }
 }

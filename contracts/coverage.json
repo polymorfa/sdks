@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "8193408813bc16b78d9317cdbeaf9805929e1b18",
+  "sourceCommit": "5f6a2b1470821c1a2b4077aa8de14214faede57a",
   "excludedContracts": [
     {
       "family": "graph",
@@ -596,7 +596,7 @@
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/messages",
       "operationId": "listChatMessages",
-      "fingerprint": "eedca694e77953c840f19e0999be9aafd3f4ec67c08ec6c6653e4d31debc9a57",
+      "fingerprint": "3516cbf0aacf56ef2ce638909d5507aef03e1ff916b539cc5b1413ea330a2fd2",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.chats.listMessages"
@@ -607,10 +607,21 @@
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
       "operationId": "getChatMessage",
-      "fingerprint": "40dadd9f752d0fe5231120f5ebc385751bb8d8eaf228070581055ba5c94e6987",
+      "fingerprint": "28f8a6956df65a93b6370879059c7a258a811a8d4b680384c3728e47a309f92d",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.chats.retrieveMessage"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}/media",
+      "operationId": "getChatMessageMedia",
+      "fingerprint": "104d13ee3a51a7c02d4d78aac2f1d98bbe6967b7e60314aab1f0d5a84e9041e2",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Official API hosted-history media download is owned by SDK PR #316."
       }
     },
     {
@@ -932,6 +943,17 @@
         "status": "excluded",
         "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
         "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
+      "operationId": "updateProjectCampaign",
+      "fingerprint": "fe6366542a59aaf35a743b1d4fc2819fc0c192aeca7db53e41a6370de886f3fa",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Messaging campaign update is owned by SDK PR #307."
       }
     },
     {

@@ -49,8 +49,7 @@ authentication. The SDK snapshot below also includes the later campaign
 reschedule operations, which are tracked separately by SDK PR #310.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API commit `8193408813bc16b78d9317cdbeaf9805929e1b18` on
-`codex/calls-continuation-20260926`. This unreleased revision adds ad-hoc and group-ID placement,
+files at API `dev` merge commit `5f6a2b1470821c1a2b4077aa8de14214faede57a`. This revision adds ad-hoc and group-ID placement,
 participant re-ring, connection media controls, emoji reactions, raised hands
 and scoped call record detail. It also documents automatic SIP caller identity
 when no From user override is set. The API merge also adds campaign reschedule
@@ -68,6 +67,12 @@ accepts `session` and `token` together while remaining a closed object.
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
 operation fingerprint or SDK method mapping.
+
+The API merge also incorporates two unrelated routes from API PRs #333 and
+#332. Hosted-history media download is assigned to SDK PR #316; Messaging
+campaign update is assigned to SDK PR #307. Both are intentional exclusions in
+this Calls ledger. Existing hosted-history message reads now type the optional
+`mediaRetrieval` status and remain covered.
 
 The Platform event-list contract adds `afterOffset` and indexed page metadata
 for both organization and project routes. `Client.events.list` and project-view

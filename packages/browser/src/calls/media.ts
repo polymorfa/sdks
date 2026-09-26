@@ -354,25 +354,32 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         }
       | undefined;
     let screenPending = false;
+    let videoIntentRevision = 0;
     const syncState = () =>
       mediaControls.set({
         audioMuted: !local.getAudioTracks().some(({ enabled }) => enabled),
         videoEnabled: local.getVideoTracks().some(({ enabled }) => enabled),
         screenSharing: screen !== undefined,
       });
-    const failedControl = (cause: unknown) => {
+    const failedControl = (cause: unknown, revision = videoIntentRevision) => {
       // Capture is local; a rejected or uncertain publish must not look live.
-      setTracks(local.getVideoTracks(), false);
-      if (screen !== undefined) {
-        screen.cameraEnabled = false;
-        void queueVideo(stopScreen).catch((cleanupError: unknown) => {
-          callbacks.onMediaControlError?.(cleanupError);
-        });
+      // A newer video choice may already be queued behind this failed command.
+      if (revision === videoIntentRevision) {
+        setTracks(local.getVideoTracks(), false);
+        if (screen !== undefined) {
+          screen.cameraEnabled = false;
+          void queueVideo(stopScreen).catch((cleanupError: unknown) => {
+            callbacks.onMediaControlError?.(cleanupError);
+          });
+        }
       }
       callbacks.onMediaControlError?.(cause);
     };
     control.onopen = () => {
-      void syncState().catch(failedControl);
+      const revision = videoIntentRevision;
+      void syncState().catch((cause: unknown) =>
+        failedControl(cause, revision),
+      );
     };
     peer.addTransceiver(local.getAudioTracks()[0] ?? "audio", {
       direction: "sendrecv",
@@ -876,13 +883,16 @@ export class WebRtcMediaFactory implements CallMediaFactory {
           const changesVideo =
             muted.video !== undefined && screen === undefined;
           if (muted.audio === undefined && !changesVideo) return;
+          const revision = changesVideo
+            ? ++videoIntentRevision
+            : videoIntentRevision;
           void mediaControls
             .set({
               ...(muted.audio === undefined ? {} : { audioMuted: muted.audio }),
               ...(changesVideo ? { videoEnabled: !muted.video } : {}),
             })
             .catch((cause: unknown) => {
-              if (changesVideo) failedControl(cause);
+              if (changesVideo) failedControl(cause, revision);
               else callbacks.onMediaControlError?.(cause);
             });
         }
