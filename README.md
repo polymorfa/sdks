@@ -311,7 +311,7 @@ The organization view also exposes these management resources:
   and revoke pairing links; and transfer Numbers between Customers
 - `audiences`: list, create from inline members or a spreadsheet import,
   retrieve, delete, create an upload URL, and add, page, or remove members
-- `optOuts`: list, create one, create a batch, delete by phone number, and read
+- `optOuts`: list, create one, create a batch, delete by phone number, read optional STOP confirmation settings and outcome counts, and read
   or replace the organization's STOP/START keyword settings
 - `callPolicy`: retrieve and replace the team's blocked country codes for calls
 - `callOptOuts`: list, add one, import up to 5,000, and remove entries on the

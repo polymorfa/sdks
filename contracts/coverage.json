@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "6839976e7ad54e044c4d789fd296edc44772a907",
+  "sourceCommit": "6b9fe148e613b5282c79c082ddbb174230157a28",
   "excludedContracts": [
     {
       "family": "graph",
@@ -3485,6 +3485,28 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/platform/optouts/confirmation-settings",
+      "operationId": "getStopConfirmationSettings",
+      "fingerprint": "7ce61653f59ebf4864f323af86e0b94709225f4572d8d5ba6f397863ce77d383",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.optOuts.getConfirmationSettings"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/optouts/confirmation-summary",
+      "operationId": "getStopConfirmationSummary",
+      "fingerprint": "0fcf0ab6a73cf703092c7224512ed0e42d01e670e8c4dd455385b1f16a98d585",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.optOuts.getConfirmationSummary"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/platform/optouts/settings",
       "operationId": "getOptOutSettings",
       "fingerprint": "3ae15933960cb7c604e6e70c61992d39ee457b8f74591d780f17c643849063a8",
@@ -4139,7 +4161,7 @@
       "method": "PATCH",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
       "operationId": "updateProjectWebhook",
-      "fingerprint": "dd063cb877e87bdd9c02df55decca2c72e5eed162d7c91fcb6d1d4ca93566714",
+      "fingerprint": "97736d6e9e6a5bdd5106f8a8bfdfa8d93cc4871b1fa3361bcf850b2bd614ceaa",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).webhooks.update"
@@ -4195,7 +4217,7 @@
       "method": "PATCH",
       "path": "/platform/webhooks/{webhookId}",
       "operationId": "updateOrganizationWebhook",
-      "fingerprint": "c2202ed0f4068cee38ece298a963ece9fc10b8e68afd6d771a152d779285481b",
+      "fingerprint": "defd2bb51f7ae7e5162e2d5c19f3f8f9b8b5ad989dc0516f0f1860f9563a54cc",
       "typescript": {
         "status": "covered",
         "method": "Client.webhooks.update"
@@ -5076,7 +5098,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks",
       "operationId": "createProjectWebhook",
-      "fingerprint": "d1da775d2aba25802eb5573fa48e6555d161d717f83e23fee02605265da386a0",
+      "fingerprint": "776f24ac17854feac94ed6c5db42cd0aa7b8141dfac47245755f4571f35a5c74",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).webhooks.create"
@@ -5334,7 +5356,7 @@
       "method": "POST",
       "path": "/platform/webhooks",
       "operationId": "createOrganizationWebhook",
-      "fingerprint": "b20438679f669bb141b5e333afae3fe669b55a9e9363f945ccb684ee1bc677ac",
+      "fingerprint": "37a88593419abbb8bfc1355e709908ed2bbf601d8c67e6b6c5f834a6ce0756b7",
       "typescript": {
         "status": "covered",
         "method": "Client.webhooks.create"
@@ -5503,6 +5525,17 @@
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).functions.deployments.promote"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/optouts/confirmation-settings",
+      "operationId": "updateStopConfirmationSettings",
+      "fingerprint": "089b038c657664116a06a314e786ad14d38f51149048ac307410f3a36d48902b",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.optOuts.updateConfirmationSettings"
       }
     },
     {

@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (218 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (221 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -19231,6 +19231,215 @@
                   "properties": {
                     "data": {
                       "$ref": "#/components/schemas/OptOutSettings"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/platform/optouts/confirmation-settings": {
+      "get": {
+        "operationId": "getStopConfirmationSettings",
+        "tags": [
+          "optouts"
+        ],
+        "summary": "Get STOP confirmation settings",
+        "description": "Returns the team's optional acknowledgement preference. Confirmations are disabled by default. A locale is explicitly selected from English, Brazilian Portuguese or Spanish; the response includes the reviewed acknowledgement text. Reads remain available after beta withdrawal.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StopConfirmationSettings"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateStopConfirmationSettings",
+        "tags": [
+          "optouts"
+        ],
+        "summary": "Update STOP confirmation settings",
+        "description": "Replaces the team's preference using the observed revision. Enabling requires STOP confirmations beta access, a selected locale, and an organization key with campaigns:manage or a team owner/admin. Project credentials cannot manage this team-wide setting. A new STOP opt-out queues at most one plain acknowledgement from the receiving connection; manual opt-outs, repeated STOP while suppressed and START produce none. A confirmation cannot undo suppression. Disabling remains available after beta withdrawal and cancels queued acknowledgements. A changed revision returns 409. Unknown send outcomes are never resent with a new operation identity.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStopConfirmationSettingsInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StopConfirmationSettings"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/platform/optouts/confirmation-summary": {
+      "get": {
+        "operationId": "getStopConfirmationSummary",
+        "tags": [
+          "optouts"
+        ],
+        "summary": "Get STOP confirmation outcome counts",
+        "description": "Returns aggregate acknowledgement outcomes from the last 30 days, without recipient phones or message content. Disabled is the preference state, queued is waiting, admitted may have been submitted, completed means the provider accepted the send rather than delivered it, failed is a proven skip or rejection, and unknown means the send outcome could not be established. All outcomes preserve the opt-out.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StopConfirmationSummary"
                     }
                   },
                   "required": [
@@ -39160,6 +39369,139 @@
           "updatedAt"
         ]
       },
+      "StopConfirmationSettings": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "en",
+              "pt-BR",
+              "es",
+              null
+            ],
+            "nullable": true
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "textRevision": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "acknowledgement": {
+            "type": "string",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "required": [
+          "teamId",
+          "enabled",
+          "locale",
+          "revision",
+          "textRevision",
+          "acknowledgement",
+          "updatedAt"
+        ]
+      },
+      "UpdateStopConfirmationSettingsInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The teamId returned by the settings read. Must match the authenticated team."
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "en",
+              "pt-BR",
+              "es",
+              null
+            ],
+            "nullable": true,
+            "description": "Required when enabled. Never inferred from a phone number."
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          }
+        },
+        "required": [
+          "teamId",
+          "enabled",
+          "locale",
+          "revision"
+        ]
+      },
+      "StopConfirmationSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "counts": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "queued": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "admitted": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "completed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "failed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "unknown": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "queued",
+              "admitted",
+              "completed",
+              "failed",
+              "unknown"
+            ]
+          }
+        },
+        "required": [
+          "enabled",
+          "counts"
+        ]
+      },
       "UpdateOptOutSettingsInput": {
         "type": "object",
         "additionalProperties": false,
@@ -40666,7 +41008,7 @@
           "value": {
             "type": "string",
             "maxLength": 4096,
-            "pattern": "^(?![\\s\\S]*[\\^@-\\^H\\u000A-\\^_\\u007F])[\\s\\S]*$",
+            "pattern": "^(?![\\s\\S]*[\\u0000-\\u0008\\u000A-\\u001F\\u007F])[\\s\\S]*$",
             "x-polymorfa-max-utf8-bytes": 4096,
             "writeOnly": true,
             "description": "Encrypted write-only HTTP field value. Limited to 4096 UTF-8 bytes. Line breaks, NUL, and other control characters except horizontal tab are rejected."

@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "6839976e7ad54e044c4d789fd296edc44772a907",
-  "branch": "dev",
-  "published": true,
-  "note": "Merged API source commit retiring three unproduced BanSafe webhook names and test fixtures; Messaging and Platform snapshots are byte-identical to the authoritative OpenAPI files. SDK publication and deployment are separate.",
+  "commit": "6b9fe148e613b5282c79c082ddbb174230157a28",
+  "branch": "t3code/campaigns-stop-confirmation",
+  "published": false,
+  "note": "Provisional exact local API source for optional STOP confirmations. Stacked API PR, SDK publication, CLI pin and deployment remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "7eca4148c2f1fbda47c26a67c42e2da6b74e47e5edf38d749e30a5fc3f1d7fe8"
+      "sha256": "8d7ac39ae01065abac2a7e3a82e041fac0a59c700fbbfc880e0416765cff0c1f"
     }
   }
 }

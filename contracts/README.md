@@ -317,3 +317,9 @@ organization enabled for Functions. The SDK never retries Function mutations or
 invocations automatically. Browser/client-token SDKs do not expose this server
 control plane. A local implementation or installed method does not establish
 hosted availability.
+
+## Optional STOP confirmations
+
+The coordinated API branch adds three organization-only preference/summary operations covered by `Client.optOuts.getConfirmationSettings`, `updateConfirmationSettings`, and `getConfirmationSummary`. The preference write carries an observed team/revision and never retries automatically. Browser/client-token packages do not expose this server authority. Publication and beta enrollment are separate gates.
+
+Four webhook create/update fingerprints also move because the API generator repairs the control-character rejection regex for write-only header values. The existing typed header string and HTTP serialization remain unchanged; their method mappings are retained after inspecting the exact schema delta.

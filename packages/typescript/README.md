@@ -2452,3 +2452,32 @@ without the original response. An `unknown` outcome can mean an external effect
 occurred; reconcile it before choosing a new key. Request/response bodies and
 customer log output are not retained. List responses contain `items` and
 `nextCursor`; pass that cursor as `before` to read the next page.
+
+### Optional STOP confirmations
+
+`client.optOuts.getConfirmationSettings()` reads the team's preference, which
+starts disabled. `updateConfirmationSettings()` saves the observed `teamId` and
+`revision` together with `enabled` and an explicit `en`, `pt-BR`, or `es` locale.
+`getConfirmationSummary()` reads the five outcome counts for the last 30 days.
+These methods return the API envelope under `response.data.data`.
+
+```ts
+const observed = (await client.optOuts.getConfirmationSettings()).data.data;
+await client.optOuts.updateConfirmationSettings({
+  teamId: observed.teamId,
+  revision: observed.revision,
+  enabled: false,
+  locale: observed.locale,
+});
+```
+
+Enabling requires beta access and a team key with `campaigns:manage`; reads need
+`campaigns:read`. Disabling remains available after withdrawal. This example
+keeps the preference disabled. The SDK does not automatically retry preference
+writes, even when `maxNetworkRetries` is supplied. After a timeout or revision
+conflict, read settings before deciding to save again.
+
+Only a new STOP opt-out can produce one acknowledgement. Suppression survives
+failed or unknown acknowledgement outcomes. Completed means provider acceptance,
+not confirmed delivery; unknown submissions are reconciled without resending.
+Installing the SDK does not enable this feature or establish hosted availability.
