@@ -1,4 +1,7 @@
-import { PolymorfaConfigurationError } from "../errors.js";
+import {
+  PolymorfaConfigurationError,
+  PolymorfaValidationError,
+} from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import type {
   ApiResponse,
@@ -127,6 +130,14 @@ export class FlowsResource {
     flowId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<FlowDraft | null>> {
+    if (
+      typeof flowId !== "string" ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        flowId,
+      )
+    ) {
+      throw new PolymorfaValidationError("flowId must be a valid UUID.");
+    }
     return this.request("GET", flowPath(flowId), undefined, options);
   }
   update(
