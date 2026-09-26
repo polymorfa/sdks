@@ -43,7 +43,7 @@ published SDK package before updating their pinned dependency.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` API PR #332 commit
-`41f20e16e3c7928ed67e372902803df5c500030a`, stacked on PR #295.
+`b9344127108a000623d1a9f2f00cf67fc633e571`, stacked on PR #295.
 This adds the Messaging campaign PATCH operation. It includes the merged
 retirement of three unproduced BanSafe event names; the four live BanSafe events
 remain typed. Re-pin to the merged API `dev` commit before SDK merge.

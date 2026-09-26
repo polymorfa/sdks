@@ -15905,6 +15905,7 @@
           },
           "recipientListId": {
             "type": "string",
+            "format": "uuid",
             "description": "Audience to send to, or null for none. Only an unlaunched draft can change it; the campaign's current recipients are replaced by the audience's members at launch.",
             "nullable": true
           },

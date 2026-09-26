@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "41f20e16e3c7928ed67e372902803df5c500030a",
+  "sourceCommit": "b9344127108a000623d1a9f2f00cf67fc633e571",
   "excludedContracts": [
     {
       "family": "graph",
@@ -983,7 +983,7 @@
       "method": "PATCH",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
       "operationId": "updateProjectCampaign",
-      "fingerprint": "0955f3cb8a404acf022d4f27a06d37d3b723b2278ce7c3285974cc381fe8243d",
+      "fingerprint": "363b537a343602b52dd66d75e8d7320fda5f89a612cab91b557d9d4a4f79e469",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.update"
