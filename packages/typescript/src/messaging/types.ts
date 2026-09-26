@@ -224,6 +224,11 @@ export interface LaunchCampaignRequest {
   readonly scheduledAt?: number;
 }
 
+export interface RescheduleCampaignRequest {
+  /** New start time in Unix milliseconds; null or a past time starts now. */
+  readonly scheduledAt: number | null;
+}
+
 export interface RequeueCampaignRequest {
   readonly includeSkippedError?: boolean;
 }

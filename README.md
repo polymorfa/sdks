@@ -142,7 +142,7 @@ The handwritten Messaging resources in this milestone are:
   participants, read a person's call permission on a Cloud API Number, check a
   destination before dialing, and read or update a session's call settings
 - `campaigns`: list, create (with inline recipients), retrieve, inspect
-  analytics, launch, pause, resume, stop, requeue, and page or append campaign
+  analytics, launch, reschedule, pause, resume, stop, requeue, and page or append campaign
   recipients through the Messaging control plane
 - `messages`: send every contract-defined message kind through one typed send
   union, mark seen, set typing state, react, and star
@@ -299,7 +299,7 @@ The organization view also exposes these management resources:
 - `sessions`: list, start, stop, or delete one session; stop or delete a bounded
   batch; review and confirm a tier change; create a testing session; and
   retrieve or update the session Safe Mode override
-- `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
+- `campaigns`: list, create, retrieve, update, delete, reschedule, lifecycle actions,
   analytics, events, and paged or appended recipients. The single-campaign
   operations require the owning `projectId`. This resource is available only
   on organization clients. `create` requires `CreatePlatformCampaignRequest`

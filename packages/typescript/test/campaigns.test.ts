@@ -116,6 +116,7 @@ async function campaignsServer(): Promise<{
                 data:
                   request.path.endsWith("/launch") ||
                   request.path.endsWith("/pause") ||
+                  request.path.endsWith("/reschedule") ||
                   request.path.endsWith("/resume") ||
                   request.path.endsWith("/stop")
                     ? {
@@ -261,6 +262,54 @@ describe("MessagingClient campaigns", () => {
     expect(launched.data.data.operationId).toBe(
       "018f0000-0000-7000-8000-000000000003",
     );
+  });
+
+  it("reschedules a waiting launch with the exact body and stable retry key", async () => {
+    const { client, requests } = await campaignsServer();
+    const response = await client.campaigns.reschedule(
+      "launch/eu",
+      campaign.id,
+      { scheduledAt: null },
+      { idempotencyKey: "start-now-august" },
+    );
+
+    expectTypeOf(response).toEqualTypeOf<
+      ApiResponse<CampaignOperationResponse>
+    >();
+    expect(requests[0]).toMatchObject({
+      method: "POST",
+      path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}/reschedule`,
+      body: '{"scheduledAt":null}',
+    });
+    expect(requests[0]?.headers["idempotency-key"]).toBe("start-now-august");
+    expect(response.data.data.operationId).toBe(
+      "018f0000-0000-7000-8000-000000000003",
+    );
+  });
+
+  it("returns a known reschedule conflict without replaying the write", async () => {
+    const server = await startTestServer(() => ({
+      status: 409,
+      body: JSON.stringify({
+        error: {
+          code: "campaign_state_conflict",
+          message: "Campaign already started.",
+        },
+      }),
+    }));
+    servers.push(server);
+    const client = new MessagingClient({
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: server.url,
+      maxNetworkRetries: 2,
+    });
+
+    await expect(
+      client.campaigns.reschedule("launch/eu", campaign.id, {
+        scheduledAt: null,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(server.requests).toHaveLength(1);
   });
 
   it("requeues failed and optionally skipped recipients directly", async () => {

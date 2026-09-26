@@ -19,6 +19,7 @@ import type {
   ListCampaignRecipientsResponse,
   ListCampaignsResponse,
   RequeueCampaignRequest,
+  RescheduleCampaignRequest,
 } from "./types.js";
 
 /** Exact project-slug campaign workflow exposed by the Messaging API. */
@@ -84,6 +85,21 @@ export class MessagingCampaignsResource {
       path: `${campaignPath(projectSlug, campaignId)}/launch`,
       body,
       ...withIdempotencyKey(options),
+    });
+  }
+
+  /** Move a launched campaign that has not started sending, or start it now. */
+  reschedule(
+    projectSlug: string,
+    campaignId: string,
+    body: RescheduleCampaignRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CampaignOperationResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(projectSlug, campaignId)}/reschedule`,
+      body,
+      ...withoutAutomaticRetry(withIdempotencyKey(options)),
     });
   }
 

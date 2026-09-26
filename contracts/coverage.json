@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "6839976e7ad54e044c4d789fd296edc44772a907",
+  "sourceCommit": "0566f1719b1e252b81093cbc37e234c1561a877f",
   "excludedContracts": [
     {
       "family": "graph",
@@ -772,7 +772,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
       "operationId": "getCampaign",
-      "fingerprint": "b3c5430236e9e7539866777d4a2804a5b622ef023659ee7200bbceddf73958b3",
+      "fingerprint": "df0afb657e91437629b726fc004b1c769343ee277d1dcbe235955d6dc1432d9b",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.retrieve"
@@ -783,7 +783,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/analytics",
       "operationId": "getCampaignAnalytics",
-      "fingerprint": "954b6bf88195055987a02b453307322d6ac1949e82fe4fb9f0a15fcd03929ed6",
+      "fingerprint": "7060015a6c91559b6ae6a0b7e8212219ddaf4c00675e0f9c3fbb7c3ceccdb00b",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.analytics"
@@ -1456,7 +1456,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns",
       "operationId": "createCampaign",
-      "fingerprint": "b0cf223ce05db6819480455fa2e6a0e0feb1a0fbf8e9abad0a7054492fb5304d",
+      "fingerprint": "4cedd525607544d02d4b31481358510b2ecb8b9c54cc6b0f749799e1011ff3f0",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.create"
@@ -1467,7 +1467,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/launch",
       "operationId": "launchCampaign",
-      "fingerprint": "6e9f9bca026988228dc99cf7528085fe2358d5d4b6715d7fc5b86c4ce5738d82",
+      "fingerprint": "4af01830d796ffcfe37f6397cccc188c4546caf643b586a9925f137df9c7b4c2",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.launch"
@@ -1478,7 +1478,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/pause",
       "operationId": "pauseCampaign",
-      "fingerprint": "e19f4b6e91f13d730302cdd33aa0e7362633ba9b490eeff2951de56cd74ba8b6",
+      "fingerprint": "cd056dc9925cf81e94b47a9a345e08287dd4d765ce9beb31ba13d78de5fd51ef",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.pause"
@@ -1500,7 +1500,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/requeue",
       "operationId": "requeueCampaign",
-      "fingerprint": "e37311f5b865649731977696e24794d350b3fac493ae0be9cd47ce33f92782b2",
+      "fingerprint": "0ed764141ea7484211a62c62c4496c37572548109cc0a5355c94cb02661c4f7d",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.requeue"
@@ -1509,9 +1509,20 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reschedule",
+      "operationId": "rescheduleCampaign",
+      "fingerprint": "916e19288beac03e21d9167a6800480214340961364c5e59e67ec9adc79ae16a",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.campaigns.reschedule"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/resume",
       "operationId": "resumeCampaign",
-      "fingerprint": "51232b6c94b80d3c20b4410a7eedf22e4de255414e26ed0c7b89efe96880c619",
+      "fingerprint": "9c0636666ce2e8678efc4a33a9b2fdac42435008f9a12486b57253c11df0764e",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.resume"
@@ -1522,7 +1533,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/stop",
       "operationId": "stopCampaign",
-      "fingerprint": "b58b3b88eaddf3d7543fe136d5d667e9588e36d767830eb9cebcf53004d43b9c",
+      "fingerprint": "6a09b0d2a67631403abfcd8b4eac52c29b25cfeb873f91d3a7f82236e8ced7d1",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.stop"
@@ -4094,7 +4105,7 @@
       "method": "PATCH",
       "path": "/platform/campaigns/{campaignId}",
       "operationId": "updateCampaign",
-      "fingerprint": "90baf7ea126eaea6a4bd8fddc729b24806db837492366c8d8798469545ef1214",
+      "fingerprint": "b7af610a57c1f24db76241bd0bf60dce7528c2b4f6e7b2c9a9da68f23ab0d380",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.update"
@@ -4139,7 +4150,7 @@
       "method": "PATCH",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
       "operationId": "updateProjectWebhook",
-      "fingerprint": "dd063cb877e87bdd9c02df55decca2c72e5eed162d7c91fcb6d1d4ca93566714",
+      "fingerprint": "97736d6e9e6a5bdd5106f8a8bfdfa8d93cc4871b1fa3361bcf850b2bd614ceaa",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).webhooks.update"
@@ -4195,7 +4206,7 @@
       "method": "PATCH",
       "path": "/platform/webhooks/{webhookId}",
       "operationId": "updateOrganizationWebhook",
-      "fingerprint": "c2202ed0f4068cee38ece298a963ece9fc10b8e68afd6d771a152d779285481b",
+      "fingerprint": "defd2bb51f7ae7e5162e2d5c19f3f8f9b8b5ad989dc0516f0f1860f9563a54cc",
       "typescript": {
         "status": "covered",
         "method": "Client.webhooks.update"
@@ -4690,7 +4701,7 @@
       "method": "POST",
       "path": "/platform/campaigns",
       "operationId": "createPlatformCampaign",
-      "fingerprint": "1bc165505e2850f060e7f191155ba64137b549161e713fce5f8ceed855e8e38c",
+      "fingerprint": "78e845758e756676217319c79cd02e6cdaf9ebbb5b034e5fe3f04b87a1398fc7",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.create"
@@ -4723,7 +4734,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/launch",
       "operationId": "launchPlatformCampaign",
-      "fingerprint": "044791fb098cb2e82eab04b812437ec23d5ea4158e77dc43e1003daab147b96c",
+      "fingerprint": "5769e0021324bd63c9d63a8a72c1094c228e5911c7ea1184e1d9bafc3928475a",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.launch"
@@ -4760,6 +4771,17 @@
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.requeue"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/reschedule",
+      "operationId": "reschedulePlatformCampaign",
+      "fingerprint": "20b75ba3b401587d91e6ad5337668983e6cf90cfc38aaf2a6d69e7e7b6b64c13",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.campaigns.reschedule"
       }
     },
     {
@@ -5076,7 +5098,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks",
       "operationId": "createProjectWebhook",
-      "fingerprint": "d1da775d2aba25802eb5573fa48e6555d161d717f83e23fee02605265da386a0",
+      "fingerprint": "776f24ac17854feac94ed6c5db42cd0aa7b8141dfac47245755f4571f35a5c74",
       "typescript": {
         "status": "covered",
         "method": "Client.project(projectId).webhooks.create"
@@ -5334,7 +5356,7 @@
       "method": "POST",
       "path": "/platform/webhooks",
       "operationId": "createOrganizationWebhook",
-      "fingerprint": "b20438679f669bb141b5e333afae3fe669b55a9e9363f945ccb684ee1bc677ac",
+      "fingerprint": "37a88593419abbb8bfc1355e709908ed2bbf601d8c67e6b6c5f834a6ce0756b7",
       "typescript": {
         "status": "covered",
         "method": "Client.webhooks.create"

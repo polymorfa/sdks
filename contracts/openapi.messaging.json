@@ -6450,6 +6450,76 @@
           "payload"
         ]
       },
+      "CampaignRescheduledPayload": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "Campaign id",
+            "example": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11"
+          },
+          "previousScheduledAt": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "description": "The start time that was replaced, in Unix milliseconds"
+          },
+          "scheduledAt": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "The new start time in Unix milliseconds. Equal to `rescheduledAt` when the campaign was asked to start now."
+          },
+          "rescheduledAt": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Unix timestamp in milliseconds when the new start time was accepted"
+          }
+        },
+        "required": [
+          "campaignId",
+          "previousScheduledAt",
+          "scheduledAt",
+          "rescheduledAt"
+        ]
+      },
+      "CampaignRescheduledEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "campaign.rescheduled"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/CampaignRescheduledPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
       "CampaignCompletedPayload": {
         "type": "object",
         "properties": {
@@ -16013,6 +16083,40 @@
           "success",
           "data"
         ]
+      },
+      "RescheduleCampaignResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/CampaignOperation"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "RescheduleCampaignRequest": {
+        "type": "object",
+        "properties": {
+          "scheduledAt": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "The new start time as a Unix timestamp in milliseconds. `null`, or a time that is not in the future, starts the campaign now."
+          }
+        },
+        "required": [
+          "scheduledAt"
+        ],
+        "additionalProperties": false
       },
       "RequeueCampaignResponse": {
         "type": "object",
@@ -44940,6 +45044,7 @@
           "Campaigns"
         ],
         "summary": "Create a campaign",
+        "description": "**Required scope:** `campaigns:manage`\n\nCreates a draft campaign on any plan. `senderConfig.sessionIds` may name numbers that are not yet on a plan that includes Campaigns; launch checks the selection. It is refused with `403 bansafe_org_suspended` while the team is suspended and `400` when `senderConfig.sessionIds` is malformed or a per-number cap is above its safety ceiling.",
         "security": [
           {
             "BearerAuth": []
@@ -45025,27 +45130,6 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
                 }
               }
             }
@@ -45154,8 +45238,7 @@
         },
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
-        },
-        "description": "**Required scope:** `campaigns:manage`"
+        }
       }
     },
     "/messaging/projects/{projectSlug}/campaigns/{id}": {
@@ -45238,27 +45321,6 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
                 }
               }
             }
@@ -45417,27 +45479,6 @@
               }
             }
           },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
-                }
-              }
-            }
-          },
           "403": {
             "description": "Authenticated but not permitted (missing scope or rule violation)",
             "content": {
@@ -45515,7 +45556,7 @@
           "Campaigns"
         ],
         "summary": "Launch a campaign",
-        "description": "**Required scope:** `campaigns:manage`\n\nStarts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. The response returns the campaign as it was when the launch was accepted.",
+        "description": "**Required scope:** `campaigns:manage`\n\nStarts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the saved sender selection against live plans: `402 campaigns_not_entitled` when a selected number is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.sessionIds` when a selected number is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. The response returns the campaign as it was when the launch was accepted.",
         "security": [
           {
             "BearerAuth": []
@@ -45614,7 +45655,7 @@
             }
           },
           "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
+            "description": "`campaigns_not_entitled`: a selected number is missing or its plan does not include Campaigns, or the project has no number on such a plan. Drafts are saved on every plan.",
             "content": {
               "application/json": {
                 "schema": {
@@ -45623,13 +45664,13 @@
                 "example": {
                   "error": {
                     "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
+                    "code": "campaigns_not_entitled",
+                    "message": "This number’s plan does not include Campaigns.",
                     "param": null,
                     "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
+                  "docs": "https://docs.polymorfa.com/api/errors#campaigns-not-entitled"
                 }
               }
             }
@@ -45677,7 +45718,7 @@
             }
           },
           "409": {
-            "description": "`state_conflict`: The campaign is not a draft, or it is already launched and waiting for its start time. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`state_conflict`: The campaign is not a draft, it is already launched and waiting for its start time, or its sending numbers changed during the launch. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {
@@ -45732,6 +45773,27 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "`service_unavailable`: the selected numbers' plans could not be checked; retry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
                 }
               }
             }
@@ -45834,27 +45896,6 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
                 }
               }
             }
@@ -46063,27 +46104,6 @@
               }
             }
           },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
-                }
-              }
-            }
-          },
           "403": {
             "description": "Authenticated but not permitted (missing scope or rule violation)",
             "content": {
@@ -46288,8 +46308,8 @@
               }
             }
           },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
             "content": {
               "application/json": {
                 "schema": {
@@ -46298,13 +46318,206 @@
                 "example": {
                   "error": {
                     "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
                     "param": null,
                     "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                   },
                   "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`state_conflict`: The campaign is already finished or cancelled. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response reports the recorded outcome of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
+        }
+      }
+    },
+    "/messaging/projects/{projectSlug}/campaigns/{id}/reschedule": {
+      "post": {
+        "operationId": "rescheduleCampaign",
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Reschedule a campaign",
+        "description": "**Required scope:** `campaigns:manage`\n\nMoves the start of a launched campaign that is still waiting for it. Set `scheduledAt` to a later or earlier time, or to `null` to start now. The response returns the campaign with its new `scheduledAt`. Sending the current start time again changes nothing. A campaign that has started, finished, is being stopped, or was never launched is refused with `409`; launch a draft with `scheduledAt` instead.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "campaigns:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "projectSlug",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again: it returns `409 idempotency_completed` when the original succeeded, or the original server error, with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleCampaignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RescheduleCampaignResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
                 }
               }
             }
@@ -46352,7 +46565,7 @@
             }
           },
           "409": {
-            "description": "`state_conflict`: The campaign is already finished or cancelled. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "description": "`state_conflict`: The campaign has already started, is finished or being stopped, or was never launched. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
             "content": {
               "application/json": {
                 "schema": {
@@ -46506,27 +46719,6 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "This project has no number on a plan that includes Campaigns (`campaigns_not_entitled`)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "permission_error",
-                    "code": "entitlement_required",
-                    "message": "The account needs the required entitlement for this action.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
                 }
               }
             }
@@ -51736,6 +51928,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CampaignStoppedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "campaign.rescheduled": {
+      "post": {
+        "operationId": "onCampaignRescheduled",
+        "summary": "A scheduled campaign's start time moved",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignRescheduledEvent"
               }
             }
           }
