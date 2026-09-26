@@ -1728,6 +1728,10 @@ const moved = await messaging.campaigns.reschedule(
 console.log(moved.data.data.scheduledAt, moved.data.data.operationId);
 ```
 
+Reschedule sends once by default, including when the API returns a campaign
+state conflict. If a response is lost, read the campaign before repeating the
+write with the same idempotency key.
+
 Create accepts inline recipients, an audience ID in `recipientListId`, or both.
 Each append accepts up to 1,000 recipients before launch and reports duplicates
 and invalid rows. Appends have no declared replay contract: the SDK sends them
@@ -1783,8 +1787,9 @@ await client.campaigns.reschedule(
 );
 ```
 
-`create`, `launch` and `reschedule` generate an `Idempotency-Key` for each call. A supplied
-key is preserved across retries within the API's 24-hour replay window. If the
+`create`, `launch` and `reschedule` generate an `Idempotency-Key` for each call.
+Reschedule sends once by default; a caller may explicitly set `maxNetworkRetries`
+while retaining the same key within the API's 24-hour replay window. If the
 outcome remains uncertain after that window, reconcile campaign state before
 starting another request; see [Idempotent sends](#idempotent-sends).
 `archive` returns a receipt for a completed, failed, or cancelled campaign;

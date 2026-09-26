@@ -287,6 +287,31 @@ describe("MessagingClient campaigns", () => {
     );
   });
 
+  it("returns a known reschedule conflict without replaying the write", async () => {
+    const server = await startTestServer(() => ({
+      status: 409,
+      body: JSON.stringify({
+        error: {
+          code: "campaign_state_conflict",
+          message: "Campaign already started.",
+        },
+      }),
+    }));
+    servers.push(server);
+    const client = new MessagingClient({
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: server.url,
+      maxNetworkRetries: 2,
+    });
+
+    await expect(
+      client.campaigns.reschedule("launch/eu", campaign.id, {
+        scheduledAt: null,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(server.requests).toHaveLength(1);
+  });
+
   it("requeues failed and optionally skipped recipients directly", async () => {
     const { client, requests } = await campaignsServer();
 

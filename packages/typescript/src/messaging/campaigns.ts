@@ -99,7 +99,7 @@ export class MessagingCampaignsResource {
       method: "POST",
       path: `${campaignPath(projectSlug, campaignId)}/reschedule`,
       body,
-      ...withIdempotencyKey(options),
+      ...withoutAutomaticRetry(withIdempotencyKey(options)),
     });
   }
 
