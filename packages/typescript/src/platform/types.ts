@@ -5,6 +5,7 @@ import type {
   CampaignRecipientFailureReason,
   CampaignRecipientInput,
   CampaignRecipientStatus,
+  ExportCampaignRecipientsParams,
   CampaignSendWindowRequest,
   InvalidRecipientRow,
 } from "../messaging/types.js";
@@ -300,16 +301,10 @@ export interface ListPlatformCampaignRecipientsParams {
   readonly limit?: number;
 }
 
-export interface ExportPlatformCampaignRecipientsParams {
+export type ExportPlatformCampaignRecipientsParams = {
   /** Required with a team API key; project tokens are bound to one project. */
   readonly projectId: string;
-  readonly status?: CampaignRecipientStatus;
-  readonly reason?: CampaignRecipientFailureReason;
-  /** Cursor from the previous page's `nextCursor`. Keep the same filters. */
-  readonly cursor?: string;
-  /** 1 to 1,000; the API defaults to 1,000. */
-  readonly limit?: number;
-}
+} & ExportCampaignRecipientsParams;
 
 export type PlatformCampaignRecipientsEnvelope =
   CursorEnvelope<CampaignRecipient>;

@@ -1732,8 +1732,11 @@ API replays the first successful result instead of appending twice.
 request while `page.hasMore` is true. Each recipient includes its send,
 delivery, read, failure and reply timestamps, plus `messagesSent`,
 `nextMessageAt`, `sequenceError`, and `failureReason`. Use
-`exportRecipients(projectSlug, campaignId, { status, reason, cursor, limit })`
-to download one CSV page and its `nextCursor`. Campaign `list` returns a complete
+`exportRecipients(projectSlug, campaignId, { cursor, limit })` downloads an
+unfiltered CSV page; continue with `nextCursor`. With `status` or `reason`, the
+export is one atomic page of up to 1,000 matches. Filtered requests cannot use
+`cursor` or a limit below 1,000; more than 1,000 matches returns 409. Phone cells
+carry a leading apostrophe so spreadsheets preserve them as text. Campaign `list` returns a complete
 array; recipient pagination does not change that method.
 
 Launch, pause and resume return the campaign state with an `operationId`.

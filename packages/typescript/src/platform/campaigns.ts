@@ -236,7 +236,7 @@ export class CampaignsResource {
     });
   }
 
-  /** One CSV page; use `nextCursor` with the same filters for the next page. */
+  /** One CSV page. Only unfiltered exports can continue with `nextCursor`. */
   exportRecipients(
     campaignId: string,
     params: ExportPlatformCampaignRecipientsParams,

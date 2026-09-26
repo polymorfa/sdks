@@ -293,19 +293,34 @@ export interface ListCampaignRecipientsParams {
   readonly limit?: number;
 }
 
-export interface ExportCampaignRecipientsParams {
-  readonly status?: CampaignRecipientStatus;
-  readonly reason?: CampaignRecipientFailureReason;
-  /** Cursor from the previous page's `nextCursor`. Keep the same filters. */
-  readonly cursor?: string;
-  /** 1 to 1,000; the API defaults to 1,000. */
-  readonly limit?: number;
-}
+/** Unfiltered exports are paginated; a filtered export is one bounded snapshot. */
+export type ExportCampaignRecipientsParams =
+  | {
+      readonly status?: never;
+      readonly reason?: never;
+      readonly cursor?: string;
+      /** 1 to 1,000; the API defaults to 1,000. */
+      readonly limit?: number;
+    }
+  | ((
+      | {
+          readonly status: CampaignRecipientStatus;
+          readonly reason?: CampaignRecipientFailureReason;
+        }
+      | {
+          readonly status?: CampaignRecipientStatus;
+          readonly reason: CampaignRecipientFailureReason;
+        }
+    ) & {
+      readonly cursor?: never;
+      /** Filtered exports must use the API's full 1,000-row limit. */
+      readonly limit?: 1000;
+    });
 
 export interface CampaignRecipientsCsvPage {
   /** CSV header and up to 1,000 recipient rows. */
   readonly csv: string;
-  /** Null after the last page. */
+  /** Null after the last page, including every successful filtered export. */
   readonly nextCursor: string | null;
 }
 
