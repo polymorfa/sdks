@@ -145,6 +145,14 @@
       "sha256": "b9d3778f17a90fd0c58e0cb1b3f6ef689661980fa83ad7565bc55ae4ab93fab4",
       "operationIds": ["graphListCatalogProducts"],
       "merged": false
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/383",
+      "commit": "1e1d613de599c2b4334f8de81fab087c74f31424",
+      "sourcePath": "docs/api-reference/openapi.graph.json",
+      "sha256": "1270c8fb32a09cb717f3ea8edd6bd657e8ff3110e03a6286e68d5e16affff474",
+      "operationIds": ["graphGetMarketingStatus"],
+      "merged": false
     }
   ]
 }

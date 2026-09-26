@@ -7,7 +7,7 @@ browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. The exact Messaging and Platform sources are pinned in
 `contracts/source.json`; pending Official API, Flows and catalog dependencies
 are recorded in `contracts/cloud-api-supplements.json`. Full Graph API parity
-is outside this SDK's scope; `cloudCatalogs.list` and `flowEncryption` provide
+is outside this SDK's scope; `cloudCatalogs`, `cloudMarketing.status`, and `flowEncryption` provide
 typed clients for their respective Graph resources.
 
 The API includes an enrolled hosted message history beta.
@@ -138,6 +138,7 @@ The handwritten Messaging resources in this milestone are:
 - `cloudTemplates`: list, retrieve, create, edit and delete Meta templates for a
   Number with an Official API connection; separate from project template drafts
 - `cloudCatalogs`: read WABA product-catalog links through the Graph facade
+- `cloudMarketing`: read Meta's raw WABA Marketing Messages status strings without interpreting eligibility
 - `flowEncryption`: read or register a public Flow encryption key for one Meta phone number
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility

@@ -394,6 +394,13 @@ from a catalog linked to that WABA. It has the same server-credential and
 to request the next page. The API rejects catalogs it cannot verify as linked;
 listing products does not grant permission to send them.
 
+`messaging.cloudMarketing.status(wabaId, { version: "v26.0" })` reads Meta's
+raw `marketing_messages_lite_api_status` and
+`marketing_messages_onboarding_status` strings through an Official API Number
+in the credential's project. It requires `sessions:read` and an organization
+API key or project token. The fields do not establish terms acceptance,
+recipient permission, eligibility, or permission to send.
+
 `messaging.flowEncryption.retrieve(phoneNumberId, { version: "v26.0" })` reads
 the registered public key and Meta signature status with `sessions:read`.
 `messaging.flowEncryption.register(phoneNumberId,
