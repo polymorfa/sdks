@@ -49,6 +49,14 @@ below do not yet include those separate branches. Consolidating them onto one
 merged API revision remains a publication gate. These methods do not establish
 deployed access or package availability.
 
+The two public Flow draft reads in the pinned Platform snapshot are covered by
+`Client.project(projectId).flows.list` and `.retrieve`. The prior ledger marked
+them dashboard-only, but API source commit `9b64c70b622593aeda7364b7603ba6790144594e`
+declares both public, project-bound, and `sessions:read`. The merged API runtime
+at `2fb3eec8624c5785f72f81f163a27c1ce4e19767` still registers them with
+server-key authentication. The combined full snapshots below are pinned to
+the later exact API merge commit `296aba4baade933e7a5620cf36768750ec9ac6af`.
+
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at `polymorfa/polymorfa` API PR #310 merge commit
 `296aba4baade933e7a5620cf36768750ec9ac6af`. This exact source combines
@@ -178,9 +186,9 @@ signed events with these names still decode as unknown events.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        383 |
+| Covered             |        385 |
 | Missing             |          0 |
-| Excluded            |        130 |
+| Excluded            |        128 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
 | Total               |        513 |
