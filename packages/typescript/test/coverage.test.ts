@@ -235,6 +235,7 @@ describe("coverage checker", () => {
     );
     expect(mappings).toEqual({
       exportCallRecords: { status: "covered", method: "Client.calls.export" },
+      getCallRecord: { status: "covered", method: "Client.calls.retrieve" },
       getCallStats: { status: "covered", method: "Client.calls.stats" },
       listCallRecords: { status: "covered", method: "Client.calls.list" },
     });
