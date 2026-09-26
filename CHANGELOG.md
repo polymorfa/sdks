@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Team webhook tests accept an optional event type. The SDK now rejects a
+  supplied body or session ID before making that request. Project webhook
+  tests keep the paired native body and session ID input.
+
 - Retired the unproduced `bansafe.risk_changed`,
   `bansafe.health_changed`, and `bansafe.enforcement` webhook names and their
   test-event fixtures. The typed `bansafe.incident`, `bansafe.action`,

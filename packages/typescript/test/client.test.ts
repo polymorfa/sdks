@@ -10,6 +10,8 @@ import {
   type OrganizationQuickLinkSettings,
   type ProjectEvent,
   type ProjectQuickLinkSettings,
+  type TestOrganizationWebhookInput,
+  type TestProjectWebhookInput,
 } from "../src/index.js";
 import {
   startTestServer,
@@ -224,6 +226,56 @@ describe("project raw confinement", () => {
 });
 
 describe("durable developer resources", () => {
+  it("keeps organization webhook tests separate from project body tests", async () => {
+    const { client, requests } = await testClient();
+    if (client.owner !== "organization") throw new Error("unexpected owner");
+    const project = client.project("project/a");
+
+    expectTypeOf<Parameters<typeof client.webhooks.test>[1]>().toEqualTypeOf<
+      TestOrganizationWebhookInput | undefined
+    >();
+    expectTypeOf<Parameters<typeof project.webhooks.test>[1]>().toEqualTypeOf<
+      TestProjectWebhookInput | undefined
+    >();
+
+    const body = {
+      encoding: "base64",
+      contentType: "application/json",
+      data: "e30=",
+    } as const;
+    expect(() =>
+      client.webhooks.test("team-hook", {
+        body,
+        sessionId: "session-id",
+      } as unknown as TestOrganizationWebhookInput),
+    ).toThrow(PolymorfaValidationError);
+    expect(requests).toEqual([]);
+
+    await client.webhooks.test(
+      "team-hook",
+      { eventType: "customer.created" },
+      { idempotencyKey: "team-test-1" },
+    );
+    await project.webhooks.test(
+      "project-hook",
+      { eventType: "message.received", body, sessionId: "session-id" },
+      { idempotencyKey: "project-test-1" },
+    );
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "POST /platform/webhooks/team-hook/tests",
+      "POST /platform/projects/project%2Fa/webhooks/project-hook/tests",
+    ]);
+    expect(requests.map(({ body }) => JSON.parse(body))).toEqual([
+      { eventType: "customer.created" },
+      { eventType: "message.received", body, sessionId: "session-id" },
+    ]);
+    expect(requests.map(({ headers }) => headers["idempotency-key"])).toEqual([
+      "team-test-1",
+      "project-test-1",
+    ]);
+  });
+
   it("preserves ingestion positions on indexed event pages", async () => {
     const body = JSON.stringify({
       data: [{ id: "late", createdAt: "2026-09-18T08:00:00Z" }],

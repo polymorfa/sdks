@@ -1887,6 +1887,26 @@ organization and project scope:
   `retry`
 - `operations.list`, `get`, `listTransitions`, `cancel`, and `wait`
 
+`platform.webhooks.test` accepts `TestOrganizationWebhookInput`, which has an
+optional `eventType` and no body or session ID. A project-bound client accepts
+`TestProjectWebhookInput`; when you supply a native event body, supply its
+project session ID too. Both methods send an `Idempotency-Key` for each test:
+
+```ts
+await platform.webhooks.test(
+  "team-webhook-id",
+  { eventType: "customer.created" },
+  { idempotencyKey: crypto.randomUUID() },
+);
+await platform
+  .project("project-id")
+  .webhooks.test(
+    "project-webhook-id",
+    { eventType: "message.received" },
+    { idempotencyKey: crypto.randomUUID() },
+  );
+```
+
 ```ts
 const deliveries = await project.webhookDeliveries.list({
   webhookId: "wh_123",
