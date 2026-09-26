@@ -1,4 +1,7 @@
 import {
+  MediaStateCommands,
+  parseMediaControlValue,
+  type MediaStateReply,
   createConnectionId,
   isConnectionId,
   isParticipant,
@@ -38,6 +41,8 @@ export interface RemoteVideo {
 
 /** Data-channel messages the platform sends. */
 export type CallsDataChannelMessage =
+  | MediaStateReply
+  | { readonly type: "remote_media"; readonly audioMuted: boolean | null }
   | ({
       readonly type: "video_source";
       readonly source: number;
@@ -81,6 +86,11 @@ export function parseDataChannelMessage(
   const m = parsed as Record<string, unknown>;
   const mid = typeof m["mid"] === "string" && m["mid"].length > 0;
   switch (m["type"]) {
+    case "media_state":
+    case "media_error":
+    case "remote_media":
+      return parseMediaControlValue(parsed) as
+        CallsDataChannelMessage | undefined;
     case "video_source": {
       if (!isSourceHandle(m["source"]) || !mid) return undefined;
       const connectionParticipant = m["connectionParticipant"];
@@ -113,6 +123,8 @@ export function parseDataChannelMessage(
 }
 
 export interface CallMediaCallbacks {
+  readonly onRemoteMute?: (muted: boolean | null) => void;
+  readonly onMediaControlError?: (cause: unknown) => void;
   readonly onConnectionState: (state: RTCPeerConnectionState) => void;
   /** The merged call audio (and nothing else) arrived or changed. */
   readonly onRemoteStream: (stream: MediaStream) => void;
@@ -295,6 +307,7 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       for (const track of local.getTracks()) track.stop();
       throw signal.reason;
     }
+    callbacks.onRemoteMute?.(null);
     const peer = this.#createPeer();
     const remote = new MediaStream();
     // Transceiver order is part of the contract: audio, then the camera
@@ -303,6 +316,24 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       negotiated: true,
       id: CALLS_DATA_CHANNEL.id,
     });
+    const mediaControls = new MediaStateCommands((frame) => {
+      if (control.readyState !== "open") return false;
+      control.send(JSON.stringify(frame));
+      return true;
+    });
+    const syncState = () =>
+      mediaControls.set({
+        audioMuted: !local.getAudioTracks().some(({ enabled }) => enabled),
+        videoEnabled: local.getVideoTracks().some(({ enabled }) => enabled),
+      });
+    const failedControl = (cause: unknown) => {
+      // Capture is local; a rejected or uncertain publish must not look live.
+      setTracks(local.getVideoTracks(), false);
+      callbacks.onMediaControlError?.(cause);
+    };
+    control.onopen = () => {
+      void syncState().catch(failedControl);
+    };
     peer.addTransceiver(local.getAudioTracks()[0] ?? "audio", {
       direction: "sendrecv",
       streams: [local],
@@ -456,6 +487,13 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       const message = parseDataChannelMessage(event.data);
       if (message === undefined || closed) return;
       switch (message.type) {
+        case "media_state":
+        case "media_error":
+          mediaControls.receive(message);
+          return;
+        case "remote_media":
+          callbacks.onRemoteMute?.(message.audioMuted);
+          return;
         case "video_source": {
           const transceiver = peer
             .getTransceivers()
@@ -602,6 +640,7 @@ export class WebRtcMediaFactory implements CallMediaFactory {
         await camera.sender.replaceTrack(track);
         camera.sender.setStreams?.(local);
         await renegotiate({}, enableSignal);
+        await mediaControls.set({ videoEnabled: true });
       } catch (cause) {
         await camera.sender.replaceTrack(null).catch(() => undefined);
         local.removeTrack(track);
@@ -627,6 +666,8 @@ export class WebRtcMediaFactory implements CallMediaFactory {
           setTracks(local.getAudioTracks(), !muted.audio);
         if (muted.video !== undefined)
           setTracks(local.getVideoTracks(), !muted.video);
+        if (control.readyState === "open")
+          void syncState().catch(failedControl);
       },
       getStats: () => peer.getStats(),
       audioEnabled: () => local.getAudioTracks().some(({ enabled }) => enabled),
@@ -661,6 +702,7 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       close: async (options = {}) => {
         if (closed) return;
         closed = true;
+        mediaControls.close();
         this.#clearInterval(poll);
         unsubscribeCandidates?.();
         videos.clear();

@@ -1,3 +1,4 @@
+import type { MediaState, MediaStateUpdate } from "./media-state.js";
 import type { CallsApi } from "./api.js";
 import { CallReporter, type CallReportClient } from "./diagnostics.js";
 import { CallClaimedError, CallsAuthError, CallsError } from "./errors.js";
@@ -236,6 +237,7 @@ export class VideoTrack extends Emitter<VideoEvents> {
 }
 
 type CallEvents = {
+  remoteMute: [boolean | null];
   state: [CallState, previous: CallState];
   connected: [];
   ended: [reason: CallEndReason];
@@ -351,6 +353,27 @@ export class Call extends Emitter<CallEvents> {
   #capabilities: CallCapabilities;
   /** This client's media connection id; reused on reconnect. */
   readonly connectionId: string;
+  /** Synchronize this connection only. Video reception is independent. */
+  async setMediaState(update: MediaStateUpdate): Promise<MediaState> {
+    if (this.#media === undefined)
+      return Promise.reject(
+        new CallsError(
+          "media_control_unavailable",
+          "No programmatic media connection is attached.",
+        ),
+      );
+    const state = await this.#media.setMediaState(update);
+    this.#mediaPreferences = state;
+    return state;
+  }
+
+  /** Remote microphone state for a direct call; null means unknown or group. */
+  #remoteAudioMuted: boolean | null = null;
+  get remoteAudioMuted(): boolean | null {
+    return this.#remoteAudioMuted;
+  }
+  #mediaPreferences: MediaStateUpdate = {};
+
   readonly audio: AudioTrack;
   readonly video: VideoTrack;
   readonly #api: CallsApi;
@@ -891,6 +914,12 @@ export class Call extends Emitter<CallEvents> {
       refreshToken,
     });
     this.#media = media;
+    if (this.#remoteAudioMuted !== null) this.emit("remoteMute", null);
+    this.#remoteAudioMuted = null;
+    media.on("remoteMute", (muted) => {
+      this.#remoteAudioMuted = muted;
+      this.emit("remoteMute", muted);
+    });
     media.on("audio", (pcm) => this.audio._push(pcm));
     media.on("video", (frame) => this.video._frame(frame));
     media.on("videoSource", (source) => this.video._source(source));
@@ -923,6 +952,8 @@ export class Call extends Emitter<CallEvents> {
     });
     try {
       await media.connect();
+      if (Object.keys(this.#mediaPreferences).length > 0)
+        await media.setMediaState(this.#mediaPreferences);
     } catch (cause) {
       if (this.#media === media) this.#media = undefined;
       media.close();

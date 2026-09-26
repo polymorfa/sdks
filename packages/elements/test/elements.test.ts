@@ -1508,3 +1508,26 @@ describe("unified call element", () => {
     h.controller.dispose();
   });
 });
+
+it("renders a remote mute observation independently of the local microphone", () => {
+  const fixture = fixtureController({
+    status: "connected",
+    revision: 0,
+    updatedAt: 0,
+    capabilities: { video: false, mute: true },
+    video: false,
+    audioMuted: false,
+    videoMuted: true,
+    remoteAudioMuted: true,
+    selectedDevices: {},
+    devices: [],
+  });
+  const node = document.createElement("pmfa-call") as PolymorfaCallElement;
+  node.controller = fixture.controller as never;
+  document.body.append(node);
+  expect(node.shadowRoot?.textContent).toContain("Their microphone is muted");
+  expect(node.shadowRoot?.querySelector('[part="mute"]')?.textContent).toBe(
+    "Mute",
+  );
+  node.remove();
+});

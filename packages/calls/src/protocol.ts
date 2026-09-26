@@ -1,3 +1,4 @@
+import type { MediaStateRequest, MediaStateReply } from "./media-state.js";
 /**
  * The wire contract between this client and the platform (Calls contract
  * revision 1). Two sockets carry a call:
@@ -281,6 +282,8 @@ export type VideoSourceFrame = {
 
 /** Text frames the platform sends on the media socket. */
 export type MediaControlFrame =
+  | MediaStateReply
+  | { readonly type: "remote_media"; readonly audioMuted: boolean | null }
   | {
       readonly type: "ready";
       readonly callId?: string;
@@ -310,6 +313,7 @@ export type MediaControlFrame =
 
 /** Text frames the client sends on the media socket. */
 export type MediaClientFrame =
+  | MediaStateRequest
   | {
       readonly type: "auth";
       readonly token: string;
@@ -336,6 +340,20 @@ export function parseMediaControlValue(
   if (parsed === null || typeof parsed !== "object") return undefined;
   const f = parsed as Record<string, unknown>;
   switch (f["type"]) {
+    case "media_state":
+      return isConnectionId(f["requestId"]) &&
+        typeof f["audioMuted"] === "boolean" &&
+        typeof f["videoEnabled"] === "boolean"
+        ? (parsed as MediaControlFrame)
+        : undefined;
+    case "media_error":
+      return isConnectionId(f["requestId"]) && isString(f["code"])
+        ? (parsed as MediaControlFrame)
+        : undefined;
+    case "remote_media":
+      return f["audioMuted"] === null || typeof f["audioMuted"] === "boolean"
+        ? (parsed as MediaControlFrame)
+        : undefined;
     case "pong":
     case "keyframe_request":
       return parsed as MediaControlFrame;
