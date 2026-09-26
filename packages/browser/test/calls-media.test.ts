@@ -575,10 +575,11 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
       options.video === true ? [audio, camera] : [audio],
     );
     const s = options.signaling ?? signaling();
+    const getUserMedia = vi.fn(async () => local);
     const factory = new WebRtcMediaFactory({
       signaling: s,
       mediaDevices: {
-        getUserMedia: vi.fn(async () => local),
+        getUserMedia,
       } as unknown as MediaDevices,
       createPeerConnection: () => peer,
       setInterval: (() => 0) as never,
@@ -604,7 +605,7 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
         ? {}
         : { connectionId: options.connectionId },
     );
-    return { peer, session, signaling: s, audio, camera };
+    return { peer, session, signaling: s, audio, camera, getUserMedia };
   }
 
   it("offers audio, a negotiated control channel, the camera and three receive slots", async () => {
@@ -666,7 +667,7 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
 
   it("maps video_source and video_source_removed to per-participant streams", async () => {
     const seen: (readonly RemoteVideo[])[] = [];
-    const { peer, session } = await opened({
+    const { peer, session, getUserMedia } = await opened({
       onRemoteVideos: (videos) => seen.push(videos),
     });
     const participant = {
@@ -704,6 +705,12 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
       ["connection:peer-conn-1", 9, "2"],
     ]);
     expect(videos[0]?.participant).toEqual(participant);
+    // Receiving the phone's video neither prompts for nor publishes a camera.
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+    expect(getUserMedia.mock.calls[0]).toEqual([
+      expect.objectContaining({ audio: true, video: false }),
+    ]);
+    expect(peer.transceivers[1]?.sender.track).toBeNull();
     expect(videos[1]?.connectionId).toBe("peer-conn-1");
     expect(videos[1]?.connectionParticipant).toBe("client:tab-2");
     // A connection source cannot also name a WhatsApp participant.
