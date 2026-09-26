@@ -62,7 +62,11 @@ export {
 export { MessagingClient } from "./messaging/client.js";
 export { CloudCatalogsResource } from "./messaging/cloud-catalogs.js";
 export { FlowEncryptionResource } from "./messaging/flow-encryption.js";
-export type { FlowEncryptionKey, FlowEncryptionParams, RegisterFlowEncryptionKeyRequest } from "./messaging/flow-encryption.js";
+export type {
+  FlowEncryptionKey,
+  FlowEncryptionParams,
+  RegisterFlowEncryptionKeyRequest,
+} from "./messaging/flow-encryption.js";
 export type {
   CloudProductCatalog,
   ListCloudCatalogsParams,

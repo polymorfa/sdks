@@ -110,7 +110,10 @@ export class MessagingClient {
     this.templates = new TemplatesResource(transport);
     this.cloudTemplates = new CloudTemplatesResource(transport);
     this.cloudCatalogs = new CloudCatalogsResource(transport, credential.type);
-    this.flowEncryption = new FlowEncryptionResource(transport, credential.type);
+    this.flowEncryption = new FlowEncryptionResource(
+      transport,
+      credential.type,
+    );
     this.users = new UsersResource(transport);
     this.voip = new VoipResource(transport, credential.type);
     this.webhooks = new WebhooksResource(transport);

@@ -106,7 +106,10 @@
       "commit": "56a0d0eabc908200ed4afe6d4d9ad2ba27e8e5fa",
       "sourcePath": "docs/api-reference/openapi.graph.json",
       "sha256": "6e4c1fca51eab78b5a21527cacf8f39e7c27da4a2fd7e46bc5f06c2cc3bf3ba1",
-      "operationIds": ["graphGetFlowEncryptionKey", "graphRegisterFlowEncryptionKey"],
+      "operationIds": [
+        "graphGetFlowEncryptionKey",
+        "graphRegisterFlowEncryptionKey"
+      ],
       "merged": false
     },
     {
