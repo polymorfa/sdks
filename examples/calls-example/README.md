@@ -80,8 +80,10 @@ token.
 
 Enter an E.164 destination allowed by this Number's client rules before pressing
 the green handset. The dial button is unavailable during an incoming or active
-call. The example shows the controller's call error and, when an API request
-fails, its HTTP status and request ID. If an answer fails without a request,
+call. The example shows the controller's call error. For failed
+`/messaging/voip/` requests, it shows the diagnostic status or category and a
+request ID when available. The last failed request stays visible until another
+failure replaces it or you reconnect. If an answer fails without a request,
 the controller error helps distinguish a local call-state failure from a
 server refusal. Do not share browser tokens when reporting these details.
 

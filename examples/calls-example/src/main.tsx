@@ -62,10 +62,6 @@ function App() {
           !event.path.startsWith("/messaging/voip/")
         )
           return;
-        if (event.type === "request.started") {
-          setRequestFailure("");
-          return;
-        }
         if (event.type !== "request.failed") return;
         const action = event.path.split("/").at(-1) ?? "calls";
         setRequestFailure(
@@ -177,7 +173,7 @@ function App() {
             )}
             {requestFailure && (
               <p className="error" role="status">
-                {requestFailure}
+                Last failed request: {requestFailure}
               </p>
             )}
             <CallSurface controller={calls.controller} />
