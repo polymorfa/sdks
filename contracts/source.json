@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "475d329333ea9ad6a8bc957c83e0d37dcc452a1c",
-  "branch": "fix/retire-unproduced-bansafe-events-20260923",
-  "published": false,
-  "note": "Exact API source commit retiring three unproduced BanSafe webhook names and test fixtures; Messaging and Platform snapshots are byte-identical to the authoritative OpenAPI files. API merge, SDK publication, and deployment are separate.",
+  "commit": "6839976e7ad54e044c4d789fd296edc44772a907",
+  "branch": "dev",
+  "published": true,
+  "note": "Merged API source commit retiring three unproduced BanSafe webhook names and test fixtures; Messaging and Platform snapshots are byte-identical to the authoritative OpenAPI files. SDK publication and deployment are separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
