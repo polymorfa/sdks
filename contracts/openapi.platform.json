@@ -21315,7 +21315,7 @@
         "tags": [
           "webhooks"
         ],
-        "summary": "Send an team webhook test",
+        "summary": "Send a team webhook test",
         "description": "Creates a synthetic team event and a traceable webhook delivery.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
@@ -21355,7 +21355,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TestWebhookInput"
+                "$ref": "#/components/schemas/TestOrganizationWebhookInput"
               }
             }
           }
@@ -22103,7 +22103,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TestWebhookInput"
+                "$ref": "#/components/schemas/TestProjectWebhookInput"
               }
             }
           }
@@ -42670,7 +42670,19 @@
         "additionalProperties": false,
         "maxProperties": 0
       },
-      "TestWebhookInput": {
+      "TestOrganizationWebhookInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "A team webhook test accepts an optional event type. Supplied event bodies and session IDs are rejected with HTTP 400.",
+        "properties": {
+          "eventType": {
+            "type": "string",
+            "default": "polymorfa.test",
+            "pattern": "^[a-z0-9][a-z0-9_.-]{0,127}$"
+          }
+        }
+      },
+      "TestProjectWebhookInput": {
         "description": "Names reserved for internal use are rejected with HTTP 400, whether supplied as eventType or in the native event body, before a test event or delivery is created.",
         "oneOf": [
           {

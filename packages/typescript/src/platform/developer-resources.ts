@@ -56,7 +56,8 @@ import type {
   RetryWebhookDeliveryInput,
   RetrieveEventParams,
   RotateWebhookSecretInput,
-  TestWebhookInput,
+  TestOrganizationWebhookInput,
+  TestProjectWebhookInput,
   UpdateOrganizationWebhookInput,
   UpdateProjectWebhookInput,
 } from "./developer-types.js";
@@ -112,6 +113,9 @@ type WebhookRotationFor<O extends ClientOwner> = O extends "project"
 type WebhookTestFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookTestReceipt
   : OrganizationWebhookTestReceipt;
+type TestWebhookInputFor<O extends ClientOwner> = O extends "project"
+  ? TestProjectWebhookInput
+  : TestOrganizationWebhookInput;
 type DeliveryFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookDelivery
   : OrganizationWebhookDelivery;
@@ -422,7 +426,7 @@ export class WebhooksResource<O extends ClientOwner> extends ResourceBase {
   }
   test(
     webhookId: string,
-    input: TestWebhookInput = {},
+    input: TestWebhookInputFor<O> = {} as TestWebhookInputFor<O>,
     options: RequestOptions = {},
   ): Promise<ApiResponse<WebhookTestFor<O>>> {
     return this.mutate(

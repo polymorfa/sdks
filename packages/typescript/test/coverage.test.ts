@@ -173,9 +173,9 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "7578bef785305bc3c67459256b48e3474d5be84a",
-      total: 513,
-      covered: 383,
+      sourceCommit: "7aef0f670dc27c7bb7ef76455b486f4cc8c29ca8",
+      total: 515,
+      covered: 385,
       partial: 0,
       missing: 0,
       excluded: 130,

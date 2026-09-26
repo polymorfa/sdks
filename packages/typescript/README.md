@@ -720,7 +720,6 @@ const detail = await platform.calls.retrieve("call_123");
 console.log(detail.data.history.events);
 ```
 
-
 `Client.calls` reads call statistics and call detail records. It needs
 `sessions:read`. A team client covers every project of the team unless you
 pass `projectId`; a project client reads only its own project, and the SDK

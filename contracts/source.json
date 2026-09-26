@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "7578bef785305bc3c67459256b48e3474d5be84a",
+  "commit": "7aef0f670dc27c7bb7ef76455b486f4cc8c29ca8",
   "branch": "codex/calls-continuation-20260926",
   "published": false,
-  "note": "Unreleased combined Calls contract: controls, groups, reactions, SIP caller identity and scoped call record detail. Snapshots match the exact API commit. Publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
+  "note": "Unreleased integrated Calls contract: media controls, groups, social state, call records, SIP identity and server call-link create/preview. Snapshots match the exact API commit. Publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "5575a8c730985be3fafec3a50d00d05207f3b3640c3bfc80d4427f07d5380711"
+      "sha256": "23357c960c14f6bf61109ebe158479bd29b5f5c953123f06e34765adcf8c1a69"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "c9529409f72492b55c831856c9942048b1e02fcff0830737f59268131e951b5e"
+      "sha256": "2e68ab37f9b2053d81235a02750517e57647f2a355a09c4dd848eb4b9209e9fa"
     }
   }
 }
