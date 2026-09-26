@@ -15917,7 +15917,9 @@
           "scheduledAt": {
             "type": "integer",
             "description": "Start time in milliseconds since the Unix epoch, or null to start at launch. Only an unlaunched draft can change it.",
-            "nullable": true
+            "nullable": true,
+            "minimum": -8640000000000000,
+            "maximum": 8640000000000000
           }
         },
         "additionalProperties": false
@@ -45342,7 +45344,7 @@
           "Campaigns"
         ],
         "summary": "Update a campaign",
-        "description": "**Required scope:** `campaigns:manage`\n\nUpdates the fields you send and leaves the rest unchanged. On an unlaunched draft, a new `senderConfig` passes the same checks as create, on any plan; launch checks the selection against live plans. Once the campaign has launched, including a scheduled launch that has not started, a new `senderConfig` must pass the launch checks and can answer `402 campaigns_not_entitled` or `400 invalid_parameter`. `recipientListId` and a different `scheduledAt` are accepted only while the campaign is an unlaunched draft; afterwards they answer `409`. A sender change to a draft that launches while the change is being saved also answers `409`.",
+        "description": "**Required scope:** `campaigns:manage`\n\nUpdates the fields you send and leaves the rest unchanged. On an unlaunched draft, a new `senderConfig` passes the same checks as create, on any plan; launch checks the selection against live plans. Once the campaign has launched, including a scheduled launch that has not started, a new `senderConfig` must pass the launch checks and can answer `402 campaigns_not_entitled` or `400 invalid_parameter`. `recipientListId` and a different `scheduledAt` are accepted only while the campaign is an unlaunched draft; afterwards they answer `409`. A sender change to a draft that launches while the change is being saved also answers `409`. A non-null `scheduledAt` must be integer Unix milliseconds within the JavaScript Date range.",
         "security": [
           {
             "BearerAuth": []

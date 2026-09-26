@@ -1726,6 +1726,8 @@ console.log(launched.data.data.operationId, launched.metadata.requestId);
 
 Create accepts inline recipients, an audience ID in `recipientListId`, or both.
 Update accepts `name`, `recipientListId`, `senderConfig`, and `scheduledAt`.
+Pass an integer Unix millisecond value within the JavaScript Date range for a
+non-null `scheduledAt`; the API returns 400 for an out-of-range value.
 Changing the audience or schedule is limited to an unlaunched draft. A sender
 change after launch must pass the live sender checks. The SDK sends PATCH once;
 after an uncertain response, retrieve the campaign before deciding on another

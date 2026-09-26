@@ -145,7 +145,7 @@ export interface UpdateCampaignRequest {
   /** Attach an audience to an unlaunched draft, or detach it with null. */
   readonly recipientListId?: string | null;
   readonly senderConfig?: Readonly<Record<string, unknown>>;
-  /** Epoch milliseconds, or null to start at launch. Only editable before launch. */
+  /** Integer Unix milliseconds within the JavaScript Date range, or null to start at launch. Only editable before launch. */
   readonly scheduledAt?: number | null;
 }
 

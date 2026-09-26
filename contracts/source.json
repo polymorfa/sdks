@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "c27e1e8088c80a42e3c5fdf934f7704a1e5d32b9",
+  "commit": "e46c432dc4ef1003009b28606a4c026d8738a41b",
   "branch": "t3code/campaigns-messaging-patch",
   "published": false,
-  "note": "API PR polymorfa/polymorfa#332 exact head, rebased on merged API #295: Messaging campaign PATCH route and UUID validation. Re-pin to the merged API dev commit before SDK merge. Both snapshots are byte-identical to source files; SDK publication and deployment are separate.",
+  "note": "API PR polymorfa/polymorfa#332 exact head, rebased on merged API #295: Messaging campaign PATCH route, UUID and schedule-range validation. Re-pin to the merged API dev commit before SDK merge. Both snapshots are byte-identical to source files; SDK publication and deployment are separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "6b5fd02d5de5a18d951f89db1239f5be7c4bc5df7cc686ca565335c0e7be06ef"
+      "sha256": "cd1be239d329d7055af5d8f3d557df092887c638f19aef63c0979bdd65edcd33"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "53d72fbfe0e05921eb137c8a92ad3e1aad9d056bd9799b78c145962cbcdf7741"
+      "sha256": "e96f5036a34097052089b54a99cdd9956333c8e918153854b9332d5e58c1c294"
     }
   }
 }
