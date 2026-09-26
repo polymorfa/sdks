@@ -1,3 +1,7 @@
+import type {
+  VoipCallReportClient,
+  VoipCallErrorCode,
+} from "../messaging/types.js";
 import {
   PolymorfaConfigurationError,
   PolymorfaServerError,
@@ -59,6 +63,137 @@ export interface CallRecord {
   readonly durationSeconds: number | null;
   /** Such as `user_hangup` or `ring_timeout`; `null` until the call ends. */
   readonly endReason: string | null;
+}
+
+/** Customer-understandable end or failure reason. */
+export interface CallRecordEndReason {
+  /**
+   * Stable reason code. A well-formed code this API does not label is kept
+   * as is (with the label `Other`); only a malformed value becomes `other`.
+   */
+  code: string;
+  label: string;
+}
+
+/** One public roster participant, as call.participant_* webhooks name it. */
+export interface CallRecordParticipant {
+  /** Public participant resource id. */
+  id: string;
+  state: "invited" | "ringing" | "connected" | "left";
+  firstSeenAt: string;
+  updatedAt: string;
+  leftReason: string | null;
+}
+
+/** One client media connection and its recorded lifetime. */
+export interface CallRecordConnection {
+  id: string;
+  /** `client:<id>` or `server:<id>`. */
+  participant: string;
+  /** `unknown` when the join was not recorded. */
+  transport: "webrtc" | "socket" | "sip" | "unknown";
+  /** Null when the join was not recorded. */
+  joinedAt: string | null;
+  /** Null while the connection is open, or when the end time is unknown. */
+  leftAt: string | null;
+  reason:
+    | "left"
+    | "replaced"
+    | "claimed"
+    | "call_ended"
+    | "sip_busy"
+    | "sip_declined"
+    | "sip_no_answer"
+    | "sip_unavailable"
+    | "sip_auth_failed"
+    | null;
+}
+
+/** Allowlisted media measurements. Unmeasured values are null, never 0. */
+export interface CallRecordTelemetry {
+  /** `unknown` until the media server reports the call's measurements. */
+  status: "reported" | "unknown";
+  source: "media_server";
+  setupMs: number | null;
+  ringMs: number | null;
+  codec: string | null;
+  jitterMs: number | null;
+  packetsLost: number | null;
+  rttMs: number | null;
+  receivedKbps: number | null;
+  sentKbps: number | null;
+}
+
+/** The latest quality report one connection's app sent. Unmeasured figures are null. */
+export interface CallRecordAppQuality {
+  reportedAt: string;
+  rttMs: number | null;
+  jitterMs: number | null;
+  packetsLost: number | null;
+  packetsReceived: number | null;
+  audioCodec: string | null;
+  videoCodec: string | null;
+  candidateType: "host" | "srflx" | "prflx" | "relay" | null;
+  reconnects: number | null;
+}
+
+/** Diagnostics reported by the app behind one connection. */
+export interface CallRecordAppConnection {
+  connectionId: string;
+  /** `client:<id>` or `server:<id>`. */
+  participant: string;
+  /** The SDK named by the connection's most recent report, when it named one. */
+  client: VoipCallReportClient | null;
+  quality: CallRecordAppQuality | null;
+  /** Reported errors, newest first. */
+  errors: Array<{ code: VoipCallErrorCode; reportedAt: string }>;
+}
+
+/** Diagnostics your app reported with `POST /voip/calls/{id}/reports`. */
+export interface CallRecordAppReports {
+  /** `none` when no report was received for the call. */
+  status: "reported" | "none";
+  connections: CallRecordAppConnection[];
+  /** True when the call reached the stored report limit or older errors are not shown. */
+  truncated: boolean;
+}
+
+/** A call summary in the stored detail. */
+export interface CallRecordSummary {
+  callId: string;
+  sessionId: string;
+  projectId: string | null;
+  direction: "inbound" | "outbound";
+  state: "offered" | "accepted" | "rejected" | "missed" | "ended";
+  /** The call may still have a live media leg. */
+  live: boolean;
+  /** How the number reaches WhatsApp for this call. */
+  backend: string;
+  hasVideo: boolean;
+  /** Per-team pseudonym of the remote party. */
+  peerRef: string | null;
+  startedAt: string;
+  connectedAt: string | null;
+  endedAt: string | null;
+  durationSeconds: number | null;
+  endReason: CallRecordEndReason | null;
+  answeredBy: string | null;
+  exclusive: boolean | null;
+}
+
+/** `GET /platform/calls/{callId}`. */
+export interface CallRecordDetail {
+  call: CallRecordSummary;
+  participants: CallRecordParticipant[];
+  connections: CallRecordConnection[];
+  telemetry: CallRecordTelemetry;
+  appReports: CallRecordAppReports;
+  history: {
+    /** Recorded events, oldest first, as correlation identifiers. */
+    events: Array<{ eventId: string; type: string; occurredAt: string }>;
+    truncated: boolean;
+  };
+  correlation: { callId: string; sessionId: string };
 }
 
 export interface CallStatsMetrics {
@@ -154,6 +289,9 @@ type ParamsFor<O extends ClientOwner, P> = O extends "project"
   ? P
   : P & TeamProjectFilter;
 
+export type RetrieveCallRecordParamsFor<O extends ClientOwner> =
+  O extends "project" ? { readonly projectId?: never } : TeamProjectFilter;
+
 export type CallStatsParamsFor<O extends ClientOwner> = ParamsFor<
   O,
   CallStatsParams
@@ -213,6 +351,28 @@ export class PlatformCallsResource<O extends ClientOwner> {
     private readonly projectId: string | null,
   ) {
     this.#raw = new RawClient(transport);
+  }
+
+  /** Read one stored call with bounded, metadata-only history and diagnostics. */
+  retrieve(
+    callId: string,
+    params: RetrieveCallRecordParamsFor<O> = {} as RetrieveCallRecordParamsFor<O>,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CallRecordDetail>> {
+    if (typeof callId !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(callId)) {
+      throw new PolymorfaConfigurationError(
+        "callId must contain 1 to 128 letters, digits, underscores or hyphens.",
+        "callId",
+      );
+    }
+    return this.transport
+      .request<DataEnvelope<CallRecordDetail>>({
+        method: "GET",
+        path: `/platform/calls/${encodeURIComponent(callId)}`,
+        query: this.#filters(params),
+        ...options,
+      })
+      .then(unwrapResponse);
   }
 
   /**
