@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "7aef0f670dc27c7bb7ef76455b486f4cc8c29ca8",
+  "commit": "f41b8cdf93c86ab8e6a144574d60ed07eb96e17e",
   "branch": "codex/calls-continuation-20260926",
   "published": false,
   "note": "Unreleased integrated Calls contract: media controls, groups, social state, call records, SIP identity and server call-link create/preview. Snapshots match the exact API commit. Publication, CLI registry pinning, deployment and live acceptance remain separate gates.",

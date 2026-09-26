@@ -42,7 +42,7 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API commit `7aef0f670dc27c7bb7ef76455b486f4cc8c29ca8` on
+files at API commit `f41b8cdf93c86ab8e6a144574d60ed07eb96e17e` on
 `codex/calls-continuation-20260926`. This unreleased revision adds ad-hoc and group-ID placement
 participant re-ring, connection media controls, emoji reactions, raised hands
 and scoped call record detail. It also documents automatic SIP caller identity
