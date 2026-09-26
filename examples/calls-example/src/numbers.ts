@@ -55,7 +55,8 @@ export function hasActiveCall(numbers: readonly NumberConnection[]): boolean {
   return numbers.some(({ calls }) => {
     const snapshot = calls.controller.getSnapshot();
     return (
-      snapshot.answering ||
+      snapshot.placing === true ||
+      snapshot.answering === true ||
       [
         "ringing",
         "accepted",

@@ -3,6 +3,7 @@ import type { BrowserCalls, BrowserCallsOptions } from "../src/calls/client.js";
 import {
   createNumberConnection,
   hasActiveCall,
+  type NumberConnection,
 } from "../../../examples/calls-example/src/numbers.js";
 
 describe("Calls example Number credential boundaries", () => {
@@ -65,5 +66,21 @@ describe("Calls example Number credential boundaries", () => {
       ),
     ).toThrow("browser client token");
     expect(create).not.toHaveBeenCalled();
+  });
+  it("blocks Number changes while placement is pending without a call ID", () => {
+    let placing = true;
+    const number = {
+      id: "support",
+      label: "Support",
+      calls: {
+        controller: {
+          getSnapshot: () => ({ status: "ready", placing }),
+        },
+      } as BrowserCalls,
+      dispose: vi.fn(() => Promise.resolve()),
+    } satisfies NumberConnection;
+    expect(hasActiveCall([number])).toBe(true);
+    placing = false;
+    expect(hasActiveCall([number])).toBe(false);
   });
 });
