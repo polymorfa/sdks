@@ -21,6 +21,10 @@ import type {
   VoipPlaceCallRequest,
   VoipPlaceCallResponse,
   VoipRejectCallRequest,
+  VoipCreateCallLinkRequest,
+  VoipPreviewCallLinkRequest,
+  VoipCreatedCallLinkResponse,
+  VoipPreviewedCallLinkResponse,
 } from "./types.js";
 
 const PARTICIPANT_PATTERN = /^[A-Za-z0-9._:@-]{1,128}$/;
@@ -63,6 +67,68 @@ export class VoipResource {
     private readonly transport: HttpTransport,
     private readonly credentialType: MessagingCredential["type"],
   ) {}
+
+  /** Creates a WhatsApp link without joining. Never retries; keep the URL private. */
+  createCallLink(
+    body: VoipCreateCallLinkRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<VoipCreatedCallLinkResponse>> {
+    this.assertCallLink(body, options);
+    return this.transport.request({
+      ...options,
+      method: "POST",
+      path: "/messaging/voip/call-links",
+      body,
+      maxNetworkRetries: 0,
+    });
+  }
+
+  /** Reads a link through a Linked Device Number. The token stays in the POST body. */
+  previewCallLink(
+    body: VoipPreviewCallLinkRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<VoipPreviewedCallLinkResponse>> {
+    this.assertCallLink(body, options);
+    if (
+      typeof body.token !== "string" ||
+      !/^[A-Za-z0-9_-]{1,256}$/.test(body.token)
+    ) {
+      throw new PolymorfaValidationError("Provide a valid call-link token.");
+    }
+    return this.transport.request({
+      ...options,
+      method: "POST",
+      path: "/messaging/voip/call-links/preview",
+      body,
+      maxNetworkRetries: 0,
+    });
+  }
+
+  private assertCallLink(
+    body: VoipCreateCallLinkRequest,
+    options: RequestOptions,
+  ): void {
+    this.assertServerCredential("Call links");
+    if (
+      !nonEmpty(body?.session) ||
+      body.session.length > 128 ||
+      (body.video !== undefined && typeof body.video !== "boolean")
+    ) {
+      throw new PolymorfaValidationError(
+        "Call links require a session and an optional boolean video flag.",
+      );
+    }
+    if (
+      options.idempotencyKey !== undefined ||
+      Object.keys(options.headers ?? {}).some(
+        (key) => key.toLowerCase() === "idempotency-key",
+      )
+    ) {
+      throw new PolymorfaValidationError(
+        "Call links do not support Idempotency-Key. Do not retry an unknown creation outcome.",
+      );
+    }
+  }
 
   /** Places a call. Pass `idempotencyKey` in options to retry safely. */
   place(

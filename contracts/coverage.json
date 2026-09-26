@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "f291600872b985ecae59a05ab4435e8e92eee878",
+  "sourceCommit": "ed7d2635774591c18da11f5f662eba03ca1f4917",
   "excludedContracts": [
     {
       "family": "graph",
@@ -1592,6 +1592,28 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.testing.createHistoryFixture"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/call-links",
+      "operationId": "voipCreateCallLink",
+      "fingerprint": "bf9fad45924d6db6e8ecc08b324c0f980fe86076784e6079e4ebc3c79905f6e7",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.voip.createCallLink"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/call-links/preview",
+      "operationId": "voipPreviewCallLink",
+      "fingerprint": "b87456ee50c708960a6f069f8c1c89ce7c6b4f0991a5f167b4c232611b42be30",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.voip.previewCallLink"
       }
     },
     {
