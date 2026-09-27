@@ -1022,6 +1022,7 @@ export {
   type MessageReceivedPayload,
   type MessageSentPayload,
   type NativeFlowResponse,
+  type ReplyChoice,
   type NewsletterUpdatePayload,
   type PollOption,
   type PollVotePayload,
