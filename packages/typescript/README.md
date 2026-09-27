@@ -1024,7 +1024,8 @@ These methods send an `Idempotency-Key` on every call:
 - `messages.send` and `messages.react`
 - `chats.editMessage` and `chats.deleteMessage`
 - `channels.reactToMessage`
-- `campaigns.create`, `campaigns.launch`, and `campaigns.reschedule`
+- `MessagingClient.campaigns.create`, plus `campaigns.launch` and
+  `campaigns.reschedule` on both clients
 
 If you don't pass `idempotencyKey`, the SDK generates a random UUID for the
 call. Every automatic retry of that call reuses the key, so the API never
@@ -2029,7 +2030,6 @@ const campaign = await platform.campaigns.create(
     name: "August launch",
   },
   {
-    idempotencyKey: "campaign-august-2026",
     timeoutMs: 10_000,
   },
 );
@@ -2037,6 +2037,8 @@ const campaign = await platform.campaigns.create(
 console.log(campaign.data.data, campaign.metadata.requestId);
 ```
 
+`Client.campaigns.create` does not accept `idempotencyKey` and never retries
+automatically, so a lost response can't create a second campaign.
 `Client.campaigns.create` requires `CreatePlatformCampaignRequest`, including
 `name` and the owning `projectId`. It accepts `templateId`, `recipientListId`,
 `senderConfig`, `scheduledAt`, inline `recipients` (at most 1,000), and
