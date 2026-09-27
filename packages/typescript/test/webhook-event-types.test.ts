@@ -38,6 +38,7 @@ import type {
   MessagePayload,
   MessageReceivedPayload,
   NativeFlowResponse,
+  ReplyChoice,
   NewsletterUpdatePayload,
   PollOption,
   PollVotePayload,
@@ -77,6 +78,11 @@ type ExpectedPollOption = {
   readonly hash: string;
 };
 
+type ExpectedReplyChoice = {
+  readonly kind: "button" | "list";
+  readonly id: string;
+};
+
 type ExpectedLinkedDeviceMessageType =
   | "text"
   | "image"
@@ -86,6 +92,9 @@ type ExpectedLinkedDeviceMessageType =
   | "location"
   | "contact"
   | "phone_number_shared"
+  | "native_flow_response"
+  | "button_reply"
+  | "list_reply"
   | "poll"
   | "sticker"
   | "reaction"
@@ -122,6 +131,8 @@ type ExpectedMessagePayload = {
   readonly unavailable?: boolean;
   readonly unavailableReason?: string;
   readonly nativeFlowResponse?: ExpectedNativeFlowResponse;
+  readonly replyChoice?: ExpectedReplyChoice;
+  readonly parentMessageId?: string;
   readonly [key: string]: unknown;
 };
 
@@ -461,6 +472,7 @@ describe("webhook event payload types", () => {
     expectTypeOf<IdentityReference>().toEqualTypeOf<ExpectedIdentityReference>();
     expectTypeOf<WebhookConversationReference>().toEqualTypeOf<ExpectedConversationReference>();
     expectTypeOf<NativeFlowResponse>().toEqualTypeOf<ExpectedNativeFlowResponse>();
+    expectTypeOf<ReplyChoice>().toEqualTypeOf<ExpectedReplyChoice>();
     expectTypeOf<PollOption>().toEqualTypeOf<ExpectedPollOption>();
     expectTypeOf<LinkedDeviceMessageType>().toEqualTypeOf<ExpectedLinkedDeviceMessageType>();
     expectTypeOf<CallParticipant>().toEqualTypeOf<

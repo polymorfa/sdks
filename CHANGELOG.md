@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `message.received` payload types include `replyChoice` (`kind` `button` or
+  `list` and the `id` you assigned) and `parentMessageId`, and the linked-device
+  message `type` union adds `button_reply`, `list_reply`, and
+  `native_flow_response`. `ReplyChoice` is exported.
 - Added typed hosted message history reads to `MessagingClient.chats`:
   `list`, `retrieve`, `listMessages`, and `retrieveMessage`. Server credentials
   need the relevant read scope, HMS enabled on the Number, and enrollment in
