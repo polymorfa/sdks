@@ -1,7 +1,7 @@
 {
   "name": "@polymorfa/sdk",
   "version": "0.1.0-dev.0",
-  "description": "Handwritten Polymorfa server SDK for TypeScript and Node.js",
+  "description": "Handwritten Polymorfa server SDK for TypeScript, Node.js, and edge runtimes",
   "type": "module",
   "license": "MIT",
   "repository": {

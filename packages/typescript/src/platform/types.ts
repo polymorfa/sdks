@@ -794,16 +794,27 @@ export type HybridMergeIneligibleReason =
   | "not_coexistence"
   | "different_customer"
   | "connection_disabled"
-  | "not_connected";
+  | "not_connected"
+  | "transition_in_progress"
+  | "pairing_in_progress"
+  | "hms_enabled";
 
 export interface HybridMergeCandidateNumber {
   readonly id: string;
   readonly name: string;
   readonly transport: HybridTransport;
   readonly status: string;
+  /**
+   * False when this Number uses hosted message storage. It cannot be the
+   * absorbed Number; quote the merge on it so it keeps its ID.
+   */
+  readonly canBeAbsorbed: boolean;
 }
 
-/** Two Numbers in one project that are the same WhatsApp Business number. */
+/**
+ * Two Numbers in one project that are the same WhatsApp Business number.
+ * `ineligibleReason` explains a pair that cannot merge now.
+ */
 export interface HybridMergeCandidate {
   /** One Linked Devices Number and one Official API Number. */
   readonly numbers: readonly [

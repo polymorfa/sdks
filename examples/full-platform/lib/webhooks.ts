@@ -25,7 +25,7 @@ export const WEBHOOK_EVENTS = [
   "session.logged_out",
   "template.status",
   "campaign.completed",
-  "bansafe.enforcement",
+  "bansafe.incident",
   "customer.created",
 ];
 
@@ -89,8 +89,8 @@ function handle(event: WebhookEvent): void {
     console.warn("logged out", event.session, event.payload.reason);
   } else if (isEvent(event, "campaign.completed")) {
     console.info("campaign completed", event.payload.campaignId);
-  } else if (isEvent(event, "bansafe.enforcement")) {
-    console.warn("BanSafe enforcement changed", event.session);
+  } else if (isEvent(event, "bansafe.incident")) {
+    console.warn("BanSafe incident", event.session, event.payload.kind);
   } else if (
     !isEvent(event, "call.received") &&
     !isEvent(event, "call.ended") &&

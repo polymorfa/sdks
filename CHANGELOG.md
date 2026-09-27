@@ -9,6 +9,23 @@
   plan and its `status`. `Client.projects.listHybridMergeCandidates` lists
   mergeable pairs. `PolymorfaErrorCode` adds `hybrid_resolution_required` and
   `hybrid_transition_ineligible`.
+
+- Calls quality diagnostics respect their five-second send interval when a
+  connection closes, avoiding an extra report that the API can rate-limit.
+
+- Browser Calls uses its authenticated lifecycle socket for ICE candidates and
+  pauses remote candidate polling while connected. It falls back to HTTP when
+  that socket disconnects. The Calls example also displays call-control errors
+  and failed request IDs.
+- Team webhook tests accept an optional event type. The SDK now rejects a
+  supplied body or session ID before making that request. Project webhook
+  tests keep the paired native body and session ID input.
+
+- Retired the unproduced `bansafe.risk_changed`,
+  `bansafe.health_changed`, and `bansafe.enforcement` webhook names and their
+  test-event fixtures. The typed `bansafe.incident`, `bansafe.action`,
+  `bansafe.health_threshold`, and `bansafe.claim` events remain available.
+
 - Browser Calls hold locally gathered ICE candidates until the platform
   answers the call's offer, then send them. Candidates sent earlier were
   refused with `409` because no media session existed yet, and were lost.

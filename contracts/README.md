@@ -29,8 +29,8 @@ operations. The six Console counterparts are excluded. Message content and
 `call.permission_changed` are typed in server and browser packages where
 applicable.
 
-`testing-events.json` records the four test-event schemas from API commit
-`9c876c16c60b74370d934e1275f23ef6096bee12`, including the source path and file
+`testing-events.json` records the four test-event schemas from API source commit
+`6839976e7ad54e044c4d789fd296edc44772a907`, including the source path and file
 hash. The TypeScript test-event catalog and override types use that revision.
 Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
@@ -43,34 +43,62 @@ published SDK package before updating their pinned dependency.
 
 The current snapshots are byte-identical copies of the Messaging and Platform
 OpenAPI files at `polymorfa/polymorfa` commit
-`feaf0734a99e24124e06cc04af52b46fdc5158f1` on the coordinated API branch
-`t3code/hybrid-pro-downgrade` (not yet merged to API `dev`; based on merged
-API `dev` commit `4d1d47fad`). The Messaging file is unchanged from
-`5cba4237`. The Platform file adds Hybrid Link tier transitions:
+`d831bf9c662f6fb1763a9de259612a4553ab5a02` on the coordinated API branch
+`t3code/hybrid-pro-downgrade` (API PR #404, not yet merged to API `dev`). It
+merges API `dev` after `5f6a2b1` and adds Hybrid Link tier transitions:
 `hybridResolution` and `hybridMerge` on `NumberTierQuoteRequest`,
 `quote.hybridTransition` on `NumberTierChange`, and
 `GET /platform/projects/{projectId}/hybrid-merge-candidates`, covered by
-`Client.projects.listHybridMergeCandidates`. Four fingerprints changed:
-`quoteSessionTierChange`, `getSessionTierChange` and `setSessionTierOverride`
-(the shared request and result schemas; each keeps its typed method) and the
-excluded Console `updateProject` (a new `409`). `hybrid_resolution_required`
-and `hybrid_transition_ineligible` are documented in operation prose rather
-than the public error enum; `POLYMORFA_ERROR_CODES` lists both. Repin to the
-merged API `dev` commit before merging this SDK change.
+`Client.projects.listHybridMergeCandidates`. Each candidate Number reports
+`canBeAbsorbed` (false with hosted message storage), and the list returns
+`403 feature_unavailable` without live Hybrid Link access.
+`hybrid_resolution_required` and `hybrid_transition_ineligible` are documented
+in operation prose rather than the public error enum; `POLYMORFA_ERROR_CODES`
+lists both.
 
-The preceding snapshots were byte-identical copies of the Messaging and Platform OpenAPI
-files at merged `polymorfa/polymorfa` API `dev` commit
-`5cba4237fcec1ef776e8d3727c7ecc4d8f0207a3`. This revision integrates
-Hybrid Link and the `campaign.launched`, `campaign.resumed`, and
-`campaign.stopped` webhook schemas from API feature source
-`3558c289ec35aba45a498a8794a94b4919365899`. The three events change no
-operation fingerprint or SDK method mapping. The snapshots, ledger, and revision
-tests have been reconciled. `source.json` records the source paths and SHA-256
-hashes. SDK package publication remains separate.
+The API `dev` changes carried by this merge add the Cloud credential health
+and reauthorization operations (`GET /messaging/{session}/cloud-credentials`,
+`POST .../reauthorize`), which the ledger excludes until SDK PR #308 merges,
+the `reauthorization` QuickLink purpose, and `X-RateLimit-*` headers on every
+response. Together with the tier-quote schemas these move 234 fingerprints;
+the headers change no request or response body. Each changed fingerprint was
+reviewed. Repin to the merged API `dev`
+commit before merging this SDK change.
+
+The preceding snapshots were described as follows.
+
+The two public Flow draft reads in the pinned Platform snapshot are covered by
+`Client.project(projectId).flows.list` and `.retrieve`. The API declares both
+public, project-bound, and `sessions:read`. The merged API runtime at
+`2fb3eec8624c5785f72f81f163a27c1ce4e19767` registers them with server-key
+authentication. The SDK snapshot below also includes the later campaign
+reschedule operations, which are tracked separately by SDK PR #310.
+
+The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
+files at API `dev` merge commit `5f6a2b1470821c1a2b4077aa8de14214faede57a`. This revision adds ad-hoc and group-ID placement,
+participant re-ring, connection media controls, emoji reactions, raised hands
+and scoped call record detail. It also documents automatic SIP caller identity
+when no From user override is set. The API merge also adds campaign reschedule
+routes. SDK PR #310 owns their methods; the coverage ledger records both as
+excluded until that PR merges. The SDK webhook catalog and payload types include
+the `campaign.rescheduled` event in this pinned snapshot. `source.json` records source paths and SHA-256
+hashes. The refresh also carries an audio-codec description and corrects an
+escaped webhook-header control-character pattern; no header fields or SDK
+serialization changed. This revision also declares the optional `handRaised`
+boolean on webhook call participants, matching the existing SDK event types.
+SDK publication, deployment and the CLI's exact
+registry pin remain separate release gates. The call-link preview request schema
+accepts `session` and `token` together while remaining a closed object.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
 operation fingerprint or SDK method mapping.
+
+The API merge also incorporates two unrelated routes from API PRs #333 and
+#332. Hosted-history media download is assigned to SDK PR #316; Messaging
+campaign update is assigned to SDK PR #307. Both are intentional exclusions in
+this Calls ledger. Existing hosted-history message reads now type the optional
+`mediaRetrieval` status and remain covered.
 
 The Platform event-list contract adds `afterOffset` and indexed page metadata
 for both organization and project routes. `Client.events.list` and project-view
@@ -89,7 +117,7 @@ from SDK `dev`. The three public Calls analytics operations are covered by
 `Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
 `Client.calls.exportAll` walks export pages. The 13 public Voice operations are
 covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
-13 Console counterparts are excluded. The full 509-operation snapshot includes
+13 Console counterparts are excluded. The full 517-operation snapshot includes
 all 15 Functions routes already merged to API `dev`.
 
 HMS history adds four server-only Messaging reads under
@@ -170,19 +198,19 @@ names `recipientListId` and keeps an index signature for every other field.
 The operation declares `409` for the refusal after launch, which the transport
 already maps to `PolymorfaConflictError`; no SDK change was needed for it.
 
-The webhook catalog adds `contact.opted_out` and `contact.opted_in` with the
-exported `ContactOptPayload`. `bansafe.health_changed` and
-`bansafe.risk_changed`, which the contract already defined, are now registered
-too, with their payload types.
+The webhook catalog includes `contact.opted_out` and `contact.opted_in` with the
+exported `ContactOptPayload`. The unproduced `bansafe.health_changed`,
+`bansafe.risk_changed`, and `bansafe.enforcement` names are retired. Historical
+signed events with these names still decode as unknown events.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        380 |
+| Covered             |        388 |
 | Missing             |          0 |
-| Excluded            |        130 |
+| Excluded            |        134 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        510 |
+| Total               |        522 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -334,3 +362,9 @@ organization enabled for Functions. The SDK never retries Function mutations or
 invocations automatically. Browser/client-token SDKs do not expose this server
 control plane. A local implementation or installed method does not establish
 hosted availability.
+
+The current dev reconciliation changes Campaigns error declarations only:
+draft reads/writes no longer declare a plan-related 402, and launch/live sender
+edits declare the existing public 503 envelope. Request and successful response
+shapes remain unchanged for all eleven refreshed fingerprints; the existing
+transport error handling applies. Focused Campaigns and contract checks pass.

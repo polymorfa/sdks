@@ -38,6 +38,21 @@ describe("verifyWebhookSignature", () => {
     ).resolves.toBe(true);
   });
 
+  it("signs only the supplied view bytes and encodes non-ASCII secrets as UTF-8", async () => {
+    const padded = Buffer.concat([Buffer.from([0]), raw, Buffer.from([0])]);
+    const view = new DataView(padded.buffer, padded.byteOffset + 1, raw.length);
+    const utf8Secret = "sëcret";
+    const utf8Signature = createHmac("sha256", utf8Secret)
+      .update(raw)
+      .digest("hex");
+    await expect(
+      verifyWebhookSignature(view, utf8Signature, utf8Secret),
+    ).resolves.toBe(true);
+    await expect(
+      verifyWebhookSignature(padded, utf8Signature, utf8Secret),
+    ).resolves.toBe(false);
+  });
+
   it("rejects mutated bytes, the wrong secret, and malformed signatures", async () => {
     await expect(
       verifyWebhookSignature(
@@ -89,6 +104,21 @@ describe("webhook utilities", () => {
     ).resolves.toEqual(event);
   });
 
+  it("keeps the existing empty-secret fixture signature", async () => {
+    const event = JSON.parse(raw.toString("utf8")) as MessageReceivedEvent;
+    const fixture = await webhooks.createFixture({ event, secret: "" });
+    expect(fixture.signature).toBe(
+      createHmac("sha256", "").update(raw).digest("hex"),
+    );
+    await expect(
+      webhooks.verifySignature({
+        body: fixture.body,
+        signature: fixture.signature,
+        secret: "",
+      }),
+    ).resolves.toBe(false);
+  });
+
   it("keeps the timestamped local-forward signature separate", async () => {
     const secretBytes = Buffer.alloc(32, 7);
     const secret = secretBytes.toString("base64url");
@@ -113,6 +143,34 @@ describe("webhook utilities", () => {
       }),
     ).rejects.toThrow(WebhookSignatureError);
   });
+
+  it("checks local-forward timestamp limits and exact bytes", async () => {
+    const secretBytes = Buffer.alloc(32, 9);
+    const secret = secretBytes.toString("base64url");
+    const timestamp = 1_787_133_600;
+    const digest = createHmac("sha256", secretBytes)
+      .update(Buffer.from(`${timestamp}.`))
+      .update(raw)
+      .digest("hex");
+    const input = {
+      body: raw,
+      signature: `t=${timestamp},v1=${digest}`,
+      secret,
+      nowUnixSeconds: timestamp + 300,
+    };
+    await expect(webhooks.verifyLocal(input)).resolves.toMatchObject({
+      id: "evt_1",
+    });
+    await expect(
+      webhooks.verifyLocal({ ...input, nowUnixSeconds: timestamp + 301 }),
+    ).rejects.toThrow(WebhookSignatureError);
+    await expect(
+      webhooks.verifyLocal({
+        ...input,
+        body: Buffer.concat([raw, Buffer.from(" ")]),
+      }),
+    ).rejects.toThrow(WebhookSignatureError);
+  });
 });
 
 describe("constructWebhookEvent", () => {
@@ -123,6 +181,30 @@ describe("constructWebhookEvent", () => {
       expectTypeOf(event).toEqualTypeOf<MessageReceivedEvent>();
       expect(event.payload.id).toBe("m1");
     }
+  });
+
+  it.each([
+    "bansafe.risk_changed",
+    "bansafe.health_changed",
+    "bansafe.enforcement",
+  ])("preserves a signed historical %s event as unknown", async (name) => {
+    const body = Buffer.from(
+      JSON.stringify({
+        id: "historical-bansafe-event",
+        session: "support",
+        timestamp: "2026-09-07T00:00:00Z",
+        event: name,
+        payload: { legacy: true },
+      }),
+    );
+    const event = await constructWebhookEvent(
+      body,
+      sign(body),
+      "fixture-secret",
+    );
+    expect(KNOWN_WEBHOOK_EVENT_TYPES).not.toContain(name);
+    expect(event.event).toBe(name);
+    expect(event.payload).toEqual({ legacy: true });
   });
 
   it.each([null, { id: "15550100@s.whatsapp.net" }])(

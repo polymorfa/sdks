@@ -194,6 +194,8 @@ export type CallLifecycleEvent =
     };
 export interface PlaceCallInput {
   readonly to: string;
+  readonly participants?: readonly string[];
+  readonly groupId?: string;
   readonly video: boolean;
   readonly idempotencyKey: string;
   /** Claim the placed call. Default `false`. */
@@ -258,7 +260,13 @@ export interface CallsSnapshot extends ControllerSnapshot {
   readonly capabilities: CallCapabilities;
   readonly video: boolean;
   readonly audioMuted: boolean;
+  /** Remote microphone observation for a direct call; absent when unknown or in a group. */
+  readonly remoteAudioMuted?: boolean;
   readonly videoMuted: boolean;
+  /** Local video request was sent; peer acceptance and delivery are unverified. */
+  readonly videoDelivery?: "unconfirmed";
+  /** The local outgoing source is display capture instead of the camera. */
+  readonly screenSharing?: boolean;
   /** Set once media connected; drives the call duration display. */
   readonly connectedAt?: number;
   readonly devices: readonly CallDevice[];
@@ -286,8 +294,14 @@ export interface CallsSnapshot extends ControllerSnapshot {
   readonly exclusive: boolean;
   /** Participants of the displayed call. */
   readonly participants: readonly CallParticipant[];
+  readonly handRaised?: boolean;
+  readonly socialSupported?: boolean;
+  readonly socialError?: boolean;
+  readonly reaction?: import("@polymorfa/sdk/calls/internal").CallReaction;
   /** Remote video tiles of the displayed call; streams are on the controller. */
   readonly remoteVideos: readonly RemoteVideoInfo[];
+  /** Placement is pending; the call may not have an ID yet. */
+  readonly placing?: boolean;
   /**
    * An answer or join is in progress. Until it settles, `answer()`, `join()`,
    * `reject()` and `place()` are refused; `select()` and `dismiss()` stay
@@ -336,11 +350,14 @@ const EMPTY_CALL = {
   canJoin: false,
   exclusive: false,
   participants: [] as readonly CallParticipant[],
+  handRaised: false,
+  socialSupported: false,
   remoteVideos: [] as readonly RemoteVideoInfo[],
 };
 
 export class CallsController extends ObservableController<CallsSnapshot> {
   readonly #backend: CallsBackend;
+  #reactionTimer: ReturnType<typeof setTimeout> | undefined;
   readonly #mediaFactory: CallMediaFactory;
   readonly #createKey: () => string;
   readonly #now: () => number;
@@ -413,6 +430,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         devices: [],
         selectedDevices: {},
         invitations: [],
+        placing: false,
         answering: false,
         ...EMPTY_CALL,
       },
@@ -447,8 +465,16 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     return id === undefined ? undefined : this.#backend.getCall?.(id);
   }
 
+  /** Place a call to an existing group; roster and permissions are resolved by the API. */
+  placeGroup(
+    groupId: string,
+    options: { readonly video?: boolean; readonly exclusive?: boolean } = {},
+  ): Promise<void> {
+    return this.place({ groupId }, options);
+  }
+
   async place(
-    to: string,
+    to: string | readonly string[] | { readonly groupId: string },
     options: {
       readonly video?: boolean;
       /** Claim the placed call. Default `false`. */
@@ -456,6 +482,25 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     } = {},
   ): Promise<void> {
     this.assertActive();
+    const participants = Array.isArray(to)
+      ? (to as readonly string[])
+      : undefined;
+    const groupId =
+      typeof to === "object" && !Array.isArray(to)
+        ? (to as { groupId: string }).groupId
+        : undefined;
+    if (groupId !== undefined && !/^[1-9][0-9]{0,18}$/.test(groupId))
+      throw new Error("A group call needs a public numeric group ID.");
+    if (
+      participants &&
+      (participants.length < 2 ||
+        participants.length > 31 ||
+        new Set(participants).size !== participants.length ||
+        participants.some((value) => !value.trim()))
+    )
+      throw new Error("A group call needs 2 to 31 distinct participants.");
+    const primary =
+      typeof to === "string" ? to : (groupId ?? participants![0]!);
     if (this.#placing)
       throw new Error("A call placement is already in progress.");
     this.#assertNotAnswering("place a call");
@@ -471,10 +516,13 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     // Only a refused offer carries the pod's terminal hints.
     let offering = false;
     this.#placing = true;
+    this.transition({ ...callFields(current), status: current.status });
     try {
       const { callId } = await this.#backend.place(
         {
-          to,
+          to: primary,
+          ...(participants ? { participants } : {}),
+          ...(groupId ? { groupId } : {}),
           video,
           idempotencyKey: this.#createKey(),
           ...(options.exclusive === undefined
@@ -503,7 +551,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
         ...this.#baseFields(),
         status: answered ? "accepted" : "ringing",
         callId,
-        peer: to,
+        peer: primary,
         direction: "outgoing",
         capabilities,
         video: offered,
@@ -527,7 +575,18 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       this.#fail(cause, operation, "place_failed", offering);
     } finally {
       this.#placing = false;
+      if (!this.#disposed) {
+        const current = this.getSnapshot();
+        this.transition({ ...callFields(current), status: current.status });
+      }
     }
+  }
+
+  /** Ring a non-connected participant in the displayed call's upstream roster. */
+  async ringParticipant(to: string): Promise<void> {
+    this.assertActive();
+    if (!this.call) throw new Error("No active call is selected.");
+    await this.call.ringParticipant(to);
   }
 
   /**
@@ -667,6 +726,9 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     readonly video?: boolean;
   }): void {
     this.assertActive();
+    if (this.getSnapshot().screenSharing && muted.video !== undefined) {
+      muted = muted.audio === undefined ? {} : { audio: muted.audio };
+    }
     this.#media?.setMuted(muted);
     const current = this.getSnapshot();
     this.transition({
@@ -728,6 +790,57 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       status: after.status,
       video: true,
       videoMuted: false,
+      videoDelivery: "unconfirmed",
+    });
+  }
+
+  get canShareScreen(): boolean {
+    return (
+      this.getSnapshot().capabilities.video &&
+      this.#media?.startScreenShare !== undefined
+    );
+  }
+
+  /** Call directly from a user gesture. Display permission is requested each time. */
+  async startScreenShare(): Promise<void> {
+    this.assertActive();
+    const media = this.#media;
+    if (
+      this.getSnapshot().status !== "connected" ||
+      !this.canShareScreen ||
+      media?.startScreenShare === undefined
+    )
+      return;
+    try {
+      await media.startScreenShare(this.#abort.signal);
+    } catch (cause) {
+      if (this.#media === media) this.#screenError();
+      throw cause;
+    }
+  }
+
+  /** Stop display capture and restore the prior camera preference. */
+  async stopScreenShare(): Promise<void> {
+    this.assertActive();
+    const media = this.#media;
+    try {
+      await media?.stopScreenShare?.();
+    } catch (cause) {
+      if (this.#media === media) this.#screenError();
+      throw cause;
+    }
+  }
+
+  #screenError(): void {
+    const current = this.getSnapshot();
+    this.transition({
+      ...callFields(current),
+      status: current.status,
+      error: {
+        code: "screen_share_failed",
+        message: "Screen sharing could not be confirmed.",
+        recoverable: true,
+      },
     });
   }
 
@@ -838,6 +951,8 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     this.#abort.abort();
     this.#unsubscribe?.();
     this.#unsubscribe = undefined;
+    if (this.#reactionTimer !== undefined)
+      this.#clearTimeout(this.#reactionTimer);
     this.#backend.dispose?.();
     // Disposal leaves the call; it never ends it for other participants.
     void this.#closeMedia().catch(() => undefined);
@@ -1151,6 +1266,52 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     if (code !== undefined) this.#diagnostics?.error(code);
   }
 
+  async sendReaction(
+    emoji: import("@polymorfa/sdk/calls/internal").CallReactionEmoji,
+  ): Promise<void> {
+    const call = this.call;
+    if (!call)
+      throw new Error("Call reactions are unavailable for this backend.");
+    await this.#socialAction(() => call.sendReaction(emoji));
+  }
+  async setHandRaised(raised: boolean): Promise<void> {
+    const call = this.call;
+    if (!call)
+      throw new Error("Call hand controls are unavailable for this backend.");
+    await this.#socialAction(() => call.setHandRaised(raised));
+  }
+
+  async #socialAction(action: () => Promise<void>): Promise<void> {
+    const callId = this.getSnapshot().callId;
+    try {
+      await action();
+      const current = this.getSnapshot();
+      if (
+        !this.#disposed &&
+        current.callId === callId &&
+        ACTIVE.has(current.status)
+      )
+        this.transition({
+          ...callFields(current),
+          status: current.status,
+          socialError: false,
+        });
+    } catch (cause) {
+      const current = this.getSnapshot();
+      if (
+        !this.#disposed &&
+        current.callId === callId &&
+        ACTIVE.has(current.status)
+      )
+        this.transition({
+          ...callFields(current),
+          status: current.status,
+          socialError: true,
+        });
+      throw cause;
+    }
+  }
+
   #openWith(
     callId: string,
     video: boolean,
@@ -1171,6 +1332,126 @@ export class CallsController extends ObservableController<CallsSnapshot> {
                 ...callFields(current),
                 status: current.status,
               });
+          },
+          onControl: (frame) => {
+            if (media !== undefined && this.#media !== media) return;
+            const current = this.getSnapshot();
+            if (
+              current.callId !== callId ||
+              current.status === "ended" ||
+              current.status === "error"
+            )
+              return;
+            const shared = this.#backend.getCall?.(callId);
+            if (frame.type === "reaction" || frame.type === "hand_state") {
+              shared?._remoteSocial(frame);
+              if (frame.type === "reaction") {
+                if (this.#reactionTimer !== undefined)
+                  this.#clearTimeout(this.#reactionTimer);
+                this.#reactionTimer = this.#setTimeout(() => {
+                  const current = this.getSnapshot();
+                  if (current.callId !== callId) return;
+                  const fields = callFields(current);
+                  delete (fields as { reaction?: unknown }).reaction;
+                  this.transition({ ...fields, status: current.status });
+                }, 3000);
+              }
+              this.transition({
+                ...callFields(current),
+                status: current.status,
+                ...(frame.type === "hand_state"
+                  ? {
+                      handRaised: frame.raised,
+                      socialSupported: frame.supported && shared !== undefined,
+                    }
+                  : { reaction: frame }),
+              });
+            } else {
+              shared?._remoteParticipant(frame);
+              const participants =
+                frame.type === "participant_left"
+                  ? current.participants.filter(
+                      (p) => p.id !== frame.participantId,
+                    )
+                  : frame.participant.state === "left"
+                    ? current.participants.filter(
+                        (p) => p.id !== frame.participant.id,
+                      )
+                    : [
+                        ...current.participants.filter(
+                          (p) => p.id !== frame.participant.id,
+                        ),
+                        frame.participant,
+                      ];
+              this.transition({
+                ...callFields(this.getSnapshot()),
+                status: this.getSnapshot().status,
+                participants,
+              });
+            }
+          },
+          onScreenSharing: (sharing) => {
+            if (media === undefined || this.#media !== media) return;
+            const current = this.getSnapshot();
+            if (
+              current.callId !== callId ||
+              current.status === "ended" ||
+              current.status === "error"
+            )
+              return;
+            this.transition({
+              ...callFields(current),
+              status: current.status,
+              screenSharing: sharing,
+              video: media.localStream.getVideoTracks().length > 0,
+              videoMuted: !media.videoEnabled(),
+              ...(sharing ? { videoDelivery: "unconfirmed" as const } : {}),
+            });
+          },
+          onRemoteMute: (muted) => {
+            if (media !== undefined && this.#media !== media) return;
+            const current = this.getSnapshot();
+            if (
+              current.callId !== callId ||
+              current.status === "ended" ||
+              current.status === "error"
+            )
+              return;
+            const fields = callFields(current);
+            const { remoteAudioMuted: previousMute, ...rest } = fields;
+            void previousMute;
+            this.transition({
+              ...rest,
+              status: current.status,
+              ...(muted === null ? {} : { remoteAudioMuted: muted }),
+            });
+          },
+          onMediaControlError: (cause) => {
+            if (media !== undefined && this.#media !== media) return;
+            const current = this.getSnapshot();
+            if (
+              current.callId !== callId ||
+              current.status === "ended" ||
+              current.status === "error"
+            )
+              return;
+            this.transition({
+              ...callFields(current),
+              status: current.status,
+              videoMuted:
+                media === undefined
+                  ? current.videoMuted
+                  : !media.videoEnabled(),
+              error: {
+                code: "media_control_failed",
+                message:
+                  cause instanceof Error
+                    ? cause.message
+                    : "Media control was not confirmed.",
+                recoverable: true,
+                callId,
+              },
+            });
           },
           onRemoteVideos: (videos) => {
             const current = this.getSnapshot();
@@ -1662,13 +1943,14 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     else this.transition(failed);
   }
 
-  /** Keeps `invitations` and `answering` current on every transition. */
+  /** Keeps invitations and in-flight call actions current on every transition. */
   protected override transition(
     next: Omit<CallsSnapshot, "revision" | "updatedAt">,
   ): void {
     super.transition({
       ...next,
       invitations: [...this.#invitations.values()],
+      placing: this.#placing,
       answering: this.#answering !== undefined,
     });
   }
@@ -1770,7 +2052,16 @@ function callFields(
     capabilities: snapshot.capabilities,
     video: snapshot.video,
     audioMuted: snapshot.audioMuted,
+    ...(snapshot.remoteAudioMuted === undefined
+      ? {}
+      : { remoteAudioMuted: snapshot.remoteAudioMuted }),
     videoMuted: snapshot.videoMuted,
+    ...(snapshot.videoDelivery === undefined
+      ? {}
+      : { videoDelivery: snapshot.videoDelivery }),
+    ...(snapshot.screenSharing === undefined
+      ? {}
+      : { screenSharing: snapshot.screenSharing }),
     ...(snapshot.connectedAt === undefined
       ? {}
       : { connectedAt: snapshot.connectedAt }),
@@ -1790,6 +2081,10 @@ function callFields(
       ? {}
       : { answeredBy: snapshot.answeredBy }),
     participants: snapshot.participants,
+    handRaised: snapshot.handRaised ?? false,
+    socialSupported: snapshot.socialSupported ?? false,
+    socialError: snapshot.socialError ?? false,
+    ...(snapshot.reaction === undefined ? {} : { reaction: snapshot.reaction }),
     remoteVideos: snapshot.remoteVideos,
   };
 }

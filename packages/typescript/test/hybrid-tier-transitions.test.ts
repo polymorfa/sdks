@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   Client,
+  PolymorfaAuthorizationError,
   PolymorfaConflictError,
   PolymorfaValidationError,
   isKnownPolymorfaErrorCode,
@@ -279,12 +280,14 @@ describe("Hybrid Link tier transitions", () => {
             name: "support",
             transport: "linked_devices",
             status: "connected",
+            canBeAbsorbed: false,
           },
           {
             id: ABSORBED,
             name: "support-cloud",
             transport: "official_api",
             status: "connected",
+            canBeAbsorbed: true,
           },
         ],
         eligible: true,
@@ -296,12 +299,14 @@ describe("Hybrid Link tier transitions", () => {
             name: "sales",
             transport: "linked_devices",
             status: "disconnected",
+            canBeAbsorbed: true,
           },
           {
             id: "01994234-0000-7000-8000-00000000000d",
             name: "sales-cloud",
             transport: "official_api",
             status: "connected",
+            canBeAbsorbed: true,
           },
         ],
         eligible: false,
@@ -346,6 +351,33 @@ function unionKeys<T>(record: { readonly [K in AllKeys<T>]: true }) {
 function values<T extends string>(record: { readonly [K in T]: true }) {
   return Object.keys(record).sort();
 }
+
+it("surfaces missing Hybrid Link access on the candidate list as a typed 403", async () => {
+  const server = await startTestServer(() => ({
+    status: 403,
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      error: {
+        type: "permission_error",
+        code: "feature_unavailable",
+        message: "Hybrid Link is not enabled for this team.",
+        param: null,
+        request_id: "req_forbidden",
+      },
+      data: null,
+      docs: "https://docs.polymorfa.com/api/errors#feature_unavailable",
+    }),
+  }));
+  const error = await client(server)
+    .projects.listHybridMergeCandidates(PROJECT)
+    .then(
+      () => undefined,
+      (caught: unknown) => caught,
+    );
+  expect(error).toBeInstanceOf(PolymorfaAuthorizationError);
+  expect(error).toMatchObject({ status: 403, code: "feature_unavailable" });
+  expect(server.requests).toHaveLength(1);
+});
 
 describe("Hybrid tier transition types match the pinned Platform snapshot", () => {
   it("covers every request and response field and enum", () => {
@@ -434,10 +466,16 @@ describe("Hybrid tier transition types match the pinned Platform snapshot", () =
         different_customer: true,
         connection_disabled: true,
         not_connected: true,
+        transition_in_progress: true,
+        pairing_in_progress: true,
+        hms_enabled: true,
       }),
     );
     expect(
       Object.keys(candidate.properties!.numbers!.items!.properties!).sort(),
-    ).toEqual(["id", "name", "status", "transport"]);
+    ).toEqual(["canBeAbsorbed", "id", "name", "status", "transport"]);
+    expect(candidate.properties!.numbers!.items!.required).toContain(
+      "canBeAbsorbed",
+    );
   });
 });

@@ -1,6 +1,7 @@
 # `@polymorfa/sdk`
 
-The handwritten Polymorfa server SDK for TypeScript and Node.js.
+The handwritten Polymorfa server SDK for TypeScript, Node.js, and server-side
+edge runtimes.
 
 Install the development prerelease from npm:
 
@@ -33,8 +34,11 @@ import {
 ```
 
 See the repository README for the complete development contract and current
-typed-resource coverage. This package has no runtime dependencies and requires
-Node.js 20 or newer.
+typed-resource coverage. This package has no runtime dependencies. On Node.js,
+it requires version 20 or newer. The package root also runs in Cloudflare
+Workers, Deno, and Bun with native `fetch` and `crypto.subtle`; keep server
+credentials in the runtime's secret store. Import `@polymorfa/sdk/node` only in
+Node.js applications that need its file helpers.
 
 ## Management client and project views
 
@@ -55,6 +59,12 @@ const project = platform.project("project_123");
 const events = await project.events.list({ limit: 25 });
 console.log(events.items, events.response.metadata.requestId);
 ```
+
+When the API applies its per-team request limit, response and error metadata
+expose `x-ratelimit-limit`, `x-ratelimit-remaining`, and `x-ratelimit-reset` in
+`metadata.headers`. The reset value is a Unix timestamp in seconds. On a
+rejected request, follow `retry-after` before retrying; the reset timestamp
+does not override it.
 
 A project token can construct only a project view and requires `projectId`:
 
@@ -706,6 +716,21 @@ lists identify the known response values. Preview responses have
 The voice resources are available only in this TypeScript SDK.
 
 ## Call analytics and call records
+
+The source SDK adds `platform.calls.retrieve(callId)` for stored call detail.
+It requires the matching API deployment and SDK publication. The `callId`
+argument accepts 1 to 128 printable ASCII characters without spaces; the SDK
+encodes it as one path segment. The response's `data` includes bounded metadata
+history, participant and connection lifetimes,
+media measurements and app-reported diagnostics. It returns no media or webhook
+deliveries. Project clients remain pinned to the call's original owning project;
+client tokens cannot use this read. Unknown measurements are `null` and
+`history.truncated` identifies incomplete retained history.
+
+```ts
+const detail = await platform.calls.retrieve("call_123");
+console.log(detail.data.history.events);
+```
 
 `Client.calls` reads call statistics and call detail records. It needs
 `sessions:read`. A team client covers every project of the team unless you
@@ -1849,17 +1874,12 @@ if (isEvent(event, "history.sync")) {
 ```
 
 The catalog also types Customer lifecycle events (`customer.*`), BanSafe events
-(`bansafe.health_threshold`, `bansafe.health_changed`, `bansafe.risk_changed`,
-`bansafe.enforcement`, `bansafe.action`, `bansafe.incident`, and
+(`bansafe.health_threshold`, `bansafe.action`, `bansafe.incident`, and
 `bansafe.claim`), campaign progress and lifecycle events (`campaign.*`),
 `call.permission_changed`, `message.failed`, and `template.status`. `message.failed`
 reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
 and `retryAfter` in seconds. Unknown event names still parse as
 `UnknownWebhookEvent`.
-
-For `bansafe.health_changed`, `band` is a `BanSafeHealthBandName`:
-`good`, `fair`, `poor`, `failing`, or `unknown`. `previousBand` uses the same
-type, with `null` for the first evaluation.
 
 `contact.sync` delivers a Meta Cloud API contact batch as
 `{ kind: "contacts", value }`. `message.echo` reports a message sent from the
@@ -1891,6 +1911,26 @@ organization and project scope:
 - `webhookDeliveries.list`, `retrieve`, `listAttempts`, `retrieveAttempt`, and
   `retry`
 - `operations.list`, `get`, `listTransitions`, `cancel`, and `wait`
+
+`platform.webhooks.test` accepts `TestOrganizationWebhookInput`, which has an
+optional `eventType` and no body or session ID. A project-bound client accepts
+`TestProjectWebhookInput`; when you supply a native event body, supply its
+project session ID too. Both methods send an `Idempotency-Key` for each test:
+
+```ts
+await platform.webhooks.test(
+  "team-webhook-id",
+  { eventType: "customer.created" },
+  { idempotencyKey: crypto.randomUUID() },
+);
+await platform
+  .project("project-id")
+  .webhooks.test(
+    "project-webhook-id",
+    { eventType: "message.received" },
+    { idempotencyKey: crypto.randomUUID() },
+  );
+```
 
 ```ts
 const deliveries = await project.webhookDeliveries.list({
@@ -2152,7 +2192,11 @@ and quote Pro on the Number that keeps its ID:
 const pairs = await platform.projects.listHybridMergeCandidates(projectId);
 const pair = pairs.data.data.find((candidate) => candidate.eligible);
 if (pair) {
-  const [keep, absorb] = pair.numbers;
+  // A Number with hosted message storage cannot be absorbed; keep it instead.
+  const [first, second] = pair.numbers;
+  const [keep, absorb] = second.canBeAbsorbed
+    ? [first, second]
+    : [second, first];
   await platform.sessions.quoteTierChange(keep.id, {
     tierOverride: "pro",
     hybridMerge: { absorbNumberId: absorb.id },
@@ -2169,8 +2213,9 @@ plus `failureReason`, `newNumberId` for a completed split, and
 `metaDisconnectRequired`. When that flag is true, disconnect the Official API in
 the WhatsApp Business app under Settings > Account > Business Platform. An
 ineligible pair or Number fails with `hybrid_transition_ineligible`; the reason
-appears only in the error message. Merging requires Hybrid Link access; the API
-enforces it.
+appears only in the error message. A candidate's `ineligibleReason` explains why
+a pair cannot merge now. Listing candidates and merging require Hybrid Link
+access; without it the API returns `403 feature_unavailable`.
 
 ## Organization access and security
 
