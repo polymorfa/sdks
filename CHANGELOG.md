@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `Session` gains optional `newChatCapping` (`NewChatCapping`): WhatsApp's
+  per-number new-chat cap, returned by `sessions.retrieve` for linked-device
+  numbers. API contract: polymorfa/polymorfa#403.
+
 - Calls quality diagnostics respect their five-second send interval when a
   connection closes, avoiding an extra report that the API can rate-limit.
 
