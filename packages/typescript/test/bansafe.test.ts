@@ -15,7 +15,6 @@ import {
   type BanSafeTelemetryHistoryEnvelope,
   type DataEnvelope,
   type ProjectHealthPolicy,
-  type SessionCapabilities,
   type SessionSafeMode,
   type SuccessEnvelope,
   MessagingBanSafeResource,
@@ -209,13 +208,9 @@ describe("Client BanSafe resources", () => {
     });
     await client.sessions.getSafeMode("session/a");
     await client.sessions.updateSafeMode("session/a", { typing: "inherit" });
-    const capabilities = await client.sessions.getCapabilities("session/a");
 
     expectTypeOf(policy).toEqualTypeOf<
       ApiResponse<DataEnvelope<ProjectHealthPolicy>>
-    >();
-    expectTypeOf(capabilities).toEqualTypeOf<
-      ApiResponse<DataEnvelope<SessionCapabilities>>
     >();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "GET /platform/projects/project%2Fa/safe-mode",
@@ -228,7 +223,6 @@ describe("Client BanSafe resources", () => {
       "PUT /platform/projects/project%2Fa/health-policy",
       "GET /platform/sessions/session%2Fa/safe-mode",
       "PUT /platform/sessions/session%2Fa/safe-mode",
-      "GET /platform/sessions/session%2Fa/capabilities",
     ]);
   });
 });

@@ -15,12 +15,12 @@ import type {
   SessionBatchRemoveResult,
   SessionBatchRequest,
   SessionBatchStopResult,
+  SessionCapabilities,
   SessionProjectContext,
   SessionRemoveResult,
   SessionStartResult,
   SessionStopResult,
   SessionTierOverrideRequest,
-  SessionCapabilities,
   SessionSafeMode,
   UpdateSessionSafeModeRequest,
 } from "./types.js";

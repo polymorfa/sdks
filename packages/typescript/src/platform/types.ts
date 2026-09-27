@@ -1193,17 +1193,34 @@ export type SessionCapabilityUnit =
 export type SessionCapabilitySource =
   "server" | "client_default" | "account_type";
 
-export interface SessionCapability {
+interface SessionCapabilityBase {
   /** Stable key such as `channels` or `messageEdit.windowSeconds`. New keys can be added. */
   readonly key: string;
-  readonly kind: SessionCapabilityKind;
-  /** Null for a feature. */
-  readonly unit: SessionCapabilityUnit | null;
-  /** Boolean for a feature, integer for a limit, null when unknown. */
-  readonly value: boolean | number | null;
   /** Null when `value` is null. */
   readonly source: SessionCapabilitySource | null;
 }
+
+/** A WhatsApp feature: enabled (`true`), off (`false`) or unknown (`null`). */
+export interface SessionFeatureCapability extends SessionCapabilityBase {
+  readonly kind: "feature";
+  readonly unit: null;
+  readonly value: boolean | null;
+}
+
+/** A WhatsApp limit: an integer in `unit`, or `null` when unknown. */
+export interface SessionLimitCapability extends SessionCapabilityBase {
+  readonly kind: "limit";
+  readonly unit: SessionCapabilityUnit;
+  readonly value: number | null;
+}
+
+/** Narrow on `kind` to type `value` and `unit`. */
+export type SessionCapability =
+  SessionFeatureCapability | SessionLimitCapability;
+
+/** `unknown` before the first sync, after a logout, while waiting to be paired, and after another account is linked; every value is then null. */
+export type SessionCapabilitiesStatus = "synced" | "unknown";
+export type SessionAccountType = "business" | "personal";
 
 /**
  * WhatsApp features and limits WhatsApp has enabled for one number, as of the
@@ -1212,11 +1229,10 @@ export interface SessionCapability {
 export interface SessionCapabilities {
   readonly session: string;
   readonly projectId: string;
-  /** `unknown` before the first sync, after a logout, and after a phone from another country is linked; every value is then null. */
-  readonly status: "synced" | "unknown";
+  readonly status: SessionCapabilitiesStatus;
   readonly syncedAt: string | null;
   readonly checkedAt: string | null;
-  readonly accountType: "business" | "personal" | null;
+  readonly accountType: SessionAccountType | null;
   readonly capabilities: readonly SessionCapability[];
 }
 

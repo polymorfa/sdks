@@ -2285,6 +2285,31 @@ enqueue another stop command; a repeated delete reports only rows still found.
 QuickLink settings updates are state upserts and can safely converge on the
 same supplied values.
 
+## Number capabilities (beta)
+
+`sessions.getCapabilities` reads which WhatsApp features WhatsApp has enabled
+for one number, and the limits it applies, as of the number's last
+configuration sync. It needs `sessions:read` and team enrollment in the number
+capabilities beta; until then it throws `PolymorfaAuthorizationError` (403).
+
+```ts
+const { data } = await platform.sessions.getCapabilities("support");
+if (data.data.status === "synced") {
+  for (const capability of data.data.capabilities) {
+    if (capability.kind === "feature")
+      console.log(capability.key, capability.value);
+    else console.log(capability.key, capability.value, capability.unit);
+  }
+}
+```
+
+`status` is `unknown`, and every `value` is `null`, before the number's first
+sync, after a logout, while it waits to be paired, and after another WhatsApp
+account is linked, until that account's first sync. `source` says whether
+WhatsApp sent the setting (`server`), left its default (`client_default`) or
+the capability does not apply to the account type (`account_type`). Ignore
+keys you do not recognize; new keys can be added.
+
 ## Session creation and configuration
 
 Create new sessions with `MessagingClient.quickLinks.create`. Direct
