@@ -1212,7 +1212,7 @@ export interface SessionCapability {
 export interface SessionCapabilities {
   readonly session: string;
   readonly projectId: string;
-  /** `unknown` before the first sync; every value is then null. */
+  /** `unknown` before the first sync, after a logout, and after a phone from another country is linked; every value is then null. */
   readonly status: "synced" | "unknown";
   readonly syncedAt: string | null;
   readonly checkedAt: string | null;

@@ -42,7 +42,7 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 Feature pin: the snapshots are currently byte-identical copies of the API
-feature source `59c227399d233c76a0e09406e662adbd7a288841` (branch
+feature source `548a4f0d774d143354ebd554e382018d688532ad` (branch
 `t3code/abprops-number-capabilities`, stacked on API PR #317), which adds only
 `getSessionCapabilities` (`Client.sessions.getCapabilities`) to the Platform
 contract; the Messaging snapshot is unchanged. `source.json` marks it

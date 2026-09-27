@@ -12877,7 +12877,7 @@
           "sessions"
         ],
         "summary": "Get a number's WhatsApp capabilities",
-        "description": "Returns which WhatsApp features WhatsApp has enabled for this number, and the limits it applies, as of the number's last configuration sync. Each value reflects WhatsApp's configuration at `syncedAt`, not a live check. Before the first sync `status` is `unknown` and every value is null. A capability reports what WhatsApp allows the number; it does not mean the Polymorfa API offers an operation for that feature. This is a beta: teams that are not enrolled receive 403.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "description": "Returns which WhatsApp features WhatsApp has enabled for this number, and the limits it applies, as of the number's last configuration sync. Each value reflects WhatsApp's configuration at `syncedAt`, not a live check. Before the first sync, after a logout, and after a phone from another country is linked (until its first sync), `status` is `unknown` and every value is null. A capability reports what WhatsApp allows the number; it does not mean the Polymorfa API offers an operation for that feature. This is a beta: teams that are not enrolled receive 403.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -40311,7 +40311,7 @@
               "synced",
               "unknown"
             ],
-            "description": "`synced` once WhatsApp's configuration for the number has been read at least once. `unknown` before that; every capability value is then null."
+            "description": "`synced` when the values reflect WhatsApp's configuration for the account linked to the number. `unknown` before the first sync, after the number is logged out, and after a phone from another country is linked, until that account's first sync; every capability value is then null."
           },
           "syncedAt": {
             "type": "string",
@@ -40338,7 +40338,7 @@
           "capabilities": {
             "type": "array",
             "maxItems": 100,
-            "description": "Every capability, always in the same order. Clients should ignore keys they do not recognize.",
+            "description": "Every capability, always in the same order. Ignore keys your app does not recognize; new keys can be added.",
             "items": {
               "$ref": "#/components/schemas/SessionCapability"
             }
