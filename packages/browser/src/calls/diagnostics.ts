@@ -220,9 +220,6 @@ export class ConnectionDiagnostics {
     )
       this.error("media_timeout");
     this.#lastReceived = sample.packetsReceived;
-    this.#reporter.quality(
-      { ...sample.figures, reconnects: this.#reconnects },
-      final,
-    );
+    this.#reporter.quality({ ...sample.figures, reconnects: this.#reconnects });
   }
 }

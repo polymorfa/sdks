@@ -131,15 +131,30 @@ export function assertServerRuntime(
   runtime: {
     readonly window?: unknown;
     readonly importScripts?: unknown;
+    readonly navigator?: { readonly userAgent?: string };
+    readonly WebSocketPair?: unknown;
+    readonly registration?: unknown;
+    readonly clients?: unknown;
+    readonly skipWaiting?: unknown;
     readonly constructor?: { readonly name?: string };
   } = globalThis,
 ): void {
   const globalName = runtime.constructor?.name ?? "";
+  // Cloudflare Workers use ServiceWorkerGlobalScope as their global name.
+  // Its documented navigator.userAgent distinguishes it from a browser
+  // service worker, which must never receive server credentials.
+  const isCloudflareWorker =
+    globalName === "ServiceWorkerGlobalScope" &&
+    runtime.navigator?.userAgent === "Cloudflare-Workers" &&
+    typeof runtime.WebSocketPair === "function" &&
+    runtime.registration === undefined &&
+    runtime.clients === undefined &&
+    runtime.skipWaiting === undefined;
   const isBrowserWorker =
     typeof runtime.importScripts === "function" ||
     globalName === "DedicatedWorkerGlobalScope" ||
     globalName === "SharedWorkerGlobalScope" ||
-    globalName === "ServiceWorkerGlobalScope" ||
+    (globalName === "ServiceWorkerGlobalScope" && !isCloudflareWorker) ||
     globalName.endsWith("WorkletGlobalScope");
 
   if (typeof runtime.window !== "undefined" || isBrowserWorker) {

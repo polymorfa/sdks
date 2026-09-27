@@ -1,3 +1,4 @@
+import type { MediaState, MediaStateUpdate } from "./media-state.js";
 import type { CallsApi } from "./api.js";
 import { CallReporter, type CallReportClient } from "./diagnostics.js";
 import { CallClaimedError, CallsAuthError, CallsError } from "./errors.js";
@@ -236,6 +237,7 @@ export class VideoTrack extends Emitter<VideoEvents> {
 }
 
 type CallEvents = {
+  remoteMute: [boolean | null];
   state: [CallState, previous: CallState];
   connected: [];
   ended: [reason: CallEndReason];
@@ -243,6 +245,8 @@ type CallEvents = {
   claim: [CallClaim];
   /** The platform reported different capabilities (on `call.accepted`). */
   capabilities: [CallCapabilities];
+  reaction: [import("./protocol.js").CallReaction];
+  handState: [boolean, boolean];
   participantJoined: [Participant];
   participantLeft: [participantId: string, reason: string | undefined];
   participantState: [Participant];
@@ -351,6 +355,27 @@ export class Call extends Emitter<CallEvents> {
   #capabilities: CallCapabilities;
   /** This client's media connection id; reused on reconnect. */
   readonly connectionId: string;
+  /** Synchronize this connection only. Video reception is independent. */
+  async setMediaState(update: MediaStateUpdate): Promise<MediaState> {
+    if (this.#media === undefined)
+      return Promise.reject(
+        new CallsError(
+          "media_control_unavailable",
+          "No programmatic media connection is attached.",
+        ),
+      );
+    const state = await this.#media.setMediaState(update);
+    this.#mediaPreferences = state;
+    return state;
+  }
+
+  /** Remote microphone state for a direct call; null means unknown or group. */
+  #remoteAudioMuted: boolean | null = null;
+  get remoteAudioMuted(): boolean | null {
+    return this.#remoteAudioMuted;
+  }
+  #mediaPreferences: MediaStateUpdate = {};
+
   readonly audio: AudioTrack;
   readonly video: VideoTrack;
   readonly #api: CallsApi;
@@ -363,6 +388,8 @@ export class Call extends Emitter<CallEvents> {
   readonly #departedParticipants = new Set<string>();
   readonly #participantRevisions = new Map<string, number>();
   #rosterRevision = 0;
+  #handRaised = false;
+  #socialSupported = false;
   #state: CallState;
   #media: MediaSocket | undefined;
   #endReason: CallEndReason | undefined;
@@ -660,7 +687,75 @@ export class Call extends Emitter<CallEvents> {
     this.#end("hangup");
   }
 
+  /** Ring an existing non-connected WhatsApp participant again. Does not alter the roster optimistically. */
+  async ringParticipant(to: string): Promise<void> {
+    if (this.#state === "ended")
+      throw new CallsError(
+        "invalid_state",
+        "Cannot ring a participant in an ended call.",
+      );
+    if (this.#api.ringParticipant === undefined)
+      throw new CallsError(
+        "invalid_state",
+        "This transport does not support participant re-ring.",
+      );
+    await this.#api.ringParticipant(this.id, to);
+  }
+
   /** Invite another party, turning a 1:1 call into a group call. */
+  get handRaised(): boolean {
+    return this.#handRaised;
+  }
+  get socialSupported(): boolean {
+    return this.#socialSupported;
+  }
+  async sendReaction(
+    emoji: import("./protocol.js").CallReactionEmoji,
+  ): Promise<void> {
+    if (
+      this.#state !== "connected" ||
+      !this.#socialSupported ||
+      !this.#api.sendReaction
+    )
+      throw new CallsError("invalid_state", "Call reactions are unavailable.");
+    await this.#api.sendReaction(
+      this.id,
+      this.connectionId,
+      emoji,
+      this.#participant,
+    );
+  }
+  async setHandRaised(raised: boolean): Promise<void> {
+    if (
+      this.#state !== "connected" ||
+      !this.#socialSupported ||
+      !this.#api.setHandRaised
+    )
+      throw new CallsError(
+        "invalid_state",
+        "Call hand controls are unavailable.",
+      );
+    await this.#api.setHandRaised(
+      this.id,
+      this.connectionId,
+      raised,
+      this.#participant,
+    );
+  }
+  /** @internal Validated control from the active media connection. */
+  _remoteSocial(
+    frame: Extract<MediaControlFrame, { type: "reaction" | "hand_state" }>,
+  ): void {
+    if (this.ended) return;
+    if (frame.type === "reaction") {
+      this.emit("reaction", frame);
+      return;
+    }
+    this.#handRaised = frame.raised;
+    this.#socialSupported = frame.supported;
+    this.emit("handState", frame.raised, frame.supported);
+  }
+
   async addParticipant(to: string): Promise<Participant> {
     if (this.#state === "ended")
       throw new CallsError(
@@ -876,6 +971,12 @@ export class Call extends Emitter<CallEvents> {
       refreshToken,
     });
     this.#media = media;
+    if (this.#remoteAudioMuted !== null) this.emit("remoteMute", null);
+    this.#remoteAudioMuted = null;
+    media.on("remoteMute", (muted) => {
+      this.#remoteAudioMuted = muted;
+      this.emit("remoteMute", muted);
+    });
     media.on("audio", (pcm) => this.audio._push(pcm));
     media.on("video", (frame) => this.video._frame(frame));
     media.on("videoSource", (source) => this.video._source(source));
@@ -883,6 +984,12 @@ export class Call extends Emitter<CallEvents> {
       this.video._sourceRemoved(handle),
     );
     media.on("keyframeRequest", () => this.video._keyframeRequest());
+    media.on("reaction", (reaction) =>
+      this._remoteSocial({ ...reaction, type: "reaction" }),
+    );
+    media.on("handState", (raised, supported) =>
+      this._remoteSocial({ type: "hand_state", raised, supported }),
+    );
     media.on("participantJoined", (participant) =>
       this._remoteParticipant({ type: "participant_joined", participant }),
     );
@@ -908,6 +1015,8 @@ export class Call extends Emitter<CallEvents> {
     });
     try {
       await media.connect();
+      if (Object.keys(this.#mediaPreferences).length > 0)
+        await media.setMediaState(this.#mediaPreferences);
     } catch (cause) {
       if (this.#media === media) this.#media = undefined;
       media.close();
@@ -1090,7 +1199,7 @@ export class Call extends Emitter<CallEvents> {
     // The connection's final figure: how often it reconnected. Only real
     // measurements are sent, and socket media measures nothing else.
     if (this.#mediaAttached)
-      this.#reporter?.quality({ reconnects: this.#reconnects }, true);
+      this.#reporter?.quality({ reconnects: this.#reconnects });
     this.#reporter?.stop();
     const media = this.#media;
     this.#media = undefined;
@@ -1133,6 +1242,7 @@ function sameParticipant(a: Participant, b: Participant): boolean {
     a.phoneNumber === b.phoneNumber &&
     a.bsuid === b.bsuid &&
     a.username === b.username &&
+    a.handRaised === b.handRaised &&
     a.audioMuted === b.audioMuted &&
     a.video === b.video &&
     a.state === b.state

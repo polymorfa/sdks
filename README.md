@@ -19,7 +19,7 @@ HMS enablement, deployment, and SDK publication.
 
 | Package                | Runtime              | Responsibility                                                                    |
 | ---------------------- | -------------------- | --------------------------------------------------------------------------------- |
-| `@polymorfa/sdk`       | Node.js 20+          | Messaging, management, system, and Bridge server clients                          |
+| `@polymorfa/sdk`       | Server               | Messaging, management, system, and Bridge server clients                          |
 | `@polymorfa/sdk/calls` | Node.js 22+, Browser | Calls lifecycle, answer/join/leave, and programmatic media sockets                |
 | `@polymorfa/browser`   | Browser              | Client-token transport and framework-neutral product controllers                  |
 | `@polymorfa/ui`        | Isomorphic           | Appearance, locale, direction, motion, and diagnostic contracts                   |
@@ -28,6 +28,10 @@ HMS enablement, deployment, and SDK publication.
 | `@polymorfa/store`     | Browser              | Opt-in IndexedDB store for webhook-shaped events, with live sources and chat data |
 | `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
 | `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
+
+The `@polymorfa/sdk` package root supports Node.js 20+, Cloudflare Workers,
+Deno, and Bun for HTTP clients and native webhook verification. Its `/node`
+entry contains Node.js file helpers.
 
 The public packages are complete development artifacts on `dev`. They
 publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
@@ -719,6 +723,29 @@ offer definitions and keeps saving separate from Meta submission.
 that interoperate with the Custom Elements standard. `@polymorfa/react`
 provides idiomatic hooks and components, including controlled and SDK-owned
 controller lifecycles.
+
+### Call links in this source revision
+
+`MessagingClient.voip.createCallLink` and `previewCallLink` require a server
+credential with `sessions:manage` and a Linked Device Number with calling
+enabled. They are source additions pending matching API deployment and SDK
+publication; client tokens are refused. They do not place or join a call.
+
+```ts
+const created = await messaging.voip.createCallLink({ session: "support" });
+const preview = await messaging.voip.previewCallLink({
+  session: "support",
+  token: created.data.data.token,
+  video: created.data.data.video,
+});
+```
+
+Keep the returned URL and token private. Preview returns the creator's public
+identity, `approvalRequired` and WhatsApp's `isAdmin` report. It does not grant
+API permissions or change approvals. Both methods make one request and refuse
+`idempotencyKey`; do not retry an unknown creation outcome. The exported types
+are `VoipCreateCallLinkRequest`, `VoipPreviewCallLinkRequest`,
+`VoipCreatedCallLink`, and `VoipPreviewedCallLink`.
 
 ### Calls
 

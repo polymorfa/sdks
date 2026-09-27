@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "6d8adf864be6a8e0808620b87750bee103556c01",
-  "branch": "t3code/campaigns-stop-confirmation",
-  "published": false,
-  "note": "Coordinated Campaigns API branch snapshot; SDK publication and deployed availability remain separate.",
+  "commit": "5f6a2b1470821c1a2b4077aa8de14214faede57a",
+  "branch": "dev",
+  "published": true,
+  "note": "Merged Calls contract on API dev. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "0ceb1d92d8153bf778f03bf3058d646e60663551e95725a721c6df109cb963ae"
+      "sha256": "fd68e43f45aaead4733c7401810c7b01c2110fdd37f35d7b2595571bd24a5466"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "f2a19a5fb17dd40f77f07fa3aa8771275b5ecdedc8487e0e4e382787aba9ee58"
+      "sha256": "6ac6657501890b75a049f84d5ff4f0a843ccae0e0b40f9fde7eed0e6b4d5bc91"
     }
   }
 }

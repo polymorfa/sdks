@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (223 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (220 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -15814,7 +15814,7 @@
           "campaigns"
         ],
         "summary": "Create campaign",
-        "description": "Creates a draft campaign on any plan. `messagesArray` holds up to 10 composed messages, with each `delayAfterSec` from 0 to 86400. `senderConfig.sessionIds` may name numbers that are not yet on a plan that includes Campaigns; launch checks the selection. `templateId` must name a template in the campaign's project, and a malformed `variableMapping` answers `400 invalid_parameter` naming the field. It is refused with `403 bansafe_org_suspended` while the team is suspended, `400 invalid_parameter` when `senderConfig.sessionIds` is malformed, and `400 campaign_throughput_capped` when a per-number cap is above its safety ceiling.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Creates a draft campaign on any plan. `senderConfig.sessionIds` may name numbers that are not yet on a plan that includes Campaigns; launch checks the selection. It is refused with `403 bansafe_org_suspended` while the team is suspended, `400 invalid_parameter` when `senderConfig.sessionIds` is malformed, and `400 campaign_throughput_capped` when a per-number cap is above its safety ceiling.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -15968,7 +15968,7 @@
           "campaigns"
         ],
         "summary": "Update campaign",
-        "description": "Updates a campaign. `messagesArray` follows the same sequence rules as create. On an unlaunched draft, a new `senderConfig` passes the same checks as create and plans are checked at launch. Once the campaign has launched, including a scheduled launch that has not started, a new `senderConfig` passes the launch checks and can answer `402 campaigns_not_entitled` or `400 invalid_parameter`. `recipientListId` points the campaign at another audience while it is still an unlaunched draft and replaces its existing recipients; after launch it answers `409`. `templateId` and `variableMapping` also change only while the campaign is an unlaunched draft; after launch they answer `409`. A sender edit to a draft that launches while the edit is being saved also answers `409`. A changed `scheduledAt` after launch answers `409`; use reschedule to move a scheduled start. `sendWindow` changes only while the campaign is a draft or paused; a running campaign answers `409`, so pause it first. A new window applies to every recipient not yet sent when the campaign resumes.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Updates a campaign. On an unlaunched draft, a new `senderConfig` passes the same checks as create and plans are checked at launch. Once the campaign has launched, including a scheduled launch that has not started, a new `senderConfig` passes the launch checks and can answer `402 campaigns_not_entitled` or `400 invalid_parameter`. `recipientListId` points the campaign at another audience while it is still an unlaunched draft and replaces its existing recipients; after launch it answers `409`. A sender edit to a draft that launches while the edit is being saved also answers `409`. A changed `scheduledAt` after launch answers `409`; use reschedule to move a scheduled start. A non-null `scheduledAt` must be integer Unix milliseconds from zero through the JavaScript Date maximum.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -16005,7 +16005,8 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdatePlatformCampaignRequest"
+                "type": "object",
+                "additionalProperties": true
               }
             }
           }
@@ -16174,7 +16175,7 @@
           "campaigns"
         ],
         "summary": "Launch campaign",
-        "description": "Starts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the stored sender selection against live plans: `402 campaigns_not_entitled` when a selected number is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.sessionIds` when a selected number is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. A composed attachment requires a public `media.url` (`400 invalid_parameter`). The template must be complete (`400 invalid_parameter`) and approved on every Cloud API number (`400 template_not_approved`). Every recipient needs a value or fallback for each variable (`422 campaign_variables_missing`); `skipMissingVariables: true` skips those recipients before the first send. `409` means the campaign is not a draft, is already launched and waiting for its start time, or its sending numbers changed during the launch.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Starts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the stored sender selection against live plans: `402 campaigns_not_entitled` when a selected number is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.sessionIds` when a selected number is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. `409` means the campaign is not a draft, is already launched and waiting for its start time, or its sending numbers changed during the launch.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -16213,7 +16214,8 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LaunchPlatformCampaignRequest"
+                "type": "object",
+                "additionalProperties": true
               }
             }
           }
@@ -16299,9 +16301,6 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/Unprocessable"
           },
           "503": {
             "$ref": "#/components/responses/CampaignEligibilityUnavailable"
@@ -17079,124 +17078,6 @@
           },
           "501": {
             "$ref": "#/components/responses/NotImplemented"
-          }
-        }
-      }
-    },
-    "/platform/campaigns/{campaignId}/test-send": {
-      "post": {
-        "operationId": "testSendPlatformCampaign",
-        "tags": [
-          "campaigns"
-        ],
-        "summary": "Send a test of a draft campaign",
-        "description": "Sends one copy of a draft campaign's content to a seed recipient, through the same rendering, sending and BanSafe checks as a launched campaign. The seed recipient must be a number connected to your team. The sending number must be connected, on a plan that includes Campaigns and, when the campaign selects numbers, one of them. A test is not a campaign recipient and is not counted in the campaign's statistics or webhooks. A team can send 20 tests an hour, and at most 5 an hour to one seed recipient; `429` carries `Retry-After`. `409 bansafe_cold_held` means the seed recipient has never written to the sending number and the campaign holds first messages. `409 state_conflict` means the campaign is not a draft or has A/B variants, the sending number is a Hybrid Link number, or the seed recipient opted out. `504 result_unknown` means the outcome was not received in time and the test may still arrive. Send `projectId` in the body when using a team API key.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
-        "x-audience": "public",
-        "x-polymorfa-resource-boundary": "project",
-        "x-excluded-from-public": false,
-        "x-required-scope": "campaigns:manage",
-        "security": [
-          {
-            "ApiKeyAuth": []
-          },
-          {
-            "ConsoleSession": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "campaignId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": false,
-            "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again: it returns `409 idempotency_completed` when the original succeeded, or the original server error. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 255
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CampaignTestSendRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "Stable request correlation identifier."
-              },
-              "Polymorfa-Version": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "API version applied to this response."
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/CampaignTestSend"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "402": {
-            "$ref": "#/components/responses/PaymentRequired"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          },
-          "502": {
-            "$ref": "#/components/responses/UpstreamFailure"
-          },
-          "503": {
-            "$ref": "#/components/responses/SendPathUnavailable"
-          },
-          "504": {
-            "$ref": "#/components/responses/ResultUnknown"
           }
         }
       }
@@ -19486,215 +19367,6 @@
                   "properties": {
                     "data": {
                       "$ref": "#/components/schemas/OptOutSettings"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          }
-        }
-      }
-    },
-    "/platform/optouts/confirmation-settings": {
-      "get": {
-        "operationId": "getStopConfirmationSettings",
-        "tags": [
-          "optouts"
-        ],
-        "summary": "Get STOP confirmation settings",
-        "description": "Returns the team's optional acknowledgement preference. Confirmations are disabled by default. A locale is explicitly selected from English, Brazilian Portuguese or Spanish; the response includes the reviewed acknowledgement text. Reads remain available after beta withdrawal.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
-        "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": false,
-        "x-required-scope": "campaigns:read",
-        "security": [
-          {
-            "ApiKeyAuth": []
-          },
-          {
-            "ConsoleSession": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "Stable request correlation identifier."
-              },
-              "Polymorfa-Version": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "API version applied to this response."
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/StopConfirmationSettings"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          }
-        }
-      },
-      "put": {
-        "operationId": "updateStopConfirmationSettings",
-        "tags": [
-          "optouts"
-        ],
-        "summary": "Update STOP confirmation settings",
-        "description": "Replaces the team's preference using the observed revision. Enabling requires STOP confirmations beta access, a selected locale, and an organization key with campaigns:manage or a team owner/admin. Project credentials cannot manage this team-wide setting. A new STOP opt-out queues at most one plain acknowledgement from the receiving connection; manual opt-outs, repeated STOP while suppressed and START produce none. A confirmation cannot undo suppression. Disabling remains available after beta withdrawal and cancels queued acknowledgements. A changed revision returns 409. Unknown send outcomes are never resent with a new operation identity.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
-        "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": false,
-        "x-required-scope": "campaigns:manage",
-        "security": [
-          {
-            "ApiKeyAuth": []
-          },
-          {
-            "ConsoleSession": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateStopConfirmationSettingsInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "Stable request correlation identifier."
-              },
-              "Polymorfa-Version": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "API version applied to this response."
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/StopConfirmationSettings"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          }
-        }
-      }
-    },
-    "/platform/optouts/confirmation-summary": {
-      "get": {
-        "operationId": "getStopConfirmationSummary",
-        "tags": [
-          "optouts"
-        ],
-        "summary": "Get STOP confirmation outcome counts",
-        "description": "Returns aggregate acknowledgement outcomes from the last 30 days, without recipient phones or message content. Disabled is the preference state, queued is waiting, admitted may have been submitted, completed means the provider accepted the send rather than delivered it, failed is a proven skip or rejection, and unknown means the send outcome could not be established. All outcomes preserve the opt-out.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
-        "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": false,
-        "x-required-scope": "campaigns:read",
-        "security": [
-          {
-            "ApiKeyAuth": []
-          },
-          {
-            "ConsoleSession": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "Stable request correlation identifier."
-              },
-              "Polymorfa-Version": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "API version applied to this response."
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/StopConfirmationSummary"
                     }
                   },
                   "required": [
@@ -30779,6 +30451,98 @@
         }
       }
     },
+    "/platform/calls/{callId}": {
+      "get": {
+        "operationId": "getCallRecord",
+        "tags": [
+          "calls"
+        ],
+        "summary": "Get a call record and history",
+        "description": "Returns one stored call with its participant and connection lifetimes, bounded event history, media measurements and app-reported diagnostics. Requires sessions:read. Project credentials can read only the call's original owning project, including after a number is deleted. Unknown measurements are null. Webhook deliveries require the separate webhook-deliveries:read endpoints. This read does not retrieve audio, video or event payloads and does not control a live call.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "callId",
+            "in": "path",
+            "required": true,
+            "description": "Call identifier.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[\\x21-\\x7e]+$"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CallRecordDetail"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
     "/console/calls": {
       "get": {
         "operationId": "listCalls",
@@ -37886,126 +37650,6 @@
           "reason"
         ]
       },
-      "CampaignTestSendRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "projectId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Required when using a team API key. Project tokens derive the project from the credential."
-          },
-          "sessionId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "The number to send the test from. It must be connected, on a plan that includes Campaigns and, when the campaign selects numbers, one of them."
-          },
-          "to": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 32,
-            "description": "The seed recipient in international format. It must be the phone of a number connected to your team.",
-            "example": "+5511999990000"
-          },
-          "sampleRecipientId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "A recipient of this campaign whose variables fill the content. Without it and without `variables`, the campaign's first recipient, or its audience's first member, is the sample."
-          },
-          "variables": {
-            "type": "object",
-            "maxProperties": 50,
-            "additionalProperties": {
-              "oneOf": [
-                {
-                  "type": "string",
-                  "maxLength": 1024
-                },
-                {
-                  "type": "number"
-                },
-                {
-                  "type": "boolean"
-                }
-              ]
-            },
-            "description": "Variable values for the test. They override the sample recipient's values; without `sampleRecipientId`, only these values are used."
-          }
-        },
-        "required": [
-          "sessionId",
-          "to"
-        ]
-      },
-      "CampaignTestSend": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "The test send's ID."
-          },
-          "campaignId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "sent"
-            ]
-          },
-          "from": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "sessionId": {
-                "type": "string",
-                "format": "uuid"
-              },
-              "phone": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "sessionId",
-              "phone"
-            ],
-            "description": "The number the test was sent from."
-          },
-          "to": {
-            "type": "string",
-            "description": "The seed recipient, in E.164 format."
-          },
-          "messageId": {
-            "type": "string",
-            "nullable": true,
-            "description": "The WhatsApp message ID, when the send path returned one."
-          },
-          "variables": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "The variable values the content was rendered with."
-          },
-          "createdAt": {
-            "type": "number",
-            "description": "When the test was admitted, in Unix milliseconds."
-          }
-        },
-        "required": [
-          "id",
-          "campaignId",
-          "status",
-          "from",
-          "to",
-          "messageId",
-          "variables",
-          "createdAt"
-        ]
-      },
       "CreatePlatformCampaignRequest": {
         "type": "object",
         "additionalProperties": false,
@@ -38023,11 +37667,7 @@
           },
           "templateId": {
             "type": "string",
-            "format": "uuid",
-            "description": "Template in the campaign's project to send instead of composed messages. On Cloud API numbers it must be approved by WhatsApp before launch."
-          },
-          "variableMapping": {
-            "$ref": "#/components/schemas/CampaignVariableMapping"
+            "format": "uuid"
           },
           "recipientListId": {
             "type": "string",
@@ -38041,10 +37681,6 @@
           "scheduledAt": {
             "type": "number",
             "description": "Scheduled start time in Unix milliseconds."
-          },
-          "sendWindow": {
-            "$ref": "#/components/schemas/CampaignSendWindowRequest",
-            "nullable": true
           },
           "recipients": {
             "type": "array",
@@ -38060,14 +37696,7 @@
             "description": "Ignored when inline recipients are provided; their stored count is authoritative."
           },
           "composerBlueprint": {},
-          "messagesArray": {
-            "type": "array",
-            "maxItems": 10,
-            "items": {
-              "$ref": "#/components/schemas/CampaignMessage"
-            },
-            "description": "The messages each recipient receives, in order, when the campaign has no `templateId`. With a template, the template is the only message. Empty messages (no text and no media) are not sent."
-          },
+          "messagesArray": {},
           "audienceRef": {},
           "complianceConfig": {},
           "variants": {},
@@ -38075,320 +37704,6 @@
         },
         "required": [
           "name"
-        ]
-      },
-      "CampaignMessage": {
-        "type": "object",
-        "additionalProperties": true,
-        "description": "One composed campaign message.",
-        "properties": {
-          "version": {
-            "type": "integer",
-            "enum": [
-              2
-            ]
-          },
-          "source": {
-            "type": "string",
-            "description": "Message text. `{{name}}` inserts a recipient variable and `{{name | fallback}}` uses the fallback when the variable is missing or empty. WhatsApp formatting such as `*bold*` is kept."
-          },
-          "media": {
-            "type": "object",
-            "additionalProperties": true,
-            "required": [
-              "kind",
-              "url"
-            ],
-            "properties": {
-              "kind": {
-                "type": "string",
-                "enum": [
-                  "image",
-                  "video",
-                  "audio",
-                  "document"
-                ]
-              },
-              "url": {
-                "type": "string",
-                "format": "uri",
-                "description": "Public https URL the sending number downloads the file from. Launch is refused with `400 invalid_parameter` when an attachment has no URL."
-              },
-              "filename": {
-                "type": "string"
-              },
-              "caption": {
-                "type": "string",
-                "description": "Used as the caption when `source` is empty."
-              }
-            }
-          },
-          "buttons": {
-            "type": "array",
-            "description": "On WhatsApp numbers, link and call buttons are sent as text lines and quick replies are left out.",
-            "items": {
-              "type": "object",
-              "additionalProperties": true,
-              "required": [
-                "kind",
-                "label"
-              ],
-              "properties": {
-                "kind": {
-                  "type": "string",
-                  "enum": [
-                    "reply",
-                    "link",
-                    "call"
-                  ]
-                },
-                "label": {
-                  "type": "string"
-                },
-                "url": {
-                  "type": "string"
-                },
-                "phone": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "footer": {
-            "type": "string"
-          },
-          "delayAfterSec": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 86400,
-            "description": "Minimum seconds between the previous message being accepted by WhatsApp and this message being sent. Ignored on the first message. Pacing, caps and a paused campaign can make the wait longer."
-          }
-        }
-      },
-      "CampaignVariableMapping": {
-        "type": "object",
-        "maxProperties": 50,
-        "description": "How each `{{variable}}` in the campaign's template or composed messages is filled, keyed by the variable name used in the content. A variable is filled from the recipient's value, then `fallback`, then an inline `{{name | fallback}}` written in a composed message. A recipient with none of them is refused at launch (`422 campaign_variables_missing`) or, when launched with `skipMissingVariables`, skipped with `missing_variable`.",
-        "additionalProperties": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "source": {
-              "type": "string",
-              "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$",
-              "description": "Recipient variable that fills this variable, for example a column mapped when the audience was imported. Defaults to the recipient variable with the same name."
-            },
-            "fallback": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 1024,
-              "description": "Sent when a recipient has no value for the source variable, or only whitespace. Must not be blank."
-            }
-          }
-        }
-      },
-      "UpdatePlatformCampaignRequest": {
-        "type": "object",
-        "additionalProperties": true,
-        "description": "Fields to change. Omitted fields keep their stored value.",
-        "properties": {
-          "name": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "projectId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Required when using a team API key. Project tokens derive the project from the credential."
-          },
-          "templateId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true,
-            "description": "Template in the campaign project, or null to send composed messages. Only while the campaign is an unlaunched draft."
-          },
-          "variableMapping": {
-            "nullable": true,
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CampaignVariableMapping"
-              }
-            ],
-            "description": "Replaces the whole mapping; null clears it. Only while the campaign is an unlaunched draft."
-          },
-          "recipientListId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true,
-            "description": "Audience to send to. Only while the campaign is an unlaunched draft."
-          },
-          "senderConfig": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "scheduledAt": {
-            "type": "number",
-            "nullable": true,
-            "description": "Scheduled start time in Unix milliseconds."
-          },
-          "sendWindow": {
-            "$ref": "#/components/schemas/CampaignSendWindowRequest",
-            "nullable": true,
-            "description": "When the campaign may send. `null` removes the window. Only while the campaign is a draft or paused."
-          },
-          "recipientCount": {
-            "type": "number"
-          },
-          "composerBlueprint": {},
-          "messagesArray": {},
-          "audienceRef": {},
-          "complianceConfig": {},
-          "variants": {},
-          "variantStrategy": {}
-        }
-      },
-      "LaunchPlatformCampaignRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "projectId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Required when using a team API key. Project tokens derive the project from the credential."
-          },
-          "scheduledAt": {
-            "type": "number",
-            "description": "Scheduled start time in Unix milliseconds. Defaults to the stored start time, or now."
-          },
-          "skipMissingVariables": {
-            "type": "boolean",
-            "description": "Launch even when some recipients have no value and no fallback for a variable. Those recipients are skipped with `lastError` `missing_variable` before the first send. Without it, such a launch answers `422 campaign_variables_missing`."
-          }
-        }
-      },
-      "CampaignSendWindowRange": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "start": {
-            "type": "string",
-            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
-            "description": "Local start time, `HH:MM` in 24-hour time, inclusive.",
-            "example": "09:00"
-          },
-          "end": {
-            "type": "string",
-            "pattern": "^(([01][0-9]|2[0-3]):[0-5][0-9]|24:00)$",
-            "description": "Local end time, `HH:MM` in 24-hour time or `24:00`, exclusive. Must be later than `start`.",
-            "example": "18:00"
-          }
-        },
-        "required": [
-          "start",
-          "end"
-        ]
-      },
-      "CampaignSendWindowRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "description": "When the campaign may send. Recipients outside the window stay `queued` and are sent when it next opens.",
-        "properties": {
-          "timeZone": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 64,
-            "description": "IANA time zone the window is written in, such as `America/Sao_Paulo`. When omitted, the team's time zone is stored, or `UTC` when the team has none.",
-            "example": "America/Sao_Paulo"
-          },
-          "days": {
-            "type": "array",
-            "minItems": 1,
-            "maxItems": 7,
-            "uniqueItems": true,
-            "items": {
-              "type": "string",
-              "enum": [
-                "monday",
-                "tuesday",
-                "wednesday",
-                "thursday",
-                "friday",
-                "saturday",
-                "sunday"
-              ]
-            },
-            "description": "Weekdays the campaign may send on, in the window's time zone."
-          },
-          "hours": {
-            "type": "array",
-            "minItems": 1,
-            "maxItems": 4,
-            "items": {
-              "$ref": "#/components/schemas/CampaignSendWindowRange"
-            },
-            "description": "Local time ranges the campaign may send in on those days. Ranges must not overlap. A range cannot cross midnight; use two ranges instead."
-          },
-          "recipientTimeZone": {
-            "type": "boolean",
-            "default": false,
-            "description": "Evaluate the window in each recipient's own time zone. The zone comes from the recipient variable named by `timeZoneVariable` when it holds a valid IANA zone, otherwise from the phone number's country when that country uses one UTC offset, otherwise `timeZone`."
-          },
-          "timeZoneVariable": {
-            "type": "string",
-            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$",
-            "default": "timeZone",
-            "description": "Recipient variable holding the recipient's IANA time zone, used when `recipientTimeZone` is true."
-          }
-        },
-        "required": [
-          "days",
-          "hours"
-        ]
-      },
-      "CampaignSendWindow": {
-        "type": "object",
-        "additionalProperties": false,
-        "description": "When the campaign may send. Recipients outside the window stay `queued` and are sent when it next opens.",
-        "properties": {
-          "timeZone": {
-            "type": "string",
-            "description": "IANA time zone the window is written in."
-          },
-          "days": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "monday",
-                "tuesday",
-                "wednesday",
-                "thursday",
-                "friday",
-                "saturday",
-                "sunday"
-              ]
-            }
-          },
-          "hours": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CampaignSendWindowRange"
-            }
-          },
-          "recipientTimeZone": {
-            "type": "boolean"
-          },
-          "timeZoneVariable": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "timeZone",
-          "days",
-          "hours",
-          "recipientTimeZone",
-          "timeZoneVariable"
         ]
       },
       "ReschedulePlatformCampaignRequest": {
@@ -38695,21 +38010,6 @@
           "respondedAt": {
             "type": "integer",
             "nullable": true
-          },
-          "messagesSent": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Messages of the campaign's message sequence this recipient has been sent. `status`, `sentAt`, `deliveredAt` and `readAt` describe the first message."
-          },
-          "nextMessageAt": {
-            "type": "integer",
-            "nullable": true,
-            "description": "Earliest time the next message is sent, in Unix milliseconds. Null when no message is waiting."
-          },
-          "sequenceError": {
-            "type": "string",
-            "nullable": true,
-            "description": "Why the remaining messages will not be sent: `opted_out`, `campaign_cancelled`, `sender_unavailable`, or the failure class of the message that failed, such as `conversation_window_closed`. Null otherwise."
           }
         },
         "required": [
@@ -38726,10 +38026,7 @@
           "deliveredAt",
           "readAt",
           "failedAt",
-          "respondedAt",
-          "messagesSent",
-          "nextMessageAt",
-          "sequenceError"
+          "respondedAt"
         ]
       },
       "CampaignRecipientAppendResult": {
@@ -40110,139 +39407,6 @@
           "optOutKeywords",
           "optInKeywords",
           "updatedAt"
-        ]
-      },
-      "StopConfirmationSettings": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "teamId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "enabled": {
-            "type": "boolean"
-          },
-          "locale": {
-            "type": "string",
-            "enum": [
-              "en",
-              "pt-BR",
-              "es",
-              null
-            ],
-            "nullable": true
-          },
-          "revision": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "textRevision": {
-            "type": "integer",
-            "enum": [
-              1
-            ]
-          },
-          "acknowledgement": {
-            "type": "string",
-            "nullable": true
-          },
-          "updatedAt": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          }
-        },
-        "required": [
-          "teamId",
-          "enabled",
-          "locale",
-          "revision",
-          "textRevision",
-          "acknowledgement",
-          "updatedAt"
-        ]
-      },
-      "UpdateStopConfirmationSettingsInput": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "teamId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "The teamId returned by the settings read. Must match the authenticated team."
-          },
-          "enabled": {
-            "type": "boolean"
-          },
-          "locale": {
-            "type": "string",
-            "enum": [
-              "en",
-              "pt-BR",
-              "es",
-              null
-            ],
-            "nullable": true,
-            "description": "Required when enabled. Never inferred from a phone number."
-          },
-          "revision": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 2147483646
-          }
-        },
-        "required": [
-          "teamId",
-          "enabled",
-          "locale",
-          "revision"
-        ]
-      },
-      "StopConfirmationSummary": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "counts": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "queued": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "admitted": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "completed": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "failed": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "unknown": {
-                "type": "integer",
-                "minimum": 0
-              }
-            },
-            "required": [
-              "queued",
-              "admitted",
-              "completed",
-              "failed",
-              "unknown"
-            ]
-          }
-        },
-        "required": [
-          "enabled",
-          "counts"
         ]
       },
       "UpdateOptOutSettingsInput": {
@@ -45424,7 +44588,7 @@
           "fromUser": {
             "type": "string",
             "nullable": true,
-            "description": "User part of the From header on calls sent to your PBX, or null to send `whatsapp`."
+            "description": "Optional override for the From header user on calls sent to your PBX. Null uses the incoming caller identity: E.164 phone number when known, a non-phone LID address otherwise, or `whatsapp` when unknown."
           }
         },
         "required": [
@@ -45662,7 +44826,7 @@
             "type": "string",
             "nullable": true,
             "pattern": "^[A-Za-z0-9+._-]{1,64}$",
-            "description": "User part of the From header on calls sent to your PBX. Null sends `whatsapp`, which is also the default for a new trunk."
+            "description": "Optional override for the From header user on calls sent to your PBX. Omit or set null to use the incoming caller identity: E.164 phone number when known, a non-phone LID address otherwise, or `whatsapp` when unknown."
           }
         },
         "required": [
@@ -45830,7 +44994,7 @@
             "type": "string",
             "nullable": true,
             "pattern": "^[A-Za-z0-9+._-]{1,64}$",
-            "description": "User part of the From header on calls sent to your PBX. Null sends `whatsapp`, which is also the default for a new trunk."
+            "description": "Optional override for the From header user on calls sent to your PBX. Omit or set null to use the incoming caller identity: E.164 phone number when known, a non-phone LID address otherwise, or `whatsapp` when unknown."
           }
         },
         "additionalProperties": false,
@@ -48253,8 +47417,7 @@
                   "bansafe_accounting_unavailable",
                   "bansafe_send_outcome_unknown",
                   "campaigns_not_entitled",
-                  "campaign_throughput_capped",
-                  "campaign_variables_missing"
+                  "campaign_throughput_capped"
                 ]
               },
               "message": {
@@ -48299,6 +47462,541 @@
           "error",
           "data",
           "docs"
+        ]
+      },
+      "CallRecordEndReason": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Why the call ended or was not answered. `code` is `other` for an unrecognized reason.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$",
+            "example": "user_hangup"
+          },
+          "label": {
+            "type": "string",
+            "example": "Hung up"
+          }
+        },
+        "required": [
+          "code",
+          "label"
+        ]
+      },
+      "CallRecordDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "call": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "callId": {
+                "type": "string"
+              },
+              "sessionId": {
+                "type": "string",
+                "description": "Session name."
+              },
+              "projectId": {
+                "type": "string",
+                "format": "uuid",
+                "nullable": true
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "inbound",
+                  "outbound"
+                ]
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "offered",
+                  "accepted",
+                  "rejected",
+                  "missed",
+                  "ended"
+                ],
+                "description": "Call outcome. `offered` and `accepted` calls may still be live. `rejected` is an incoming call a participant declined. `missed` is an incoming call that rang without an answer. Both keep that state after the call ends. `ended` covers every other finished call: answered calls, outgoing calls, and incoming calls the service could not host. `endReason` gives the cause."
+              },
+              "live": {
+                "type": "boolean"
+              },
+              "backend": {
+                "type": "string",
+                "description": "How the number reaches WhatsApp for this call."
+              },
+              "hasVideo": {
+                "type": "boolean"
+              },
+              "peerRef": {
+                "type": "string",
+                "nullable": true,
+                "description": "Team-scoped pseudonym of the remote party."
+              },
+              "startedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "connectedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "endedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "durationSeconds": {
+                "type": "integer",
+                "nullable": true
+              },
+              "endReason": {
+                "nullable": true,
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CallRecordEndReason"
+                  }
+                ]
+              },
+              "answeredBy": {
+                "type": "string",
+                "nullable": true,
+                "description": "Participant reference that answered: `client:<id>` or `server:<id>`."
+              },
+              "exclusive": {
+                "type": "boolean",
+                "nullable": true,
+                "description": "Whether the answering participant claimed the call. Null when unknown."
+              }
+            },
+            "required": [
+              "callId",
+              "sessionId",
+              "projectId",
+              "direction",
+              "state",
+              "live",
+              "backend",
+              "hasVideo",
+              "peerRef",
+              "startedAt",
+              "connectedAt",
+              "endedAt",
+              "durationSeconds",
+              "endReason",
+              "answeredBy",
+              "exclusive"
+            ]
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]{0,18}$",
+                  "description": "Public participant id, as call.participant_* webhooks report it."
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "invited",
+                    "ringing",
+                    "connected",
+                    "left"
+                  ]
+                },
+                "firstSeenAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "leftReason": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "state",
+                "firstSeenAt",
+                "updatedAt",
+                "leftReason"
+              ]
+            }
+          },
+          "connections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{8,64}$"
+                },
+                "participant": {
+                  "type": "string",
+                  "pattern": "^(client|server):[A-Za-z0-9._:@-]{1,128}$"
+                },
+                "transport": {
+                  "type": "string",
+                  "enum": [
+                    "webrtc",
+                    "socket",
+                    "sip",
+                    "unknown"
+                  ]
+                },
+                "joinedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true
+                },
+                "leftAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true
+                },
+                "reason": {
+                  "type": "string",
+                  "enum": [
+                    "left",
+                    "replaced",
+                    "claimed",
+                    "call_ended",
+                    "sip_busy",
+                    "sip_declined",
+                    "sip_no_answer",
+                    "sip_unavailable",
+                    "sip_auth_failed",
+                    null
+                  ],
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "participant",
+                "transport",
+                "joinedAt",
+                "leftAt",
+                "reason"
+              ]
+            }
+          },
+          "telemetry": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Media measurements reported by the call service. Measurements that were not taken are null.",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "reported",
+                  "unknown"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "media_server"
+                ]
+              },
+              "setupMs": {
+                "type": "number",
+                "nullable": true
+              },
+              "ringMs": {
+                "type": "number",
+                "nullable": true
+              },
+              "codec": {
+                "type": "string",
+                "nullable": true
+              },
+              "jitterMs": {
+                "type": "number",
+                "nullable": true
+              },
+              "packetsLost": {
+                "type": "number",
+                "nullable": true
+              },
+              "rttMs": {
+                "type": "number",
+                "nullable": true
+              },
+              "receivedKbps": {
+                "type": "number",
+                "nullable": true
+              },
+              "sentKbps": {
+                "type": "number",
+                "nullable": true
+              }
+            },
+            "required": [
+              "status",
+              "source",
+              "setupMs",
+              "ringMs",
+              "codec",
+              "jitterMs",
+              "packetsLost",
+              "rttMs",
+              "receivedKbps",
+              "sentKbps"
+            ]
+          },
+          "appReports": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Diagnostics your app sent with `POST /messaging/voip/calls/{id}/reports`, by connection. Figures the app did not report are null.",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "reported",
+                  "none"
+                ],
+                "description": "`none` when the app sent no report for the call."
+              },
+              "connections": {
+                "type": "array",
+                "maxItems": 200,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "connectionId": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]{8,64}$"
+                    },
+                    "participant": {
+                      "type": "string",
+                      "pattern": "^(client|server):[A-Za-z0-9._:@-]{1,128}$"
+                    },
+                    "client": {
+                      "type": "object",
+                      "nullable": true,
+                      "additionalProperties": false,
+                      "description": "The SDK named by the connection's most recent report. Null when that report named none.",
+                      "properties": {
+                        "sdk": {
+                          "type": "string",
+                          "pattern": "^[a-z0-9@/._-]{1,32}$"
+                        },
+                        "version": {
+                          "type": "string",
+                          "maxLength": 32
+                        },
+                        "platform": {
+                          "type": "string",
+                          "enum": [
+                            "browser",
+                            "node",
+                            "other"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "sdk",
+                        "version",
+                        "platform"
+                      ]
+                    },
+                    "quality": {
+                      "type": "object",
+                      "nullable": true,
+                      "additionalProperties": false,
+                      "description": "The connection's latest quality report. Null when it sent none.",
+                      "properties": {
+                        "reportedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "rttMs": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "jitterMs": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "packetsLost": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "packetsReceived": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "audioCodec": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "videoCodec": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "candidateType": {
+                          "type": "string",
+                          "enum": [
+                            "host",
+                            "srflx",
+                            "prflx",
+                            "relay",
+                            null
+                          ],
+                          "nullable": true
+                        },
+                        "reconnects": {
+                          "type": "integer",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "reportedAt",
+                        "rttMs",
+                        "jitterMs",
+                        "packetsLost",
+                        "packetsReceived",
+                        "audioCodec",
+                        "videoCodec",
+                        "candidateType",
+                        "reconnects"
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "maxItems": 50,
+                      "description": "Reported errors, newest first.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "media_permission_denied",
+                              "device_not_found",
+                              "device_in_use",
+                              "ice_failed",
+                              "negotiation_failed",
+                              "media_timeout",
+                              "reconnect_exhausted",
+                              "token_refresh_failed",
+                              "unsupported_browser",
+                              "other"
+                            ]
+                          },
+                          "reportedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "reportedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "connectionId",
+                    "participant",
+                    "client",
+                    "quality",
+                    "errors"
+                  ]
+                }
+              },
+              "truncated": {
+                "type": "boolean",
+                "description": "True when the call reached its limit of 200 stored reports or older errors are not shown."
+              }
+            },
+            "required": [
+              "status",
+              "connections",
+              "truncated"
+            ]
+          },
+          "history": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "events": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "eventId": {
+                      "type": "string",
+                      "description": "Event id, as the `id` of the matching webhook delivery."
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "eventId",
+                    "type",
+                    "occurredAt"
+                  ]
+                }
+              },
+              "truncated": {
+                "type": "boolean",
+                "description": "True when the call exceeded the recorded history limit."
+              }
+            },
+            "required": [
+              "events",
+              "truncated"
+            ]
+          },
+          "correlation": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "callId": {
+                "type": "string"
+              },
+              "sessionId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "callId",
+              "sessionId"
+            ]
+          }
+        },
+        "required": [
+          "call",
+          "participants",
+          "connections",
+          "telemetry",
+          "appReports",
+          "history",
+          "correlation"
         ]
       }
     },
@@ -48497,115 +48195,6 @@
       },
       "CallStatsTooSlow": {
         "description": "`service_unavailable`: the statistics took too long to compute. Narrow the range or filters and retry.",
-        "headers": {
-          "X-Request-Id": {
-            "schema": {
-              "type": "string"
-            },
-            "description": "Stable request correlation identifier."
-          },
-          "Polymorfa-Version": {
-            "schema": {
-              "type": "string"
-            },
-            "description": "API version applied to this response."
-          }
-        },
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorEnvelope"
-            }
-          }
-        }
-      },
-      "RateLimited": {
-        "description": "A limit was reached. Wait for `Retry-After` before retrying.",
-        "headers": {
-          "X-Request-Id": {
-            "schema": {
-              "type": "string"
-            },
-            "description": "Stable request correlation identifier."
-          },
-          "Polymorfa-Version": {
-            "schema": {
-              "type": "string"
-            },
-            "description": "API version applied to this response."
-          },
-          "Retry-After": {
-            "schema": {
-              "type": "integer",
-              "minimum": 1
-            },
-            "description": "Seconds to wait before retrying."
-          },
-          "Polymorfa-RateLimit-Reason": {
-            "schema": {
-              "type": "string"
-            },
-            "description": "The limit that was reached. See the rate-limit reasons in the error reference."
-          }
-        },
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorEnvelope"
-            }
-          }
-        }
-      },
-      "UpstreamFailure": {
-        "description": "`upstream_failure`: the messaging provider could not complete the send.",
-        "headers": {
-          "X-Request-Id": {
-            "schema": {
-              "type": "string"
-            },
-            "description": "Stable request correlation identifier."
-          },
-          "Polymorfa-Version": {
-            "schema": {
-              "type": "string"
-            },
-            "description": "API version applied to this response."
-          }
-        },
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorEnvelope"
-            }
-          }
-        }
-      },
-      "ResultUnknown": {
-        "description": "`result_unknown`: the outcome was not received before the deadline. The message may still arrive; check before repeating the request.",
-        "headers": {
-          "X-Request-Id": {
-            "schema": {
-              "type": "string"
-            },
-            "description": "Stable request correlation identifier."
-          },
-          "Polymorfa-Version": {
-            "schema": {
-              "type": "string"
-            },
-            "description": "API version applied to this response."
-          }
-        },
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorEnvelope"
-            }
-          }
-        }
-      },
-      "SendPathUnavailable": {
-        "description": "The send path is unavailable or the sending number is not ready (`session_not_ready`, `command_dispatch_failed`, `service_unavailable`, or `bansafe_accounting_unavailable`). No message was sent.",
         "headers": {
           "X-Request-Id": {
             "schema": {

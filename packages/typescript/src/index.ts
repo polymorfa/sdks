@@ -24,6 +24,11 @@ export {
 } from "./client.js";
 export type * from "./platform/developer-types.js";
 export {
+  FlowsResource,
+  type FlowDraft,
+  type FlowSummary,
+} from "./platform/flows.js";
+export {
   EventStream,
   eventStreamSource,
   type EventStreamAcknowledgement,
@@ -74,6 +79,7 @@ export type { DeleteMessageOptions } from "./messaging/chats.js";
 export type {
   HistoryChat,
   HistoryMedia,
+  HistoryMediaRetrieval,
   HistoryMessage,
   HistoryMessageSummary,
   HistoryPage,
@@ -334,6 +340,12 @@ export type {
   VoipParticipantReference,
   VoipParticipantState,
   VoipPlaceCallRequest,
+  VoipCreateCallLinkRequest,
+  VoipPreviewCallLinkRequest,
+  VoipCreatedCallLink,
+  VoipPreviewedCallLink,
+  VoipCreatedCallLinkResponse,
+  VoipPreviewedCallLinkResponse,
   VoipPlaceCallResponse,
   VoipPlaceCallResult,
   ClientTokenValue,
@@ -665,6 +677,16 @@ export type {
   CallFilters,
   CallOutcome,
   CallRecord,
+  CallRecordDetail,
+  CallRecordSummary,
+  CallRecordEndReason,
+  CallRecordParticipant,
+  CallRecordConnection,
+  CallRecordTelemetry,
+  CallRecordAppQuality,
+  CallRecordAppConnection,
+  CallRecordAppReports,
+  RetrieveCallRecordParamsFor,
   CallRecordExportPage,
   CallRecordState,
   CallStats,
