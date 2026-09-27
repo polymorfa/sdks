@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "4cdf9fc280df7ad0d74668a8ce8897a08908f432",
+  "commit": "59c227399d233c76a0e09406e662adbd7a288841",
   "branch": "t3code/abprops-number-capabilities",
   "published": false,
   "note": "Feature source for the number capabilities beta (GET /platform/sessions/{sessionId}/capabilities), stacked on API PR #317. Both snapshots are byte-identical to the authoritative source files at this commit. Repin to the merged API dev commit before merging.",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "927a8cc75d1473eea4411221ca74c5848fd55e184bfa0f4d5f33d6b95549b610"
+      "sha256": "1ac7df88de2340ff393e70d7ec06e90eace82072411f3712eac7cc4a2d85962e"
     }
   }
 }

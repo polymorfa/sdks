@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "4cdf9fc280df7ad0d74668a8ce8897a08908f432",
+  "sourceCommit": "59c227399d233c76a0e09406e662adbd7a288841",
   "excludedContracts": [
     {
       "family": "graph",
@@ -3784,7 +3784,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/capabilities",
       "operationId": "getSessionCapabilities",
-      "fingerprint": "aa2a21c98e2ab50159c4d3340dac07a4006f392f31ddfaf4453439351e0b9643",
+      "fingerprint": "fdb3d1b95d882c43dfd2d10c690bbe70ee4674ad9c3fad94f1160631e963b892",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.getCapabilities"

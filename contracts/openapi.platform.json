@@ -40386,13 +40386,14 @@
           },
           "value": {
             "description": "Boolean for a feature, integer for a limit. Null when unknown: before the first sync, or when the value depends on an account type that is not known.",
-            "nullable": true,
-            "oneOf": [
+            "anyOf": [
               {
-                "type": "boolean"
+                "type": "boolean",
+                "nullable": true
               },
               {
-                "type": "integer"
+                "type": "integer",
+                "nullable": true
               }
             ]
           },
