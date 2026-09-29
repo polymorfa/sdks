@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added `Client.referral.retrieve()` for `GET /platform/referral`, which
+  returns the team's referral link and program terms as `Referral`
+  (`ReferralTier` and `ReferralWelcomeBonus` are exported). Credit amounts are
+  decimal strings. Organization clients only. The coverage ledger records the
+  operation once the pinned API snapshot includes it.
+
 - `message.received` payload types include `replyChoice` (`kind` `button` or
   `list` and the `id` you assigned) and `parentMessageId`, and the linked-device
   message `type` union adds `button_reply`, `list_reply`, and

@@ -290,6 +290,7 @@ The organization view also exposes these management resources:
   call data (also readable on project clients; changes need a team API key)
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
+- `referral`: retrieve the team's referral link and program terms
 - `usage`: read metered call usage for a month, list or iterate usage records
   for a call or number (also on project clients), and read usage gate modes,
   limits and decisions (organization clients only). Usage is measured, not

@@ -2158,6 +2158,27 @@ purchase a replacement. Set `tierOverride: null` when quoting to restore project
 inheritance. The old `setTierOverride({tierOverride})` request and
 `billing.updateReminderSettings` method are removed.
 
+### Referral link
+
+`Client.referral.retrieve()` reads the team's referral link and the current
+program terms with `GET /platform/referral`. It needs a team API key with
+`sessions:read`; the API creates the team's shared link on the first read.
+Credit amounts are decimal strings. Teams without referral access receive
+`PolymorfaAuthorizationError`.
+
+```ts
+const { data: referral } = await platform.referral.retrieve();
+console.log(referral.link); // https://polymorfa.com/r/k3m9p2q8rt
+// referral.welcomeBonus: { percent: 25, capCredits: "5000" }
+// referral.tiers: [{ minReferrals: 1, percent: 10 }, ...]
+```
+
+`enabled` is `false` while the program does not accept new referrals. Referral
+credits appear in `billing.listTransactions()` with the `type` values
+`referral_welcome_bonus`, `referral_welcome_bonus_reversal`, and
+`referral_reward`; `BillingTransaction.type` is a string, so no SDK change is
+needed to read them.
+
 ## Organization access and security
 
 The organization view exposes key metadata, members, audit logs, session bans,

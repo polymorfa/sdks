@@ -25,6 +25,7 @@ import {
 } from "./platform/call-consent.js";
 import { PlatformCallsResource } from "./platform/calls.js";
 import { CallRetentionResource } from "./platform/call-retention.js";
+import { ReferralResource } from "./platform/referral.js";
 import { CampaignsResource } from "./platform/campaigns.js";
 import { CustomersResource } from "./platform/customers.js";
 import { FlowsResource } from "./platform/flows.js";
@@ -95,6 +96,8 @@ export interface OrganizationControlPlaneResources {
   readonly optOuts: OptOutsResource;
   readonly projects: ProjectsResource;
   readonly projectTokens: ProjectTokensResource;
+  /** The team's referral link and program terms. */
+  readonly referral: ReferralResource;
   readonly securityIncidents: SecurityIncidentsResource;
   readonly sessionBans: SessionBansResource;
   readonly sessions: PlatformSessionsResource;
@@ -224,6 +227,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
         optOuts: new OptOutsResource(this.#transport),
         projects: new ProjectsResource(this.#transport),
         projectTokens: new ProjectTokensResource(this.#transport),
+        referral: new ReferralResource(this.#transport),
         securityIncidents: new SecurityIncidentsResource(this.#transport),
         sessionBans: new SessionBansResource(this.#transport),
         sessions: new PlatformSessionsResource(this.#transport),

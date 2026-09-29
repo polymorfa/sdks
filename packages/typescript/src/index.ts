@@ -685,6 +685,12 @@ export {
   CallRetentionResource,
   createTeamCallRetentionClient,
 } from "./platform/call-retention.js";
+export { ReferralResource } from "./platform/referral.js";
+export type {
+  Referral,
+  ReferralTier,
+  ReferralWelcomeBonus,
+} from "./platform/referral.js";
 export type {
   CallRetention,
   CallRetentionPolicy,
