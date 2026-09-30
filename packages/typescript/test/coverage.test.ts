@@ -173,12 +173,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "5cba4237fcec1ef776e8d3727c7ecc4d8f0207a3",
-      total: 509,
-      covered: 379,
-      partial: 0,
-      missing: 0,
-      excluded: 130,
+      sourceCommit: "5c8014d7d58b4d3e483d9d124ee9d88bd85820f9",
+      total: 529,
+      covered: 381,
+      partial: 1,
+      missing: 15,
+      excluded: 132,
       changed: 0,
     });
     const resolutions = (result.report?.resolutions ?? []) as Array<{
@@ -235,6 +235,12 @@ describe("coverage checker", () => {
     );
     expect(mappings).toEqual({
       exportCallRecords: { status: "covered", method: "Client.calls.export" },
+      getCallRecord: {
+        status: "missing",
+        reason:
+          "Client.calls.retrieve: Implemented on SDK dev; not on this main-based branch until dev merges.",
+        milestone: "sdk-dev-calls",
+      },
       getCallStats: { status: "covered", method: "Client.calls.stats" },
       listCallRecords: { status: "covered", method: "Client.calls.list" },
     });

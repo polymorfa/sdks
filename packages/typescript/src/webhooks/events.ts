@@ -22,11 +22,8 @@ import type {
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
   "bansafe.claim",
-  "bansafe.enforcement",
-  "bansafe.health_changed",
   "bansafe.health_threshold",
   "bansafe.incident",
-  "bansafe.risk_changed",
   "blocklist.update",
   "business.quick_reply.update",
   "call.accepted",
@@ -50,6 +47,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "campaign.recipient_failed",
   "campaign.recipient_sent",
   "campaign.recipient_skipped",
+  "campaign.rescheduled",
   "campaign.resumed",
   "campaign.stopped",
   "campaign.throttled",
@@ -125,6 +123,15 @@ export interface NativeFlowResponse {
   readonly version?: number;
 }
 
+/**
+ * The reply button or list row a contact chose. `id` is the ID you assigned
+ * when sending; the visible label is not included.
+ */
+export interface ReplyChoice {
+  readonly kind: "button" | "list";
+  readonly id: string;
+}
+
 export interface PollOption {
   readonly name: string;
   readonly hash: string;
@@ -139,6 +146,9 @@ export type LinkedDeviceMessageType =
   | "location"
   | "contact"
   | "phone_number_shared"
+  | "native_flow_response"
+  | "button_reply"
+  | "list_reply"
   | "poll"
   | "sticker"
   | "reaction"
@@ -176,10 +186,21 @@ export interface LinkedDeviceMessagePayload {
   readonly unavailable?: boolean;
   readonly unavailableReason?: string;
   readonly nativeFlowResponse?: NativeFlowResponse;
+  readonly replyChoice?: ReplyChoice;
+  readonly parentMessageId?: string;
   readonly [key: string]: unknown;
 }
 
 export type MessagePayload = LinkedDeviceMessagePayload;
+
+/** Meta-supplied Click-to-WhatsApp entry point; it does not prove a conversion. */
+export interface CloudMessageReferral {
+  readonly source_type?: string;
+  readonly source_id?: string;
+  readonly source_url?: string;
+  readonly ctwa_clid?: string;
+  readonly [key: string]: unknown;
+}
 
 export interface CloudMessagePayload {
   readonly id: string;
@@ -191,7 +212,10 @@ export interface CloudMessagePayload {
   readonly type: string;
   readonly senderName?: string;
   readonly nativeFlowResponse?: NativeFlowResponse;
+  readonly replyChoice?: ReplyChoice;
+  readonly parentMessageId?: string;
   readonly interactive?: Readonly<Record<string, unknown>>;
+  readonly referral?: CloudMessageReferral;
   readonly [key: string]: unknown;
 }
 
@@ -208,6 +232,22 @@ export interface MessageSentPayload {
   readonly timestamp: number;
 }
 
+/**
+ * Official API only. The pricing classification WhatsApp reported for a
+ * message, copied as reported. Meta bills the WhatsApp Business Account
+ * directly; this is not a Polymorfa charge and contains no price.
+ */
+export interface MetaPricingReport {
+  /** Deprecated by WhatsApp; use `type`. */
+  readonly billable?: boolean;
+  /** For example `PMP` (per-message pricing). */
+  readonly pricing_model?: string;
+  /** For example `marketing`, `utility`, `authentication` or `service`. */
+  readonly category?: string;
+  /** For example `regular`, `free_customer_service` or `free_entry_point`. */
+  readonly type?: string;
+}
+
 export interface MessageAckPayload {
   readonly messages: readonly {
     readonly id: string;
@@ -220,6 +260,7 @@ export interface MessageAckPayload {
   readonly sender?: IdentityReference;
   readonly type: string;
   readonly timestamp: number;
+  readonly pricing?: MetaPricingReport;
 }
 
 export interface MessageDeletePayload {
@@ -436,6 +477,8 @@ export interface CallTelemetryPayload {
 }
 
 export interface CallParticipant {
+  /** Authoritative raised-hand state for a connected participant. */
+  readonly handRaised?: boolean;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;
@@ -679,102 +722,6 @@ export type BanSafeIncidentEventKind =
 export type BanSafeEventRung =
   "none" | "notify" | "throttle" | "block_cold" | "suspend";
 
-export type BanSafeRiskLevel = "low" | "elevated" | "high" | "critical";
-export type BanSafeHealthBandName =
-  "good" | "fair" | "poor" | "failing" | "unknown";
-
-export interface BanSafeForecast {
-  /** Probability (0-1) of a temporary or permanent ban within 7 days. */
-  readonly days7: number;
-  readonly days14: number;
-  readonly days30: number;
-}
-
-/** The factor group a risk factor belongs to. */
-export type BanSafeRiskFactorGroup =
-  | "volume"
-  | "cold_outreach"
-  | "restrictions"
-  | "engagement"
-  | "send_errors"
-  | "pattern"
-  | "traffic_mix"
-  | "number_age"
-  | "connection"
-  | "ban_history"
-  | "account"
-  | "workspace"
-  | "climate"
-  | "conversation"
-  | "solicitation"
-  | "reputation";
-
-export interface BanSafeRiskFactor {
-  /** Feature key, or `group:<groupId>`. */
-  readonly key: string;
-  readonly group: BanSafeRiskFactorGroup;
-  readonly label: string;
-  readonly direction: "raises" | "lowers";
-  readonly strength: "strong" | "moderate" | "slight";
-  /** Share, as a whole percentage, of the raising or lowering total. */
-  readonly impact: number;
-  readonly sentence: string;
-  readonly hint: string | null;
-}
-
-export interface BanSafeModelRef {
-  readonly version: string;
-  readonly reliability: "prior" | "early" | "calibrated";
-}
-
-export interface BanSafeRiskChangedPayload {
-  /** The customer's own number in E.164 format. */
-  readonly phoneNumber: string;
-  readonly level: BanSafeRiskLevel;
-  /** Null for the first evaluation of the number. */
-  readonly previousLevel: BanSafeRiskLevel | null;
-  /** Risk score from 0 (lowest) to 100 (highest). */
-  readonly score: number;
-  readonly forecast: BanSafeForecast;
-  /** Up to five contributing factors, ordered by impact. */
-  readonly factors: readonly BanSafeRiskFactor[];
-  readonly model: BanSafeModelRef;
-  readonly evaluatedAt: string;
-}
-
-export interface BanSafeHealthPenalties {
-  readonly conduct: number;
-  readonly restriction: number;
-  readonly connection: number;
-}
-
-export interface BanSafeHealthFinding {
-  readonly key: string;
-  readonly title: string;
-  readonly severity: "info" | "warning" | "critical";
-  /** `not_measured` means the signal could not be measured for this number. */
-  readonly status: "open" | "acknowledged" | "not_measured";
-  /** Health points this finding costs. */
-  readonly points: number;
-}
-
-export interface BanSafeHealthChangedPayload {
-  readonly phoneNumber: string;
-  /** Health from 0 (worst) to 100 (best), or null when not measured. */
-  readonly health: number | null;
-  readonly band: BanSafeHealthBandName;
-  readonly previousBand: BanSafeHealthBandName | null;
-  readonly state:
-    "measured" | "partial" | "measuring" | "restricted" | "banned";
-  readonly penalties: BanSafeHealthPenalties;
-  readonly findings: readonly BanSafeHealthFinding[];
-  readonly measuredChecks: number;
-  readonly totalChecks: number;
-  /** Messages allowed today under the warm-up plan; null or absent without one. */
-  readonly allowance?: number | null;
-  readonly evaluatedAt: string;
-}
-
 export interface BanSafeHealthThresholdPayload {
   readonly sessionId: string;
   readonly projectId: string;
@@ -788,18 +735,6 @@ export interface BanSafeHealthThresholdPayload {
   readonly policyVersion: number;
   readonly episodeId: string;
   readonly actionId: string;
-}
-
-export interface BanSafeEnforcementPayload {
-  readonly phoneNumber: string;
-  readonly kind: BanSafeIncidentEventKind;
-  readonly source: "runtime" | "customer";
-  readonly code?: number;
-  readonly subCode?: number;
-  readonly reason?: string;
-  readonly enforcementType?: string;
-  readonly startedAt: string;
-  readonly endsAt?: string;
 }
 
 /** A finding that must be resolved before a BanSafe action can lift. */
@@ -939,6 +874,15 @@ export interface CampaignResumedPayload {
   readonly resumedAt: number;
 }
 
+export interface CampaignRescheduledPayload {
+  readonly campaignId: string;
+  /** Previous start time in Unix milliseconds, or null. */
+  readonly previousScheduledAt: number | null;
+  /** New start time in Unix milliseconds. */
+  readonly scheduledAt: number;
+  readonly rescheduledAt: number;
+}
+
 export interface CampaignCompletedPayload {
   readonly campaignId: string;
   readonly sentCount: number;
@@ -1071,11 +1015,8 @@ export interface UsageRecordedPayload {
 export interface WebhookPayloadMap {
   readonly "bansafe.action": BanSafeActionPayload;
   readonly "bansafe.claim": BanSafeClaimPayload;
-  readonly "bansafe.enforcement": BanSafeEnforcementPayload;
-  readonly "bansafe.health_changed": BanSafeHealthChangedPayload;
   readonly "bansafe.health_threshold": BanSafeHealthThresholdPayload;
   readonly "bansafe.incident": BanSafeIncidentPayload;
-  readonly "bansafe.risk_changed": BanSafeRiskChangedPayload;
   readonly "blocklist.update": BlocklistUpdatePayload;
   readonly "business.quick_reply.update": BusinessQuickReplyUpdatePayload;
   readonly "call.accepted": CallAcceptedPayload;
@@ -1099,6 +1040,7 @@ export interface WebhookPayloadMap {
   readonly "campaign.recipient_failed": CampaignRecipientFailedPayload;
   readonly "campaign.recipient_sent": CampaignRecipientSentPayload;
   readonly "campaign.recipient_skipped": CampaignRecipientSkippedPayload;
+  readonly "campaign.rescheduled": CampaignRescheduledPayload;
   readonly "campaign.resumed": CampaignResumedPayload;
   readonly "campaign.stopped": CampaignStoppedPayload;
   readonly "campaign.throttled": CampaignThrottledPayload;

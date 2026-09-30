@@ -11,13 +11,20 @@ import type {
   DataEnvelope,
   ListCampaignsParams,
   ListPlatformCampaignRecipientsParams,
+  PlatformCampaign,
   PlatformCampaignParams,
   PlatformCampaignRecipientsEnvelope,
   PlatformPayload,
+  ReschedulePlatformCampaignRequest,
   UpdatePlatformCampaignRequest,
 } from "./types.js";
 
 type CampaignResponse = Promise<ApiResponse<DataEnvelope<PlatformPayload>>>;
+type CampaignResult<T> = Promise<ApiResponse<DataEnvelope<T>>>;
+type CreateCampaignOptions = Omit<
+  RequestOptions,
+  "idempotencyKey" | "maxNetworkRetries"
+>;
 type CampaignAction =
   "launch" | "pause" | "resume" | "stop" | "archive" | "duplicate" | "requeue";
 type CampaignRead = "analytics" | "events";
@@ -28,7 +35,7 @@ export class CampaignsResource {
   list(
     params: ListCampaignsParams,
     options: RequestOptions = {},
-  ): CampaignResponse {
+  ): CampaignResult<readonly PlatformCampaign[]> {
     return this.transport.request({
       method: "GET",
       path: "/platform/campaigns",
@@ -44,13 +51,21 @@ export class CampaignsResource {
 
   create(
     body: CreatePlatformCampaignRequest,
-    options: RequestOptions = {},
-  ): CampaignResponse {
+    options: CreateCampaignOptions = {},
+  ): CampaignResult<PlatformCampaign> {
     return this.transport.request({
       method: "POST",
       path: "/platform/campaigns",
       body,
-      ...options,
+      ...(options.apiVersion === undefined
+        ? {}
+        : { apiVersion: options.apiVersion }),
+      ...(options.headers === undefined ? {} : { headers: options.headers }),
+      ...(options.signal === undefined ? {} : { signal: options.signal }),
+      ...(options.timeoutMs === undefined
+        ? {}
+        : { timeoutMs: options.timeoutMs }),
+      maxNetworkRetries: 0,
     });
   }
 
@@ -58,7 +73,7 @@ export class CampaignsResource {
     campaignId: string,
     params: PlatformCampaignParams,
     options: RequestOptions = {},
-  ): CampaignResponse {
+  ): CampaignResult<PlatformCampaign | null> {
     return this.transport.request({
       method: "GET",
       path: campaignPath(campaignId),
@@ -77,7 +92,7 @@ export class CampaignsResource {
     body: UpdatePlatformCampaignRequest | undefined,
     params: PlatformCampaignParams,
     options: RequestOptions = {},
-  ): CampaignResponse {
+  ): CampaignResult<PlatformCampaign> {
     return this.transport.request({
       method: "PATCH",
       path: campaignPath(campaignId),
@@ -106,6 +121,19 @@ export class CampaignsResource {
     options: RequestOptions = {},
   ): CampaignResponse {
     return this.action(campaignId, "launch", body, options);
+  }
+
+  reschedule(
+    campaignId: string,
+    body: ReschedulePlatformCampaignRequest,
+    options: RequestOptions = {},
+  ): CampaignResponse {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(campaignId)}/reschedule`,
+      body,
+      ...withIdempotencyKey(options),
+    });
   }
 
   pause(

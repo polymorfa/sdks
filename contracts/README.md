@@ -29,27 +29,76 @@ operations. The six Console counterparts are excluded. Message content and
 `call.permission_changed` are typed in server and browser packages where
 applicable.
 
-`testing-events.json` records the four test-event schemas from API commit
-`9c876c16c60b74370d934e1275f23ef6096bee12`, including the source path and file
-hash. The TypeScript test-event catalog and override types use that revision.
+`testing-events.json` records the four test-event schemas from the same API
+source commit as the full snapshots, including the source path and file hash.
+The TypeScript test-event catalog and override types use that revision.
 Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
-It adds `session.restriction_updated`, its boolean `restrictionActive` override,
-and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
-below use the merged API revision. CLI consumers require a
+It includes `session.restriction_updated`, its boolean `restrictionActive`
+override, and `call_restricted` in `callEndReason`. The retired BanSafe test
+fixtures are absent. CLI consumers require a
 published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at merged `polymorfa/polymorfa` API `dev` commit
-`5cba4237fcec1ef776e8d3727c7ecc4d8f0207a3`. This revision integrates
-Hybrid Link and the `campaign.launched`, `campaign.resumed`, and
-`campaign.stopped` webhook schemas from API feature source
-`3558c289ec35aba45a498a8794a94b4919365899`. The three events change no
-operation fingerprint or SDK method mapping. The snapshots, ledger, and revision
-tests have been reconciled. `source.json` records the source paths and SHA-256
-hashes. SDK package publication remains separate.
+files at `polymorfa/polymorfa` commit
+`5c8014d7d58b4d3e483d9d124ee9d88bd85820f9`, the merge of PR #388 into API
+`dev`. `testing-events.json` uses the same commit; its four schemas are
+unchanged. The response to feature evaluation includes a nullable
+`experimentRevision`; both evaluation routes remain excluded from SDK methods
+because they require a host runtime or live dashboard identity. The Platform
+referral route was removed on API `dev` before this merge, so the snapshot has
+no `/platform/referral` operation; referrals stay Console-only. `source.json`
+records the exact source paths and SHA-256 hashes. SDK package publication
+remains separate.
+
+Moving from PR source commit `2f24c1d62` to the merge commit adds 17
+operations and changes 236 fingerprints; no operation was removed. The
+fingerprint changes were reviewed:
+
+- 211 operations only add documented `X-RateLimit-Limit`,
+  `X-RateLimit-Remaining` and `X-RateLimit-Reset` response headers. Most of
+  the other changed operations add the same headers.
+- Campaigns add `sendWindow` on both surfaces. `Campaign.sendWindow` is
+  `CampaignSendWindow | null`; Messaging create and update, and Platform create
+  and update, accept `CampaignSendWindowRequest` (update and Platform create
+  accept null to remove it). Platform list, get, create and update now declare
+  `PlatformCampaign`, an open object with the Messaging campaign fields, so
+  those methods return it instead of `PlatformPayload`. The Platform update
+  body names `name`, `senderConfig`, `scheduledAt` and `sendWindow` and stays
+  open.
+- QuickLink create, get and status add the `reauthorization` purpose to
+  `QuickLinkPurpose`. The public QuickLink token routes stay excluded.
+- Hosted-history message reads add `mediaRetrieval` (`HistoryMediaRetrieval`).
+- `VoipParticipant` adds optional `handRaised`.
+- `POST /messaging/voip/calls` now accepts exactly one of `to`,
+  `participants` or `groupId`. `MessagingClient.voip.place` types only `to`
+  here, so the row is partial; group placement is implemented on SDK `dev`.
+- The two account feature routes add a body `projectId`; they stay excluded.
+
+The 17 added operations are recorded as follows. Two Console account-health
+routes (`/api/account/cloud-health` and its export) are excluded because they
+require dashboard identity. Six Calls operations (call links, link preview,
+raised hand, ring participant, call reaction and `GET /platform/calls/{callId}`)
+have typed methods on SDK `dev` and are missing on this branch until `dev`
+merges. Nine Official API operations are missing: four Cloud template routes
+(proposed in SDK PR #308), stored message media download (proposed in SDK PR
+#316), the customer service window, credential health, credential
+reauthorization and the Meta pricing summary.
+
+Webhook payload types follow the same commit: `message.received` adds
+`replyChoice` and `parentMessageId` and three linked-device message types,
+`message.ack` adds optional `pricing` (`MetaPricingReport`), and call
+participants add optional `handRaised`.
+
+`MessagingClient.campaigns.update` covers the new draft update route, while
+`MessagingClient.campaigns.reschedule` and `Client.campaigns.reschedule` cover
+moving a launched campaign that is waiting to start. The Messaging update is
+sent once after an uncertain response because its route has no replay key;
+reschedule uses the API's idempotency key. The Platform reschedule request names
+`projectId` for an organization credential. The other refreshed operation
+fingerprints were checked against their existing method paths and types.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
@@ -102,7 +151,7 @@ payment-required error class. The webhook catalog also adds the restriction
 payload, requires `code` on `session.logged_out`, narrows its reason enum, and
 narrows the previous BanSafe health band; SDK types follow those schemas.
 
-The latest schema refresh changes only `POST /platform/campaigns`: its required
+An earlier schema refresh changes only `POST /platform/campaigns`: its required
 body is now `CreatePlatformCampaignRequest`, with required `name`, named optional
 fields, and no additional top-level properties. The SDK requires `projectId`
 because its Platform campaign resource belongs to organization clients. The
@@ -154,18 +203,18 @@ The operation declares `409` for the refusal after launch, which the transport
 already maps to `PolymorfaConflictError`; no SDK change was needed for it.
 
 The webhook catalog adds `contact.opted_out` and `contact.opted_in` with the
-exported `ContactOptPayload`. `bansafe.health_changed` and
-`bansafe.risk_changed`, which the contract already defined, are now registered
-too, with their payload types.
+exported `ContactOptPayload`. That earlier revision registered
+`bansafe.health_changed` and `bansafe.risk_changed`; the current API source has
+retired both events and `bansafe.enforcement`.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        379 |
-| Missing             |          0 |
-| Excluded            |        130 |
-| Partial             |          0 |
+| Covered             |        381 |
+| Missing             |         15 |
+| Excluded            |        132 |
+| Partial             |          1 |
 | Changed fingerprint |          0 |
-| Total               |        509 |
+| Total               |        529 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

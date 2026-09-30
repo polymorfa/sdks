@@ -1,8 +1,7 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type {
-  BanSafeHealthBandName,
-  BanSafeHealthChangedPayload,
   BlocklistUpdatePayload,
   WhatsAppMessageIds,
   BusinessQuickReplyUpdatePayload,
@@ -23,6 +22,7 @@ import type {
   ChatMutePayload,
   ChatReadPayload,
   CloudMessagePayload,
+  CloudMessageReferral,
   CommandResultPayload,
   ContactsSyncPayload,
   ContactUpdatePayload,
@@ -33,11 +33,14 @@ import type {
   WebhookConversationReference,
   LabelsUpdatePayload,
   LinkedDeviceMessageType,
+  MessageAckPayload,
   MessageDeletePayload,
+  MetaPricingReport,
   MessageEchoPayload,
   MessagePayload,
   MessageReceivedPayload,
   NativeFlowResponse,
+  ReplyChoice,
   NewsletterUpdatePayload,
   PollOption,
   PollVotePayload,
@@ -49,7 +52,6 @@ import type {
   WebhookPayloadMap,
 } from "../src/index.js";
 import { KNOWN_WEBHOOK_EVENT_TYPES } from "../src/index.js";
-import type { BanSafeHealthBandName as WebhooksHealthBandName } from "../src/webhooks/index.js";
 
 type ExpectedIdentityReference = {
   readonly id: string;
@@ -78,6 +80,11 @@ type ExpectedPollOption = {
   readonly hash: string;
 };
 
+type ExpectedReplyChoice = {
+  readonly kind: "button" | "list";
+  readonly id: string;
+};
+
 type ExpectedLinkedDeviceMessageType =
   | "text"
   | "image"
@@ -87,6 +94,9 @@ type ExpectedLinkedDeviceMessageType =
   | "location"
   | "contact"
   | "phone_number_shared"
+  | "native_flow_response"
+  | "button_reply"
+  | "list_reply"
   | "poll"
   | "sticker"
   | "reaction"
@@ -123,6 +133,8 @@ type ExpectedMessagePayload = {
   readonly unavailable?: boolean;
   readonly unavailableReason?: string;
   readonly nativeFlowResponse?: ExpectedNativeFlowResponse;
+  readonly replyChoice?: ExpectedReplyChoice;
+  readonly parentMessageId?: string;
   readonly [key: string]: unknown;
 };
 
@@ -177,6 +189,7 @@ type ExpectedPayloads = {
       readonly phoneNumber?: string;
       readonly bsuid?: string;
       readonly username?: string;
+      readonly handRaised?: boolean;
       readonly audioMuted: false;
       readonly video: false;
       readonly state: "invited" | "ringing" | "connected" | "left";
@@ -194,6 +207,7 @@ type ExpectedPayloads = {
       readonly phoneNumber?: string;
       readonly bsuid?: string;
       readonly username?: string;
+      readonly handRaised?: boolean;
       readonly audioMuted: false;
       readonly video: false;
       readonly state: "invited" | "ringing" | "connected" | "left";
@@ -430,20 +444,48 @@ type ExportedPayloads = {
 };
 
 describe("webhook event payload types", () => {
-  it("exports the health band through the public webhook type surfaces", () => {
-    expectTypeOf<
-      BanSafeHealthChangedPayload["band"]
-    >().toEqualTypeOf<BanSafeHealthBandName>();
-    expectTypeOf<WebhooksHealthBandName>().toEqualTypeOf<BanSafeHealthBandName>();
-    expectTypeOf<BanSafeHealthBandName>().toEqualTypeOf<
-      "good" | "fair" | "poor" | "failing" | "unknown"
+  it("types Meta Cloud referral fields from the public webhook contract", () => {
+    expectTypeOf<CloudMessagePayload["referral"]>().toEqualTypeOf<
+      CloudMessageReferral | undefined
     >();
+    expectTypeOf<CloudMessageReferral["ctwa_clid"]>().toEqualTypeOf<
+      string | undefined
+    >();
+    const spec = JSON.parse(
+      readFileSync(
+        new URL("../../../contracts/openapi.messaging.json", import.meta.url),
+        "utf8",
+      ),
+    ) as {
+      components: { schemas: { CloudMessagePayload: unknown } };
+    };
+    const schema = (
+      spec.components.schemas.CloudMessagePayload as {
+        properties: { referral: { properties: Record<string, unknown> } };
+      }
+    ).properties.referral;
+    expect(Object.keys(schema.properties).sort()).toEqual([
+      "ctwa_clid",
+      "source_id",
+      "source_type",
+      "source_url",
+    ]);
   });
 
   it("maps every formerly opaque event family to its contract payload", () => {
     expectTypeOf<IdentityReference>().toEqualTypeOf<ExpectedIdentityReference>();
     expectTypeOf<WebhookConversationReference>().toEqualTypeOf<ExpectedConversationReference>();
     expectTypeOf<NativeFlowResponse>().toEqualTypeOf<ExpectedNativeFlowResponse>();
+    expectTypeOf<ReplyChoice>().toEqualTypeOf<ExpectedReplyChoice>();
+    expectTypeOf<MessageAckPayload["pricing"]>().toEqualTypeOf<
+      MetaPricingReport | undefined
+    >();
+    expectTypeOf<MetaPricingReport>().toEqualTypeOf<{
+      readonly billable?: boolean;
+      readonly pricing_model?: string;
+      readonly category?: string;
+      readonly type?: string;
+    }>();
     expectTypeOf<PollOption>().toEqualTypeOf<ExpectedPollOption>();
     expectTypeOf<LinkedDeviceMessageType>().toEqualTypeOf<ExpectedLinkedDeviceMessageType>();
     expectTypeOf<CallParticipant>().toEqualTypeOf<

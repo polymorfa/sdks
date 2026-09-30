@@ -103,6 +103,8 @@ export interface Campaign {
   readonly completedAt: number | null;
   readonly createdAt: number;
   readonly updatedAt: number;
+  /** Local hours the campaign may send in, or null when sending is unrestricted. */
+  readonly sendWindow: CampaignSendWindow | null;
   /** Additional live repository fields omitted from the pinned OpenAPI schema. */
   readonly composerBlueprint?: unknown;
   readonly messages?: unknown;
@@ -111,6 +113,51 @@ export interface Campaign {
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
   readonly variantStrategy?: unknown;
+}
+
+export type CampaignSendWindowDay =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
+
+/** Local `HH:MM` range; `start` is inclusive and `end` is exclusive. */
+export interface CampaignSendWindowRange {
+  readonly start: string;
+  /** Later than `start`; `24:00` ends the range at midnight. */
+  readonly end: string;
+}
+
+/**
+ * When a campaign may send. Recipients outside the window stay `queued` and
+ * are sent when it next opens.
+ */
+export interface CampaignSendWindowRequest {
+  /**
+   * IANA time zone the window is written in. When omitted, the team's time
+   * zone is stored, or `UTC` when the team has none.
+   */
+  readonly timeZone?: string;
+  /** One to seven distinct weekdays, in the window's time zone. */
+  readonly days: readonly CampaignSendWindowDay[];
+  /** One to four non-overlapping ranges; a range cannot cross midnight. */
+  readonly hours: readonly CampaignSendWindowRange[];
+  /** Evaluate the window in each recipient's own time zone. Defaults to false. */
+  readonly recipientTimeZone?: boolean;
+  /** Recipient variable holding an IANA time zone. Defaults to `timeZone`. */
+  readonly timeZoneVariable?: string;
+}
+
+/** Stored send window returned on a campaign. */
+export interface CampaignSendWindow {
+  readonly timeZone: string;
+  readonly days: readonly CampaignSendWindowDay[];
+  readonly hours: readonly CampaignSendWindowRange[];
+  readonly recipientTimeZone: boolean;
+  readonly timeZoneVariable: string;
 }
 
 export interface CampaignAnalytics {
@@ -137,6 +184,8 @@ export interface CreateCampaignRequest {
    * whole request; use `campaigns.addRecipients` for partial acceptance.
    */
   readonly recipients?: readonly CampaignRecipientInput[];
+  /** Local hours the campaign may send in. Omit it to send at any hour. */
+  readonly sendWindow?: CampaignSendWindowRequest;
 }
 
 export type CampaignRecipientStatus =
@@ -224,6 +273,36 @@ export interface LaunchCampaignRequest {
   readonly scheduledAt?: number;
 }
 
+interface UpdateCampaignChanges {
+  readonly name?: string;
+  readonly recipientListId?: string | null;
+  readonly senderConfig?: Readonly<Record<string, unknown>>;
+  /** Epoch milliseconds, or null to start at launch. */
+  readonly scheduledAt?: number | null;
+  /**
+   * Null removes the window. Only a draft or paused campaign can change it; a
+   * paused edit requires in-flight sends to have settled.
+   */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
+}
+
+/** At least one draft field must be supplied. */
+export type UpdateCampaignRequest =
+  | (UpdateCampaignChanges & { readonly name: string })
+  | (UpdateCampaignChanges & { readonly recipientListId: string | null })
+  | (UpdateCampaignChanges & {
+      readonly senderConfig: Readonly<Record<string, unknown>>;
+    })
+  | (UpdateCampaignChanges & { readonly scheduledAt: number | null })
+  | (UpdateCampaignChanges & {
+      readonly sendWindow: CampaignSendWindowRequest | null;
+    });
+
+export interface RescheduleCampaignRequest {
+  /** Epoch milliseconds, or null to start a waiting campaign now. */
+  readonly scheduledAt: number | null;
+}
+
 export interface RequeueCampaignRequest {
   readonly includeSkippedError?: boolean;
 }
@@ -240,8 +319,10 @@ export interface CampaignRequeueResult {
 export type ListCampaignsResponse = SuccessEnvelope<readonly Campaign[]>;
 export type GetCampaignResponse = SuccessEnvelope<Campaign>;
 export type CreateCampaignResponse = SuccessEnvelope<Campaign>;
+export type UpdateCampaignResponse = SuccessEnvelope<Campaign>;
 export type CampaignAnalyticsResponse = SuccessEnvelope<CampaignAnalytics>;
 export type CampaignOperationResponse = SuccessEnvelope<CampaignOperation>;
+export type RescheduleCampaignResponse = SuccessEnvelope<CampaignOperation>;
 export type CampaignRequeueResponse = SuccessEnvelope<CampaignRequeueResult>;
 export type CampaignStopResponse = SuccessEnvelope<CampaignStopOperation>;
 export type AddCampaignRecipientsResponse =
@@ -1713,6 +1794,7 @@ export interface VoipAddParticipantRequest {
 export type VoipParticipantState = "invited" | "ringing" | "connected" | "left";
 
 export interface VoipParticipant {
+  readonly handRaised?: boolean;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;

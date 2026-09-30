@@ -1024,7 +1024,8 @@ These methods send an `Idempotency-Key` on every call:
 - `messages.send` and `messages.react`
 - `chats.editMessage` and `chats.deleteMessage`
 - `channels.reactToMessage`
-- `campaigns.create` and `campaigns.launch`
+- `MessagingClient.campaigns.create`, plus `campaigns.launch` and
+  `campaigns.reschedule` on both clients
 
 If you don't pass `idempotencyKey`, the SDK generates a random UUID for the
 call. Every automatic retry of that call reuses the key, so the API never
@@ -1685,8 +1686,9 @@ message identifiers are URL-encoded by the SDK.
 ## Messaging campaigns
 
 `MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `analytics`,
-`listRecipients`, `addRecipients`, `launch`, `pause`, `resume`, `stop`, and
-`requeue`. Reads require `campaigns:read`; writes require `campaigns:manage`.
+`listRecipients`, `addRecipients`, `update`, `launch`, `reschedule`, `pause`,
+`resume`, `stop`, and `requeue`. Reads require `campaigns:read`; writes require
+`campaigns:manage`.
 Pass the project's slug as the first argument. Campaigns accept organization
 API keys or project tokens; browser client tokens cannot use these methods.
 
@@ -1719,6 +1721,16 @@ const launched = await messaging.campaigns.launch(
 console.log(launched.data.data.operationId, launched.metadata.requestId);
 ```
 
+Use `messaging.campaigns.update(projectSlug, campaignId, changes)` to change a
+draft's name, audience, sender selection, or start time. The SDK sends this
+write once by default because the route has no replay key. For a campaign that
+has launched and is waiting to start, call
+`messaging.campaigns.reschedule(projectSlug, campaignId, { scheduledAt })`.
+Set `scheduledAt` to a Unix millisecond timestamp or `null` to start now. The
+organization client has `client.campaigns.reschedule(campaignId, { projectId,
+scheduledAt })` for the Platform route. Both reschedule methods accept an
+optional idempotency key in request options.
+
 Create accepts inline recipients, an audience ID in `recipientListId`, or both.
 Each append accepts up to 1,000 recipients before launch and reports duplicates
 and invalid rows. Appends have no declared replay contract: the SDK sends them
@@ -1739,17 +1751,18 @@ They accept the transition without waiting for sending to finish. Stop always
 cancels; its `operationId` is null when the campaign had no active delivery run
 and was cancelled immediately. Check for null before calling
 `Client.operations.wait(operationId)`. A launched campaign waiting for its
-scheduled start can be stopped, but its start time cannot be changed.
-Launch, pause, resume, and stop generate one idempotency key per call unless you
+scheduled start can be stopped or rescheduled. Rescheduling after sending has
+started returns `409`.
+Launch, reschedule, pause, resume, and stop generate one idempotency key per call unless you
 pass one. Automatic retries reuse that key; a completed replay returns the
 API's `idempotency_completed` conflict, so inspect the campaign state after a
 lost response.
 
 `requeue` moves eligible failed recipients, and optionally recipients skipped
-with an error, back into the queue. It returns the number moved. The API refuses
-unentitled campaigns with `402`, suspension with `403`, and invalid lifecycle
-transitions with `409`. Throughput above the eligible number pool's ceiling is
-`400 campaign_throughput_capped`.
+with an error, back into the queue. It returns the number moved. Launch checks
+the selected numbers' Campaigns entitlement and returns `402` when it is absent.
+The API refuses suspension with `403` and invalid lifecycle transitions with
+`409`. Throughput above a number's ceiling is `400 campaign_throughput_capped`.
 
 `Client.campaigns` provides the Platform campaign methods. Its single-campaign
 reads, updates and deletion take a `PlatformCampaignParams` argument: a team
@@ -1759,18 +1772,22 @@ listing and append also require `projectId`. Platform
 `recipients` uses the same cursor-page shape. `Client.audiences` manages audience
 members, and `Client.optOuts` reads and replaces team keyword settings.
 
-`create` and `launch` generate an `Idempotency-Key` for each call. A supplied
-key is preserved across retries within the API's 24-hour replay window. If the
-outcome remains uncertain after that window, reconcile campaign state before
-starting another request; see [Idempotent sends](#idempotent-sends).
+`launch` and `reschedule` generate an `Idempotency-Key` for each call. The
+Platform `create` route has no replay contract, so the SDK sends it once and
+does not accept an idempotency key or retry setting. After a lost create
+response, inspect the campaign list before creating another draft. For launch
+and reschedule, a supplied key is preserved across retries within the API's
+24-hour replay window. If the outcome remains uncertain after that window,
+reconcile campaign state before starting another request; see
+[Idempotent sends](#idempotent-sends).
 `archive` returns a receipt for a completed, failed, or cancelled campaign;
 other states return `409`. A pending final event or active delivery run also
 returns `409`; retry after both finish. Platform `delete` accepts draft,
 completed, failed, cancelled, or archived campaigns. A completed or failed
 campaign with a pending final event or active delivery run returns `409`.
-The Messaging API has no campaign update, deletion, archive, duplicate, or
-campaign event history method. The SDK does not substitute Platform routes for
-those operations.
+The Messaging API has no campaign deletion, archive, duplicate, or campaign
+event history method. The SDK does not substitute Platform routes for those
+operations.
 
 ## Chats
 
@@ -1849,23 +1866,24 @@ if (isEvent(event, "history.sync")) {
 ```
 
 The catalog also types Customer lifecycle events (`customer.*`), BanSafe events
-(`bansafe.health_threshold`, `bansafe.health_changed`, `bansafe.risk_changed`,
-`bansafe.enforcement`, `bansafe.action`, `bansafe.incident`, and
-`bansafe.claim`), campaign progress and lifecycle events (`campaign.*`),
+(`bansafe.health_threshold`, `bansafe.action`, `bansafe.incident`, and
+`bansafe.claim`), campaign progress and lifecycle events (`campaign.*`, including
+`campaign.rescheduled`),
 `call.permission_changed`, `message.failed`, and `template.status`. `message.failed`
 reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
 and `retryAfter` in seconds. Unknown event names still parse as
 `UnknownWebhookEvent`.
-
-For `bansafe.health_changed`, `band` is a `BanSafeHealthBandName`:
-`good`, `fair`, `poor`, `failing`, or `unknown`. `previousBand` uses the same
-type, with `null` for the first evaluation.
 
 `contact.sync` delivers a Meta Cloud API contact batch as
 `{ kind: "contacts", value }`. `message.echo` reports a message sent from the
 WhatsApp Business app on a connected Meta Cloud API number as
 `{ source: "whatsapp_business_app", value }`. Events for a session created by a
 QuickLink include its optional `externalId`.
+
+Cloud API `message.received` payloads may include a `referral` object with
+`source_type`, `source_id`, `source_url`, and `ctwa_clid` from a Click-to-WhatsApp
+entry point. These fields describe the entry point; they do not establish a
+conversion or payment.
 
 Development builds also export `CallEndedPayload` and `CallTelemetryPayload`.
 For `call.ended`, check `from` before reading its identity: it is `null` when
@@ -2012,7 +2030,6 @@ const campaign = await platform.campaigns.create(
     name: "August launch",
   },
   {
-    idempotencyKey: "campaign-august-2026",
     timeoutMs: 10_000,
   },
 );
@@ -2020,6 +2037,8 @@ const campaign = await platform.campaigns.create(
 console.log(campaign.data.data, campaign.metadata.requestId);
 ```
 
+`Client.campaigns.create` does not accept `idempotencyKey` and never retries
+automatically, so a lost response can't create a second campaign.
 `Client.campaigns.create` requires `CreatePlatformCampaignRequest`, including
 `name` and the owning `projectId`. It accepts `templateId`, `recipientListId`,
 `senderConfig`, `scheduledAt`, inline `recipients` (at most 1,000), and

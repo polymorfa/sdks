@@ -11,11 +11,16 @@ import {
   type CampaignOperationResponse,
   type CampaignRecipient,
   type CampaignRequeueResponse,
+  type CampaignSendWindow,
+  type CampaignSendWindowRequest,
+  type PlatformCampaign,
   type CampaignStopResponse,
   type CreateCampaignResponse,
   type GetCampaignResponse,
   type ListCampaignRecipientsResponse,
   type ListCampaignsResponse,
+  type RescheduleCampaignResponse,
+  type UpdateCampaignResponse,
 } from "../src/index.js";
 import {
   startTestServer,
@@ -46,6 +51,7 @@ const campaign = {
   completedAt: null,
   createdAt: 1_724_000_000_000,
   updatedAt: 1_724_000_000_000,
+  sendWindow: null,
 };
 
 const recipient = {
@@ -117,6 +123,7 @@ async function campaignsServer(): Promise<{
                   request.path.endsWith("/launch") ||
                   request.path.endsWith("/pause") ||
                   request.path.endsWith("/resume") ||
+                  request.path.endsWith("/reschedule") ||
                   request.path.endsWith("/stop")
                     ? {
                         ...campaign,
@@ -147,6 +154,31 @@ describe("MessagingClient campaigns", () => {
     expectTypeOf<Campaign>().toHaveProperty("recipientCount");
     expectTypeOf<Campaign>().toHaveProperty("scheduledAt");
     expectTypeOf<CampaignAnalytics>().toHaveProperty("responseRate");
+    expectTypeOf<
+      Campaign["sendWindow"]
+    >().toEqualTypeOf<CampaignSendWindow | null>();
+    expectTypeOf<
+      PlatformCampaign["sendWindow"]
+    >().toEqualTypeOf<CampaignSendWindow | null>();
+  });
+
+  it("sends a send window update and removes it with null", async () => {
+    const { client, requests } = await campaignsServer();
+    const window: CampaignSendWindowRequest = {
+      timeZone: "America/Sao_Paulo",
+      days: ["monday", "tuesday"],
+      hours: [{ start: "09:00", end: "18:00" }],
+    };
+    await client.campaigns.update("launch/eu", campaign.id, {
+      sendWindow: window,
+    });
+    await client.campaigns.update("launch/eu", campaign.id, {
+      sendWindow: null,
+    });
+    expect(requests.map(({ body }) => JSON.parse(body))).toEqual([
+      { sendWindow: window },
+      { sendWindow: null },
+    ]);
   });
 
   it("maps complete project reads without inventing pagination", async () => {
@@ -203,6 +235,56 @@ describe("MessagingClient campaigns", () => {
     expect(requests[0]?.headers["idempotency-key"]).toBe(
       "campaign-create-august",
     );
+  });
+
+  it("updates a draft and reschedules a waiting campaign with the exact request bodies", async () => {
+    const { client, requests } = await campaignsServer();
+    const updated = await client.campaigns.update("launch/eu", campaign.id, {
+      name: "Autumn launch",
+      scheduledAt: null,
+    });
+    const rescheduled = await client.campaigns.reschedule(
+      "launch/eu",
+      campaign.id,
+      { scheduledAt: null },
+      { idempotencyKey: "campaign-reschedule-autumn" },
+    );
+
+    expectTypeOf(updated).toEqualTypeOf<ApiResponse<UpdateCampaignResponse>>();
+    expectTypeOf(rescheduled).toEqualTypeOf<
+      ApiResponse<RescheduleCampaignResponse>
+    >();
+    expect(
+      requests.map(({ method, path, body }) => ({ method, path, body })),
+    ).toEqual([
+      {
+        method: "PATCH",
+        path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}`,
+        body: '{"name":"Autumn launch","scheduledAt":null}',
+      },
+      {
+        method: "POST",
+        path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}/reschedule`,
+        body: '{"scheduledAt":null}',
+      },
+    ]);
+    expect(requests[1]?.headers["idempotency-key"]).toBe(
+      "campaign-reschedule-autumn",
+    );
+    expect(rescheduled.data.data.operationId).toBe(
+      "018f0000-0000-7000-8000-000000000003",
+    );
+  });
+
+  it("requires an update field at compile time", () => {
+    const client = new MessagingClient({
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    });
+    const invalidUpdate = () => {
+      // @ts-expect-error the API rejects an empty campaign update
+      client.campaigns.update("launch/eu", campaign.id, {});
+    };
+    expect(invalidUpdate).toBeTypeOf("function");
   });
 
   it("submits durable lifecycle commands with operation IDs", async () => {

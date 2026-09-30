@@ -221,10 +221,7 @@ describe("Client campaigns", () => {
       projectId: "project/a",
       projectSlug: "support",
     });
-    await client.campaigns.create(
-      { projectId: "project/a", name: "August" },
-      { idempotencyKey: "campaign-1" },
-    );
+    await client.campaigns.create({ projectId: "project/a", name: "August" });
     await client.campaigns.retrieve("campaign/a", { projectId: "project/a" });
     await client.campaigns.update(
       "campaign/a",
@@ -241,7 +238,7 @@ describe("Client campaigns", () => {
       "DELETE /platform/campaigns/campaign%2Fa?projectId=project%2Fa",
     ]);
     expect(requests[1]?.body).toBe('{"projectId":"project/a","name":"August"}');
-    expect(requests[1]?.headers["idempotency-key"]).toBe("campaign-1");
+    expect(requests[1]?.headers["idempotency-key"]).toBeUndefined();
     expect(requests[3]?.body).toBe('{"name":"September"}');
   });
 
