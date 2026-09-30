@@ -196,7 +196,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("2f24c1d62");
+    expect(source.commit).toBe("5c8014d7d58b4d3e483d9d124ee9d88bd85820f9");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -233,8 +233,9 @@ describe("reconciled coverage evidence", () => {
     "proves $operationId uses its covered HTTP route and body",
     async (fixture) => {
       const mapping = entry(fixture.operationId);
-      expect(mapping.typescript).toEqual({
-        status: "covered",
+      expect(mapping.typescript).toMatchObject({
+        // Group placement is implemented on SDK dev; `to` placement is typed here.
+        status: fixture.operationId === "voipPlaceCall" ? "partial" : "covered",
         method: `MessagingClient.voip.${fixture.method}`,
       });
       const fetch = vi.fn(async () =>

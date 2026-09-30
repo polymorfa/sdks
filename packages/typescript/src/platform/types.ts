@@ -1,7 +1,9 @@
 import type {
+  Campaign,
   CampaignRecipient,
   CampaignRecipientInput,
   CampaignRecipientStatus,
+  CampaignSendWindowRequest,
   InvalidRecipientRow,
 } from "../messaging/types.js";
 
@@ -187,6 +189,8 @@ export interface CreatePlatformCampaignRequest {
   readonly recipients?: readonly CampaignRecipientInput[];
   /** Ignored when inline recipients are supplied. */
   readonly recipientCount?: number;
+  /** Local hours the campaign may send in; null or omitted sends at any hour. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   // The API deliberately leaves these JSON values opaque.
   readonly composerBlueprint?: unknown;
   readonly messagesArray?: unknown;
@@ -194,6 +198,14 @@ export interface CreatePlatformCampaignRequest {
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
   readonly variantStrategy?: unknown;
+}
+
+/**
+ * Campaign returned by Platform list, get, create and update. The contract
+ * keeps the object open, so unnamed fields pass through as `unknown`.
+ */
+export interface PlatformCampaign extends Campaign {
+  readonly [field: string]: unknown;
 }
 
 export interface ListCampaignsParams {
@@ -226,7 +238,14 @@ export interface ReschedulePlatformCampaignRequest extends PlatformCampaignParam
  * not been copied into recipients. After that the API refuses the change.
  */
 export interface UpdatePlatformCampaignRequest {
+  /** 1 to 200 characters. */
+  readonly name?: string;
   readonly recipientListId?: string | null;
+  readonly senderConfig?: Readonly<Record<string, unknown>>;
+  /** Unix milliseconds, or null. Only while the campaign is an unlaunched draft. */
+  readonly scheduledAt?: number | null;
+  /** Null removes the window. Only while the campaign is a draft or paused. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   readonly [field: string]: unknown;
 }
 

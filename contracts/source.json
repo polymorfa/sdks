@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "2f24c1d62",
-  "branch": "codex/native-release-capabilities-20260926",
+  "commit": "5c8014d7d58b4d3e483d9d124ee9d88bd85820f9",
+  "branch": "dev",
   "published": false,
-  "note": "Coordinated with polymorfa/polymorfa PR #388 at source commit 2f24c1d62. Both snapshots are byte-identical to the authoritative source files. SDK package publication is separate.",
+  "note": "polymorfa/polymorfa PR #388 merged into dev as 5c8014d7d58b4d3e483d9d124ee9d88bd85820f9. Both snapshots are byte-identical to the authoritative source files at that merge commit. SDK package publication is separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "959f28d1181a085da7927b1f10240b06130de6b8a0b4a3f80fbbea9c710e0262"
+      "sha256": "ed0b8c863fd2400291036b2883bcedb2a409a95dfe4299f1e66d4a683fc9d2c9"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "17a3d97d9b8ba6b4a1e0d7d1fbc24b6be1cf579165fa02f8b7358cc6c5029892"
+      "sha256": "4aa6264fdaf0671246d22f61a2ece2ca70378d00893e1ce3dfc81e934c099a5d"
     }
   }
 }

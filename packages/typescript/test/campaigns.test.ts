@@ -11,6 +11,9 @@ import {
   type CampaignOperationResponse,
   type CampaignRecipient,
   type CampaignRequeueResponse,
+  type CampaignSendWindow,
+  type CampaignSendWindowRequest,
+  type PlatformCampaign,
   type CampaignStopResponse,
   type CreateCampaignResponse,
   type GetCampaignResponse,
@@ -48,6 +51,7 @@ const campaign = {
   completedAt: null,
   createdAt: 1_724_000_000_000,
   updatedAt: 1_724_000_000_000,
+  sendWindow: null,
 };
 
 const recipient = {
@@ -150,6 +154,31 @@ describe("MessagingClient campaigns", () => {
     expectTypeOf<Campaign>().toHaveProperty("recipientCount");
     expectTypeOf<Campaign>().toHaveProperty("scheduledAt");
     expectTypeOf<CampaignAnalytics>().toHaveProperty("responseRate");
+    expectTypeOf<
+      Campaign["sendWindow"]
+    >().toEqualTypeOf<CampaignSendWindow | null>();
+    expectTypeOf<
+      PlatformCampaign["sendWindow"]
+    >().toEqualTypeOf<CampaignSendWindow | null>();
+  });
+
+  it("sends a send window update and removes it with null", async () => {
+    const { client, requests } = await campaignsServer();
+    const window: CampaignSendWindowRequest = {
+      timeZone: "America/Sao_Paulo",
+      days: ["monday", "tuesday"],
+      hours: [{ start: "09:00", end: "18:00" }],
+    };
+    await client.campaigns.update("launch/eu", campaign.id, {
+      sendWindow: window,
+    });
+    await client.campaigns.update("launch/eu", campaign.id, {
+      sendWindow: null,
+    });
+    expect(requests.map(({ body }) => JSON.parse(body))).toEqual([
+      { sendWindow: window },
+      { sendWindow: null },
+    ]);
   });
 
   it("maps complete project reads without inventing pagination", async () => {

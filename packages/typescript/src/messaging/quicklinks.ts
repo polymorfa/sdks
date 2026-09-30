@@ -27,7 +27,7 @@ export interface QuickLinkConfiguration extends SessionConfigurationOverrides {
   };
 }
 
-export type QuickLinkPurpose = "initial" | "add_connection";
+export type QuickLinkPurpose = "initial" | "add_connection" | "reauthorization";
 export type QuickLinkConnectionGoal = "single" | "hybrid";
 export type QuickLinkConnectionKind = "linked_devices" | "official_api";
 export type QuickLinkHybridPhase =

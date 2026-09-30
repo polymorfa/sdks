@@ -32,6 +32,13 @@ const body = {
   complianceConfig: false,
   variants: ["a", "b"],
   variantStrategy: "round_robin",
+  sendWindow: {
+    timeZone: "America/Sao_Paulo",
+    days: ["monday", "friday"],
+    hours: [{ start: "09:00", end: "18:00" }],
+    recipientTimeZone: true,
+    timeZoneVariable: "timeZone",
+  },
 } satisfies CreatePlatformCampaignRequest;
 
 it("covers exactly the pinned create request fields without closing opaque JSON", () => {

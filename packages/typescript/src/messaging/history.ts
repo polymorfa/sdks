@@ -26,6 +26,20 @@ export interface HistoryMedia {
   readonly url: string;
 }
 
+/** Official API media storage status on a hosted history message. */
+export interface HistoryMediaRetrieval {
+  readonly state:
+    | "pending"
+    | "stored"
+    | "unavailable"
+    | "expired"
+    | "too_large"
+    | "unsupported_type"
+    | "failed"
+    | "cancelled";
+  readonly reason?: string;
+}
+
 export interface HistoryMessage extends HistoryMessageSummary {
   readonly conversation: ConversationIdentity & {
     readonly sender?: ConversationIdentity;
@@ -51,6 +65,7 @@ export interface HistoryMessage extends HistoryMessageSummary {
     readonly hash: string;
   }[];
   readonly media?: readonly HistoryMedia[];
+  readonly mediaRetrieval?: HistoryMediaRetrieval;
 }
 
 export interface HistoryPage<T> {

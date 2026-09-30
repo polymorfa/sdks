@@ -11,6 +11,7 @@ import type {
   DataEnvelope,
   ListCampaignsParams,
   ListPlatformCampaignRecipientsParams,
+  PlatformCampaign,
   PlatformCampaignParams,
   PlatformCampaignRecipientsEnvelope,
   PlatformPayload,
@@ -19,6 +20,7 @@ import type {
 } from "./types.js";
 
 type CampaignResponse = Promise<ApiResponse<DataEnvelope<PlatformPayload>>>;
+type CampaignResult<T> = Promise<ApiResponse<DataEnvelope<T>>>;
 type CreateCampaignOptions = Omit<
   RequestOptions,
   "idempotencyKey" | "maxNetworkRetries"
@@ -33,7 +35,7 @@ export class CampaignsResource {
   list(
     params: ListCampaignsParams,
     options: RequestOptions = {},
-  ): CampaignResponse {
+  ): CampaignResult<readonly PlatformCampaign[]> {
     return this.transport.request({
       method: "GET",
       path: "/platform/campaigns",
@@ -50,7 +52,7 @@ export class CampaignsResource {
   create(
     body: CreatePlatformCampaignRequest,
     options: CreateCampaignOptions = {},
-  ): CampaignResponse {
+  ): CampaignResult<PlatformCampaign> {
     return this.transport.request({
       method: "POST",
       path: "/platform/campaigns",
@@ -71,7 +73,7 @@ export class CampaignsResource {
     campaignId: string,
     params: PlatformCampaignParams,
     options: RequestOptions = {},
-  ): CampaignResponse {
+  ): CampaignResult<PlatformCampaign | null> {
     return this.transport.request({
       method: "GET",
       path: campaignPath(campaignId),
@@ -90,7 +92,7 @@ export class CampaignsResource {
     body: UpdatePlatformCampaignRequest | undefined,
     params: PlatformCampaignParams,
     options: RequestOptions = {},
-  ): CampaignResponse {
+  ): CampaignResult<PlatformCampaign> {
     return this.transport.request({
       method: "PATCH",
       path: campaignPath(campaignId),
