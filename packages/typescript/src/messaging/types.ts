@@ -103,6 +103,8 @@ export interface Campaign {
   readonly completedAt: number | null;
   readonly createdAt: number;
   readonly updatedAt: number;
+  /** Null when the campaign may send at any time. */
+  readonly sendWindow: CampaignSendWindow | null;
   /** Additional live repository fields omitted from the pinned OpenAPI schema. */
   readonly composerBlueprint?: unknown;
   readonly messages?: unknown;
@@ -111,6 +113,44 @@ export interface Campaign {
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
   readonly variantStrategy?: unknown;
+}
+
+export type CampaignSendWindowDay =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
+
+/** Local `HH:MM` range; `end` is exclusive and may be `24:00`. */
+export interface CampaignSendWindowRange {
+  readonly start: string;
+  readonly end: string;
+}
+
+/** When a campaign may send, as stored by the API. */
+export interface CampaignSendWindow {
+  readonly timeZone: string;
+  readonly days: readonly CampaignSendWindowDay[];
+  readonly hours: readonly CampaignSendWindowRange[];
+  readonly recipientTimeZone: boolean;
+  readonly timeZoneVariable: string;
+}
+
+/**
+ * When a campaign may send. Recipients outside the window stay `queued` until
+ * it next opens. `timeZone` defaults to the team's time zone, else `UTC`.
+ */
+export interface CampaignSendWindowRequest {
+  readonly timeZone?: string;
+  /** 1 to 7 unique weekdays. */
+  readonly days: readonly CampaignSendWindowDay[];
+  /** 1 to 4 non-overlapping ranges; a range cannot cross midnight. */
+  readonly hours: readonly CampaignSendWindowRange[];
+  readonly recipientTimeZone?: boolean;
+  readonly timeZoneVariable?: string;
 }
 
 export interface CampaignAnalytics {
@@ -137,6 +177,7 @@ export interface CreateCampaignRequest {
    * whole request; use `campaigns.addRecipients` for partial acceptance.
    */
   readonly recipients?: readonly CampaignRecipientInput[];
+  readonly sendWindow?: CampaignSendWindowRequest;
 }
 
 export type CampaignRecipientStatus =

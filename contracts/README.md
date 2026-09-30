@@ -43,7 +43,7 @@ published SDK package before updating their pinned dependency.
 
 The current snapshots are byte-identical copies of the Messaging and Platform
 OpenAPI files at `polymorfa/polymorfa` commit
-`d831bf9c662f6fb1763a9de259612a4553ab5a02` on the coordinated API branch
+`4be41e2b467dc488980499d60076fcfb3d87c44d` on the coordinated API branch
 `t3code/hybrid-pro-downgrade` (API PR #404, not yet merged to API `dev`). It
 merges API `dev` after `5f6a2b1` and adds Hybrid Link tier transitions:
 `hybridResolution` and `hybridMerge` on `NumberTierQuoteRequest`,
@@ -51,19 +51,23 @@ merges API `dev` after `5f6a2b1` and adds Hybrid Link tier transitions:
 `GET /platform/projects/{projectId}/hybrid-merge-candidates`, covered by
 `Client.projects.listHybridMergeCandidates`. Each candidate Number reports
 `canBeAbsorbed` (false with hosted message storage), and the list returns
-`403 feature_unavailable` without live Hybrid Link access.
-`hybrid_resolution_required` and `hybrid_transition_ineligible` are documented
-in operation prose rather than the public error enum; `POLYMORFA_ERROR_CODES`
+`403 feature_unavailable` without live Hybrid Link access. A missing choice
+returns `409 hybrid_choice_required`, and a queued change rejected for that
+reason reports `failureReason: "hybrid_choice_required"`.
+`hybrid_choice_required` and `hybrid_transition_ineligible` are documented in
+operation prose rather than the public error enum; `POLYMORFA_ERROR_CODES`
 lists both.
 
-The API `dev` changes carried by this merge add the Cloud credential health
-and reauthorization operations (`GET /messaging/{session}/cloud-credentials`,
-`POST .../reauthorize`), which the ledger excludes until SDK PR #308 merges,
-the `reauthorization` QuickLink purpose, and `X-RateLimit-*` headers on every
-response. Together with the tier-quote schemas these move 234 fingerprints;
-the headers change no request or response body. Each changed fingerprint was
-reviewed. Repin to the merged API `dev`
-commit before merging this SDK change.
+The API `dev` changes carried by this merge add eight Messaging operations
+owned by SDK PR #308 and excluded in the ledger until it merges: Cloud
+credential health and reauthorization, Official API templates (list, get,
+create, delete), the customer service window and the Meta pricing summary.
+They also add the `reauthorization` QuickLink purpose, `X-RateLimit-*` headers
+on every response, message payload fields already typed on SDK `dev`, and
+campaign send windows. `sendWindow` is typed on `Campaign`,
+`CreateCampaignRequest`, `CreatePlatformCampaignRequest` and
+`UpdatePlatformCampaignRequest`. Every changed fingerprint was reviewed. Repin
+to the merged API `dev` commit before merging this SDK change.
 
 The preceding snapshots were described as follows.
 
@@ -207,10 +211,10 @@ signed events with these names still decode as unknown events.
 | ------------------- | ---------: |
 | Covered             |        388 |
 | Missing             |          0 |
-| Excluded            |        134 |
+| Excluded            |        140 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        522 |
+| Total               |        528 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

@@ -137,7 +137,7 @@ export class PlatformSessionsResource {
    *
    * A Hybrid Link Number leaving Pro needs `hybridResolution` (keep one
    * connection or split the Number); without it the API returns
-   * `hybrid_resolution_required`. An upgrade to Pro can merge a same-number
+   * `hybrid_choice_required`. An upgrade to Pro can merge a same-number
    * pair with `hybridMerge`; `sessionId` keeps its ID. The quote echoes the
    * plan in `quote.hybridTransition`.
    */

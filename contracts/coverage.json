@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "d831bf9c662f6fb1763a9de259612a4553ab5a02",
+  "sourceCommit": "4be41e2b467dc488980499d60076fcfb3d87c44d",
   "excludedContracts": [
     {
       "family": "graph",
@@ -277,7 +277,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns",
       "operationId": "listCampaigns",
-      "fingerprint": "ddb086bf884df4f5e76d312168a7385b503c647fce88da9d3197692575ca9c3f",
+      "fingerprint": "f791c529a630848b647c40e3ac554ac586c567be9d5fa34c0eb53ac79b910d24",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.list"
@@ -288,7 +288,7 @@
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
       "operationId": "getCampaign",
-      "fingerprint": "62e29cdd34b22e19cf14320d3cdd36668830f518035980895ee680e90f5dab59",
+      "fingerprint": "6339320aba7f83fe0749363e292fb842f9fe3bd7d32e0aaa26f82a4c26f7aebf",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.retrieve"
@@ -950,7 +950,7 @@
       "method": "PATCH",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
       "operationId": "updateProjectCampaign",
-      "fingerprint": "50aed26b56bf3310816f1fc767bd9713c53e4b31d9ba3d97aef18e741544931c",
+      "fingerprint": "508f4f2a061c0b698df2f91ee8cb6ba0696ab888aadfb91db00f85182559c933",
       "typescript": {
         "status": "excluded",
         "reason": "Messaging campaign update is owned by SDK PR #307."
@@ -1060,7 +1060,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns",
       "operationId": "createCampaign",
-      "fingerprint": "523228b4363de43de9d1295bfbf544228d0679c1f9ee7429d5d92b88c6784d0e",
+      "fingerprint": "c858b4f27fe9a56f8a6e89f40ea5f1e63806768c27f7f80e085f383afd932120",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.create"
@@ -1071,7 +1071,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/launch",
       "operationId": "launchCampaign",
-      "fingerprint": "68ca093ee02552977581c4295a76e5ba865f6c6c71d99a11aa47e716f40d65fd",
+      "fingerprint": "8bc723d1c383f16ef833d08c8cc0f8ccb5431c3e0f83683d17e12133a74b1126",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.launch"
@@ -1082,7 +1082,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/pause",
       "operationId": "pauseCampaign",
-      "fingerprint": "36040dfaf479c634eeba8a42169541238f3c57514c7f54fe8d4531dd151daa19",
+      "fingerprint": "6769cb5043ca55004973cb329193308155afc2026d076ffc21eea4afd199850b",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.pause"
@@ -1115,7 +1115,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reschedule",
       "operationId": "rescheduleCampaign",
-      "fingerprint": "5a04040d558f6578e7c8624fcf8ef6fff6f28a25488ad748f911c58b45ccfa19",
+      "fingerprint": "35bd17781eeca00ab6e0fe132e25f1a4bf4d0065d08932755ba9dffff068ab29",
       "typescript": {
         "status": "excluded",
         "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges."
@@ -1126,7 +1126,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/resume",
       "operationId": "resumeCampaign",
-      "fingerprint": "2bb1b81c5d99509bbb95553d626330ea8711c650e42931695412b82f71b675a7",
+      "fingerprint": "e45e8e7dd2b7eacca457da9e90567054e740491e5c12c401c4e9ec4d207d3ea3",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.resume"
@@ -1137,7 +1137,7 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/stop",
       "operationId": "stopCampaign",
-      "fingerprint": "919eb6ea5bf07ffc679a81c99e0a6aaae8954376b31e20b1a6c24ce4d54ebd5d",
+      "fingerprint": "7459ed402f10e6e7170f4dea98b37904c392d3fc1487a855185164d4070e8272",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.campaigns.stop"
@@ -2236,6 +2236,72 @@
       }
     },
     {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/templates/{name}",
+      "operationId": "deleteTemplate",
+      "fingerprint": "a74c0a441a2c71001e54b47e516b5dd67d0ef3051a73a3eca29b133e4ea8f55d",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Official API templates, customer service window and Meta pricing reads are owned by SDK PR #308 and will be covered when that PR merges."
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/service-window",
+      "operationId": "getCustomerServiceWindow",
+      "fingerprint": "41682e6f4f46cef3a31bd5e24ab9502040d20796c8bb31656f76823b21f3e735",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Official API templates, customer service window and Meta pricing reads are owned by SDK PR #308 and will be covered when that PR merges."
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/meta-pricing",
+      "operationId": "getMetaPricingSummary",
+      "fingerprint": "c6226fb97a62f7f0b596fe98ad740197a33a6a6e470f03e58ce6b89eff784eca",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Official API templates, customer service window and Meta pricing reads are owned by SDK PR #308 and will be covered when that PR merges."
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/templates",
+      "operationId": "listTemplates",
+      "fingerprint": "0e4fb03a957b63354c8c50d6046529f444b6093d8a1a61857975e21ea49ab320",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Official API templates, customer service window and Meta pricing reads are owned by SDK PR #308 and will be covered when that PR merges."
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/templates/{name}",
+      "operationId": "getTemplate",
+      "fingerprint": "8d222acf68c34a5173c19b8869eb14595896d39f801031e1e5af913f908ecc0a",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Official API templates, customer service window and Meta pricing reads are owned by SDK PR #308 and will be covered when that PR merges."
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/templates",
+      "operationId": "createTemplate",
+      "fingerprint": "4d1d16a052d9b1d3dbb8ccde6abc853a98afb2c0ed4e1408be818af0c4cb0904",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Official API templates, customer service window and Meta pricing reads are owned by SDK PR #308 and will be covered when that PR merges."
+      }
+    },
+    {
       "family": "platform",
       "method": "DELETE",
       "path": "/api/account/meta-app",
@@ -3276,7 +3342,7 @@
       "method": "GET",
       "path": "/platform/campaigns",
       "operationId": "listPlatformCampaigns",
-      "fingerprint": "5b3da6a0dedd223a2445031682bd92ce2cd9d38ff5f0a87f93aadf68030d564c",
+      "fingerprint": "a103a7aff42594826b512cd5278567e1642d73e1ef7ec986f9a34e6c43c99bd3",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.list"
@@ -3287,7 +3353,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}",
       "operationId": "getPlatformCampaign",
-      "fingerprint": "11bee4a4bab57d0bd7ea12d0db56c9ed2023e2ffd1e24f13c688fee9104f0484",
+      "fingerprint": "4f1c68c6b4beca679fb4ccfb17c3a34beff6d7964ab3722f471a8e5b2b8dee5b",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.retrieve"
@@ -4213,7 +4279,7 @@
       "method": "PATCH",
       "path": "/platform/campaigns/{campaignId}",
       "operationId": "updateCampaign",
-      "fingerprint": "b7af610a57c1f24db76241bd0bf60dce7528c2b4f6e7b2c9a9da68f23ab0d380",
+      "fingerprint": "9c0dd10a3f7f56b738a28de51816e6c4bc0015b8e7be74820897d17a580cb98e",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.update"
@@ -4809,7 +4875,7 @@
       "method": "POST",
       "path": "/platform/campaigns",
       "operationId": "createPlatformCampaign",
-      "fingerprint": "78e845758e756676217319c79cd02e6cdaf9ebbb5b034e5fe3f04b87a1398fc7",
+      "fingerprint": "f2898a01845fdb18c3f1c0fed9131c11ce6e6825972934fccf57da36aa649a15",
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.create"

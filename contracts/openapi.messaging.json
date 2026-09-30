@@ -173,6 +173,9 @@
               "location",
               "contact",
               "phone_number_shared",
+              "native_flow_response",
+              "button_reply",
+              "list_reply",
               "poll",
               "sticker",
               "reaction",
@@ -245,6 +248,36 @@
               "name",
               "paramsJson"
             ]
+          },
+          "replyChoice": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "button",
+                  "list"
+                ],
+                "description": "Reply control the contact used: a reply or quick-reply button, or a list row."
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "description": "ID you assigned to the selected button or list row. It is never the visible label, except for a template quick-reply button sent without a payload, where WhatsApp returns the button text."
+              }
+            },
+            "required": [
+              "kind",
+              "id"
+            ],
+            "description": "Present when the contact selects a reply button or list row."
+          },
+          "parentMessageId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "WhatsApp ID of the message this one quotes, when WhatsApp supplies one. It is not necessarily a message you sent."
           },
           "media": {
             "type": "string"
@@ -332,6 +365,36 @@
               "name",
               "paramsJson"
             ]
+          },
+          "replyChoice": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "button",
+                  "list"
+                ],
+                "description": "Reply control the contact used: a reply or quick-reply button, or a list row."
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "description": "ID you assigned to the selected button or list row. It is never the visible label, except for a template quick-reply button sent without a payload, where WhatsApp returns the button text."
+              }
+            },
+            "required": [
+              "kind",
+              "id"
+            ],
+            "description": "Present when the contact selects a reply button or list row."
+          },
+          "parentMessageId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "WhatsApp ID of the message this one quotes, when WhatsApp supplies one. It is not necessarily a message you sent."
           },
           "interactive": {
             "type": "object",
@@ -479,6 +542,31 @@
           "payload"
         ]
       },
+      "MetaPricingReport": {
+        "type": "object",
+        "properties": {
+          "billable": {
+            "type": "boolean",
+            "description": "Whether WhatsApp reported the message as billable. WhatsApp is deprecating this field; use `type`."
+          },
+          "pricing_model": {
+            "type": "string",
+            "description": "WhatsApp pricing model, for example `PMP` (per-message pricing).",
+            "example": "PMP"
+          },
+          "category": {
+            "type": "string",
+            "description": "WhatsApp pricing category, for example `marketing`, `utility`, `authentication` or `service`.",
+            "example": "utility"
+          },
+          "type": {
+            "type": "string",
+            "description": "WhatsApp pricing type, for example `regular`, `free_customer_service` or `free_entry_point`.",
+            "example": "free_customer_service"
+          }
+        },
+        "description": "Official API only. The pricing classification WhatsApp reported for this message, copied as reported. Meta bills your WhatsApp Business Account directly; this is not a Polymorfa charge and contains no price."
+      },
       "MessageAckPayload": {
         "type": "object",
         "properties": {
@@ -525,6 +613,9 @@
           },
           "timestamp": {
             "type": "number"
+          },
+          "pricing": {
+            "$ref": "#/components/schemas/MetaPricingReport"
           }
         },
         "required": [
@@ -9584,6 +9675,167 @@
           "data"
         ]
       },
+      "OfficialServiceWindow": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed",
+              "unknown"
+            ],
+            "description": "`open`: the person messaged, reacted or called this Number through the Official API in the last 24 hours, so free-form messages can be sent. `closed`: no such activity in the last 24 hours; only approved templates can be sent, and Polymorfa refuses free-form sends with `conversation_window_closed`. `unknown`: Polymorfa cannot prove the window is closed; sends are passed to WhatsApp, which decides."
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "not_tracked",
+              "tracking_started",
+              "notifications_interrupted",
+              "identity_unlinked",
+              null
+            ],
+            "description": "Why the state is `unknown`, otherwise null. `not_tracked`: no WhatsApp notification has been processed for this connection yet. `tracking_started`: tracking began less than 24 hours ago. `notifications_interrupted`: a WhatsApp notification could not be processed in the last 24 hours. `identity_unlinked`: someone without a phone number (or username ID) wrote in during the last 24 hours and could be this person."
+          },
+          "openedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When the person's latest known message, reaction or call started or reset the window. Null when none is known."
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "`openedAt` plus 24 hours. In the past when the window has closed."
+          },
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "state",
+          "reason",
+          "openedAt",
+          "expiresAt",
+          "checkedAt"
+        ]
+      },
+      "GetCustomerServiceWindowResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/OfficialServiceWindow"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "MetaPricingGroup": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "description": "Pricing category as WhatsApp reported it, for example `marketing`, `utility`, `authentication` or `service`.",
+            "example": "utility"
+          },
+          "pricingModel": {
+            "type": "string",
+            "description": "Pricing model as WhatsApp reported it, for example `PMP`.",
+            "example": "PMP"
+          },
+          "pricingType": {
+            "type": "string",
+            "nullable": true,
+            "description": "Pricing type as WhatsApp reported it, for example `regular`, `free_customer_service` or `free_entry_point`. Null when not reported.",
+            "example": "regular"
+          },
+          "billable": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "The `billable` flag as WhatsApp reported it. Null when not reported."
+          },
+          "messages": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Messages WhatsApp reported with this classification."
+          }
+        },
+        "required": [
+          "category",
+          "pricingModel",
+          "pricingType",
+          "billable",
+          "messages"
+        ]
+      },
+      "MetaPricingSummary": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "meta"
+            ],
+            "description": "Always `meta`: these are WhatsApp's own reports. Meta bills your WhatsApp Business Account directly. They are not a Polymorfa charge and contain no prices."
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "messages": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Messages with a WhatsApp pricing report in the period."
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MetaPricingGroup"
+            }
+          }
+        },
+        "required": [
+          "source",
+          "since",
+          "until",
+          "messages",
+          "groups"
+        ]
+      },
+      "GetMetaPricingSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/MetaPricingSummary"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
       "RejectCallRequest": {
         "type": "object",
         "properties": {
@@ -15632,6 +15884,174 @@
           "data"
         ]
       },
+      "WaTemplate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "session": {
+            "type": "string"
+          },
+          "wabaId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "UTILITY",
+              "MARKETING",
+              "AUTHENTICATION"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "PAUSED",
+              "DISABLED",
+              "DELETED",
+              "ARCHIVED",
+              "IN_APPEAL",
+              "LIMIT_EXCEEDED",
+              "PENDING_DELETION"
+            ]
+          },
+          "components": {
+            "type": "array",
+            "items": {}
+          },
+          "metaTemplateId": {
+            "type": "string"
+          },
+          "rejectionReason": {
+            "type": "string"
+          },
+          "qualityScore": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "session",
+          "wabaId",
+          "name",
+          "language",
+          "category",
+          "status",
+          "components",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ListTemplatesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaTemplate"
+            }
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "GetTemplateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/WaTemplate"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "CreateTemplateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/WaTemplate"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "CreateTemplateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9_]+$"
+          },
+          "language": {
+            "type": "string",
+            "minLength": 2
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "UTILITY",
+              "MARKETING",
+              "AUTHENTICATION"
+            ]
+          },
+          "components": {
+            "type": "array",
+            "items": {},
+            "minItems": 1
+          }
+        },
+        "required": [
+          "name",
+          "language",
+          "category",
+          "components"
+        ]
+      },
       "MessageTemplate": {
         "type": "object",
         "properties": {
@@ -15868,6 +16288,92 @@
           "session"
         ]
       },
+      "CampaignSendWindowRange": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+            "description": "Local start time, `HH:MM` in 24-hour time, inclusive.",
+            "example": "09:00"
+          },
+          "end": {
+            "type": "string",
+            "pattern": "^(([01][0-9]|2[0-3]):[0-5][0-9]|24:00)$",
+            "description": "Local end time, `HH:MM` in 24-hour time or `24:00`, exclusive. Must be later than `start`.",
+            "example": "18:00"
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ],
+        "additionalProperties": false
+      },
+      "CampaignSendWindow": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "timeZone": {
+            "type": "string",
+            "description": "IANA time zone the window is written in.",
+            "example": "America/Sao_Paulo"
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 7,
+            "uniqueItems": true,
+            "description": "Weekdays the campaign may send on, in the window's time zone. At least one; no repeats.",
+            "example": [
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday"
+            ]
+          },
+          "hours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignSendWindowRange"
+            },
+            "minItems": 1,
+            "maxItems": 4,
+            "description": "Local time ranges the campaign may send in on those days, at most 4. Ranges must not overlap. A range cannot cross midnight; use two ranges instead."
+          },
+          "recipientTimeZone": {
+            "type": "boolean",
+            "description": "Evaluate the window in each recipient's own time zone. The zone comes from the recipient variable named by `timeZoneVariable` when it holds a valid IANA zone, otherwise from the phone number's country when that country uses one UTC offset, otherwise `timeZone`."
+          },
+          "timeZoneVariable": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$",
+            "description": "Recipient variable holding the recipient's IANA time zone, used when `recipientTimeZone` is true.",
+            "example": "timeZone"
+          }
+        },
+        "required": [
+          "timeZone",
+          "days",
+          "hours",
+          "recipientTimeZone",
+          "timeZoneVariable"
+        ],
+        "description": "When the campaign may send; null sends at any time."
+      },
       "Campaign": {
         "type": "object",
         "properties": {
@@ -15923,6 +16429,9 @@
           },
           "updatedAt": {
             "type": "number"
+          },
+          "sendWindow": {
+            "$ref": "#/components/schemas/CampaignSendWindow"
           }
         },
         "required": [
@@ -15941,7 +16450,8 @@
           "launchedAt",
           "completedAt",
           "createdAt",
-          "updatedAt"
+          "updatedAt",
+          "sendWindow"
         ]
       },
       "ListCampaignsResponse": {
@@ -16020,6 +16530,72 @@
           "data"
         ]
       },
+      "CampaignSendWindowRequest": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "timeZone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "IANA time zone the window is written in, such as `America/Sao_Paulo`. When omitted, the team's time zone is stored, or `UTC` when the team has none.",
+            "example": "America/Sao_Paulo"
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 7,
+            "uniqueItems": true,
+            "description": "Weekdays the campaign may send on, in the window's time zone. At least one; no repeats.",
+            "example": [
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday"
+            ]
+          },
+          "hours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignSendWindowRange"
+            },
+            "minItems": 1,
+            "maxItems": 4,
+            "description": "Local time ranges the campaign may send in on those days, at most 4. Ranges must not overlap. A range cannot cross midnight; use two ranges instead."
+          },
+          "recipientTimeZone": {
+            "type": "boolean",
+            "default": false,
+            "description": "Evaluate the window in each recipient's own time zone. The zone comes from the recipient variable named by `timeZoneVariable` when it holds a valid IANA zone, otherwise from the phone number's country when that country uses one UTC offset, otherwise `timeZone`."
+          },
+          "timeZoneVariable": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$",
+            "default": "timeZone",
+            "description": "Recipient variable holding the recipient's IANA time zone, used when `recipientTimeZone` is true.",
+            "example": "timeZone"
+          }
+        },
+        "required": [
+          "days",
+          "hours"
+        ],
+        "additionalProperties": false,
+        "description": "When the campaign may send. Recipients outside the window stay `queued` and are sent when it next opens. `null` sends at any time."
+      },
       "CampaignRecipientInput": {
         "type": "object",
         "properties": {
@@ -16070,6 +16646,9 @@
           },
           "scheduledAt": {
             "type": "number"
+          },
+          "sendWindow": {
+            "$ref": "#/components/schemas/CampaignSendWindowRequest"
           },
           "recipients": {
             "type": "array",
@@ -16128,6 +16707,17 @@
             "minimum": 0,
             "maximum": 8640000000000000,
             "description": "Start time in milliseconds since the Unix epoch, or null to start at launch. Only an unlaunched draft can change it."
+          },
+          "sendWindow": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CampaignSendWindowRequest"
+              },
+              {
+                "description": "When the campaign may send. Null removes the window. Only a draft or paused campaign can change it; a paused edit requires in-flight sends to have settled."
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -24791,6 +25381,247 @@
         },
         "x-mint": {
           "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">messages:read</Badge> <Badge color=\"yellow\" icon=\"key\">media:read</Badge>"
+        },
+        "x-protocols": [
+          "Meta Cloud API"
+        ]
+      }
+    },
+    "/messaging/{session}/chats/{conversation}/service-window": {
+      "get": {
+        "operationId": "getCustomerServiceWindow",
+        "tags": [
+          "Chats"
+        ],
+        "summary": "Get the customer service window",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `chats:read`\n\nReturns whether free-form messages can be sent to a person from a Number's active Official API connection. WhatsApp's customer service window opens for 24 hours when the person messages or calls the Number. Outside it, only approved templates can be sent. Beta: requires team enrollment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "chats:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Number ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Conversation ID or E.164 phone number."
+            },
+            "required": true,
+            "name": "conversation",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The window state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCustomerServiceWindowResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The credential is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credential lacks the scope, is a client token, or the team is not enrolled in the beta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Number or conversation is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The Number has no Official API connection (`unsupported_for_connection`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Number's regional evidence service is temporarily unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">chats:read</Badge>"
+        },
+        "x-protocols": [
+          "Meta Cloud API"
+        ]
+      }
+    },
+    "/messaging/{session}/meta-pricing": {
+      "get": {
+        "operationId": "getMetaPricingSummary",
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Summarize Meta-reported pricing",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `sessions:read`\n\nCounts the messages sent from the Number's active Official API connection generation by the pricing classification WhatsApp reported for each one. Meta bills your WhatsApp Business Account directly. These counts are not a Polymorfa charge and contain no prices. Each message is counted in the period of its first pricing report. Beta: requires team enrollment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Number ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Start of the period, inclusive (ISO 8601). Defaults to 30 days before `until`."
+            },
+            "required": false,
+            "name": "since",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "End of the period, exclusive (ISO 8601). Defaults to now. The period can be at most 93 days."
+            },
+            "required": false,
+            "name": "until",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Meta-reported message counts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMetaPricingSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The credential is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credential lacks the scope, is a client token, or the team is not enrolled in the beta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Number is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The Number has no Official API connection (`unsupported_for_connection`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Number's regional evidence service is temporarily unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
         },
         "x-protocols": [
           "Meta Cloud API"
@@ -55467,6 +56298,918 @@
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `media:manage`"
       }
     },
+    "/messaging/{session}/templates": {
+      "get": {
+        "operationId": "listTemplates",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "List templates for a Number",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `messages:write`\n\nFor a real Official API Number, reads the complete template catalog of its WhatsApp Business Account from Meta, stores it, and returns it. A test-mode Cloud Number uses its simulated catalog. A Linked Devices Number, including one that later added an official connection, receives 400. If a catalog read is incomplete, the request fails with 502 and the stored templates are unchanged.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "messages:write",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Template list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListTemplatesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Meta did not return a complete template catalog; the stored templates are unchanged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Number's WhatsApp Business Account is not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge>"
+        },
+        "x-protocols": [
+          "Meta Cloud API"
+        ]
+      },
+      "post": {
+        "operationId": "createTemplate",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Create a template for a Number",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `messages:write`\n\nSubmits the template to Meta for a real Official API Number or to the simulator for a test-mode Cloud Number, then stores the receipt. If the provider accepts the template but the receipt cannot be stored, the API imports it from one catalog read; if that also fails, it returns 500 with `template was submitted but could not be stored`. Do not resubmit in that case: list templates to load it. A retry with the same `Idempotency-Key` returns `409 idempotency_completed`. The returned status is the one in the response, or `PENDING` when none is returned. For real Official API Numbers, later approval, rejection and quality changes arrive as `template.status` webhook events and appear in the next list. A Linked Devices Number, including one that later added an official connection, receives 400.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "messages:write",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again: it returns `409 idempotency_completed` when the original succeeded, or the original server error, with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTemplateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Template submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTemplateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response reports the recorded outcome of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "idempotency_conflict",
+                    "message": "This Idempotency-Key was already used with a different request. Use a new key for a different request.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#idempotency-conflict"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Meta did not complete the request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Number's WhatsApp Business Account is not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Meta returned a 400-599 error status; the mutation may have an unknown outcome",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge>"
+        },
+        "x-protocols": [
+          "Meta Cloud API"
+        ]
+      }
+    },
+    "/messaging/{session}/templates/{name}": {
+      "get": {
+        "operationId": "getTemplate",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Get a template by name",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `messages:write`\n\nRefreshes the Number's provider or simulated template catalog and returns the template with this name and language. `language` defaults to `en_US`. Fails with 502 if the catalog read is incomplete. Real Official API and test-mode Cloud Numbers are supported; a Linked Devices Number, including one that later added an official connection, receives 400.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "messages:write",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "name",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "language",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Template detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTemplateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Meta did not return a complete template catalog; the stored templates are unchanged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Number's WhatsApp Business Account is not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge>"
+        },
+        "x-protocols": [
+          "Meta Cloud API"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteTemplate",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Delete a template",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `messages:write`\n\nDeletes every language of the named template from Meta for a real Official API Number or from the simulated catalog for a test-mode Cloud Number, then removes the stored copies. A confirmed provider deletion succeeds even if local cleanup fails; the next complete catalog read reconciles the mirror. If the provider rejects the deletion or its result is unknown, the stored templates are kept. A Linked Devices Number, including one that later added an official connection, receives 400.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "messages:write",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "name",
+            "in": "path"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again: it returns `409 idempotency_completed` when the original succeeded, or the original server error, with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Template deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response reports the recorded outcome of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "idempotency_conflict",
+                    "message": "This Idempotency-Key was already used with a different request. Use a new key for a different request.",
+                    "param": null
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#idempotency-conflict"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Meta did not complete the request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Meta returned a 400-599 error status; the mutation may have an unknown outcome",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge>"
+        },
+        "x-protocols": [
+          "Meta Cloud API"
+        ]
+      }
+    },
     "/messaging/projects/{projectSlug}/templates": {
       "get": {
         "operationId": "listProjectTemplates",
@@ -57735,7 +59478,7 @@
           "Campaigns"
         ],
         "summary": "Update a campaign",
-        "description": "**Required scope:** `campaigns:manage`\n\nUpdates the fields you send and leaves the rest unchanged. On an unlaunched draft, a new `senderConfig` passes the same checks as create, on any plan; launch checks the selection against live plans. Once the campaign has launched, including a scheduled launch that has not started, a new `senderConfig` must pass the launch checks and can answer `402 campaigns_not_entitled` or `400 invalid_parameter`. `recipientListId` and a different `scheduledAt` are accepted only while the campaign is an unlaunched draft; afterwards they answer `409`. A sender change to a draft that launches while the change is being saved also answers `409`. A non-null `scheduledAt` must be integer Unix milliseconds within the JavaScript Date range.",
+        "description": "**Required scope:** `campaigns:manage`\n\nUpdates the fields you send and leaves the rest unchanged. On an unlaunched draft, a new `senderConfig` passes the same checks as create, on any plan; launch checks the selection against live plans. Once the campaign has launched, including a scheduled launch that has not started, a new `senderConfig` must pass the launch checks and can answer `402 campaigns_not_entitled` or `400 invalid_parameter`. `recipientListId` and a different `scheduledAt` are accepted only while the campaign is an unlaunched draft; afterwards they answer `409`. A sender change to a draft that launches while the change is being saved also answers `409`. `sendWindow` changes only while draft or paused; a paused edit answers `409` while sends are in progress. A non-null `scheduledAt` must be integer Unix milliseconds within the JavaScript Date range.",
         "security": [
           {
             "BearerAuth": []
@@ -57954,7 +59697,7 @@
             }
           },
           "409": {
-            "description": "`state_conflict`: the campaign has launched and the audience or start time can no longer change, or it launched while its sending numbers were being changed",
+            "description": "`state_conflict`: the campaign has launched and the audience or start time can no longer change, it launched while its sending numbers were being changed, or its send window cannot change in the current state or while sends are in progress",
             "content": {
               "application/json": {
                 "schema": {

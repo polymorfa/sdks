@@ -183,7 +183,7 @@ describe("error codes", () => {
     const documentedInProse = [
       "payg_required",
       "addon_required",
-      "hybrid_resolution_required",
+      "hybrid_choice_required",
       "hybrid_transition_ineligible",
     ];
     for (const code of documentedInProse) {

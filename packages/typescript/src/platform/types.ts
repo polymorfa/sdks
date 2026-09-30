@@ -2,6 +2,7 @@ import type {
   CampaignRecipient,
   CampaignRecipientInput,
   CampaignRecipientStatus,
+  CampaignSendWindowRequest,
   InvalidRecipientRow,
 } from "../messaging/types.js";
 
@@ -194,6 +195,8 @@ export interface CreatePlatformCampaignRequest {
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
   readonly variantStrategy?: unknown;
+  /** When the campaign may send; null or omitted sends at any time. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
 }
 
 export interface ListCampaignsParams {
@@ -222,6 +225,8 @@ export interface PlatformCampaignParams {
  */
 export interface UpdatePlatformCampaignRequest {
   readonly recipientListId?: string | null;
+  /** Null removes the window. Only while the campaign is a draft or paused. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   readonly [field: string]: unknown;
 }
 
@@ -729,7 +734,7 @@ interface NumberTierQuoteBase {
 
 /**
  * A tier quote. Send `hybridResolution` when a Hybrid Link Number leaves Pro
- * (otherwise the API returns `hybrid_resolution_required`), or `hybridMerge`
+ * (otherwise the API returns `hybrid_choice_required`), or `hybridMerge`
  * to merge a same-number pair on an upgrade to Pro. Never both.
  */
 export type NumberTierQuoteRequest =
@@ -828,6 +833,11 @@ export interface HybridMergeCandidate {
 export interface NumberTierChange {
   readonly id: string;
   readonly status: "quoted" | "queued" | "applied" | "rejected";
+  /**
+   * Why a queued change was rejected, for example `hybrid_choice_required`
+   * when a Hybrid Link Number would leave Pro without a recorded choice, or
+   * `hybrid_transition_ineligible`. Quote again with a choice.
+   */
   readonly failureReason: string | null;
   readonly expiresAtMs: number;
   readonly quote: {

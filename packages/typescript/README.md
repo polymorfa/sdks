@@ -2162,7 +2162,7 @@ inheritance. The old `setTierOverride({tierOverride})` request and
 
 A Hybrid Link Number (Linked Devices and Official API on one Number) needs a
 choice before it leaves Pro. Without `hybridResolution`, the quote fails with
-`PolymorfaConflictError` and `code === "hybrid_resolution_required"`. This
+`PolymorfaConflictError` and `code === "hybrid_choice_required"`. This
 includes `tierOverride: null` when the project default lacks Hybrid Link.
 
 ```ts
@@ -2210,7 +2210,9 @@ or `merge`), the surviving Number and the effective time. After confirmation,
 `retrieveTierChange` reports `hybridTransition.status` (`scheduled`, `running`,
 `completed`, `failed` or `cancelled`) separately from the tier change status,
 plus `failureReason`, `newNumberId` for a completed split, and
-`metaDisconnectRequired`. When that flag is true, disconnect the Official API in
+`metaDisconnectRequired`. A queued change that the API rejects at apply time
+because no choice is recorded reports `status: "rejected"` with
+`failureReason: "hybrid_choice_required"`; quote again with a choice. When that flag is true, disconnect the Official API in
 the WhatsApp Business app under Settings > Account > Business Platform. An
 ineligible pair or Number fails with `hybrid_transition_ineligible`; the reason
 appears only in the error message. A candidate's `ineligibleReason` explains why

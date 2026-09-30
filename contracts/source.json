@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "d831bf9c662f6fb1763a9de259612a4553ab5a02",
+  "commit": "4be41e2b467dc488980499d60076fcfb3d87c44d",
   "branch": "t3code/hybrid-pro-downgrade",
   "published": false,
-  "note": "Coordinated API feature commit for Hybrid Link tier transitions (polymorfa/polymorfa#404), not yet merged to API dev. It merges API dev after 5f6a2b1470821c1a2b4077aa8de14214faede57a, adding Cloud credential health and reauthorization (owned by SDK PR #308), the reauthorization QuickLink purpose and rate-limit response headers. Both snapshots are byte-identical to the authoritative source files at this commit. SDK package publication is separate.",
+  "note": "Coordinated API feature commit for Hybrid Link tier transitions (polymorfa/polymorfa#404), not yet merged to API dev. It merges API dev after 5f6a2b1470821c1a2b4077aa8de14214faede57a, adding Cloud credential health and reauthorization, Official API templates, customer service window and Meta pricing reads (all owned by SDK PR #308), campaign send windows, message payload fields, the reauthorization QuickLink purpose and rate-limit response headers. Both snapshots are byte-identical to the authoritative source files at this commit. SDK package publication is separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "5497c90125b002bc44207b9e8be9a138197c6bf261ce0d64e20a1e2314b64688"
+      "sha256": "78595dccae2e6292ff45769b4c9727e73c963568554dd7e0e481e3d8fb13ca89"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "b7c00859cc965ba8c10deac11be3b471871b4cf1efe302d5e90fb91190636fe2"
+      "sha256": "82b88dbfaa5fcd39da7b9e67f9f3873910073530dfd35b12517a4ef9e28e8b58"
     }
   }
 }

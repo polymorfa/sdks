@@ -178,6 +178,37 @@ describe("Hybrid Link tier transitions", () => {
     expect(done.metaDisconnectRequired).toBe(false);
   });
 
+  it("reads a queued change rejected for a missing Hybrid Link choice", async () => {
+    const server = await startTestServer(() => ({
+      body: JSON.stringify({
+        data: {
+          id: "01994234-0000-7000-8000-000000000001",
+          status: "rejected",
+          failureReason: "hybrid_choice_required",
+          expiresAtMs: 1800000600000,
+          quote: {
+            tier: "standard",
+            tierOverride: null,
+            amountCents: 0,
+            priceVersion: "catalog-1",
+            action: "downgrade",
+            effectiveAtMs: 1800000000000,
+            replacesWindowId: null,
+          },
+        },
+      }),
+    }));
+    const read = await client(server).sessions.retrieveTierChange(
+      SURVIVOR,
+      "01994234-0000-7000-8000-000000000001",
+    );
+    expect(read.data.data).toMatchObject({
+      status: "rejected",
+      failureReason: "hybrid_choice_required",
+    });
+    expect(read.data.data.quote.hybridTransition).toBeUndefined();
+  });
+
   it("reads a failed keep and a merge plan with its absorbed Number", async () => {
     const server = await startTestServer((_, index) => ({
       body: JSON.stringify({
@@ -225,7 +256,7 @@ describe("Hybrid Link tier transitions", () => {
 
   it.each([
     [
-      "hybrid_resolution_required",
+      "hybrid_choice_required",
       "choose which Hybrid Link connection to keep, or split the Number, before leaving Pro",
     ],
     [

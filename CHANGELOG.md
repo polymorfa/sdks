@@ -2,13 +2,22 @@
 
 ## Unreleased
 
+- Campaign send windows. `CreatePlatformCampaignRequest`,
+  `UpdatePlatformCampaignRequest` and Messaging `CreateCampaignRequest` accept
+  `sendWindow` (`CampaignSendWindowRequest`); `Campaign` returns the stored
+  `sendWindow` or null.
 - Hybrid Link tier transitions. `Client.sessions.quoteTierChange` accepts
   `hybridResolution` (`keep` one connection or `split` into two Numbers) for a
   Hybrid Link Number leaving Pro, or `hybridMerge` to merge a same-number pair
   on an upgrade to Pro. `NumberTierChange.quote.hybridTransition` reports the
   plan and its `status`. `Client.projects.listHybridMergeCandidates` lists
-  mergeable pairs. `PolymorfaErrorCode` adds `hybrid_resolution_required` and
+  mergeable pairs. `PolymorfaErrorCode` adds `hybrid_choice_required` and
   `hybrid_transition_ineligible`.
+
+- `message.received` payload types include `replyChoice` (`kind` `button` or
+  `list` and the `id` you assigned) and `parentMessageId`, and the linked-device
+  message `type` union adds `button_reply`, `list_reply`, and
+  `native_flow_response`. `ReplyChoice` is exported.
 
 - Calls quality diagnostics respect their five-second send interval when a
   connection closes, avoiding an extra report that the API can rate-limit.

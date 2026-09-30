@@ -16135,7 +16135,7 @@
           "sessions"
         ],
         "summary": "Preview a number tier change",
-        "description": "Returns the full credit charge and effective time before confirmation. Null tierOverride restores project inheritance. Creating a quote does not change the number or consume credit. Quotes expire after ten minutes and are invalidated when the number or price changes.\n\n**Hybrid Link.** A Hybrid Link Number leaving Pro requires `hybridResolution`: keep one connection, or split the Number into two Standard Numbers; without it the quote returns `409` with code `hybrid_resolution_required`. The choice runs when the paid Pro window ends. An upgrade to Pro can merge two same-number Numbers with `hybridMerge`; the Number in the path keeps its ID. An ineligible change returns `409` with code `hybrid_transition_ineligible`.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Returns the full credit charge and effective time before confirmation. Null tierOverride restores project inheritance. Creating a quote does not change the number or consume credit. Quotes expire after ten minutes and are invalidated when the number or price changes.\n\n**Hybrid Link.** A Hybrid Link Number leaving Pro requires `hybridResolution`: keep one connection, or split the Number into two Standard Numbers; without it the quote returns `409` with code `hybrid_choice_required`. The choice runs when the paid Pro window ends. An upgrade to Pro can merge two same-number Numbers with `hybridMerge`; the Number in the path keeps its ID. An ineligible change returns `409` with code `hybrid_transition_ineligible`.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -19179,8 +19179,8 @@
         "tags": [
           "campaigns"
         ],
-        "summary": "List platform campaigns",
-        "description": "Public Management API. Requires `campaigns:read`. Project tokens only access resources in their own project.",
+        "summary": "List campaigns",
+        "description": "Lists campaigns in the selected project, including each campaign's stored send window and delivery counts.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -19231,10 +19231,25 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PlatformCampaign"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -19242,8 +19257,8 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       },
@@ -19300,8 +19315,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "type": "object",
-                      "additionalProperties": true
+                      "$ref": "#/components/schemas/PlatformCampaign"
                     }
                   },
                   "required": [
@@ -19333,7 +19347,7 @@
           "campaigns"
         ],
         "summary": "Get campaign",
-        "description": "Public Management API. Requires `campaigns:read`. Project tokens only access resources in their own project.",
+        "description": "Returns one campaign and its stored send window, or null when no matching campaign exists in the selected project.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -19385,10 +19399,27 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "nullable": true,
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/PlatformCampaign"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -19396,8 +19427,8 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       },
@@ -19407,7 +19438,7 @@
           "campaigns"
         ],
         "summary": "Update campaign",
-        "description": "Updates a campaign. On an unlaunched draft, a new `senderConfig` passes the same checks as create and plans are checked at launch. Once the campaign has launched, including a scheduled launch that has not started, a new `senderConfig` passes the launch checks and can answer `402 campaigns_not_entitled` or `400 invalid_parameter`. `recipientListId` points the campaign at another audience while it is still an unlaunched draft and replaces its existing recipients; after launch it answers `409`. A sender edit to a draft that launches while the edit is being saved also answers `409`. A changed `scheduledAt` after launch answers `409`; use reschedule to move a scheduled start. A non-null `scheduledAt` must be integer Unix milliseconds from zero through the JavaScript Date maximum.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Updates a campaign. On an unlaunched draft, a new `senderConfig` passes the same checks as create and plans are checked at launch. Once the campaign has launched, including a scheduled launch that has not started, a new `senderConfig` passes the launch checks and can answer `402 campaigns_not_entitled` or `400 invalid_parameter`. `recipientListId` points the campaign at another audience while it is still an unlaunched draft and replaces its existing recipients; after launch it answers `409`. A sender edit to a draft that launches while the edit is being saved also answers `409`. A changed `scheduledAt` after launch answers `409`; use reschedule to move a scheduled start. A non-null `scheduledAt` must be integer Unix milliseconds from zero through the JavaScript Date maximum. `sendWindow` changes only while the campaign is a draft or paused; a running campaign answers `409`, so pause it first. An edit to a paused campaign also answers `409` while sends are in progress; retry after they settle. A stalled send that has not reached the provider can be recovered on a later edit attempt. If delivery may have started, the edit waits for a definite result rather than sending the recipient again. A new window applies to the remaining recipients when the campaign resumes.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -19444,8 +19475,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "additionalProperties": true
+                "$ref": "#/components/schemas/UpdatePlatformCampaignRequest"
               }
             }
           }
@@ -19474,8 +19504,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "type": "object",
-                      "additionalProperties": true
+                      "$ref": "#/components/schemas/PlatformCampaign"
                     }
                   },
                   "required": [
@@ -23698,7 +23727,7 @@
           "projects"
         ],
         "summary": "Update project settings",
-        "description": "Updates the display name, icon, or default number plan without changing the project ID, URL, stage, or individual number overrides.\n\n**Hybrid Link.** A default plan without Hybrid Link returns `409` with code `hybrid_resolution_required` while a Hybrid Link Number inherits the project plan. Change each such Number's tier first and choose which connection it keeps.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Updates the display name, icon, or default number plan without changing the project ID, URL, stage, or individual number overrides.\n\n**Hybrid Link.** A default plan without Hybrid Link returns `409` with code `hybrid_choice_required` while a Hybrid Link Number inherits the project plan. Change each such Number's tier first and choose which connection it keeps.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -24315,7 +24344,7 @@
           "projects"
         ],
         "summary": "List Numbers that can merge into Hybrid Link",
-        "description": "Lists pairs of Numbers in the project that are the same WhatsApp Business number: one connected through Linked Devices and one through the Official API with the WhatsApp Business app (coexistence). Merge an eligible pair with a Pro tier quote on the Number you want to keep and `hybridMerge.absorbNumberId` set to the other Number. Neither side needs to pair or sign up again.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "description": "Lists pairs of Numbers in the project that are the same WhatsApp Business number: one connected through Linked Devices and one through the Official API with the WhatsApp Business app (coexistence). Merge an eligible pair with a Pro tier quote on the Number you want to keep and `hybridMerge.absorbNumberId` set to the other Number. Neither side needs to pair or sign up again. Returns `403` with code `feature_unavailable` when the team has no Hybrid Link access. Each Number reports `canBeAbsorbed`; a Number with hosted message storage must be the one you keep.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -41408,6 +41437,14 @@
             "type": "number",
             "description": "Scheduled start time in Unix milliseconds."
           },
+          "sendWindow": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CampaignSendWindowRequest"
+              }
+            ]
+          },
           "recipients": {
             "type": "array",
             "minItems": 0,
@@ -41430,6 +41467,281 @@
         },
         "required": [
           "name"
+        ]
+      },
+      "UpdatePlatformCampaignRequest": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Fields to change. Omitted fields keep their stored value.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Required when using a team API key. Project tokens derive the project from the credential."
+          },
+          "recipientListId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Audience to send to. Only while the campaign is an unlaunched draft."
+          },
+          "senderConfig": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "scheduledAt": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 8640000000000000,
+            "nullable": true,
+            "description": "Scheduled start time in Unix milliseconds. Only while the campaign is an unlaunched draft."
+          },
+          "sendWindow": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CampaignSendWindowRequest"
+              }
+            ],
+            "description": "When the campaign may send. `null` removes the window. Only while the campaign is a draft or paused."
+          }
+        }
+      },
+      "CampaignSendWindowRange": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "start": {
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+            "description": "Local start time, `HH:MM` in 24-hour time, inclusive.",
+            "example": "09:00"
+          },
+          "end": {
+            "type": "string",
+            "pattern": "^(([01][0-9]|2[0-3]):[0-5][0-9]|24:00)$",
+            "description": "Local end time, `HH:MM` in 24-hour time or `24:00`, exclusive. Must be later than `start`.",
+            "example": "18:00"
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ]
+      },
+      "CampaignSendWindowRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "When the campaign may send. Recipients outside the window stay `queued` and are sent when it next opens.",
+        "properties": {
+          "timeZone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "IANA time zone the window is written in, such as `America/Sao_Paulo`. When omitted, the team's time zone is stored, or `UTC` when the team has none.",
+            "example": "America/Sao_Paulo"
+          },
+          "days": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 7,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday"
+              ]
+            },
+            "description": "Weekdays the campaign may send on, in the window's time zone."
+          },
+          "hours": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 4,
+            "items": {
+              "$ref": "#/components/schemas/CampaignSendWindowRange"
+            },
+            "description": "Local time ranges the campaign may send in on those days. Ranges must not overlap. A range cannot cross midnight; use two ranges instead."
+          },
+          "recipientTimeZone": {
+            "type": "boolean",
+            "default": false,
+            "description": "Evaluate the window in each recipient's own time zone. The zone comes from the recipient variable named by `timeZoneVariable` when it holds a valid IANA zone, otherwise from the phone number's country when that country uses one UTC offset, otherwise `timeZone`."
+          },
+          "timeZoneVariable": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$",
+            "default": "timeZone",
+            "description": "Recipient variable holding the recipient's IANA time zone, used when `recipientTimeZone` is true. Launch rejects more than 5,000 distinct nonempty values with `400 invalid_parameter`."
+          }
+        },
+        "required": [
+          "days",
+          "hours"
+        ]
+      },
+      "CampaignSendWindow": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "When the campaign may send. Recipients outside the window stay `queued` and are sent when it next opens.",
+        "properties": {
+          "timeZone": {
+            "type": "string",
+            "description": "IANA time zone the window is written in."
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday"
+              ]
+            }
+          },
+          "hours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignSendWindowRange"
+            }
+          },
+          "recipientTimeZone": {
+            "type": "boolean"
+          },
+          "timeZoneVariable": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "timeZone",
+          "days",
+          "hours",
+          "recipientTimeZone",
+          "timeZoneVariable"
+        ]
+      },
+      "PlatformCampaign": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "A campaign returned by Platform list, get, create and update. `sendWindow` is null when sending is unrestricted by local hours.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "recipientListId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "recipientCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sentCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "deliveredCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "readCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "skippedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scheduledAt": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Scheduled start in Unix milliseconds."
+          },
+          "launchedAt": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Launch time in Unix milliseconds."
+          },
+          "completedAt": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Completion time in Unix milliseconds."
+          },
+          "createdAt": {
+            "type": "integer",
+            "description": "Creation time in Unix milliseconds."
+          },
+          "updatedAt": {
+            "type": "integer",
+            "description": "Last update in Unix milliseconds."
+          },
+          "sendWindow": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CampaignSendWindow"
+              }
+            ]
+          },
+          "composerBlueprint": {},
+          "messages": {},
+          "audienceRef": {},
+          "senderConfig": {},
+          "complianceConfig": {},
+          "variants": {},
+          "variantStrategy": {}
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "templateId",
+          "recipientListId",
+          "recipientCount",
+          "sentCount",
+          "deliveredCount",
+          "readCount",
+          "failedCount",
+          "skippedCount",
+          "scheduledAt",
+          "launchedAt",
+          "completedAt",
+          "createdAt",
+          "updatedAt",
+          "sendWindow"
         ]
       },
       "ReschedulePlatformCampaignRequest": {

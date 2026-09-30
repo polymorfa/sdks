@@ -29,7 +29,7 @@ export const POLYMORFA_ERROR_CODES = [
   "hybrid_automation_unavailable",
   "hybrid_transport_unavailable",
   "hybrid_target_reference_unavailable",
-  "hybrid_resolution_required",
+  "hybrid_choice_required",
   "hybrid_transition_ineligible",
   "send_outcome_unknown",
   "command_dispatch_failed",

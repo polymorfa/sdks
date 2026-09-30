@@ -123,6 +123,15 @@ export interface NativeFlowResponse {
   readonly version?: number;
 }
 
+/**
+ * The reply button or list row a contact chose. `id` is the ID you assigned
+ * when sending; the visible label is not included.
+ */
+export interface ReplyChoice {
+  readonly kind: "button" | "list";
+  readonly id: string;
+}
+
 export interface PollOption {
   readonly name: string;
   readonly hash: string;
@@ -137,6 +146,9 @@ export type LinkedDeviceMessageType =
   | "location"
   | "contact"
   | "phone_number_shared"
+  | "native_flow_response"
+  | "button_reply"
+  | "list_reply"
   | "poll"
   | "sticker"
   | "reaction"
@@ -174,6 +186,8 @@ export interface LinkedDeviceMessagePayload {
   readonly unavailable?: boolean;
   readonly unavailableReason?: string;
   readonly nativeFlowResponse?: NativeFlowResponse;
+  readonly replyChoice?: ReplyChoice;
+  readonly parentMessageId?: string;
   readonly [key: string]: unknown;
 }
 
@@ -189,6 +203,8 @@ export interface CloudMessagePayload {
   readonly type: string;
   readonly senderName?: string;
   readonly nativeFlowResponse?: NativeFlowResponse;
+  readonly replyChoice?: ReplyChoice;
+  readonly parentMessageId?: string;
   readonly interactive?: Readonly<Record<string, unknown>>;
   readonly [key: string]: unknown;
 }

@@ -31,6 +31,13 @@ const body = {
   complianceConfig: false,
   variants: ["a", "b"],
   variantStrategy: "round_robin",
+  sendWindow: {
+    timeZone: "America/Sao_Paulo",
+    days: ["monday", "friday"],
+    hours: [{ start: "09:00", end: "18:00" }],
+    recipientTimeZone: true,
+    timeZoneVariable: "timeZone",
+  },
 } satisfies CreatePlatformCampaignRequest;
 
 it("covers exactly the pinned create request fields without closing opaque JSON", () => {
@@ -155,5 +162,32 @@ it("returns the archive receipt and surfaces an active-campaign conflict", async
   expect(server.requests.map(({ method, path }) => [method, path])).toEqual([
     ["POST", "/platform/campaigns/campaign-1/archive"],
     ["POST", "/platform/campaigns/campaign-2/archive"],
+  ]);
+});
+
+it("keeps the send-window request and stored window fields aligned with the snapshot", () => {
+  const spec = JSON.parse(
+    readFileSync(
+      new URL("../../../contracts/openapi.platform.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const request = spec.components.schemas.CampaignSendWindowRequest;
+  const stored = spec.components.schemas.CampaignSendWindow;
+  expect(Object.keys(body.sendWindow).sort()).toEqual(
+    Object.keys(request.properties).sort(),
+  );
+  expect(Object.keys(stored.properties).sort()).toEqual(
+    Object.keys(request.properties).sort(),
+  );
+  expect(request.required).toEqual(["days", "hours"]);
+  expect(request.properties.days.items.enum).toEqual([
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
   ]);
 });
