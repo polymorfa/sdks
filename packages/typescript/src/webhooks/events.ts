@@ -232,6 +232,22 @@ export interface MessageSentPayload {
   readonly timestamp: number;
 }
 
+/**
+ * Official API only. The pricing classification WhatsApp reported for a
+ * message, copied as reported. Meta bills the WhatsApp Business Account
+ * directly; this is not a Polymorfa charge and contains no price.
+ */
+export interface MetaPricingReport {
+  /** Deprecated by WhatsApp; use `type`. */
+  readonly billable?: boolean;
+  /** For example `PMP` (per-message pricing). */
+  readonly pricing_model?: string;
+  /** For example `marketing`, `utility`, `authentication` or `service`. */
+  readonly category?: string;
+  /** For example `regular`, `free_customer_service` or `free_entry_point`. */
+  readonly type?: string;
+}
+
 export interface MessageAckPayload {
   readonly messages: readonly {
     readonly id: string;
@@ -244,6 +260,7 @@ export interface MessageAckPayload {
   readonly sender?: IdentityReference;
   readonly type: string;
   readonly timestamp: number;
+  readonly pricing?: MetaPricingReport;
 }
 
 export interface MessageDeletePayload {
@@ -460,6 +477,8 @@ export interface CallTelemetryPayload {
 }
 
 export interface CallParticipant {
+  /** Authoritative raised-hand state for a connected participant. */
+  readonly handRaised?: boolean;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;

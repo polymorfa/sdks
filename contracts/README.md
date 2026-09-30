@@ -42,13 +42,55 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` PR #388 source commit `2f24c1d62` (coordinated
-until that PR merges). The response to feature evaluation now includes a nullable
+files at `polymorfa/polymorfa` commit
+`5c8014d7d58b4d3e483d9d124ee9d88bd85820f9`, the merge of PR #388 into API
+`dev`. `testing-events.json` uses the same commit; its four schemas are
+unchanged. The response to feature evaluation includes a nullable
 `experimentRevision`; both evaluation routes remain excluded from SDK methods
-because they require a host runtime or live dashboard identity. The full refresh
-also reconciles the Campaigns update and reschedule routes. `source.json` records
-the exact source paths and SHA-256 hashes. SDK package publication remains
-separate.
+because they require a host runtime or live dashboard identity. The Platform
+referral route was removed on API `dev` before this merge, so the snapshot has
+no `/platform/referral` operation; referrals stay Console-only. `source.json`
+records the exact source paths and SHA-256 hashes. SDK package publication
+remains separate.
+
+Moving from PR source commit `2f24c1d62` to the merge commit adds 17
+operations and changes 236 fingerprints; no operation was removed. The
+fingerprint changes were reviewed:
+
+- 211 operations only add documented `X-RateLimit-Limit`,
+  `X-RateLimit-Remaining` and `X-RateLimit-Reset` response headers. Most of
+  the other changed operations add the same headers.
+- Campaigns add `sendWindow` on both surfaces. `Campaign.sendWindow` is
+  `CampaignSendWindow | null`; Messaging create and update, and Platform create
+  and update, accept `CampaignSendWindowRequest` (update and Platform create
+  accept null to remove it). Platform list, get, create and update now declare
+  `PlatformCampaign`, an open object with the Messaging campaign fields, so
+  those methods return it instead of `PlatformPayload`. The Platform update
+  body names `name`, `senderConfig`, `scheduledAt` and `sendWindow` and stays
+  open.
+- QuickLink create, get and status add the `reauthorization` purpose to
+  `QuickLinkPurpose`. The public QuickLink token routes stay excluded.
+- Hosted-history message reads add `mediaRetrieval` (`HistoryMediaRetrieval`).
+- `VoipParticipant` adds optional `handRaised`.
+- `POST /messaging/voip/calls` now accepts exactly one of `to`,
+  `participants` or `groupId`. `MessagingClient.voip.place` types only `to`
+  here, so the row is partial; group placement is implemented on SDK `dev`.
+- The two account feature routes add a body `projectId`; they stay excluded.
+
+The 17 added operations are recorded as follows. Two Console account-health
+routes (`/api/account/cloud-health` and its export) are excluded because they
+require dashboard identity. Six Calls operations (call links, link preview,
+raised hand, ring participant, call reaction and `GET /platform/calls/{callId}`)
+have typed methods on SDK `dev` and are missing on this branch until `dev`
+merges. Nine Official API operations are missing: four Cloud template routes
+(proposed in SDK PR #308), stored message media download (proposed in SDK PR
+#316), the customer service window, credential health, credential
+reauthorization and the Meta pricing summary.
+
+Webhook payload types follow the same commit: `message.received` adds
+`replyChoice` and `parentMessageId` and three linked-device message types,
+`message.ack` adds optional `pricing` (`MetaPricingReport`), and call
+participants add optional `handRaised`.
 
 `MessagingClient.campaigns.update` covers the new draft update route, while
 `MessagingClient.campaigns.reschedule` and `Client.campaigns.reschedule` cover
@@ -167,12 +209,12 @@ retired both events and `bansafe.enforcement`.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        382 |
-| Missing             |          0 |
-| Excluded            |        130 |
-| Partial             |          0 |
+| Covered             |        381 |
+| Missing             |         15 |
+| Excluded            |        132 |
+| Partial             |          1 |
 | Changed fingerprint |          0 |
-| Total               |        512 |
+| Total               |        529 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

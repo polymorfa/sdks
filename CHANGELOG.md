@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Campaign types include `sendWindow`. `Campaign.sendWindow` is a
+  `CampaignSendWindow` or null, and campaign create and update requests on
+  both clients accept a `CampaignSendWindowRequest`; update accepts null to
+  remove the window. `Client.campaigns.list`, `retrieve`, `create` and
+  `update` return `PlatformCampaign` instead of an untyped payload.
+- `QuickLinkPurpose` includes `reauthorization`. Hosted history messages
+  expose `mediaRetrieval`, call participants expose optional `handRaised`, and
+  `message.ack` payloads expose the optional Official API `pricing`
+  classification (`MetaPricingReport`).
 - `message.received` payload types include `replyChoice` (`kind` `button` or
   `list` and the `id` you assigned) and `parentMessageId`, and the linked-device
   message `type` union adds `button_reply`, `list_reply`, and

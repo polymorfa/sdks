@@ -33,7 +33,9 @@ import type {
   WebhookConversationReference,
   LabelsUpdatePayload,
   LinkedDeviceMessageType,
+  MessageAckPayload,
   MessageDeletePayload,
+  MetaPricingReport,
   MessageEchoPayload,
   MessagePayload,
   MessageReceivedPayload,
@@ -187,6 +189,7 @@ type ExpectedPayloads = {
       readonly phoneNumber?: string;
       readonly bsuid?: string;
       readonly username?: string;
+      readonly handRaised?: boolean;
       readonly audioMuted: false;
       readonly video: false;
       readonly state: "invited" | "ringing" | "connected" | "left";
@@ -204,6 +207,7 @@ type ExpectedPayloads = {
       readonly phoneNumber?: string;
       readonly bsuid?: string;
       readonly username?: string;
+      readonly handRaised?: boolean;
       readonly audioMuted: false;
       readonly video: false;
       readonly state: "invited" | "ringing" | "connected" | "left";
@@ -473,6 +477,15 @@ describe("webhook event payload types", () => {
     expectTypeOf<WebhookConversationReference>().toEqualTypeOf<ExpectedConversationReference>();
     expectTypeOf<NativeFlowResponse>().toEqualTypeOf<ExpectedNativeFlowResponse>();
     expectTypeOf<ReplyChoice>().toEqualTypeOf<ExpectedReplyChoice>();
+    expectTypeOf<MessageAckPayload["pricing"]>().toEqualTypeOf<
+      MetaPricingReport | undefined
+    >();
+    expectTypeOf<MetaPricingReport>().toEqualTypeOf<{
+      readonly billable?: boolean;
+      readonly pricing_model?: string;
+      readonly category?: string;
+      readonly type?: string;
+    }>();
     expectTypeOf<PollOption>().toEqualTypeOf<ExpectedPollOption>();
     expectTypeOf<LinkedDeviceMessageType>().toEqualTypeOf<ExpectedLinkedDeviceMessageType>();
     expectTypeOf<CallParticipant>().toEqualTypeOf<

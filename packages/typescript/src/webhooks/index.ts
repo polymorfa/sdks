@@ -91,6 +91,7 @@ export {
   type MessageSentPayload,
   type NativeFlowResponse,
   type ReplyChoice,
+  type MetaPricingReport,
   type NewsletterUpdatePayload,
   type PollOption,
   type PollVotePayload,
