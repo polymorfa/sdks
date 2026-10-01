@@ -46,6 +46,8 @@ export const POLYMORFA_ERROR_CODES = [
   "whatsapp_group_full",
   "whatsapp_group_suspended",
   "whatsapp_group_has_no_participants",
+  "order_status_transition_invalid",
+  "order_cancellation_failed",
   "number_restricted",
   "bansafe_suspended",
   "bansafe_org_suspended",

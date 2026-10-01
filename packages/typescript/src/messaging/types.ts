@@ -2264,6 +2264,121 @@ export interface SendCallPermissionRequestMessageRequest extends MessageSendCont
   };
 }
 
+/** An amount in centavos: `value` is the amount times `offset` (always 100 for BRL). */
+export interface PaymentOrderAmount {
+  readonly value: number;
+  readonly offset: 100;
+}
+
+export type PixKeyType = "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "EVP";
+
+/**
+ * A Brazil order with payment instructions (payment orders beta, Official API
+ * Numbers only). Polymorfa validates and relays the order; it does not
+ * collect, hold or confirm funds. Use a new `referenceId` for every order.
+ */
+export interface OrderDetailsMessageContent {
+  /** 1 to 60 letters, digits, underscores, dashes or dots. */
+  readonly referenceId: string;
+  readonly type: "digital-goods" | "physical-goods";
+  /** At most 1,024 characters. */
+  readonly body: string;
+  /** At most 60 characters. */
+  readonly footer?: string;
+  /** HTTPS image shown as the thumbnail. Requires `order`. */
+  readonly headerImageUrl?: string;
+  readonly currency: "BRL";
+  /** With `order`, equals subtotal + tax + shipping - discount. */
+  readonly totalAmount: PaymentOrderAmount;
+  /** At least one way to pay. */
+  readonly paymentSettings: {
+    /** Dynamic Pix copy-and-paste code from your bank or payment provider. */
+    readonly pixDynamicCode?: {
+      readonly code: string;
+      readonly merchantName: string;
+      readonly key: string;
+      readonly keyType: PixKeyType;
+    };
+    /** HTTPS checkout link. */
+    readonly paymentLink?: { readonly uri: string };
+    /** Boleto digitable line of 47 or 48 digits. */
+    readonly boleto?: { readonly digitableLine: string };
+  };
+  /** Itemized order. Omit to send only the total. */
+  readonly order?: {
+    readonly catalogId?: string;
+    readonly expiration?: {
+      /** Unix seconds, at least 300 seconds from now. */
+      readonly timestamp: number;
+      readonly description: string;
+    };
+    readonly items: readonly {
+      readonly retailerId: string;
+      readonly name: string;
+      readonly amount: PaymentOrderAmount;
+      readonly quantity: number;
+      readonly saleAmount?: PaymentOrderAmount;
+    }[];
+    /** Sum of each item's saleAmount (or amount) times quantity. */
+    readonly subtotal: PaymentOrderAmount;
+    readonly tax: PaymentOrderAmount & { readonly description?: string };
+    readonly shipping?: PaymentOrderAmount & { readonly description?: string };
+    readonly discount?: PaymentOrderAmount & {
+      readonly description?: string;
+      readonly programName?: string;
+    };
+  };
+}
+
+export type OrderStatus =
+  | "pending"
+  | "processing"
+  | "partially_shipped"
+  | "shipped"
+  | "completed"
+  | "canceled";
+export type OrderPaymentStatus = "pending" | "captured" | "failed";
+
+/**
+ * Updates a Brazil order sent with `orderDetails`. Send `payment.status`
+ * after your payment provider confirms it; `captured` shows the order as paid.
+ * Provide `order`, `payment`, or both.
+ */
+export type OrderStatusMessageContent = {
+  readonly referenceId: string;
+  readonly body: string;
+  readonly footer?: string;
+} & (
+  | {
+      readonly order: {
+        readonly status: OrderStatus;
+        readonly description?: string;
+      };
+      readonly payment?: {
+        readonly status: OrderPaymentStatus;
+        readonly timestamp?: number;
+      };
+    }
+  | {
+      readonly order?: {
+        readonly status: OrderStatus;
+        readonly description?: string;
+      };
+      readonly payment: {
+        readonly status: OrderPaymentStatus;
+        readonly timestamp?: number;
+      };
+    }
+);
+
+export interface SendOrderDetailsMessageRequest extends MessageSendContext {
+  readonly content: { readonly orderDetails: OrderDetailsMessageContent };
+}
+
+export interface SendOrderStatusMessageRequest extends MessageSendContext {
+  readonly content: { readonly orderStatus: OrderStatusMessageContent };
+}
+
 export interface SendTemplateMessageRequest extends MessageSendContext {
   readonly content: { readonly template: MessageTemplateSend };
 }
@@ -2283,6 +2398,8 @@ export type SendMessageRequest =
   | SendAddressMessageRequest
   | SendFlowMessageRequest
   | SendCallPermissionRequestMessageRequest
+  | SendOrderDetailsMessageRequest
+  | SendOrderStatusMessageRequest
   | SendTemplateMessageRequest;
 
 export interface MessageOperation {

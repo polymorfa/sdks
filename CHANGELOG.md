@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Brazil payment orders (beta, requires team enrollment, an Official API
+  Number and Meta payments eligibility in Brazil). `messages.send` accepts
+  `orderDetails` (Pix dynamic code, payment link or boleto, itemized or
+  total only) and `orderStatus` content. New types:
+  `OrderDetailsMessageContent`, `OrderStatusMessageContent`,
+  `PaymentOrderAmount`, `PixKeyType`, `OrderStatus`, `OrderPaymentStatus`,
+  `SendOrderDetailsMessageRequest`, `SendOrderStatusMessageRequest` and
+  `OrderPaymentUpdatedPayload` for the `order.payment_updated` event. New error
+  codes: `order_status_transition_invalid` and `order_cancellation_failed`.
+  Polymorfa relays orders and payment reports; it does not process funds.
+  Contracts are pinned to API `dev` `4b9ebf0`.
 - Official groups (beta, requires team enrollment and an Official Business
   Account). `MessagingClient.officialGroups` adds `list`, `create`, `retrieve`,
   `update`, `delete`, `getInviteLink`, `resetInviteLink`, `removeParticipants`,

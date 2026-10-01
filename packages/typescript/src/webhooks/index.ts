@@ -22,6 +22,7 @@ export {
   type CallParticipantLeftPayload,
   type CallParticipantPayload,
   type CallPermissionChangedPayload,
+  type OrderPaymentUpdatedPayload,
   type CallReceivedPayload,
   type CallRejectedPayload,
   type CallTelemetryPayload,

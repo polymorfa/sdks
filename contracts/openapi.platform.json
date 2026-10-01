@@ -52944,6 +52944,8 @@
                   "call_destination_blocked",
                   "call_permission_request_limited",
                   "call_permission_granted",
+                  "order_status_transition_invalid",
+                  "order_cancellation_failed",
                   "call_opt_out_limit",
                   "number_restricted",
                   "sip_trunk_in_use",

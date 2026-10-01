@@ -6518,6 +6518,160 @@
           "payload"
         ]
       },
+      "OrderPaymentUpdatedPayload": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "payment_status",
+              "payment_method_selected"
+            ],
+            "description": "`payment_status` when WhatsApp reports a payment status; `payment_method_selected` when the buyer confirmed a one-click payment method"
+          },
+          "reportedBy": {
+            "type": "string",
+            "enum": [
+              "whatsapp"
+            ],
+            "description": "Polymorfa relays this report; it does not process or confirm funds"
+          },
+          "providerEventId": {
+            "type": "string",
+            "description": "WhatsApp's notification or message ID"
+          },
+          "referenceId": {
+            "type": "string",
+            "description": "Your order reference ID from the order details message",
+            "example": "order-1522"
+          },
+          "conversation": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "phoneNumber": {
+                "type": "string"
+              }
+            },
+            "description": "The buyer"
+          },
+          "status": {
+            "type": "string",
+            "description": "Payment status as WhatsApp reported it",
+            "example": "captured"
+          },
+          "amount": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "integer"
+              },
+              "offset": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "value",
+              "offset"
+            ],
+            "description": "Reported amount; value divided by offset is the amount in currency units"
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "transaction": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "providerTransactionId": {
+                "type": "string"
+              },
+              "provider": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "method": {
+                "type": "string"
+              },
+              "errorCode": {
+                "type": "string"
+              }
+            },
+            "description": "Payment provider transaction as WhatsApp reported it"
+          },
+          "messageId": {
+            "type": "string",
+            "description": "Message that carried a payment method confirmation"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "example": "offsite_card_pay"
+          },
+          "lastFourDigits": {
+            "type": "string"
+          },
+          "credentialId": {
+            "type": "string",
+            "description": "Your credential ID from the order's payment settings"
+          },
+          "paymentTimestamp": {
+            "type": "integer",
+            "description": "Unix time in seconds reported by WhatsApp"
+          }
+        },
+        "required": [
+          "kind",
+          "reportedBy",
+          "providerEventId",
+          "referenceId",
+          "conversation"
+        ]
+      },
+      "OrderPaymentUpdatedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "order.payment_updated"
+            ],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/OrderPaymentUpdatedPayload"
+          }
+        },
+        "required": [
+          "id",
+          "session",
+          "timestamp",
+          "event",
+          "payload"
+        ]
+      },
       "CampaignPausedPayload": {
         "type": "object",
         "properties": {
@@ -7815,6 +7969,8 @@
                   "call_destination_blocked",
                   "call_permission_request_limited",
                   "call_permission_granted",
+                  "order_status_transition_invalid",
+                  "order_cancellation_failed",
                   "call_opt_out_limit",
                   "number_restricted",
                   "sip_trunk_in_use",
@@ -8232,6 +8388,377 @@
           "id"
         ],
         "description": "Message being replied to."
+      },
+      "PaymentOrderAmount": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "description": "Amount in centavos (value multiplied by offset). R$12.34 is 1234."
+          },
+          "offset": {
+            "type": "number",
+            "enum": [
+              100
+            ],
+            "description": "Always 100 for BRL."
+          }
+        },
+        "required": [
+          "value",
+          "offset"
+        ],
+        "additionalProperties": false,
+        "description": "Amount the buyer pays. With `order`, equals subtotal + tax + shipping - discount."
+      },
+      "OrderDetailsContent": {
+        "type": "object",
+        "properties": {
+          "referenceId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,60}$",
+            "description": "Your unique order or invoice ID: 1 to 60 letters, digits, underscores, dashes or dots. Use a new ID for every order details message."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "digital-goods",
+              "physical-goods"
+            ]
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Message text, at most 1,024 characters."
+          },
+          "footer": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Footer text, at most 60 characters."
+          },
+          "headerImageUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "HTTPS image shown as the order thumbnail. Requires `order`."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "BRL"
+            ]
+          },
+          "totalAmount": {
+            "$ref": "#/components/schemas/PaymentOrderAmount"
+          },
+          "paymentSettings": {
+            "type": "object",
+            "properties": {
+              "pixDynamicCode": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Dynamic Pix copy-and-paste code generated by your bank or payment provider."
+                  },
+                  "merchantName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Account holder name shown to the buyer."
+                  },
+                  "key": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Pix key shown to the buyer."
+                  },
+                  "keyType": {
+                    "type": "string",
+                    "enum": [
+                      "CPF",
+                      "CNPJ",
+                      "EMAIL",
+                      "PHONE",
+                      "EVP"
+                    ]
+                  }
+                },
+                "required": [
+                  "code",
+                  "merchantName",
+                  "key",
+                  "keyType"
+                ],
+                "additionalProperties": false
+              },
+              "paymentLink": {
+                "type": "object",
+                "properties": {
+                  "uri": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "HTTPS checkout link from your payment provider."
+                  }
+                },
+                "required": [
+                  "uri"
+                ],
+                "additionalProperties": false
+              },
+              "boleto": {
+                "type": "object",
+                "properties": {
+                  "digitableLine": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Boleto digitable line: 47 or 48 digits."
+                  }
+                },
+                "required": [
+                  "digitableLine"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false,
+            "description": "At least one way to pay. Polymorfa does not process the payment.",
+            "minProperties": 1
+          },
+          "order": {
+            "type": "object",
+            "properties": {
+              "catalogId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "expiration": {
+                "type": "object",
+                "properties": {
+                  "timestamp": {
+                    "type": "integer",
+                    "description": "Unix time in seconds, at least 300 seconds from now."
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Why or when the order expires, at most 120 characters."
+                  }
+                },
+                "required": [
+                  "timestamp",
+                  "description"
+                ],
+                "additionalProperties": false
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "retailerId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "At most 60 characters."
+                    },
+                    "amount": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/PaymentOrderAmount"
+                        },
+                        {
+                          "description": "Price per item."
+                        }
+                      ]
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "saleAmount": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/PaymentOrderAmount"
+                        },
+                        {
+                          "description": "Discounted price per item, below `amount`."
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "retailerId",
+                    "name",
+                    "amount",
+                    "quantity"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1
+              },
+              "subtotal": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaymentOrderAmount"
+                  },
+                  {
+                    "description": "Sum of each item's saleAmount (or amount) times quantity."
+                  }
+                ]
+              },
+              "tax": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaymentOrderAmount"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "description": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 60
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ],
+                "description": "Tax; value may be 0."
+              },
+              "shipping": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaymentOrderAmount"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "description": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 60
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "discount": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaymentOrderAmount"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "description": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "programName": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "items",
+              "subtotal",
+              "tax"
+            ],
+            "additionalProperties": false,
+            "description": "Itemized order. Omit to send only the total."
+          }
+        },
+        "required": [
+          "referenceId",
+          "type",
+          "body",
+          "currency",
+          "totalAmount",
+          "paymentSettings"
+        ],
+        "additionalProperties": false,
+        "description": "Brazil order with payment instructions (Official API only). Polymorfa relays the order; it does not collect, hold or confirm funds."
+      },
+      "OrderStatusContent": {
+        "type": "object",
+        "properties": {
+          "referenceId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,60}$",
+            "description": "The referenceId of the order details message."
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Message text, at most 1,024 characters."
+          },
+          "footer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "order": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "processing",
+                  "partially_shipped",
+                  "shipped",
+                  "completed",
+                  "canceled"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "description": "At most 120 characters."
+              }
+            },
+            "required": [
+              "status"
+            ],
+            "additionalProperties": false
+          },
+          "payment": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "captured",
+                  "failed"
+                ],
+                "description": "Status confirmed by your payment provider. `captured` shows the order as paid."
+              },
+              "timestamp": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true
+              }
+            },
+            "required": [
+              "status"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "referenceId",
+          "body"
+        ],
+        "additionalProperties": false,
+        "description": "Update a Brazil order sent with orderDetails (Official API only). Send it after your payment provider confirms a payment status."
       },
       "MessageContent": {
         "description": "Exactly one message kind: text, image, location, or another supported content field.",
@@ -9120,6 +9647,30 @@
             },
             "required": [
               "callPermissionRequest"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "orderDetails": {
+                "$ref": "#/components/schemas/OrderDetailsContent"
+              }
+            },
+            "required": [
+              "orderDetails"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "orderStatus": {
+                "$ref": "#/components/schemas/OrderStatusContent"
+              }
+            },
+            "required": [
+              "orderStatus"
             ],
             "additionalProperties": false
           },
@@ -74879,6 +75430,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/TemplateStatusEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Return any 2xx status to acknowledge receipt. Non-2xx responses are retried according to the retry policy."
+          }
+        }
+      }
+    },
+    "order.payment_updated": {
+      "post": {
+        "operationId": "onOrderPaymentUpdated",
+        "summary": "WhatsApp reported a payment update for an order",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderPaymentUpdatedEvent"
               }
             }
           }
