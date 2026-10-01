@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- `message.received` payload types include `replyChoice` (`kind` `button` or
+  `list` and the `id` you assigned) and `parentMessageId`, and the linked-device
+  message `type` union adds `button_reply`, `list_reply`, and
+  `native_flow_response`. `ReplyChoice` is exported.
+
+- Calls quality diagnostics respect their five-second send interval when a
+  connection closes, avoiding an extra report that the API can rate-limit.
+
+- Browser Calls uses its authenticated lifecycle socket for ICE candidates and
+  pauses remote candidate polling while connected. It falls back to HTTP when
+  that socket disconnects. The Calls example also displays call-control errors
+  and failed request IDs.
 - Team webhook tests accept an optional event type. The SDK now rejects a
   supplied body or session ID before making that request. Project webhook
   tests keep the paired native body and session ID input.

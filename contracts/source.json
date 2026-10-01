@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "296aba4baade933e7a5620cf36768750ec9ac6af",
-  "branch": "codex/oa-01-cloud-templates",
-  "published": false,
-  "note": "API PR310 merge ancestor incorporates dev campaign and webhook updates with four Number-scoped Cloud template operations. Both snapshots are byte-identical to this exact API commit. API merge, SDK publication and deployment remain separate.",
+  "commit": "29abb7b66a8e225af4df5cf354e9836ccb2ce04c",
+  "branch": "dev",
+  "published": true,
+  "note": "API dev merge of PR #362. Includes every merged Official API, Flow lifecycle, catalog and campaign send-window contract. Both snapshots are byte-identical to this exact API commit. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "397f6d8f59e032ceb8bc520667f5a3c8eaf14d0995bbeabb61d5ca3493df44c5"
+      "sha256": "907a3fa58d5bb377e370748510a1bdeb9051d6d4e767f5fcf317a89d39979ba8"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "6cf2ab1aa2a187553cc95a87bfa281613a2e0b047b81695c937c1b38b19c7218"
+      "sha256": "f13f2190a9611044a6cedccdcc14127f113875b48109960503b464b7218a1e5d"
     }
   }
 }

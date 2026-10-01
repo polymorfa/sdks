@@ -12,6 +12,8 @@ import {
   type OrganizationWebhookDeliveryAttempt,
   type SessionLoggedOutPayload,
   type RuntimeTemplateStatusPayload,
+  type CloudTemplateStatusPayload,
+  type CloudAccountStatusPayload,
   type WebhookPayloadMap,
 } from "../src/index.js";
 
@@ -564,6 +566,15 @@ const PAYLOADS: {
     { ...campaign, sentCount: 10, remainingCount: 5, pausedAt: 1 },
     ["campaignId", "sentCount", "remainingCount", "pausedAt"],
   ),
+  "campaign.rescheduled": shape<P["campaign.rescheduled"]>()(
+    {
+      ...campaign,
+      previousScheduledAt: null,
+      scheduledAt: 1_790_000_003_000,
+      rescheduledAt: 1_790_000_003_000,
+    },
+    ["campaignId", "previousScheduledAt", "scheduledAt", "rescheduledAt"],
+  ),
   "campaign.resumed": shape<P["campaign.resumed"]>()(
     {
       ...campaign,
@@ -711,6 +722,11 @@ type LegacyEventType = Exclude<
   | "session.logged_out"
 >;
 
+/** Union payloads whose PAYLOADS fixture covers one named alternative. */
+const UNION_FIXTURE_SCHEMAS: Readonly<Record<string, string>> = {
+  "template.status": "RuntimeTemplateStatusPayload",
+};
+
 function specEvents(): Map<string, string> {
   const events = new Map<string, string>();
   for (const schema of Object.values(messaging.components.schemas)) {
@@ -737,9 +753,54 @@ describe("webhook catalog contract", () => {
     (type, fixture) => {
       const schemaName = specEvents().get(type);
       expect(schemaName, type).toBeDefined();
-      expectShape(messaging, schemaName!, fixture);
+      const variant = UNION_FIXTURE_SCHEMAS[type];
+      if (variant !== undefined) {
+        const union = resolveRef(messaging, { $ref: `#/${schemaName!}` });
+        expect(
+          (union.anyOf ?? union.oneOf ?? []).map((part) => part.$ref),
+          type,
+        ).toContain(`#/components/schemas/${variant}`);
+      }
+      expectShape(messaging, variant ?? schemaName!, fixture);
     },
   );
+
+  it("types the Meta template notification variant of template.status", () => {
+    expectShape(
+      messaging,
+      "CloudTemplateStatusPayload",
+      shape<CloudTemplateStatusPayload>()(
+        {
+          kind: "message_template_quality_update",
+          event: "YELLOW",
+          templateId: "1234567890",
+          templateName: "order_update",
+          language: "en_US",
+          reason: "NONE",
+          previousQualityScore: "GREEN",
+          newQualityScore: "YELLOW",
+          wabaId: "102290129340398",
+        },
+        ["kind"],
+      ),
+    );
+  });
+
+  it("types the Meta account notification variant of session.status", () => {
+    expectShape(
+      messaging,
+      "CloudAccountStatusPayload",
+      shape<CloudAccountStatusPayload>()(
+        {
+          source: "meta",
+          kind: "phone_number_name_update",
+          wabaId: "102290129340398",
+          value: { decision: "APPROVED" },
+        },
+        ["source", "kind", "value"],
+      ),
+    );
+  });
 
   it.each(Object.entries(PAYLOADS))(
     "%s parses from a signed delivery",
@@ -787,6 +848,43 @@ describe("webhook catalog contract", () => {
     expectTypeOf<P["bansafe.action"]["previousRung"]>().toEqualTypeOf<
       "none" | "notify" | "throttle" | "block_cold" | "suspend" | null
     >();
+  });
+
+  it("accepts raised-hand participant state in the pinned contract and signed delivery", async () => {
+    const participant = {
+      id: "participant-1",
+      audioMuted: false,
+      video: false,
+      state: "connected",
+      handRaised: true,
+    } as const;
+    const schema = messaging.components.schemas.CallParticipant!;
+    expect(violations(messaging, schema, participant)).toEqual([]);
+    expect(
+      violations(messaging, schema, { ...participant, handRaised: "yes" }),
+    ).toContain("$.handRaised is not a boolean");
+    const withoutHandRaised = {
+      id: participant.id,
+      audioMuted: participant.audioMuted,
+      video: participant.video,
+      state: participant.state,
+    };
+    expect(violations(messaging, schema, withoutHandRaised)).toEqual([]);
+
+    const body = Buffer.from(
+      JSON.stringify({
+        id: "evt_hand_raised",
+        session: "support",
+        timestamp: AT,
+        event: "call.participant_state",
+        payload: { callId: "call-1", participant },
+      }),
+    );
+    const event = await constructWebhookEvent(body, sign(body), secret);
+    if (!isEvent(event, "call.participant_state"))
+      throw new Error("Expected participant state event");
+    expectTypeOf(event.payload).toEqualTypeOf<P["call.participant_state"]>();
+    expect(event.payload.participant.handRaised).toBe(true);
   });
 
   it("types logged-out reasons and the required integer code from the pinned contract", async () => {

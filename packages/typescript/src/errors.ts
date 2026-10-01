@@ -9,6 +9,7 @@ export const POLYMORFA_ERROR_CODES = [
   "invalid_parameter",
   "invalid_credential",
   "entitlement_required",
+  "cloud_template_authority_restricted",
   "gate_limit_reached",
   "method_not_allowed",
   "permission_denied",

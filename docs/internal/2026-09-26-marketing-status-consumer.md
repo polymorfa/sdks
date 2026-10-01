@@ -8,7 +8,7 @@ The exact operation is `graphGetMarketingStatus`. It reads raw optional WABA
 status strings and preserves the API's Graph error behavior. No status value is
 mapped to accepted terms, eligibility, insight availability, or a send decision.
 
-API: implemented in the separate source PR, not merged or deployed by this SDK
+API: merged as polymorfa PR #383 and pinned at dev 29abb7b; not deployed by this SDK
 change. SDKs: TypeScript server Messaging resource and public type updated;
 other language clients in this workspace do not expose this Graph facade
 resource and remain unaffected by the current contract. CLI: companion
