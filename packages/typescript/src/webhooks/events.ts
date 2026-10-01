@@ -92,6 +92,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "message.update",
   "message.vote",
   "newsletter.update",
+  "order.payment_updated",
   "presence.update",
   "session.connected",
   "session.logged_out",
@@ -870,6 +871,51 @@ export interface CallPermissionChangedPayload {
   readonly changedAt: string;
 }
 
+interface OrderPaymentUpdateBase {
+  readonly reportedBy: "whatsapp";
+  /** WhatsApp's notification or message ID. */
+  readonly providerEventId: string;
+  /** Your order reference ID from the order details message. */
+  readonly referenceId: string;
+  readonly conversation: {
+    readonly id?: string;
+    readonly phoneNumber?: string;
+  };
+}
+
+/**
+ * WhatsApp reported a payment update for a Brazil order (payment orders beta).
+ * Polymorfa relays the report; it does not process, hold or confirm funds.
+ * Confirm settlement with your payment provider by `referenceId`.
+ */
+export type OrderPaymentUpdatedPayload =
+  | (OrderPaymentUpdateBase & {
+      readonly kind: "payment_status";
+      /** Payment status as WhatsApp reported it, for example `captured`. */
+      readonly status: string;
+      /** Reported amount; `value / offset` is the amount in currency units. */
+      readonly amount?: { readonly value: number; readonly offset: number };
+      readonly currency?: string;
+      readonly transaction?: {
+        readonly id?: string;
+        readonly providerTransactionId?: string;
+        readonly provider?: string;
+        readonly status?: string;
+        readonly method?: string;
+        readonly errorCode?: string;
+      };
+    })
+  | (OrderPaymentUpdateBase & {
+      /** The buyer confirmed a one-click payment method. */
+      readonly kind: "payment_method_selected";
+      readonly messageId: string;
+      readonly paymentMethod: string;
+      readonly lastFourDigits?: string;
+      readonly credentialId?: string;
+      /** Unix time in seconds reported by WhatsApp. */
+      readonly paymentTimestamp?: number;
+    });
+
 export type MessageFailedReason =
   | "invalid_recipient"
   | "session_not_connected"
@@ -1091,6 +1137,7 @@ export interface WebhookPayloadMap {
   readonly "call.participant_left": CallParticipantLeftPayload;
   readonly "call.participant_state": CallParticipantPayload;
   readonly "call.permission_changed": CallPermissionChangedPayload;
+  readonly "order.payment_updated": OrderPaymentUpdatedPayload;
   readonly "call.received": CallReceivedPayload;
   readonly "call.rejected": CallRejectedPayload;
   readonly "call.telemetry": CallTelemetryPayload;

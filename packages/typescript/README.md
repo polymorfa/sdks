@@ -1147,7 +1147,8 @@ The source has one send route rather than separate routes for each message
 kind. `SendMessageRequest` is therefore a union of the exact typed payloads for
 text, image/file/voice/video media, polls, locations, contacts, phone-number
 requests, products, product lists, orders, lists, buttons, address messages,
-flows, and call permission requests. Template sends use `SendTemplateMessageRequest`. Select exactly one
+flows, call permission requests, and Brazil payment orders (`orderDetails` and
+`orderStatus`). Template sends use `SendTemplateMessageRequest`. Select exactly one
 message kind inside `content`; `conversation` selects its destination.
 
 ```ts
@@ -1176,6 +1177,47 @@ Reply context uses `quotedMessage`; forwarding is represented by
 `isForwarded`. Neither is a separate endpoint. The pinned contract exposes no
 message list, search, or standalone forward/reply route in `messages`. Hosted
 message history is read through `MessagingClient.chats` as described below.
+
+### Brazil payment orders beta
+
+Teams enrolled in the beta can send Brazil orders with Pix, payment link or
+boleto instructions from Official API Numbers that Meta has made eligible for
+payments in Brazil. Polymorfa validates and relays the order; it does not
+collect, hold or confirm funds. Amounts are centavos with `offset: 100`, and
+with an itemized `order` the total must equal subtotal + tax + shipping -
+discount.
+
+```ts
+await messaging.messages.send("store", {
+  conversation: { phoneNumber: "+5511987654321" },
+  content: {
+    orderDetails: {
+      referenceId: "order-1522",
+      type: "digital-goods",
+      body: "Your order",
+      currency: "BRL",
+      totalAmount: { value: 5000, offset: 100 },
+      paymentSettings: {
+        pixDynamicCode: {
+          code: pixCopyAndPasteCode, // from your bank or payment provider
+          merchantName: "Loja Exemplo",
+          key: "39580525000189",
+          keyType: "CNPJ",
+        },
+      },
+    },
+  },
+});
+```
+
+After your payment provider confirms the payment, send `orderStatus` with the
+same `referenceId`, for example `{ order: { status: "processing" }, payment: {
+status: "captured" } }`. WhatsApp refuses an invalid status change with
+`order_status_transition_invalid` and a refused cancellation with
+`order_cancellation_failed` (both `409`). Use a new `referenceId` for every
+order; never resend an order after an uncertain result. `order.payment_updated`
+relays payment reports from WhatsApp and is not proof of settlement. Teams
+outside the beta receive `403 feature_unavailable`.
 
 ### Hosted message history beta
 
@@ -2115,7 +2157,8 @@ if (isEvent(event, "history.sync")) {
 The catalog also types Customer lifecycle events (`customer.*`), BanSafe events
 (`bansafe.health_threshold`, `bansafe.action`, `bansafe.incident`, and
 `bansafe.claim`), campaign progress and lifecycle events (`campaign.*`),
-`call.permission_changed`, `message.failed`, and `template.status`. `message.failed`
+`call.permission_changed`, `order.payment_updated`, `message.failed`, and
+`template.status`. `message.failed`
 reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
 and `retryAfter` in seconds. Unknown event names still parse as
 `UnknownWebhookEvent`.

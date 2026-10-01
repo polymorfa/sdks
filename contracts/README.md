@@ -46,8 +46,16 @@ The two public Flow draft reads in the pinned Platform snapshot are covered by
 public, project-bound, and `sessions:read`.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API `dev` merge commit `ee217bf7bf6320e20bce341335589f17357e374c`
-(API PR #431). Earlier releases pinned `29abb7b66a8e225af4df5cf354e9836ccb2ce04c`
+files at API `dev` merge commit `e818ba62830d3727a7822379bb46c1fece90ef1b`
+(API PR #433, which corrects the payment order amount and status schemas from
+PR #429, on top of PR #431). PR #433 changes only the `sendMessage`
+fingerprint: `tax`, `shipping` and `discount` become single closed objects
+and `OrderStatusContent` requires `order` or `payment`. Moving from
+`ee217bf7bf6320e20bce341335589f17357e374c` adds no operation. It changes 251
+operation fingerprints, all reviewed: every Messaging and Platform error code
+enum gains `order_status_transition_invalid` and `order_cancellation_failed`,
+`MessageContent` gains `orderDetails` and `orderStatus`, and the webhooks gain
+`order.payment_updated`. Earlier releases pinned `29abb7b66a8e225af4df5cf354e9836ccb2ce04c`
 (API PR #362). This single revision contains every merged Official API
 contract the SDK consumes: Number-scoped Cloud templates and template editing,
 customer service windows, Meta pricing counts, Cloud credential health and
@@ -55,6 +63,12 @@ reauthorization, QuickLink sync receipts, typing with an inbound message ID,
 the Meta lifecycle webhook payloads, and the Flow provider lifecycle. It also
 contains the merged campaign send windows and rate-limit headers.
 
+- Brazil payment orders (beta): `messages.send` accepts `orderDetails`
+  (`OrderDetailsMessageContent`, Pix dynamic code, payment link and boleto) and
+  `orderStatus` (`OrderStatusMessageContent`) content. `order.payment_updated`
+  is typed as `OrderPaymentUpdatedPayload`. The API enforces beta enrollment,
+  Official API routing and the order checks; Polymorfa relays orders and payment
+  reports and does not process funds.
 - `MessagingClient.officialGroups` (beta) covers the twelve Official group
   operations: list, create, retrieve, update, delete, getInviteLink,
   resetInviteLink, removeParticipants, listJoinRequests, approveJoinRequests,
