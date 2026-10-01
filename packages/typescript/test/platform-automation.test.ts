@@ -410,7 +410,9 @@ describe("Client campaign conversions (beta)", () => {
       occurredAt: "2026-10-01T10:00:00+02:00",
       value: { amountMinor: 1999, currency: "USD" },
     });
-    await client.campaigns.conversions("campaign/a", { projectId: "project/a" });
+    await client.campaigns.conversions("campaign/a", {
+      projectId: "project/a",
+    });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "POST /platform/campaigns/campaign%2Fa/conversions",
