@@ -332,11 +332,34 @@ export interface SessionPhoneOfflinePayload {
   readonly action: string;
 }
 
+/** A WhatsApp error reported for an Official group operation (beta). */
+export interface OfficialGroupError {
+  readonly code: number;
+  readonly title?: string;
+}
+
 export interface GroupUpdatePayload {
   readonly id: string;
   readonly newSubject?: string;
   readonly newDescription?: string;
+  /**
+   * What changed, for example `joined`. Official groups (beta): `created`,
+   * `create_failed`, `deleted`, `delete_failed`, `settings_updated`,
+   * `suspended` or `suspension_cleared`.
+   */
   readonly action?: string;
+  /** Official groups (beta): the request ID returned when the group was created, or of a change. */
+  readonly requestId?: string;
+  /** Official groups (beta), action `created`: the invite link. */
+  readonly inviteLink?: string;
+  /** Official groups (beta), action `created`. */
+  readonly joinApprovalRequired?: boolean;
+  /** Official groups (beta), action `settings_updated`. */
+  readonly pictureChanged?: boolean;
+  /** Official groups (beta), action `settings_updated`: changes WhatsApp did not apply. */
+  readonly failedChanges?: readonly ("subject" | "description" | "picture")[];
+  /** Official groups (beta): why WhatsApp refused the operation. */
+  readonly errors?: readonly OfficialGroupError[];
 }
 
 export interface GroupParticipantPayload {
@@ -345,6 +368,23 @@ export interface GroupParticipantPayload {
   readonly left?: readonly IdentityReference[];
   readonly promoted?: readonly IdentityReference[];
   readonly demoted?: readonly IdentityReference[];
+  /** Official groups (beta): how the change happened, for example `invite_link`. */
+  readonly reason?: string;
+  /** Official groups (beta): who removed the participants. */
+  readonly initiatedBy?: "business" | "participant";
+  readonly requestId?: string;
+  /** Official groups (beta): participants WhatsApp could not remove. */
+  readonly failedParticipants?: readonly {
+    readonly participant: IdentityReference;
+    readonly errors?: readonly OfficialGroupError[];
+  }[];
+  readonly errors?: readonly OfficialGroupError[];
+  /** Official groups requiring approval (beta): a join request was created or revoked. */
+  readonly joinRequest?: {
+    readonly joinRequestId: string;
+    readonly user: IdentityReference;
+    readonly state: "created" | "revoked";
+  };
 }
 
 export interface PresenceUpdatePayload {

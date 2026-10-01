@@ -287,6 +287,24 @@ export {
   type CloudTemplateResponse,
   type ListCloudTemplatesResponse,
 } from "./messaging/cloud-templates.js";
+export {
+  OfficialGroupsResource,
+  type OfficialGroup,
+  type OfficialGroupChangeAccepted,
+  type OfficialGroupCursorParams,
+  type OfficialGroupCursors,
+  type OfficialGroupInviteLink,
+  type OfficialGroupJoinRequest,
+  type OfficialGroupJoinRequestDecision,
+  type OfficialGroupJoinRequestList,
+  type OfficialGroupList,
+  type OfficialGroupSummary,
+  type CreateOfficialGroupRequest,
+  type CreateOfficialGroupResult,
+  type ListOfficialGroupsParams,
+  type PinOfficialGroupMessageRequest,
+  type UpdateOfficialGroupRequest,
+} from "./messaging/official-groups.js";
 export { UsersResource } from "./messaging/users.js";
 export type {
   AddressMessageContent,

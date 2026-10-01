@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "29abb7b66a8e225af4df5cf354e9836ccb2ce04c",
+  "commit": "ee217bf7bf6320e20bce341335589f17357e374c",
   "branch": "dev",
   "published": true,
-  "note": "API dev merge of PR #362. Includes every merged Official API, Flow lifecycle, catalog and campaign send-window contract. Both snapshots are byte-identical to this exact API commit. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
+  "note": "API dev merge of PR #431 (Official groups). Includes every merged Official API, Flow lifecycle, catalog, campaign send-window and campaign conversion contract. Both snapshots are byte-identical to this exact API commit. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "907a3fa58d5bb377e370748510a1bdeb9051d6d4e767f5fcf317a89d39979ba8"
+      "sha256": "9da3e4d5cc858e5792a48288c253faf03aa83e785fa14b8a047c6cda2d752fdf"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "f13f2190a9611044a6cedccdcc14127f113875b48109960503b464b7218a1e5d"
+      "sha256": "1fb0ffe60f4e567b9b2ba2fd6c88e46d2242699b9f0f9cd6a6149960631d2bcf"
     }
   }
 }
