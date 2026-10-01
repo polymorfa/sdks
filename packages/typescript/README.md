@@ -328,6 +328,11 @@ with a project token exposes the same resource for its configured project.
 returns `null` when the API has no matching draft; updates require the observed
 `expectedUpdatedAt` value. Draft methods and provider methods remain distinct.
 
+Every Flow method returns the unwrapped record in `response.data`. Prereleases
+up to `0.1.0-dev.20260927174827` returned `list` and `retrieve` inside a
+`{ data }` envelope; replace `response.data.data` with `response.data` when
+upgrading.
+
 ```ts
 const flows = client.project(projectId).flows;
 const draft = await flows.create({
