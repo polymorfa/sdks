@@ -43,26 +43,42 @@ published SDK package before updating their pinned dependency.
 
 The two public Flow draft reads in the pinned Platform snapshot are covered by
 `Client.project(projectId).flows.list` and `.retrieve`. The API declares both
-public, project-bound, and `sessions:read`. The merged API runtime at
-`2fb3eec8624c5785f72f81f163a27c1ce4e19767` registers them with server-key
-authentication. The SDK snapshot below also includes the later campaign
-reschedule operations, which are tracked separately by SDK PR #310.
+public, project-bound, and `sessions:read`.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API `dev` merge commit `5f6a2b1470821c1a2b4077aa8de14214faede57a`. This revision adds ad-hoc and group-ID placement,
-participant re-ring, connection media controls, emoji reactions, raised hands
-and scoped call record detail. It also documents automatic SIP caller identity
-when no From user override is set. The API merge also adds campaign reschedule
-routes. SDK PR #310 owns their methods; the coverage ledger records both as
-excluded until that PR merges. The SDK webhook catalog and payload types include
-the `campaign.rescheduled` event in this pinned snapshot. `source.json` records source paths and SHA-256
-hashes. The refresh also carries an audio-codec description and corrects an
-escaped webhook-header control-character pattern; no header fields or SDK
-serialization changed. This revision also declares the optional `handRaised`
-boolean on webhook call participants, matching the existing SDK event types.
-SDK publication, deployment and the CLI's exact
-registry pin remain separate release gates. The call-link preview request schema
-accepts `session` and `token` together while remaining a closed object.
+files at API `dev` merge commit `29abb7b66a8e225af4df5cf354e9836ccb2ce04c`
+(API PR #362). This single revision contains every merged Official API
+contract the SDK consumes: Number-scoped Cloud templates and template editing,
+customer service windows, Meta pricing counts, Cloud credential health and
+reauthorization, QuickLink sync receipts, typing with an inbound message ID,
+the Meta lifecycle webhook payloads, and the Flow provider lifecycle. It also
+contains the merged campaign send windows and rate-limit headers.
+
+- `MessagingClient.cloudTemplates` covers list, retrieve, create, edit and
+  delete. Create, edit and delete make one network attempt even when a caller
+  supplies an idempotency key or retry override. Create and delete accept the
+  API's `Idempotency-Key`, so a manual retry with the same key returns
+  `409 idempotency_completed` rather than writing again.
+- `MessagingClient.chats.getServiceWindow`, `MessagingClient.sessions.getMetaPricing`,
+  `getCloudCredentialHealth` and `reauthorizeCloudCredentials` cover the four
+  new Number reads and the reauthorization link. Reauthorization makes one attempt.
+- `Client.project(projectId).flows` covers create, update, delete, upload,
+  publish, deprecate, discard, sync and receipts. The API now accepts server
+  API keys for these routes, so the earlier dashboard-only exclusions are
+  replaced. Provider writes make one attempt; `sync` reconciles an uncertain
+  operation without repeating it.
+- The two Console-only account health reads are excluded.
+- Campaign records type the stored `sendWindow`; create and update requests on
+  both surfaces accept it.
+
+250 fingerprints changed. Each was reviewed: 202 changed only by the new
+`cloud_template_authority_restricted` public error code and the documented
+`X-RateLimit-*` response headers. The rest add campaign `sendWindow`, the
+QuickLink `sync` status and `reauthorization` purpose, the typing `id`, the
+template `Idempotency-Key` header, typed Flow `metaLinks`, the feature
+decision `experimentRevision`, and closed Platform campaign shapes. SDK types
+follow each change on covered operations; feature evaluation stays excluded. `cloud-api-supplements.json` pins the Graph-compatible
+catalog and Flow encryption routes to the same commit.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
@@ -91,7 +107,7 @@ from SDK `dev`. The three public Calls analytics operations are covered by
 `Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
 `Client.calls.exportAll` walks export pages. The 13 public Voice operations are
 covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
-13 Console counterparts are excluded. The full 517-operation snapshot includes
+13 Console counterparts are excluded. The full 536-operation snapshot includes
 all 15 Functions routes already merged to API `dev`.
 
 HMS history adds four server-only Messaging reads under
@@ -179,12 +195,12 @@ signed events with these names still decode as unknown events.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        387 |
+| Covered             |        405 |
 | Missing             |          0 |
-| Excluded            |        130 |
+| Excluded            |        131 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        517 |
+| Total               |        536 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -342,3 +358,7 @@ draft reads/writes no longer declare a plan-related 402, and launch/live sender
 edits declare the existing public 503 envelope. Request and successful response
 shapes remain unchanged for all eleven refreshed fingerprints; the existing
 transport error handling applies. Focused Campaigns and contract checks pass.
+
+The Graph coverage exclusion applies to the full Graph API, not the separately
+typed `cloudCatalogs` and `flowEncryption` subsets recorded in
+`cloud-api-supplements.json`.

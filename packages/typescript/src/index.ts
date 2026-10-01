@@ -24,11 +24,6 @@ export {
 } from "./client.js";
 export type * from "./platform/developer-types.js";
 export {
-  FlowsResource,
-  type FlowDraft,
-  type FlowSummary,
-} from "./platform/flows.js";
-export {
   EventStream,
   eventStreamSource,
   type EventStreamAcknowledgement,
@@ -65,6 +60,18 @@ export {
   type PolymorfaRateLimitReason,
 } from "./errors.js";
 export { MessagingClient } from "./messaging/client.js";
+export { CloudCatalogsResource } from "./messaging/cloud-catalogs.js";
+export { FlowEncryptionResource } from "./messaging/flow-encryption.js";
+export type {
+  FlowEncryptionKey,
+  FlowEncryptionParams,
+  RegisterFlowEncryptionKeyRequest,
+} from "./messaging/flow-encryption.js";
+export type {
+  CloudProductCatalog,
+  ListCloudCatalogsParams,
+  ListCloudCatalogsResponse,
+} from "./messaging/cloud-catalogs.js";
 export {
   BridgeClient,
   BridgeRoutesResource,
@@ -75,6 +82,15 @@ export {
   type BridgeSignal,
 } from "./bridge.js";
 export { ChatsResource } from "./messaging/chats.js";
+export type {
+  CustomerServiceWindow,
+  MetaPricingParams,
+  MetaPricingGroup,
+  MetaPricingSummary,
+  CloudCredentialFailureCode,
+  CloudCredentialHealth,
+  CloudReauthorization,
+} from "./messaging/cloud-types.js";
 export type { DeleteMessageOptions } from "./messaging/chats.js";
 export type {
   HistoryChat,
@@ -239,6 +255,9 @@ export {
   type QuickLink,
   type QuickLinkStatus,
   type QuickLinkStatusValue,
+  type CloudSyncStatus,
+  type CloudSyncRequest,
+  type CloudSyncDelivery,
   type QuickLinkPurpose,
   type QuickLinkConnectionGoal,
   type QuickLinkConnectionKind,
@@ -249,6 +268,17 @@ export {
 } from "./messaging/quicklinks.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
+export {
+  CloudTemplatesResource,
+  type CloudTemplate,
+  type CloudTemplateStatus,
+  type CreateCloudTemplateRequest,
+  type EditCloudTemplateRequest,
+  type EditCloudTemplateResponse,
+  type RetrieveCloudTemplateParams,
+  type CloudTemplateResponse,
+  type ListCloudTemplatesResponse,
+} from "./messaging/cloud-templates.js";
 export { UsersResource } from "./messaging/users.js";
 export type {
   AddressMessageContent,
@@ -276,6 +306,10 @@ export type {
   CampaignRecipientStatus,
   CampaignRecipientVariables,
   CampaignRequeueResponse,
+  CampaignSendWindow,
+  CampaignSendWindowRange,
+  CampaignSendWindowRequest,
+  CampaignWeekday,
   CampaignRequeueResult,
   CampaignStopOperation,
   CampaignStopResponse,
@@ -1015,6 +1049,7 @@ export {
   type LinkedDeviceMessageType,
   type LinkedHistorySyncPayload,
   type MessageAckPayload,
+  type MetaPricingReport,
   type MessageDeletePayload,
   type MessageEchoPayload,
   type MessagePayload,
@@ -1034,6 +1069,8 @@ export {
   type SessionRestrictionUpdatedPayload,
   type SessionPhoneOfflinePayload,
   type SessionStatusPayload,
+  type RuntimeSessionStatusPayload,
+  type CloudAccountStatusPayload,
   type UnknownWebhookEvent,
   type WebhookBody,
   type WebhookFixture,
@@ -1086,6 +1123,8 @@ export {
   type MessageFailedPayload,
   type MessageFailedReason,
   type TemplateStatusPayload,
+  type RuntimeTemplateStatusPayload,
+  type CloudTemplateStatusPayload,
   type UsageRecordedPayload,
   type VoiceAssetEventPayload,
   type VoiceAssetFailedPayload,
@@ -1119,3 +1158,19 @@ export {
 } from "./messaging/hybrid-link.js";
 
 export * from "./platform/functions.js";
+
+export {
+  FlowsResource,
+  type FlowCategory,
+  type FlowDraftStatus,
+  type FlowValidationPointer,
+  type FlowValidationIssue,
+  type FlowNumberLink,
+  type FlowSummary,
+  type FlowDraft,
+  type CreateFlowRequest,
+  type UpdateFlowRequest,
+  type FlowProviderRequest,
+  type FlowProviderOperation,
+  type FlowProviderResult,
+} from "./platform/flows.js";

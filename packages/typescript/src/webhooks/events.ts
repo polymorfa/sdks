@@ -206,6 +206,13 @@ export interface CloudMessagePayload {
   readonly replyChoice?: ReplyChoice;
   readonly parentMessageId?: string;
   readonly interactive?: Readonly<Record<string, unknown>>;
+  /** Provider referral source only; it does not establish a conversion or payment. */
+  readonly referral?: Readonly<{
+    source_type?: string;
+    source_id?: string;
+    source_url?: string;
+    ctwa_clid?: string;
+  }>;
   readonly [key: string]: unknown;
 }
 
@@ -222,6 +229,14 @@ export interface MessageSentPayload {
   readonly timestamp: number;
 }
 
+/** Meta classification copied from a status notification; contains no price. */
+export interface MetaPricingReport {
+  readonly billable?: boolean;
+  readonly pricing_model?: string;
+  readonly category?: string;
+  readonly type?: string;
+}
+
 export interface MessageAckPayload {
   readonly messages: readonly {
     readonly id: string;
@@ -234,6 +249,7 @@ export interface MessageAckPayload {
   readonly sender?: IdentityReference;
   readonly type: string;
   readonly timestamp: number;
+  readonly pricing?: MetaPricingReport;
 }
 
 export interface MessageDeletePayload {
@@ -255,10 +271,27 @@ export interface PollVotePayload {
   readonly timestamp: number;
 }
 
-export interface SessionStatusPayload {
+export interface RuntimeSessionStatusPayload {
   readonly status: string;
   readonly statusReason?: string;
+  readonly banCode?: number;
+  readonly banReason?: string;
+  /** Unix seconds. */
+  readonly banExpiresAt?: number;
+  readonly detail?: string;
 }
+
+/** A Meta account notification, not a runtime connection-state transition. */
+export interface CloudAccountStatusPayload {
+  readonly source: "meta";
+  readonly kind:
+    "account_alerts" | "account_update" | "phone_number_name_update";
+  readonly wabaId?: string;
+  readonly value: Readonly<Record<string, unknown>>;
+}
+
+export type SessionStatusPayload =
+  RuntimeSessionStatusPayload | CloudAccountStatusPayload;
 
 export type SessionRestrictionType = "reachout_timelock";
 
@@ -814,7 +847,7 @@ export interface MessageFailedPayload {
   readonly timestamp: number;
 }
 
-export interface TemplateStatusPayload {
+export interface RuntimeTemplateStatusPayload {
   readonly templateName: string;
   readonly templateId: string;
   readonly status: string;
@@ -822,6 +855,22 @@ export interface TemplateStatusPayload {
   readonly reason: string;
   readonly qualityRating: string;
 }
+
+export interface CloudTemplateStatusPayload {
+  readonly kind:
+    "message_template_status_update" | "message_template_quality_update";
+  readonly event?: string;
+  readonly templateId?: string;
+  readonly templateName?: string;
+  readonly language?: string;
+  readonly reason?: string;
+  readonly previousQualityScore?: string;
+  readonly newQualityScore?: string;
+  readonly wabaId?: string;
+}
+
+export type TemplateStatusPayload =
+  RuntimeTemplateStatusPayload | CloudTemplateStatusPayload;
 
 export interface CampaignLaunchedPayload {
   readonly campaignId: string;

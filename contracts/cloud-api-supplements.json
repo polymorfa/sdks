@@ -1,0 +1,30 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "29abb7b66a8e225af4df5cf354e9836ccb2ce04c",
+  "branch": "dev",
+  "note": "Graph-compatible operations used by typed SDK methods. The full Graph API is outside the coverage ledger. All sources are merged on API dev at this exact commit. No SDK package or availability claim.",
+  "sources": [
+    {
+      "sourcePath": "docs/api-reference/openapi.graph.json",
+      "sha256": "87e3a56aee42de041dd38db08d0b263123f84a5a4982ce0f20b780c3cfae3684",
+      "operationIds": ["graphListProductCatalogs"],
+      "methods": ["MessagingClient.cloudCatalogs.list"],
+      "merged": true
+    },
+    {
+      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/362",
+      "sourcePath": "apps/api/packages/api/src/routes/graph/flow-encryption.ts",
+      "sha256": "8138dced428eaa4f50c94f1ed48a6fff35ab3f55b188faad6d647ee6635a8129",
+      "operationIds": [
+        "graphGetFlowEncryptionKey",
+        "graphRegisterFlowEncryptionKey"
+      ],
+      "methods": [
+        "MessagingClient.flowEncryption.retrieve",
+        "MessagingClient.flowEncryption.register"
+      ],
+      "merged": true,
+      "note": "The published Graph OpenAPI at this commit omits these two routes; the route source is the exact contract."
+    }
+  ]
+}

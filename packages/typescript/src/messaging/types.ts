@@ -103,6 +103,8 @@ export interface Campaign {
   readonly completedAt: number | null;
   readonly createdAt: number;
   readonly updatedAt: number;
+  /** When the campaign may send, or null when it has no send window. */
+  readonly sendWindow: CampaignSendWindow | null;
   /** Additional live repository fields omitted from the pinned OpenAPI schema. */
   readonly composerBlueprint?: unknown;
   readonly messages?: unknown;
@@ -111,6 +113,42 @@ export interface Campaign {
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
   readonly variantStrategy?: unknown;
+}
+
+export type CampaignWeekday =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
+
+/** Local `HH:MM` range; `start` is inclusive and `end` (up to `24:00`) exclusive. */
+export interface CampaignSendWindowRange {
+  readonly start: string;
+  readonly end: string;
+}
+
+/** Stored send window. Recipients outside it stay queued until it next opens. */
+export interface CampaignSendWindow {
+  readonly timeZone: string;
+  readonly days: readonly CampaignWeekday[];
+  readonly hours: readonly CampaignSendWindowRange[];
+  readonly recipientTimeZone: boolean;
+  readonly timeZoneVariable: string;
+}
+
+/** Send window input. Up to four non-overlapping ranges that do not cross midnight. */
+export interface CampaignSendWindowRequest {
+  /** IANA zone. Defaults to the team's time zone, or UTC. */
+  readonly timeZone?: string;
+  readonly days: readonly CampaignWeekday[];
+  readonly hours: readonly CampaignSendWindowRange[];
+  /** Evaluate the window in each recipient's own time zone. Defaults to false. */
+  readonly recipientTimeZone?: boolean;
+  /** Recipient variable holding an IANA zone. Defaults to `timeZone`. */
+  readonly timeZoneVariable?: string;
 }
 
 export interface CampaignAnalytics {
@@ -132,6 +170,8 @@ export interface CreateCampaignRequest {
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Epoch milliseconds. */
   readonly scheduledAt?: number;
+  /** When the campaign may send; null or omitted sends at any time. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   /**
    * Up to 1,000 recipients to queue with the draft. Invalid entries reject the
    * whole request; use `campaigns.addRecipients` for partial acceptance.
@@ -2286,6 +2326,8 @@ export interface SeenRequest {
 
 export interface TypingRequest {
   readonly conversation: ConversationReference;
+  /** Required on Official Numbers: an inbound message to mark read while showing typing. */
+  readonly id?: string;
   readonly state: "typing" | "recording" | "paused";
 }
 

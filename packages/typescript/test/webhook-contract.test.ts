@@ -11,6 +11,9 @@ import {
   type ProjectWebhookDeliveryAttempt,
   type OrganizationWebhookDeliveryAttempt,
   type SessionLoggedOutPayload,
+  type RuntimeTemplateStatusPayload,
+  type CloudTemplateStatusPayload,
+  type CloudAccountStatusPayload,
   type WebhookPayloadMap,
 } from "../src/index.js";
 
@@ -175,7 +178,11 @@ const campaign = { campaignId: "cmp_1" } as const;
 
 type P = WebhookPayloadMap;
 const PAYLOADS: {
-  readonly [K in Exclude<KnownWebhookEventType, LegacyEventType>]: Shape<P[K]>;
+  readonly [
+    K in Exclude<KnownWebhookEventType, LegacyEventType>
+  ]: K extends "template.status"
+    ? Shape<RuntimeTemplateStatusPayload>
+    : Shape<P[K]>;
 } = {
   "contact.opted_in": shape<P["contact.opted_in"]>()(
     {
@@ -527,7 +534,7 @@ const PAYLOADS: {
       "failureReason",
     ],
   ),
-  "template.status": shape<P["template.status"]>()(
+  "template.status": shape<RuntimeTemplateStatusPayload>()(
     {
       templateName: "order_update",
       templateId: "tpl_1",
@@ -715,6 +722,11 @@ type LegacyEventType = Exclude<
   | "session.logged_out"
 >;
 
+/** Union payloads whose PAYLOADS fixture covers one named alternative. */
+const UNION_FIXTURE_SCHEMAS: Readonly<Record<string, string>> = {
+  "template.status": "RuntimeTemplateStatusPayload",
+};
+
 function specEvents(): Map<string, string> {
   const events = new Map<string, string>();
   for (const schema of Object.values(messaging.components.schemas)) {
@@ -741,9 +753,54 @@ describe("webhook catalog contract", () => {
     (type, fixture) => {
       const schemaName = specEvents().get(type);
       expect(schemaName, type).toBeDefined();
-      expectShape(messaging, schemaName!, fixture);
+      const variant = UNION_FIXTURE_SCHEMAS[type];
+      if (variant !== undefined) {
+        const union = resolveRef(messaging, { $ref: `#/${schemaName!}` });
+        expect(
+          (union.anyOf ?? union.oneOf ?? []).map((part) => part.$ref),
+          type,
+        ).toContain(`#/components/schemas/${variant}`);
+      }
+      expectShape(messaging, variant ?? schemaName!, fixture);
     },
   );
+
+  it("types the Meta template notification variant of template.status", () => {
+    expectShape(
+      messaging,
+      "CloudTemplateStatusPayload",
+      shape<CloudTemplateStatusPayload>()(
+        {
+          kind: "message_template_quality_update",
+          event: "YELLOW",
+          templateId: "1234567890",
+          templateName: "order_update",
+          language: "en_US",
+          reason: "NONE",
+          previousQualityScore: "GREEN",
+          newQualityScore: "YELLOW",
+          wabaId: "102290129340398",
+        },
+        ["kind"],
+      ),
+    );
+  });
+
+  it("types the Meta account notification variant of session.status", () => {
+    expectShape(
+      messaging,
+      "CloudAccountStatusPayload",
+      shape<CloudAccountStatusPayload>()(
+        {
+          source: "meta",
+          kind: "phone_number_name_update",
+          wabaId: "102290129340398",
+          value: { decision: "APPROVED" },
+        },
+        ["source", "kind", "value"],
+      ),
+    );
+  });
 
   it.each(Object.entries(PAYLOADS))(
     "%s parses from a signed delivery",

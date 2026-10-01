@@ -1,4 +1,5 @@
 import type { MessagingCredential } from "../credentials.js";
+import type { CustomerServiceWindow } from "./cloud-types.js";
 import { PolymorfaConfigurationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import { withIdempotencyKey } from "../transport/idempotency.js";
@@ -26,6 +27,29 @@ export class ChatsResource {
     private readonly transport: HttpTransport,
     private readonly credentialType: MessagingCredential["type"],
   ) {}
+
+  /** Official API beta. Requires chats:read and team enrollment; no HMS requirement. */
+  getServiceWindow(
+    session: string,
+    conversation: string,
+    options: RequestOptions = {},
+  ): Promise<
+    ApiResponse<{
+      readonly success: true;
+      readonly data: CustomerServiceWindow;
+    }>
+  > {
+    if (this.credentialType === "clientToken") {
+      throw new PolymorfaConfigurationError(
+        "Service windows require an organization API key or project token.",
+      );
+    }
+    return this.transport.request({
+      method: "GET",
+      path: `${chatPath(session, conversation)}/service-window`,
+      ...options,
+    });
+  }
 
   /** Lists one page of stored conversations. Requires `chats:read` and enrolled HMS history access. */
   list(
