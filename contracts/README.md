@@ -90,12 +90,18 @@ product page. `MessagingClient.cloudCatalogs.listProducts` follows its WABA and
 catalog path, `sessions:read` credential boundary, projected product fields,
 and opaque cursor response. It does not establish live catalog access.
 
+API PRs #333 and #385, merged at the pinned commit, add the Official API
+message-media retrieval status and the stored-copy download route.
+`MessagingClient.chats.downloadMessageMedia` and `downloadMessageMediaStream`
+cover the route; `HistoryMessage.mediaRetrieval` types the status. This does
+not establish deployed HMS beta access or SDK package publication.
+
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
 operation fingerprint or SDK method mapping.
 
 The API merge also incorporates two unrelated routes from API PRs #333 and
-#332. Hosted-history media download is assigned to SDK PR #316; Messaging
+#332. Hosted-history media download is covered by `MessagingClient.chats`; Messaging
 campaign update is assigned to SDK PR #307. Both are intentional exclusions in
 this Calls ledger. Existing hosted-history message reads now type the optional
 `mediaRetrieval` status and remain covered.
@@ -205,9 +211,9 @@ signed events with these names still decode as unknown events.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        405 |
+| Covered             |        406 |
 | Missing             |          0 |
-| Excluded            |        131 |
+| Excluded            |        130 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
 | Total               |        536 |

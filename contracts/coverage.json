@@ -587,8 +587,8 @@
       "operationId": "getChatMessageMedia",
       "fingerprint": "fff403df5eb56d8cfd73b930641f5ea070b39eb9a4e2d8bb05aa7f9992ca7065",
       "typescript": {
-        "status": "excluded",
-        "reason": "Official API hosted-history media download is owned by SDK PR #316."
+        "status": "covered",
+        "method": "MessagingClient.chats.downloadMessageMedia"
       }
     },
     {
