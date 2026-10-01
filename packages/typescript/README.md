@@ -315,10 +315,19 @@ const created = await messaging.templates.create("support", {
 await messaging.templates.preview("support", created.data.data.id, {
   values: { name: "Grace" },
 });
+
+await messaging.templates.submit("support", created.data.data.id, {
+  session: "number_123",
+});
 ```
 
 Keep this client on the server. Browser builders use an application-owned
 route, such as `createTemplateBuilderRoute` from `@polymorfa/nextjs`.
+Submission validates the saved definition before making one provider attempt.
+A successful response records the submission; it does not establish approval.
+If the request times out or loses its response, read the Number's template
+catalog before deciding whether another submission is needed. Local preview
+does not ask Meta to validate the template.
 
 ## Flow drafts and provider lifecycle
 

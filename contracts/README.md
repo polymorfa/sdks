@@ -80,6 +80,11 @@ decision `experimentRevision`, and closed Platform campaign shapes. SDK types
 follow each change on covered operations; feature evaluation stays excluded. `cloud-api-supplements.json` pins the Graph-compatible
 catalog and Flow encryption routes to the same commit.
 
+API PR #377, merged in this snapshot, rejects invalid project-template
+drafts with 400 before submission. The typed `MessagingClient.templates.submit`
+method makes one network attempt, including when callers supply an idempotency
+key or retry override; the route declares no replay contract.
+
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
 operation fingerprint or SDK method mapping.
