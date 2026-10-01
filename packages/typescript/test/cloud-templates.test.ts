@@ -163,6 +163,29 @@ describe("Cloud templates", () => {
     },
   );
 
+  it("submits a project template draft to Meta once, even with a retry override", async () => {
+    const server = await startTestServer(() => ({
+      status: 500,
+      body: JSON.stringify({
+        error: { code: "internal_error", message: "Outcome unknown" },
+      }),
+    }));
+    servers.push(server);
+    await expect(
+      client(server).templates.submit(
+        "support",
+        "tpl/1",
+        { session: "number_123" },
+        { idempotencyKey: "customer-key", maxNetworkRetries: 3 },
+      ),
+    ).rejects.toMatchObject({ status: 500 });
+    expect(server.requests).toHaveLength(1);
+    expect(server.requests[0]!.method).toBe("POST");
+    expect(server.requests[0]!.path).toBe(
+      "/messaging/projects/support/templates/tpl%2F1/submit",
+    );
+  });
+
   it("returns a catalog failure instead of an empty successful list", async () => {
     const server = await startTestServer(() => ({
       status: 502,
