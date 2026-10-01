@@ -124,6 +124,23 @@ interface Shape<T> {
   readonly required: readonly RequiredKeys<T>[];
 }
 
+const ORDER_PAYMENT_SAMPLE = {
+  kind: "payment_status",
+  reportedBy: "whatsapp",
+  providerEventId: "notification-1",
+  referenceId: "order-1522",
+  conversation: { phoneNumber: "+5511987654321" },
+  status: "captured",
+  amount: { value: 5500, offset: 100 },
+  currency: "BRL",
+  transaction: { id: "pg-order", status: "success", method: "pix" },
+  messageId: "wamid.PAY",
+  paymentMethod: "offsite_card_pay",
+  lastFourDigits: "5235",
+  credentialId: "1234567",
+  paymentTimestamp: 1726170122,
+} as const;
+
 function shape<T>() {
   return <const R extends readonly RequiredKeys<T>[]>(
     value: { readonly [K in keyof T]-?: Exclude<T[K], undefined> },
@@ -312,6 +329,11 @@ const PAYLOADS: {
       "episodeId",
       "actionId",
     ],
+  ),
+  // Every property of both variants, checked against the contract schema.
+  "order.payment_updated": shape<P["order.payment_updated"]>()(
+    ORDER_PAYMENT_SAMPLE,
+    ["kind", "reportedBy", "providerEventId", "referenceId", "conversation"],
   ),
   "call.permission_changed": shape<P["call.permission_changed"]>()(
     {
@@ -714,6 +736,7 @@ type LegacyEventType = Exclude<
   | `bansafe.${string}`
   | `campaign.${string}`
   | "call.permission_changed"
+  | "order.payment_updated"
   | `voice.${string}`
   | "usage.recorded"
   | "message.failed"

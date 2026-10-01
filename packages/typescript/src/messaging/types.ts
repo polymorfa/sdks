@@ -1986,7 +1986,9 @@ export type MessageKind =
   | "buttons"
   | "address_message"
   | "flow"
-  | "call_permission_request";
+  | "call_permission_request"
+  | "order_details"
+  | "order_status";
 
 export interface QuotedMessage {
   readonly id: string;
@@ -2277,7 +2279,58 @@ export type PixKeyType = "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "EVP";
  * Numbers only). Polymorfa validates and relays the order; it does not
  * collect, hold or confirm funds. Use a new `referenceId` for every order.
  */
-export interface OrderDetailsMessageContent {
+export interface PixDynamicCodePayment {
+  /** Dynamic Pix copy-and-paste code from your bank or payment provider. */
+  readonly code: string;
+  readonly merchantName: string;
+  readonly key: string;
+  readonly keyType: PixKeyType;
+}
+
+/** Ways to pay; provide at least one. */
+export type OrderPaymentSettings = {
+  readonly pixDynamicCode?: PixDynamicCodePayment;
+  /** HTTPS checkout link. */
+  readonly paymentLink?: { readonly uri: string };
+  /** Boleto digitable line of 47 or 48 digits. */
+  readonly boleto?: { readonly digitableLine: string };
+} & (
+  | { readonly pixDynamicCode: PixDynamicCodePayment }
+  | { readonly paymentLink: { readonly uri: string } }
+  | { readonly boleto: { readonly digitableLine: string } }
+);
+
+/** Itemized order lines and totals. */
+export interface OrderDetailsItemization {
+  readonly catalogId?: string;
+  readonly expiration?: {
+    /** Unix seconds, at least 300 seconds from now. */
+    readonly timestamp: number;
+    readonly description: string;
+  };
+  readonly items: readonly {
+    readonly retailerId: string;
+    readonly name: string;
+    readonly amount: PaymentOrderAmount;
+    readonly quantity: number;
+    readonly saleAmount?: PaymentOrderAmount;
+  }[];
+  /** Sum of each item's saleAmount (or amount) times quantity. */
+  readonly subtotal: PaymentOrderAmount;
+  readonly tax: PaymentOrderAmount & { readonly description?: string };
+  readonly shipping?: PaymentOrderAmount & { readonly description?: string };
+  readonly discount?: PaymentOrderAmount & {
+    readonly description?: string;
+    readonly programName?: string;
+  };
+}
+
+/**
+ * A Brazil order with payment instructions (payment orders beta, Official API
+ * Numbers only). Polymorfa validates and relays the order; it does not
+ * collect, hold or confirm funds. Use a new `referenceId` for every order.
+ */
+export type OrderDetailsMessageContent = {
   /** 1 to 60 letters, digits, underscores, dashes or dots. */
   readonly referenceId: string;
   readonly type: "digital-goods" | "physical-goods";
@@ -2285,50 +2338,19 @@ export interface OrderDetailsMessageContent {
   readonly body: string;
   /** At most 60 characters. */
   readonly footer?: string;
-  /** HTTPS image shown as the thumbnail. Requires `order`. */
-  readonly headerImageUrl?: string;
   readonly currency: "BRL";
   /** With `order`, equals subtotal + tax + shipping - discount. */
   readonly totalAmount: PaymentOrderAmount;
-  /** At least one way to pay. */
-  readonly paymentSettings: {
-    /** Dynamic Pix copy-and-paste code from your bank or payment provider. */
-    readonly pixDynamicCode?: {
-      readonly code: string;
-      readonly merchantName: string;
-      readonly key: string;
-      readonly keyType: PixKeyType;
-    };
-    /** HTTPS checkout link. */
-    readonly paymentLink?: { readonly uri: string };
-    /** Boleto digitable line of 47 or 48 digits. */
-    readonly boleto?: { readonly digitableLine: string };
-  };
-  /** Itemized order. Omit to send only the total. */
-  readonly order?: {
-    readonly catalogId?: string;
-    readonly expiration?: {
-      /** Unix seconds, at least 300 seconds from now. */
-      readonly timestamp: number;
-      readonly description: string;
-    };
-    readonly items: readonly {
-      readonly retailerId: string;
-      readonly name: string;
-      readonly amount: PaymentOrderAmount;
-      readonly quantity: number;
-      readonly saleAmount?: PaymentOrderAmount;
-    }[];
-    /** Sum of each item's saleAmount (or amount) times quantity. */
-    readonly subtotal: PaymentOrderAmount;
-    readonly tax: PaymentOrderAmount & { readonly description?: string };
-    readonly shipping?: PaymentOrderAmount & { readonly description?: string };
-    readonly discount?: PaymentOrderAmount & {
-      readonly description?: string;
-      readonly programName?: string;
-    };
-  };
-}
+  readonly paymentSettings: OrderPaymentSettings;
+} & (
+  | {
+      /** Itemized order. */
+      readonly order: OrderDetailsItemization;
+      /** HTTPS image shown as the thumbnail. */
+      readonly headerImageUrl?: string;
+    }
+  | { readonly order?: undefined; readonly headerImageUrl?: undefined }
+);
 
 export type OrderStatus =
   | "pending"

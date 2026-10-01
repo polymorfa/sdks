@@ -7,9 +7,12 @@
   `orderDetails` (Pix dynamic code, payment link or boleto, itemized or
   total only) and `orderStatus` content. New types:
   `OrderDetailsMessageContent`, `OrderStatusMessageContent`,
+  `OrderPaymentSettings`, `OrderDetailsItemization`, `PixDynamicCodePayment`,
   `PaymentOrderAmount`, `PixKeyType`, `OrderStatus`, `OrderPaymentStatus`,
   `SendOrderDetailsMessageRequest`, `SendOrderStatusMessageRequest` and
-  `OrderPaymentUpdatedPayload` for the `order.payment_updated` event. New error
+  `OrderPaymentUpdatedPayload` (discriminated on `kind`) for the
+  `order.payment_updated` event. `MessageKind` adds `order_details` and
+  `order_status`. New error
   codes: `order_status_transition_invalid` and `order_cancellation_failed`.
   Polymorfa relays orders and payment reports; it does not process funds.
   Contracts are pinned to API `dev` `4b9ebf0`.

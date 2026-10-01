@@ -4,6 +4,7 @@ import {
   KNOWN_WEBHOOK_EVENT_TYPES,
   MessagingClient,
   PolymorfaConflictError,
+  type OrderDetailsMessageContent,
   type OrderPaymentUpdatedPayload,
   type OrderStatusMessageContent,
   type SendMessageRequest,
@@ -66,6 +67,27 @@ describe("Brazil payment orders (beta)", () => {
     expect(JSON.parse(String(init?.body))).toEqual(order);
   });
 
+  it("requires a payment setting, and an itemized order for a header image", () => {
+    type Details = OrderDetailsMessageContent;
+    const base = {
+      referenceId: "r",
+      type: "digital-goods",
+      body: "b",
+      currency: "BRL",
+      totalAmount: { value: 1, offset: 100 },
+    } as const;
+    expectTypeOf({
+      ...base,
+      paymentSettings: { boleto: { digitableLine: "1" } },
+    }).toMatchTypeOf<Details>();
+    expectTypeOf({ ...base, paymentSettings: {} }).not.toMatchTypeOf<Details>();
+    expectTypeOf({
+      ...base,
+      paymentSettings: { boleto: { digitableLine: "1" } },
+      headerImageUrl: "https://x",
+    }).not.toMatchTypeOf<Details>();
+  });
+
   it("types order status updates that need order, payment, or both", () => {
     expectTypeOf<{
       referenceId: "r";
@@ -123,7 +145,8 @@ describe("Brazil payment orders (beta)", () => {
         { properties?: Record<string, unknown>; required?: string[] }
       >
     ).OrderPaymentUpdatedPayload!;
-    const typed: Record<keyof OrderPaymentUpdatedPayload, true> = {
+    type AnyKey<T> = T extends T ? keyof T : never;
+    const typed: Record<AnyKey<OrderPaymentUpdatedPayload>, true> = {
       kind: true,
       reportedBy: true,
       providerEventId: true,
@@ -142,5 +165,21 @@ describe("Brazil payment orders (beta)", () => {
     expect(Object.keys(schema.properties!).sort()).toEqual(
       Object.keys(typed).sort(),
     );
+    // Fields the contract requires are required on every variant.
+    expect([...schema.required!].sort()).toEqual([
+      "conversation",
+      "kind",
+      "providerEventId",
+      "referenceId",
+      "reportedBy",
+    ]);
+    expectTypeOf<
+      Extract<OrderPaymentUpdatedPayload, { kind: "payment_status" }>["status"]
+    >().toEqualTypeOf<string>();
+    expectTypeOf<
+      Extract<OrderPaymentUpdatedPayload, { kind: "payment_status" }>["amount"]
+    >().toEqualTypeOf<
+      { readonly value: number; readonly offset: number } | undefined
+    >();
   });
 });

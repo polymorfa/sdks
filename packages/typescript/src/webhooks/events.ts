@@ -2,7 +2,6 @@ import type {
   CallPermissionSource,
   CallPermissionStatus,
   MessagingConnection,
-  PaymentOrderAmount,
   WhatsAppMessageIds,
   PhonePlatform,
   WhatsAppAccountType,
@@ -872,14 +871,7 @@ export interface CallPermissionChangedPayload {
   readonly changedAt: string;
 }
 
-/**
- * WhatsApp reported a payment update for a Brazil order (payment orders beta).
- * Polymorfa relays the report; it does not process, hold or confirm funds.
- * Confirm settlement with your payment provider by `referenceId`.
- */
-export interface OrderPaymentUpdatedPayload {
-  /** `payment_status` reports a status; `payment_method_selected` reports a one-click payment confirmation. */
-  readonly kind: "payment_status" | "payment_method_selected";
+interface OrderPaymentUpdateBase {
   readonly reportedBy: "whatsapp";
   /** WhatsApp's notification or message ID. */
   readonly providerEventId: string;
@@ -889,25 +881,40 @@ export interface OrderPaymentUpdatedPayload {
     readonly id?: string;
     readonly phoneNumber?: string;
   };
-  /** Payment status as WhatsApp reported it, for example `captured`. */
-  readonly status?: string;
-  readonly amount?: PaymentOrderAmount;
-  readonly currency?: string;
-  readonly transaction?: {
-    readonly id?: string;
-    readonly providerTransactionId?: string;
-    readonly provider?: string;
-    readonly status?: string;
-    readonly method?: string;
-    readonly errorCode?: string;
-  };
-  readonly messageId?: string;
-  readonly paymentMethod?: string;
-  readonly lastFourDigits?: string;
-  readonly credentialId?: string;
-  /** Unix time in seconds reported by WhatsApp. */
-  readonly paymentTimestamp?: number;
 }
+
+/**
+ * WhatsApp reported a payment update for a Brazil order (payment orders beta).
+ * Polymorfa relays the report; it does not process, hold or confirm funds.
+ * Confirm settlement with your payment provider by `referenceId`.
+ */
+export type OrderPaymentUpdatedPayload =
+  | (OrderPaymentUpdateBase & {
+      readonly kind: "payment_status";
+      /** Payment status as WhatsApp reported it, for example `captured`. */
+      readonly status: string;
+      /** Reported amount; `value / offset` is the amount in currency units. */
+      readonly amount?: { readonly value: number; readonly offset: number };
+      readonly currency?: string;
+      readonly transaction?: {
+        readonly id?: string;
+        readonly providerTransactionId?: string;
+        readonly provider?: string;
+        readonly status?: string;
+        readonly method?: string;
+        readonly errorCode?: string;
+      };
+    })
+  | (OrderPaymentUpdateBase & {
+      /** The buyer confirmed a one-click payment method. */
+      readonly kind: "payment_method_selected";
+      readonly messageId: string;
+      readonly paymentMethod: string;
+      readonly lastFourDigits?: string;
+      readonly credentialId?: string;
+      /** Unix time in seconds reported by WhatsApp. */
+      readonly paymentTimestamp?: number;
+    });
 
 export type MessageFailedReason =
   | "invalid_recipient"
