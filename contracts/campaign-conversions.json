@@ -58,12 +58,7 @@
           "description": "Reported value, or omit for a conversion without one."
         }
       },
-      "required": [
-        "recipientId",
-        "eventId",
-        "eventType",
-        "occurredAt"
-      ]
+      "required": ["recipientId", "eventId", "eventType", "occurredAt"]
     },
     "CampaignConversionValue": {
       "type": "object",
@@ -82,10 +77,7 @@
           "example": "USD"
         }
       },
-      "required": [
-        "amountMinor",
-        "currency"
-      ]
+      "required": ["amountMinor", "currency"]
     },
     "CampaignConversion": {
       "type": "object",
@@ -123,9 +115,7 @@
         },
         "evidence": {
           "type": "string",
-          "enum": [
-            "customer_reported"
-          ],
+          "enum": ["customer_reported"],
           "description": "Who asserted the conversion. `customer_reported`: your system reported it; Polymorfa did not verify a payment."
         },
         "attribution": {
@@ -134,12 +124,7 @@
           "properties": {
             "outcome": {
               "type": "string",
-              "enum": [
-                "attributed",
-                "outside_window",
-                "not_sent",
-                "opted_out"
-              ],
+              "enum": ["attributed", "outside_window", "not_sent", "opted_out"],
               "description": "`attributed`: within 7 days after the recipient was sent. `outside_window`: before the send or more than 7 days after it. `not_sent`: the recipient was never sent. `opted_out`: the recipient is on the team's opt-out list; the conversion is counted but not linked to them."
             },
             "touchAt": {
@@ -150,16 +135,10 @@
             },
             "windowDays": {
               "type": "integer",
-              "enum": [
-                7
-              ]
+              "enum": [7]
             }
           },
-          "required": [
-            "outcome",
-            "touchAt",
-            "windowDays"
-          ]
+          "required": ["outcome", "touchAt", "windowDays"]
         },
         "recordedAt": {
           "type": "string",
@@ -198,28 +177,18 @@
           "properties": {
             "touch": {
               "type": "string",
-              "enum": [
-                "recipient_sent"
-              ]
+              "enum": ["recipient_sent"]
             },
             "windowDays": {
               "type": "integer",
-              "enum": [
-                7
-              ]
+              "enum": [7]
             },
             "correlation": {
               "type": "string",
-              "enum": [
-                "explicit_recipient"
-              ]
+              "enum": ["explicit_recipient"]
             }
           },
-          "required": [
-            "touch",
-            "windowDays",
-            "correlation"
-          ]
+          "required": ["touch", "windowDays", "correlation"]
         },
         "sentCount": {
           "type": "integer",
@@ -282,9 +251,7 @@
               },
               "evidence": {
                 "type": "string",
-                "enum": [
-                  "customer_reported"
-                ]
+                "enum": ["customer_reported"]
               },
               "attributedConversions": {
                 "type": "integer",

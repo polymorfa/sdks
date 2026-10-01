@@ -1774,7 +1774,10 @@ const recorded = await client.campaigns.recordConversion(campaignId, {
   occurredAt: "2026-10-01T10:00:00+02:00",
   value: { amountMinor: 1999, currency: "USD" },
 });
-console.log(recorded.data.data.attribution.outcome, recorded.data.data.replayed);
+console.log(
+  recorded.data.data.attribution.outcome,
+  recorded.data.data.replayed,
+);
 
 const report = await client.campaigns.conversions(campaignId, { projectId });
 console.log(report.data.data.conversions.attributed, report.data.data.values);
