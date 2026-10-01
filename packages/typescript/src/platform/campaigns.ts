@@ -7,6 +7,8 @@ import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   AddPlatformCampaignRecipientsRequest,
   AddPlatformCampaignRecipientsResult,
+  CampaignConversion,
+  CampaignConversionReport,
   CreatePlatformCampaignRequest,
   DataEnvelope,
   ListCampaignsParams,
@@ -14,6 +16,7 @@ import type {
   PlatformCampaignParams,
   PlatformCampaignRecipientsEnvelope,
   PlatformPayload,
+  RecordCampaignConversionRequest,
   UpdatePlatformCampaignRequest,
 } from "./types.js";
 
@@ -215,6 +218,45 @@ export class CampaignsResource {
       path: recipientsPath(campaignId),
       body,
       ...withoutAutomaticRetry(options),
+    });
+  }
+
+  /**
+   * Beta: report a conversion your system observed for one campaign recipient.
+   *
+   * Credited to the campaign when `occurredAt` is within 7 days after the
+   * recipient was sent; the decision is made once and never recalculated.
+   * `eventId` deduplicates per project, so a retry with the same body returns
+   * the original conversion with `replayed: true`, and a different body is
+   * refused with `409 idempotency_conflict`. Retries are therefore safe.
+   */
+  recordConversion(
+    campaignId: string,
+    body: RecordCampaignConversionRequest,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignConversion> {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(campaignId)}/conversions`,
+      body,
+      ...options,
+    });
+  }
+
+  /**
+   * Beta: counts of a campaign's reported conversions by attribution outcome,
+   * and reported value per currency. Amounts are never converted or combined.
+   */
+  conversions(
+    campaignId: string,
+    params: PlatformCampaignParams,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignConversionReport> {
+    return this.transport.request({
+      method: "GET",
+      path: `${campaignPath(campaignId)}/conversions`,
+      query: campaignQuery(params),
+      ...options,
     });
   }
 

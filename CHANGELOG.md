@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Campaign conversion reporting (beta, requires team enrollment).
+  `Client.campaigns.recordConversion(campaignId, body)` reports a conversion
+  for a named campaign recipient, deduplicated by `eventId`.
+  `Client.campaigns.conversions(campaignId, { projectId })` returns counts by
+  attribution outcome and reported value per currency. New types:
+  `RecordCampaignConversionRequest`, `CampaignConversion`,
+  `CampaignConversionValue`, `CampaignConversionOutcome`,
+  `CampaignConversionReport` and `CampaignConversionCurrencyTotal`.
 - Official API consumers: Number-scoped Meta templates (`cloudTemplates`),
   service windows, Meta pricing counts, Cloud credential health and
   reauthorization, QuickLink sync receipts, typing with an inbound message ID,

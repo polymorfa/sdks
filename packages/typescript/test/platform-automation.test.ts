@@ -384,6 +384,45 @@ it("requires project scope on organization campaigns and omits campaigns from pr
     client.campaigns.recipients("campaign/a", { status: "queued" });
     // @ts-expect-error recipient append requires its owning project
     client.campaigns.addRecipients("campaign/a", { recipients: [] });
+    // @ts-expect-error conversion reports require project parameters
+    client.campaigns.conversions("campaign/a");
+    client.campaigns.recordConversion("campaign/a", {
+      // @ts-expect-error amounts are integer minor units with a currency, never a bare number
+      value: 19.99,
+      projectId: "project/a",
+      recipientId: "recipient/a",
+      eventId: "order-1",
+      eventType: "purchase",
+      occurredAt: "2026-10-01T10:00:00Z",
+    });
   };
   expect(invalidCalls).toBeTypeOf("function");
+});
+
+describe("Client campaign conversions (beta)", () => {
+  it("records a conversion and reads the per-campaign report", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.recordConversion("campaign/a", {
+      projectId: "project/a",
+      recipientId: "recipient-1",
+      eventId: "order-1001",
+      eventType: "purchase",
+      occurredAt: "2026-10-01T10:00:00+02:00",
+      value: { amountMinor: 1999, currency: "USD" },
+    });
+    await client.campaigns.conversions("campaign/a", { projectId: "project/a" });
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "POST /platform/campaigns/campaign%2Fa/conversions",
+      "GET /platform/campaigns/campaign%2Fa/conversions?projectId=project%2Fa",
+    ]);
+    expect(JSON.parse(requests[0]?.body ?? "{}")).toEqual({
+      projectId: "project/a",
+      recipientId: "recipient-1",
+      eventId: "order-1001",
+      eventType: "purchase",
+      occurredAt: "2026-10-01T10:00:00+02:00",
+      value: { amountMinor: 1999, currency: "USD" },
+    });
+  });
 });
