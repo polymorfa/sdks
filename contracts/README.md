@@ -366,3 +366,15 @@ organization enabled for Functions. The SDK never retries Function mutations or
 invocations automatically. Browser/client-token SDKs do not expose this server
 control plane. A local implementation or installed method does not establish
 hosted availability.
+
+## Campaign conversion supplement
+
+`campaign-conversions.json` records the two beta campaign conversion
+operations and their four schemas from API source commit
+`7d1b7d6eb035447dc8c5d20420e4cc172ba99b37` (polymorfa/polymorfa PR #427), with
+the source file hash. The operations are withheld from the public Platform
+spec while the beta has no audience. The full snapshots stay pinned to
+`source.json` until the next repin, which will add both operations to the
+coverage ledger as `Client.campaigns.recordConversion` and
+`Client.campaigns.conversions`. `campaign-conversions-contract.test.ts`
+compares the exported types with the supplement.
