@@ -20,6 +20,19 @@ export interface ListCloudCatalogsResponse {
     readonly cursors: { readonly before?: string; readonly after?: string };
   };
 }
+export interface CloudCatalogProduct {
+  readonly id: string;
+  readonly retailer_id?: string;
+  readonly name?: string;
+  readonly availability?: string;
+}
+export type ListCloudCatalogProductsParams = ListCloudCatalogsParams;
+export interface ListCloudCatalogProductsResponse {
+  readonly data: readonly CloudCatalogProduct[];
+  readonly paging?: {
+    readonly cursors: { readonly before?: string; readonly after?: string };
+  };
+}
 
 /** Reads catalog links visible to the authenticated WABA. Requires sessions:read. */
 export class CloudCatalogsResource {
@@ -47,6 +60,36 @@ export class CloudCatalogsResource {
     return this.transport.request({
       method: "GET",
       path: `/graph/whatsapp/${encodeURIComponent(params.version)}/${encodeURIComponent(wabaId)}/product_catalogs`,
+      query: { limit: params.limit, after: params.after },
+      ...options,
+    });
+  }
+
+  /** Read a page of products only after the API verifies that this catalog is linked to the WABA. */
+  listProducts(
+    wabaId: string,
+    catalogId: string,
+    params: ListCloudCatalogProductsParams,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<ListCloudCatalogProductsResponse>> {
+    if (this.credentialType === "clientToken") {
+      throw new PolymorfaConfigurationError(
+        "Official API catalogs require an organization API key or project token.",
+        "credential",
+      );
+    }
+    if (
+      !wabaId.trim() ||
+      !/^[0-9]+$/.test(catalogId) ||
+      !params.version.trim()
+    ) {
+      throw new PolymorfaConfigurationError(
+        "Provide a WABA ID, numeric catalog ID, and Graph version.",
+      );
+    }
+    return this.transport.request({
+      method: "GET",
+      path: `/graph/whatsapp/${encodeURIComponent(params.version)}/${encodeURIComponent(wabaId)}/product_catalogs/${encodeURIComponent(catalogId)}/products`,
       query: { limit: params.limit, after: params.after },
       ...options,
     });

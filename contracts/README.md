@@ -85,6 +85,11 @@ drafts with 400 before submission. The typed `MessagingClient.templates.submit`
 method makes one network attempt, including when callers supply an idempotency
 key or retry override; the route declares no replay contract.
 
+API PR #380, merged at the pinned commit, adds the read-only linked-catalog
+product page. `MessagingClient.cloudCatalogs.listProducts` follows its WABA and
+catalog path, `sessions:read` credential boundary, projected product fields,
+and opaque cursor response. It does not establish live catalog access.
+
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
 operation fingerprint or SDK method mapping.
