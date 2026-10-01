@@ -1758,6 +1758,42 @@ pass one. Automatic retries reuse that key; a completed replay returns the
 API's `idempotency_completed` conflict, so inspect the campaign state after a
 lost response.
 
+#### Campaign conversions (beta)
+
+Campaign conversion reporting is a beta: the team must be enrolled, or both
+methods answer `403`. Report a conversion your system observed for one
+recipient, named by its `id` from `client.campaigns.recipients`. Polymorfa never
+matches conversions by phone number.
+
+```ts
+const recorded = await client.campaigns.recordConversion(campaignId, {
+  projectId,
+  recipientId,
+  eventId: "order-1001",
+  eventType: "purchase",
+  occurredAt: "2026-10-01T10:00:00+02:00",
+  value: { amountMinor: 1999, currency: "USD" },
+});
+console.log(
+  recorded.data.data.attribution.outcome,
+  recorded.data.data.replayed,
+);
+
+const report = await client.campaigns.conversions(campaignId, { projectId });
+console.log(report.data.data.conversions.attributed, report.data.data.values);
+```
+
+A conversion is `attributed` when `occurredAt` is no earlier than the
+recipient's send time and at most 7 days after it. Otherwise it is
+`outside_window`, or `not_sent` when the recipient was never sent. A recipient
+on the team's opt-out list is recorded as `opted_out`, with no recipient link
+and no value. The decision is fixed when the conversion is recorded.
+`eventId` deduplicates per project: sending the same body again returns the
+original with `replayed: true`, so retries are safe. Changing any detail
+answers `409 idempotency_conflict`. Amounts are integer minor units of an ISO
+4217 currency. The report sums them per currency, as decimal strings, and never
+converts between currencies. Values are as reported, not verified payments.
+
 `requeue` moves eligible failed recipients, and optionally recipients skipped
 with an error, back into the queue. It returns the number moved. Launch checks
 the selected numbers' Campaigns entitlement and returns `402` when it is absent.

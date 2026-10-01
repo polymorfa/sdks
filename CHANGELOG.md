@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Campaign conversion reporting (beta, requires team enrollment).
+  `Client.campaigns.recordConversion(campaignId, body)` reports a conversion
+  for a named campaign recipient, deduplicated by `eventId`.
+  `Client.campaigns.conversions(campaignId, { projectId })` returns counts by
+  attribution outcome and reported value per currency. New types:
+  `RecordCampaignConversionRequest`, `CampaignConversion`,
+  `CampaignConversionValue`, `CampaignConversionOutcome`,
+  `CampaignConversionReport` and `CampaignConversionCurrencyTotal`.
 - Campaign types include `sendWindow`. `Campaign.sendWindow` is a
   `CampaignSendWindow` or null, and campaign create and update requests on
   both clients accept a `CampaignSendWindowRequest`; update accepts null to
