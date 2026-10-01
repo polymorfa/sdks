@@ -21,6 +21,7 @@ import type {
 } from "./types.js";
 
 type CampaignResponse = Promise<ApiResponse<DataEnvelope<PlatformPayload>>>;
+type CampaignResult<T> = Promise<ApiResponse<DataEnvelope<T>>>;
 type CampaignAction =
   "launch" | "pause" | "resume" | "stop" | "archive" | "duplicate" | "requeue";
 type CampaignRead = "analytics" | "events";
