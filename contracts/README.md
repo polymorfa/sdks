@@ -46,8 +46,11 @@ The two public Flow draft reads in the pinned Platform snapshot are covered by
 public, project-bound, and `sessions:read`.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API `dev` merge commit `4b9ebf00d03cd9ccef2a1d00b2b44221ba976ac6`
-(API PR #429, Brazil payment orders beta, on top of PR #431). Moving from
+files at API `dev` merge commit `e818ba62830d3727a7822379bb46c1fece90ef1b`
+(API PR #433, which corrects the payment order amount and status schemas from
+PR #429, on top of PR #431). PR #433 changes only the `sendMessage`
+fingerprint: `tax`, `shipping` and `discount` become single closed objects
+and `OrderStatusContent` requires `order` or `payment`. Moving from
 `ee217bf7bf6320e20bce341335589f17357e374c` adds no operation. It changes 251
 operation fingerprints, all reviewed: every Messaging and Platform error code
 enum gains `order_status_transition_invalid` and `order_cancellation_failed`,

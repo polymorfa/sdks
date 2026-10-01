@@ -1,14 +1,14 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "4b9ebf00d03cd9ccef2a1d00b2b44221ba976ac6",
+  "commit": "e818ba62830d3727a7822379bb46c1fece90ef1b",
   "branch": "dev",
   "published": true,
-  "note": "API dev merge of PR #429 (Brazil payment orders beta), on top of PR #431 (Official groups). Includes every merged Official API, Flow lifecycle, catalog, campaign send-window and campaign conversion contract. Both snapshots are byte-identical to this exact API commit. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
+  "note": "API dev merge of PR #433 (Brazil payment order schema fix, after PR #429), on top of PR #431 (Official groups). Includes every merged Official API, Flow lifecycle, catalog, campaign send-window and campaign conversion contract. Both snapshots are byte-identical to this exact API commit. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "401294360e70da55d6b6d9ac11b88b70f91a0c722ccd3b1fcb553e5f0c0aa5a6"
+      "sha256": "20312f7b375ad8f37a374d936cf15f345f1eb6e3c76a39987d4be6f81581098d"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",

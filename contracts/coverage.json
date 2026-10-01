@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "4b9ebf00d03cd9ccef2a1d00b2b44221ba976ac6",
+  "sourceCommit": "e818ba62830d3727a7822379bb46c1fece90ef1b",
   "excludedContracts": [
     {
       "family": "graph",
@@ -1808,7 +1808,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/send",
       "operationId": "sendMessage",
-      "fingerprint": "6f0f1be7eb4eaab11a9ebe68bd41685a658d23d82795423d3afaca810797baef",
+      "fingerprint": "6552019f317563d243529fa08d4bf044404aa81536b687771d72a232c1b1fe9b",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.send"

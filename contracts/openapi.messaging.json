@@ -8609,62 +8609,86 @@
                 ]
               },
               "tax": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PaymentOrderAmount"
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "integer",
+                    "description": "Amount in centavos (value multiplied by offset). R$12.34 is 1234."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "description": {
-                        "type": "string",
-                        "minLength": 1,
-                        "maxLength": 60
-                      }
-                    },
-                    "additionalProperties": false
+                  "offset": {
+                    "type": "number",
+                    "enum": [
+                      100
+                    ],
+                    "description": "Always 100 for BRL."
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60
                   }
+                },
+                "required": [
+                  "value",
+                  "offset"
                 ],
+                "additionalProperties": false,
                 "description": "Tax; value may be 0."
               },
               "shipping": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PaymentOrderAmount"
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "integer",
+                    "description": "Amount in centavos (value multiplied by offset). R$12.34 is 1234."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "description": {
-                        "type": "string",
-                        "minLength": 1,
-                        "maxLength": 60
-                      }
-                    },
-                    "additionalProperties": false
+                  "offset": {
+                    "type": "number",
+                    "enum": [
+                      100
+                    ],
+                    "description": "Always 100 for BRL."
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60
                   }
-                ]
+                },
+                "required": [
+                  "value",
+                  "offset"
+                ],
+                "additionalProperties": false
               },
               "discount": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PaymentOrderAmount"
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "integer",
+                    "description": "Amount in centavos (value multiplied by offset). R$12.34 is 1234."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "description": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "programName": {
-                        "type": "string",
-                        "minLength": 1
-                      }
-                    },
-                    "additionalProperties": false
+                  "offset": {
+                    "type": "number",
+                    "enum": [
+                      100
+                    ],
+                    "description": "Always 100 for BRL."
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "programName": {
+                    "type": "string",
+                    "minLength": 1
                   }
-                ]
+                },
+                "required": [
+                  "value",
+                  "offset"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -8758,7 +8782,19 @@
           "body"
         ],
         "additionalProperties": false,
-        "description": "Update a Brazil order sent with orderDetails (Official API only). Send it after your payment provider confirms a payment status."
+        "description": "Update a Brazil order sent with orderDetails (Official API only). Send it after your payment provider confirms a payment status. Provide order, payment, or both.",
+        "anyOf": [
+          {
+            "required": [
+              "order"
+            ]
+          },
+          {
+            "required": [
+              "payment"
+            ]
+          }
+        ]
       },
       "MessageContent": {
         "description": "Exactly one message kind: text, image, location, or another supported content field.",

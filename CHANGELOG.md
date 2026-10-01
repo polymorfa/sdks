@@ -15,7 +15,7 @@
   `order_status`. New error
   codes: `order_status_transition_invalid` and `order_cancellation_failed`.
   Polymorfa relays orders and payment reports; it does not process funds.
-  Contracts are pinned to API `dev` `4b9ebf0`.
+  Contracts are pinned to API `dev` `e818ba6`.
 - Official groups (beta, requires team enrollment and an Official Business
   Account). `MessagingClient.officialGroups` adds `list`, `create`, `retrieve`,
   `update`, `delete`, `getInviteLink`, `resetInviteLink`, `removeParticipants`,
