@@ -156,6 +156,10 @@ describe("Cloud templates", () => {
             : resource.delete("support", "delivery", options);
       await expect(request).rejects.toMatchObject({ status: 502 });
       expect(server.requests).toHaveLength(1);
+      // The caller's key reaches the API so a manual retry is fenced there.
+      expect(server.requests[0]?.headers["idempotency-key"]).toBe(
+        "customer-key",
+      );
     },
   );
 

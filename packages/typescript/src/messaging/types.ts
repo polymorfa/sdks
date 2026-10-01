@@ -103,6 +103,8 @@ export interface Campaign {
   readonly completedAt: number | null;
   readonly createdAt: number;
   readonly updatedAt: number;
+  /** When the campaign may send, or null when it has no send window. */
+  readonly sendWindow: CampaignSendWindow | null;
   /** Additional live repository fields omitted from the pinned OpenAPI schema. */
   readonly composerBlueprint?: unknown;
   readonly messages?: unknown;
@@ -111,6 +113,42 @@ export interface Campaign {
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
   readonly variantStrategy?: unknown;
+}
+
+export type CampaignWeekday =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
+
+/** Local `HH:MM` range; `start` is inclusive and `end` (up to `24:00`) exclusive. */
+export interface CampaignSendWindowRange {
+  readonly start: string;
+  readonly end: string;
+}
+
+/** Stored send window. Recipients outside it stay queued until it next opens. */
+export interface CampaignSendWindow {
+  readonly timeZone: string;
+  readonly days: readonly CampaignWeekday[];
+  readonly hours: readonly CampaignSendWindowRange[];
+  readonly recipientTimeZone: boolean;
+  readonly timeZoneVariable: string;
+}
+
+/** Send window input. Up to four non-overlapping ranges that do not cross midnight. */
+export interface CampaignSendWindowRequest {
+  /** IANA zone. Defaults to the team's time zone, or UTC. */
+  readonly timeZone?: string;
+  readonly days: readonly CampaignWeekday[];
+  readonly hours: readonly CampaignSendWindowRange[];
+  /** Evaluate the window in each recipient's own time zone. Defaults to false. */
+  readonly recipientTimeZone?: boolean;
+  /** Recipient variable holding an IANA zone. Defaults to `timeZone`. */
+  readonly timeZoneVariable?: string;
 }
 
 export interface CampaignAnalytics {
@@ -132,6 +170,8 @@ export interface CreateCampaignRequest {
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Epoch milliseconds. */
   readonly scheduledAt?: number;
+  /** When the campaign may send; null or omitted sends at any time. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   /**
    * Up to 1,000 recipients to queue with the draft. Invalid entries reject the
    * whole request; use `campaigns.addRecipients` for partial acceptance.
@@ -1587,7 +1627,11 @@ export type VoipParticipantReference = string;
 /** Body for `POST /messaging/voip/calls`. */
 export interface VoipPlaceCallRequest {
   /** Phone number in E.164 form or a WhatsApp user ID. */
-  readonly to: string;
+  readonly to?: string;
+  /** Ad-hoc group of 2 to 31 distinct people. Mutually exclusive with to. */
+  readonly participants?: readonly string[];
+  /** Public group ID; mutually exclusive with to and participants. */
+  readonly groupId?: string;
   /** Session that places the call. Required with a server credential. */
   readonly session?: string;
   readonly video?: boolean;
@@ -1603,6 +1647,37 @@ export interface VoipPlaceCallResult {
 }
 
 export type VoipPlaceCallResponse = SuccessEnvelope<VoipPlaceCallResult>;
+
+/** Server credentials only. Creates a reusable link without joining a call. */
+export interface VoipCreateCallLinkRequest {
+  readonly session: string;
+  readonly video?: boolean;
+}
+
+/** Keep the token private; send the media type that matches the link. */
+export interface VoipPreviewCallLinkRequest extends VoipCreateCallLinkRequest {
+  readonly token: string;
+}
+
+export interface VoipCreatedCallLink {
+  readonly session: string;
+  readonly token: string;
+  readonly url: string;
+  readonly video: boolean;
+}
+
+export interface VoipPreviewedCallLink {
+  readonly session: string;
+  readonly video: boolean;
+  readonly creator: ConversationIdentity;
+  readonly approvalRequired: boolean;
+  /** WhatsApp-reported role for this Number, not an API permission grant. */
+  readonly isAdmin: boolean;
+}
+
+export type VoipCreatedCallLinkResponse = SuccessEnvelope<VoipCreatedCallLink>;
+export type VoipPreviewedCallLinkResponse =
+  SuccessEnvelope<VoipPreviewedCallLink>;
 
 /** Body for `POST /messaging/voip/calls/{callId}/accept`. */
 export interface VoipAcceptCallRequest {
@@ -1713,6 +1788,7 @@ export interface VoipAddParticipantRequest {
 export type VoipParticipantState = "invited" | "ringing" | "connected" | "left";
 
 export interface VoipParticipant {
+  readonly handRaised?: boolean;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;

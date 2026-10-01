@@ -108,7 +108,12 @@ export class CloudTemplatesResource {
     });
   }
 
-  /** Submit once. An Idempotency-Key does not make this provider write replayable. */
+  /**
+   * Sends one request; the SDK never retries this provider write. Pass
+   * `options.idempotencyKey` so a manual retry after an unknown outcome returns
+   * `409 idempotency_completed` instead of submitting again, and list templates
+   * before resubmitting.
+   */
   create(
     session: string,
     body: CreateCloudTemplateRequest,
@@ -143,7 +148,11 @@ export class CloudTemplatesResource {
     });
   }
 
-  /** Delete every language of this name once; reconcile an uncertain outcome before retrying. */
+  /**
+   * Deletes every language of this name with one request. The SDK never
+   * retries it; reuse `options.idempotencyKey` for a manual retry and list
+   * templates to reconcile an unknown outcome.
+   */
   delete(
     session: string,
     name: string,

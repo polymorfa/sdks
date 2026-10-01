@@ -22,8 +22,22 @@ export interface HistoryMedia {
   readonly id: string;
   readonly mimeType: string;
   readonly fileLength: number;
-  /** API path for `MessagingClient.media.download`; this is not a signed URL. */
+  /** API path for stored bytes; this is not a signed URL. */
   readonly url: string;
+}
+
+/** Official API media storage status on a hosted history message. */
+export interface HistoryMediaRetrieval {
+  readonly state:
+    | "pending"
+    | "stored"
+    | "unavailable"
+    | "expired"
+    | "too_large"
+    | "unsupported_type"
+    | "failed"
+    | "cancelled";
+  readonly reason?: string;
 }
 
 export interface HistoryMessage extends HistoryMessageSummary {
@@ -51,6 +65,7 @@ export interface HistoryMessage extends HistoryMessageSummary {
     readonly hash: string;
   }[];
   readonly media?: readonly HistoryMedia[];
+  readonly mediaRetrieval?: HistoryMediaRetrieval;
 }
 
 export interface HistoryPage<T> {

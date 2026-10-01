@@ -38,6 +38,8 @@ export interface FlowValidationIssue extends Omit<
 }
 export interface FlowNumberLink {
   readonly session: string;
+  /** Number session UUID, when the API reports it. */
+  readonly sessionId?: string;
   readonly wabaId: string;
   readonly metaFlowId: string;
   readonly status: string;
