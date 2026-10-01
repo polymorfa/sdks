@@ -8,6 +8,7 @@ import {
   PolymorfaServerError,
   type HistoryChat,
   type HistoryMessage,
+  type HistoryMediaRetrieval,
   type HistoryPage,
 } from "../src/index.js";
 import { ORGANIZATION_API_KEY } from "./support/credentials.js";
@@ -32,6 +33,7 @@ const message: HistoryMessage = {
   fromMe: false,
   text: "Hello",
   media: [],
+  mediaRetrieval: { state: "unavailable", reason: "provider_media_expired" },
 };
 
 function client(
@@ -156,9 +158,60 @@ describe("hosted message history", () => {
       "739182640518204",
     );
     expect(result.data.data.id).toBe("739182640518204");
+    expectTypeOf(result.data.data.mediaRetrieval).toEqualTypeOf<
+      HistoryMediaRetrieval | undefined
+    >();
+    expect(result.data.data.mediaRetrieval).toEqual({
+      state: "unavailable",
+      reason: "provider_media_expired",
+    });
     expect(new URL(String(fetch.mock.calls[0]![0])).pathname).toBe(
       "/messaging/support/chats/%2B14155550123/messages/739182640518204",
     );
+  });
+
+  it("downloads a stored Official API copy by encoded message path", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(
+      async () =>
+        new Response(Uint8Array.from([1, 2, 3]), {
+          headers: { "content-type": "image/jpeg", "content-length": "3" },
+        }),
+    );
+    const result = await client(fetch).chats.downloadMessageMedia(
+      "support/1",
+      "+14155550123",
+      "739182640518204",
+    );
+    expect(new Uint8Array(result.data)).toEqual(Uint8Array.from([1, 2, 3]));
+    const url = new URL(String(fetch.mock.calls[0]![0]));
+    expect(url.pathname).toBe(
+      "/messaging/support%2F1/chats/%2B14155550123/messages/739182640518204/media",
+    );
+
+    const stream = await client(fetch).chats.downloadMessageMediaStream(
+      "support",
+      "+14155550123",
+      "739182640518204",
+    );
+    expect(stream).toMatchObject({
+      contentType: "image/jpeg",
+      contentLength: 3,
+    });
+    expect(
+      new Uint8Array(await new Response(stream.body).arrayBuffer()),
+    ).toEqual(Uint8Array.from([1, 2, 3]));
+  });
+
+  it("rejects client tokens before downloading stored media", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>();
+    const chats = client(fetch, "clientToken").chats;
+    expect(() =>
+      chats.downloadMessageMedia("support", "+14155550123", "1"),
+    ).toThrow(PolymorfaConfigurationError);
+    await expect(
+      chats.downloadMessageMediaStream("support", "+14155550123", "1"),
+    ).rejects.toBeInstanceOf(PolymorfaConfigurationError);
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it("rejects client tokens locally on all history reads", () => {

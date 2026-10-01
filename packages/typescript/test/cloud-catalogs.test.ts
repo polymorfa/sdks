@@ -58,6 +58,50 @@ describe("Official API catalog discovery", () => {
     ).rejects.toMatchObject({ status: 403 });
     expect(server.requests).toHaveLength(1);
   });
+  it("reads one linked catalog product page through the exact Graph route", async () => {
+    const payload = {
+      data: [
+        {
+          id: "111",
+          retailer_id: "sku-1",
+          name: "Mug",
+          availability: "in stock",
+        },
+      ],
+      paging: { cursors: { after: "next+/=" } },
+    };
+    const server = await startTestServer(() => ({
+      body: JSON.stringify(payload),
+    }));
+    servers.push(server);
+    const client = new MessagingClient({
+      credential: { type: "projectToken", value: PROJECT_TOKEN },
+      baseUrl: server.url,
+    });
+    const page = await client.cloudCatalogs.listProducts(
+      "12345678901234567890",
+      "98765432109876543210",
+      { version: "v26.0", limit: 10, after: "next+/=" },
+    );
+    expect(page.data).toEqual(payload);
+    expect(server.requests[0]!.path).toBe(
+      "/graph/whatsapp/v26.0/12345678901234567890/product_catalogs/98765432109876543210/products?limit=10&after=next%2B%2F%3D",
+    );
+  });
+  it("rejects a non-numeric catalog ID or client token before dispatch", () => {
+    const server = new MessagingClient({
+      credential: { type: "projectToken", value: PROJECT_TOKEN },
+    });
+    expect(() =>
+      server.cloudCatalogs.listProducts("123", "../x", { version: "v26.0" }),
+    ).toThrow("numeric catalog ID");
+    const browser = new MessagingClient({
+      credential: { type: "clientToken", value: `pmfa_ct_${"A".repeat(94)}` },
+    });
+    expect(() =>
+      browser.cloudCatalogs.listProducts("123", "456", { version: "v26.0" }),
+    ).toThrow("organization API key or project token");
+  });
   it("rejects client credentials before dispatch", () => {
     const client = new MessagingClient({
       credential: { type: "clientToken", value: `pmfa_ct_${"A".repeat(94)}` },

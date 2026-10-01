@@ -1,167 +1,38 @@
 {
   "repository": "polymorfa/polymorfa",
-  "note": "Pending API dependencies for new SDK consumers. Full coverage snapshots remain at contracts/source.json until these branches merge into one verified API revision. OA11 also defines MessageAckPayload.pricing in src/lib/webhook-schemas.ts. No SDK package or availability claim.",
+  "commit": "29abb7b66a8e225af4df5cf354e9836ccb2ce04c",
+  "branch": "dev",
+  "note": "Graph-compatible operations used by typed SDK methods. The full Graph API is outside the coverage ledger. All sources are merged on API dev at this exact commit. No SDK package or availability claim.",
   "sources": [
     {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/344",
-      "commit": "1aa0c9b45e2cdcd15bdc6443524bdb9329ae1a6d",
-      "sourcePath": "apps/api/docs/openapi.json",
-      "sha256": "fd226ba3a09271f19ba27249e5e960a9530b32d131702c8d2f2dd5c7110747c6",
-      "operationIds": ["getCustomerServiceWindow", "getMetaPricingSummary"],
-      "merged": false
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/345",
-      "commit": "041f58465035ba49649430b59b118d98fef2dbc4",
-      "sourcePath": "apps/api/docs/openapi.json",
-      "sha256": "aefe5f3b39d5fb8f504d6f7c9694934189e4264893c238d7f6d53dfc01bfe8a4",
-      "operationIds": [
-        "getCloudCredentialHealth",
-        "reauthorizeCloudCredentials"
-      ],
-      "merged": false
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/347",
-      "commit": "e3d2767d29262dd8f4e0a215b495be9041a5f484",
-      "sourcePath": "apps/api/docs/openapi.json",
-      "sha256": "697209c49d97f2bc3230f17c3c40268cc60cefea5c7d7acb217fe53e261a2ca3",
-      "operationIds": ["editTemplate"],
-      "merged": false
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/377",
-      "commit": "0f559ed7f89227fa220d6a0275fcc40b8e319a55",
-      "sourcePath": "apps/api/docs/openapi.json",
-      "sha256": "7d2c6060f054eab6d4c60c9c58da41cc6f7282bc86c5098c234ec2a9dd3d0c8c",
-      "operationIds": ["submitProjectTemplateToMeta"],
-      "merged": false
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/348",
-      "commit": "d22930d2453c3ae428fac807f545277bb748594c",
-      "sourcePath": "apps/api/docs/openapi.json",
-      "sha256": "3d7c6662fd6033328498199b84b72b71f67217b9a3a3b668e84b62e62d9ea385",
-      "operationIds": ["getQuickLink"],
-      "merged": false
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/313",
-      "commit": "73965b10e25cbac9cf1d7bed0ceffd450f313da9",
-      "sourcePath": "apps/api/docs/openapi.json",
-      "sha256": "1f11869d6ca6b66a61b645d1e106d849a1cc6f6fc504e64d460e6445281a6c27",
-      "operationIds": [],
-      "merged": false,
-      "schemas": [
-        "SessionStatusPayload",
-        "CloudAccountStatusPayload",
-        "TemplateStatusPayload",
-        "CloudTemplateStatusPayload"
-      ]
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/315",
-      "commit": "cf124d15f31a917d92f25c34d9b2d7713b6ba8dd",
-      "sourcePath": "apps/api/docs/openapi.json",
-      "sha256": "d697ef59cfedc1d4dca9c721c198dbad084705a051afd68eee7aee236fc80a37",
-      "operationIds": ["setTyping"],
-      "merged": false
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/336",
-      "commit": "19ac219ce4676a2e54e8cc7a123ff4a66c453117",
-      "sourcePath": "apps/api/docs/openapi.management.json",
-      "sha256": "dba69d5cd570dd986083864b74769360d4a0c5eeeecf9fa7311cad0d189fa056",
-      "operationIds": [
-        "listFlows",
-        "createFlow",
-        "getFlow",
-        "updateFlow",
-        "deleteFlow",
-        "uploadFlow",
-        "publishFlow",
-        "deprecateFlow",
-        "discardFlow",
-        "syncFlow",
-        "listFlowOperations"
-      ],
-      "merged": false
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/349",
-      "commit": "ac3805dfa30d7efddf6e2f3a839c9fcdb7c27bfa",
-      "sourcePath": "apps/api/docs/openapi.json",
-      "sha256": "feafdba56b7014322be88e06180cae1b5d45da467b208ce7fd78832f90867196",
-      "operationIds": [
-        "listTemplates",
-        "createTemplate",
-        "getTemplate",
-        "editTemplate",
-        "deleteTemplate"
-      ],
-      "merged": false
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/354",
-      "commit": "22d38f144d4b7ab0fb9953a0aacd521b63a496bb",
       "sourcePath": "docs/api-reference/openapi.graph.json",
-      "sha256": "a52432d517b67e733abd18fadd44fcf4efd5918a506ef2f036a4bb2c34bfdeb5",
-      "operationIds": ["graphListProductCatalogs"],
-      "merged": false
+      "sha256": "87e3a56aee42de041dd38db08d0b263123f84a5a4982ce0f20b780c3cfae3684",
+      "operationIds": [
+        "graphListProductCatalogs",
+        "graphListCatalogProducts",
+        "graphGetMarketingStatus"
+      ],
+      "methods": [
+        "MessagingClient.cloudCatalogs.list",
+        "MessagingClient.cloudCatalogs.listProducts",
+        "MessagingClient.cloudMarketing.status"
+      ],
+      "merged": true
     },
     {
       "pullRequest": "https://github.com/polymorfa/polymorfa/pull/362",
-      "commit": "56a0d0eabc908200ed4afe6d4d9ad2ba27e8e5fa",
-      "sourcePath": "docs/api-reference/openapi.graph.json",
-      "sha256": "6e4c1fca51eab78b5a21527cacf8f39e7c27da4a2fd7e46bc5f06c2cc3bf3ba1",
+      "sourcePath": "apps/api/packages/api/src/routes/graph/flow-encryption.ts",
+      "sha256": "8138dced428eaa4f50c94f1ed48a6fff35ab3f55b188faad6d647ee6635a8129",
       "operationIds": [
         "graphGetFlowEncryptionKey",
         "graphRegisterFlowEncryptionKey"
       ],
-      "merged": false
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/363",
-      "commit": "e6976f75cb62ef43ba8d04cfc95a513f0af1e152",
-      "sourcePath": "apps/api/docs/openapi.json",
-      "sha256": "ff0907be44882f78644797ec3700545843bf8e17b81c868c7ca12cfaa672882e",
-      "operationIds": [],
-      "schemas": ["CloudMessagePayload"],
-      "merged": false
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/373",
-      "commit": "b6e820f612a63d54bc4c733fc670a06b6a4cc656",
-      "sourcePath": "apps/api/docs/openapi.json",
-      "sha256": "9aed1d4a5ecf7c17ba05701cf57c1a219fcc4521330faa1ef7a34fb9b6df7232",
-      "operationIds": [],
-      "schemas": ["CloudAccountStatusPayload"],
-      "merged": false
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/380",
-      "commit": "bbfb2f4af3a8e1289074d9b7d0ed058b96881410",
-      "sourcePath": "docs/api-reference/openapi.graph.json",
-      "sha256": "b9d3778f17a90fd0c58e0cb1b3f6ef689661980fa83ad7565bc55ae4ab93fab4",
-      "operationIds": ["graphListCatalogProducts"],
-      "merged": false
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/383",
-      "commit": "1e1d613de599c2b4334f8de81fab087c74f31424",
-      "sourcePath": "docs/api-reference/openapi.graph.json",
-      "sha256": "1270c8fb32a09cb717f3ea8edd6bd657e8ff3110e03a6286e68d5e16affff474",
-      "operationIds": ["graphGetMarketingStatus"],
-      "merged": false
-    },
-    {
-      "pullRequest": "https://github.com/polymorfa/polymorfa/pull/333",
-      "commit": "5044826d122759aaa8be3e2c2d0f120a326fda81",
-      "sourcePath": "apps/api/docs/openapi.json",
-      "sha256": "b7b79f399ce9f6944497a2970e184fe40c276dff9034726297ca18b2aab0bd41",
-      "operationIds": ["getChatMessageMedia"],
-      "schemas": ["HistoryMediaRetrieval", "HistoryMessage"],
-      "merged": false
+      "methods": [
+        "MessagingClient.flowEncryption.retrieve",
+        "MessagingClient.flowEncryption.register"
+      ],
+      "merged": true,
+      "note": "The published Graph OpenAPI at this commit omits these two routes; the route source is the exact contract."
     }
   ]
 }
