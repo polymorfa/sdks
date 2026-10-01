@@ -30,6 +30,7 @@ import { SessionsResource } from "./sessions.js";
 import { TemplatesResource } from "./templates.js";
 import { CloudTemplatesResource } from "./cloud-templates.js";
 import { CloudCatalogsResource } from "./cloud-catalogs.js";
+import { CloudMarketingResource } from "./cloud-marketing.js";
 import { FlowEncryptionResource } from "./flow-encryption.js";
 import { UsersResource } from "./users.js";
 import { VoipResource } from "./voip.js";
@@ -62,6 +63,7 @@ export class MessagingClient {
   readonly templates: TemplatesResource;
   readonly cloudTemplates: CloudTemplatesResource;
   readonly cloudCatalogs: CloudCatalogsResource;
+  readonly cloudMarketing: CloudMarketingResource;
   readonly flowEncryption: FlowEncryptionResource;
   readonly users: UsersResource;
   readonly voip: VoipResource;
@@ -113,6 +115,10 @@ export class MessagingClient {
       credential.type,
     );
     this.cloudCatalogs = new CloudCatalogsResource(transport, credential.type);
+    this.cloudMarketing = new CloudMarketingResource(
+      transport,
+      credential.type,
+    );
     this.flowEncryption = new FlowEncryptionResource(
       transport,
       credential.type,

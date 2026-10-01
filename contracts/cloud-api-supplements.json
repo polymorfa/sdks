@@ -7,10 +7,15 @@
     {
       "sourcePath": "docs/api-reference/openapi.graph.json",
       "sha256": "87e3a56aee42de041dd38db08d0b263123f84a5a4982ce0f20b780c3cfae3684",
-      "operationIds": ["graphListProductCatalogs", "graphListCatalogProducts"],
+      "operationIds": [
+        "graphListProductCatalogs",
+        "graphListCatalogProducts",
+        "graphGetMarketingStatus"
+      ],
       "methods": [
         "MessagingClient.cloudCatalogs.list",
-        "MessagingClient.cloudCatalogs.listProducts"
+        "MessagingClient.cloudCatalogs.listProducts",
+        "MessagingClient.cloudMarketing.status"
       ],
       "merged": true
     },
