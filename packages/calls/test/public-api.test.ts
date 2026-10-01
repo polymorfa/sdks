@@ -7,6 +7,7 @@ describe("@polymorfa/sdk/calls public entry point", () => {
   it("exports only neutral calling operations", () => {
     expect(Object.keys(publicApi).sort()).toEqual([
       "AudioTrack",
+      "CALL_REACTION_EMOJI",
       "Call",
       "CallClaimedError",
       "CallsApiError",

@@ -41,52 +41,59 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
-`cloud-api-supplements.json` records the exact pending API sources for service
-windows, pricing counts, acknowledgement pricing, credential health,
-reauthorization, lifecycle webhooks, QuickLink sync receipts, typing, Flow lifecycle,
-Hybrid template authority and WABA catalog discovery. Their SDK consumers are implemented, but the full snapshots
-below do not yet include those separate branches. Consolidating them onto one
-merged API revision remains a publication gate. These methods do not establish
-deployed access or package availability.
-
 The two public Flow draft reads in the pinned Platform snapshot are covered by
-`Client.project(projectId).flows.list` and `.retrieve`. The prior ledger marked
-them dashboard-only, but API source commit `9b64c70b622593aeda7364b7603ba6790144594e`
-declares both public, project-bound, and `sessions:read`. The merged API runtime
-at `2fb3eec8624c5785f72f81f163a27c1ce4e19767` still registers them with
-server-key authentication. The combined full snapshots below are pinned to
-the later exact API merge commit `296aba4baade933e7a5620cf36768750ec9ac6af`.
+`Client.project(projectId).flows.list` and `.retrieve`. The API declares both
+public, project-bound, and `sessions:read`.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` API PR #310 merge commit
-`296aba4baade933e7a5620cf36768750ec9ac6af`. This exact source combines
-the four Number-scoped Cloud template operations with the API `dev` campaign
-and webhook changes. `MessagingClient.cloudTemplates` covers the template
-operations. Project template drafts remain under `MessagingClient.templates`.
-Template create and delete make one attempt even when an idempotency key or
-retry override is supplied; the API does not yet provide durable replay for
-these provider writes. Team webhook tests now use
-their own event-only input schema; project webhook tests still accept a paired
-body and session ID. The team test operation is covered by
-`Client.webhooks.test`, which rejects project-only fields before sending.
-Eleven campaign fingerprints changed only in documented error responses. The
-existing SDK methods retain their route and success-response coverage; their
-shared transport preserves the `campaigns_not_entitled` 402 and
-`service_unavailable` 503 codes. Four webhook create/update fingerprints reflect
-the API's corrected HTTP header pattern. `source.json` records the source paths
-and SHA-256 hashes. API merge, SDK package publication and deployment remain
-separate.
+files at API `dev` merge commit `29abb7b66a8e225af4df5cf354e9836ccb2ce04c`
+(API PR #362). This single revision contains every merged Official API
+contract the SDK consumes: Number-scoped Cloud templates and template editing,
+customer service windows, Meta pricing counts, Cloud credential health and
+reauthorization, QuickLink sync receipts, typing with an inbound message ID,
+the Meta lifecycle webhook payloads, and the Flow provider lifecycle. It also
+contains the merged campaign send windows and rate-limit headers.
 
-API PR #377 at `0f559ed7f89227fa220d6a0275fcc40b8e319a55` adds local
-validation before project-template submission. Its exact OpenAPI source and hash
-are recorded in `cloud-api-supplements.json`. The existing typed
-`MessagingClient.templates.submit` method now makes one network attempt,
-including when callers supply an idempotency key or retry override. The full
-snapshot remains pinned to PR #310 until the API branches converge.
+- `MessagingClient.cloudTemplates` covers list, retrieve, create, edit and
+  delete. Create, edit and delete make one network attempt even when a caller
+  supplies an idempotency key or retry override. Create and delete accept the
+  API's `Idempotency-Key`, so a manual retry with the same key returns
+  `409 idempotency_completed` rather than writing again.
+- `MessagingClient.chats.getServiceWindow`, `MessagingClient.sessions.getMetaPricing`,
+  `getCloudCredentialHealth` and `reauthorizeCloudCredentials` cover the four
+  new Number reads and the reauthorization link. Reauthorization makes one attempt.
+- `Client.project(projectId).flows` covers create, update, delete, upload,
+  publish, deprecate, discard, sync and receipts. The API now accepts server
+  API keys for these routes, so the earlier dashboard-only exclusions are
+  replaced. Provider writes make one attempt; `sync` reconciles an uncertain
+  operation without repeating it.
+- The two Console-only account health reads are excluded.
+- Campaign records type the stored `sendWindow`; create and update requests on
+  both surfaces accept it.
+
+250 fingerprints changed. Each was reviewed: 202 changed only by the new
+`cloud_template_authority_restricted` public error code and the documented
+`X-RateLimit-*` response headers. The rest add campaign `sendWindow`, the
+QuickLink `sync` status and `reauthorization` purpose, the typing `id`, the
+template `Idempotency-Key` header, typed Flow `metaLinks`, the feature
+decision `experimentRevision`, and closed Platform campaign shapes. SDK types
+follow each change on covered operations; feature evaluation stays excluded. `cloud-api-supplements.json` pins the Graph-compatible
+catalog and Flow encryption routes to the same commit.
+
+API PR #377, merged in this snapshot, rejects invalid project-template
+drafts with 400 before submission. The typed `MessagingClient.templates.submit`
+method makes one network attempt, including when callers supply an idempotency
+key or retry override; the route declares no replay contract.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
 operation fingerprint or SDK method mapping.
+
+The API merge also incorporates two unrelated routes from API PRs #333 and
+#332. Hosted-history media download is assigned to SDK PR #316; Messaging
+campaign update is assigned to SDK PR #307. Both are intentional exclusions in
+this Calls ledger. Existing hosted-history message reads now type the optional
+`mediaRetrieval` status and remain covered.
 
 The Platform event-list contract adds `afterOffset` and indexed page metadata
 for both organization and project routes. `Client.events.list` and project-view
@@ -105,7 +112,7 @@ from SDK `dev`. The three public Calls analytics operations are covered by
 `Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
 `Client.calls.exportAll` walks export pages. The 13 public Voice operations are
 covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
-13 Console counterparts are excluded. The full 513-operation snapshot includes
+13 Console counterparts are excluded. The full 536-operation snapshot includes
 all 15 Functions routes already merged to API `dev`.
 
 HMS history adds four server-only Messaging reads under
@@ -193,12 +200,12 @@ signed events with these names still decode as unknown events.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        385 |
+| Covered             |        405 |
 | Missing             |          0 |
-| Excluded            |        128 |
+| Excluded            |        131 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        513 |
+| Total               |        536 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -342,7 +349,7 @@ Functions is tracked separately in `functions/openapi.json`, with its exact
 monorepo source commit and extraction hash in `functions/source.json`. This
 snapshot contains only the 15 Functions operations and their transitive schemas.
 `npm run check:functions` verifies their ledger; SDK tests exercise every method.
-The main Messaging and Platform snapshots use the pinned merged API `dev` commit;
+The main Messaging and Platform snapshots use the pinned Hybrid Link API branch;
 Functions subset retains its separate source revision.
 
 All 15 Functions methods require `client.project(projectId).functions` and an
@@ -351,5 +358,12 @@ invocations automatically. Browser/client-token SDKs do not expose this server
 control plane. A local implementation or installed method does not establish
 hosted availability.
 
+The current dev reconciliation changes Campaigns error declarations only:
+draft reads/writes no longer declare a plan-related 402, and launch/live sender
+edits declare the existing public 503 envelope. Request and successful response
+shapes remain unchanged for all eleven refreshed fingerprints; the existing
+transport error handling applies. Focused Campaigns and contract checks pass.
+
 The Graph coverage exclusion applies to the full Graph API, not the separately
-implemented `cloudCatalogs.list` subset recorded in cloud-api-supplements.json.
+typed `cloudCatalogs` and `flowEncryption` subsets recorded in
+`cloud-api-supplements.json`.

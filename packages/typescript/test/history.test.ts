@@ -8,6 +8,7 @@ import {
   PolymorfaServerError,
   type HistoryChat,
   type HistoryMessage,
+  type HistoryMediaRetrieval,
   type HistoryPage,
 } from "../src/index.js";
 import { ORGANIZATION_API_KEY } from "./support/credentials.js";
@@ -32,6 +33,7 @@ const message: HistoryMessage = {
   fromMe: false,
   text: "Hello",
   media: [],
+  mediaRetrieval: { state: "unavailable", reason: "provider_media_expired" },
 };
 
 function client(
@@ -156,6 +158,13 @@ describe("hosted message history", () => {
       "739182640518204",
     );
     expect(result.data.data.id).toBe("739182640518204");
+    expectTypeOf(result.data.data.mediaRetrieval).toEqualTypeOf<
+      HistoryMediaRetrieval | undefined
+    >();
+    expect(result.data.data.mediaRetrieval).toEqual({
+      state: "unavailable",
+      reason: "provider_media_expired",
+    });
     expect(new URL(String(fetch.mock.calls[0]![0])).pathname).toBe(
       "/messaging/support/chats/%2B14155550123/messages/739182640518204",
     );
