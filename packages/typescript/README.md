@@ -401,6 +401,31 @@ const template = await messaging.cloudTemplates.retrieve(
 );
 ```
 
+`messaging.officialGroups` (beta) manages WhatsApp groups created through the
+Official API: `list`, `create`, `retrieve`, `update`, `delete`,
+`getInviteLink`, `resetInviteLink`, `removeParticipants`, `listJoinRequests`,
+`approveJoinRequests`, `rejectJoinRequests` and `pin`. Groups require team
+enrollment and a Number whose WhatsApp Business Account is an Official Business
+Account; otherwise the API returns `whatsapp_groups_ineligible`. People join
+with the invite link and cannot be added. A group holds at most 8 participants
+besides your business. `create` returns a `requestId`; the group's conversation
+ID and invite link arrive in a `group.update` event with action `created`.
+Send to a group with `messages.send` and the group's conversation ID (text,
+media and templates only). Every change makes one attempt even with a retry
+override and passes your `idempotencyKey` to the API. Read the group before
+repeating an uncertain change. Use an organization API key or project token.
+
+```ts
+const { data } = await messaging.officialGroups.create("support", {
+  subject: "Order 1042",
+  joinApprovalRequired: true,
+});
+// Later, from the group.update webhook: group ID and invite link.
+await messaging.officialGroups.approveJoinRequests("support", groupId, [
+  joinRequestId,
+]);
+```
+
 `messaging.cloudCatalogs.list(wabaId, { version: "v26.0", limit: 25, after })`
 reads catalog IDs and names visible to the connected WABA credentials. It
 requires `sessions:read` and Graph access. The response retains opaque cursors;

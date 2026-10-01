@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Official groups (beta, requires team enrollment and an Official Business
+  Account). `MessagingClient.officialGroups` adds `list`, `create`, `retrieve`,
+  `update`, `delete`, `getInviteLink`, `resetInviteLink`, `removeParticipants`,
+  `listJoinRequests`, `approveJoinRequests`, `rejectJoinRequests` and `pin`.
+  Changes make one attempt and pass `idempotencyKey` through. New error codes:
+  `whatsapp_groups_ineligible`, `whatsapp_group_creation_paused`,
+  `whatsapp_group_limit_reached`, `whatsapp_group_full`,
+  `whatsapp_group_suspended` and `whatsapp_group_has_no_participants`.
+  `GroupUpdatePayload` and `GroupParticipantPayload` add optional Official
+  group fields. Contracts are pinned to API `dev` `ee217bf`.
 - Campaign conversion reporting (beta, requires team enrollment).
   `Client.campaigns.recordConversion(campaignId, body)` reports a conversion
   for a named campaign recipient, deduplicated by `eventId`.

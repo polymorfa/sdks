@@ -46,7 +46,8 @@ The two public Flow draft reads in the pinned Platform snapshot are covered by
 public, project-bound, and `sessions:read`.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API `dev` merge commit `29abb7b66a8e225af4df5cf354e9836ccb2ce04c`
+files at API `dev` merge commit `ee217bf7bf6320e20bce341335589f17357e374c`
+(API PR #431). Earlier releases pinned `29abb7b66a8e225af4df5cf354e9836ccb2ce04c`
 (API PR #362). This single revision contains every merged Official API
 contract the SDK consumes: Number-scoped Cloud templates and template editing,
 customer service windows, Meta pricing counts, Cloud credential health and
@@ -54,6 +55,12 @@ reauthorization, QuickLink sync receipts, typing with an inbound message ID,
 the Meta lifecycle webhook payloads, and the Flow provider lifecycle. It also
 contains the merged campaign send windows and rate-limit headers.
 
+- `MessagingClient.officialGroups` (beta) covers the twelve Official group
+  operations: list, create, retrieve, update, delete, getInviteLink,
+  resetInviteLink, removeParticipants, listJoinRequests, approveJoinRequests,
+  rejectJoinRequests and pin. Changes make one network attempt even with a
+  retry override and pass `Idempotency-Key` through. `Client.campaigns`
+  `recordConversion` and `conversions` cover the two conversion operations.
 - `MessagingClient.cloudTemplates` covers list, retrieve, create, edit and
   delete. Create, edit and delete make one network attempt even when a caller
   supplies an idempotency key or retry override. Create and delete accept the

@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (226 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (228 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (101 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -15,52 +15,6 @@
     }
   ],
   "paths": {
-    "/api/account/cloud-health": {
-      "get": {
-        "operationId": "getAccountCloudHealth",
-        "summary": "Read a Number's redacted Meta account health",
-        "tags": ["Account"],
-        "x-audience": "console",
-        "x-dashboard-only": true,
-        "x-excluded-reason": "Dashboard identity and live organization membership are required; the account projection is not an API-key operation.",
-        "security": [{"ConsoleSession": []}],
-        "parameters": [
-          {"name": "projectId", "in": "query", "required": true, "schema": {"type": "string", "format": "uuid"}},
-          {"name": "session", "in": "query", "required": true, "schema": {"type": "string"}}
-        ],
-        "responses": {
-          "200": {"description": "Redacted account, connection, webhook and messaging evidence with a scan ID and observation time", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AccountCloudHealthResponse"}}}},
-          "400": {"description": "Invalid project or Number"},
-          "401": {"description": "Missing or invalid dashboard JWT, or identity no longer active", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/DashboardUnauthorizedError"}}}},
-          "403": {"description": "Cloud onboarding is unavailable"},
-          "404": {"description": "Active Cloud connection or health projection not found"},
-          "503": {"description": "Health projection unavailable"}
-        }
-      }
-    },
-    "/api/account/cloud-health/export": {
-      "get": {
-        "operationId": "exportAccountCloudHealth",
-        "summary": "Download a Number's redacted Meta account health",
-        "tags": ["Account"],
-        "x-audience": "console",
-        "x-dashboard-only": true,
-        "x-excluded-reason": "Dashboard identity and live organization membership are required; diagnostics are not an API-key operation.",
-        "security": [{"ConsoleSession": []}],
-        "parameters": [
-          {"name": "projectId", "in": "query", "required": true, "schema": {"type": "string", "format": "uuid"}},
-          {"name": "session", "in": "query", "required": true, "schema": {"type": "string"}}
-        ],
-        "responses": {
-          "200": {"description": "JSON attachment with the same redacted projection as the account read", "headers": {"Content-Disposition": {"description": "Attachment filename for the redacted JSON export", "schema": {"type": "string"}}}, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AccountCloudHealthResponse"}}}},
-          "400": {"description": "Invalid project or Number"},
-          "401": {"description": "Missing or invalid dashboard JWT, or identity no longer active", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/DashboardUnauthorizedError"}}}},
-          "403": {"description": "Cloud onboarding is unavailable"},
-          "404": {"description": "Active Cloud connection or health projection not found"},
-          "503": {"description": "Health projection unavailable"}
-        }
-      }
-    },
     "/api/account/meta-app": {
       "get": {
         "operationId": "getTeamMetaApp",
@@ -331,6 +285,154 @@
           },
           "503": {
             "description": "Configuration unavailable"
+          }
+        }
+      }
+    },
+    "/api/account/cloud-health": {
+      "get": {
+        "operationId": "getAccountCloudHealth",
+        "summary": "Read a Number's redacted Meta account health",
+        "tags": [
+          "Account"
+        ],
+        "x-audience": "console",
+        "x-dashboard-only": true,
+        "x-excluded-reason": "Dashboard identity and live organization membership are required; the account projection is not an API-key operation.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "session",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Redacted account, connection, webhook and messaging evidence with a scan ID and observation time",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountCloudHealthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid project or Number"
+          },
+          "401": {
+            "description": "Missing or invalid dashboard JWT, or identity no longer active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardUnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Cloud onboarding is unavailable"
+          },
+          "404": {
+            "description": "Active Cloud connection or health projection not found"
+          },
+          "503": {
+            "description": "Health projection unavailable"
+          }
+        }
+      }
+    },
+    "/api/account/cloud-health/export": {
+      "get": {
+        "operationId": "exportAccountCloudHealth",
+        "summary": "Download a Number's redacted Meta account health",
+        "tags": [
+          "Account"
+        ],
+        "x-audience": "console",
+        "x-dashboard-only": true,
+        "x-excluded-reason": "Dashboard identity and live organization membership are required; diagnostics are not an API-key operation.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "session",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "JSON attachment with the same redacted projection as the account read",
+            "headers": {
+              "Content-Disposition": {
+                "description": "Attachment filename for the redacted JSON export",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountCloudHealthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid project or Number"
+          },
+          "401": {
+            "description": "Missing or invalid dashboard JWT, or identity no longer active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardUnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Cloud onboarding is unavailable"
+          },
+          "404": {
+            "description": "Active Cloud connection or health projection not found"
+          },
+          "503": {
+            "description": "Health projection unavailable"
           }
         }
       }
@@ -20992,6 +21094,184 @@
         }
       }
     },
+    "/platform/campaigns/{campaignId}/conversions": {
+      "get": {
+        "operationId": "getCampaignConversions",
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Get campaign conversions",
+        "description": "Beta: requires team enrollment in campaign conversion reporting. Counts the conversions reported for a campaign by attribution outcome and sums reported values per currency. Amounts in different currencies are never added together. `conversionRate` is the number of distinct recipients with an attributed conversion divided by the campaign's `sentCount`.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project the campaign belongs to. Required with a team API key; a project token is bound to its own project and omits it.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CampaignConversionReport"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post": {
+        "operationId": "recordCampaignConversion",
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Report a campaign conversion",
+        "description": "Beta: requires team enrollment in campaign conversion reporting. Records a conversion your system observed for one campaign recipient, such as a purchase or a sign-up. Name the recipient with `recipientId` from the campaign's recipient list; Polymorfa never matches a conversion to a recipient by phone number, reply or link. The conversion is attributed to the campaign when `occurredAt` is no earlier than the recipient's send time and no more than 7 days after it. Otherwise `attribution.outcome` is `outside_window`, or `not_sent` when the recipient was never sent. A recipient on the team's opt-out list is recorded as `opted_out` without the recipient link or the value. The decision is made once and never recalculated. `eventId` deduplicates per project: sending the same `eventId` with the same details returns the original conversion with `replayed: true`; different details answer `409 idempotency_conflict`. `value` is an integer amount in the currency's minor unit (for example cents) and an ISO 4217 code; amounts are never converted between currencies. Values are reported by you and are not verified payments. `occurredAt` cannot be in the future or more than 90 days ago. Conversions are deleted 400 days after they are recorded. Send `projectId` in the body when using a team API key.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordCampaignConversionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CampaignConversion"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
     "/platform/audiences": {
       "get": {
         "operationId": "listAudiences",
@@ -35993,65 +36273,6 @@
       }
     },
     "schemas": {
-      "DashboardUnauthorizedError": {
-        "type": "object", "additionalProperties": false, "required": ["error"],
-        "properties": {"error": {"type": "string", "enum": ["invalid dashboard token"]}}
-      },
-      "AccountCloudHealthResponse": {
-        "type": "object", "additionalProperties": false, "required": ["success", "data"],
-        "properties": {
-          "success": {"type": "boolean", "enum": [true]},
-          "data": {"$ref": "#/components/schemas/AccountCloudHealthView"}
-        }
-      },
-      "AccountCloudHealthView": {
-        "type": "object", "additionalProperties": false,
-        "required": ["session", "phone", "appId", "wabaId", "connection", "credentials", "account", "readiness", "diagnostic"],
-        "properties": {
-          "session": {"type": "string"},
-          "phone": {"type": "string", "nullable": true},
-          "appId": {"type": "string", "nullable": true},
-          "wabaId": {"type": "string", "nullable": true},
-          "connection": {"type": "object", "additionalProperties": false, "required": ["status", "connected", "sendingPaused"], "properties": {
-            "status": {"type": "string"}, "connected": {"type": "boolean", "description": "Whether the Official API connection is connected. A Hybrid sending pause does not change this value."},
-            "sendingPaused": {"type": "boolean", "description": "Whether Hybrid sending is paused for this Number. Always false for Numbers without a Hybrid Link."}
-          }},
-          "credentials": {"type": "object", "additionalProperties": false,
-            "required": ["status", "tokenStatus", "missingPermissions", "phoneRegistration", "webhookSubscription", "failureCode"],
-            "properties": {
-              "status": {"type": "string", "enum": ["pending", "healthy", "action_required", "unknown"]},
-              "tokenStatus": {"type": "string", "enum": ["valid", "expired", "invalid", "unknown"]},
-              "missingPermissions": {"type": "array", "items": {"type": "string"}},
-              "phoneRegistration": {"type": "string", "enum": ["registered", "not_registered", "unknown"]},
-              "webhookSubscription": {"type": "string", "enum": ["subscribed", "not_subscribed", "unknown"]},
-              "failureCode": {"type": "string", "nullable": true}
-            }
-          },
-          "account": {"type": "object", "additionalProperties": false,
-            "required": ["verifiedName", "qualityRating", "messagingLimitTier", "displayNameReview", "payment", "restrictions"],
-            "properties": {
-              "verifiedName": {"type": "string", "nullable": true},
-              "qualityRating": {"type": "string", "enum": ["GREEN", "YELLOW", "RED", "NA"], "nullable": true},
-              "messagingLimitTier": {"type": "string", "nullable": true},
-              "displayNameReview": {"type": "string", "enum": ["unverified"]},
-              "payment": {"type": "string", "enum": ["unverified"]},
-              "restrictions": {"type": "string", "enum": ["unverified"]}
-            }
-          },
-          "readiness": {"type": "object", "additionalProperties": false,
-            "required": ["connection", "webhook", "messaging", "nextAction"],
-            "properties": {
-              "connection": {"type": "string", "enum": ["connected", "not_connected"]},
-              "webhook": {"type": "string", "enum": ["configured", "not_configured", "unknown"]},
-              "messaging": {"type": "string", "enum": ["not_ready", "unverified"]},
-              "nextAction": {"type": "string", "enum": ["reconnect_number", "reauthorize", "complete_registration", "check_webhook_subscription", "review_account_quality", "verify_messaging_and_webhooks", "retry_health_check", "resume_hybrid_sending", "contact_support"]}
-            }
-          },
-          "diagnostic": {"type": "object", "additionalProperties": false, "required": ["id", "observedAt"],
-            "properties": {"id": {"type": "string", "format": "uuid", "nullable": true}, "observedAt": {"type": "string", "format": "date-time", "nullable": true}}
-          }
-        }
-      },
       "Function": {
         "type": "object",
         "additionalProperties": false,
@@ -36728,6 +36949,271 @@
         "required": [
           "ok"
         ]
+      },
+      "DashboardUnauthorizedError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "enum": [
+              "invalid dashboard token"
+            ]
+          }
+        }
+      },
+      "AccountCloudHealthResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/AccountCloudHealthView"
+          }
+        }
+      },
+      "AccountCloudHealthView": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "session",
+          "phone",
+          "appId",
+          "wabaId",
+          "connection",
+          "credentials",
+          "account",
+          "readiness",
+          "diagnostic"
+        ],
+        "properties": {
+          "session": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "appId": {
+            "type": "string",
+            "nullable": true
+          },
+          "wabaId": {
+            "type": "string",
+            "nullable": true
+          },
+          "connection": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "connected",
+              "sendingPaused"
+            ],
+            "properties": {
+              "status": {
+                "type": "string"
+              },
+              "connected": {
+                "type": "boolean",
+                "description": "Whether the Official API connection is connected. A Hybrid sending pause does not change this value."
+              },
+              "sendingPaused": {
+                "type": "boolean",
+                "description": "Whether Hybrid sending is paused for this Number. Always false for Numbers without a Hybrid Link."
+              }
+            }
+          },
+          "credentials": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "tokenStatus",
+              "missingPermissions",
+              "phoneRegistration",
+              "webhookSubscription",
+              "failureCode"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "healthy",
+                  "action_required",
+                  "unknown"
+                ]
+              },
+              "tokenStatus": {
+                "type": "string",
+                "enum": [
+                  "valid",
+                  "expired",
+                  "invalid",
+                  "unknown"
+                ]
+              },
+              "missingPermissions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "phoneRegistration": {
+                "type": "string",
+                "enum": [
+                  "registered",
+                  "not_registered",
+                  "unknown"
+                ]
+              },
+              "webhookSubscription": {
+                "type": "string",
+                "enum": [
+                  "subscribed",
+                  "not_subscribed",
+                  "unknown"
+                ]
+              },
+              "failureCode": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "account": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "verifiedName",
+              "qualityRating",
+              "messagingLimitTier",
+              "displayNameReview",
+              "payment",
+              "restrictions"
+            ],
+            "properties": {
+              "verifiedName": {
+                "type": "string",
+                "nullable": true
+              },
+              "qualityRating": {
+                "type": "string",
+                "enum": [
+                  "GREEN",
+                  "YELLOW",
+                  "RED",
+                  "NA",
+                  null
+                ],
+                "nullable": true
+              },
+              "messagingLimitTier": {
+                "type": "string",
+                "nullable": true
+              },
+              "displayNameReview": {
+                "type": "string",
+                "enum": [
+                  "unverified"
+                ]
+              },
+              "payment": {
+                "type": "string",
+                "enum": [
+                  "unverified"
+                ]
+              },
+              "restrictions": {
+                "type": "string",
+                "enum": [
+                  "unverified"
+                ]
+              }
+            }
+          },
+          "readiness": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "connection",
+              "webhook",
+              "messaging",
+              "nextAction"
+            ],
+            "properties": {
+              "connection": {
+                "type": "string",
+                "enum": [
+                  "connected",
+                  "not_connected"
+                ]
+              },
+              "webhook": {
+                "type": "string",
+                "enum": [
+                  "configured",
+                  "not_configured",
+                  "unknown"
+                ]
+              },
+              "messaging": {
+                "type": "string",
+                "enum": [
+                  "not_ready",
+                  "unverified"
+                ]
+              },
+              "nextAction": {
+                "type": "string",
+                "enum": [
+                  "reconnect_number",
+                  "reauthorize",
+                  "complete_registration",
+                  "check_webhook_subscription",
+                  "review_account_quality",
+                  "verify_messaging_and_webhooks",
+                  "retry_health_check",
+                  "resume_hybrid_sending",
+                  "contact_support"
+                ]
+              }
+            }
+          },
+          "diagnostic": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "observedAt"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "nullable": true
+              },
+              "observedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            }
+          }
+        }
       },
       "DataEnvelope": {
         "type": "object",
@@ -42795,6 +43281,316 @@
           "readAt",
           "failedAt",
           "respondedAt"
+        ]
+      },
+      "RecordCampaignConversionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Project of the campaign. Required with a team API key."
+          },
+          "recipientId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The campaign recipient the conversion belongs to, from the campaign's recipient list."
+          },
+          "eventId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[\\x21-\\x7e]{1,128}$",
+            "description": "Your unique ID for this conversion, such as an order ID. Deduplicates per project. Stored only as a one-way hash."
+          },
+          "eventType": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,39}$",
+            "description": "Kind of conversion, such as `purchase` or `sign_up`.",
+            "example": "purchase"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the conversion happened, with a time zone offset. Not in the future and not more than 90 days ago."
+          },
+          "value": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CampaignConversionValue"
+              }
+            ],
+            "description": "Reported value, or omit for a conversion without one."
+          }
+        },
+        "required": [
+          "recipientId",
+          "eventId",
+          "eventType",
+          "occurredAt"
+        ]
+      },
+      "CampaignConversionValue": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000000000000,
+            "description": "Amount in the currency's minor unit, for example cents for USD. Not converted."
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "ISO 4217 currency code.",
+            "example": "USD"
+          }
+        },
+        "required": [
+          "amountMinor",
+          "currency"
+        ]
+      },
+      "CampaignConversion": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "campaignId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipientId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Null when the recipient opted out."
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "value": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CampaignConversionValue"
+              }
+            ],
+            "description": "Null when no value was reported or the recipient opted out."
+          },
+          "evidence": {
+            "type": "string",
+            "enum": [
+              "customer_reported"
+            ],
+            "description": "Who asserted the conversion. `customer_reported`: your system reported it; Polymorfa did not verify a payment."
+          },
+          "attribution": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "outcome": {
+                "type": "string",
+                "enum": [
+                  "attributed",
+                  "outside_window",
+                  "not_sent",
+                  "opted_out"
+                ],
+                "description": "`attributed`: within 7 days after the recipient was sent. `outside_window`: before the send or more than 7 days after it. `not_sent`: the recipient was never sent. `opted_out`: the recipient is on the team's opt-out list; the conversion is counted but not linked to them."
+              },
+              "touchAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true,
+                "description": "The recipient's send time used for the decision. Null for `not_sent` and `opted_out`."
+              },
+              "windowDays": {
+                "type": "integer",
+                "enum": [
+                  7
+                ]
+              }
+            },
+            "required": [
+              "outcome",
+              "touchAt",
+              "windowDays"
+            ]
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "replayed": {
+            "type": "boolean",
+            "description": "True when this `eventId` was already recorded and nothing new was written."
+          }
+        },
+        "required": [
+          "id",
+          "campaignId",
+          "recipientId",
+          "eventType",
+          "occurredAt",
+          "value",
+          "evidence",
+          "attribution",
+          "recordedAt",
+          "replayed"
+        ]
+      },
+      "CampaignConversionReport": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "model": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "The attribution rule applied to every conversion of this campaign.",
+            "properties": {
+              "touch": {
+                "type": "string",
+                "enum": [
+                  "recipient_sent"
+                ]
+              },
+              "windowDays": {
+                "type": "integer",
+                "enum": [
+                  7
+                ]
+              },
+              "correlation": {
+                "type": "string",
+                "enum": [
+                  "explicit_recipient"
+                ]
+              }
+            },
+            "required": [
+              "touch",
+              "windowDays",
+              "correlation"
+            ]
+          },
+          "sentCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "conversions": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "attributed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "outsideWindow": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "notSent": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "optedOut": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "total",
+              "attributed",
+              "outsideWindow",
+              "notSent",
+              "optedOut"
+            ]
+          },
+          "convertedRecipients": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Distinct recipients with at least one attributed conversion."
+          },
+          "conversionRate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "`convertedRecipients` divided by `sentCount`; 0 when nothing was sent."
+          },
+          "values": {
+            "type": "array",
+            "description": "Reported value per currency, sorted by currency code. Currencies are never combined or converted.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "evidence": {
+                  "type": "string",
+                  "enum": [
+                    "customer_reported"
+                  ]
+                },
+                "attributedConversions": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "attributedAmountMinor": {
+                  "type": "string",
+                  "pattern": "^[0-9]+$",
+                  "description": "Sum of attributed amounts in minor units, as a decimal string."
+                },
+                "unattributedConversions": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Conversions with a value that are `outside_window` or `not_sent`."
+                },
+                "unattributedAmountMinor": {
+                  "type": "string",
+                  "pattern": "^[0-9]+$"
+                }
+              },
+              "required": [
+                "currency",
+                "evidence",
+                "attributedConversions",
+                "attributedAmountMinor",
+                "unattributedConversions",
+                "unattributedAmountMinor"
+              ]
+            }
+          }
+        },
+        "required": [
+          "campaignId",
+          "model",
+          "sentCount",
+          "conversions",
+          "convertedRecipients",
+          "conversionRate",
+          "values"
         ]
       },
       "CampaignRecipientAppendResult": {
@@ -52114,6 +52910,7 @@
                   "invalid_parameter",
                   "invalid_credential",
                   "entitlement_required",
+                  "cloud_template_authority_restricted",
                   "gate_limit_reached",
                   "method_not_allowed",
                   "permission_denied",
@@ -52176,6 +52973,12 @@
                   "whatsapp_rate_limited",
                   "new_chat_limit_reached",
                   "whatsapp_account_restricted",
+                  "whatsapp_groups_ineligible",
+                  "whatsapp_group_creation_paused",
+                  "whatsapp_group_limit_reached",
+                  "whatsapp_group_full",
+                  "whatsapp_group_suspended",
+                  "whatsapp_group_has_no_participants",
                   "bansafe_suspended",
                   "bansafe_org_suspended",
                   "bansafe_cold_blocked",
