@@ -17,6 +17,32 @@ function client(server: TestServer) {
 }
 
 describe("Cloud templates", () => {
+  it("rejects client tokens before every template request", async () => {
+    const server = await startTestServer(() => ({ body: "{}" }));
+    servers.push(server);
+    const resource = new MessagingClient({
+      credential: { type: "clientToken", value: "pmfa_ct_browser" },
+      baseUrl: server.url,
+    }).cloudTemplates;
+    const body = {
+      name: "delivery",
+      language: "en_US",
+      category: "UTILITY" as const,
+      components: [{}],
+    };
+    const requests = [
+      () => resource.list("support"),
+      () => resource.retrieve("support", "delivery"),
+      () => resource.create("support", body),
+      () => resource.update("support", "delivery", { components: [{}] }),
+      () => resource.delete("support", "delivery"),
+    ];
+    for (const request of requests) {
+      expect(request).toThrow(/organization API key or project token/);
+    }
+    expect(server.requests).toHaveLength(0);
+  });
+
   it("preserves receipt fields and encodes Number, template name and language separately", async () => {
     const template = {
       id: "tpl_1",
@@ -130,6 +156,10 @@ describe("Cloud templates", () => {
             : resource.delete("support", "delivery", options);
       await expect(request).rejects.toMatchObject({ status: 502 });
       expect(server.requests).toHaveLength(1);
+      // The caller's key reaches the API so a manual retry is fenced there.
+      expect(server.requests[0]?.headers["idempotency-key"]).toBe(
+        "customer-key",
+      );
     },
   );
 

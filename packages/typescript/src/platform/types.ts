@@ -2,6 +2,7 @@ import type {
   CampaignRecipient,
   CampaignRecipientInput,
   CampaignRecipientStatus,
+  CampaignSendWindowRequest,
   InvalidRecipientRow,
 } from "../messaging/types.js";
 
@@ -183,6 +184,8 @@ export interface CreatePlatformCampaignRequest {
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Scheduled start time in Unix milliseconds. */
   readonly scheduledAt?: number;
+  /** When the campaign may send; null or omitted sends at any time. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   /** At most 1,000 recipients. */
   readonly recipients?: readonly CampaignRecipientInput[];
   /** Ignored when inline recipients are supplied. */
@@ -222,6 +225,8 @@ export interface PlatformCampaignParams {
  */
 export interface UpdatePlatformCampaignRequest {
   readonly recipientListId?: string | null;
+  /** Replaces the send window; null removes it. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   readonly [field: string]: unknown;
 }
 

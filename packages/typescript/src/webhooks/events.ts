@@ -47,6 +47,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "campaign.recipient_failed",
   "campaign.recipient_sent",
   "campaign.recipient_skipped",
+  "campaign.rescheduled",
   "campaign.resumed",
   "campaign.stopped",
   "campaign.throttled",
@@ -122,6 +123,15 @@ export interface NativeFlowResponse {
   readonly version?: number;
 }
 
+/**
+ * The reply button or list row a contact chose. `id` is the ID you assigned
+ * when sending; the visible label is not included.
+ */
+export interface ReplyChoice {
+  readonly kind: "button" | "list";
+  readonly id: string;
+}
+
 export interface PollOption {
   readonly name: string;
   readonly hash: string;
@@ -136,6 +146,9 @@ export type LinkedDeviceMessageType =
   | "location"
   | "contact"
   | "phone_number_shared"
+  | "native_flow_response"
+  | "button_reply"
+  | "list_reply"
   | "poll"
   | "sticker"
   | "reaction"
@@ -173,6 +186,8 @@ export interface LinkedDeviceMessagePayload {
   readonly unavailable?: boolean;
   readonly unavailableReason?: string;
   readonly nativeFlowResponse?: NativeFlowResponse;
+  readonly replyChoice?: ReplyChoice;
+  readonly parentMessageId?: string;
   readonly [key: string]: unknown;
 }
 
@@ -188,6 +203,8 @@ export interface CloudMessagePayload {
   readonly type: string;
   readonly senderName?: string;
   readonly nativeFlowResponse?: NativeFlowResponse;
+  readonly replyChoice?: ReplyChoice;
+  readonly parentMessageId?: string;
   readonly interactive?: Readonly<Record<string, unknown>>;
   /** Provider referral source only; it does not establish a conversion or payment. */
   readonly referral?: Readonly<{
@@ -466,6 +483,8 @@ export interface CallTelemetryPayload {
 }
 
 export interface CallParticipant {
+  /** Authoritative raised-hand state for a connected participant. */
+  readonly handRaised?: boolean;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;
@@ -869,6 +888,16 @@ export interface CampaignPausedPayload {
   readonly pausedAt: number;
 }
 
+export interface CampaignRescheduledPayload {
+  readonly campaignId: string;
+  /** Replaced start time in Unix milliseconds, or null. */
+  readonly previousScheduledAt: number | null;
+  /** New start time in Unix milliseconds; equals rescheduledAt when starting now. */
+  readonly scheduledAt: number;
+  /** Unix milliseconds when the new start was accepted. */
+  readonly rescheduledAt: number;
+}
+
 export interface CampaignResumedPayload {
   readonly campaignId: string;
   readonly sentCount: number;
@@ -1034,6 +1063,7 @@ export interface WebhookPayloadMap {
   readonly "campaign.recipient_failed": CampaignRecipientFailedPayload;
   readonly "campaign.recipient_sent": CampaignRecipientSentPayload;
   readonly "campaign.recipient_skipped": CampaignRecipientSkippedPayload;
+  readonly "campaign.rescheduled": CampaignRescheduledPayload;
   readonly "campaign.resumed": CampaignResumedPayload;
   readonly "campaign.stopped": CampaignStoppedPayload;
   readonly "campaign.throttled": CampaignThrottledPayload;

@@ -1,0 +1,5 @@
+{
+  "name": "polymorfa-sdk-edge-smoke",
+  "main": "./edge-worker-smoke.mjs",
+  "compatibility_date": "2026-09-25",
+}
