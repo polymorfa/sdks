@@ -103,6 +103,8 @@ export interface Campaign {
   readonly completedAt: number | null;
   readonly createdAt: number;
   readonly updatedAt: number;
+  /** When the campaign may send, or null when it has no send window. */
+  readonly sendWindow: CampaignSendWindow | null;
   /** Additional live repository fields omitted from the pinned OpenAPI schema. */
   readonly composerBlueprint?: unknown;
   readonly messages?: unknown;
@@ -111,6 +113,42 @@ export interface Campaign {
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
   readonly variantStrategy?: unknown;
+}
+
+export type CampaignWeekday =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
+
+/** Local `HH:MM` range; `start` is inclusive and `end` (up to `24:00`) exclusive. */
+export interface CampaignSendWindowRange {
+  readonly start: string;
+  readonly end: string;
+}
+
+/** Stored send window. Recipients outside it stay queued until it next opens. */
+export interface CampaignSendWindow {
+  readonly timeZone: string;
+  readonly days: readonly CampaignWeekday[];
+  readonly hours: readonly CampaignSendWindowRange[];
+  readonly recipientTimeZone: boolean;
+  readonly timeZoneVariable: string;
+}
+
+/** Send window input. Up to four non-overlapping ranges that do not cross midnight. */
+export interface CampaignSendWindowRequest {
+  /** IANA zone. Defaults to the team's time zone, or UTC. */
+  readonly timeZone?: string;
+  readonly days: readonly CampaignWeekday[];
+  readonly hours: readonly CampaignSendWindowRange[];
+  /** Evaluate the window in each recipient's own time zone. Defaults to false. */
+  readonly recipientTimeZone?: boolean;
+  /** Recipient variable holding an IANA zone. Defaults to `timeZone`. */
+  readonly timeZoneVariable?: string;
 }
 
 export interface CampaignAnalytics {
@@ -132,6 +170,8 @@ export interface CreateCampaignRequest {
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Epoch milliseconds. */
   readonly scheduledAt?: number;
+  /** When the campaign may send; null or omitted sends at any time. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   /**
    * Up to 1,000 recipients to queue with the draft. Invalid entries reject the
    * whole request; use `campaigns.addRecipients` for partial acceptance.
@@ -1587,7 +1627,11 @@ export type VoipParticipantReference = string;
 /** Body for `POST /messaging/voip/calls`. */
 export interface VoipPlaceCallRequest {
   /** Phone number in E.164 form or a WhatsApp user ID. */
-  readonly to: string;
+  readonly to?: string;
+  /** Ad-hoc group of 2 to 31 distinct people. Mutually exclusive with to. */
+  readonly participants?: readonly string[];
+  /** Public group ID; mutually exclusive with to and participants. */
+  readonly groupId?: string;
   /** Session that places the call. Required with a server credential. */
   readonly session?: string;
   readonly video?: boolean;
@@ -1603,6 +1647,37 @@ export interface VoipPlaceCallResult {
 }
 
 export type VoipPlaceCallResponse = SuccessEnvelope<VoipPlaceCallResult>;
+
+/** Server credentials only. Creates a reusable link without joining a call. */
+export interface VoipCreateCallLinkRequest {
+  readonly session: string;
+  readonly video?: boolean;
+}
+
+/** Keep the token private; send the media type that matches the link. */
+export interface VoipPreviewCallLinkRequest extends VoipCreateCallLinkRequest {
+  readonly token: string;
+}
+
+export interface VoipCreatedCallLink {
+  readonly session: string;
+  readonly token: string;
+  readonly url: string;
+  readonly video: boolean;
+}
+
+export interface VoipPreviewedCallLink {
+  readonly session: string;
+  readonly video: boolean;
+  readonly creator: ConversationIdentity;
+  readonly approvalRequired: boolean;
+  /** WhatsApp-reported role for this Number, not an API permission grant. */
+  readonly isAdmin: boolean;
+}
+
+export type VoipCreatedCallLinkResponse = SuccessEnvelope<VoipCreatedCallLink>;
+export type VoipPreviewedCallLinkResponse =
+  SuccessEnvelope<VoipPreviewedCallLink>;
 
 /** Body for `POST /messaging/voip/calls/{callId}/accept`. */
 export interface VoipAcceptCallRequest {
@@ -1713,6 +1788,7 @@ export interface VoipAddParticipantRequest {
 export type VoipParticipantState = "invited" | "ringing" | "connected" | "left";
 
 export interface VoipParticipant {
+  readonly handRaised?: boolean;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;
@@ -1910,7 +1986,9 @@ export type MessageKind =
   | "buttons"
   | "address_message"
   | "flow"
-  | "call_permission_request";
+  | "call_permission_request"
+  | "order_details"
+  | "order_status";
 
 export interface QuotedMessage {
   readonly id: string;
@@ -2188,6 +2266,141 @@ export interface SendCallPermissionRequestMessageRequest extends MessageSendCont
   };
 }
 
+/** An amount in centavos: `value` is the amount times `offset` (always 100 for BRL). */
+export interface PaymentOrderAmount {
+  readonly value: number;
+  readonly offset: 100;
+}
+
+export type PixKeyType = "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "EVP";
+
+/**
+ * A Brazil order with payment instructions (payment orders beta, Official API
+ * Numbers only). Polymorfa validates and relays the order; it does not
+ * collect, hold or confirm funds. Use a new `referenceId` for every order.
+ */
+export interface PixDynamicCodePayment {
+  /** Dynamic Pix copy-and-paste code from your bank or payment provider. */
+  readonly code: string;
+  readonly merchantName: string;
+  readonly key: string;
+  readonly keyType: PixKeyType;
+}
+
+/** Ways to pay; provide at least one. */
+export type OrderPaymentSettings = {
+  readonly pixDynamicCode?: PixDynamicCodePayment;
+  /** HTTPS checkout link. */
+  readonly paymentLink?: { readonly uri: string };
+  /** Boleto digitable line of 47 or 48 digits. */
+  readonly boleto?: { readonly digitableLine: string };
+} & (
+  | { readonly pixDynamicCode: PixDynamicCodePayment }
+  | { readonly paymentLink: { readonly uri: string } }
+  | { readonly boleto: { readonly digitableLine: string } }
+);
+
+/** Itemized order lines and totals. */
+export interface OrderDetailsItemization {
+  readonly catalogId?: string;
+  readonly expiration?: {
+    /** Unix seconds, at least 300 seconds from now. */
+    readonly timestamp: number;
+    readonly description: string;
+  };
+  readonly items: readonly {
+    readonly retailerId: string;
+    readonly name: string;
+    readonly amount: PaymentOrderAmount;
+    readonly quantity: number;
+    readonly saleAmount?: PaymentOrderAmount;
+  }[];
+  /** Sum of each item's saleAmount (or amount) times quantity. */
+  readonly subtotal: PaymentOrderAmount;
+  readonly tax: PaymentOrderAmount & { readonly description?: string };
+  readonly shipping?: PaymentOrderAmount & { readonly description?: string };
+  readonly discount?: PaymentOrderAmount & {
+    readonly description?: string;
+    readonly programName?: string;
+  };
+}
+
+/**
+ * A Brazil order with payment instructions (payment orders beta, Official API
+ * Numbers only). Polymorfa validates and relays the order; it does not
+ * collect, hold or confirm funds. Use a new `referenceId` for every order.
+ */
+export type OrderDetailsMessageContent = {
+  /** 1 to 60 letters, digits, underscores, dashes or dots. */
+  readonly referenceId: string;
+  readonly type: "digital-goods" | "physical-goods";
+  /** At most 1,024 characters. */
+  readonly body: string;
+  /** At most 60 characters. */
+  readonly footer?: string;
+  readonly currency: "BRL";
+  /** With `order`, equals subtotal + tax + shipping - discount. */
+  readonly totalAmount: PaymentOrderAmount;
+  readonly paymentSettings: OrderPaymentSettings;
+} & (
+  | {
+      /** Itemized order. */
+      readonly order: OrderDetailsItemization;
+      /** HTTPS image shown as the thumbnail. */
+      readonly headerImageUrl?: string;
+    }
+  | { readonly order?: undefined; readonly headerImageUrl?: undefined }
+);
+
+export type OrderStatus =
+  | "pending"
+  | "processing"
+  | "partially_shipped"
+  | "shipped"
+  | "completed"
+  | "canceled";
+export type OrderPaymentStatus = "pending" | "captured" | "failed";
+
+/**
+ * Updates a Brazil order sent with `orderDetails`. Send `payment.status`
+ * after your payment provider confirms it; `captured` shows the order as paid.
+ * Provide `order`, `payment`, or both.
+ */
+export type OrderStatusMessageContent = {
+  readonly referenceId: string;
+  readonly body: string;
+  readonly footer?: string;
+} & (
+  | {
+      readonly order: {
+        readonly status: OrderStatus;
+        readonly description?: string;
+      };
+      readonly payment?: {
+        readonly status: OrderPaymentStatus;
+        readonly timestamp?: number;
+      };
+    }
+  | {
+      readonly order?: {
+        readonly status: OrderStatus;
+        readonly description?: string;
+      };
+      readonly payment: {
+        readonly status: OrderPaymentStatus;
+        readonly timestamp?: number;
+      };
+    }
+);
+
+export interface SendOrderDetailsMessageRequest extends MessageSendContext {
+  readonly content: { readonly orderDetails: OrderDetailsMessageContent };
+}
+
+export interface SendOrderStatusMessageRequest extends MessageSendContext {
+  readonly content: { readonly orderStatus: OrderStatusMessageContent };
+}
+
 export interface SendTemplateMessageRequest extends MessageSendContext {
   readonly content: { readonly template: MessageTemplateSend };
 }
@@ -2207,6 +2420,8 @@ export type SendMessageRequest =
   | SendAddressMessageRequest
   | SendFlowMessageRequest
   | SendCallPermissionRequestMessageRequest
+  | SendOrderDetailsMessageRequest
+  | SendOrderStatusMessageRequest
   | SendTemplateMessageRequest;
 
 export interface MessageOperation {
@@ -2250,6 +2465,8 @@ export interface SeenRequest {
 
 export interface TypingRequest {
   readonly conversation: ConversationReference;
+  /** Required on Official Numbers: an inbound message to mark read while showing typing. */
+  readonly id?: string;
   readonly state: "typing" | "recording" | "paused";
 }
 

@@ -1,8 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type {
-  BanSafeHealthBandName,
-  BanSafeHealthChangedPayload,
   BlocklistUpdatePayload,
   WhatsAppMessageIds,
   BusinessQuickReplyUpdatePayload,
@@ -38,6 +36,7 @@ import type {
   MessagePayload,
   MessageReceivedPayload,
   NativeFlowResponse,
+  ReplyChoice,
   NewsletterUpdatePayload,
   PollOption,
   PollVotePayload,
@@ -49,7 +48,6 @@ import type {
   WebhookPayloadMap,
 } from "../src/index.js";
 import { KNOWN_WEBHOOK_EVENT_TYPES } from "../src/index.js";
-import type { BanSafeHealthBandName as WebhooksHealthBandName } from "../src/webhooks/index.js";
 
 type ExpectedIdentityReference = {
   readonly id: string;
@@ -78,6 +76,11 @@ type ExpectedPollOption = {
   readonly hash: string;
 };
 
+type ExpectedReplyChoice = {
+  readonly kind: "button" | "list";
+  readonly id: string;
+};
+
 type ExpectedLinkedDeviceMessageType =
   | "text"
   | "image"
@@ -87,6 +90,9 @@ type ExpectedLinkedDeviceMessageType =
   | "location"
   | "contact"
   | "phone_number_shared"
+  | "native_flow_response"
+  | "button_reply"
+  | "list_reply"
   | "poll"
   | "sticker"
   | "reaction"
@@ -123,7 +129,14 @@ type ExpectedMessagePayload = {
   readonly unavailable?: boolean;
   readonly unavailableReason?: string;
   readonly nativeFlowResponse?: ExpectedNativeFlowResponse;
+  readonly replyChoice?: ExpectedReplyChoice;
+  readonly parentMessageId?: string;
   readonly [key: string]: unknown;
+};
+
+type ExpectedOfficialGroupError = {
+  readonly code: number;
+  readonly title?: string;
 };
 
 type ExpectedPayloads = {
@@ -177,6 +190,7 @@ type ExpectedPayloads = {
       readonly phoneNumber?: string;
       readonly bsuid?: string;
       readonly username?: string;
+      readonly handRaised?: boolean;
       readonly audioMuted: false;
       readonly video: false;
       readonly state: "invited" | "ringing" | "connected" | "left";
@@ -194,6 +208,7 @@ type ExpectedPayloads = {
       readonly phoneNumber?: string;
       readonly bsuid?: string;
       readonly username?: string;
+      readonly handRaised?: boolean;
       readonly audioMuted: false;
       readonly video: false;
       readonly state: "invited" | "ringing" | "connected" | "left";
@@ -293,12 +308,31 @@ type ExpectedPayloads = {
     readonly left?: readonly ExpectedIdentityReference[];
     readonly promoted?: readonly ExpectedIdentityReference[];
     readonly demoted?: readonly ExpectedIdentityReference[];
+    readonly reason?: string;
+    readonly initiatedBy?: "business" | "participant";
+    readonly requestId?: string;
+    readonly failedParticipants?: readonly {
+      readonly participant: ExpectedIdentityReference;
+      readonly errors?: readonly ExpectedOfficialGroupError[];
+    }[];
+    readonly errors?: readonly ExpectedOfficialGroupError[];
+    readonly joinRequest?: {
+      readonly joinRequestId: string;
+      readonly user: ExpectedIdentityReference;
+      readonly state: "created" | "revoked";
+    };
   };
   readonly "group.update": {
     readonly id: string;
     readonly newSubject?: string;
     readonly newDescription?: string;
     readonly action?: string;
+    readonly requestId?: string;
+    readonly inviteLink?: string;
+    readonly joinApprovalRequired?: boolean;
+    readonly pictureChanged?: boolean;
+    readonly failedChanges?: readonly ("subject" | "description" | "picture")[];
+    readonly errors?: readonly ExpectedOfficialGroupError[];
   };
   readonly "history.sync":
     | {
@@ -430,20 +464,11 @@ type ExportedPayloads = {
 };
 
 describe("webhook event payload types", () => {
-  it("exports the health band through the public webhook type surfaces", () => {
-    expectTypeOf<
-      BanSafeHealthChangedPayload["band"]
-    >().toEqualTypeOf<BanSafeHealthBandName>();
-    expectTypeOf<WebhooksHealthBandName>().toEqualTypeOf<BanSafeHealthBandName>();
-    expectTypeOf<BanSafeHealthBandName>().toEqualTypeOf<
-      "good" | "fair" | "poor" | "failing" | "unknown"
-    >();
-  });
-
   it("maps every formerly opaque event family to its contract payload", () => {
     expectTypeOf<IdentityReference>().toEqualTypeOf<ExpectedIdentityReference>();
     expectTypeOf<WebhookConversationReference>().toEqualTypeOf<ExpectedConversationReference>();
     expectTypeOf<NativeFlowResponse>().toEqualTypeOf<ExpectedNativeFlowResponse>();
+    expectTypeOf<ReplyChoice>().toEqualTypeOf<ExpectedReplyChoice>();
     expectTypeOf<PollOption>().toEqualTypeOf<ExpectedPollOption>();
     expectTypeOf<LinkedDeviceMessageType>().toEqualTypeOf<ExpectedLinkedDeviceMessageType>();
     expectTypeOf<CallParticipant>().toEqualTypeOf<

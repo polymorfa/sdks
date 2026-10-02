@@ -41,7 +41,8 @@ label {
   font-weight: 600;
   margin: 0.8rem 0 0.35rem;
 }
-input {
+input,
+select {
   box-sizing: border-box;
   width: 100%;
   padding: 0.7rem;
@@ -59,7 +60,8 @@ button {
   padding: 0.65rem 1rem;
 }
 button:focus-visible,
-input:focus-visible {
+input:focus-visible,
+select:focus-visible {
   outline: 3px solid #e8993a;
   outline-offset: 2px;
 }
@@ -71,4 +73,10 @@ input:focus-visible {
 }
 .error {
   color: #a01919;
+}
+
+button:disabled,
+select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }

@@ -4,13 +4,14 @@ Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 
 The development branch contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
-Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts from API source commit
-`2dd0c1563b1fc4e6525f708afc12e0685110cfe0`, now merged into API `dev`
-by PR #260. Graph-compatible
-APIs are outside this SDK's initial scope.
+Next.js server helpers, and a production-gated developer assistant. The exact Messaging and Platform sources are pinned in
+`contracts/source.json`; the Graph-compatible catalog, marketing status and
+Flow encryption routes are pinned to the same API commit in
+`contracts/cloud-api-supplements.json`. Full Graph API parity is outside this
+SDK's scope; `cloudCatalogs`, `cloudMarketing.status`, and `flowEncryption` provide
+typed clients for their respective Graph resources.
 
-The same API revision adds an enrolled hosted message history beta.
+The API includes an enrolled hosted message history beta.
 `MessagingClient.chats` has typed conversation and message reads for server
 credentials. These methods do not make the beta available before enrollment,
 HMS enablement, deployment, and SDK publication.
@@ -19,7 +20,7 @@ HMS enablement, deployment, and SDK publication.
 
 | Package                | Runtime              | Responsibility                                                                    |
 | ---------------------- | -------------------- | --------------------------------------------------------------------------------- |
-| `@polymorfa/sdk`       | Node.js 20+          | Messaging, management, system, and Bridge server clients                          |
+| `@polymorfa/sdk`       | Server               | Messaging, management, system, and Bridge server clients                          |
 | `@polymorfa/sdk/calls` | Node.js 22+, Browser | Calls lifecycle, answer/join/leave, and programmatic media sockets                |
 | `@polymorfa/browser`   | Browser              | Client-token transport and framework-neutral product controllers                  |
 | `@polymorfa/ui`        | Isomorphic           | Appearance, locale, direction, motion, and diagnostic contracts                   |
@@ -28,6 +29,10 @@ HMS enablement, deployment, and SDK publication.
 | `@polymorfa/store`     | Browser              | Opt-in IndexedDB store for webhook-shaped events, with live sources and chat data |
 | `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
 | `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
+
+The `@polymorfa/sdk` package root supports Node.js 20+, Cloudflare Workers,
+Deno, and Bun for HTTP clients and native webhook verification. Its `/node`
+entry contains Node.js file helpers.
 
 The public packages are complete development artifacts on `dev`. They
 publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
@@ -135,6 +140,11 @@ The handwritten Messaging resources in this milestone are:
 - `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions
 - `cloudOnboarding`: continue an issued Meta Cloud API QuickLink from a trusted
   server
+- `cloudTemplates`: list, retrieve, create, edit and delete Meta templates for a
+  Number with an Official API connection; separate from project template drafts
+- `cloudCatalogs`: read WABA product-catalog links through the Graph facade
+- `cloudMarketing`: read Meta's raw WABA Marketing Messages status strings without interpreting eligibility
+- `flowEncryption`: read or register a public Flow encryption key for one Meta phone number
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call
@@ -716,6 +726,29 @@ that interoperate with the Custom Elements standard. `@polymorfa/react`
 provides idiomatic hooks and components, including controlled and SDK-owned
 controller lifecycles.
 
+### Call links in this source revision
+
+`MessagingClient.voip.createCallLink` and `previewCallLink` require a server
+credential with `sessions:manage` and a Linked Device Number with calling
+enabled. They are source additions pending matching API deployment and SDK
+publication; client tokens are refused. They do not place or join a call.
+
+```ts
+const created = await messaging.voip.createCallLink({ session: "support" });
+const preview = await messaging.voip.previewCallLink({
+  session: "support",
+  token: created.data.data.token,
+  video: created.data.data.video,
+});
+```
+
+Keep the returned URL and token private. Preview returns the creator's public
+identity, `approvalRequired` and WhatsApp's `isAdmin` report. It does not grant
+API permissions or change approvals. Both methods make one request and refuse
+`idempotencyKey`; do not retry an unknown creation outcome. The exported types
+are `VoipCreateCallLinkRequest`, `VoipPreviewCallLinkRequest`,
+`VoipCreatedCallLink`, and `VoipPreviewedCallLink`.
+
 ### Calls
 
 `createBrowserCalls` connects the shared `@polymorfa/sdk/calls` model to the
@@ -879,7 +912,7 @@ and readiness.
 Native send/reaction requests and edits accept `transport: "auto" |
 "linked_devices" | "official_api"`. `chats.deleteMessage` accepts the choice in
 its options. Explicit choices never fall back. Raw Graph-compatible requests can
-use `graphTransportHeaders(transport)`; Graph remains outside handwritten method
+use `graphTransportHeaders(transport)`; Other Graph operations remain outside handwritten method
 coverage. Routing details appear in response `metadata.transport`,
 `metadata.routingReason`, and `metadata.operationId` when supplied by the API.
 

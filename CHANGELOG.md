@@ -2,6 +2,71 @@
 
 ## Unreleased
 
+- Brazil payment orders (beta, requires team enrollment, an Official API
+  Number and Meta payments eligibility in Brazil). `messages.send` accepts
+  `orderDetails` (Pix dynamic code, payment link or boleto, itemized or
+  total only) and `orderStatus` content. New types:
+  `OrderDetailsMessageContent`, `OrderStatusMessageContent`,
+  `OrderPaymentSettings`, `OrderDetailsItemization`, `PixDynamicCodePayment`,
+  `PaymentOrderAmount`, `PixKeyType`, `OrderStatus`, `OrderPaymentStatus`,
+  `SendOrderDetailsMessageRequest`, `SendOrderStatusMessageRequest` and
+  `OrderPaymentUpdatedPayload` (discriminated on `kind`) for the
+  `order.payment_updated` event. `MessageKind` adds `order_details` and
+  `order_status`. New error
+  codes: `order_status_transition_invalid` and `order_cancellation_failed`.
+  Polymorfa relays orders and payment reports; it does not process funds.
+  Contracts are pinned to API `dev` `e818ba6`.
+- Official groups (beta, requires team enrollment and an Official Business
+  Account). `MessagingClient.officialGroups` adds `list`, `create`, `retrieve`,
+  `update`, `delete`, `getInviteLink`, `resetInviteLink`, `removeParticipants`,
+  `listJoinRequests`, `approveJoinRequests`, `rejectJoinRequests` and `pin`.
+  Changes make one attempt and pass `idempotencyKey` through. New error codes:
+  `whatsapp_groups_ineligible`, `whatsapp_group_creation_paused`,
+  `whatsapp_group_limit_reached`, `whatsapp_group_full`,
+  `whatsapp_group_suspended` and `whatsapp_group_has_no_participants`.
+  `GroupUpdatePayload` and `GroupParticipantPayload` add optional Official
+  group fields. Contracts are pinned to API `dev` `ee217bf`.
+- Campaign conversion reporting (beta, requires team enrollment).
+  `Client.campaigns.recordConversion(campaignId, body)` reports a conversion
+  for a named campaign recipient, deduplicated by `eventId`.
+  `Client.campaigns.conversions(campaignId, { projectId })` returns counts by
+  attribution outcome and reported value per currency. New types:
+  `RecordCampaignConversionRequest`, `CampaignConversion`,
+  `CampaignConversionValue`, `CampaignConversionOutcome`,
+  `CampaignConversionReport` and `CampaignConversionCurrencyTotal`.
+- Official API consumers: Number-scoped Meta templates (`cloudTemplates`),
+  service windows, Meta pricing counts, Cloud credential health and
+  reauthorization, QuickLink sync receipts, typing with an inbound message ID,
+  the Flow provider lifecycle, linked catalogs and Flow encryption keys, and
+  the Meta lifecycle webhook payload variants. Provider writes make one
+  attempt. Contracts are pinned to API `dev` `29abb7b`.
+- Campaign records type the stored `sendWindow`; create and update requests
+  accept `CampaignSendWindowRequest`.
+- Breaking for Flow drafts: `flows.list` and `flows.retrieve` now return the
+  unwrapped record in `response.data`, like the other Flow methods. Replace
+  `response.data.data` with `response.data`.
+
+- `message.received` payload types include `replyChoice` (`kind` `button` or
+  `list` and the `id` you assigned) and `parentMessageId`, and the linked-device
+  message `type` union adds `button_reply`, `list_reply`, and
+  `native_flow_response`. `ReplyChoice` is exported.
+
+- Calls quality diagnostics respect their five-second send interval when a
+  connection closes, avoiding an extra report that the API can rate-limit.
+
+- Browser Calls uses its authenticated lifecycle socket for ICE candidates and
+  pauses remote candidate polling while connected. It falls back to HTTP when
+  that socket disconnects. The Calls example also displays call-control errors
+  and failed request IDs.
+- Team webhook tests accept an optional event type. The SDK now rejects a
+  supplied body or session ID before making that request. Project webhook
+  tests keep the paired native body and session ID input.
+
+- Retired the unproduced `bansafe.risk_changed`,
+  `bansafe.health_changed`, and `bansafe.enforcement` webhook names and their
+  test-event fixtures. The typed `bansafe.incident`, `bansafe.action`,
+  `bansafe.health_threshold`, and `bansafe.claim` events remain available.
+
 - Added `Client.sessions.getCapabilities(sessionId)` and the
   `SessionCapabilities` types. It reads which WhatsApp features and limits
   WhatsApp has enabled for a number, as of the number's last configuration sync;

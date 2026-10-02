@@ -2,6 +2,7 @@ import type {
   CampaignRecipient,
   CampaignRecipientInput,
   CampaignRecipientStatus,
+  CampaignSendWindowRequest,
   InvalidRecipientRow,
 } from "../messaging/types.js";
 
@@ -183,6 +184,8 @@ export interface CreatePlatformCampaignRequest {
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Scheduled start time in Unix milliseconds. */
   readonly scheduledAt?: number;
+  /** When the campaign may send; null or omitted sends at any time. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   /** At most 1,000 recipients. */
   readonly recipients?: readonly CampaignRecipientInput[];
   /** Ignored when inline recipients are supplied. */
@@ -222,6 +225,8 @@ export interface PlatformCampaignParams {
  */
 export interface UpdatePlatformCampaignRequest {
   readonly recipientListId?: string | null;
+  /** Replaces the send window; null removes it. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   readonly [field: string]: unknown;
 }
 
@@ -236,6 +241,92 @@ export interface ListPlatformCampaignRecipientsParams {
 
 export type PlatformCampaignRecipientsEnvelope =
   CursorEnvelope<CampaignRecipient>;
+
+/** Reported value in integer minor units of one ISO 4217 currency. Never converted. */
+export interface CampaignConversionValue {
+  /** Amount in the currency's minor unit, for example cents for USD. 0 to 10^14. */
+  readonly amountMinor: number;
+  /** Uppercase ISO 4217 code, for example `USD`. */
+  readonly currency: string;
+}
+
+/**
+ * Body accepted by `campaigns.recordConversion` (beta: requires team enrollment
+ * in campaign conversion reporting).
+ */
+export interface RecordCampaignConversionRequest extends PlatformCampaignParams {
+  /** The campaign recipient the conversion belongs to, from `campaigns.recipients`. */
+  readonly recipientId: string;
+  /** Your unique ID for the conversion, such as an order ID. Deduplicates per project. */
+  readonly eventId: string;
+  /** Kind of conversion: 1 to 40 lowercase letters, digits or underscores, such as `purchase`. */
+  readonly eventType: string;
+  /** ISO 8601 date-time with an offset. Not in the future and not more than 90 days ago. */
+  readonly occurredAt: string;
+  readonly value?: CampaignConversionValue | null;
+}
+
+export type CampaignConversionOutcome =
+  "attributed" | "outside_window" | "not_sent" | "opted_out";
+
+export interface CampaignConversion {
+  readonly id: string;
+  readonly campaignId: string;
+  /** Null when the recipient opted out. */
+  readonly recipientId: string | null;
+  readonly eventType: string;
+  readonly occurredAt: string;
+  /** Null when no value was reported or the recipient opted out. */
+  readonly value: CampaignConversionValue | null;
+  /** Your system reported the conversion; it is not a verified payment. */
+  readonly evidence: "customer_reported";
+  readonly attribution: {
+    /**
+     * `attributed`: within 7 days after the recipient was sent. `outside_window`:
+     * before the send or later than 7 days. `not_sent`: never sent. `opted_out`:
+     * the recipient is on the team's opt-out list and is not linked.
+     */
+    readonly outcome: CampaignConversionOutcome;
+    readonly touchAt: string | null;
+    readonly windowDays: 7;
+  };
+  readonly recordedAt: string;
+  /** True when this `eventId` was already recorded and nothing new was written. */
+  readonly replayed: boolean;
+}
+
+export interface CampaignConversionCurrencyTotal {
+  readonly currency: string;
+  readonly evidence: "customer_reported";
+  readonly attributedConversions: number;
+  /** Decimal string of minor units; sums can exceed `Number.MAX_SAFE_INTEGER`. */
+  readonly attributedAmountMinor: string;
+  readonly unattributedConversions: number;
+  readonly unattributedAmountMinor: string;
+}
+
+export interface CampaignConversionReport {
+  readonly campaignId: string;
+  readonly model: {
+    readonly touch: "recipient_sent";
+    readonly windowDays: 7;
+    readonly correlation: "explicit_recipient";
+  };
+  readonly sentCount: number;
+  readonly conversions: {
+    readonly total: number;
+    readonly attributed: number;
+    readonly outsideWindow: number;
+    readonly notSent: number;
+    readonly optedOut: number;
+  };
+  /** Distinct recipients with at least one attributed conversion. */
+  readonly convertedRecipients: number;
+  /** `convertedRecipients / sentCount`; 0 when nothing was sent. */
+  readonly conversionRate: number;
+  /** One entry per currency, sorted by code. Currencies are never combined. */
+  readonly values: readonly CampaignConversionCurrencyTotal[];
+}
 
 export interface AddPlatformCampaignRecipientsRequest {
   readonly projectId: string;

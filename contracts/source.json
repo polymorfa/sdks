@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "548a4f0d774d143354ebd554e382018d688532ad",
-  "branch": "t3code/abprops-number-capabilities",
-  "published": false,
-  "note": "Feature source for the number capabilities beta (GET /platform/sessions/{sessionId}/capabilities), stacked on API PR #317. Both snapshots are byte-identical to the authoritative source files at this commit. Repin to the merged API dev commit before merging.",
+  "commit": "e818ba62830d3727a7822379bb46c1fece90ef1b",
+  "branch": "dev",
+  "published": true,
+  "note": "API dev merge of PR #433 (Brazil payment order schema fix, after PR #429), on top of PR #431 (Official groups). Includes every merged Official API, Flow lifecycle, catalog, campaign send-window and campaign conversion contract. Both snapshots are byte-identical to this exact API commit. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "7291c6001b8d5f53c368b8775d46d137868d6c75b9ed63f673d8c255242d62ab"
+      "sha256": "20312f7b375ad8f37a374d936cf15f345f1eb6e3c76a39987d4be6f81581098d"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "24b753a2f5d74ec06b9389282572ddb9071af9e174fe4359c89e4cbbd2719ad4"
+      "sha256": "c077ba0f3fbab9ffbb67a928f79a19b958ed6ee6053380e88cadf82d9f863e07"
     }
   }
 }

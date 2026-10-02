@@ -23,6 +23,13 @@ const body = {
     nested: [null, { enabled: false }],
   },
   scheduledAt: 1_800_000_000_000,
+  sendWindow: {
+    timeZone: "America/Sao_Paulo",
+    days: ["monday", "friday"],
+    hours: [{ start: "09:00", end: "18:00" }],
+    recipientTimeZone: true,
+    timeZoneVariable: "timeZone",
+  },
   recipients: [{ phone: "+15551234567", variables: { plan: "pro" } }],
   recipientCount: 100,
   composerBlueprint: { steps: [null, { text: "Hello" }] },
