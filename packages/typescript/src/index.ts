@@ -461,6 +461,7 @@ export type {
   GetUserSecurityCodeResponse,
   GetWebhookResponse,
   HistorySyncPolicy,
+  NewChatCapping,
   Group,
   GroupAdminOnlySettingRequest,
   GroupInviteCode,

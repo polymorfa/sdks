@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `Session` gains optional `newChatCapping` (`NewChatCapping`): WhatsApp's
+  per-number new-chat cap, returned by `sessions.retrieve` for linked-device
+  numbers. API contract: polymorfa/polymorfa#403.
+
 - Brazil payment orders (beta, requires team enrollment, an Official API
   Number and Meta payments eligibility in Brazil). `messages.send` accepts
   `orderDetails` (Pix dynamic code, payment link or boleto, itemized or
