@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (221 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (99 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (235 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (101 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -285,6 +285,154 @@
           },
           "503": {
             "description": "Configuration unavailable"
+          }
+        }
+      }
+    },
+    "/api/account/cloud-health": {
+      "get": {
+        "operationId": "getAccountCloudHealth",
+        "summary": "Read a Number's redacted Meta account health",
+        "tags": [
+          "Account"
+        ],
+        "x-audience": "console",
+        "x-dashboard-only": true,
+        "x-excluded-reason": "Dashboard identity and live organization membership are required; the account projection is not an API-key operation.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "session",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Redacted account, connection, webhook and messaging evidence with a scan ID and observation time",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountCloudHealthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid project or Number"
+          },
+          "401": {
+            "description": "Missing or invalid dashboard JWT, or identity no longer active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardUnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Cloud onboarding is unavailable"
+          },
+          "404": {
+            "description": "Active Cloud connection or health projection not found"
+          },
+          "503": {
+            "description": "Health projection unavailable"
+          }
+        }
+      }
+    },
+    "/api/account/cloud-health/export": {
+      "get": {
+        "operationId": "exportAccountCloudHealth",
+        "summary": "Download a Number's redacted Meta account health",
+        "tags": [
+          "Account"
+        ],
+        "x-audience": "console",
+        "x-dashboard-only": true,
+        "x-excluded-reason": "Dashboard identity and live organization membership are required; diagnostics are not an API-key operation.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "session",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "JSON attachment with the same redacted projection as the account read",
+            "headers": {
+              "Content-Disposition": {
+                "description": "Attachment filename for the redacted JSON export",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountCloudHealthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid project or Number"
+          },
+          "401": {
+            "description": "Missing or invalid dashboard JWT, or identity no longer active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardUnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Cloud onboarding is unavailable"
+          },
+          "404": {
+            "description": "Active Cloud connection or health projection not found"
+          },
+          "503": {
+            "description": "Health projection unavailable"
           }
         }
       }
@@ -20946,6 +21094,184 @@
         }
       }
     },
+    "/platform/campaigns/{campaignId}/conversions": {
+      "get": {
+        "operationId": "getCampaignConversions",
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Get campaign conversions",
+        "description": "Beta: requires team enrollment in campaign conversion reporting. Counts the conversions reported for a campaign by attribution outcome and sums reported values per currency. Amounts in different currencies are never added together. `conversionRate` is the number of distinct recipients with an attributed conversion divided by the campaign's `sentCount`.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project the campaign belongs to. Required with a team API key; a project token is bound to its own project and omits it.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CampaignConversionReport"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post": {
+        "operationId": "recordCampaignConversion",
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Report a campaign conversion",
+        "description": "Beta: requires team enrollment in campaign conversion reporting. Records a conversion your system observed for one campaign recipient, such as a purchase or a sign-up. Name the recipient with `recipientId` from the campaign's recipient list; Polymorfa never matches a conversion to a recipient by phone number, reply or link. The conversion is attributed to the campaign when `occurredAt` is no earlier than the recipient's send time and no more than 7 days after it. Otherwise `attribution.outcome` is `outside_window`, or `not_sent` when the recipient was never sent. A recipient on the team's opt-out list is recorded as `opted_out` without the recipient link or the value. The decision is made once and never recalculated. `eventId` deduplicates per project: sending the same `eventId` with the same details returns the original conversion with `replayed: true`; different details answer `409 idempotency_conflict`. `value` is an integer amount in the currency's minor unit (for example cents) and an ISO 4217 code; amounts are never converted between currencies. Values are reported by you and are not verified payments. `occurredAt` cannot be in the future or more than 90 days ago. Conversions are deleted 400 days after they are recorded. Send `projectId` in the body when using a team API key.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordCampaignConversionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CampaignConversion"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
     "/platform/audiences": {
       "get": {
         "operationId": "listAudiences",
@@ -22454,6 +22780,1153 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/platform/flows/{flowId}/upload": {
+      "post": {
+        "operationId": "uploadFlow",
+        "tags": [
+          "flows"
+        ],
+        "summary": "Upload a Flow to a Number",
+        "description": "Sends the saved Flow draft to the WhatsApp Business Account of one Number. The first upload to a Number, or the first upload after the Number's Flow was deprecated, creates a WhatsApp Flow and needs `categories`; later uploads replace the JSON of that Flow while it is still a WhatsApp draft. The response lists the validation errors WhatsApp reported, and `uploadState` is `valid` only when there are none. The Number needs an active WhatsApp Business Platform connection and the Cloud onboarding beta; test Numbers use the simulation. A Flow with `data_api_version` needs an enabled data endpoint for the Number (see Configure a Flow's data endpoint); its endpoint URI is attached during the upload. Test Numbers cannot use data endpoints. A supplied `requestId` makes retries return the original operation instead of sending again.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlowProviderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FlowProviderResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/flows/{flowId}/publish": {
+      "post": {
+        "operationId": "publishFlow",
+        "tags": [
+          "flows"
+        ],
+        "summary": "Publish a Flow on a Number",
+        "description": "Publishes the Number's WhatsApp Flow. The last upload must match the saved draft, and for a Flow with a data endpoint the endpoint's current URI, and have no validation errors. A published Flow cannot be changed or deleted; it can only be deprecated. The Flow counts as published only after WhatsApp confirms it: when the response is lost, the operation state is `uncertain` until a provider read settles it, and publishing is never sent twice.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlowProviderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FlowProviderResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/flows/{flowId}/deprecate": {
+      "post": {
+        "operationId": "deprecateFlow",
+        "tags": [
+          "flows"
+        ],
+        "summary": "Deprecate a Flow on a Number",
+        "description": "Deprecates the Number's published WhatsApp Flow so it can no longer be sent. Deprecation cannot be undone; upload the draft again to create a new WhatsApp Flow. It remains available while the team's service is restricted.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlowProviderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FlowProviderResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/flows/{flowId}/discard": {
+      "post": {
+        "operationId": "discardFlow",
+        "tags": [
+          "flows"
+        ],
+        "summary": "Delete a Flow from a Number",
+        "description": "Deletes the Number's WhatsApp Flow while it is still a WhatsApp draft and removes the Number's link. The saved Polymorfa draft is kept. A Flow that was published cannot be deleted; deprecate it instead.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlowProviderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FlowProviderResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/flows/{flowId}/sync": {
+      "post": {
+        "operationId": "syncFlow",
+        "tags": [
+          "flows"
+        ],
+        "summary": "Sync a Flow's status from a Number",
+        "description": "Reads the Number's WhatsApp Flow status, validation errors and preview link, and settles an earlier operation whose outcome was unknown. It never repeats a change.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlowProviderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FlowProviderResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/flows/{flowId}/receipts": {
+      "get": {
+        "operationId": "listFlowOperations",
+        "tags": [
+          "flows"
+        ],
+        "summary": "List a Flow's provider operations",
+        "description": "Lists up to 50 recent upload, publish, deprecate and delete operations for a Flow draft across Numbers, newest first.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "maxItems": 50,
+                      "items": {
+                        "$ref": "#/components/schemas/FlowProviderOperation"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/platform/flows/{flowId}/endpoint": {
+      "get": {
+        "operationId": "getFlowEndpoint",
+        "tags": [
+          "flows"
+        ],
+        "summary": "Get a Flow's data endpoint on a Number",
+        "description": "Returns the data endpoint configured for a Flow on one Number, the endpoint URI WhatsApp calls, and the Number's Flow encryption custody. `endpoint` is null when none is configured.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FlowEndpointState"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      },
+      "put": {
+        "operationId": "setFlowEndpoint",
+        "tags": [
+          "flows"
+        ],
+        "summary": "Configure a Flow's data endpoint on a Number",
+        "description": "Creates or replaces the data endpoint of a dynamic Flow on one Number. `forward` decrypts each WhatsApp request with the Number's Polymorfa-managed key and forwards the request JSON to your HTTPS `url`, signed with `X-Polymorfa-Flow-Signature`; your JSON response is encrypted and returned to WhatsApp. `function` runs a deployed Function with the request JSON as the body. `direct` attaches your own `url` and requires your own encryption key on the Number; Polymorfa never decrypts that traffic. A new forward endpoint, a switch to forward and `rotateSigningSecret` return `signingSecret` once. Upload the Flow after configuring its endpoint so the endpoint URI is attached. Request and response contents are never stored.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetFlowEndpointRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FlowEndpointSetResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteFlowEndpoint",
+        "tags": [
+          "flows"
+        ],
+        "summary": "Remove a Flow's data endpoint on a Number",
+        "description": "Removes the endpoint configuration. Requests to its URI are refused afterwards. Receipts are kept.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/DeleteFlowResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/platform/flows/{flowId}/endpoint/receipts": {
+      "get": {
+        "operationId": "listFlowEndpointReceipts",
+        "tags": [
+          "flows"
+        ],
+        "summary": "List a Flow's data endpoint receipts",
+        "description": "Lists up to 100 recent data-exchange receipts for a Flow, newest first. Receipts record the action, outcome, HTTP status returned to WhatsApp, an error code and timing. They never contain form data, Flow tokens or responses.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "maxItems": 100,
+                      "items": {
+                        "$ref": "#/components/schemas/FlowEndpointReceipt"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/platform/flow-encryption-keys": {
+      "get": {
+        "operationId": "getFlowEncryptionKey",
+        "tags": [
+          "flow-encryption-keys"
+        ],
+        "summary": "Get a Number's Flow encryption custody",
+        "description": "Returns whether Polymorfa holds the Number's active Flow encryption key (`managed`) or not (`customer`), and recent managed keys. Private keys are never returned.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FlowEncryptionCustody"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/platform/flow-encryption-keys/rotate": {
+      "post": {
+        "operationId": "rotateFlowEncryptionKey",
+        "tags": [
+          "flow-encryption-keys"
+        ],
+        "summary": "Rotate a Number's managed Flow encryption key",
+        "description": "Generates a 2048-bit RSA key pair, keeps the private key sealed, and registers the public key with WhatsApp for the Number. Every dynamic Flow on the Number uses this key. The previous managed key keeps decrypting for 24 hours. A lost WhatsApp response is settled by reading the registered key; the key is `uncertain` until then and is never registered twice.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RotateFlowEncryptionKeyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FlowEncryptionKeyRotation"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
           }
         }
       }
@@ -35060,6 +36533,11 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Explicit measurement consent; the server also requires telemetry configuration."
+                  },
+                  "projectId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Optional active project in the signed-in team. Required when checking a project-targeted release."
                   }
                 }
               }
@@ -35122,6 +36600,7 @@
                               "available",
                               "enrolled",
                               "variant",
+                              "experimentRevision",
                               "experimentAssigned"
                             ],
                             "properties": {
@@ -35143,6 +36622,12 @@
                               "variant": {
                                 "type": "string",
                                 "nullable": true
+                              },
+                              "experimentRevision": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "nullable": true,
+                                "description": "Published experiment policy revision for an assigned native experiment; null otherwise."
                               },
                               "experimentAssigned": {
                                 "type": "boolean",
@@ -35237,6 +36722,11 @@
                     "type": "string",
                     "nullable": true,
                     "maxLength": 100
+                  },
+                  "projectId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Optional active project in the signed-in team for a project-targeted release."
                   }
                 },
                 "required": [
@@ -36114,6 +37604,271 @@
         "required": [
           "ok"
         ]
+      },
+      "DashboardUnauthorizedError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "enum": [
+              "invalid dashboard token"
+            ]
+          }
+        }
+      },
+      "AccountCloudHealthResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/AccountCloudHealthView"
+          }
+        }
+      },
+      "AccountCloudHealthView": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "session",
+          "phone",
+          "appId",
+          "wabaId",
+          "connection",
+          "credentials",
+          "account",
+          "readiness",
+          "diagnostic"
+        ],
+        "properties": {
+          "session": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "appId": {
+            "type": "string",
+            "nullable": true
+          },
+          "wabaId": {
+            "type": "string",
+            "nullable": true
+          },
+          "connection": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "connected",
+              "sendingPaused"
+            ],
+            "properties": {
+              "status": {
+                "type": "string"
+              },
+              "connected": {
+                "type": "boolean",
+                "description": "Whether the Official API connection is connected. A Hybrid sending pause does not change this value."
+              },
+              "sendingPaused": {
+                "type": "boolean",
+                "description": "Whether Hybrid sending is paused for this Number. Always false for Numbers without a Hybrid Link."
+              }
+            }
+          },
+          "credentials": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "tokenStatus",
+              "missingPermissions",
+              "phoneRegistration",
+              "webhookSubscription",
+              "failureCode"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "healthy",
+                  "action_required",
+                  "unknown"
+                ]
+              },
+              "tokenStatus": {
+                "type": "string",
+                "enum": [
+                  "valid",
+                  "expired",
+                  "invalid",
+                  "unknown"
+                ]
+              },
+              "missingPermissions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "phoneRegistration": {
+                "type": "string",
+                "enum": [
+                  "registered",
+                  "not_registered",
+                  "unknown"
+                ]
+              },
+              "webhookSubscription": {
+                "type": "string",
+                "enum": [
+                  "subscribed",
+                  "not_subscribed",
+                  "unknown"
+                ]
+              },
+              "failureCode": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "account": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "verifiedName",
+              "qualityRating",
+              "messagingLimitTier",
+              "displayNameReview",
+              "payment",
+              "restrictions"
+            ],
+            "properties": {
+              "verifiedName": {
+                "type": "string",
+                "nullable": true
+              },
+              "qualityRating": {
+                "type": "string",
+                "enum": [
+                  "GREEN",
+                  "YELLOW",
+                  "RED",
+                  "NA",
+                  null
+                ],
+                "nullable": true
+              },
+              "messagingLimitTier": {
+                "type": "string",
+                "nullable": true
+              },
+              "displayNameReview": {
+                "type": "string",
+                "enum": [
+                  "unverified"
+                ]
+              },
+              "payment": {
+                "type": "string",
+                "enum": [
+                  "unverified"
+                ]
+              },
+              "restrictions": {
+                "type": "string",
+                "enum": [
+                  "unverified"
+                ]
+              }
+            }
+          },
+          "readiness": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "connection",
+              "webhook",
+              "messaging",
+              "nextAction"
+            ],
+            "properties": {
+              "connection": {
+                "type": "string",
+                "enum": [
+                  "connected",
+                  "not_connected"
+                ]
+              },
+              "webhook": {
+                "type": "string",
+                "enum": [
+                  "configured",
+                  "not_configured",
+                  "unknown"
+                ]
+              },
+              "messaging": {
+                "type": "string",
+                "enum": [
+                  "not_ready",
+                  "unverified"
+                ]
+              },
+              "nextAction": {
+                "type": "string",
+                "enum": [
+                  "reconnect_number",
+                  "reauthorize",
+                  "complete_registration",
+                  "check_webhook_subscription",
+                  "review_account_quality",
+                  "verify_messaging_and_webhooks",
+                  "retry_health_check",
+                  "resume_hybrid_sending",
+                  "contact_support"
+                ]
+              }
+            }
+          },
+          "diagnostic": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "observedAt"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "nullable": true
+              },
+              "observedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            }
+          }
+        }
       },
       "DataEnvelope": {
         "type": "object",
@@ -39961,8 +41716,7 @@
           "metaLinks": {
             "type": "array",
             "items": {
-              "type": "object",
-              "additionalProperties": true
+              "$ref": "#/components/schemas/FlowNumberLink"
             }
           },
           "createdAt": {
@@ -40065,6 +41819,738 @@
         "required": [
           "projectId",
           "expectedUpdatedAt"
+        ]
+      },
+      "FlowCategory": {
+        "type": "string",
+        "enum": [
+          "SIGN_UP",
+          "SIGN_IN",
+          "APPOINTMENT_BOOKING",
+          "LEAD_GENERATION",
+          "CONTACT_US",
+          "CUSTOMER_SUPPORT",
+          "SURVEY",
+          "OTHER"
+        ]
+      },
+      "FlowProviderRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Number (session) name or id in the Flow's project."
+          },
+          "categories": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/components/schemas/FlowCategory"
+            },
+            "description": "WhatsApp Flow categories. Required for an upload that creates the Number's Flow; ignored otherwise."
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Caller-chosen id. Repeating a request with the same id returns the original operation without sending it again."
+          }
+        },
+        "required": [
+          "projectId",
+          "sessionId"
+        ]
+      },
+      "FlowValidationIssue": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "errorType": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "lineStart": {
+            "type": "integer"
+          },
+          "lineEnd": {
+            "type": "integer"
+          },
+          "columnStart": {
+            "type": "integer"
+          },
+          "columnEnd": {
+            "type": "integer"
+          },
+          "pointers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "lineStart": {
+                  "type": "integer"
+                },
+                "lineEnd": {
+                  "type": "integer"
+                },
+                "columnStart": {
+                  "type": "integer"
+                },
+                "columnEnd": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "FlowNumberLink": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "The Flow as WhatsApp last reported it for one Number.",
+        "properties": {
+          "session": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Stable Number ID. A Number recreated under the same name does not reuse this link."
+          },
+          "wabaId": {
+            "type": "string",
+            "description": "WhatsApp Business Account id."
+          },
+          "metaFlowId": {
+            "type": "string",
+            "description": "WhatsApp Flow id; use it as `flow_id` when sending the Flow."
+          },
+          "status": {
+            "type": "string",
+            "description": "WhatsApp Flow status: `DRAFT`, `PUBLISHED`, `DEPRECATED`, `BLOCKED` or `THROTTLED`."
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "validationErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlowValidationIssue"
+            }
+          },
+          "uploadState": {
+            "type": "string",
+            "enum": [
+              "stale",
+              "creating",
+              "uploading",
+              "valid",
+              "invalid",
+              "failed"
+            ],
+            "description": "`stale`: the draft changed after the last upload. `valid`/`invalid`: the last upload was accepted with no or some validation errors. `failed`: the last upload was refused."
+          },
+          "previewUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "previewExpiresAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastSyncedAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "definitionDigest": {
+            "type": "string",
+            "description": "SHA-256 of the uploaded Flow JSON; for a Flow with a data endpoint, of the JSON and the attached endpoint URI."
+          },
+          "simulated": {
+            "type": "boolean",
+            "description": "True for a test Number."
+          }
+        },
+        "required": [
+          "session",
+          "wabaId",
+          "metaFlowId",
+          "status",
+          "categories",
+          "validationErrors",
+          "uploadState",
+          "lastSyncedAt"
+        ]
+      },
+      "FlowProviderOperation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "flowId": {
+            "$ref": "#/components/schemas/FlowId"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "session": {
+            "type": "string"
+          },
+          "flowName": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "upload",
+              "publish",
+              "deprecate",
+              "delete"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "succeeded",
+              "rejected",
+              "uncertain",
+              "superseded"
+            ],
+            "description": "`uncertain`: WhatsApp did not confirm the outcome. It is settled by a later provider read (see Sync), never by sending the change again. `superseded`: an uncertain upload replaced by a later confirmed upload."
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "response",
+              "reconciled",
+              "superseded",
+              null
+            ],
+            "nullable": true
+          },
+          "wabaId": {
+            "type": "string",
+            "nullable": true
+          },
+          "metaFlowId": {
+            "type": "string",
+            "nullable": true
+          },
+          "definitionDigest": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why the operation was refused or is unresolved, such as `provider_rejected`, `flow_not_found`, `not_applied` or `cloud_service_restricted`."
+          },
+          "providerCode": {
+            "type": "integer",
+            "nullable": true,
+            "description": "WhatsApp error code, when WhatsApp refused the change."
+          },
+          "providerSubcode": {
+            "type": "integer",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "completedAt": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "requestId",
+          "flowId",
+          "sessionId",
+          "session",
+          "flowName",
+          "action",
+          "state",
+          "resolution",
+          "wabaId",
+          "metaFlowId",
+          "definitionDigest",
+          "providerStatus",
+          "errorCode",
+          "providerCode",
+          "providerSubcode",
+          "createdAt",
+          "updatedAt",
+          "completedAt"
+        ]
+      },
+      "FlowProviderResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation": {
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FlowProviderOperation"
+              }
+            ],
+            "nullable": true
+          },
+          "flow": {
+            "$ref": "#/components/schemas/FlowDraft"
+          }
+        },
+        "required": [
+          "operation",
+          "flow"
+        ]
+      },
+      "FlowEndpoint": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orgId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "flowId": {
+            "$ref": "#/components/schemas/FlowId"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "forward",
+              "function",
+              "direct"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "functionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "deploymentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Pinned Function deployment; null follows the Function's active deployment."
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "endpointUri": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URL WhatsApp calls. Attached to the Flow when it is uploaded."
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "id",
+          "orgId",
+          "projectId",
+          "flowId",
+          "sessionId",
+          "mode",
+          "url",
+          "functionId",
+          "deploymentId",
+          "enabled",
+          "revision",
+          "endpointUri",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "FlowEncryptionKey": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "uncertain",
+              "active",
+              "retiring",
+              "retired",
+              "failed"
+            ]
+          },
+          "fingerprint": {
+            "type": "string",
+            "description": "SHA-256 of the DER public key."
+          },
+          "publicKey": {
+            "type": "string",
+            "description": "PEM public key."
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "activatedAt": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "retireAfter": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "fingerprint",
+          "publicKey",
+          "errorCode",
+          "createdAt",
+          "activatedAt",
+          "retireAfter"
+        ]
+      },
+      "FlowEncryptionCustody": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "custody": {
+            "type": "string",
+            "enum": [
+              "managed",
+              "customer"
+            ],
+            "description": "`managed`: Polymorfa holds the Number's active key. `customer`: it does not; register your own key to use direct endpoints."
+          },
+          "activeKeyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "keys": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/FlowEncryptionKey"
+            }
+          }
+        },
+        "required": [
+          "custody",
+          "activeKeyId",
+          "keys"
+        ]
+      },
+      "FlowEncryptionKeyRotation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FlowEncryptionCustody"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "key": {
+                "$ref": "#/components/schemas/FlowEncryptionKey"
+              }
+            },
+            "required": [
+              "key"
+            ]
+          }
+        ]
+      },
+      "RotateFlowEncryptionKeyRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Number (session) name or id."
+          }
+        },
+        "required": [
+          "projectId",
+          "sessionId"
+        ]
+      },
+      "FlowEndpointState": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "endpoint": {
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FlowEndpoint"
+              }
+            ],
+            "nullable": true
+          },
+          "encryption": {
+            "$ref": "#/components/schemas/FlowEncryptionCustody"
+          }
+        },
+        "required": [
+          "endpoint",
+          "encryption"
+        ]
+      },
+      "FlowEndpointSetResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "endpoint": {
+            "$ref": "#/components/schemas/FlowEndpoint"
+          },
+          "signingSecret": {
+            "type": "string",
+            "description": "Returned once. Verify `X-Polymorfa-Flow-Signature: t=<unix seconds>,v1=<hex HMAC-SHA256 of \"<t>.<body>\">` with it."
+          },
+          "encryption": {
+            "$ref": "#/components/schemas/FlowEncryptionCustody"
+          }
+        },
+        "required": [
+          "endpoint",
+          "encryption"
+        ]
+      },
+      "SetFlowEndpointRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Number (session) name or id in the Flow's project."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "forward",
+              "function",
+              "direct"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "description": "HTTPS URL for `forward` and `direct`."
+          },
+          "functionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Function for `function`."
+          },
+          "deploymentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Optional immutable deployment for `function`."
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Replace only when the stored revision matches."
+          },
+          "rotateSigningSecret": {
+            "type": "boolean",
+            "description": "Issue a new forwarding signing secret."
+          }
+        },
+        "required": [
+          "projectId",
+          "sessionId",
+          "mode"
+        ]
+      },
+      "FlowEndpointReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "flowId": {
+            "$ref": "#/components/schemas/FlowId"
+          },
+          "endpointId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "forward",
+              "function"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "ping",
+              "INIT",
+              "data_exchange",
+              "BACK",
+              "error_notification",
+              null
+            ],
+            "nullable": true
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "running",
+              "succeeded",
+              "rejected",
+              "failed",
+              "timeout",
+              "unavailable"
+            ]
+          },
+          "httpStatus": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Status returned to WhatsApp, such as 200, 421 (decryption failed), 427 (Flow token invalid), 503 or 504."
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "keyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "functionInvocationId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "durationMs": {
+            "type": "integer",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "completedAt": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "flowId",
+          "endpointId",
+          "sessionId",
+          "mode",
+          "action",
+          "outcome",
+          "httpStatus",
+          "errorCode",
+          "keyId",
+          "functionInvocationId",
+          "durationMs",
+          "createdAt",
+          "completedAt"
         ]
       },
       "DeleteFlowResult": {
@@ -42065,6 +44551,316 @@
           "readAt",
           "failedAt",
           "respondedAt"
+        ]
+      },
+      "RecordCampaignConversionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Project of the campaign. Required with a team API key."
+          },
+          "recipientId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The campaign recipient the conversion belongs to, from the campaign's recipient list."
+          },
+          "eventId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[\\x21-\\x7e]{1,128}$",
+            "description": "Your unique ID for this conversion, such as an order ID. Deduplicates per project. Stored only as a one-way hash."
+          },
+          "eventType": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,39}$",
+            "description": "Kind of conversion, such as `purchase` or `sign_up`.",
+            "example": "purchase"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the conversion happened, with a time zone offset. Not in the future and not more than 90 days ago."
+          },
+          "value": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CampaignConversionValue"
+              }
+            ],
+            "description": "Reported value, or omit for a conversion without one."
+          }
+        },
+        "required": [
+          "recipientId",
+          "eventId",
+          "eventType",
+          "occurredAt"
+        ]
+      },
+      "CampaignConversionValue": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000000000000,
+            "description": "Amount in the currency's minor unit, for example cents for USD. Not converted."
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "ISO 4217 currency code.",
+            "example": "USD"
+          }
+        },
+        "required": [
+          "amountMinor",
+          "currency"
+        ]
+      },
+      "CampaignConversion": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "campaignId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipientId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Null when the recipient opted out."
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "value": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CampaignConversionValue"
+              }
+            ],
+            "description": "Null when no value was reported or the recipient opted out."
+          },
+          "evidence": {
+            "type": "string",
+            "enum": [
+              "customer_reported"
+            ],
+            "description": "Who asserted the conversion. `customer_reported`: your system reported it; Polymorfa did not verify a payment."
+          },
+          "attribution": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "outcome": {
+                "type": "string",
+                "enum": [
+                  "attributed",
+                  "outside_window",
+                  "not_sent",
+                  "opted_out"
+                ],
+                "description": "`attributed`: within 7 days after the recipient was sent. `outside_window`: before the send or more than 7 days after it. `not_sent`: the recipient was never sent. `opted_out`: the recipient is on the team's opt-out list; the conversion is counted but not linked to them."
+              },
+              "touchAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true,
+                "description": "The recipient's send time used for the decision. Null for `not_sent` and `opted_out`."
+              },
+              "windowDays": {
+                "type": "integer",
+                "enum": [
+                  7
+                ]
+              }
+            },
+            "required": [
+              "outcome",
+              "touchAt",
+              "windowDays"
+            ]
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "replayed": {
+            "type": "boolean",
+            "description": "True when this `eventId` was already recorded and nothing new was written."
+          }
+        },
+        "required": [
+          "id",
+          "campaignId",
+          "recipientId",
+          "eventType",
+          "occurredAt",
+          "value",
+          "evidence",
+          "attribution",
+          "recordedAt",
+          "replayed"
+        ]
+      },
+      "CampaignConversionReport": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "model": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "The attribution rule applied to every conversion of this campaign.",
+            "properties": {
+              "touch": {
+                "type": "string",
+                "enum": [
+                  "recipient_sent"
+                ]
+              },
+              "windowDays": {
+                "type": "integer",
+                "enum": [
+                  7
+                ]
+              },
+              "correlation": {
+                "type": "string",
+                "enum": [
+                  "explicit_recipient"
+                ]
+              }
+            },
+            "required": [
+              "touch",
+              "windowDays",
+              "correlation"
+            ]
+          },
+          "sentCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "conversions": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "attributed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "outsideWindow": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "notSent": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "optedOut": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "total",
+              "attributed",
+              "outsideWindow",
+              "notSent",
+              "optedOut"
+            ]
+          },
+          "convertedRecipients": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Distinct recipients with at least one attributed conversion."
+          },
+          "conversionRate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "`convertedRecipients` divided by `sentCount`; 0 when nothing was sent."
+          },
+          "values": {
+            "type": "array",
+            "description": "Reported value per currency, sorted by currency code. Currencies are never combined or converted.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "evidence": {
+                  "type": "string",
+                  "enum": [
+                    "customer_reported"
+                  ]
+                },
+                "attributedConversions": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "attributedAmountMinor": {
+                  "type": "string",
+                  "pattern": "^[0-9]+$",
+                  "description": "Sum of attributed amounts in minor units, as a decimal string."
+                },
+                "unattributedConversions": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Conversions with a value that are `outside_window` or `not_sent`."
+                },
+                "unattributedAmountMinor": {
+                  "type": "string",
+                  "pattern": "^[0-9]+$"
+                }
+              },
+              "required": [
+                "currency",
+                "evidence",
+                "attributedConversions",
+                "attributedAmountMinor",
+                "unattributedConversions",
+                "unattributedAmountMinor"
+              ]
+            }
+          }
+        },
+        "required": [
+          "campaignId",
+          "model",
+          "sentCount",
+          "conversions",
+          "convertedRecipients",
+          "conversionRate",
+          "values"
         ]
       },
       "CampaignRecipientAppendResult": {
@@ -51384,6 +54180,7 @@
                   "invalid_parameter",
                   "invalid_credential",
                   "entitlement_required",
+                  "cloud_template_authority_restricted",
                   "gate_limit_reached",
                   "method_not_allowed",
                   "permission_denied",
@@ -51417,6 +54214,8 @@
                   "call_destination_blocked",
                   "call_permission_request_limited",
                   "call_permission_granted",
+                  "order_status_transition_invalid",
+                  "order_cancellation_failed",
                   "call_opt_out_limit",
                   "number_restricted",
                   "sip_trunk_in_use",
@@ -51446,6 +54245,12 @@
                   "whatsapp_rate_limited",
                   "new_chat_limit_reached",
                   "whatsapp_account_restricted",
+                  "whatsapp_groups_ineligible",
+                  "whatsapp_group_creation_paused",
+                  "whatsapp_group_limit_reached",
+                  "whatsapp_group_full",
+                  "whatsapp_group_suspended",
+                  "whatsapp_group_has_no_participants",
                   "bansafe_suspended",
                   "bansafe_org_suspended",
                   "bansafe_cold_blocked",

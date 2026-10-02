@@ -2,10 +2,6 @@
 
 ## Unreleased
 
-- Campaign send windows. `CreatePlatformCampaignRequest`,
-  `UpdatePlatformCampaignRequest` and Messaging `CreateCampaignRequest` accept
-  `sendWindow` (`CampaignSendWindowRequest`); `Campaign` returns the stored
-  `sendWindow` or null.
 - Hybrid Link tier transitions. `Client.sessions.quoteTierChange` accepts
   `hybridResolution` (`keep` one connection or `split` into two Numbers) for a
   Hybrid Link Number leaving Pro, or `hybridMerge` to merge a same-number pair
@@ -13,6 +9,49 @@
   plan and its `status`. `Client.projects.listHybridMergeCandidates` lists
   mergeable pairs. `PolymorfaErrorCode` adds `hybrid_choice_required` and
   `hybrid_transition_ineligible`.
+- Brazil payment orders (beta, requires team enrollment, an Official API
+  Number and Meta payments eligibility in Brazil). `messages.send` accepts
+  `orderDetails` (Pix dynamic code, payment link or boleto, itemized or
+  total only) and `orderStatus` content. New types:
+  `OrderDetailsMessageContent`, `OrderStatusMessageContent`,
+  `OrderPaymentSettings`, `OrderDetailsItemization`, `PixDynamicCodePayment`,
+  `PaymentOrderAmount`, `PixKeyType`, `OrderStatus`, `OrderPaymentStatus`,
+  `SendOrderDetailsMessageRequest`, `SendOrderStatusMessageRequest` and
+  `OrderPaymentUpdatedPayload` (discriminated on `kind`) for the
+  `order.payment_updated` event. `MessageKind` adds `order_details` and
+  `order_status`. New error
+  codes: `order_status_transition_invalid` and `order_cancellation_failed`.
+  Polymorfa relays orders and payment reports; it does not process funds.
+  Contracts are pinned to API `dev` `e818ba6`.
+- Official groups (beta, requires team enrollment and an Official Business
+  Account). `MessagingClient.officialGroups` adds `list`, `create`, `retrieve`,
+  `update`, `delete`, `getInviteLink`, `resetInviteLink`, `removeParticipants`,
+  `listJoinRequests`, `approveJoinRequests`, `rejectJoinRequests` and `pin`.
+  Changes make one attempt and pass `idempotencyKey` through. New error codes:
+  `whatsapp_groups_ineligible`, `whatsapp_group_creation_paused`,
+  `whatsapp_group_limit_reached`, `whatsapp_group_full`,
+  `whatsapp_group_suspended` and `whatsapp_group_has_no_participants`.
+  `GroupUpdatePayload` and `GroupParticipantPayload` add optional Official
+  group fields. Contracts are pinned to API `dev` `ee217bf`.
+- Campaign conversion reporting (beta, requires team enrollment).
+  `Client.campaigns.recordConversion(campaignId, body)` reports a conversion
+  for a named campaign recipient, deduplicated by `eventId`.
+  `Client.campaigns.conversions(campaignId, { projectId })` returns counts by
+  attribution outcome and reported value per currency. New types:
+  `RecordCampaignConversionRequest`, `CampaignConversion`,
+  `CampaignConversionValue`, `CampaignConversionOutcome`,
+  `CampaignConversionReport` and `CampaignConversionCurrencyTotal`.
+- Official API consumers: Number-scoped Meta templates (`cloudTemplates`),
+  service windows, Meta pricing counts, Cloud credential health and
+  reauthorization, QuickLink sync receipts, typing with an inbound message ID,
+  the Flow provider lifecycle, linked catalogs and Flow encryption keys, and
+  the Meta lifecycle webhook payload variants. Provider writes make one
+  attempt. Contracts are pinned to API `dev` `29abb7b`.
+- Campaign records type the stored `sendWindow`; create and update requests
+  accept `CampaignSendWindowRequest`.
+- Breaking for Flow drafts: `flows.list` and `flows.retrieve` now return the
+  unwrapped record in `response.data`, like the other Flow methods. Replace
+  `response.data.data` with `response.data`.
 
 - `message.received` payload types include `replyChoice` (`kind` `button` or
   `list` and the `id` you assigned) and `parentMessageId`, and the linked-device
