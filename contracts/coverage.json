@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "e818ba62830d3727a7822379bb46c1fece90ef1b",
+  "sourceCommit": "fcf7b21015dd185e987b5aa3580e8af5f4c7f1a4",
   "excludedContracts": [
     {
       "family": "graph",
@@ -3990,7 +3990,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/tier-quotes/{quoteId}",
       "operationId": "getSessionTierChange",
-      "fingerprint": "26a366bd27b1e77700ca427f137f3f01c99c398f41f95edb8008af2bcb19aefe",
+      "fingerprint": "602247de1ae72206a3207b1cd8d7ce65fec0a7b386716f6b5e24fd85f79b5454",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.retrieveTierChange"
@@ -4278,7 +4278,7 @@
       "method": "PATCH",
       "path": "/console/projects/{projectId}",
       "operationId": "updateProject",
-      "fingerprint": "1d124460d20e14953ecf03af3372e69a31b59c512a4b27568c8537d936a9ed17",
+      "fingerprint": "17294266cd2773fd99470bd94aab7b9a01adba28b3718c31a312a8ac00e36985",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -4377,7 +4377,7 @@
       "method": "PATCH",
       "path": "/platform/sessions/{sessionId}",
       "operationId": "setSessionTierOverride",
-      "fingerprint": "a28a3700b2e1ca7362a57de40598959640bbf31d709d929623206bc3ecd45f1d",
+      "fingerprint": "42e924cd6ea94896fa447071dfa78b152f06475f06d5be200ed9d5cffdab1f96",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.setTierOverride"
@@ -5167,6 +5167,72 @@
     },
     {
       "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "operationId": "deleteFlowEndpoint",
+      "fingerprint": "c282b7d48c759117c33fbc797616541664c01da36679335444e53d48d37e4e6a",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted Flow endpoint and Flow encryption key operations from API PR #428 have no SDK owner yet; they are outside the Hybrid Link tier-transition change and need a separate SDK PR."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flow-encryption-keys",
+      "operationId": "getFlowEncryptionKey",
+      "fingerprint": "2cef096982f4a550dff1c3cded7248685c28d433c36bd2304d99a193f8cda000",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted Flow endpoint and Flow encryption key operations from API PR #428 have no SDK owner yet; they are outside the Hybrid Link tier-transition change and need a separate SDK PR."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "operationId": "getFlowEndpoint",
+      "fingerprint": "12354b56aedcccd9a81fae27d6deb93da3e6490e07192cb8137770312bafe5ff",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted Flow endpoint and Flow encryption key operations from API PR #428 have no SDK owner yet; they are outside the Hybrid Link tier-transition change and need a separate SDK PR."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}/endpoint/receipts",
+      "operationId": "listFlowEndpointReceipts",
+      "fingerprint": "861ecbba5343f1b72688b9c8da9fb2a678de49cf10abf16794464e8870c68427",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted Flow endpoint and Flow encryption key operations from API PR #428 have no SDK owner yet; they are outside the Hybrid Link tier-transition change and need a separate SDK PR."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flow-encryption-keys/rotate",
+      "operationId": "rotateFlowEncryptionKey",
+      "fingerprint": "44534cbc6d6ee4f783e3f1782dfa4f638f5c94fe9cb176f93fb74c18dc8f2457",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted Flow endpoint and Flow encryption key operations from API PR #428 have no SDK owner yet; they are outside the Hybrid Link tier-transition change and need a separate SDK PR."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "operationId": "setFlowEndpoint",
+      "fingerprint": "cefa55fe9a7793bc12f590909c8620dd9b82a7f793750167505bce84143ae5a4",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Hosted Flow endpoint and Flow encryption key operations from API PR #428 have no SDK owner yet; they are outside the Hybrid Link tier-transition change and need a separate SDK PR."
+      }
+    },
+    {
+      "family": "platform",
       "method": "POST",
       "path": "/platform/functions",
       "operationId": "createFunction",
@@ -5503,7 +5569,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/tier-quotes",
       "operationId": "quoteSessionTierChange",
-      "fingerprint": "7bd49359f1b8a15cd21477573209924c7ea1532d0f4b258eb0022a30a8c4593a",
+      "fingerprint": "a9e13a9e870e108da6669c7a1bd79655df499ab2c03f22f5e4bcea89f621d185",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.quoteTierChange"
@@ -5850,6 +5916,17 @@
       "typescript": {
         "status": "covered",
         "method": "Client.projects.updateWarmupPlan"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/hybrid-merge-candidates",
+      "operationId": "listHybridMergeCandidates",
+      "fingerprint": "e4fdcbb9deffd164c07bd7f10b50455f339fed3cb0d8817a4344eac0f8af49ee",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.projects.listHybridMergeCandidates"
       }
     },
     {

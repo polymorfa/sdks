@@ -41,6 +41,35 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
+The current snapshots are byte-identical copies of the Messaging and Platform
+OpenAPI files at `polymorfa/polymorfa` commit
+`fcf7b21015dd185e987b5aa3580e8af5f4c7f1a4` on the coordinated API branch
+`t3code/hybrid-pro-downgrade` (API PR #404, not yet merged to API `dev`). The
+Messaging file is byte-identical to the SDK `dev` pin `e818ba6`. The Platform
+file adds Hybrid Link tier transitions: `hybridResolution` and `hybridMerge` on
+`NumberTierQuoteRequest`, `quote.hybridTransition` on `NumberTierChange`, and
+`GET /platform/projects/{projectId}/hybrid-merge-candidates`, covered by
+`Client.projects.listHybridMergeCandidates`. Each candidate Number reports
+`canBeAbsorbed` (false with hosted message storage), and the list returns
+`403 feature_unavailable` without live Hybrid Link access. A missing choice
+returns `409 hybrid_choice_required`, and a queued change rejected for that
+reason reports `failureReason: "hybrid_choice_required"`.
+`hybrid_choice_required` and `hybrid_transition_ineligible` are documented in
+operation prose rather than the public error enum; `POLYMORFA_ERROR_CODES`
+lists both. Four fingerprints changed: the three tier-quote operations and the
+excluded Console `updateProject`.
+
+The branch also contains API `dev` through `5ce6290bc`, whose PR #428 adds six
+Platform operations for hosted Flow endpoints and Flow encryption keys
+(`GET`/`PUT`/`DELETE /platform/flows/{flowId}/endpoint`,
+`GET /platform/flows/{flowId}/endpoint/receipts`,
+`GET /platform/flow-encryption-keys` and
+`POST /platform/flow-encryption-keys/rotate`). No SDK change covers them yet;
+the ledger excludes them with that reason. Repin to the merged API `dev` commit
+before merging this SDK change.
+
+The preceding snapshots were described as follows.
+
 The two public Flow draft reads in the pinned Platform snapshot are covered by
 `Client.project(projectId).flows.list` and `.retrieve`. The API declares both
 public, project-bound, and `sessions:read`.
@@ -232,12 +261,12 @@ signed events with these names still decode as unknown events.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        406 |
+| Covered             |        421 |
 | Missing             |          0 |
-| Excluded            |        130 |
+| Excluded            |        136 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        536 |
+| Total               |        557 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing

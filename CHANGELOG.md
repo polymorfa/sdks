@@ -2,10 +2,16 @@
 
 ## Unreleased
 
+- Hybrid Link tier transitions. `Client.sessions.quoteTierChange` accepts
+  `hybridResolution` (`keep` one connection or `split` into two Numbers) for a
+  Hybrid Link Number leaving Pro, or `hybridMerge` to merge a same-number pair
+  on an upgrade to Pro. `NumberTierChange.quote.hybridTransition` reports the
+  plan and its `status`. `Client.projects.listHybridMergeCandidates` lists
+  mergeable pairs. `PolymorfaErrorCode` adds `hybrid_choice_required` and
+  `hybrid_transition_ineligible`.
 - `Session` gains optional `newChatCapping` (`NewChatCapping`): WhatsApp's
   per-number new-chat cap, returned by `sessions.retrieve` for linked-device
   numbers. API contract: polymorfa/polymorfa#403.
-
 - Brazil payment orders (beta, requires team enrollment, an Official API
   Number and Meta payments eligibility in Brazil). `messages.send` accepts
   `orderDetails` (Pix dynamic code, payment link or boleto, itemized or
