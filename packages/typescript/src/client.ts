@@ -1,3 +1,4 @@
+import { FlowsResource } from "./platform/flows.js";
 import { FunctionsResource } from "./platform/functions.js";
 import { SessionConfigurationResource } from "./platform/session-configuration.js";
 import {
@@ -27,7 +28,6 @@ import { PlatformCallsResource } from "./platform/calls.js";
 import { CallRetentionResource } from "./platform/call-retention.js";
 import { CampaignsResource } from "./platform/campaigns.js";
 import { CustomersResource } from "./platform/customers.js";
-import { FlowsResource } from "./platform/flows.js";
 import {
   EventsResource,
   OperationsResource,
@@ -101,8 +101,8 @@ export interface OrganizationControlPlaneResources {
 }
 
 export interface ProjectControlPlaneResources {
-  readonly functions: FunctionsResource;
   readonly flows: FlowsResource;
+  readonly functions: FunctionsResource;
 }
 
 export type Client<O extends ClientOwner = "organization"> = ClientBase<O> &

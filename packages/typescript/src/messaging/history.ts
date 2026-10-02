@@ -22,11 +22,11 @@ export interface HistoryMedia {
   readonly id: string;
   readonly mimeType: string;
   readonly fileLength: number;
-  /** API path for stored bytes; this is not a signed URL. */
+  /** API download path. Cloud stored copies use `MessagingClient.chats.downloadMessageMedia`. */
   readonly url: string;
 }
 
-/** Official API media storage status on a hosted history message. */
+/** Official API media copy status. Other final states have no downloadable copy. */
 export interface HistoryMediaRetrieval {
   readonly state:
     | "pending"

@@ -1,4 +1,5 @@
 import type { MessagingCredential } from "../credentials.js";
+import type { CustomerServiceWindow } from "./cloud-types.js";
 import { PolymorfaConfigurationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import { withIdempotencyKey } from "../transport/idempotency.js";
@@ -10,6 +11,7 @@ import type {
   ListHistoryChatsParams,
   ListHistoryMessagesParams,
 } from "./history.js";
+import type { MediaDownloadStream } from "./media.js";
 import type {
   DisappearingTimerRequest,
   EditMessageRequest,
@@ -26,6 +28,29 @@ export class ChatsResource {
     private readonly transport: HttpTransport,
     private readonly credentialType: MessagingCredential["type"],
   ) {}
+
+  /** Official API beta. Requires chats:read and team enrollment; no HMS requirement. */
+  getServiceWindow(
+    session: string,
+    conversation: string,
+    options: RequestOptions = {},
+  ): Promise<
+    ApiResponse<{
+      readonly success: true;
+      readonly data: CustomerServiceWindow;
+    }>
+  > {
+    if (this.credentialType === "clientToken") {
+      throw new PolymorfaConfigurationError(
+        "Service windows require an organization API key or project token.",
+      );
+    }
+    return this.transport.request({
+      method: "GET",
+      path: `${chatPath(session, conversation)}/service-window`,
+      ...options,
+    });
+  }
 
   /** Lists one page of stored conversations. Requires `chats:read` and enrolled HMS history access. */
   list(
@@ -88,6 +113,53 @@ export class ChatsResource {
       method: "GET",
       path: chatMessagePath(session, conversation, messageId),
       ...options,
+    });
+  }
+
+  /** Downloads a stored Official API message copy. Requires `messages:read`, `media:read`, and enrolled HMS history access. */
+  downloadMessageMedia(
+    session: string,
+    conversation: string,
+    messageId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<ArrayBuffer>> {
+    this.assertHistoryCredential();
+    return this.transport.requestBinary({
+      method: "GET",
+      path: `${chatMessagePath(session, conversation, messageId)}/media`,
+      ...options,
+    });
+  }
+
+  /** Streams a stored Official API message copy without buffering the file. */
+  async downloadMessageMediaStream(
+    session: string,
+    conversation: string,
+    messageId: string,
+    options: RequestOptions = {},
+  ): Promise<MediaDownloadStream> {
+    this.assertHistoryCredential();
+    const response = await this.transport.requestStream({
+      method: "GET",
+      path: `${chatMessagePath(session, conversation, messageId)}/media`,
+      ...options,
+    });
+    return Object.freeze({
+      body: response.body,
+      ...(response.contentType === undefined
+        ? {}
+        : { contentType: response.contentType }),
+      ...(response.contentLength === undefined
+        ? {}
+        : { contentLength: response.contentLength }),
+      ...(response.filename === undefined
+        ? {}
+        : { filename: response.filename }),
+      ...(response.metadata.requestId === undefined
+        ? {}
+        : { requestId: response.metadata.requestId }),
+      redirected: response.redirected,
+      metadata: response.metadata,
     });
   }
 

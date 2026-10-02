@@ -56,6 +56,7 @@ export class MessagesResource {
     return this.post(session, "seen", body, options);
   }
 
+  /** Official Numbers require an inbound id and state typing; marks it read for an indicator lasting at most 25 seconds. */
   setTyping(
     session: string,
     body: TypingRequest,
