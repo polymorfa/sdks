@@ -39890,8 +39890,8 @@
           },
           "consumption": {
             "type": "array",
-            "maxItems": 16,
-            "description": "Credit-ledger number windows and registered usage meters. Credits come only from the charged number-window ledger; observed call and voice quantities do not imply a charge. HMS has no aggregate usage source and returns unavailable values.",
+            "maxItems": 18,
+            "description": "Credit-ledger number windows, registered meters and priced overage families. Outbound calls count completed call.duration records, matching the monthly gate. Serverless counts surviving admitted project invocation receipts, including failed or uncertain outcomes; receipts have no per-number allowance attribution. WhatsApp data covers media and enabled HMS but has no approved complete GB-month aggregate source. Pricing and measurement availability never establish a charge; credits come only from the number-window debit ledger.",
             "items": {
               "$ref": "#/components/schemas/ConsoleConsumption"
             }
@@ -39934,7 +39934,9 @@
               "agent.provider_cost",
               "channels.peak",
               "storage.byte_days",
-              "hms.storage"
+              "call.outbound",
+              "whatsapp.storage",
+              "serverless.invocations"
             ]
           },
           "group": {
@@ -39945,7 +39947,7 @@
               "voice",
               "agents",
               "storage",
-              "hms"
+              "serverless"
             ]
           },
           "unit": {
@@ -39959,7 +39961,9 @@
               "token",
               "provider_unit",
               "channel",
-              "byte_day"
+              "byte_day",
+              "gb_month",
+              "invocation"
             ]
           },
           "aggregation": {
@@ -39987,6 +39991,14 @@
               "unavailable"
             ]
           },
+          "pricingState": {
+            "type": "string",
+            "enum": [
+              "priced",
+              "unpriced"
+            ],
+            "description": "An approved catalog price or an actual priced ledger category exists. Independent of measurement and actual charged-credit availability; never grants a capability or authorizes settlement."
+          },
           "chargeState": {
             "type": "string",
             "enum": [
@@ -40013,6 +40025,7 @@
           "quantity",
           "credits",
           "availability",
+          "pricingState",
           "chargeState",
           "daily"
         ]
@@ -40138,7 +40151,7 @@
             "enum": [
               1
             ],
-            "description": "This date has at least one observed audit, credit-ledger or usage-meter row, including activity that is not an API request or session charge."
+            "description": "This date has at least one observed audit, credit-ledger, usage-meter or admitted function invocation row, including activity that is not an API request or session charge."
           }
         },
         "required": [

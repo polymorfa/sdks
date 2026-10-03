@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "61d0a0e6e2c7b0eca1971657afc80926b4d4142b",
+  "commit": "9aa751ef923990c4b9ff6df56f64e35c7ae78027",
   "branch": "t3code/project-billing-dashboard",
   "published": false,
-  "note": "Project, customer and number funding controls retain their existing public contract. Private Console usage insights add aggregate consumption for number windows, registered call and voice meters, and unavailable HMS history; they remain excluded from server SDK authority. Snapshots are byte-identical to this source commit. This implementation branch is unmerged; API deployment and package publication remain separate gates.",
+  "note": "Project, customer and number funding controls retain their existing public contract. Private Console usage insights distinguish catalog pricing from measured quantities and actual charged credits; completed outbound call counts and admitted project invocation receipts are observed, while complete WhatsApp media/HMS GB-month usage is unavailable. The production-number total no longer uses legacy session_limit as a cap. Console insights remain excluded from server SDK authority. Snapshots are byte-identical to this source commit. This implementation branch is unmerged; API deployment and package publication remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "ce4bc5eb8e0115c7873d28ee26da9167c777b5874419c60945224f118fdcba46"
+      "sha256": "4d0b041063833c498b9e47252e8612c15666518212891965042e90d5008ee088"
     }
   }
 }
