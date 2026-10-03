@@ -440,6 +440,11 @@ The strict response contains number/project-scoped messaging aggregates and
 retained-call outcomes, measured timings, quality, failure categories, missed-call
 follow-up and daily call series. This is an unshipped source-build addition.
 
-With the two Analytics reads included, the strict ledger has 560 operations:
-424 covered and 136 explicitly excluded, with no missing, partial or changed
+The two collector reads, `/platform/analytics/metrics` and
+`/platform/projects/{projectId}/analytics/metrics`, are covered by
+`Client.analytics.metrics`. They return Prometheus/OpenMetrics text rather than
+a JSON envelope, using the same scoped reader and Analytics enablement.
+
+With all four Analytics reads included, the strict ledger has 562 operations:
+426 covered and 136 explicitly excluded, with no missing, partial or changed
 fingerprints. This count does not establish package publication or customer access.
