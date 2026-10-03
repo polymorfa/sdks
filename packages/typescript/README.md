@@ -2873,7 +2873,7 @@ customer log output are not retained. List responses contain `items` and
 
 ```ts
 const limits = await platform.billing.getLimits({ projectId });
-const number = limits.data.data.budgets.find(b => b.scope === "number")!;
+const number = limits.data.data.budgets.find((b) => b.scope === "number")!;
 await platform.billing.setLimit("number", number.resourceId, {
   limitCredits: 1000,
   expectedRevision: number.revision,
@@ -2881,7 +2881,7 @@ await platform.billing.setLimit("number", number.resourceId, {
 const priorities = await platform.billing.getPriorities();
 await platform.billing.reorderPriorities({
   scope: "project",
-  resourceIds: priorities.data.data.projects.map(p => p.id).reverse(),
+  resourceIds: priorities.data.data.projects.map((p) => p.id).reverse(),
   expectedRevision: priorities.data.data.revision,
 });
 ```
@@ -2894,14 +2894,16 @@ removes a cap; zero blocks new charges. Paid windows remain intact. These
 methods do not grant permissions, paid access or deployed availability.
 Publication of this source revision is separate from API deployment.
 
-
 For one customer or number, read and save both controls without loading the
 organization directory:
 
 ```typescript
-const {data: {data: current}} = await platform.billing.getResourceControls("customer", customerId);
+const {
+  data: { data: current },
+} = await platform.billing.getResourceControls("customer", customerId);
 await platform.billing.setResourceControls("customer", customerId, {
-  limitCredits: 1500, priority: 25,
+  limitCredits: 1500,
+  priority: 25,
   expectedBudgetRevision: current.budget.revision,
   expectedPriorityRevision: current.priorityRevision,
 });
@@ -2921,14 +2923,16 @@ Read one project's funding controls and save its combined customer and number
 order:
 
 ```typescript
-const { data: { data: controls } } = await platform.billing.getPriorities({ projectId });
+const {
+  data: { data: controls },
+} = await platform.billing.getPriorities({ projectId });
 const resources = [
-  ...controls.customers.map(customer => ({
+  ...controls.customers.map((customer) => ({
     scope: "customer" as const,
     resourceId: customer.id,
     priority: customer.priority,
   })),
-  ...controls.numbers.map(number => ({
+  ...controls.numbers.map((number) => ({
     scope: "number" as const,
     resourceId: number.id,
     priority: number.priority,

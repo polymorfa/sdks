@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "b8fa167e47c901131d3bd9865e6479b153ad5157",
+  "sourceCommit": "8efb062e106ac1d6888bf6fff4fbcdddf8406e48",
   "excludedContracts": [
     {
       "family": "graph",
@@ -2844,6 +2844,17 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/console/audit",
+      "operationId": "getConsoleAuditLogs",
+      "fingerprint": "cee6857cf3f81bf70aa2483d0146a3267ec1a7aef0ea3cf4a09828fb6196d3d6",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/console/auth/methods",
       "operationId": "getUserProfileAuthMethods",
       "fingerprint": "624193b13df5b8a8f227710368d0fb680d03eb3df2ca10aff5496ddb2d8a15d5",
@@ -2954,9 +2965,20 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/console/insights/log-calendar",
+      "operationId": "getLogCalendar",
+      "fingerprint": "1e18f21016e4a62f467b64b6d192c2eecbba23ce3e6f03a617329db3601e0554",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/console/insights/logs",
       "operationId": "logsInsight",
-      "fingerprint": "c4a0a6f7a351e4e806335e6ed0eddc9f8c0c35203abe8637d2dfe0dbe010a46c",
+      "fingerprint": "1c779fc4eceba62a2f40be524fa30f0e3477cc88535d303f0fa6a46a8379b330",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -3059,6 +3081,17 @@
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/logging",
+      "operationId": "getProjectLogging",
+      "fingerprint": "ee09b8d569d9b33bd5e65c1ead0bb2b71ee4b8e8e766627bb97a99e24f78fc19",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
       }
     },
     {
@@ -6037,6 +6070,28 @@
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/projects/{projectId}/logging/drains",
+      "operationId": "saveProjectDrain",
+      "fingerprint": "d6464828734345de6640155503d469531741f527bcb1bcd24d28ecdc15d39aae",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/projects/{projectId}/logging/sampling",
+      "operationId": "saveProjectSampling",
+      "fingerprint": "fb655f6a95bc6ba532942cf41e9a4963db9eaa0d100714925d377f9318a27779",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
       }
     },
     {

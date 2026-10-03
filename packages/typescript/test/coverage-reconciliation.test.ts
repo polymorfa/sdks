@@ -196,7 +196,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("b8fa167e47c901131d3bd9865e6479b153ad5157");
+    expect(source.commit).toBe("8efb062e106ac1d6888bf6fff4fbcdddf8406e48");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -389,6 +389,34 @@ describe("reconciled coverage evidence", () => {
       expect(
         platform.paths[operation.path]![operation.method.toLowerCase()]!
           .security,
+      ).toEqual([{ ConsoleSession: [] }]);
+    }
+  });
+
+  it("keeps inherited Logs operations excluded according to dashboard identity", () => {
+    const platform = JSON.parse(
+      readFileSync(repositoryFile("contracts/openapi.platform.json"), "utf8"),
+    ) as {
+      paths: Record<string, Record<string, { security: unknown }>>;
+    };
+    for (const operationId of [
+      "getConsoleAuditLogs",
+      "getLogCalendar",
+      "getProjectLogging",
+      "saveProjectDrain",
+      "saveProjectSampling",
+      "logsInsight",
+    ]) {
+      const operation = entry(operationId);
+      expect(operation.typescript.status, operationId).toBe("excluded");
+      expect(operation.typescript.reason, operationId).toContain(
+        "dashboard identity",
+      );
+      expect(operation.typescript.method, operationId).toBeUndefined();
+      expect(
+        platform.paths[operation.path]![operation.method.toLowerCase()]!
+          .security,
+        operationId,
       ).toEqual([{ ConsoleSession: [] }]);
     }
   });
