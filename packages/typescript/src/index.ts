@@ -1232,3 +1232,12 @@ export {
   type FlowProviderOperation,
   type FlowProviderResult,
 } from "./platform/flows.js";
+
+export { AnalyticsResource } from "./platform/analytics.js";
+export type {
+  AnalyticsParams,
+  WhatsAppBusinessSegment,
+  WhatsAppAnalytics,
+  WhatsAppMetrics,
+  WhatsAppEngagement,
+} from "./platform/analytics.js";

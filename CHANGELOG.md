@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `Client.analytics.get` reads WhatsApp number activity, completed 24-hour read and reply cohorts, response times and connection vitals. Requires `sessions:read` and Analytics enabled by a team owner or admin. Missing coverage returns null rates.
+
 - Hybrid Link tier transitions. `Client.sessions.quoteTierChange` accepts
   `hybridResolution` (`keep` one connection or `split` into two Numbers) for a
   Hybrid Link Number leaving Pro, or `hybridMerge` to merge a same-number pair

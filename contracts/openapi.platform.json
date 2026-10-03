@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (235 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (101 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/\u2026` \u2014 **public registry** (235 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/\u2026` \u2014 **console-only** (101 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -960,7 +960,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -1123,7 +1123,7 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
         },
-        "description": "**Required scopes (all):** `sessions:manage` · `messages:write` · `contacts:read` · `presence:read` · `presence:observe` · `mcp`",
+        "description": "**Required scopes (all):** `sessions:manage` \u00b7 `messages:write` \u00b7 `contacts:read` \u00b7 `presence:read` \u00b7 `presence:observe` \u00b7 `mcp`",
         "x-audience": "public"
       }
     },
@@ -1173,7 +1173,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -1401,7 +1401,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -1564,7 +1564,7 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
         },
-        "description": "**Required scopes (all):** `sessions:manage` · `messages:write` · `contacts:read` · `presence:read` · `presence:observe` · `mcp`",
+        "description": "**Required scopes (all):** `sessions:manage` \u00b7 `messages:write` \u00b7 `contacts:read` \u00b7 `presence:read` \u00b7 `presence:observe` \u00b7 `mcp`",
         "x-audience": "public"
       },
       "delete": {
@@ -1612,7 +1612,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -1827,7 +1827,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -2051,7 +2051,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -2286,7 +2286,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -2497,7 +2497,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -2875,7 +2875,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -3078,7 +3078,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -3293,7 +3293,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -3504,7 +3504,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -3781,7 +3781,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -4004,7 +4004,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -4280,7 +4280,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -4526,7 +4526,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -4793,7 +4793,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -5004,7 +5004,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -5283,7 +5283,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -5515,7 +5515,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -5760,7 +5760,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -6006,7 +6006,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -6250,7 +6250,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -6461,7 +6461,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -6770,7 +6770,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -7112,7 +7112,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -7389,7 +7389,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -7612,7 +7612,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -7856,7 +7856,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -8102,7 +8102,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -8381,7 +8381,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -8592,7 +8592,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -8933,7 +8933,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -9146,7 +9146,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -9360,7 +9360,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -9604,7 +9604,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -9824,7 +9824,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -10270,7 +10270,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -10483,7 +10483,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -10696,7 +10696,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -10869,7 +10869,7 @@
         "tags": [
           "Sessions"
         ],
-        "summary": "Initiate M↔P toggle: fetch the destination Curve25519 pubkey",
+        "summary": "Initiate M\u2194P toggle: fetch the destination Curve25519 pubkey",
         "security": [
           {
             "ApiKeyAuth": []
@@ -10909,7 +10909,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -11131,7 +11131,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -11353,7 +11353,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -11526,7 +11526,7 @@
         "tags": [
           "Sessions"
         ],
-        "summary": "Acknowledge receipt of an M→P export; API flips bartenderMode after hash verify",
+        "summary": "Acknowledge receipt of an M\u2192P export; API flips bartenderMode after hash verify",
         "security": [
           {
             "ApiKeyAuth": []
@@ -11554,7 +11554,7 @@
         },
         "responses": {
           "200": {
-            "description": "Ack accepted; bartenderMode flipped from magic → passthrough",
+            "description": "Ack accepted; bartenderMode flipped from magic \u2192 passthrough",
             "content": {
               "application/json": {
                 "schema": {
@@ -11575,7 +11575,7 @@
             }
           },
           "400": {
-            "description": "Bad request — request body or params failed validation",
+            "description": "Bad request \u2014 request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -32337,11 +32337,11 @@
           "keys"
         ],
         "summary": "Mint for console api key",
-        "description": "**EXCLUDED from the public API** (`console`). Credential red line: a pmfa_ key must never mint a pmfa_ key. Human session only — keeps revocation meaningful.",
+        "description": "**EXCLUDED from the public API** (`console`). Credential red line: a pmfa_ key must never mint a pmfa_ key. Human session only \u2014 keeps revocation meaningful.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Credential red line: a pmfa_ key must never mint a pmfa_ key. Human session only — keeps revocation meaningful.",
+        "x-exclusion-reason": "Credential red line: a pmfa_ key must never mint a pmfa_ key. Human session only \u2014 keeps revocation meaningful.",
         "security": [
           {
             "ConsoleSession": []
@@ -36909,6 +36909,226 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/platform/analytics": {
+      "get": {
+        "operationId": "getWhatsAppAnalytics",
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Get WhatsApp number analytics",
+        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps and daily series use UTC. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone active periods follow 15 minutes without evidence and are not power cycles. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Number record UUID."
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix milliseconds; maximum range 366 days."
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix milliseconds; maximum range 366 days."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WhatsAppAnalytics"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/projects/{projectId}/analytics": {
+      "get": {
+        "operationId": "getProjectWhatsAppAnalytics",
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Get WhatsApp number analytics",
+        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps and daily series use UTC. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone active periods follow 15 minutes without evidence and are not power cycles. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Number record UUID."
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix milliseconds; maximum range 366 days."
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix milliseconds; maximum range 366 days."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WhatsAppAnalytics"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
           }
         }
       }
@@ -41553,7 +41773,7 @@
             "type": "string",
             "maxLength": 80,
             "nullable": true,
-            "description": "Page title shown above the pairing flow. Defaults to “Connect WhatsApp”."
+            "description": "Page title shown above the pairing flow. Defaults to \u201cConnect WhatsApp\u201d."
           },
           "description": {
             "type": "string",
@@ -42784,7 +43004,7 @@
               "amountCents": {
                 "type": "number",
                 "minimum": 0,
-                "multipleOf": 0.000001,
+                "multipleOf": 1e-06,
                 "description": "Credits charged on application, with up to six decimal places."
               },
               "priceVersion": {
@@ -47017,19 +47237,19 @@
           "measuredCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001,
+            "multipleOf": 1e-06,
             "description": "Credit quantity this number consumed inside the window, with up to six decimal places."
           },
           "capCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001,
+            "multipleOf": 1e-06,
             "description": "Maximum credit quantity this claim can return, with up to six decimal places."
           },
           "amountCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001,
+            "multipleOf": 1e-06,
             "description": "Credit quantity this claim returns, with up to six decimal places."
           },
           "evidence": {
@@ -54115,7 +54335,7 @@
             "enum": [
               "passthrough_plus"
             ],
-            "description": "When set, atomically flips sessions.config.bartenderMode → passthrough_plus after the keys persist. Eliminates the window where mode is set but no keys are staged."
+            "description": "When set, atomically flips sessions.config.bartenderMode \u2192 passthrough_plus after the keys persist. Eliminates the window where mode is set but no keys are staged."
           }
         },
         "required": [
@@ -54840,6 +55060,1108 @@
           "appReports",
           "history",
           "correlation"
+        ]
+      },
+      "WhatsAppAnalytics": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "period": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start": {
+                "type": "integer",
+                "description": "Unix milliseconds."
+              },
+              "end": {
+                "type": "integer",
+                "description": "Unix milliseconds."
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ]
+          },
+          "requestVitals": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "requests": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "failures": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "errorRate": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "nullable": true
+              }
+            },
+            "required": [
+              "requests",
+              "failures",
+              "errorRate"
+            ]
+          },
+          "summary": {
+            "nullable": true,
+            "allOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "measured": {
+                    "type": "boolean"
+                  },
+                  "observedHours": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "lastObservedAt": {
+                    "type": "integer",
+                    "description": "Unix milliseconds.",
+                    "nullable": true
+                  },
+                  "outgoingMessages": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "incomingMessages": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sendAttempts": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sendFailures": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sendFailureRate": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "nullable": true
+                  },
+                  "businessReplies": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "averageBusinessResponseMs": {
+                    "type": "number",
+                    "minimum": 0,
+                    "nullable": true
+                  },
+                  "onlineMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "disconnects": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "connectFailures": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "streamErrors": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "keepaliveTimeouts": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "engagement": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "windowHours": {
+                        "type": "integer",
+                        "enum": [
+                          24
+                        ]
+                      },
+                      "completedConversations": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "deliveredConversations": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "readConversations": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "repliedConversations": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "deliveryRate": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "nullable": true
+                      },
+                      "readRate": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "nullable": true
+                      },
+                      "replyRate": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "nullable": true
+                      },
+                      "averageCustomerReplyMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "complete": {
+                        "type": "boolean"
+                      },
+                      "droppedConversations": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "droppedRecords": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "droppedReceiptJoins": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "windowHours",
+                      "completedConversations",
+                      "deliveredConversations",
+                      "readConversations",
+                      "repliedConversations",
+                      "deliveryRate",
+                      "readRate",
+                      "replyRate",
+                      "averageCustomerReplyMs",
+                      "complete",
+                      "droppedConversations",
+                      "droppedRecords",
+                      "droppedReceiptJoins"
+                    ]
+                  },
+                  "totalNumbers": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "measuredNumbers": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "connectedNumbers": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "messageAnalysis": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "complete": {
+                        "type": "boolean"
+                      },
+                      "segments": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "dimension": {
+                              "type": "string",
+                              "enum": [
+                                "message_type",
+                                "text_band",
+                                "origin",
+                                "calling_code",
+                                "customer_devices"
+                              ]
+                            },
+                            "key": {
+                              "type": "string"
+                            },
+                            "sendAttempts": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "sent": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "sendFailures": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "sendFailureRate": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "completedConversations": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "deliveredConversations": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "readConversations": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "repliedConversations": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "deliveryRate": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "readRate": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "replyRate": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "averageCustomerReplyMs": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "shareOfConversations": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "shareOfSends": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "readRateInterval95": {
+                              "type": "array",
+                              "nullable": true,
+                              "minItems": 2,
+                              "maxItems": 2,
+                              "items": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              },
+                              "description": "95% Wilson interval for observed conversation receipts or replies; not a causal effect."
+                            },
+                            "replyRateInterval95": {
+                              "type": "array",
+                              "nullable": true,
+                              "minItems": 2,
+                              "maxItems": 2,
+                              "items": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              },
+                              "description": "95% Wilson interval for observed conversation receipts or replies; not a causal effect."
+                            },
+                            "readRateDifference": {
+                              "type": "number",
+                              "minimum": -1,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "replyRateDifference": {
+                              "type": "number",
+                              "minimum": -1,
+                              "maximum": 1,
+                              "nullable": true
+                            }
+                          },
+                          "required": [
+                            "dimension",
+                            "key",
+                            "sendAttempts",
+                            "sent",
+                            "sendFailures",
+                            "sendFailureRate",
+                            "completedConversations",
+                            "deliveredConversations",
+                            "readConversations",
+                            "repliedConversations",
+                            "deliveryRate",
+                            "readRate",
+                            "replyRate",
+                            "averageCustomerReplyMs",
+                            "shareOfConversations",
+                            "shareOfSends",
+                            "readRateInterval95",
+                            "replyRateInterval95",
+                            "readRateDifference",
+                            "replyRateDifference"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "complete",
+                      "segments"
+                    ]
+                  },
+                  "customerActivity": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "observed": {
+                        "type": "boolean"
+                      },
+                      "onlineSignals": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "offlineSignals": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "typingSignals": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "observed",
+                      "onlineSignals",
+                      "offlineSignals",
+                      "typingSignals"
+                    ]
+                  },
+                  "accountActivity": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "observed": {
+                        "type": "boolean"
+                      },
+                      "primaryPhoneActivitySignals": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "primaryPhoneActivePeriods": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "primaryPhoneMessages": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "otherDeviceMessages": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "lastPrimaryPhoneAt": {
+                        "type": "integer",
+                        "description": "Unix milliseconds.",
+                        "nullable": true
+                      },
+                      "primaryPhoneReplies": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "otherDeviceReplies": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "averagePrimaryPhoneResponseMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "averageOtherDeviceResponseMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "observed",
+                      "primaryPhoneActivitySignals",
+                      "primaryPhoneActivePeriods",
+                      "primaryPhoneMessages",
+                      "otherDeviceMessages",
+                      "lastPrimaryPhoneAt",
+                      "primaryPhoneReplies",
+                      "otherDeviceReplies",
+                      "averagePrimaryPhoneResponseMs",
+                      "averageOtherDeviceResponseMs"
+                    ]
+                  },
+                  "responseQueue": {
+                    "nullable": true,
+                    "allOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "awaitingReply": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "oldestWaitingMs": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "observedAt": {
+                            "type": "integer",
+                            "description": "Unix milliseconds."
+                          },
+                          "complete": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "awaitingReply",
+                          "oldestWaitingMs",
+                          "observedAt",
+                          "complete"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "measured",
+                  "observedHours",
+                  "lastObservedAt",
+                  "outgoingMessages",
+                  "incomingMessages",
+                  "sendAttempts",
+                  "sendFailures",
+                  "sendFailureRate",
+                  "businessReplies",
+                  "averageBusinessResponseMs",
+                  "onlineMs",
+                  "disconnects",
+                  "connectFailures",
+                  "streamErrors",
+                  "keepaliveTimeouts",
+                  "engagement",
+                  "totalNumbers",
+                  "measuredNumbers",
+                  "connectedNumbers",
+                  "messageAnalysis",
+                  "customerActivity",
+                  "accountActivity",
+                  "responseQueue"
+                ]
+              }
+            ]
+          },
+          "numbers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sessionId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "projectId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "backend": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "measured": {
+                  "type": "boolean"
+                },
+                "observedHours": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "lastObservedAt": {
+                  "type": "integer",
+                  "description": "Unix milliseconds.",
+                  "nullable": true
+                },
+                "outgoingMessages": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "incomingMessages": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sendAttempts": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sendFailures": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sendFailureRate": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "nullable": true
+                },
+                "businessReplies": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "averageBusinessResponseMs": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "onlineMs": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "disconnects": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "connectFailures": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "streamErrors": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "keepaliveTimeouts": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "engagement": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "windowHours": {
+                      "type": "integer",
+                      "enum": [
+                        24
+                      ]
+                    },
+                    "completedConversations": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "deliveredConversations": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "readConversations": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "repliedConversations": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "deliveryRate": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1,
+                      "nullable": true
+                    },
+                    "readRate": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1,
+                      "nullable": true
+                    },
+                    "replyRate": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1,
+                      "nullable": true
+                    },
+                    "averageCustomerReplyMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "complete": {
+                      "type": "boolean"
+                    },
+                    "droppedConversations": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "droppedRecords": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "droppedReceiptJoins": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "windowHours",
+                    "completedConversations",
+                    "deliveredConversations",
+                    "readConversations",
+                    "repliedConversations",
+                    "deliveryRate",
+                    "readRate",
+                    "replyRate",
+                    "averageCustomerReplyMs",
+                    "complete",
+                    "droppedConversations",
+                    "droppedRecords",
+                    "droppedReceiptJoins"
+                  ]
+                },
+                "messageAnalysis": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "complete": {
+                      "type": "boolean"
+                    },
+                    "segments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "dimension": {
+                            "type": "string",
+                            "enum": [
+                              "message_type",
+                              "text_band",
+                              "origin",
+                              "calling_code",
+                              "customer_devices"
+                            ]
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "sendAttempts": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "sent": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "sendFailures": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "sendFailureRate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "completedConversations": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "deliveredConversations": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "readConversations": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "repliedConversations": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "deliveryRate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "readRate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "replyRate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "averageCustomerReplyMs": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "shareOfConversations": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "shareOfSends": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "readRateInterval95": {
+                            "type": "array",
+                            "nullable": true,
+                            "minItems": 2,
+                            "maxItems": 2,
+                            "items": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "description": "95% Wilson interval for observed conversation receipts or replies; not a causal effect."
+                          },
+                          "replyRateInterval95": {
+                            "type": "array",
+                            "nullable": true,
+                            "minItems": 2,
+                            "maxItems": 2,
+                            "items": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "description": "95% Wilson interval for observed conversation receipts or replies; not a causal effect."
+                          },
+                          "readRateDifference": {
+                            "type": "number",
+                            "minimum": -1,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "replyRateDifference": {
+                            "type": "number",
+                            "minimum": -1,
+                            "maximum": 1,
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "dimension",
+                          "key",
+                          "sendAttempts",
+                          "sent",
+                          "sendFailures",
+                          "sendFailureRate",
+                          "completedConversations",
+                          "deliveredConversations",
+                          "readConversations",
+                          "repliedConversations",
+                          "deliveryRate",
+                          "readRate",
+                          "replyRate",
+                          "averageCustomerReplyMs",
+                          "shareOfConversations",
+                          "shareOfSends",
+                          "readRateInterval95",
+                          "replyRateInterval95",
+                          "readRateDifference",
+                          "replyRateDifference"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "complete",
+                    "segments"
+                  ]
+                },
+                "customerActivity": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "observed": {
+                      "type": "boolean"
+                    },
+                    "onlineSignals": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "offlineSignals": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "typingSignals": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "observed",
+                    "onlineSignals",
+                    "offlineSignals",
+                    "typingSignals"
+                  ]
+                },
+                "accountActivity": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "observed": {
+                      "type": "boolean"
+                    },
+                    "primaryPhoneActivitySignals": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "primaryPhoneActivePeriods": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "primaryPhoneMessages": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "otherDeviceMessages": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "lastPrimaryPhoneAt": {
+                      "type": "integer",
+                      "description": "Unix milliseconds.",
+                      "nullable": true
+                    },
+                    "primaryPhoneReplies": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "otherDeviceReplies": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "averagePrimaryPhoneResponseMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "averageOtherDeviceResponseMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "observed",
+                    "primaryPhoneActivitySignals",
+                    "primaryPhoneActivePeriods",
+                    "primaryPhoneMessages",
+                    "otherDeviceMessages",
+                    "lastPrimaryPhoneAt",
+                    "primaryPhoneReplies",
+                    "otherDeviceReplies",
+                    "averagePrimaryPhoneResponseMs",
+                    "averageOtherDeviceResponseMs"
+                  ]
+                },
+                "responseQueue": {
+                  "nullable": true,
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "awaitingReply": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "oldestWaitingMs": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "observedAt": {
+                          "type": "integer",
+                          "description": "Unix milliseconds."
+                        },
+                        "complete": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "awaitingReply",
+                        "oldestWaitingMs",
+                        "observedAt",
+                        "complete"
+                      ]
+                    }
+                  ]
+                },
+                "projectName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "sessionId",
+                "projectId",
+                "name",
+                "backend",
+                "status",
+                "measured",
+                "observedHours",
+                "lastObservedAt",
+                "outgoingMessages",
+                "incomingMessages",
+                "sendAttempts",
+                "sendFailures",
+                "sendFailureRate",
+                "businessReplies",
+                "averageBusinessResponseMs",
+                "onlineMs",
+                "disconnects",
+                "connectFailures",
+                "streamErrors",
+                "keepaliveTimeouts",
+                "engagement",
+                "messageAnalysis",
+                "customerActivity",
+                "accountActivity",
+                "responseQueue",
+                "projectName"
+              ]
+            }
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "ts": {
+                  "type": "integer",
+                  "description": "Unix milliseconds."
+                },
+                "outgoingMessages": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "incomingMessages": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sendFailures": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "businessReplies": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "averageBusinessResponseMs": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "onlineMs": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "disconnects": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sessionId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "customerOnlineSignals": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "customerTypingSignals": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "primaryPhoneMessages": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "otherDeviceMessages": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "primaryPhoneReplies": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "phoneActivePeriods": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "ts",
+                "outgoingMessages",
+                "incomingMessages",
+                "sendFailures",
+                "businessReplies",
+                "averageBusinessResponseMs",
+                "onlineMs",
+                "disconnects",
+                "sessionId",
+                "customerOnlineSignals",
+                "customerTypingSignals",
+                "primaryPhoneMessages",
+                "otherDeviceMessages",
+                "primaryPhoneReplies",
+                "phoneActivePeriods"
+              ]
+            }
+          }
+        },
+        "required": [
+          "enabled",
+          "period",
+          "requestVitals",
+          "summary",
+          "numbers",
+          "series"
         ]
       }
     },

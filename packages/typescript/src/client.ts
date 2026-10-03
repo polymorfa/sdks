@@ -1,3 +1,4 @@
+import { AnalyticsResource } from "./platform/analytics.js";
 import { FlowsResource } from "./platform/flows.js";
 import { FunctionsResource } from "./platform/functions.js";
 import { SessionConfigurationResource } from "./platform/session-configuration.js";
@@ -71,6 +72,7 @@ export interface ClientBase<O extends ClientOwner> {
   readonly voice: VoiceResource<O>;
   /** Metered usage and usage gates. */
   readonly usage: UsageResource;
+  readonly analytics: AnalyticsResource;
   readonly calls: PlatformCallsResource<O>;
   readonly callRetention: CallRetentionResource;
   readonly raw: RawResourceFor<O>;
@@ -130,6 +132,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   readonly sipTrunks: SipTrunksResource<ClientOwner>;
   readonly voice: VoiceResource<ClientOwner>;
   readonly usage: UsageResource;
+  readonly analytics: AnalyticsResource;
   readonly calls: PlatformCallsResource<ClientOwner>;
   readonly callRetention: CallRetentionResource;
   readonly raw: RawClient | ProjectScopedRawClient;
@@ -194,6 +197,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       projectId !== null && credential.type !== "projectToken",
     );
     this.usage = new UsageResource(this.#transport, projectId);
+    this.analytics = new AnalyticsResource(this.#transport, projectId);
     this.calls = new PlatformCallsResource(this.#transport, projectId);
     this.callRetention = new CallRetentionResource(this.#transport);
     this.raw =
