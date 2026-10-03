@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "49b529fd74f42fdd6bb30671ebd4b0ec8e9558f3",
+  "sourceCommit": "b8fa167e47c901131d3bd9865e6479b153ad5157",
   "excludedContracts": [
     {
       "family": "graph",
@@ -2960,6 +2960,17 @@
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/number-options",
+      "operationId": "listConsoleNumberOptions",
+      "fingerprint": "b8f7a1985611bccafc827257f68e3e7f0c147230e59bf1343d223e02ca246333",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Private Console selector requires dashboard identity; organization API keys and project tokens are not accepted."
       }
     },
     {

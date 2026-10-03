@@ -42,15 +42,21 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The current snapshots are byte-identical copies of Messaging and Platform
-contracts at API implementation commit `49b529fd74f42fdd6bb30671ebd4b0ec8e9558f3` on
+contracts at API implementation commit `b8fa167e47c901131d3bd9865e6479b153ad5157` on
 `t3code/project-billing-dashboard`. This branch is unmerged. Seven financial
 operations cover limits, priorities, complete ordering and one-resource combined
 read/save. Project priority takes precedence. Numbers inherit customer priority;
 a higher number priority overrides it within the project. Customer limits still
 include all assigned numbers.
 Initial real QuickLink creation accepts optional billing controls before admission.
-This repin changes only the excluded private Console `usageInsight` fingerprint.
-It adds exact org/project/number scope metadata and immutable-number filtering.
+This repin adds only the private Console `listConsoleNumberOptions` operation,
+a bounded searchable number-label read with keyset pagination. Its dashboard
+identity requirement excludes it from server SDK methods. All 568 preceding
+operation fingerprints and the public API contract remain unchanged. The ledger
+now contains 569 operations: 429 covered and 140 excluded.
+The preceding private `usageInsight` contract at
+`49b529fd74f42fdd6bb30671ebd4b0ec8e9558f3`
+added exact org/project/number scope metadata and immutable-number filtering.
 The selected number's current UTC monthly completed outgoing calls and included
 allowance remain separate from the chart period. Unknown tiers have no allowance
 read; known unlimited tiers are explicit. Request logs and serverless receipts

@@ -196,7 +196,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("49b529fd74f42fdd6bb30671ebd4b0ec8e9558f3");
+    expect(source.commit).toBe("b8fa167e47c901131d3bd9865e6479b153ad5157");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -347,6 +347,26 @@ describe("reconciled coverage evidence", () => {
           typescript.reason === "Operation is absent from the coverage ledger.",
       ),
     ).toBe(false);
+  });
+
+  it("excludes the bounded number selector based on its dashboard identity contract", () => {
+    const operation = entry("listConsoleNumberOptions");
+    expect(operation).toMatchObject({
+      family: "platform",
+      method: "GET",
+      path: "/console/insights/number-options",
+      typescript: { status: "excluded" },
+    });
+    expect(operation.typescript.reason).toContain("dashboard identity");
+    expect(operation.typescript.method).toBeUndefined();
+    const platform = JSON.parse(
+      readFileSync(repositoryFile("contracts/openapi.platform.json"), "utf8"),
+    ) as {
+      paths: Record<string, Record<string, { security: unknown }>>;
+    };
+    expect(platform.paths[operation.path]!.get!.security).toEqual([
+      { ConsoleSession: [] },
+    ]);
   });
 
   it("excludes the added Console routes based on their credential contract", () => {
