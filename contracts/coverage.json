@@ -6172,8 +6172,8 @@
       },
       "sourceContractSha256": "421be44c1356cf7f4f5c322bef8364246ee463f0aa1ff4171e1e41a09c40dd00",
       "sourceBaseCommit": "1fa7c8fafa03d5915f51e4b36e135b3a3234c657",
-      "sourceState": "working-tree",
-      "sourceCommit": "c582f0c25efd24d6e5939b6d49b22abe57e26eca",
+      "sourceState": "committed",
+      "sourceCommit": "d60780445908a09d02a1f80da9b85e685c58f438",
       "sdkContractSha256": "6e8f3e3721fb143cf11cc108f7d98752efd0c698848e830108aa895b1d7e7de1"
     },
     {
@@ -6188,8 +6188,8 @@
       },
       "sourceContractSha256": "421be44c1356cf7f4f5c322bef8364246ee463f0aa1ff4171e1e41a09c40dd00",
       "sourceBaseCommit": "1fa7c8fafa03d5915f51e4b36e135b3a3234c657",
-      "sourceState": "working-tree",
-      "sourceCommit": "c582f0c25efd24d6e5939b6d49b22abe57e26eca",
+      "sourceState": "committed",
+      "sourceCommit": "d60780445908a09d02a1f80da9b85e685c58f438",
       "sdkContractSha256": "6e8f3e3721fb143cf11cc108f7d98752efd0c698848e830108aa895b1d7e7de1"
     }
   ]

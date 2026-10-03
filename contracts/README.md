@@ -426,3 +426,13 @@ spec while the beta has no audience. The full snapshots stay pinned to
 coverage ledger as `Client.campaigns.recordConversion` and
 `Client.campaigns.conversions`. `campaign-conversions-contract.test.ts`
 compares the exported types with the supplement.
+
+## WhatsApp business analytics contract
+
+The two new reads, `/platform/analytics` and
+`/platform/projects/{projectId}/analytics`, are covered by `Client.analytics.get`.
+Their per-operation ledger entries pin the integrated Analytics source and exact
+route/schema fingerprints. Other operations retain the SDK dev contract revision.
+The strict response contains number/project-scoped messaging aggregates and
+retained-call outcomes, measured timings, quality, failure categories, missed-call
+follow-up and daily call series. This is an unshipped source-build addition.

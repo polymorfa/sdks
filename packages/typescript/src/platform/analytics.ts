@@ -1,4 +1,4 @@
-// Platform analytics contract: polymorfa/polymorfa@c582f0c25efd24d6e5939b6d49b22abe57e26eca
+// Platform analytics contract: polymorfa/polymorfa@d60780445908a09d02a1f80da9b85e685c58f438
 import { PolymorfaValidationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import type {
