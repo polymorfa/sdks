@@ -3,11 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-<<<<<<< HEAD
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/\u2026` \u2014 **public registry** (235 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/\u2026` \u2014 **console-only** (101 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
-=======
     "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (236 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (101 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
->>>>>>> origin/dev
   },
   "servers": [
     {
@@ -964,7 +960,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -1127,7 +1123,7 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
         },
-        "description": "**Required scopes (all):** `sessions:manage` \u00b7 `messages:write` \u00b7 `contacts:read` \u00b7 `presence:read` \u00b7 `presence:observe` \u00b7 `mcp`",
+        "description": "**Required scopes (all):** `sessions:manage` · `messages:write` · `contacts:read` · `presence:read` · `presence:observe` · `mcp`",
         "x-audience": "public"
       }
     },
@@ -1177,7 +1173,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -1405,7 +1401,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -1568,7 +1564,7 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
         },
-        "description": "**Required scopes (all):** `sessions:manage` \u00b7 `messages:write` \u00b7 `contacts:read` \u00b7 `presence:read` \u00b7 `presence:observe` \u00b7 `mcp`",
+        "description": "**Required scopes (all):** `sessions:manage` · `messages:write` · `contacts:read` · `presence:read` · `presence:observe` · `mcp`",
         "x-audience": "public"
       },
       "delete": {
@@ -1616,7 +1612,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -1831,7 +1827,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -2055,7 +2051,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -2290,7 +2286,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -2501,7 +2497,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -2879,7 +2875,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -3082,7 +3078,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -3297,7 +3293,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -3508,7 +3504,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -3785,7 +3781,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -4008,7 +4004,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -4284,7 +4280,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -4530,7 +4526,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -4797,7 +4793,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -5008,7 +5004,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -5287,7 +5283,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -5519,7 +5515,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -5764,7 +5760,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -6010,7 +6006,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -6254,7 +6250,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -6465,7 +6461,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -6774,7 +6770,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -7116,7 +7112,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -7393,7 +7389,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -7616,7 +7612,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -7860,7 +7856,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -8106,7 +8102,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -8385,7 +8381,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -8596,7 +8592,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -8937,7 +8933,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -9150,7 +9146,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -9364,7 +9360,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -9608,7 +9604,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -9828,7 +9824,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -10274,7 +10270,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -10487,7 +10483,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -10700,7 +10696,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -10873,7 +10869,7 @@
         "tags": [
           "Sessions"
         ],
-        "summary": "Initiate M\u2194P toggle: fetch the destination Curve25519 pubkey",
+        "summary": "Initiate M↔P toggle: fetch the destination Curve25519 pubkey",
         "security": [
           {
             "ApiKeyAuth": []
@@ -10913,7 +10909,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -11135,7 +11131,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -11357,7 +11353,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -11530,7 +11526,7 @@
         "tags": [
           "Sessions"
         ],
-        "summary": "Acknowledge receipt of an M\u2192P export; API flips bartenderMode after hash verify",
+        "summary": "Acknowledge receipt of an M→P export; API flips bartenderMode after hash verify",
         "security": [
           {
             "ApiKeyAuth": []
@@ -11558,7 +11554,7 @@
         },
         "responses": {
           "200": {
-            "description": "Ack accepted; bartenderMode flipped from magic \u2192 passthrough",
+            "description": "Ack accepted; bartenderMode flipped from magic → passthrough",
             "content": {
               "application/json": {
                 "schema": {
@@ -11579,7 +11575,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -32421,11 +32417,11 @@
           "keys"
         ],
         "summary": "Mint for console api key",
-        "description": "**EXCLUDED from the public API** (`console`). Credential red line: a pmfa_ key must never mint a pmfa_ key. Human session only \u2014 keeps revocation meaningful.",
+        "description": "**EXCLUDED from the public API** (`console`). Credential red line: a pmfa_ key must never mint a pmfa_ key. Human session only — keeps revocation meaningful.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Credential red line: a pmfa_ key must never mint a pmfa_ key. Human session only \u2014 keeps revocation meaningful.",
+        "x-exclusion-reason": "Credential red line: a pmfa_ key must never mint a pmfa_ key. Human session only — keeps revocation meaningful.",
         "security": [
           {
             "ConsoleSession": []
@@ -37004,7 +37000,7 @@
           "Analytics"
         ],
         "summary": "Get WhatsApp number analytics",
-        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps and daily series use UTC. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone active periods follow 15 minutes without evidence and are not power cycles. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps and daily series use UTC. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone active periods follow 15 minutes without evidence and are not power cycles. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -37114,7 +37110,7 @@
           "Analytics"
         ],
         "summary": "Get WhatsApp number analytics",
-        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps and daily series use UTC. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone active periods follow 15 minutes without evidence and are not power cycles. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps and daily series use UTC. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone active periods follow 15 minutes without evidence and are not power cycles. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -41857,7 +41853,7 @@
             "type": "string",
             "maxLength": 80,
             "nullable": true,
-            "description": "Page title shown above the pairing flow. Defaults to \u201cConnect WhatsApp\u201d."
+            "description": "Page title shown above the pairing flow. Defaults to “Connect WhatsApp”."
           },
           "description": {
             "type": "string",
@@ -43088,7 +43084,7 @@
               "amountCents": {
                 "type": "number",
                 "minimum": 0,
-                "multipleOf": 1e-06,
+                "multipleOf": 0.000001,
                 "description": "Credits charged on application, with up to six decimal places."
               },
               "priceVersion": {
@@ -47321,19 +47317,19 @@
           "measuredCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 1e-06,
+            "multipleOf": 0.000001,
             "description": "Credit quantity this number consumed inside the window, with up to six decimal places."
           },
           "capCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 1e-06,
+            "multipleOf": 0.000001,
             "description": "Maximum credit quantity this claim can return, with up to six decimal places."
           },
           "amountCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 1e-06,
+            "multipleOf": 0.000001,
             "description": "Credit quantity this claim returns, with up to six decimal places."
           },
           "evidence": {
@@ -54626,7 +54622,7 @@
             "enum": [
               "passthrough_plus"
             ],
-            "description": "When set, atomically flips sessions.config.bartenderMode \u2192 passthrough_plus after the keys persist. Eliminates the window where mode is set but no keys are staged."
+            "description": "When set, atomically flips sessions.config.bartenderMode → passthrough_plus after the keys persist. Eliminates the window where mode is set but no keys are staged."
           }
         },
         "required": [
@@ -55848,6 +55844,498 @@
                         ]
                       }
                     ]
+                  },
+                  "calls": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "total": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "answered": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "missed": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "declined": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "failed": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "ringing": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "answerRate": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "nullable": true
+                      },
+                      "talkSeconds": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "timedAnswered": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "timedPickup": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "averageTalkSeconds": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "medianTalkSeconds": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "p95TalkSeconds": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "averagePickupMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "p95PickupMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "shortAnswered": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "video": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "directions": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "inbound": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "total": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "answered": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "missed": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "declined": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "failed": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "ringing": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "answerRate": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "nullable": true
+                              },
+                              "talkSeconds": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "timedAnswered": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "timedPickup": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "averageTalkSeconds": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "medianTalkSeconds": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "p95TalkSeconds": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "averagePickupMs": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "p95PickupMs": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "shortAnswered": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "video": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "total",
+                              "answered",
+                              "missed",
+                              "declined",
+                              "failed",
+                              "ringing",
+                              "answerRate",
+                              "talkSeconds",
+                              "timedAnswered",
+                              "timedPickup",
+                              "averageTalkSeconds",
+                              "medianTalkSeconds",
+                              "p95TalkSeconds",
+                              "averagePickupMs",
+                              "p95PickupMs",
+                              "shortAnswered",
+                              "video"
+                            ]
+                          },
+                          "outbound": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "total": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "answered": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "missed": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "declined": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "failed": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "ringing": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "answerRate": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "nullable": true
+                              },
+                              "talkSeconds": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "timedAnswered": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "timedPickup": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "averageTalkSeconds": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "medianTalkSeconds": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "p95TalkSeconds": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "averagePickupMs": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "p95PickupMs": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "shortAnswered": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "video": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "total",
+                              "answered",
+                              "missed",
+                              "declined",
+                              "failed",
+                              "ringing",
+                              "answerRate",
+                              "talkSeconds",
+                              "timedAnswered",
+                              "timedPickup",
+                              "averageTalkSeconds",
+                              "medianTalkSeconds",
+                              "p95TalkSeconds",
+                              "averagePickupMs",
+                              "p95PickupMs",
+                              "shortAnswered",
+                              "video"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "inbound",
+                          "outbound"
+                        ]
+                      },
+                      "mediaQuality": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "measuredCalls": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "averageJitterMs": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "averageRttMs": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "packetsLost": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "measuredCalls",
+                          "averageJitterMs",
+                          "averageRttMs",
+                          "packetsLost"
+                        ]
+                      },
+                      "appQuality": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "measuredCalls": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "averageJitterMs": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "averageRttMs": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "packetLossRate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "reconnects": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "measuredCalls",
+                          "averageJitterMs",
+                          "averageRttMs",
+                          "packetLossRate",
+                          "reconnects"
+                        ]
+                      },
+                      "endReasons": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "type": "string"
+                            },
+                            "count": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "count"
+                          ]
+                        }
+                      },
+                      "appErrors": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "type": "string"
+                            },
+                            "count": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "count"
+                          ]
+                        }
+                      },
+                      "transports": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "type": "string"
+                            },
+                            "count": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "count"
+                          ]
+                        }
+                      },
+                      "multiParticipantCalls": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "followUp": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "eligibleMissed": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "returnedWithin24h": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "rate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "averageDelayMs": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "pendingWindow": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "unknownContact": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "eligibleMissed",
+                          "returnedWithin24h",
+                          "rate",
+                          "averageDelayMs",
+                          "pendingWindow",
+                          "unknownContact"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "total",
+                      "answered",
+                      "missed",
+                      "declined",
+                      "failed",
+                      "ringing",
+                      "answerRate",
+                      "talkSeconds",
+                      "timedAnswered",
+                      "timedPickup",
+                      "averageTalkSeconds",
+                      "medianTalkSeconds",
+                      "p95TalkSeconds",
+                      "averagePickupMs",
+                      "p95PickupMs",
+                      "shortAnswered",
+                      "video",
+                      "directions",
+                      "mediaQuality",
+                      "appQuality",
+                      "endReasons",
+                      "appErrors",
+                      "transports",
+                      "multiParticipantCalls",
+                      "followUp"
+                    ]
                   }
                 },
                 "required": [
@@ -55873,7 +56361,8 @@
                   "messageAnalysis",
                   "customerActivity",
                   "accountActivity",
-                  "responseQueue"
+                  "responseQueue",
+                  "calls"
                 ]
               }
             ]
@@ -56328,6 +56817,498 @@
                 },
                 "projectName": {
                   "type": "string"
+                },
+                "calls": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "answered": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "missed": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "declined": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "failed": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ringing": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "answerRate": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1,
+                      "nullable": true
+                    },
+                    "talkSeconds": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "timedAnswered": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "timedPickup": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "averageTalkSeconds": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "medianTalkSeconds": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "p95TalkSeconds": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "averagePickupMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "p95PickupMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "shortAnswered": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "video": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "directions": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "inbound": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "total": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "answered": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "missed": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "declined": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "failed": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "ringing": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "answerRate": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "talkSeconds": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "timedAnswered": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "timedPickup": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "averageTalkSeconds": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "medianTalkSeconds": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "p95TalkSeconds": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "averagePickupMs": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "p95PickupMs": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "shortAnswered": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "video": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "total",
+                            "answered",
+                            "missed",
+                            "declined",
+                            "failed",
+                            "ringing",
+                            "answerRate",
+                            "talkSeconds",
+                            "timedAnswered",
+                            "timedPickup",
+                            "averageTalkSeconds",
+                            "medianTalkSeconds",
+                            "p95TalkSeconds",
+                            "averagePickupMs",
+                            "p95PickupMs",
+                            "shortAnswered",
+                            "video"
+                          ]
+                        },
+                        "outbound": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "total": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "answered": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "missed": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "declined": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "failed": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "ringing": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "answerRate": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "talkSeconds": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "timedAnswered": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "timedPickup": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "averageTalkSeconds": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "medianTalkSeconds": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "p95TalkSeconds": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "averagePickupMs": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "p95PickupMs": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "shortAnswered": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "video": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "total",
+                            "answered",
+                            "missed",
+                            "declined",
+                            "failed",
+                            "ringing",
+                            "answerRate",
+                            "talkSeconds",
+                            "timedAnswered",
+                            "timedPickup",
+                            "averageTalkSeconds",
+                            "medianTalkSeconds",
+                            "p95TalkSeconds",
+                            "averagePickupMs",
+                            "p95PickupMs",
+                            "shortAnswered",
+                            "video"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "inbound",
+                        "outbound"
+                      ]
+                    },
+                    "mediaQuality": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "measuredCalls": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "averageJitterMs": {
+                          "type": "number",
+                          "minimum": 0,
+                          "nullable": true
+                        },
+                        "averageRttMs": {
+                          "type": "number",
+                          "minimum": 0,
+                          "nullable": true
+                        },
+                        "packetsLost": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "measuredCalls",
+                        "averageJitterMs",
+                        "averageRttMs",
+                        "packetsLost"
+                      ]
+                    },
+                    "appQuality": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "measuredCalls": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "averageJitterMs": {
+                          "type": "number",
+                          "minimum": 0,
+                          "nullable": true
+                        },
+                        "averageRttMs": {
+                          "type": "number",
+                          "minimum": 0,
+                          "nullable": true
+                        },
+                        "packetLossRate": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1,
+                          "nullable": true
+                        },
+                        "reconnects": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "measuredCalls",
+                        "averageJitterMs",
+                        "averageRttMs",
+                        "packetLossRate",
+                        "reconnects"
+                      ]
+                    },
+                    "endReasons": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "count"
+                        ]
+                      }
+                    },
+                    "appErrors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "count"
+                        ]
+                      }
+                    },
+                    "transports": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "count"
+                        ]
+                      }
+                    },
+                    "multiParticipantCalls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "followUp": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "eligibleMissed": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "returnedWithin24h": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "rate": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1,
+                          "nullable": true
+                        },
+                        "averageDelayMs": {
+                          "type": "number",
+                          "minimum": 0,
+                          "nullable": true
+                        },
+                        "pendingWindow": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "unknownContact": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "eligibleMissed",
+                        "returnedWithin24h",
+                        "rate",
+                        "averageDelayMs",
+                        "pendingWindow",
+                        "unknownContact"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "answered",
+                    "missed",
+                    "declined",
+                    "failed",
+                    "ringing",
+                    "answerRate",
+                    "talkSeconds",
+                    "timedAnswered",
+                    "timedPickup",
+                    "averageTalkSeconds",
+                    "medianTalkSeconds",
+                    "p95TalkSeconds",
+                    "averagePickupMs",
+                    "p95PickupMs",
+                    "shortAnswered",
+                    "video",
+                    "directions",
+                    "mediaQuality",
+                    "appQuality",
+                    "endReasons",
+                    "appErrors",
+                    "transports",
+                    "multiParticipantCalls",
+                    "followUp"
+                  ]
                 }
               },
               "required": [
@@ -56356,7 +57337,8 @@
                 "customerActivity",
                 "accountActivity",
                 "responseQueue",
-                "projectName"
+                "projectName",
+                "calls"
               ]
             }
           },
@@ -56446,6 +57428,119 @@
                 "phoneActivePeriods"
               ]
             }
+          },
+          "callSeries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "answered": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "missed": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "declined": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "failed": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ringing": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "answerRate": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "nullable": true
+                },
+                "talkSeconds": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "timedAnswered": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "timedPickup": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "averageTalkSeconds": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "medianTalkSeconds": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "p95TalkSeconds": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "averagePickupMs": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "p95PickupMs": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "shortAnswered": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "video": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sessionId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "ts": {
+                  "type": "integer",
+                  "description": "Unix milliseconds."
+                }
+              },
+              "required": [
+                "total",
+                "answered",
+                "missed",
+                "declined",
+                "failed",
+                "ringing",
+                "answerRate",
+                "talkSeconds",
+                "timedAnswered",
+                "timedPickup",
+                "averageTalkSeconds",
+                "medianTalkSeconds",
+                "p95TalkSeconds",
+                "averagePickupMs",
+                "p95PickupMs",
+                "shortAnswered",
+                "video",
+                "sessionId",
+                "ts"
+              ]
+            }
           }
         },
         "required": [
@@ -56454,7 +57549,8 @@
           "requestVitals",
           "summary",
           "numbers",
-          "series"
+          "series",
+          "callSeries"
         ]
       }
     },
