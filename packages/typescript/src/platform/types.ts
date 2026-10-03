@@ -1410,6 +1410,61 @@ export interface SafeModeApplied {
   readonly pacing: string | null;
 }
 
+/** `feature`: `value` is a boolean. `limit`: `value` is an integer in `unit`. */
+export type SessionCapabilityKind = "feature" | "limit";
+export type SessionCapabilityUnit =
+  "seconds" | "count" | "characters" | "members";
+/**
+ * `server`: WhatsApp sent a setting the value depends on. `client_default`:
+ * WhatsApp sent none, so its default applies. `account_type`: the capability
+ * does not apply to this account type.
+ */
+export type SessionCapabilitySource =
+  "server" | "client_default" | "account_type";
+
+interface SessionCapabilityBase {
+  /** Stable key such as `channels` or `messageEdit.windowSeconds`. New keys can be added. */
+  readonly key: string;
+  /** Null when `value` is null. */
+  readonly source: SessionCapabilitySource | null;
+}
+
+/** A WhatsApp feature: enabled (`true`), off (`false`) or unknown (`null`). */
+export interface SessionFeatureCapability extends SessionCapabilityBase {
+  readonly kind: "feature";
+  readonly unit: null;
+  readonly value: boolean | null;
+}
+
+/** A WhatsApp limit: an integer in `unit`, or `null` when unknown. */
+export interface SessionLimitCapability extends SessionCapabilityBase {
+  readonly kind: "limit";
+  readonly unit: SessionCapabilityUnit;
+  readonly value: number | null;
+}
+
+/** Narrow on `kind` to type `value` and `unit`. */
+export type SessionCapability =
+  SessionFeatureCapability | SessionLimitCapability;
+
+/** `unknown` before the first sync, after a logout, while waiting to be paired, and after another account is linked; every value is then null. */
+export type SessionCapabilitiesStatus = "synced" | "unknown";
+export type SessionAccountType = "business" | "personal";
+
+/**
+ * WhatsApp features and limits WhatsApp has enabled for one number, as of the
+ * number's last configuration sync (`syncedAt`). Beta: teams must enroll.
+ */
+export interface SessionCapabilities {
+  readonly session: string;
+  readonly projectId: string;
+  readonly status: SessionCapabilitiesStatus;
+  readonly syncedAt: string | null;
+  readonly checkedAt: string | null;
+  readonly accountType: SessionAccountType | null;
+  readonly capabilities: readonly SessionCapability[];
+}
+
 export interface SessionSafeMode {
   readonly session: string;
   readonly projectId: string;

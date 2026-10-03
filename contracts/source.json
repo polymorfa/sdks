@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "fcf7b21015dd185e987b5aa3580e8af5f4c7f1a4",
-  "branch": "t3code/hybrid-pro-downgrade",
-  "published": false,
-  "note": "Coordinated API feature commit for Hybrid Link tier transitions (polymorfa/polymorfa#404), not yet merged to API dev. It contains API dev through 5ce6290bc, which adds the hosted Flow endpoint and Flow encryption key operations of API PR #428 (excluded until an SDK change covers them). The Messaging snapshot is byte-identical to the SDK dev pin e818ba62830d3727a7822379bb46c1fece90ef1b. Both snapshots are byte-identical to the authoritative source files at this commit. SDK package publication is separate.",
+  "commit": "ee885ec4bf62af36b9b85df4310c505f38a224db",
+  "branch": "dev",
+  "published": true,
+  "note": "API number capabilities PR #402, reconciled with Hybrid Link tier transitions and hosted Flow operations. Both snapshots are byte-identical to this source commit. SDK publication, CLI registry pinning and deployed beta access remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "20312f7b375ad8f37a374d936cf15f345f1eb6e3c76a39987d4be6f81581098d"
+      "sha256": "fd9709bc7f75e362a1c2008dbde44fd6ba1db310207cf0bed85282a12bef16d4"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "73269496b558f5f74382204c312e97512bdbadeb1c7675a267071d44345493e8"
+      "sha256": "d831f87eb4027c5f43ec4454bdd23e6972a4beb715fa080947545b7bff28d6b7"
     }
   }
 }
