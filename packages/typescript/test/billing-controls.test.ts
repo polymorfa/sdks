@@ -16,7 +16,7 @@ it("serializes limits and single/reordered project and number priorities using r
   server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      data: { revision: 1, projects: [], numbers: [] },
+      data: { revision: 1, projects: [], customers: [], numbers: [] },
     }),
   }));
   const client = new Client({
@@ -106,4 +106,71 @@ it("preserves a stale revision conflict without retrying or rewriting the reques
     }),
   ).rejects.toBeInstanceOf(PolymorfaConflictError);
   expect(server.requests).toHaveLength(1);
+});
+
+it("serializes singleton customer controls with both revisions and validates before transport", async () => {
+  server = await startTestServer(() => ({
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      data: {
+        budget: {
+          scope: "customer",
+          resourceId: id,
+          projectId: other,
+          name: "Acme",
+          limitCredits: 200,
+          spentCredits: 0,
+          reservedCredits: 0,
+          revision: 2,
+        },
+        priority: 40,
+        priorityRevision: 3,
+      },
+    }),
+  }));
+  const client = new Client({
+    baseUrl: server.url,
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    maxNetworkRetries: 0,
+  });
+  await client.billing.getResourceControls("customer", id);
+  const input = {
+    limitCredits: 200,
+    priority: 40,
+    expectedBudgetRevision: 1,
+    expectedPriorityRevision: 2,
+  };
+  await client.billing.setResourceControls("customer", id, input);
+  expect(server.requests.map((r) => [r.method, r.path])).toEqual([
+    ["GET", `/platform/billing/controls/customer/${id}`],
+    ["PUT", `/platform/billing/controls/customer/${id}`],
+  ]);
+  expect(JSON.parse(server.requests[1]!.body)).toEqual(input);
+  expect(() =>
+    client.billing.setResourceControls("customer", id, {
+      ...input,
+      priority: -1,
+    }),
+  ).toThrow(PolymorfaValidationError);
+  expect(server.requests).toHaveLength(2);
+});
+
+it("filters project directories without loading customer and number lists", async () => {
+  server = await startTestServer(() => ({
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      data: { revision: 1, projects: [], customers: [], numbers: [] },
+    }),
+  }));
+  const client = new Client({
+    baseUrl: server.url,
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    maxNetworkRetries: 0,
+  });
+  await client.billing.getLimits({ projectId: id, scope: "project" });
+  await client.billing.getPriorities({ scope: "project" });
+  expect(server.requests.map((r) => r.path)).toEqual([
+    `/platform/billing/limits?projectId=${id}&scope=project`,
+    "/platform/billing/priorities?scope=project",
+  ]);
 });

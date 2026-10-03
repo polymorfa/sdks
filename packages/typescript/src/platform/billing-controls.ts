@@ -1,6 +1,6 @@
 import { PolymorfaValidationError } from "../errors.js";
 
-export type BillingScope = "project" | "number";
+export type BillingScope = "project" | "customer" | "number";
 export interface BillingPriority {
   readonly id: string;
   readonly name: string;
@@ -9,6 +9,9 @@ export interface BillingPriority {
 export interface BillingPriorities {
   readonly revision: number;
   readonly projects: readonly BillingPriority[];
+  readonly customers: readonly (BillingPriority & {
+    readonly projectId: string;
+  })[];
   readonly numbers: readonly (BillingPriority & {
     readonly projectId: string;
   })[];
@@ -42,7 +45,7 @@ export type ReorderBillingPrioritiesInput =
       readonly expectedRevision: number;
     }
   | {
-      readonly scope: "number";
+      readonly scope: "customer" | "number";
       readonly projectId: string;
       readonly resourceIds: readonly string[];
       readonly expectedRevision: number;
@@ -61,8 +64,8 @@ export function billingRevision(value: number): void {
     invalid("expectedRevision must be a nonnegative integer");
 }
 export function billingScope(value: BillingScope): void {
-  if (value !== "project" && value !== "number")
-    invalid("scope must be project or number");
+  if (value !== "project" && value !== "customer" && value !== "number")
+    invalid("scope must be project, customer or number");
 }
 export function billingPriority(value: number): void {
   if (!Number.isInteger(value) || value < 0 || value > 1000000)
@@ -74,7 +77,7 @@ export function billingLimit(value: number | null): void {
     (!Number.isFinite(value) ||
       value < 0 ||
       value > 1000000 ||
-      Math.abs(value * 1000000 - Math.round(value * 1000000)) > 0.00001)
+      !/^\d+(\.\d{1,6})?$/.test(String(value)))
   )
     invalid(
       "limitCredits must be null or 0–1000000 credits with at most six decimal places",
@@ -84,4 +87,10 @@ function invalid(message: string): never {
   throw new PolymorfaValidationError(message, {
     code: "invalid_billing_control",
   });
+}
+
+export interface ResourceBillingControls {
+  readonly budget: BillingLimit;
+  readonly priority: number;
+  readonly priorityRevision: number;
 }

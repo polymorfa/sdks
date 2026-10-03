@@ -42,17 +42,19 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The current snapshots are byte-identical copies of Messaging and Platform
-contracts at API implementation commit `2cf44217655e8f4659ff9bbfa869d6499f4926ce` on
-`t3code/project-billing-dashboard`. This branch is unmerged. The five new
-operations are `Client.billing.getLimits`, `setLimit`, `getPriorities`,
-`setPriority` and `reorderPriorities`. Existing operation fingerprints are
-unchanged. Reads require organization credentials with `billing:read`; writes
-require `billing:manage`, live team authority and Pay-As-You-Go. Existing
-credential masks do not gain these permissions. Paid service continues through
-its paid window when a limit is reached. The older Graph and test-event
-supplements retain their independent source pins; these operations do not
-change those contracts. API deployment, SDK publication and CLI publication are
-separate release gates.
+contracts at API implementation commit `ec5f287953fe983ffa43e98dacbff4672c98c8ce` on
+`t3code/project-billing-dashboard`. This branch is unmerged. Seven financial
+operations cover limits, priorities, complete ordering and one-resource combined
+read/save. Project, customer and number scopes use the confirmed funding hierarchy.
+Initial real QuickLink creation accepts optional billing controls before admission.
+Six existing operation fingerprints changed for those fields and read filters;
+three new Console-only setup operations are explicitly excluded from SDK authority.
+Reads require organization credentials with `billing:read`; writes require
+`billing:manage`, live team authority and Pay-As-You-Go. Existing credential masks
+do not gain these permissions. Paid service continues through its window when a
+limit is reached. The older Graph and test-event supplements keep their independent
+pins; these financial operations do not change them. API deployment, SDK and CLI
+publication remain separate gates.
 
 The preceding snapshots were described as follows.
 

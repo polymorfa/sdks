@@ -2893,3 +2893,25 @@ return a conflict. Limits reset monthly at 00:00 UTC on the first day. Null
 removes a cap; zero blocks new charges. Paid windows remain intact. These
 methods do not grant permissions, paid access or deployed availability.
 Publication of this source revision is separate from API deployment.
+
+
+For one customer or number, read and save both controls without loading the
+organization directory:
+
+```typescript
+const {data: {data: current}} = await platform.billing.getResourceControls("customer", customerId);
+await platform.billing.setResourceControls("customer", customerId, {
+  limitCredits: 1500, priority: 25,
+  expectedBudgetRevision: current.budget.revision,
+  expectedPriorityRevision: current.priorityRevision,
+});
+```
+
+Both revisions are required; a conflict leaves both settings unchanged. Funding
+uses project, customer, then number priority. A customer's assigned numbers
+share its monthly cap. `getLimits({scope:"project"})` and
+`getPriorities({scope:"project"})` avoid downloading number/customer directories.
+Real initial QuickLink creation accepts `billingControls:{limitCredits:250,
+priority:30}` before pairing admission, with team `billing:manage` authority.
+Testing and supplementary connections reject these fields. Package publication
+and API deployment remain separate gates.

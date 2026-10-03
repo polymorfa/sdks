@@ -1242,4 +1242,12 @@ export {
   type FlowProviderResult,
 } from "./platform/flows.js";
 
-export type { BillingScope, BillingLimit, BillingLimits, BillingPriority, BillingPriorities, ReorderBillingPrioritiesInput } from "./platform/billing-controls.js";
+export type {
+  ResourceBillingControls,
+  BillingScope,
+  BillingLimit,
+  BillingLimits,
+  BillingPriority,
+  BillingPriorities,
+  ReorderBillingPrioritiesInput,
+} from "./platform/billing-controls.js";

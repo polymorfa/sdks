@@ -6,6 +6,7 @@ import {
   billingPriority,
   billingLimit,
   type BillingScope,
+  type ResourceBillingControls,
   type BillingLimits,
   type BillingPriorities,
   type ReorderBillingPrioritiesInput,
@@ -47,18 +48,57 @@ export class BillingResource {
     return this.get("/pricing", options);
   }
 
+  getResourceControls(
+    scope: BillingScope,
+    resourceId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<ResourceBillingControls>>> {
+    billingScope(scope);
+    return this.transport.request({
+      method: "GET",
+      path: `/platform/billing/controls/${scope}/${billingId(resourceId)}`,
+      ...options,
+    });
+  }
+  setResourceControls(
+    scope: BillingScope,
+    resourceId: string,
+    input: {
+      readonly limitCredits: number | null;
+      readonly priority: number;
+      readonly expectedBudgetRevision: number;
+      readonly expectedPriorityRevision: number;
+    },
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<ResourceBillingControls>>> {
+    billingScope(scope);
+    billingLimit(input.limitCredits);
+    billingPriority(input.priority);
+    billingRevision(input.expectedBudgetRevision);
+    billingRevision(input.expectedPriorityRevision);
+    return this.transport.request({
+      method: "PUT",
+      path: `/platform/billing/controls/${scope}/${billingId(resourceId)}`,
+      body: input,
+      ...options,
+    });
+  }
   /** Monthly credit limits. Organization credentials with billing:read only. */
   getLimits(
-    params: { readonly projectId?: string } = {},
+    params: { readonly projectId?: string; readonly scope?: "project" } = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<BillingLimits>>> {
+    if (params.scope !== undefined && params.scope !== "project")
+      throw new PolymorfaValidationError("Read scope must be project.");
     return this.transport.request({
       method: "GET",
       path: "/platform/billing/limits",
-      query:
-        params.projectId === undefined
+      query: {
+        ...(params.projectId === undefined
           ? {}
-          : { projectId: billingId(params.projectId) },
+          : { projectId: billingId(params.projectId) }),
+        ...(params.scope === undefined ? {} : { scope: params.scope }),
+      },
       ...options,
     });
   }
@@ -85,11 +125,15 @@ export class BillingResource {
     });
   }
   getPriorities(
+    params: { readonly scope?: "project" } = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<BillingPriorities>>> {
+    if (params.scope !== undefined && params.scope !== "project")
+      throw new PolymorfaValidationError("Read scope must be project.");
     return this.transport.request({
       method: "GET",
       path: "/platform/billing/priorities",
+      query: params.scope === undefined ? {} : { scope: params.scope },
       ...options,
     });
   }
@@ -125,7 +169,7 @@ export class BillingResource {
         { code: "invalid_billing_control" },
       );
     const body =
-      input.scope === "number"
+      input.scope !== "project"
         ? {
             scope: input.scope,
             projectId: billingId(input.projectId),
