@@ -16,7 +16,6 @@ it("serializes limits and single/reordered project and number priorities using r
   server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      success: true,
       data: { revision: 1, projects: [], numbers: [] },
     }),
   }));
