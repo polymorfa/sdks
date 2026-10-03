@@ -37847,6 +37847,16 @@
             }
           },
           {
+            "name": "numberId",
+            "in": "query",
+            "required": false,
+            "description": "Immutable production number UUID. Requires projectId; missing, deleted, testing or mismatched numbers return 404. Filters only immutable attributed records; request logs and serverless receipts have no number attribution.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
             "name": "start",
             "in": "query",
             "required": false,
@@ -39839,6 +39849,19 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "scope": {
+            "$ref": "#/components/schemas/ConsoleUsageScope"
+          },
+          "monthlyCalls": {
+            "type": "object",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsoleMonthlyOutgoingCalls"
+              }
+            ],
+            "description": "Known-tier selected-number included outgoing allowance and completed-call usage for the current UTC month. Null for team/project reads or an unknown number tier. Independent of the requested chart period and of staff gate overrides; never a hard admission cap or charged-credit quote."
+          },
           "period": {
             "type": "object",
             "additionalProperties": false,
@@ -39869,7 +39892,9 @@
             "properties": {
               "failedRequests": {
                 "type": "integer",
-                "minimum": 0
+                "minimum": 0,
+                "nullable": true,
+                "description": "Null for a number read: audit logs have no immutable number attribution."
               },
               "sessionDayCredits": {
                 "type": "number"
@@ -39898,18 +39923,93 @@
           },
           "byProject": {
             "type": "array",
-            "description": "Included for a team-wide read; omitted for a selected project. Active projects only. Team-level activity without a project is included in totals but has no project row.",
+            "description": "Included for a team-wide read; omitted for a selected project or number. Active projects only. Team-level activity without a project is included in totals but has no project row.",
             "items": {
               "$ref": "#/components/schemas/ConsoleProjectUsage"
             }
           }
         },
         "required": [
+          "scope",
+          "monthlyCalls",
           "period",
           "metrics",
           "totals",
           "daily",
           "consumption"
+        ]
+      },
+      "ConsoleUsageScope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "team",
+              "project",
+              "number"
+            ]
+          },
+          "orgId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "numberId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "numberName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Selected number display name or session name; null without a selected number."
+          }
+        },
+        "required": [
+          "kind",
+          "orgId",
+          "projectId",
+          "numberId",
+          "numberName"
+        ]
+      },
+      "ConsoleMonthlyOutgoingCalls": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "periodStart": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Inclusive first day of the current UTC calendar month in Unix milliseconds."
+          },
+          "periodEnd": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Exclusive first day of the next UTC calendar month in Unix milliseconds."
+          },
+          "used": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Completed outbound call.duration records for the exact number and project, including zero-duration calls. In-flight placements are not included."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0,
+            "nullable": true,
+            "description": "Included number-tier monthly outgoing calls, using the runtime gate tier lookup. Null means a known unlimited tier. Separate staff gate overrides are not the included allowance."
+          }
+        },
+        "required": [
+          "periodStart",
+          "periodEnd",
+          "used",
+          "limit"
         ]
       },
       "ConsoleConsumption": {
@@ -40135,16 +40235,20 @@
           },
           "apiRequests": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "nullable": true,
+            "description": "Null for number scope: request logs have no immutable number attribution."
           },
           "failedRequests": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "nullable": true
           },
           "peakRequestRate": {
             "type": "integer",
             "minimum": 0,
-            "description": "Maximum API and MCP request count in one UTC minute on this date within the requested range."
+            "nullable": true,
+            "description": "Null for number scope. Maximum API and MCP request count in one UTC minute on this date within the requested range."
           },
           "activeDays": {
             "type": "integer",

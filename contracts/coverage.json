@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "9aa751ef923990c4b9ff6df56f64e35c7ae78027",
+  "sourceCommit": "49b529fd74f42fdd6bb30671ebd4b0ec8e9558f3",
   "excludedContracts": [
     {
       "family": "graph",
@@ -2978,7 +2978,7 @@
       "method": "GET",
       "path": "/console/insights/usage",
       "operationId": "usageInsight",
-      "fingerprint": "d1dd7bae8660c815bb26de3a824cf2941ab487bd8c5cd2dc5cb09813ea756c38",
+      "fingerprint": "9fd2eed8de7659be96a0f2c90dccfe057f8bf79d25592f03f75ed8cab5e0b14b",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."

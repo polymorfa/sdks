@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "9aa751ef923990c4b9ff6df56f64e35c7ae78027",
+  "commit": "49b529fd74f42fdd6bb30671ebd4b0ec8e9558f3",
   "branch": "t3code/project-billing-dashboard",
   "published": false,
-  "note": "Project, customer and number funding controls retain their existing public contract. Private Console usage insights distinguish catalog pricing from measured quantities and actual charged credits; completed outbound call counts and admitted project invocation receipts are observed, while complete WhatsApp media/HMS GB-month usage is unavailable. The production-number total no longer uses legacy session_limit as a cap. Console insights remain excluded from server SDK authority. Snapshots are byte-identical to this source commit. This implementation branch is unmerged; API deployment and package publication remain separate gates.",
+  "note": "Project, customer and number funding controls retain their existing public contract. Private Console usage insights accept an immutable number UUID bound to its selected project, return exact scope metadata, and report current-UTC-month completed outgoing calls against the number-tier included allowance independently of the chart period. Request logs and serverless receipts have no number attribution; their number measurements are unavailable. WhatsApp media/HMS GB-month measurement remains unavailable. No allowance pooling, new billing policy or settlement is added. Console insights remain excluded from server SDK authority. Snapshots are byte-identical to this source commit. This implementation branch is unmerged; API deployment and package publication remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "4d0b041063833c498b9e47252e8612c15666518212891965042e90d5008ee088"
+      "sha256": "5f3e8a47070faa2584260a9c1f58fb1088f8e7e0c5a7e279d03435c6225f7630"
     }
   }
 }
