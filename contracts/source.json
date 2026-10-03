@@ -3,7 +3,7 @@
   "commit": "ee885ec4bf62af36b9b85df4310c505f38a224db",
   "branch": "dev",
   "published": true,
-  "note": "API number capabilities PR #402, reconciled with Hybrid Link tier transitions and hosted Flow operations. Both snapshots are byte-identical to this source commit. SDK publication, CLI registry pinning and deployed beta access remain separate gates.",
+  "note": "The Messaging snapshot and Platform baseline pin API number capabilities PR #402, reconciled with Hybrid Link tier transitions and hosted Flow operations. The composite Platform snapshot adds only the explicitly pinned Analytics supplement below; removing its paths and schemas reconstructs the byte-identical baseline. SDK publication, CLI registry pinning and deployed access remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,23 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "d831f87eb4027c5f43ec4454bdd23e6972a4beb715fa080947545b7bff28d6b7"
+      "sha256": "3a661d6713099309f6c8525a102b1c0a0855edad30c016920cab215d1de66516",
+      "baselineSha256": "d831f87eb4027c5f43ec4454bdd23e6972a4beb715fa080947545b7bff28d6b7"
+    }
+  },
+  "supplements": {
+    "analytics": {
+      "commit": "19cc9cd42f45e085b7757aebaf6a44e4f66115c7",
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "sourceSha256": "5a4e00d5f3fbe535d0a94152c975b8cb32948fad431d513de7a0a4db5aa3cadd",
+      "published": false,
+      "paths": [
+        "/platform/analytics",
+        "/platform/projects/{projectId}/analytics",
+        "/platform/analytics/metrics",
+        "/platform/projects/{projectId}/analytics/metrics"
+      ],
+      "schemas": ["WhatsAppAnalytics"]
     }
   }
 }

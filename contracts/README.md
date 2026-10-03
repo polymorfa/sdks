@@ -41,7 +41,7 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
-The current snapshots are byte-identical copies of API number capabilities
+The baseline snapshots are byte-identical copies of API number capabilities
 PR #402 at merged `dev` commit
 `ee885ec4bf62af36b9b85df4310c505f38a224db`. It adds `Client.sessions.getCapabilities` and the
 capability response types. The API requires `sessions:read`, beta access and
@@ -245,7 +245,7 @@ exported `ContactOptPayload`. The unproduced `bansafe.health_changed`,
 `bansafe.risk_changed`, and `bansafe.enforcement` names are retired. Historical
 signed events with these names still decode as unknown events.
 
-The base contract snapshot below excludes the two WhatsApp business analytics
+The base contract snapshot below excludes the four WhatsApp business analytics
 reads described at the end of this document.
 
 | Status              | Operations |
@@ -448,3 +448,9 @@ a JSON envelope, using the same scoped reader and Analytics enablement.
 With all four Analytics reads included, the strict ledger has 562 operations:
 426 covered and 136 explicitly excluded, with no missing, partial or changed
 fingerprints. This count does not establish package publication or customer access.
+
+`source.json` records the composite Platform hash and the separate Analytics
+source revision. The reconciliation test removes only those four paths and the
+`WhatsAppAnalytics` schema, then verifies the reconstructed baseline against its
+original byte hash. The Messaging snapshot and all existing Platform definitions
+remain unchanged.
