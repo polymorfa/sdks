@@ -12,6 +12,7 @@ it("reads enabled or disabled analytics and confines a project token without wid
     summary: null,
     numbers: [],
     series: [],
+    callSeries: [],
   };
   const server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
@@ -47,4 +48,39 @@ it("reads enabled or disabled analytics and confines a project token without wid
   await expect(
     root.analytics.get({ sessionId: "name" }),
   ).rejects.toBeInstanceOf(PolymorfaValidationError);
+});
+
+it("preserves nullable call quality, follow-up coverage and per-number call series", async () => {
+  const calls = {
+    total: 3,
+    answerRate: 0.5,
+    mediaQuality: { measuredCalls: 0, averageRttMs: null },
+    followUp: {
+      eligibleMissed: 1,
+      returnedWithin24h: 0,
+      rate: 0,
+      pendingWindow: 1,
+      unknownContact: 1,
+    },
+  };
+  const body = {
+    enabled: true,
+    summary: { calls },
+    numbers: [{ sessionId: "number", calls }],
+    series: [],
+    callSeries: [{ sessionId: "number", ts: 1, answered: 1, missed: 1 }],
+  };
+  const server = await startTestServer(() => ({
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ data: body }),
+  }));
+  servers.push(server);
+  const client = new Client({
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    baseUrl: server.url,
+  });
+  const result = (await client.analytics.get()).data;
+  expect(result.summary?.calls.followUp).toEqual(calls.followUp);
+  expect(result.numbers[0]?.calls.mediaQuality.averageRttMs).toBeNull();
+  expect(result.callSeries).toEqual(body.callSeries);
 });

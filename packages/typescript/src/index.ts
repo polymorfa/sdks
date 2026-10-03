@@ -1235,6 +1235,8 @@ export {
 
 export { AnalyticsResource } from "./platform/analytics.js";
 export type {
+  CallOutcomeMetrics,
+  CallBusinessMetrics,
   AnalyticsParams,
   WhatsAppBusinessSegment,
   WhatsAppAnalytics,

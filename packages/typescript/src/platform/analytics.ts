@@ -7,6 +7,53 @@ import type {
   RequestOptions,
 } from "../transport/types.js";
 import { type DataEnvelope, unwrapResponse } from "./response.js";
+export interface CallOutcomeMetrics {
+  total: number;
+  answered: number;
+  missed: number;
+  declined: number;
+  failed: number;
+  ringing: number;
+  answerRate: number | null;
+  talkSeconds: number;
+  timedAnswered: number;
+  timedPickup: number;
+  averageTalkSeconds: number | null;
+  medianTalkSeconds: number | null;
+  p95TalkSeconds: number | null;
+  averagePickupMs: number | null;
+  p95PickupMs: number | null;
+  shortAnswered: number;
+  video: number;
+}
+export interface CallBusinessMetrics extends CallOutcomeMetrics {
+  directions: { inbound: CallOutcomeMetrics; outbound: CallOutcomeMetrics };
+  mediaQuality: {
+    measuredCalls: number;
+    averageJitterMs: number | null;
+    averageRttMs: number | null;
+    packetsLost: number | null;
+  };
+  appQuality: {
+    measuredCalls: number;
+    averageJitterMs: number | null;
+    averageRttMs: number | null;
+    packetLossRate: number | null;
+    reconnects: number | null;
+  };
+  endReasons: { code: string; count: number }[];
+  appErrors: { code: string; count: number }[];
+  transports: { code: string; count: number }[];
+  multiParticipantCalls: number;
+  followUp: {
+    eligibleMissed: number;
+    returnedWithin24h: number;
+    rate: number | null;
+    averageDelayMs: number | null;
+    pendingWindow: number;
+    unknownContact: number;
+  };
+}
 export interface WhatsAppBusinessSegment {
   dimension:
     | "message_type"
@@ -50,6 +97,7 @@ export interface WhatsAppEngagement {
   droppedReceiptJoins: number;
 }
 export interface WhatsAppMetrics {
+  calls: CallBusinessMetrics;
   measured: boolean;
   observedHours: number;
   lastObservedAt: number | null;
@@ -93,6 +141,7 @@ export interface WhatsAppMetrics {
   } | null;
 }
 export interface WhatsAppAnalytics {
+  callSeries: (CallOutcomeMetrics & { sessionId: string; ts: number })[];
   enabled: boolean;
   period: { start: number; end: number };
   requestVitals: {
@@ -144,7 +193,7 @@ export interface AnalyticsParams {
   readonly start?: number;
   readonly end?: number;
 }
-/** Number aggregates from Linked Devices telemetry. Requires sessions:read.
+/** Message aggregates from Linked Devices telemetry and retained call outcomes. Requires sessions:read.
  * Owners/admins enable Analytics in the Console. Disabled results contain no
  * business data. Read/reply percentages are completed 24-hour direct-chat
  * cohorts; null means there is no denominator or coverage is incomplete. */
