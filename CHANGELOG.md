@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added source-build `Client.analytics.metrics` for scoped Prometheus/OpenMetrics gauges, including denominators, observation times and coverage. Uses Analytics opt-in and `sessions:read`.
+
 - `Client.analytics.get` reads WhatsApp number activity, completed 24-hour read and reply cohorts, response times and connection vitals. Requires `sessions:read` and Analytics enabled by a team owner or admin. Missing coverage returns null rates.
 
 - Hybrid Link tier transitions. `Client.sessions.quoteTierChange` accepts

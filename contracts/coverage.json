@@ -6170,11 +6170,11 @@
         "status": "covered",
         "method": "Client.analytics.get"
       },
-      "sourceContractSha256": "421be44c1356cf7f4f5c322bef8364246ee463f0aa1ff4171e1e41a09c40dd00",
+      "sourceContractSha256": "5a4e00d5f3fbe535d0a94152c975b8cb32948fad431d513de7a0a4db5aa3cadd",
       "sourceBaseCommit": "1fa7c8fafa03d5915f51e4b36e135b3a3234c657",
       "sourceState": "committed",
-      "sourceCommit": "d60780445908a09d02a1f80da9b85e685c58f438",
-      "sdkContractSha256": "6e8f3e3721fb143cf11cc108f7d98752efd0c698848e830108aa895b1d7e7de1"
+      "sourceCommit": "19cc9cd42f45e085b7757aebaf6a44e4f66115c7",
+      "sdkContractSha256": "3a661d6713099309f6c8525a102b1c0a0855edad30c016920cab215d1de66516"
     },
     {
       "family": "platform",
@@ -6186,11 +6186,43 @@
         "status": "covered",
         "method": "Client.analytics.get"
       },
-      "sourceContractSha256": "421be44c1356cf7f4f5c322bef8364246ee463f0aa1ff4171e1e41a09c40dd00",
+      "sourceContractSha256": "5a4e00d5f3fbe535d0a94152c975b8cb32948fad431d513de7a0a4db5aa3cadd",
       "sourceBaseCommit": "1fa7c8fafa03d5915f51e4b36e135b3a3234c657",
       "sourceState": "committed",
-      "sourceCommit": "d60780445908a09d02a1f80da9b85e685c58f438",
-      "sdkContractSha256": "6e8f3e3721fb143cf11cc108f7d98752efd0c698848e830108aa895b1d7e7de1"
+      "sourceCommit": "19cc9cd42f45e085b7757aebaf6a44e4f66115c7",
+      "sdkContractSha256": "3a661d6713099309f6c8525a102b1c0a0855edad30c016920cab215d1de66516"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/analytics/metrics",
+      "operationId": "exportWhatsAppAnalyticsMetrics",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.analytics.metrics"
+      },
+      "fingerprint": "520ce37bc6a198e313d9495ddd968ebb54cbbe5cc84f4d6bea636c43a4ea62c5",
+      "sourceContractSha256": "5a4e00d5f3fbe535d0a94152c975b8cb32948fad431d513de7a0a4db5aa3cadd",
+      "sdkContractSha256": "3a661d6713099309f6c8525a102b1c0a0855edad30c016920cab215d1de66516",
+      "sourceBaseCommit": "1fa7c8fafa03d5915f51e4b36e135b3a3234c657",
+      "sourceState": "committed",
+      "sourceCommit": "19cc9cd42f45e085b7757aebaf6a44e4f66115c7"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/analytics/metrics",
+      "operationId": "exportProjectWhatsAppAnalyticsMetrics",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.analytics.metrics"
+      },
+      "fingerprint": "56e2540bc5d78c3f458fbd363d63b101df49fcd273b7cc81e1fa9318d69b30b6",
+      "sourceContractSha256": "5a4e00d5f3fbe535d0a94152c975b8cb32948fad431d513de7a0a4db5aa3cadd",
+      "sdkContractSha256": "3a661d6713099309f6c8525a102b1c0a0855edad30c016920cab215d1de66516",
+      "sourceBaseCommit": "1fa7c8fafa03d5915f51e4b36e135b3a3234c657",
+      "sourceState": "committed",
+      "sourceCommit": "19cc9cd42f45e085b7757aebaf6a44e4f66115c7"
     }
   ]
 }

@@ -948,3 +948,11 @@ Disabled results contain no business data. Missing coverage has null rates;
 read receipts do not prove an app open. `measured` distinguishes observed zero
 activity from a number without telemetry. No contact identities or message
 content are returned. See the [Analytics guide](https://docs.polymorfa.com/console/analytics).
+
+### Collector metrics
+
+Source builds expose `client.analytics.metrics({windowHours: 24, format: "openmetrics", segments: true})`.
+It returns Prometheus/OpenMetrics text with HTTP metadata, on root and project clients.
+Counts are overlapping-window gauges, with denominators, measurement coverage and observation times.
+Requires `sessions:read` and the same Analytics opt-in. Disabled exports contain only
+enablement and window metadata. [Collector configuration](https://docs.polymorfa.com/console/analytics-collectors).

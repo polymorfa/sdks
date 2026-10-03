@@ -1,5 +1,5 @@
-// Platform analytics contract: polymorfa/polymorfa@d60780445908a09d02a1f80da9b85e685c58f438
-import { PolymorfaValidationError } from "../errors.js";
+// Platform analytics contract: polymorfa/polymorfa@19cc9cd42f45e085b7757aebaf6a44e4f66115c7
+import { PolymorfaValidationError, PolymorfaServerError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import type {
   ApiResponse,
@@ -193,6 +193,15 @@ export interface AnalyticsParams {
   readonly start?: number;
   readonly end?: number;
 }
+export interface AnalyticsMetricsParams {
+  readonly projectId?: string;
+  readonly sessionId?: string;
+  /** Completed UTC hours, 1-168. Default 24. */
+  readonly windowHours?: number;
+  /** Include bounded metadata breakdowns. Default false. */
+  readonly segments?: boolean;
+  readonly format?: "prometheus" | "openmetrics";
+}
 /** Message aggregates from Linked Devices telemetry and retained call outcomes. Requires sessions:read.
  * Owners/admins enable Analytics in the Console. Disabled results contain no
  * business data. Read/reply percentages are completed 24-hour direct-chat
@@ -202,6 +211,86 @@ export class AnalyticsResource {
     private readonly transport: HttpTransport,
     private readonly projectId: string | null,
   ) {}
+  /** Collector-compatible windowed gauges. Never apply rate() or increase().
+   * Disabled Analytics returns enablement and window metadata only. */
+  async metrics(
+    params: AnalyticsMetricsParams = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<string>> {
+    for (const key of ["projectId", "sessionId"] as const) {
+      if (
+        params[key] !== undefined &&
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          params[key],
+        )
+      )
+        throw new PolymorfaValidationError(`${key} must be a UUID.`, {
+          code: "invalid_analytics_filter",
+        });
+    }
+    if (
+      this.projectId !== null &&
+      params.projectId !== undefined &&
+      params.projectId.toLowerCase() !== this.projectId.toLowerCase()
+    )
+      throw new PolymorfaValidationError(
+        "Analytics cannot read outside the client's project.",
+        { code: "invalid_analytics_filter" },
+      );
+    if (
+      params.windowHours !== undefined &&
+      (!Number.isInteger(params.windowHours) ||
+        params.windowHours < 1 ||
+        params.windowHours > 168)
+    )
+      throw new PolymorfaValidationError(
+        "windowHours must be an integer from 1 to 168.",
+        { code: "invalid_analytics_range" },
+      );
+    if (params.segments !== undefined && typeof params.segments !== "boolean")
+      throw new PolymorfaValidationError("segments must be a boolean.", {
+        code: "invalid_analytics_filter",
+      });
+    const format = params.format ?? "prometheus";
+    if (format !== "prometheus" && format !== "openmetrics")
+      throw new PolymorfaValidationError(
+        "format must be prometheus or openmetrics.",
+        { code: "invalid_analytics_filter" },
+      );
+    const query: Record<string, QueryValue> = { ...params, format };
+    if (this.projectId !== null) delete query.projectId;
+    const response = await this.transport.requestText(
+      {
+        ...options,
+        method: "GET",
+        path:
+          this.projectId === null
+            ? "/platform/analytics/metrics"
+            : `/platform/projects/${encodeURIComponent(this.projectId)}/analytics/metrics`,
+        query,
+      },
+      format === "openmetrics" ? "application/openmetrics-text" : "text/plain",
+    );
+    const expected =
+      format === "openmetrics" ? "application/openmetrics-text" : "text/plain";
+    if (
+      !/^# TYPE polymorfa_analytics_enabled gauge$/m.test(response.data) ||
+      response.metadata.headers["content-type"]
+        ?.split(";", 1)[0]
+        ?.trim()
+        .toLowerCase() !== expected ||
+      (format === "openmetrics" && !response.data.endsWith("# EOF\n"))
+    )
+      throw new PolymorfaServerError(
+        "The API returned an invalid analytics metrics response.",
+        {
+          code: "invalid_response",
+          status: response.metadata.status,
+          metadata: response.metadata,
+        },
+      );
+    return response;
+  }
   async get(
     params: AnalyticsParams = {},
     options: RequestOptions = {},

@@ -1247,6 +1247,7 @@ export type {
   CallOutcomeMetrics,
   CallBusinessMetrics,
   AnalyticsParams,
+  AnalyticsMetricsParams,
   WhatsAppBusinessSegment,
   WhatsAppAnalytics,
   WhatsAppMetrics,

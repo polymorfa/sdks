@@ -2890,3 +2890,21 @@ missing reports do not imply healthy quality. Disabling Analytics clears message
 and engagement aggregates and hides the call view; operational call history is
 retained separately. [Measurement definitions](https://docs.polymorfa.com/console/analytics).
 These source-build methods have not been published in a package release.
+
+## Analytics metrics export
+
+Source builds expose `client.analytics.metrics` on root and project clients:
+
+```ts
+const { data, metadata } = await client.analytics.metrics({
+  windowHours: 24,
+  format: "openmetrics",
+  segments: true,
+});
+```
+
+`data` is the metrics text; `metadata` retains HTTP status, request ID and headers.
+The method validates UUID filters and the 1–168-hour window. It uses `sessions:read`
+and the same Analytics opt-in. All metrics are gauges over completed UTC hours;
+never apply `rate()` or `increase()`. Disabled exports contain enablement and window
+metadata only. [Collector setup and definitions](https://docs.polymorfa.com/console/analytics-collectors).
