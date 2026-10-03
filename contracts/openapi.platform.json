@@ -39888,6 +39888,14 @@
               "$ref": "#/components/schemas/ConsoleDailyUsage"
             }
           },
+          "consumption": {
+            "type": "array",
+            "maxItems": 16,
+            "description": "Credit-ledger number windows and registered usage meters. Credits come only from the charged number-window ledger; observed call and voice quantities do not imply a charge. HMS has no aggregate usage source and returns unavailable values.",
+            "items": {
+              "$ref": "#/components/schemas/ConsoleConsumption"
+            }
+          },
           "byProject": {
             "type": "array",
             "description": "Included for a team-wide read; omitted for a selected project. Active projects only. Team-level activity without a project is included in totals but has no project row.",
@@ -39900,7 +39908,136 @@
           "period",
           "metrics",
           "totals",
+          "daily",
+          "consumption"
+        ]
+      },
+      "ConsoleConsumption": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "number.free",
+              "number.standard",
+              "number.pro",
+              "number.other",
+              "call.duration",
+              "call.cloud_pulses",
+              "campaign.call",
+              "tts.characters",
+              "tts.seconds",
+              "stt.seconds",
+              "agent.seconds",
+              "agent.tokens",
+              "agent.provider_cost",
+              "channels.peak",
+              "storage.byte_days",
+              "hms.storage"
+            ]
+          },
+          "group": {
+            "type": "string",
+            "enum": [
+              "numbers",
+              "calls",
+              "voice",
+              "agents",
+              "storage",
+              "hms"
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "day",
+              "second",
+              "pulse",
+              "call",
+              "character",
+              "token",
+              "provider_unit",
+              "channel",
+              "byte_day"
+            ]
+          },
+          "aggregation": {
+            "type": "string",
+            "enum": [
+              "sum",
+              "max"
+            ],
+            "description": "channels.peak uses the maximum observed quantity; additive quantities use the sum."
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0,
+            "nullable": true
+          },
+          "credits": {
+            "type": "number",
+            "nullable": true,
+            "description": "Actual credit-ledger debit. Null for observed meters that have no credit settlement; never calculated from a catalog or rate card."
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "measured",
+              "unavailable"
+            ]
+          },
+          "chargeState": {
+            "type": "string",
+            "enum": [
+              "charged",
+              "unpriced",
+              "unavailable"
+            ]
+          },
+          "daily": {
+            "type": "array",
+            "maxItems": 367,
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ConsoleConsumptionDay"
+            },
+            "description": "Observed UTC dates in ascending order within the inclusive range. Null when history is unavailable; an empty array is a measured empty range."
+          }
+        },
+        "required": [
+          "key",
+          "group",
+          "unit",
+          "aggregation",
+          "quantity",
+          "credits",
+          "availability",
+          "chargeState",
           "daily"
+        ]
+      },
+      "ConsoleConsumptionDay": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0
+          },
+          "credits": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "date",
+          "quantity",
+          "credits"
         ]
       },
       "ConsoleUsageMetric": {
@@ -40001,7 +40138,7 @@
             "enum": [
               1
             ],
-            "description": "This date has at least one observed audit or credit-ledger row, including activity that is not an API request or session charge."
+            "description": "This date has at least one observed audit, credit-ledger or usage-meter row, including activity that is not an API request or session charge."
           }
         },
         "required": [

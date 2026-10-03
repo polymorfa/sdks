@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "ba09326dd3c6688f05320c1f7685aeb0290a0ed2",
+  "commit": "61d0a0e6e2c7b0eca1971657afc80926b4d4142b",
   "branch": "t3code/project-billing-dashboard",
   "published": false,
-  "note": "Project, customer and number funding controls with mixed resource ranking and project-filtered priority reads. Private Console usage insights include bounded UTC daily aggregates and remain excluded from server SDK authority. Snapshots are byte-identical to this source commit. This implementation branch is unmerged; API deployment and package publication remain separate gates.",
+  "note": "Project, customer and number funding controls retain their existing public contract. Private Console usage insights add aggregate consumption for number windows, registered call and voice meters, and unavailable HMS history; they remain excluded from server SDK authority. Snapshots are byte-identical to this source commit. This implementation branch is unmerged; API deployment and package publication remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "972fe78f67ea7cb07a891f7510d40a2e8a12a2716dc2a368e0886dcdc32a229a"
+      "sha256": "ce4bc5eb8e0115c7873d28ee26da9167c777b5874419c60945224f118fdcba46"
     }
   }
 }

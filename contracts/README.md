@@ -42,19 +42,22 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The current snapshots are byte-identical copies of Messaging and Platform
-contracts at API implementation commit `ba09326dd3c6688f05320c1f7685aeb0290a0ed2` on
+contracts at API implementation commit `61d0a0e6e2c7b0eca1971657afc80926b4d4142b` on
 `t3code/project-billing-dashboard`. This branch is unmerged. Seven financial
 operations cover limits, priorities, complete ordering and one-resource combined
 read/save. Project priority takes precedence. Numbers inherit customer priority;
 a higher number priority overrides it within the project. Customer limits still
 include all assigned numbers.
 Initial real QuickLink creation accepts optional billing controls before admission.
-This repin changes three operation fingerprints: project-filtered priority reads,
-mixed customer/number ordering, and private Console usage insights. The two
-financial operations are covered by typed SDK methods. Usage insights remain
-excluded because they require dashboard identity; no server SDK method grants
-access to that Console route. The three Console-only setup operations also
-remain excluded from SDK authority.
+This repin changes only the excluded private Console `usageInsight` fingerprint.
+Its aggregate breakdown includes number-window tiers, registered call and voice
+meters, and explicitly unavailable HMS history. Metered quantities do not imply
+credit charges. The preceding source, `ba09326dd3c6688f05320c1f7685aeb0290a0ed2`,
+added project-filtered priority reads and mixed customer/number ordering; those
+public operations retain their typed SDK methods and unchanged fingerprints.
+Usage insights require dashboard identity; no server SDK method grants access
+to that Console route. The three Console-only setup operations also remain
+excluded from SDK authority.
 Reads require organization credentials with `billing:read`; writes require
 `billing:manage`, live team authority and Pay-As-You-Go. Existing credential masks
 do not gain these permissions. Paid service continues through its window when a
