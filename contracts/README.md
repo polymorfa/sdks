@@ -42,8 +42,8 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The current snapshots are byte-identical copies of API number capabilities
-PR #402, reconciled with API `dev`. Repin to its merged `dev` commit before
-merging this SDK change. It adds `Client.sessions.getCapabilities` and the
+PR #402 at merged `dev` commit
+`ee885ec4bf62af36b9b85df4310c505f38a224db`. It adds `Client.sessions.getCapabilities` and the
 capability response types. The API requires `sessions:read`, beta access and
 live Number authority. Before configuration is synced, values are unknown.
 

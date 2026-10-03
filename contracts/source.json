@@ -1,8 +1,8 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "de7d7e03350b3847b261efb6ea32a9f524b7e0a7",
-  "branch": "t3code/abprops-number-capabilities",
-  "published": false,
+  "commit": "ee885ec4bf62af36b9b85df4310c505f38a224db",
+  "branch": "dev",
+  "published": true,
   "note": "API number capabilities PR #402, reconciled with Hybrid Link tier transitions and hosted Flow operations. Both snapshots are byte-identical to this source commit. SDK publication, CLI registry pinning and deployed beta access remain separate gates.",
   "contracts": {
     "messaging": {
