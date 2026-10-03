@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (228 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (101 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (235 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (101 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -16283,7 +16283,7 @@
           "sessions"
         ],
         "summary": "Preview a number tier change",
-        "description": "Returns the full credit charge and effective time before confirmation. Null tierOverride restores project inheritance. Creating a quote does not change the number or consume credit. Quotes expire after ten minutes and are invalidated when the number or price changes.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Returns the full credit charge and effective time before confirmation. Null tierOverride restores project inheritance. Creating a quote does not change the number or consume credit. Quotes expire after ten minutes and are invalidated when the number or price changes.\n\n**Hybrid Link.** A Hybrid Link Number leaving Pro requires `hybridResolution`: keep one connection, or split the Number into two Standard Numbers; without it the quote returns `409` with code `hybrid_choice_required`. The choice runs when the paid Pro window ends. An upgrade to Pro can merge two same-number Numbers with `hybridMerge`; the Number in the path keeps its ID. An ineligible change returns `409` with code `hybrid_transition_ineligible`.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -16376,7 +16376,7 @@
           "sessions"
         ],
         "summary": "Read a number tier change",
-        "description": "Reads the quote and durable result for a number in the authenticated project scope.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "description": "Reads the quote and durable result for a number in the authenticated project scope.\n\n**Hybrid Link.** For a Hybrid Link change, `quote.hybridTransition.status` reports the connection change separately from the tier change: `scheduled`, `running`, `completed`, `failed` or `cancelled`.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -22791,7 +22791,7 @@
           "flows"
         ],
         "summary": "Upload a Flow to a Number",
-        "description": "Sends the saved Flow draft to the WhatsApp Business Account of one Number. The first upload to a Number, or the first upload after the Number's Flow was deprecated, creates a WhatsApp Flow and needs `categories`; later uploads replace the JSON of that Flow while it is still a WhatsApp draft. The response lists the validation errors WhatsApp reported, and `uploadState` is `valid` only when there are none. The Number needs an active WhatsApp Business Platform connection and the Cloud onboarding beta; test Numbers use the simulation. Flows with a data endpoint are refused. A supplied `requestId` makes retries return the original operation instead of sending again.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Sends the saved Flow draft to the WhatsApp Business Account of one Number. The first upload to a Number, or the first upload after the Number's Flow was deprecated, creates a WhatsApp Flow and needs `categories`; later uploads replace the JSON of that Flow while it is still a WhatsApp draft. The response lists the validation errors WhatsApp reported, and `uploadState` is `valid` only when there are none. The Number needs an active WhatsApp Business Platform connection and the Cloud onboarding beta; test Numbers use the simulation. A Flow with `data_api_version` needs an enabled data endpoint for the Number (see Configure a Flow's data endpoint); its endpoint URI is attached during the upload. Test Numbers cannot use data endpoints. A supplied `requestId` makes retries return the original operation instead of sending again.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -22889,7 +22889,7 @@
           "flows"
         ],
         "summary": "Publish a Flow on a Number",
-        "description": "Publishes the Number's WhatsApp Flow. The last upload must match the saved draft and have no validation errors. A published Flow cannot be changed or deleted; it can only be deprecated. The Flow counts as published only after WhatsApp confirms it: when the response is lost, the operation state is `uncertain` until a provider read settles it, and publishing is never sent twice.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Publishes the Number's WhatsApp Flow. The last upload must match the saved draft, and for a Flow with a data endpoint the endpoint's current URI, and have no validation errors. A published Flow cannot be changed or deleted; it can only be deprecated. The Flow counts as published only after WhatsApp confirms it: when the response is lost, the operation state is `uncertain` until a provider read settles it, and publishing is never sent twice.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -23352,6 +23352,581 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/platform/flows/{flowId}/endpoint": {
+      "get": {
+        "operationId": "getFlowEndpoint",
+        "tags": [
+          "flows"
+        ],
+        "summary": "Get a Flow's data endpoint on a Number",
+        "description": "Returns the data endpoint configured for a Flow on one Number, the endpoint URI WhatsApp calls, and the Number's Flow encryption custody. `endpoint` is null when none is configured.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FlowEndpointState"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      },
+      "put": {
+        "operationId": "setFlowEndpoint",
+        "tags": [
+          "flows"
+        ],
+        "summary": "Configure a Flow's data endpoint on a Number",
+        "description": "Creates or replaces the data endpoint of a dynamic Flow on one Number. `forward` decrypts each WhatsApp request with the Number's Polymorfa-managed key and forwards the request JSON to your HTTPS `url`, signed with `X-Polymorfa-Flow-Signature`; your JSON response is encrypted and returned to WhatsApp. `function` runs a deployed Function with the request JSON as the body. `direct` attaches your own `url` and requires your own encryption key on the Number; Polymorfa never decrypts that traffic. A new forward endpoint, a switch to forward and `rotateSigningSecret` return `signingSecret` once. Upload the Flow after configuring its endpoint so the endpoint URI is attached. Request and response contents are never stored.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetFlowEndpointRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FlowEndpointSetResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteFlowEndpoint",
+        "tags": [
+          "flows"
+        ],
+        "summary": "Remove a Flow's data endpoint on a Number",
+        "description": "Removes the endpoint configuration. Requests to its URI are refused afterwards. Receipts are kept.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/DeleteFlowResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/platform/flows/{flowId}/endpoint/receipts": {
+      "get": {
+        "operationId": "listFlowEndpointReceipts",
+        "tags": [
+          "flows"
+        ],
+        "summary": "List a Flow's data endpoint receipts",
+        "description": "Lists up to 100 recent data-exchange receipts for a Flow, newest first. Receipts record the action, outcome, HTTP status returned to WhatsApp, an error code and timing. They never contain form data, Flow tokens or responses.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "flowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "maxItems": 100,
+                      "items": {
+                        "$ref": "#/components/schemas/FlowEndpointReceipt"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/platform/flow-encryption-keys": {
+      "get": {
+        "operationId": "getFlowEncryptionKey",
+        "tags": [
+          "flow-encryption-keys"
+        ],
+        "summary": "Get a Number's Flow encryption custody",
+        "description": "Returns whether Polymorfa holds the Number's active Flow encryption key (`managed`) or not (`customer`), and recent managed keys. Private keys are never returned.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FlowEncryptionCustody"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/platform/flow-encryption-keys/rotate": {
+      "post": {
+        "operationId": "rotateFlowEncryptionKey",
+        "tags": [
+          "flow-encryption-keys"
+        ],
+        "summary": "Rotate a Number's managed Flow encryption key",
+        "description": "Generates a 2048-bit RSA key pair, keeps the private key sealed, and registers the public key with WhatsApp for the Number. Every dynamic Flow on the Number uses this key. The previous managed key keeps decrypting for 24 hours. A lost WhatsApp response is settled by reading the registered key; the key is `uncertain` until then and is never registered twice.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RotateFlowEncryptionKeyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FlowEncryptionKeyRotation"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
           }
         }
       }
@@ -24625,7 +25200,7 @@
           "projects"
         ],
         "summary": "Update project settings",
-        "description": "Updates the display name, icon, or default number plan without changing the project ID, URL, stage, or individual number overrides.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Updates the display name, icon, or default number plan without changing the project ID, URL, stage, or individual number overrides.\n\n**Hybrid Link.** A default plan without Hybrid Link returns `409` with code `hybrid_choice_required` while a Hybrid Link Number inherits the project plan. Change each such Number's tier first and choose which connection it keeps.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -24762,6 +25337,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
@@ -25228,6 +25806,83 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/platform/projects/{projectId}/hybrid-merge-candidates": {
+      "get": {
+        "operationId": "listHybridMergeCandidates",
+        "tags": [
+          "projects"
+        ],
+        "summary": "List Numbers that can merge into Hybrid Link",
+        "description": "Lists pairs of Numbers in the project that are the same WhatsApp Business number: one connected through Linked Devices and one through the Official API with the WhatsApp Business app (coexistence). Merge an eligible pair with a Pro tier quote on the Number you want to keep and `hybridMerge.absorbNumberId` set to the other Number. Neither side needs to pair or sign up again. Returns `403` with code `feature_unavailable` when the team has no Hybrid Link access. Each Number reports `canBeAbsorbed`; a Number with hosted message storage must be the one you keep.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/HybridMergeCandidateList"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -41327,7 +41982,7 @@
           },
           "definitionDigest": {
             "type": "string",
-            "description": "SHA-256 of the uploaded Flow JSON."
+            "description": "SHA-256 of the uploaded Flow JSON; for a Flow with a data endpoint, of the JSON and the attached endpoint URI."
           },
           "simulated": {
             "type": "boolean",
@@ -41488,6 +42143,414 @@
         "required": [
           "operation",
           "flow"
+        ]
+      },
+      "FlowEndpoint": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orgId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "flowId": {
+            "$ref": "#/components/schemas/FlowId"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "forward",
+              "function",
+              "direct"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "functionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "deploymentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Pinned Function deployment; null follows the Function's active deployment."
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "endpointUri": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URL WhatsApp calls. Attached to the Flow when it is uploaded."
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "id",
+          "orgId",
+          "projectId",
+          "flowId",
+          "sessionId",
+          "mode",
+          "url",
+          "functionId",
+          "deploymentId",
+          "enabled",
+          "revision",
+          "endpointUri",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "FlowEncryptionKey": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "uncertain",
+              "active",
+              "retiring",
+              "retired",
+              "failed"
+            ]
+          },
+          "fingerprint": {
+            "type": "string",
+            "description": "SHA-256 of the DER public key."
+          },
+          "publicKey": {
+            "type": "string",
+            "description": "PEM public key."
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "activatedAt": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "retireAfter": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "fingerprint",
+          "publicKey",
+          "errorCode",
+          "createdAt",
+          "activatedAt",
+          "retireAfter"
+        ]
+      },
+      "FlowEncryptionCustody": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "custody": {
+            "type": "string",
+            "enum": [
+              "managed",
+              "customer"
+            ],
+            "description": "`managed`: Polymorfa holds the Number's active key. `customer`: it does not; register your own key to use direct endpoints."
+          },
+          "activeKeyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "keys": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/FlowEncryptionKey"
+            }
+          }
+        },
+        "required": [
+          "custody",
+          "activeKeyId",
+          "keys"
+        ]
+      },
+      "FlowEncryptionKeyRotation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FlowEncryptionCustody"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "key": {
+                "$ref": "#/components/schemas/FlowEncryptionKey"
+              }
+            },
+            "required": [
+              "key"
+            ]
+          }
+        ]
+      },
+      "RotateFlowEncryptionKeyRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Number (session) name or id."
+          }
+        },
+        "required": [
+          "projectId",
+          "sessionId"
+        ]
+      },
+      "FlowEndpointState": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "endpoint": {
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FlowEndpoint"
+              }
+            ],
+            "nullable": true
+          },
+          "encryption": {
+            "$ref": "#/components/schemas/FlowEncryptionCustody"
+          }
+        },
+        "required": [
+          "endpoint",
+          "encryption"
+        ]
+      },
+      "FlowEndpointSetResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "endpoint": {
+            "$ref": "#/components/schemas/FlowEndpoint"
+          },
+          "signingSecret": {
+            "type": "string",
+            "description": "Returned once. Verify `X-Polymorfa-Flow-Signature: t=<unix seconds>,v1=<hex HMAC-SHA256 of \"<t>.<body>\">` with it."
+          },
+          "encryption": {
+            "$ref": "#/components/schemas/FlowEncryptionCustody"
+          }
+        },
+        "required": [
+          "endpoint",
+          "encryption"
+        ]
+      },
+      "SetFlowEndpointRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/ProjectId"
+          },
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Number (session) name or id in the Flow's project."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "forward",
+              "function",
+              "direct"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "description": "HTTPS URL for `forward` and `direct`."
+          },
+          "functionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Function for `function`."
+          },
+          "deploymentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Optional immutable deployment for `function`."
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Replace only when the stored revision matches."
+          },
+          "rotateSigningSecret": {
+            "type": "boolean",
+            "description": "Issue a new forwarding signing secret."
+          }
+        },
+        "required": [
+          "projectId",
+          "sessionId",
+          "mode"
+        ]
+      },
+      "FlowEndpointReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "flowId": {
+            "$ref": "#/components/schemas/FlowId"
+          },
+          "endpointId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "forward",
+              "function"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "ping",
+              "INIT",
+              "data_exchange",
+              "BACK",
+              "error_notification",
+              null
+            ],
+            "nullable": true
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "running",
+              "succeeded",
+              "rejected",
+              "failed",
+              "timeout",
+              "unavailable"
+            ]
+          },
+          "httpStatus": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Status returned to WhatsApp, such as 200, 421 (decryption failed), 427 (Flow token invalid), 503 or 504."
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "keyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "functionInvocationId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "durationMs": {
+            "type": "integer",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "completedAt": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "flowId",
+          "endpointId",
+          "sessionId",
+          "mode",
+          "action",
+          "outcome",
+          "httpStatus",
+          "errorCode",
+          "keyId",
+          "functionInvocationId",
+          "durationMs",
+          "createdAt",
+          "completedAt"
         ]
       },
       "DeleteFlowResult": {
@@ -41742,6 +42805,9 @@
                 "type": "string",
                 "format": "uuid",
                 "nullable": true
+              },
+              "hybridTransition": {
+                "$ref": "#/components/schemas/NumberHybridTransition"
               }
             },
             "required": [
@@ -41779,11 +42845,215 @@
               null
             ],
             "nullable": true
+          },
+          "hybridResolution": {
+            "$ref": "#/components/schemas/HybridResolution"
+          },
+          "hybridMerge": {
+            "$ref": "#/components/schemas/HybridMerge"
           }
         },
         "required": [
           "tierOverride"
         ]
+      },
+      "HybridTransport": {
+        "type": "string",
+        "enum": [
+          "linked_devices",
+          "official_api"
+        ]
+      },
+      "HybridResolution": {
+        "description": "Required when a Hybrid Link Number moves to a tier without Hybrid Link. `keep` retires the other connection. `split` keeps `existingNumberTransport` on this Number and moves the other connection to a new Standard Number named `newNumberName`, without pairing or signing up again.",
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "keep"
+                ]
+              },
+              "transport": {
+                "$ref": "#/components/schemas/HybridTransport"
+              }
+            },
+            "required": [
+              "action",
+              "transport"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "split"
+                ]
+              },
+              "existingNumberTransport": {
+                "$ref": "#/components/schemas/HybridTransport"
+              },
+              "newNumberName": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$"
+              }
+            },
+            "required": [
+              "action",
+              "existingNumberTransport",
+              "newNumberName"
+            ]
+          }
+        ],
+        "discriminator": {
+          "propertyName": "action"
+        }
+      },
+      "HybridMerge": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Merges another Number into this one as a Hybrid Link Number. The other Number's connection moves here and the other Number is removed.",
+        "properties": {
+          "absorbNumberId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "absorbNumberId"
+        ]
+      },
+      "NumberHybridTransition": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "keep",
+              "split",
+              "merge"
+            ]
+          },
+          "keepTransport": {
+            "$ref": "#/components/schemas/HybridTransport"
+          },
+          "existingNumberTransport": {
+            "$ref": "#/components/schemas/HybridTransport"
+          },
+          "newNumberName": {
+            "type": "string"
+          },
+          "absorbNumberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "survivingNumberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "newNumberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The Number created by a completed split."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "running",
+              "completed",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "metaDisconnectRequired": {
+            "type": "boolean",
+            "description": "True after an Official API connection that shares the number with the WhatsApp Business app is dropped. Polymorfa has stopped using it; disconnect it in the WhatsApp Business app under Settings > Account > Business Platform."
+          },
+          "effectiveAtMs": {
+            "type": "integer",
+            "nullable": true
+          }
+        },
+        "required": [
+          "action",
+          "survivingNumberId"
+        ]
+      },
+      "HybridMergeCandidateList": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "numbers": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "transport": {
+                    "$ref": "#/components/schemas/HybridTransport"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "canBeAbsorbed": {
+                    "type": "boolean",
+                    "description": "False when this Number has hosted message storage enabled. Keep this Number and absorb the other one."
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "transport",
+                  "status",
+                  "canBeAbsorbed"
+                ]
+              }
+            },
+            "eligible": {
+              "type": "boolean"
+            },
+            "ineligibleReason": {
+              "type": "string",
+              "enum": [
+                "deletion_in_progress",
+                "transition_in_progress",
+                "pairing_in_progress",
+                "hms_enabled",
+                "not_coexistence",
+                "different_customer",
+                "connection_disabled",
+                "not_connected"
+              ]
+            }
+          },
+          "required": [
+            "numbers",
+            "eligible"
+          ]
+        }
       },
       "SessionBatchRequest": {
         "type": "object",

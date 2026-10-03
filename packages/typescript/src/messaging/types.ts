@@ -31,8 +31,32 @@ export interface Session {
   readonly status: string;
   readonly statusReason?: string;
   readonly configuration?: import("./session-configuration.js").SessionConfigurationView;
+  /**
+   * WhatsApp's per-number new-chat cap. Returned by `sessions.retrieve` for
+   * linked-device numbers only; `null` until Polymorfa observed the number.
+   */
+  readonly newChatCapping?: NewChatCapping | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+}
+
+/** WhatsApp's new-chat cap for a linked-device number, as WhatsApp configured and reported it. */
+export interface NewChatCapping {
+  /** Whether WhatsApp enabled a cap for the number; `null` when it cannot be decided. */
+  readonly enabled: boolean | null;
+  /** Whether Polymorfa holds back new-chat sends while the number is capped. */
+  readonly pacing: boolean;
+  /** The status WhatsApp last reported; `null` before it reported one. */
+  readonly status:
+    "none" | "first_warning" | "second_warning" | "capped" | null;
+  /** True while WhatsApp reports the number capped and Polymorfa paces it (`pacing`), until `resetsAt`. */
+  readonly capped: boolean;
+  readonly limit: number | null;
+  readonly used: number | null;
+  readonly remaining: number | null;
+  readonly cycleStartsAt: string | null;
+  readonly resetsAt: string | null;
+  readonly observedAt: string;
 }
 
 export interface UpdateSessionRequest {

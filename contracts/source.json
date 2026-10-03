@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "e818ba62830d3727a7822379bb46c1fece90ef1b",
-  "branch": "dev",
-  "published": true,
-  "note": "API dev merge of PR #433 (Brazil payment order schema fix, after PR #429), on top of PR #431 (Official groups). Includes every merged Official API, Flow lifecycle, catalog, campaign send-window and campaign conversion contract. Both snapshots are byte-identical to this exact API commit. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
+  "commit": "fcf7b21015dd185e987b5aa3580e8af5f4c7f1a4",
+  "branch": "t3code/hybrid-pro-downgrade",
+  "published": false,
+  "note": "Coordinated API feature commit for Hybrid Link tier transitions (polymorfa/polymorfa#404), not yet merged to API dev. It contains API dev through 5ce6290bc, which adds the hosted Flow endpoint and Flow encryption key operations of API PR #428 (excluded until an SDK change covers them). The Messaging snapshot is byte-identical to the SDK dev pin e818ba62830d3727a7822379bb46c1fece90ef1b. Both snapshots are byte-identical to the authoritative source files at this commit. SDK package publication is separate.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "c077ba0f3fbab9ffbb67a928f79a19b958ed6ee6053380e88cadf82d9f863e07"
+      "sha256": "73269496b558f5f74382204c312e97512bdbadeb1c7675a267071d44345493e8"
     }
   }
 }
