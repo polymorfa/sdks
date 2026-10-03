@@ -15,6 +15,7 @@ import type {
   SessionBatchRemoveResult,
   SessionBatchRequest,
   SessionBatchStopResult,
+  SessionCapabilities,
   SessionProjectContext,
   SessionRemoveResult,
   SessionStartResult,
@@ -189,6 +190,21 @@ export class PlatformSessionsResource {
       method: "PATCH",
       path: sessionPath(sessionId),
       body,
+      ...options,
+    });
+  }
+
+  /**
+   * WhatsApp features and limits WhatsApp has enabled for the number, as of
+   * its last configuration sync. Beta: returns 403 until the team enrolls.
+   */
+  getCapabilities(
+    sessionId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SessionCapabilities>>> {
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionPath(sessionId)}/capabilities`,
       ...options,
     });
   }

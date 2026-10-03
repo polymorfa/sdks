@@ -3,7 +3,11 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
+<<<<<<< HEAD
     "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/\u2026` \u2014 **public registry** (235 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/\u2026` \u2014 **console-only** (101 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+=======
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (236 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (101 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+>>>>>>> origin/dev
   },
   "servers": [
     {
@@ -16433,6 +16437,86 @@
                   "properties": {
                     "data": {
                       "$ref": "#/components/schemas/NumberTierChange"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/platform/sessions/{sessionId}/capabilities": {
+      "get": {
+        "operationId": "getSessionCapabilities",
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Get a number's WhatsApp capabilities",
+        "description": "Returns which WhatsApp features WhatsApp has enabled for this number, and the limits it applies, as of the number's last configuration sync. Each value reflects WhatsApp's configuration at `syncedAt`, not a live check. Values describe the WhatsApp account last linked to the number, whether or not it is connected now; read the session for its connection status. Before the first sync, from the first sync attempt of another linked WhatsApp account until its configuration is synced, and when Polymorfa cannot tell whether the stored configuration belongs to the account linked now, `status` is `unknown` and every value is null. Values come from a linked-device connection: a number that has never had one (Official API only) reports `unknown`, and a number whose linked-device connection was removed keeps the values last synced. A capability reports what WhatsApp allows the number; it does not mean the Polymorfa API offers an operation for that feature. This is a beta: teams that are not enrolled receive 403.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "session",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Database session UUID or stable session slug.",
+            "schema": {
+              "$ref": "#/components/schemas/SessionIdentifier"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SessionCapabilities"
                     }
                   },
                   "required": [
@@ -47516,6 +47600,130 @@
           "entitlementReason"
         ]
       },
+      "SessionCapabilities": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "session": {
+            "type": "string",
+            "description": "The session name."
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "synced",
+              "unknown"
+            ],
+            "description": "`synced` when the values reflect WhatsApp's configuration for the account last linked to the number. `unknown` before the first sync, from the first sync attempt of another linked WhatsApp account until its configuration is synced, and when Polymorfa cannot tell whether the stored configuration belongs to the account linked now; every capability value is then null."
+          },
+          "syncedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the configuration the values reflect was last read from WhatsApp. Null while `status` is `unknown`."
+          },
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When Polymorfa last asked WhatsApp for the number's configuration, whether or not anything changed. Null before the first request."
+          },
+          "accountType": {
+            "type": "string",
+            "enum": [
+              "business",
+              "personal",
+              null
+            ],
+            "nullable": true,
+            "description": "The WhatsApp account type the values were evaluated for. Null when not known."
+          },
+          "capabilities": {
+            "type": "array",
+            "maxItems": 100,
+            "description": "Every capability, always in the same order. Ignore keys your app does not recognize; new keys can be added.",
+            "items": {
+              "$ref": "#/components/schemas/SessionCapability"
+            }
+          }
+        },
+        "required": [
+          "session",
+          "projectId",
+          "status",
+          "syncedAt",
+          "checkedAt",
+          "accountType",
+          "capabilities"
+        ]
+      },
+      "SessionCapability": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z][A-Za-z]*(\\.[a-z][A-Za-z]*)*$",
+            "maxLength": 64,
+            "description": "Stable capability identifier, for example `channels` or `messageEdit.windowSeconds`. A key never changes meaning; new keys can be added."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "feature",
+              "limit"
+            ],
+            "description": "`feature`: `value` is a boolean. `limit`: `value` is an integer in `unit`."
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "seconds",
+              "count",
+              "characters",
+              "members",
+              null
+            ],
+            "nullable": true,
+            "description": "Unit of a limit. Null for a feature."
+          },
+          "value": {
+            "description": "Boolean for a feature, integer for a limit. Null whenever `status` is `unknown`, for a capability that depends on an account type that is not known, for a limit whose WhatsApp setting is not a usable number, and for a capability Polymorfa can no longer evaluate.",
+            "anyOf": [
+              {
+                "type": "boolean",
+                "nullable": true
+              },
+              {
+                "type": "integer",
+                "nullable": true
+              }
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "server",
+              "client_default",
+              "account_type",
+              null
+            ],
+            "nullable": true,
+            "description": "`server`: every WhatsApp setting the value was evaluated from was sent by WhatsApp and used as sent. `client_default`: WhatsApp's own default or limit took part, because a setting was not sent or not usable, or WhatsApp caps or replaces the value it sent. `account_type`: the capability does not apply to this account type. Null when `value` is null."
+          }
+        },
+        "required": [
+          "key",
+          "kind",
+          "unit",
+          "value",
+          "source"
+        ]
+      },
       "SessionSafeMode": {
         "type": "object",
         "additionalProperties": false,
@@ -53848,6 +54056,86 @@
         ],
         "additionalProperties": false
       },
+      "PlatformAccessNewChatCapping": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether WhatsApp enabled its new-chat cap for this number. WhatsApp decides this per number; `false` means no cap applies. `null` means WhatsApp's configuration for this number could not be read to a decision, and Polymorfa does not pace to a cap."
+          },
+          "pacing": {
+            "type": "boolean",
+            "description": "Whether Polymorfa is holding back sends that would start a new chat while the number is capped. True only when `enabled` is true."
+          },
+          "status": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "none",
+              "first_warning",
+              "second_warning",
+              "capped",
+              null
+            ],
+            "description": "The number's cap status as WhatsApp last reported it: `none`, `first_warning`, `second_warning` or `capped`. `null` until WhatsApp reported one. Reads `none` once the reported cycle has ended.",
+            "example": "first_warning"
+          },
+          "capped": {
+            "type": "boolean",
+            "description": "True while WhatsApp reports the number capped and Polymorfa paces it (`pacing` is true), until `resetsAt`. New-chat sends are then held back; messages to existing chats still send."
+          },
+          "limit": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "description": "New chats the number may start in the current cycle, as WhatsApp reported it.",
+            "example": 50
+          },
+          "used": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "description": "New chats started in the current cycle, as WhatsApp reported it.",
+            "example": 26
+          },
+          "remaining": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "description": "`limit` minus `used`.",
+            "example": 24
+          },
+          "cycleStartsAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601 start of the current cycle, when WhatsApp reported it."
+          },
+          "resetsAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601 end of the current cycle as WhatsApp reported it. While Polymorfa holds a number that WhatsApp rejected for a new chat without reporting a cycle, the end of that one-hour hold."
+          },
+          "observedAt": {
+            "type": "string",
+            "description": "ISO 8601 time Polymorfa last observed this state."
+          }
+        },
+        "required": [
+          "enabled",
+          "pacing",
+          "status",
+          "capped",
+          "limit",
+          "used",
+          "remaining",
+          "cycleStartsAt",
+          "resetsAt",
+          "observedAt"
+        ],
+        "description": "WhatsApp's new-chat cap for this linked-device number. Returned by Get session only. `null` when Polymorfa has not observed the number's configuration yet."
+      },
       "PlatformAccessSession": {
         "type": "object",
         "properties": {
@@ -53887,6 +54175,9 @@
           },
           "configuration": {
             "$ref": "#/components/schemas/PlatformAccessSessionConfigurationView"
+          },
+          "newChatCapping": {
+            "$ref": "#/components/schemas/PlatformAccessNewChatCapping"
           },
           "createdAt": {
             "type": "string"
@@ -54415,6 +54706,8 @@
                   "stream_connection_limit_reached",
                   "state_conflict",
                   "hybrid_routing_paused",
+                  "hybrid_choice_required",
+                  "hybrid_transition_ineligible",
                   "hybrid_automation_unavailable",
                   "hybrid_transport_unavailable",
                   "hybrid_target_reference_unavailable",
