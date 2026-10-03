@@ -1,4 +1,4 @@
-// Platform analytics contract: polymorfa/polymorfa@19cc9cd42f45e085b7757aebaf6a44e4f66115c7
+// Platform analytics contract: polymorfa/polymorfa@e6006c2242ed8fe01abbe6b2d8db93c230508929
 import { PolymorfaValidationError, PolymorfaServerError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import type {
@@ -125,6 +125,12 @@ export interface WhatsAppMetrics {
     observed: boolean;
     primaryPhoneActivitySignals: number;
     primaryPhoneActivePeriods: number;
+    completedPhoneActivityPeriods: number;
+    phoneActivityMs: number;
+    averagePhoneActivityMs: number | null;
+    phoneQuietGaps: number;
+    phoneQuietMs: number;
+    averagePhoneQuietMs: number | null;
     primaryPhoneMessages: number;
     otherDeviceMessages: number;
     primaryPhoneReplies: number;
@@ -171,6 +177,10 @@ export interface WhatsAppAnalytics {
     otherDeviceMessages: number;
     primaryPhoneReplies: number;
     phoneActivePeriods: number;
+    completedPhoneActivityPeriods: number;
+    phoneActivityMs: number;
+    phoneQuietGaps: number;
+    phoneQuietMs: number;
     sessionId: string;
     ts: number;
     outgoingMessages: number;

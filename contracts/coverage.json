@@ -6165,32 +6165,32 @@
       "method": "GET",
       "path": "/platform/analytics",
       "operationId": "getWhatsAppAnalytics",
-      "fingerprint": "26515108217a11c208cfac0f930c9c1876ae83b03c6b662f912b21edb6e930e8",
+      "fingerprint": "1ac8b2438ef13263289d71f0d956fd3f7b60b44ac0999151bc96f30d31798b91",
       "typescript": {
         "status": "covered",
         "method": "Client.analytics.get"
       },
-      "sourceContractSha256": "5a4e00d5f3fbe535d0a94152c975b8cb32948fad431d513de7a0a4db5aa3cadd",
-      "sourceBaseCommit": "1fa7c8fafa03d5915f51e4b36e135b3a3234c657",
+      "sourceContractSha256": "fb337ae222f335ee7773d1fa82f33fa13b00522a0a820b229d01ea612377ff18",
+      "sourceBaseCommit": "5668e178b01f235fe72f9df70fe020b13e41e68b",
       "sourceState": "committed",
-      "sourceCommit": "19cc9cd42f45e085b7757aebaf6a44e4f66115c7",
-      "sdkContractSha256": "3a661d6713099309f6c8525a102b1c0a0855edad30c016920cab215d1de66516"
+      "sourceCommit": "e6006c2242ed8fe01abbe6b2d8db93c230508929",
+      "sdkContractSha256": "bf3fddce3a098850b2985c49348b63bf7036e8c03bf8f1551eddeca2e48a9053"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/analytics",
       "operationId": "getProjectWhatsAppAnalytics",
-      "fingerprint": "5988ad1a2820021bb567807332a89175c26ed56dc16c06011740ebc257b4858e",
+      "fingerprint": "dc6ab3ff0e56d2e97c26fb64c2090b8b8f900a0f09c86e221f84932e9fb0a36f",
       "typescript": {
         "status": "covered",
         "method": "Client.analytics.get"
       },
-      "sourceContractSha256": "5a4e00d5f3fbe535d0a94152c975b8cb32948fad431d513de7a0a4db5aa3cadd",
-      "sourceBaseCommit": "1fa7c8fafa03d5915f51e4b36e135b3a3234c657",
+      "sourceContractSha256": "fb337ae222f335ee7773d1fa82f33fa13b00522a0a820b229d01ea612377ff18",
+      "sourceBaseCommit": "5668e178b01f235fe72f9df70fe020b13e41e68b",
       "sourceState": "committed",
-      "sourceCommit": "19cc9cd42f45e085b7757aebaf6a44e4f66115c7",
-      "sdkContractSha256": "3a661d6713099309f6c8525a102b1c0a0855edad30c016920cab215d1de66516"
+      "sourceCommit": "e6006c2242ed8fe01abbe6b2d8db93c230508929",
+      "sdkContractSha256": "bf3fddce3a098850b2985c49348b63bf7036e8c03bf8f1551eddeca2e48a9053"
     },
     {
       "family": "platform",
@@ -6202,11 +6202,11 @@
         "method": "Client.analytics.metrics"
       },
       "fingerprint": "520ce37bc6a198e313d9495ddd968ebb54cbbe5cc84f4d6bea636c43a4ea62c5",
-      "sourceContractSha256": "5a4e00d5f3fbe535d0a94152c975b8cb32948fad431d513de7a0a4db5aa3cadd",
-      "sdkContractSha256": "3a661d6713099309f6c8525a102b1c0a0855edad30c016920cab215d1de66516",
-      "sourceBaseCommit": "1fa7c8fafa03d5915f51e4b36e135b3a3234c657",
+      "sourceContractSha256": "fb337ae222f335ee7773d1fa82f33fa13b00522a0a820b229d01ea612377ff18",
+      "sdkContractSha256": "bf3fddce3a098850b2985c49348b63bf7036e8c03bf8f1551eddeca2e48a9053",
+      "sourceBaseCommit": "5668e178b01f235fe72f9df70fe020b13e41e68b",
       "sourceState": "committed",
-      "sourceCommit": "19cc9cd42f45e085b7757aebaf6a44e4f66115c7"
+      "sourceCommit": "e6006c2242ed8fe01abbe6b2d8db93c230508929"
     },
     {
       "family": "platform",
@@ -6218,11 +6218,11 @@
         "method": "Client.analytics.metrics"
       },
       "fingerprint": "56e2540bc5d78c3f458fbd363d63b101df49fcd273b7cc81e1fa9318d69b30b6",
-      "sourceContractSha256": "5a4e00d5f3fbe535d0a94152c975b8cb32948fad431d513de7a0a4db5aa3cadd",
-      "sdkContractSha256": "3a661d6713099309f6c8525a102b1c0a0855edad30c016920cab215d1de66516",
-      "sourceBaseCommit": "1fa7c8fafa03d5915f51e4b36e135b3a3234c657",
+      "sourceContractSha256": "fb337ae222f335ee7773d1fa82f33fa13b00522a0a820b229d01ea612377ff18",
+      "sdkContractSha256": "bf3fddce3a098850b2985c49348b63bf7036e8c03bf8f1551eddeca2e48a9053",
+      "sourceBaseCommit": "5668e178b01f235fe72f9df70fe020b13e41e68b",
       "sourceState": "committed",
-      "sourceCommit": "19cc9cd42f45e085b7757aebaf6a44e4f66115c7"
+      "sourceCommit": "e6006c2242ed8fe01abbe6b2d8db93c230508929"
     }
   ]
 }

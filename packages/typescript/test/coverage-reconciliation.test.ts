@@ -228,7 +228,7 @@ describe("reconciled coverage evidence", () => {
       };
     };
     const analytics = source.supplements.analytics;
-    expect(analytics.commit).toBe("19cc9cd42f45e085b7757aebaf6a44e4f66115c7");
+    expect(analytics.commit).toBe("e6006c2242ed8fe01abbe6b2d8db93c230508929");
     expect(analytics.published).toBe(false);
     expect(analytics.paths).toEqual([
       "/platform/analytics",

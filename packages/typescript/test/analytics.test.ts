@@ -63,9 +63,17 @@ it("preserves nullable call quality, follow-up coverage and per-number call seri
       unknownContact: 1,
     },
   };
+  const accountActivity = {
+    completedPhoneActivityPeriods: 2,
+    phoneActivityMs: 600_000,
+    averagePhoneActivityMs: 300_000,
+    phoneQuietGaps: 1,
+    phoneQuietMs: 1_200_000,
+    averagePhoneQuietMs: 1_200_000,
+  };
   const body = {
     enabled: true,
-    summary: { calls },
+    summary: { calls, accountActivity },
     numbers: [{ sessionId: "number", calls }],
     series: [],
     callSeries: [{ sessionId: "number", ts: 1, answered: 1, missed: 1 }],
@@ -80,6 +88,7 @@ it("preserves nullable call quality, follow-up coverage and per-number call seri
     baseUrl: server.url,
   });
   const result = (await client.analytics.get()).data;
+  expect(result.summary?.accountActivity).toEqual(accountActivity);
   expect(result.summary?.calls.followUp).toEqual(calls.followUp);
   expect(result.numbers[0]?.calls.mediaQuality.averageRttMs).toBeNull();
   expect(result.callSeries).toEqual(body.callSeries);

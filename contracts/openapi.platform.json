@@ -37000,7 +37000,7 @@
           "Analytics"
         ],
         "summary": "Get WhatsApp number analytics",
-        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps and daily series use UTC. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone active periods follow 15 minutes without evidence and are not power cycles. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps use UTC. Activity series use hourly buckets for ranges up to 48 hours and daily buckets for longer ranges. Call series use daily buckets. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone activity spans end at their last observed signal and close after 15 minutes without evidence. Quiet gaps end at the next observed signal. Duration sums and averages count completed intervals and exclude open or restart-censored intervals; they do not measure phone online/offline or power state. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -37008,6 +37008,9 @@
         "security": [
           {
             "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
           }
         ],
         "parameters": [
@@ -37110,7 +37113,7 @@
           "Analytics"
         ],
         "summary": "Get WhatsApp number analytics",
-        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps and daily series use UTC. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone active periods follow 15 minutes without evidence and are not power cycles. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps use UTC. Activity series use hourly buckets for ranges up to 48 hours and daily buckets for longer ranges. Call series use daily buckets. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone activity spans end at their last observed signal and close after 15 minutes without evidence. Quiet gaps end at the next observed signal. Duration sums and averages count completed intervals and exclude open or restart-censored intervals; they do not measure phone online/offline or power state. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -37118,6 +37121,9 @@
         "security": [
           {
             "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
           }
         ],
         "parameters": [
@@ -37226,6 +37232,7 @@
             "ApiKeyAuth": []
           }
         ],
+        "x-polymorfa-resource-boundary": "project",
         "x-required-scope": "sessions:read",
         "parameters": [
           {
@@ -37515,8 +37522,7 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
         },
-        "x-audience": "public",
-        "x-polymorfa-resource-boundary": "project"
+        "x-audience": "public"
       }
     },
     "/platform/projects/{projectId}/analytics/metrics": {
@@ -37532,6 +37538,7 @@
             "ApiKeyAuth": []
           }
         ],
+        "x-polymorfa-resource-boundary": "project",
         "x-required-scope": "sessions:read",
         "parameters": [
           {
@@ -37821,8 +37828,7 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
         },
-        "x-audience": "public",
-        "x-polymorfa-resource-boundary": "project"
+        "x-audience": "public"
       }
     }
   },
@@ -56014,6 +56020,7 @@
             ]
           },
           "summary": {
+            "type": "object",
             "nullable": true,
             "allOf": [
               {
@@ -56380,6 +56387,32 @@
                         "type": "integer",
                         "minimum": 0
                       },
+                      "completedPhoneActivityPeriods": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "phoneActivityMs": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "averagePhoneActivityMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "phoneQuietGaps": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "phoneQuietMs": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "averagePhoneQuietMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
                       "primaryPhoneMessages": {
                         "type": "integer",
                         "minimum": 0
@@ -56416,6 +56449,12 @@
                       "observed",
                       "primaryPhoneActivitySignals",
                       "primaryPhoneActivePeriods",
+                      "completedPhoneActivityPeriods",
+                      "phoneActivityMs",
+                      "averagePhoneActivityMs",
+                      "phoneQuietGaps",
+                      "phoneQuietMs",
+                      "averagePhoneQuietMs",
                       "primaryPhoneMessages",
                       "otherDeviceMessages",
                       "lastPrimaryPhoneAt",
@@ -56426,6 +56465,7 @@
                     ]
                   },
                   "responseQueue": {
+                    "type": "object",
                     "nullable": true,
                     "allOf": [
                       {
@@ -57350,6 +57390,32 @@
                       "type": "integer",
                       "minimum": 0
                     },
+                    "completedPhoneActivityPeriods": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "phoneActivityMs": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "averagePhoneActivityMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "phoneQuietGaps": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "phoneQuietMs": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "averagePhoneQuietMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
                     "primaryPhoneMessages": {
                       "type": "integer",
                       "minimum": 0
@@ -57386,6 +57452,12 @@
                     "observed",
                     "primaryPhoneActivitySignals",
                     "primaryPhoneActivePeriods",
+                    "completedPhoneActivityPeriods",
+                    "phoneActivityMs",
+                    "averagePhoneActivityMs",
+                    "phoneQuietGaps",
+                    "phoneQuietMs",
+                    "averagePhoneQuietMs",
                     "primaryPhoneMessages",
                     "otherDeviceMessages",
                     "lastPrimaryPhoneAt",
@@ -57396,6 +57468,7 @@
                   ]
                 },
                 "responseQueue": {
+                  "type": "object",
                   "nullable": true,
                   "allOf": [
                     {
@@ -58020,6 +58093,22 @@
                 "phoneActivePeriods": {
                   "type": "integer",
                   "minimum": 0
+                },
+                "completedPhoneActivityPeriods": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "phoneActivityMs": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "phoneQuietGaps": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "phoneQuietMs": {
+                  "type": "integer",
+                  "minimum": 0
                 }
               },
               "required": [
@@ -58037,7 +58126,11 @@
                 "primaryPhoneMessages",
                 "otherDeviceMessages",
                 "primaryPhoneReplies",
-                "phoneActivePeriods"
+                "phoneActivePeriods",
+                "completedPhoneActivityPeriods",
+                "phoneActivityMs",
+                "phoneQuietGaps",
+                "phoneQuietMs"
               ]
             }
           },

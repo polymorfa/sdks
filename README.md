@@ -956,3 +956,9 @@ It returns Prometheus/OpenMetrics text with HTTP metadata, on root and project c
 Counts are overlapping-window gauges, with denominators, measurement coverage and observation times.
 Requires `sessions:read` and the same Analytics opt-in. Disabled exports contain only
 enablement and window metadata. [Collector configuration](https://docs.polymorfa.com/console/analytics-collectors).
+
+Analytics source builds also expose completed observed phone activity spans and
+quiet gaps, duration sums, sample counts and weighted averages. Ranges up to
+48 hours use hourly activity buckets; longer ranges and call series use daily
+UTC buckets. These signals do not establish phone online/offline or power state.
+See the [measurement definitions](https://docs.polymorfa.com/console/analytics#phone-polymorfa-and-customer-activity).
