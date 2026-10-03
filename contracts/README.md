@@ -245,6 +245,9 @@ exported `ContactOptPayload`. The unproduced `bansafe.health_changed`,
 `bansafe.risk_changed`, and `bansafe.enforcement` names are retired. Historical
 signed events with these names still decode as unknown events.
 
+The base contract snapshot below excludes the two WhatsApp business analytics
+reads described at the end of this document.
+
 | Status              | Operations |
 | ------------------- | ---------: |
 | Covered             |        422 |
@@ -436,3 +439,7 @@ route/schema fingerprints. Other operations retain the SDK dev contract revision
 The strict response contains number/project-scoped messaging aggregates and
 retained-call outcomes, measured timings, quality, failure categories, missed-call
 follow-up and daily call series. This is an unshipped source-build addition.
+
+With the two Analytics reads included, the strict ledger has 560 operations:
+424 covered and 136 explicitly excluded, with no missing, partial or changed
+fingerprints. This count does not establish package publication or customer access.
