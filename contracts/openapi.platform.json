@@ -36992,6 +36992,844 @@
           }
         }
       }
+    },
+    "/platform/analytics": {
+      "get": {
+        "operationId": "getWhatsAppAnalytics",
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Get WhatsApp number analytics",
+        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps use UTC. Activity series use hourly buckets for ranges up to 48 hours and daily buckets for longer ranges. Call series use daily buckets. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone activity spans end at their last observed signal and close after 15 minutes without evidence. Quiet gaps end at the next observed signal. Duration sums and averages count completed intervals and exclude open or restart-censored intervals; they do not measure phone online/offline or power state. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Number record UUID."
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix milliseconds; maximum range 366 days."
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix milliseconds; maximum range 366 days."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WhatsAppAnalytics"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/projects/{projectId}/analytics": {
+      "get": {
+        "operationId": "getProjectWhatsAppAnalytics",
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Get WhatsApp number analytics",
+        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps use UTC. Activity series use hourly buckets for ranges up to 48 hours and daily buckets for longer ranges. Call series use daily buckets. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone activity spans end at their last observed signal and close after 15 minutes without evidence. Quiet gaps end at the next observed signal. Duration sums and averages count completed intervals and exclude open or restart-censored intervals; they do not measure phone online/offline or power state. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "sessions:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Number record UUID."
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix milliseconds; maximum range 366 days."
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix milliseconds; maximum range 366 days."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WhatsAppAnalytics"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/analytics/metrics": {
+      "get": {
+        "operationId": "exportWhatsAppAnalyticsMetrics",
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Export analytics metrics",
+        "description": "**Required scope:** `sessions:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain number/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/organization scope even when filtering a number.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-polymorfa-resource-boundary": "project",
+        "x-required-scope": "sessions:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "projectId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "One number record UUID, within the authorized project or organization."
+            },
+            "required": false,
+            "description": "One number record UUID, within the authorized project or organization.",
+            "name": "sessionId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 168,
+              "default": 24,
+              "description": "Number of completed UTC hours in the window, ending at the most recent hour boundary. Default 24; maximum 168."
+            },
+            "required": false,
+            "description": "Number of completed UTC hours in the window, ending at the most recent hour boundary. Default 24; maximum 168.",
+            "name": "windowHours",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "default": "false",
+              "description": "Include message type, text length, origin, calling-code and device-count breakdowns. Adds metric series."
+            },
+            "required": false,
+            "description": "Include message type, text length, origin, calling-code and device-count breakdowns. Adds metric series.",
+            "name": "segments",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "prometheus",
+                "openmetrics"
+              ],
+              "default": "prometheus",
+              "description": "Prometheus text 0.0.4 or OpenMetrics text 1.0. The format parameter selects the representation."
+            },
+            "required": false,
+            "description": "Prometheus text 0.0.4 or OpenMetrics text 1.0. The format parameter selects the representation.",
+            "name": "format",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Windowed analytics gauges. OpenMetrics ends with # EOF. No JSON envelope.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/openmetrics-text": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "503": {
+            "description": "Analytics query deadline exceeded. Retry later or use a shorter window.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        },
+        "x-audience": "public"
+      }
+    },
+    "/platform/projects/{projectId}/analytics/metrics": {
+      "get": {
+        "operationId": "exportProjectWhatsAppAnalyticsMetrics",
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Export project analytics metrics",
+        "description": "**Required scope:** `sessions:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain number/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/organization scope even when filtering a number.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-polymorfa-resource-boundary": "project",
+        "x-required-scope": "sessions:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "projectId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "One number record UUID, within the authorized project or organization."
+            },
+            "required": false,
+            "description": "One number record UUID, within the authorized project or organization.",
+            "name": "sessionId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 168,
+              "default": 24,
+              "description": "Number of completed UTC hours in the window, ending at the most recent hour boundary. Default 24; maximum 168."
+            },
+            "required": false,
+            "description": "Number of completed UTC hours in the window, ending at the most recent hour boundary. Default 24; maximum 168.",
+            "name": "windowHours",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "default": "false",
+              "description": "Include message type, text length, origin, calling-code and device-count breakdowns. Adds metric series."
+            },
+            "required": false,
+            "description": "Include message type, text length, origin, calling-code and device-count breakdowns. Adds metric series.",
+            "name": "segments",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "prometheus",
+                "openmetrics"
+              ],
+              "default": "prometheus",
+              "description": "Prometheus text 0.0.4 or OpenMetrics text 1.0. The format parameter selects the representation."
+            },
+            "required": false,
+            "description": "Prometheus text 0.0.4 or OpenMetrics text 1.0. The format parameter selects the representation.",
+            "name": "format",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Windowed analytics gauges. OpenMetrics ends with # EOF. No JSON envelope.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/openmetrics-text": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "503": {
+            "description": "Analytics query deadline exceeded. Retry later or use a shorter window.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAccessPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        },
+        "x-audience": "public"
+      }
     }
   },
   "components": {
@@ -55129,6 +55967,2295 @@
           "appReports",
           "history",
           "correlation"
+        ]
+      },
+      "WhatsAppAnalytics": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "period": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start": {
+                "type": "integer",
+                "description": "Unix milliseconds."
+              },
+              "end": {
+                "type": "integer",
+                "description": "Unix milliseconds."
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ]
+          },
+          "requestVitals": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "requests": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "failures": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "errorRate": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "nullable": true
+              }
+            },
+            "required": [
+              "requests",
+              "failures",
+              "errorRate"
+            ]
+          },
+          "summary": {
+            "type": "object",
+            "nullable": true,
+            "allOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "measured": {
+                    "type": "boolean"
+                  },
+                  "observedHours": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "lastObservedAt": {
+                    "type": "integer",
+                    "description": "Unix milliseconds.",
+                    "nullable": true
+                  },
+                  "outgoingMessages": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "incomingMessages": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sendAttempts": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sendFailures": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sendFailureRate": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "nullable": true
+                  },
+                  "businessReplies": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "averageBusinessResponseMs": {
+                    "type": "number",
+                    "minimum": 0,
+                    "nullable": true
+                  },
+                  "onlineMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "disconnects": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "connectFailures": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "streamErrors": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "keepaliveTimeouts": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "engagement": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "windowHours": {
+                        "type": "integer",
+                        "enum": [
+                          24
+                        ]
+                      },
+                      "completedConversations": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "deliveredConversations": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "readConversations": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "repliedConversations": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "deliveryRate": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "nullable": true
+                      },
+                      "readRate": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "nullable": true
+                      },
+                      "replyRate": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "nullable": true
+                      },
+                      "averageCustomerReplyMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "complete": {
+                        "type": "boolean"
+                      },
+                      "droppedConversations": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "droppedRecords": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "droppedReceiptJoins": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "windowHours",
+                      "completedConversations",
+                      "deliveredConversations",
+                      "readConversations",
+                      "repliedConversations",
+                      "deliveryRate",
+                      "readRate",
+                      "replyRate",
+                      "averageCustomerReplyMs",
+                      "complete",
+                      "droppedConversations",
+                      "droppedRecords",
+                      "droppedReceiptJoins"
+                    ]
+                  },
+                  "totalNumbers": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "measuredNumbers": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "connectedNumbers": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "messageAnalysis": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "complete": {
+                        "type": "boolean"
+                      },
+                      "segments": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "dimension": {
+                              "type": "string",
+                              "enum": [
+                                "message_type",
+                                "text_band",
+                                "origin",
+                                "calling_code",
+                                "customer_devices"
+                              ]
+                            },
+                            "key": {
+                              "type": "string"
+                            },
+                            "sendAttempts": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "sent": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "sendFailures": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "sendFailureRate": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "completedConversations": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "deliveredConversations": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "readConversations": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "repliedConversations": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "deliveryRate": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "readRate": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "replyRate": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "averageCustomerReplyMs": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "shareOfConversations": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "shareOfSends": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "readRateInterval95": {
+                              "type": "array",
+                              "nullable": true,
+                              "minItems": 2,
+                              "maxItems": 2,
+                              "items": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              },
+                              "description": "95% Wilson interval for observed conversation receipts or replies; not a causal effect."
+                            },
+                            "replyRateInterval95": {
+                              "type": "array",
+                              "nullable": true,
+                              "minItems": 2,
+                              "maxItems": 2,
+                              "items": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              },
+                              "description": "95% Wilson interval for observed conversation receipts or replies; not a causal effect."
+                            },
+                            "readRateDifference": {
+                              "type": "number",
+                              "minimum": -1,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "replyRateDifference": {
+                              "type": "number",
+                              "minimum": -1,
+                              "maximum": 1,
+                              "nullable": true
+                            }
+                          },
+                          "required": [
+                            "dimension",
+                            "key",
+                            "sendAttempts",
+                            "sent",
+                            "sendFailures",
+                            "sendFailureRate",
+                            "completedConversations",
+                            "deliveredConversations",
+                            "readConversations",
+                            "repliedConversations",
+                            "deliveryRate",
+                            "readRate",
+                            "replyRate",
+                            "averageCustomerReplyMs",
+                            "shareOfConversations",
+                            "shareOfSends",
+                            "readRateInterval95",
+                            "replyRateInterval95",
+                            "readRateDifference",
+                            "replyRateDifference"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "complete",
+                      "segments"
+                    ]
+                  },
+                  "customerActivity": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "observed": {
+                        "type": "boolean"
+                      },
+                      "onlineSignals": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "offlineSignals": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "typingSignals": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "observed",
+                      "onlineSignals",
+                      "offlineSignals",
+                      "typingSignals"
+                    ]
+                  },
+                  "accountActivity": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "observed": {
+                        "type": "boolean"
+                      },
+                      "primaryPhoneActivitySignals": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "primaryPhoneActivePeriods": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "completedPhoneActivityPeriods": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "phoneActivityMs": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "averagePhoneActivityMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "phoneQuietGaps": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "phoneQuietMs": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "averagePhoneQuietMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "primaryPhoneMessages": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "otherDeviceMessages": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "lastPrimaryPhoneAt": {
+                        "type": "integer",
+                        "description": "Unix milliseconds.",
+                        "nullable": true
+                      },
+                      "primaryPhoneReplies": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "otherDeviceReplies": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "averagePrimaryPhoneResponseMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "averageOtherDeviceResponseMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "observed",
+                      "primaryPhoneActivitySignals",
+                      "primaryPhoneActivePeriods",
+                      "completedPhoneActivityPeriods",
+                      "phoneActivityMs",
+                      "averagePhoneActivityMs",
+                      "phoneQuietGaps",
+                      "phoneQuietMs",
+                      "averagePhoneQuietMs",
+                      "primaryPhoneMessages",
+                      "otherDeviceMessages",
+                      "lastPrimaryPhoneAt",
+                      "primaryPhoneReplies",
+                      "otherDeviceReplies",
+                      "averagePrimaryPhoneResponseMs",
+                      "averageOtherDeviceResponseMs"
+                    ]
+                  },
+                  "responseQueue": {
+                    "type": "object",
+                    "nullable": true,
+                    "allOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "awaitingReply": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "oldestWaitingMs": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "observedAt": {
+                            "type": "integer",
+                            "description": "Unix milliseconds."
+                          },
+                          "complete": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "awaitingReply",
+                          "oldestWaitingMs",
+                          "observedAt",
+                          "complete"
+                        ]
+                      }
+                    ]
+                  },
+                  "calls": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "total": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "answered": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "missed": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "declined": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "failed": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "ringing": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "answerRate": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "nullable": true
+                      },
+                      "talkSeconds": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "timedAnswered": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "timedPickup": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "averageTalkSeconds": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "medianTalkSeconds": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "p95TalkSeconds": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "averagePickupMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "p95PickupMs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "nullable": true
+                      },
+                      "shortAnswered": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "video": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "directions": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "inbound": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "total": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "answered": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "missed": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "declined": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "failed": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "ringing": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "answerRate": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "nullable": true
+                              },
+                              "talkSeconds": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "timedAnswered": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "timedPickup": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "averageTalkSeconds": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "medianTalkSeconds": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "p95TalkSeconds": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "averagePickupMs": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "p95PickupMs": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "shortAnswered": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "video": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "total",
+                              "answered",
+                              "missed",
+                              "declined",
+                              "failed",
+                              "ringing",
+                              "answerRate",
+                              "talkSeconds",
+                              "timedAnswered",
+                              "timedPickup",
+                              "averageTalkSeconds",
+                              "medianTalkSeconds",
+                              "p95TalkSeconds",
+                              "averagePickupMs",
+                              "p95PickupMs",
+                              "shortAnswered",
+                              "video"
+                            ]
+                          },
+                          "outbound": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "total": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "answered": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "missed": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "declined": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "failed": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "ringing": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "answerRate": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "nullable": true
+                              },
+                              "talkSeconds": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "timedAnswered": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "timedPickup": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "averageTalkSeconds": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "medianTalkSeconds": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "p95TalkSeconds": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "averagePickupMs": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "p95PickupMs": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              },
+                              "shortAnswered": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "video": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "total",
+                              "answered",
+                              "missed",
+                              "declined",
+                              "failed",
+                              "ringing",
+                              "answerRate",
+                              "talkSeconds",
+                              "timedAnswered",
+                              "timedPickup",
+                              "averageTalkSeconds",
+                              "medianTalkSeconds",
+                              "p95TalkSeconds",
+                              "averagePickupMs",
+                              "p95PickupMs",
+                              "shortAnswered",
+                              "video"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "inbound",
+                          "outbound"
+                        ]
+                      },
+                      "mediaQuality": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "measuredCalls": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "averageJitterMs": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "averageRttMs": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "packetsLost": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "measuredCalls",
+                          "averageJitterMs",
+                          "averageRttMs",
+                          "packetsLost"
+                        ]
+                      },
+                      "appQuality": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "measuredCalls": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "averageJitterMs": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "averageRttMs": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "packetLossRate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "reconnects": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "measuredCalls",
+                          "averageJitterMs",
+                          "averageRttMs",
+                          "packetLossRate",
+                          "reconnects"
+                        ]
+                      },
+                      "endReasons": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "type": "string"
+                            },
+                            "count": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "count"
+                          ]
+                        }
+                      },
+                      "appErrors": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "type": "string"
+                            },
+                            "count": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "count"
+                          ]
+                        }
+                      },
+                      "transports": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "type": "string"
+                            },
+                            "count": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "count"
+                          ]
+                        }
+                      },
+                      "multiParticipantCalls": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "followUp": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "eligibleMissed": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "returnedWithin24h": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "rate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "averageDelayMs": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "pendingWindow": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "unknownContact": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "eligibleMissed",
+                          "returnedWithin24h",
+                          "rate",
+                          "averageDelayMs",
+                          "pendingWindow",
+                          "unknownContact"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "total",
+                      "answered",
+                      "missed",
+                      "declined",
+                      "failed",
+                      "ringing",
+                      "answerRate",
+                      "talkSeconds",
+                      "timedAnswered",
+                      "timedPickup",
+                      "averageTalkSeconds",
+                      "medianTalkSeconds",
+                      "p95TalkSeconds",
+                      "averagePickupMs",
+                      "p95PickupMs",
+                      "shortAnswered",
+                      "video",
+                      "directions",
+                      "mediaQuality",
+                      "appQuality",
+                      "endReasons",
+                      "appErrors",
+                      "transports",
+                      "multiParticipantCalls",
+                      "followUp"
+                    ]
+                  }
+                },
+                "required": [
+                  "measured",
+                  "observedHours",
+                  "lastObservedAt",
+                  "outgoingMessages",
+                  "incomingMessages",
+                  "sendAttempts",
+                  "sendFailures",
+                  "sendFailureRate",
+                  "businessReplies",
+                  "averageBusinessResponseMs",
+                  "onlineMs",
+                  "disconnects",
+                  "connectFailures",
+                  "streamErrors",
+                  "keepaliveTimeouts",
+                  "engagement",
+                  "totalNumbers",
+                  "measuredNumbers",
+                  "connectedNumbers",
+                  "messageAnalysis",
+                  "customerActivity",
+                  "accountActivity",
+                  "responseQueue",
+                  "calls"
+                ]
+              }
+            ]
+          },
+          "numbers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sessionId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "projectId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "backend": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "measured": {
+                  "type": "boolean"
+                },
+                "observedHours": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "lastObservedAt": {
+                  "type": "integer",
+                  "description": "Unix milliseconds.",
+                  "nullable": true
+                },
+                "outgoingMessages": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "incomingMessages": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sendAttempts": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sendFailures": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sendFailureRate": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "nullable": true
+                },
+                "businessReplies": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "averageBusinessResponseMs": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "onlineMs": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "disconnects": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "connectFailures": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "streamErrors": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "keepaliveTimeouts": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "engagement": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "windowHours": {
+                      "type": "integer",
+                      "enum": [
+                        24
+                      ]
+                    },
+                    "completedConversations": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "deliveredConversations": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "readConversations": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "repliedConversations": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "deliveryRate": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1,
+                      "nullable": true
+                    },
+                    "readRate": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1,
+                      "nullable": true
+                    },
+                    "replyRate": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1,
+                      "nullable": true
+                    },
+                    "averageCustomerReplyMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "complete": {
+                      "type": "boolean"
+                    },
+                    "droppedConversations": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "droppedRecords": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "droppedReceiptJoins": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "windowHours",
+                    "completedConversations",
+                    "deliveredConversations",
+                    "readConversations",
+                    "repliedConversations",
+                    "deliveryRate",
+                    "readRate",
+                    "replyRate",
+                    "averageCustomerReplyMs",
+                    "complete",
+                    "droppedConversations",
+                    "droppedRecords",
+                    "droppedReceiptJoins"
+                  ]
+                },
+                "messageAnalysis": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "complete": {
+                      "type": "boolean"
+                    },
+                    "segments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "dimension": {
+                            "type": "string",
+                            "enum": [
+                              "message_type",
+                              "text_band",
+                              "origin",
+                              "calling_code",
+                              "customer_devices"
+                            ]
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "sendAttempts": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "sent": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "sendFailures": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "sendFailureRate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "completedConversations": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "deliveredConversations": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "readConversations": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "repliedConversations": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "deliveryRate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "readRate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "replyRate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "averageCustomerReplyMs": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "shareOfConversations": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "shareOfSends": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "readRateInterval95": {
+                            "type": "array",
+                            "nullable": true,
+                            "minItems": 2,
+                            "maxItems": 2,
+                            "items": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "description": "95% Wilson interval for observed conversation receipts or replies; not a causal effect."
+                          },
+                          "replyRateInterval95": {
+                            "type": "array",
+                            "nullable": true,
+                            "minItems": 2,
+                            "maxItems": 2,
+                            "items": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "description": "95% Wilson interval for observed conversation receipts or replies; not a causal effect."
+                          },
+                          "readRateDifference": {
+                            "type": "number",
+                            "minimum": -1,
+                            "maximum": 1,
+                            "nullable": true
+                          },
+                          "replyRateDifference": {
+                            "type": "number",
+                            "minimum": -1,
+                            "maximum": 1,
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "dimension",
+                          "key",
+                          "sendAttempts",
+                          "sent",
+                          "sendFailures",
+                          "sendFailureRate",
+                          "completedConversations",
+                          "deliveredConversations",
+                          "readConversations",
+                          "repliedConversations",
+                          "deliveryRate",
+                          "readRate",
+                          "replyRate",
+                          "averageCustomerReplyMs",
+                          "shareOfConversations",
+                          "shareOfSends",
+                          "readRateInterval95",
+                          "replyRateInterval95",
+                          "readRateDifference",
+                          "replyRateDifference"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "complete",
+                    "segments"
+                  ]
+                },
+                "customerActivity": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "observed": {
+                      "type": "boolean"
+                    },
+                    "onlineSignals": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "offlineSignals": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "typingSignals": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "observed",
+                    "onlineSignals",
+                    "offlineSignals",
+                    "typingSignals"
+                  ]
+                },
+                "accountActivity": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "observed": {
+                      "type": "boolean"
+                    },
+                    "primaryPhoneActivitySignals": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "primaryPhoneActivePeriods": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "completedPhoneActivityPeriods": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "phoneActivityMs": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "averagePhoneActivityMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "phoneQuietGaps": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "phoneQuietMs": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "averagePhoneQuietMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "primaryPhoneMessages": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "otherDeviceMessages": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "lastPrimaryPhoneAt": {
+                      "type": "integer",
+                      "description": "Unix milliseconds.",
+                      "nullable": true
+                    },
+                    "primaryPhoneReplies": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "otherDeviceReplies": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "averagePrimaryPhoneResponseMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "averageOtherDeviceResponseMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "observed",
+                    "primaryPhoneActivitySignals",
+                    "primaryPhoneActivePeriods",
+                    "completedPhoneActivityPeriods",
+                    "phoneActivityMs",
+                    "averagePhoneActivityMs",
+                    "phoneQuietGaps",
+                    "phoneQuietMs",
+                    "averagePhoneQuietMs",
+                    "primaryPhoneMessages",
+                    "otherDeviceMessages",
+                    "lastPrimaryPhoneAt",
+                    "primaryPhoneReplies",
+                    "otherDeviceReplies",
+                    "averagePrimaryPhoneResponseMs",
+                    "averageOtherDeviceResponseMs"
+                  ]
+                },
+                "responseQueue": {
+                  "type": "object",
+                  "nullable": true,
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "awaitingReply": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "oldestWaitingMs": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "observedAt": {
+                          "type": "integer",
+                          "description": "Unix milliseconds."
+                        },
+                        "complete": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "awaitingReply",
+                        "oldestWaitingMs",
+                        "observedAt",
+                        "complete"
+                      ]
+                    }
+                  ]
+                },
+                "projectName": {
+                  "type": "string"
+                },
+                "calls": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "answered": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "missed": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "declined": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "failed": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ringing": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "answerRate": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1,
+                      "nullable": true
+                    },
+                    "talkSeconds": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "timedAnswered": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "timedPickup": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "averageTalkSeconds": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "medianTalkSeconds": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "p95TalkSeconds": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "averagePickupMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "p95PickupMs": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "shortAnswered": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "video": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "directions": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "inbound": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "total": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "answered": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "missed": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "declined": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "failed": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "ringing": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "answerRate": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "talkSeconds": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "timedAnswered": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "timedPickup": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "averageTalkSeconds": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "medianTalkSeconds": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "p95TalkSeconds": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "averagePickupMs": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "p95PickupMs": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "shortAnswered": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "video": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "total",
+                            "answered",
+                            "missed",
+                            "declined",
+                            "failed",
+                            "ringing",
+                            "answerRate",
+                            "talkSeconds",
+                            "timedAnswered",
+                            "timedPickup",
+                            "averageTalkSeconds",
+                            "medianTalkSeconds",
+                            "p95TalkSeconds",
+                            "averagePickupMs",
+                            "p95PickupMs",
+                            "shortAnswered",
+                            "video"
+                          ]
+                        },
+                        "outbound": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "total": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "answered": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "missed": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "declined": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "failed": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "ringing": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "answerRate": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "nullable": true
+                            },
+                            "talkSeconds": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "timedAnswered": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "timedPickup": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "averageTalkSeconds": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "medianTalkSeconds": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "p95TalkSeconds": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "averagePickupMs": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "p95PickupMs": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            },
+                            "shortAnswered": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "video": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "total",
+                            "answered",
+                            "missed",
+                            "declined",
+                            "failed",
+                            "ringing",
+                            "answerRate",
+                            "talkSeconds",
+                            "timedAnswered",
+                            "timedPickup",
+                            "averageTalkSeconds",
+                            "medianTalkSeconds",
+                            "p95TalkSeconds",
+                            "averagePickupMs",
+                            "p95PickupMs",
+                            "shortAnswered",
+                            "video"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "inbound",
+                        "outbound"
+                      ]
+                    },
+                    "mediaQuality": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "measuredCalls": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "averageJitterMs": {
+                          "type": "number",
+                          "minimum": 0,
+                          "nullable": true
+                        },
+                        "averageRttMs": {
+                          "type": "number",
+                          "minimum": 0,
+                          "nullable": true
+                        },
+                        "packetsLost": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "measuredCalls",
+                        "averageJitterMs",
+                        "averageRttMs",
+                        "packetsLost"
+                      ]
+                    },
+                    "appQuality": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "measuredCalls": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "averageJitterMs": {
+                          "type": "number",
+                          "minimum": 0,
+                          "nullable": true
+                        },
+                        "averageRttMs": {
+                          "type": "number",
+                          "minimum": 0,
+                          "nullable": true
+                        },
+                        "packetLossRate": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1,
+                          "nullable": true
+                        },
+                        "reconnects": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "measuredCalls",
+                        "averageJitterMs",
+                        "averageRttMs",
+                        "packetLossRate",
+                        "reconnects"
+                      ]
+                    },
+                    "endReasons": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "count"
+                        ]
+                      }
+                    },
+                    "appErrors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "count"
+                        ]
+                      }
+                    },
+                    "transports": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "count"
+                        ]
+                      }
+                    },
+                    "multiParticipantCalls": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "followUp": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "eligibleMissed": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "returnedWithin24h": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "rate": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1,
+                          "nullable": true
+                        },
+                        "averageDelayMs": {
+                          "type": "number",
+                          "minimum": 0,
+                          "nullable": true
+                        },
+                        "pendingWindow": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "unknownContact": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "eligibleMissed",
+                        "returnedWithin24h",
+                        "rate",
+                        "averageDelayMs",
+                        "pendingWindow",
+                        "unknownContact"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "answered",
+                    "missed",
+                    "declined",
+                    "failed",
+                    "ringing",
+                    "answerRate",
+                    "talkSeconds",
+                    "timedAnswered",
+                    "timedPickup",
+                    "averageTalkSeconds",
+                    "medianTalkSeconds",
+                    "p95TalkSeconds",
+                    "averagePickupMs",
+                    "p95PickupMs",
+                    "shortAnswered",
+                    "video",
+                    "directions",
+                    "mediaQuality",
+                    "appQuality",
+                    "endReasons",
+                    "appErrors",
+                    "transports",
+                    "multiParticipantCalls",
+                    "followUp"
+                  ]
+                }
+              },
+              "required": [
+                "sessionId",
+                "projectId",
+                "name",
+                "backend",
+                "status",
+                "measured",
+                "observedHours",
+                "lastObservedAt",
+                "outgoingMessages",
+                "incomingMessages",
+                "sendAttempts",
+                "sendFailures",
+                "sendFailureRate",
+                "businessReplies",
+                "averageBusinessResponseMs",
+                "onlineMs",
+                "disconnects",
+                "connectFailures",
+                "streamErrors",
+                "keepaliveTimeouts",
+                "engagement",
+                "messageAnalysis",
+                "customerActivity",
+                "accountActivity",
+                "responseQueue",
+                "projectName",
+                "calls"
+              ]
+            }
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "ts": {
+                  "type": "integer",
+                  "description": "Unix milliseconds."
+                },
+                "outgoingMessages": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "incomingMessages": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sendFailures": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "businessReplies": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "averageBusinessResponseMs": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "onlineMs": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "disconnects": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sessionId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "customerOnlineSignals": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "customerTypingSignals": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "primaryPhoneMessages": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "otherDeviceMessages": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "primaryPhoneReplies": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "phoneActivePeriods": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "completedPhoneActivityPeriods": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "phoneActivityMs": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "phoneQuietGaps": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "phoneQuietMs": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "ts",
+                "outgoingMessages",
+                "incomingMessages",
+                "sendFailures",
+                "businessReplies",
+                "averageBusinessResponseMs",
+                "onlineMs",
+                "disconnects",
+                "sessionId",
+                "customerOnlineSignals",
+                "customerTypingSignals",
+                "primaryPhoneMessages",
+                "otherDeviceMessages",
+                "primaryPhoneReplies",
+                "phoneActivePeriods",
+                "completedPhoneActivityPeriods",
+                "phoneActivityMs",
+                "phoneQuietGaps",
+                "phoneQuietMs"
+              ]
+            }
+          },
+          "callSeries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "answered": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "missed": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "declined": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "failed": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ringing": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "answerRate": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "nullable": true
+                },
+                "talkSeconds": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "timedAnswered": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "timedPickup": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "averageTalkSeconds": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "medianTalkSeconds": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "p95TalkSeconds": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "averagePickupMs": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "p95PickupMs": {
+                  "type": "number",
+                  "minimum": 0,
+                  "nullable": true
+                },
+                "shortAnswered": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "video": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sessionId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "ts": {
+                  "type": "integer",
+                  "description": "Unix milliseconds."
+                }
+              },
+              "required": [
+                "total",
+                "answered",
+                "missed",
+                "declined",
+                "failed",
+                "ringing",
+                "answerRate",
+                "talkSeconds",
+                "timedAnswered",
+                "timedPickup",
+                "averageTalkSeconds",
+                "medianTalkSeconds",
+                "p95TalkSeconds",
+                "averagePickupMs",
+                "p95PickupMs",
+                "shortAnswered",
+                "video",
+                "sessionId",
+                "ts"
+              ]
+            }
+          }
+        },
+        "required": [
+          "enabled",
+          "period",
+          "requestVitals",
+          "summary",
+          "numbers",
+          "series",
+          "callSeries"
         ]
       }
     },

@@ -2865,3 +2865,46 @@ without the original response. An `unknown` outcome can mean an external effect
 occurred; reconcile it before choosing a new key. Request/response bodies and
 customer log output are not retained. List responses contain `items` and
 `nextCursor`; pass that cursor as `before` to read the next page.
+
+## WhatsApp business analytics
+
+Source builds expose `client.analytics.get({ projectId, sessionId, start, end })`.
+Requires `sessions:read`; project-bound clients cannot read another project.
+A team owner or admin enables Analytics in the Console. Disabled results contain
+no business aggregates.
+
+```ts
+const { data } = await client.analytics.get({ sessionId: numberId });
+console.log(data.summary?.engagement.replyRate);
+console.log(data.summary?.calls.answerRate);
+console.log(data.summary?.calls.followUp);
+console.log(data.callSeries);
+```
+
+Messaging results include completed 24-hour receipt/reply cohorts, response
+queues, coarse metadata comparisons and observed phone/customer activity.
+Calls include outcomes, direction breakdowns, measured pickup and length timings,
+reported quality, failure categories and completed missed-call follow-up windows.
+Call results do not require messaging telemetry. Preserve `null` measurements;
+missing reports do not imply healthy quality. Disabling Analytics clears message
+and engagement aggregates and hides the call view; operational call history is
+retained separately. [Measurement definitions](https://docs.polymorfa.com/console/analytics).
+These source-build methods have not been published in a package release.
+
+## Analytics metrics export
+
+Source builds expose `client.analytics.metrics` on root and project clients:
+
+```ts
+const { data, metadata } = await client.analytics.metrics({
+  windowHours: 24,
+  format: "openmetrics",
+  segments: true,
+});
+```
+
+`data` is the metrics text; `metadata` retains HTTP status, request ID and headers.
+The method validates UUID filters and the 1–168-hour window. It uses `sessions:read`
+and the same Analytics opt-in. All metrics are gauges over completed UTC hours;
+never apply `rate()` or `increase()`. Disabled exports contain enablement and window
+metadata only. [Collector setup and definitions](https://docs.polymorfa.com/console/analytics-collectors).

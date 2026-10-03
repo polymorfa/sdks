@@ -10,6 +10,7 @@ type LedgerEntry = {
   method: string;
   path: string;
   operationId: string;
+  sourceCommit?: string;
   typescript: { status: string; method?: string; reason?: string };
 };
 
@@ -186,7 +187,7 @@ const calls = [
 ] as const;
 
 describe("reconciled coverage evidence", () => {
-  it("pins byte-identical source snapshots and the ledger to one revision", () => {
+  it("pins reviewed snapshot hashes and the ledger baseline revision", () => {
     const source = JSON.parse(
       readFileSync(repositoryFile("contracts/source.json"), "utf8"),
     ) as {
@@ -207,6 +208,67 @@ describe("reconciled coverage evidence", () => {
         .update(readFileSync(repositoryFile(contract.snapshotPath)))
         .digest("hex");
       expect(hash, contract.snapshotPath).toBe(contract.sha256);
+    }
+  });
+
+  it("reconstructs the exact Platform baseline after removing only pinned Analytics additions", () => {
+    const source = JSON.parse(
+      readFileSync(repositoryFile("contracts/source.json"), "utf8"),
+    ) as {
+      contracts: {
+        platform: { snapshotPath: string; baselineSha256: string };
+      };
+      supplements: {
+        analytics: {
+          commit: string;
+          published: boolean;
+          paths: string[];
+          schemas: string[];
+        };
+      };
+    };
+    const analytics = source.supplements.analytics;
+    expect(analytics.commit).toBe("e6006c2242ed8fe01abbe6b2d8db93c230508929");
+    expect(analytics.published).toBe(false);
+    expect(analytics.paths).toEqual([
+      "/platform/analytics",
+      "/platform/projects/{projectId}/analytics",
+      "/platform/analytics/metrics",
+      "/platform/projects/{projectId}/analytics/metrics",
+    ]);
+    expect(analytics.schemas).toEqual(["WhatsAppAnalytics"]);
+    const platform = JSON.parse(
+      readFileSync(
+        repositoryFile(source.contracts.platform.snapshotPath),
+        "utf8",
+      ),
+    ) as {
+      paths: Record<string, unknown>;
+      components: { schemas: Record<string, unknown> };
+    };
+    for (const path of analytics.paths) {
+      expect(platform.paths[path], path).toBeDefined();
+      delete platform.paths[path];
+    }
+    for (const schema of analytics.schemas) {
+      expect(platform.components.schemas[schema], schema).toBeDefined();
+      delete platform.components.schemas[schema];
+    }
+    const baselineSha256 =
+      "d831f87eb4027c5f43ec4454bdd23e6972a4beb715fa080947545b7bff28d6b7";
+    expect(source.contracts.platform.baselineSha256).toBe(baselineSha256);
+    expect(
+      createHash("sha256")
+        .update(`${JSON.stringify(platform, null, 2)}\n`)
+        .digest("hex"),
+    ).toBe(baselineSha256);
+    for (const id of [
+      "getWhatsAppAnalytics",
+      "getProjectWhatsAppAnalytics",
+      "exportWhatsAppAnalyticsMetrics",
+      "exportProjectWhatsAppAnalyticsMetrics",
+    ]) {
+      expect(entry(id).sourceCommit).toBe(analytics.commit);
     }
   });
 
