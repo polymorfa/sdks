@@ -125,7 +125,7 @@ export class BillingResource {
     });
   }
   getPriorities(
-    params: { readonly scope?: "project" } = {},
+    params: { readonly scope?: "project"; readonly projectId?: string } = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<BillingPriorities>>> {
     if (params.scope !== undefined && params.scope !== "project")
@@ -133,7 +133,12 @@ export class BillingResource {
     return this.transport.request({
       method: "GET",
       path: "/platform/billing/priorities",
-      query: params.scope === undefined ? {} : { scope: params.scope },
+      query: {
+        ...(params.scope === undefined ? {} : { scope: params.scope }),
+        ...(params.projectId === undefined
+          ? {}
+          : { projectId: billingId(params.projectId) }),
+      },
       ...options,
     });
   }
@@ -160,8 +165,36 @@ export class BillingResource {
     input: ReorderBillingPrioritiesInput,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<BillingPriorities>>> {
-    billingScope(input.scope);
     billingRevision(input.expectedRevision);
+    if (input.scope === "resource") {
+      const resources = input.resources.map((row) => {
+        if (row.scope !== "customer" && row.scope !== "number")
+          throw new PolymorfaValidationError(
+            "Resource scope must be customer or number.",
+          );
+        return { scope: row.scope, resourceId: billingId(row.resourceId) };
+      });
+      if (
+        resources.length > 1000000 ||
+        new Set(resources.map((r) => `${r.scope}:${r.resourceId}`)).size !==
+          resources.length
+      )
+        throw new PolymorfaValidationError(
+          "resources must be a unique complete list.",
+        );
+      return this.transport.request({
+        method: "PUT",
+        path: "/platform/billing/priorities",
+        body: {
+          scope: input.scope,
+          projectId: billingId(input.projectId),
+          resources,
+          expectedRevision: input.expectedRevision,
+        },
+        ...options,
+      });
+    }
+    billingScope(input.scope);
     const resourceIds = input.resourceIds.map(billingId);
     if (new Set(resourceIds).size !== resourceIds.length)
       throw new PolymorfaValidationError(

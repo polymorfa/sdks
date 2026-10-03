@@ -42,13 +42,19 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The current snapshots are byte-identical copies of Messaging and Platform
-contracts at API implementation commit `ec5f287953fe983ffa43e98dacbff4672c98c8ce` on
+contracts at API implementation commit `ba09326dd3c6688f05320c1f7685aeb0290a0ed2` on
 `t3code/project-billing-dashboard`. This branch is unmerged. Seven financial
 operations cover limits, priorities, complete ordering and one-resource combined
-read/save. Project, customer and number scopes use the confirmed funding hierarchy.
+read/save. Project priority takes precedence. Numbers inherit customer priority;
+a higher number priority overrides it within the project. Customer limits still
+include all assigned numbers.
 Initial real QuickLink creation accepts optional billing controls before admission.
-Six existing operation fingerprints changed for those fields and read filters;
-three new Console-only setup operations are explicitly excluded from SDK authority.
+This repin changes three operation fingerprints: project-filtered priority reads,
+mixed customer/number ordering, and private Console usage insights. The two
+financial operations are covered by typed SDK methods. Usage insights remain
+excluded because they require dashboard identity; no server SDK method grants
+access to that Console route. The three Console-only setup operations also
+remain excluded from SDK authority.
 Reads require organization credentials with `billing:read`; writes require
 `billing:manage`, live team authority and Pay-As-You-Go. Existing credential masks
 do not gain these permissions. Paid service continues through its window when a

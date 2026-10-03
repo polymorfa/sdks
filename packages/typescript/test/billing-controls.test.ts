@@ -174,3 +174,107 @@ it("filters project directories without loading customer and number lists", asyn
     "/platform/billing/priorities?scope=project",
   ]);
 });
+
+it("serializes project-scoped mixed funding controls and rejects duplicate or invalid resource scopes before HTTP", async () => {
+  server = await startTestServer(() => ({
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      data: { revision: 5, projects: [], customers: [], numbers: [] },
+    }),
+  }));
+  const client = new Client({
+    baseUrl: server.url,
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    maxNetworkRetries: 0,
+  });
+  await client.billing.getPriorities({ projectId: id });
+  const resources = [
+    { scope: "number" as const, resourceId: other },
+    { scope: "customer" as const, resourceId: id },
+  ];
+  await client.billing.reorderPriorities({
+    scope: "resource",
+    projectId: id,
+    resources,
+    expectedRevision: 5,
+  });
+  expect(server.requests[0]?.path).toBe(
+    `/platform/billing/priorities?projectId=${id}`,
+  );
+  expect(JSON.parse(server.requests[1]!.body)).toEqual({
+    scope: "resource",
+    projectId: id,
+    resources,
+    expectedRevision: 5,
+  });
+  expect(() =>
+    client.billing.reorderPriorities({
+      scope: "resource",
+      projectId: id,
+      resources: [resources[0]!, resources[0]!],
+      expectedRevision: 5,
+    }),
+  ).toThrow(PolymorfaValidationError);
+  expect(() =>
+    client.billing.reorderPriorities({
+      scope: "resource",
+      projectId: id,
+      resources: [{ scope: "project" as never, resourceId: id }],
+      expectedRevision: 5,
+    }),
+  ).toThrow(PolymorfaValidationError);
+  expect(server.requests).toHaveLength(2);
+});
+
+it("normalizes scoped IDs, preserves distinct resource kinds, and validates project filters before HTTP", async () => {
+  server = await startTestServer(() => ({
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      data: { revision: 5, projects: [], customers: [], numbers: [] },
+    }),
+  }));
+  const client = new Client({
+    baseUrl: server.url,
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    maxNetworkRetries: 0,
+  });
+  const resourceId = "AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA";
+  await client.billing.getPriorities({
+    scope: "project",
+    projectId: resourceId,
+  });
+  await client.billing.reorderPriorities({
+    scope: "resource",
+    projectId: resourceId,
+    resources: [
+      { scope: "number", resourceId },
+      { scope: "customer", resourceId },
+    ],
+    expectedRevision: 5,
+  });
+  expect(server.requests[0]?.path).toBe(
+    `/platform/billing/priorities?scope=project&projectId=${resourceId.toLowerCase()}`,
+  );
+  expect(JSON.parse(server.requests[1]!.body)).toMatchObject({
+    projectId: resourceId.toLowerCase(),
+    resources: [
+      { scope: "number", resourceId: resourceId.toLowerCase() },
+      { scope: "customer", resourceId: resourceId.toLowerCase() },
+    ],
+  });
+  expect(() => client.billing.getPriorities({ projectId: "invalid" })).toThrow(
+    PolymorfaValidationError,
+  );
+  expect(() =>
+    client.billing.reorderPriorities({
+      scope: "resource",
+      projectId: resourceId,
+      resources: [
+        { scope: "number", resourceId },
+        { scope: "number", resourceId: resourceId.toLowerCase() },
+      ],
+      expectedRevision: 5,
+    }),
+  ).toThrow(PolymorfaValidationError);
+  expect(server.requests).toHaveLength(2);
+});

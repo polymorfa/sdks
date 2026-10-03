@@ -25109,7 +25109,7 @@
           "billing"
         ],
         "summary": "Read funding priorities",
-        "description": "Lists active projects, customers and real numbers. Pass scope=project to read only project ranks. Higher project priority takes precedence, followed by customer priority and number priority before renewal due time and stable number identity. Numbers are ranked within a project. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:read`. Project tokens are not accepted.",
+        "description": "Lists active projects, customers and real numbers. Pass scope=project to read only project ranks. Pass projectId to read one project and its customer/number leaderboard. Project priority takes precedence. Within a project, numbers inherit their customer priority; a higher number priority overrides it. Number priority then breaks ties before renewal due time and stable number identity. Numbers are ranked within a project. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -25132,6 +25132,15 @@
               "enum": [
                 "project"
               ]
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -25178,6 +25187,9 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
           "503": {
             "$ref": "#/components/responses/PropagationPending"
           }
@@ -25189,7 +25201,7 @@
           "billing"
         ],
         "summary": "Reorder funding priorities",
-        "description": "resourceIds is the complete list in highest-first order. Project order includes every active project; customer and number orders include every active customer or real number in projectId. Saves the whole order atomically. Concurrent changes or an incomplete list return 409. Retrying the same successful order is harmless. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
+        "description": "resourceIds is the complete list in highest-first order. Project order includes every active project; customer and number orders include every active customer or real number in projectId. Use scope=resource with projectId and a complete resources array of {scope: customer or number, resourceId} for one mixed leaderboard. Saves the whole order atomically. Concurrent changes or an incomplete list return 409. Retrying the same successful order is harmless. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
@@ -25208,6 +25220,59 @@
             "application/json": {
               "schema": {
                 "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "scope": {
+                        "type": "string",
+                        "enum": [
+                          "resource"
+                        ]
+                      },
+                      "projectId": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "resources": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "enum": [
+                                "customer",
+                                "number"
+                              ]
+                            },
+                            "resourceId": {
+                              "type": "string",
+                              "format": "uuid"
+                            }
+                          },
+                          "required": [
+                            "scope",
+                            "resourceId"
+                          ]
+                        },
+                        "uniqueItems": true,
+                        "maxItems": 1000000
+                      },
+                      "expectedRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483646
+                      }
+                    },
+                    "required": [
+                      "scope",
+                      "projectId",
+                      "resources",
+                      "expectedRevision"
+                    ]
+                  },
                   {
                     "type": "object",
                     "additionalProperties": false,
@@ -37759,8 +37824,8 @@
         "tags": [
           "insights"
         ],
-        "summary": "Usage insight",
-        "description": "**EXCLUDED from the public API** (`console`). Customer console usage and entitlement presentation.",
+        "summary": "Read Console usage",
+        "description": "Private Console usage for the authenticated team or one active project. `start` and `end` are inclusive Unix-millisecond boundaries, with a maximum span of 366 days. A missing end defaults to now; a missing start defaults to 29 days before the end. Daily buckets use UTC dates and include only dates with observed audit or credit-ledger activity. API request counts include API and MCP operations; peak request rate is the busiest one-minute bucket, not a sum of daily peaks. Number and connection metrics are live snapshots, and message-rate usage remains null because its peak is not measured. The project breakdown includes active projects and omits unattributed team activity, which remains in team totals.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -37777,7 +37842,8 @@
             "required": false,
             "description": "Project to read. Omit to total every project in the organization.",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           },
           {
@@ -37785,7 +37851,9 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64",
+              "description": "Inclusive Unix-millisecond boundary. The range may span at most 366 days."
             }
           },
           {
@@ -37793,7 +37861,9 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64",
+              "description": "Inclusive Unix-millisecond boundary. The range may span at most 366 days."
             }
           }
         ],
@@ -37817,10 +37887,22 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsoleUsageInsights"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -37828,8 +37910,8 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -39751,6 +39833,222 @@
         },
         "required": [
           "data"
+        ]
+      },
+      "ConsoleUsageInsights": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "period": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "end": {
+                "type": "integer",
+                "format": "int64"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ]
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsoleUsageMetric"
+            }
+          },
+          "totals": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "failedRequests": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sessionDayCredits": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "failedRequests",
+              "sessionDayCredits"
+            ]
+          },
+          "daily": {
+            "type": "array",
+            "maxItems": 367,
+            "description": "Observed UTC dates in ascending order. Missing dates have no observed activity. Partial first and last days count only activity within the inclusive requested range.",
+            "items": {
+              "$ref": "#/components/schemas/ConsoleDailyUsage"
+            }
+          },
+          "byProject": {
+            "type": "array",
+            "description": "Included for a team-wide read; omitted for a selected project. Active projects only. Team-level activity without a project is included in totals but has no project row.",
+            "items": {
+              "$ref": "#/components/schemas/ConsoleProjectUsage"
+            }
+          }
+        },
+        "required": [
+          "period",
+          "metrics",
+          "totals",
+          "daily"
+        ]
+      },
+      "ConsoleUsageMetric": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "numbers",
+              "connected",
+              "session-days",
+              "api-requests",
+              "request-rate",
+              "message-rate",
+              "active-days"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "numbers",
+              "sessions",
+              "days",
+              "requests",
+              "req/min",
+              "msg/min"
+            ]
+          },
+          "used": {
+            "type": "number",
+            "minimum": 0,
+            "nullable": true,
+            "description": "Null for the unmeasured message-rate peak."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": -1,
+            "description": "-1 means no limit. Session-days uses 0 because every observed session-day is metered."
+          },
+          "overage": {
+            "type": "number",
+            "minimum": 0,
+            "nullable": true
+          },
+          "overageLabel": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "description",
+          "unit",
+          "used",
+          "limit",
+          "overage",
+          "overageLabel"
+        ]
+      },
+      "ConsoleDailyUsage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "UTC date, YYYY-MM-DD."
+          },
+          "sessionDays": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sessionDayCredits": {
+            "type": "number"
+          },
+          "apiRequests": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failedRequests": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "peakRequestRate": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Maximum API and MCP request count in one UTC minute on this date within the requested range."
+          },
+          "activeDays": {
+            "type": "integer",
+            "enum": [
+              1
+            ],
+            "description": "This date has at least one observed audit or credit-ledger row, including activity that is not an API request or session charge."
+          }
+        },
+        "required": [
+          "date",
+          "sessionDays",
+          "sessionDayCredits",
+          "apiRequests",
+          "failedRequests",
+          "peakRequestRate",
+          "activeDays"
+        ]
+      },
+      "ConsoleProjectUsage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "connected": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sessionDays": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sessionDayCredits": {
+            "type": "number"
+          },
+          "apiRequests": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failedRequests": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "projectId",
+          "connected",
+          "sessionDays",
+          "sessionDayCredits",
+          "apiRequests",
+          "failedRequests"
         ]
       },
       "ErrorEnvelope": {

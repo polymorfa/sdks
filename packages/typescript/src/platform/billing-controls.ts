@@ -40,6 +40,15 @@ export interface BillingLimits {
 }
 export type ReorderBillingPrioritiesInput =
   | {
+      readonly scope: "resource";
+      readonly projectId: string;
+      readonly resources: readonly {
+        readonly scope: "customer" | "number";
+        readonly resourceId: string;
+      }[];
+      readonly expectedRevision: number;
+    }
+  | {
       readonly scope: "project";
       readonly resourceIds: readonly string[];
       readonly expectedRevision: number;

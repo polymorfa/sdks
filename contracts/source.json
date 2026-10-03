@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "ec5f287953fe983ffa43e98dacbff4672c98c8ce",
+  "commit": "ba09326dd3c6688f05320c1f7685aeb0290a0ed2",
   "branch": "t3code/project-billing-dashboard",
   "published": false,
-  "note": "Project, customer and number limits and priorities; native single-resource controls and atomic initial QuickLink controls. Snapshots are byte-identical to this source commit. This implementation branch is unmerged; API deployment and package publication remain separate gates.",
+  "note": "Project, customer and number funding controls with mixed resource ranking and project-filtered priority reads. Private Console usage insights include bounded UTC daily aggregates and remain excluded from server SDK authority. Snapshots are byte-identical to this source commit. This implementation branch is unmerged; API deployment and package publication remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "62da5f577924847a6bbb46bebd960336ac919bda9988b04b49b787393f3f21b6"
+      "sha256": "972fe78f67ea7cb07a891f7510d40a2e8a12a2716dc2a368e0886dcdc32a229a"
     }
   }
 }

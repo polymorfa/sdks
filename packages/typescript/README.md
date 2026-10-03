@@ -2907,11 +2907,41 @@ await platform.billing.setResourceControls("customer", customerId, {
 });
 ```
 
-Both revisions are required; a conflict leaves both settings unchanged. Funding
-uses project, customer, then number priority. A customer's assigned numbers
-share its monthly cap. `getLimits({scope:"project"})` and
+Both revisions are required; a conflict leaves both settings unchanged. Project
+priority takes precedence. Numbers inherit customer priority; a higher number
+priority overrides it within the project. A customer's assigned numbers share
+its monthly cap. `getLimits({scope:"project"})` and
 `getPriorities({scope:"project"})` avoid downloading number/customer directories.
 Real initial QuickLink creation accepts `billingControls:{limitCredits:250,
 priority:30}` before pairing admission, with team `billing:manage` authority.
 Testing and supplementary connections reject these fields. Package publication
 and API deployment remain separate gates.
+
+Read one project's funding controls and save its combined customer and number
+order:
+
+```typescript
+const { data: { data: controls } } = await platform.billing.getPriorities({ projectId });
+const resources = [
+  ...controls.customers.map(customer => ({
+    scope: "customer" as const,
+    resourceId: customer.id,
+    priority: customer.priority,
+  })),
+  ...controls.numbers.map(number => ({
+    scope: "number" as const,
+    resourceId: number.id,
+    priority: number.priority,
+  })),
+].sort((first, second) => second.priority - first.priority);
+await platform.billing.reorderPriorities({
+  scope: "resource",
+  projectId,
+  resources: resources.map(({ scope, resourceId }) => ({ scope, resourceId })),
+  expectedRevision: controls.revision,
+});
+```
+
+Pass every active customer and real number, highest priority first. Duplicate,
+incomplete, or stale orders fail without partial changes. This operation never
+bypasses a spending cap.
