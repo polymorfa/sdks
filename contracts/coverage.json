@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "ee885ec4bf62af36b9b85df4310c505f38a224db",
+  "sourceCommit": "2cf44217655e8f4659ff9bbfa869d6499f4926ce",
   "excludedContracts": [
     {
       "family": "graph",
@@ -6158,6 +6158,61 @@
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.getCapabilities"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/limits",
+      "operationId": "getBillingLimits",
+      "fingerprint": "09f303846c1ce0044c0b15357d11108cb4da1d379caf2c02b9b65ccefb9c792b",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.billing.getLimits"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/priorities",
+      "operationId": "getBillingPriorities",
+      "fingerprint": "7c5b91e3412d7a1fdbfb7af700c142a0d751eeedce3e2b98d63f48f440c01039",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.billing.getPriorities"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/limits/{scope}/{resourceId}",
+      "operationId": "setBillingLimit",
+      "fingerprint": "cd84f8690610148f325a379712233e148844cbe9da093154fc3281b18184f69a",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.billing.setLimit"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/priorities",
+      "operationId": "reorderBillingPriorities",
+      "fingerprint": "e618e279c18d8b53715f15ae6e277a9464aadf0420cbebc0cfe9127e9f475f5e",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.billing.reorderPriorities"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/priorities/{scope}/{resourceId}",
+      "operationId": "setBillingPriority",
+      "fingerprint": "d5b33799f33d73775906061fcf94322af949ae722d5896807cdfe998f0da92a8",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.billing.setPriority"
       }
     }
   ]

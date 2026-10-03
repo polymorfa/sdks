@@ -41,18 +41,18 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
-The current snapshots are byte-identical copies of API number capabilities
-PR #402 at merged `dev` commit
-`ee885ec4bf62af36b9b85df4310c505f38a224db`. It adds `Client.sessions.getCapabilities` and the
-capability response types. The API requires `sessions:read`, beta access and
-live Number authority. Before configuration is synced, values are unknown.
-
-The pin also includes merged Hybrid Link tier transitions and new-chat capping.
-The two Hybrid Link error codes now appear in the public error enum; the SDK
-already recognizes both. Template submission has a more precise response
-schema; its SDK response remains an object. Hosted Flow endpoint and encryption
-key operations remain explicitly excluded from typed SDK coverage. Package
-publication and deployed feature access are separate gates.
+The current snapshots are byte-identical copies of Messaging and Platform
+contracts at API implementation commit `2cf44217655e8f4659ff9bbfa869d6499f4926ce` on
+`t3code/project-billing-dashboard`. This branch is unmerged. The five new
+operations are `Client.billing.getLimits`, `setLimit`, `getPriorities`,
+`setPriority` and `reorderPriorities`. Existing operation fingerprints are
+unchanged. Reads require organization credentials with `billing:read`; writes
+require `billing:manage`, live team authority and Pay-As-You-Go. Existing
+credential masks do not gain these permissions. Paid service continues through
+its paid window when a limit is reached. The older Graph and test-event
+supplements retain their independent source pins; these operations do not
+change those contracts. API deployment, SDK publication and CLI publication are
+separate release gates.
 
 The preceding snapshots were described as follows.
 

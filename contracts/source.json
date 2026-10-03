@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "ee885ec4bf62af36b9b85df4310c505f38a224db",
-  "branch": "dev",
-  "published": true,
-  "note": "API number capabilities PR #402, reconciled with Hybrid Link tier transitions and hosted Flow operations. Both snapshots are byte-identical to this source commit. SDK publication, CLI registry pinning and deployed beta access remain separate gates.",
+  "commit": "2cf44217655e8f4659ff9bbfa869d6499f4926ce",
+  "branch": "t3code/project-billing-dashboard",
+  "published": false,
+  "note": "Limits and project/number funding priorities on an unmerged implementation branch. Both snapshots are byte-identical to this API source commit. API deployment and SDK/CLI package publication remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "d831f87eb4027c5f43ec4454bdd23e6972a4beb715fa080947545b7bff28d6b7"
+      "sha256": "82451703efb451fd847d0f664ca3d03101428ac98300fe7f7ecfd26e7dca58f9"
     }
   }
 }

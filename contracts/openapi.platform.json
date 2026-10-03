@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (236 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (101 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (241 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (101 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -16097,7 +16097,7 @@
           "sessions"
         ],
         "summary": "Start a session",
-        "description": "Starts a stopped session or retries a session whose runtime failed. A hosted paid number must reserve credit before connecting; insufficient available credit returns 402. A new paid window is charged only after the messaging connection succeeds. The identifier may be the session UUID or stable session slug.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Starts a stopped session or retries a session whose runtime failed. A hosted paid number must reserve credit before connecting; insufficient available credit returns 402. A new paid window is charged only after the messaging connection succeeds. Monthly project and number credit limits also apply: a new charge that would exceed either limit returns 409 state_conflict. Already-paid service remains available until its paid window ends. The identifier may be the session UUID or stable session slug.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -24416,11 +24416,11 @@
           "billing"
         ],
         "summary": "Get billing",
-        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
+        "description": "Public Management API. Requires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
-        "x-required-scope": "sessions:read",
+        "x-required-scope": "billing:read",
         "security": [
           {
             "ApiKeyAuth": []
@@ -24473,11 +24473,11 @@
           "billing"
         ],
         "summary": "List usage meters",
-        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
+        "description": "Public Management API. Requires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
-        "x-required-scope": "sessions:read",
+        "x-required-scope": "billing:read",
         "security": [
           {
             "ApiKeyAuth": []
@@ -24530,11 +24530,11 @@
           "billing"
         ],
         "summary": "List billing transactions",
-        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
+        "description": "Public Management API. Requires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
-        "x-required-scope": "sessions:read",
+        "x-required-scope": "billing:read",
         "security": [
           {
             "ApiKeyAuth": []
@@ -24587,11 +24587,11 @@
           "billing"
         ],
         "summary": "List tier pricing",
-        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
+        "description": "Public Management API. Requires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
-        "x-required-scope": "sessions:read",
+        "x-required-scope": "billing:read",
         "security": [
           {
             "ApiKeyAuth": []
@@ -24633,6 +24633,558 @@
           },
           "501": {
             "$ref": "#/components/responses/NotImplemented"
+          }
+        }
+      }
+    },
+    "/platform/billing/limits": {
+      "get": {
+        "operationId": "getBillingLimits",
+        "tags": [
+          "billing"
+        ],
+        "summary": "Read monthly spending limits",
+        "description": "Reads attributed charges and active reservations in Polymorfa credits. Months reset at 00:00 UTC on the first day. Omit projectId for project limits across the team; pass it to include that project's number limits. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "billing:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BillingLimits"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/billing/limits/{scope}/{resourceId}": {
+      "put": {
+        "operationId": "setBillingLimit",
+        "tags": [
+          "billing"
+        ],
+        "summary": "Set a monthly spending limit",
+        "description": "Zero blocks new charges; null removes the limit. Existing paid service continues to its paid-window end. Reservations count toward admission. Supply the revision from the limit read; a stale revision returns 409. Retrying the same successful update is harmless. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "billing:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "limitCredits": {
+                    "type": "number",
+                    "minimum": 0,
+                    "multipleOf": 0.000001,
+                    "maximum": 1000000,
+                    "nullable": true
+                  },
+                  "expectedRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483646
+                  }
+                },
+                "required": [
+                  "limitCredits",
+                  "expectedRevision"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "saved": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "saved"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/billing/priorities": {
+      "get": {
+        "operationId": "getBillingPriorities",
+        "tags": [
+          "billing"
+        ],
+        "summary": "Read funding priorities",
+        "description": "Lists active projects and real numbers. Higher project priority takes precedence; higher number priority breaks ties before renewal due time and stable number identity. Numbers are ranked within a project. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "billing:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BillingPriorities"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      },
+      "put": {
+        "operationId": "reorderBillingPriorities",
+        "tags": [
+          "billing"
+        ],
+        "summary": "Reorder funding priorities",
+        "description": "resourceIds is the complete list in highest-first order. Project order includes every active project; number order includes every real number in projectId. Saves the whole order atomically. Concurrent changes or an incomplete list return 409. Retrying the same successful order is harmless. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "billing:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "scope": {
+                        "type": "string",
+                        "enum": [
+                          "project"
+                        ]
+                      },
+                      "resourceIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "uniqueItems": true,
+                        "maxItems": 1000000
+                      },
+                      "expectedRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483646
+                      }
+                    },
+                    "required": [
+                      "scope",
+                      "resourceIds",
+                      "expectedRevision"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "scope": {
+                        "type": "string",
+                        "enum": [
+                          "number"
+                        ]
+                      },
+                      "projectId": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "resourceIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "uniqueItems": true,
+                        "maxItems": 1000000
+                      },
+                      "expectedRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483646
+                      }
+                    },
+                    "required": [
+                      "scope",
+                      "projectId",
+                      "resourceIds",
+                      "expectedRevision"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BillingPriorities"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/billing/priorities/{scope}/{resourceId}": {
+      "put": {
+        "operationId": "setBillingPriority",
+        "tags": [
+          "billing"
+        ],
+        "summary": "Set a funding priority",
+        "description": "Changes future funding protection and recovery order without shortening paid service. Supply the team-wide revision from the priorities read. A stale revision returns 409. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "billing:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "priority": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "expectedRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483646
+                  }
+                },
+                "required": [
+                  "priority",
+                  "expectedRevision"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BillingPriorities"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
           }
         }
       }
@@ -37683,6 +38235,200 @@
         },
         "required": [
           "ok"
+        ]
+      },
+      "BillingPriorities": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "priority": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "priority"
+              ]
+            }
+          },
+          "numbers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "projectId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "priority": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "id",
+                "projectId",
+                "name",
+                "priority"
+              ]
+            }
+          }
+        },
+        "required": [
+          "revision",
+          "projects",
+          "numbers"
+        ]
+      },
+      "BillingLimit": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "project",
+              "number"
+            ]
+          },
+          "resourceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "limitCredits": {
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 0.000001,
+            "maximum": 1000000,
+            "nullable": true
+          },
+          "spentCredits": {
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 0.000001
+          },
+          "reservedCredits": {
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 0.000001
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          }
+        },
+        "required": [
+          "scope",
+          "resourceId",
+          "projectId",
+          "name",
+          "limitCredits",
+          "spentCredits",
+          "reservedCredits",
+          "revision"
+        ]
+      },
+      "BillingLimits": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "todayCredits": {
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 0.000001
+          },
+          "monthCredits": {
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 0.000001
+          },
+          "daily": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "credits": {
+                  "type": "number",
+                  "minimum": 0,
+                  "multipleOf": 0.000001
+                }
+              },
+              "required": [
+                "date",
+                "credits"
+              ]
+            }
+          },
+          "budgets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingLimit"
+            }
+          }
+        },
+        "required": [
+          "checkedAt",
+          "periodStart",
+          "periodEnd",
+          "todayCredits",
+          "monthCredits",
+          "daily",
+          "budgets"
         ]
       },
       "DashboardUnauthorizedError": {
