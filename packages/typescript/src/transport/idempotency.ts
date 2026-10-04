@@ -14,3 +14,16 @@ export function withIdempotencyKey(options: RequestOptions): RequestOptions {
   if (options.idempotencyKey !== undefined) return options;
   return { ...options, idempotencyKey: globalThis.crypto.randomUUID() };
 }
+
+/**
+ * Send a keyed write at most once unless the caller opts into retries.
+ *
+ * Automatic retries are off unless the caller sets `maxNetworkRetries` for
+ * this request. Campaign reschedule uses this: a retry after a lost response
+ * could act on a campaign whose state has since changed, so the SDK leaves
+ * the decision to retry with the same key to the caller.
+ */
+export function withoutAutomaticRetry(options: RequestOptions): RequestOptions {
+  if (options.maxNetworkRetries !== undefined) return options;
+  return { ...options, maxNetworkRetries: 0 };
+}

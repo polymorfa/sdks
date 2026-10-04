@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- `MessagingClient.campaigns.reschedule(projectSlug, campaignId, body)` and
+  `Client.campaigns.reschedule(campaignId, body)` move a launched campaign that
+  has not started sending, or start it now with `scheduledAt: null`. Each call
+  sends an `Idempotency-Key` and makes one attempt unless you set
+  `maxNetworkRetries`.
 - `Client.audiences.createFromCampaign` creates a follow-up audience from one
   previous campaign outcome. The response includes matched and opted-out counts.
 - Campaign recipient lists expose a typed `failureReason` and can filter by

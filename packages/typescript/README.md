@@ -2125,8 +2125,8 @@ other states return `409`. A pending final event or active delivery run also
 returns `409`; retry after both finish. Platform `delete` accepts draft,
 completed, failed, cancelled, or archived campaigns. A completed or failed
 campaign with a pending final event or active delivery run returns `409`.
-The Messaging API has no campaign update, deletion, archive, duplicate, or
-campaign event history method. The SDK does not substitute Platform routes for
+The Messaging API has no campaign deletion, archive, duplicate, or campaign
+event history method. The SDK does not substitute Platform routes for
 those operations.
 
 ## Chats

@@ -42,8 +42,26 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The current snapshots are byte-identical copies of the Messaging and Platform
-contracts at API dev merge commit `171a9683ff45d11a4b5d3917dc428ad2722b0d99`.
-The full revision contains the inherited Logs and Usage contracts and all four
+contracts at API dev merge commit `ff112f9ea82329da1b5d4c54dcb8f6c3446566e4`
+(API PR #331). Moving from `171a9683ff45d11a4b5d3917dc428ad2722b0d99` adds
+the two paged recipient CSV export operations, covered by
+`MessagingClient.campaigns.exportRecipients` and
+`Client.campaigns.exportRecipients`. The two recipient list fingerprints change
+for the `reason` filter and `failureReason`. The Messaging campaign PATCH
+(API PR #332) and both reschedule actions (API PR #321) were already in the
+snapshot and move from excluded to covered by
+`MessagingClient.campaigns.update`, `MessagingClient.campaigns.reschedule` and
+`Client.campaigns.reschedule`. The ledger contains 581 operations: 444 covered
+and 137 excluded, with no missing, partial or changed fingerprints.
+
+This revision does not yet contain API PR #323 (`Idempotency-Key` replay on
+audience create, audience member append and campaign recipient append) or API
+PR #335 (`createAudienceFromCampaign`). The SDK already sends keys on those
+writes and exposes `Client.audiences.createFromCampaign`; the next repin adds
+the replay headers to four fingerprints and the new operation to the ledger.
+
+The preceding pin at `171a9683ff45d11a4b5d3917dc428ad2722b0d99` was described
+as follows. The full revision contains the inherited Logs and Usage contracts and all four
 public Analytics reads. The ledger contains 579 operations: 433 covered and
 146 excluded, with no missing, partial or changed fingerprints. Six reviewed
 Console changes cover analytics projections, consent preferences, operational

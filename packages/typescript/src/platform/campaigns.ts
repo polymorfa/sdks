@@ -1,7 +1,10 @@
 import { HttpTransport } from "../transport/http.js";
 import { campaignRecipientExportPage } from "../transport/campaign-recipient-export.js";
 import type { CampaignRecipientsCsvPage } from "../messaging/types.js";
-import { withIdempotencyKey } from "../transport/idempotency.js";
+import {
+  withIdempotencyKey,
+  withoutAutomaticRetry,
+} from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   AddPlatformCampaignRecipientsRequest,
