@@ -663,6 +663,62 @@ const PAYLOADS: {
       "attempt",
     ],
   ),
+  "campaign.recipient_delivered": shape<P["campaign.recipient_delivered"]>()(
+    {
+      ...campaign,
+      recipientId: "rcp_1",
+      phone: "+15551234567",
+      sessionKey: "support",
+      externalMessageId: "msg_1",
+      deliveredAt: 6,
+    },
+    [
+      "campaignId",
+      "recipientId",
+      "phone",
+      "sessionKey",
+      "externalMessageId",
+      "deliveredAt",
+    ],
+  ),
+  "campaign.recipient_read": shape<P["campaign.recipient_read"]>()(
+    {
+      ...campaign,
+      recipientId: "rcp_1",
+      phone: "+15551234567",
+      sessionKey: "support",
+      externalMessageId: "msg_1",
+      readAt: 7,
+    },
+    [
+      "campaignId",
+      "recipientId",
+      "phone",
+      "sessionKey",
+      "externalMessageId",
+      "readAt",
+    ],
+  ),
+  "campaign.recipient_replied": shape<P["campaign.recipient_replied"]>()(
+    {
+      ...campaign,
+      recipientId: "rcp_1",
+      phone: "+15551234567",
+      sessionKey: "support",
+      externalMessageId: null,
+      repliedAt: 8,
+      responseMs: 1_000,
+    },
+    [
+      "campaignId",
+      "recipientId",
+      "phone",
+      "sessionKey",
+      "externalMessageId",
+      "repliedAt",
+      "responseMs",
+    ],
+  ),
   "campaign.recipient_failed": shape<P["campaign.recipient_failed"]>()(
     {
       ...campaign,
