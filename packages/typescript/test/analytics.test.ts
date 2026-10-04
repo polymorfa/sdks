@@ -164,7 +164,6 @@ it("rejects HTML success bodies and incomplete OpenMetrics framing", async () =>
   }
 });
 
-
 it("preserves joint country/message cohorts, unknown client families and stale device inventories", async () => {
   const deviceAnalytics = {
     detector: "message_id_prefix/v1",

@@ -962,7 +962,6 @@ quiet gaps, duration sums, sample counts and weighted averages. Ranges up to
 UTC buckets. These signals do not establish phone online/offline or power state.
 See the [measurement definitions](https://docs.polymorfa.com/console/analytics#phone-polymorfa-and-customer-activity).
 
-
 ### Device analytics
 
 `client.analytics.get({start, end, projectId, sessionId})` reads scoped Analytics.
