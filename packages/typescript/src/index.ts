@@ -1116,3 +1116,19 @@ export {
 } from "./messaging/hybrid-link.js";
 
 export * from "./platform/functions.js";
+
+export { AnalyticsResource } from "./platform/analytics.js";
+export type {
+  CallOutcomeMetrics,
+  CallBusinessMetrics,
+  AnalyticsParams,
+  AnalyticsMetricsParams,
+  WhatsAppBusinessSegment,
+  WhatsAppAnalytics,
+  WhatsAppMetrics,
+  WhatsAppEngagement,
+  EstimatedMessagePlatform,
+  WhatsAppDeviceAnalytics,
+  WhatsAppConversationGroup,
+  WhatsAppConversationBreakdown,
+} from "./platform/analytics.js";

@@ -902,3 +902,29 @@ or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
 ## License
 
 MIT
+
+### Device analytics
+
+`client.analytics.get({start, end, projectId, sessionId})` reads scoped Analytics.
+A project-bound client is confined to its project. Requires `sessions:read` and
+Analytics enabled by a team owner or admin. `deviceAnalytics` counts observed
+live direct messages by estimated sending client family, separately for people
+messaging your numbers and for your own numbers sending. Message ID prefixes are
+estimates, not hardware verification. Unknown is included; incomplete coverage
+has null shares. Older retained buckets have no device measurements.
+
+`numbers[].deviceAnalytics.inventory` lists up to 25 observed device indexes
+belonging to that connected number, with a coarse reported class and last
+observed sending activity. A later device-list change sets `listCurrent=false`
+and makes the count/membership unknown until a fresh list arrives. The combined
+summary has no inventory. No recipient device identities or raw message IDs
+are retained in Analytics.
+
+For a fresh list of a recipient's linked-device indexes, use
+`client.messaging.contacts.devices(numberId, contactId)`. This existing
+scoped read does not establish OS, model or device ownership. See the
+[device guide](https://docs.polymorfa.com/sdks/typescript/devices).
+
+`client.analytics.metrics({windowHours:24, format:"openmetrics"})` exports
+windowed gauges for platform message counts/shares and owned-device list coverage.
+Do not apply `rate()` or `increase()` to overlapping windows.
