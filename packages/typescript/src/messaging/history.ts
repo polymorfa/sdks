@@ -22,7 +22,7 @@ export interface HistoryMedia {
   readonly id: string;
   readonly mimeType: string;
   readonly fileLength: number;
-  /** API path for `MessagingClient.media.download`; this is not a signed URL. */
+  /** API download path. Cloud stored copies use `MessagingClient.chats.downloadMessageMedia`. */
   readonly url: string;
 }
 

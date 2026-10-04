@@ -1,0 +1,177 @@
+import type { MessagingCredential } from "../credentials.js";
+import { PolymorfaConfigurationError } from "../errors.js";
+import { HttpTransport } from "../transport/http.js";
+import type { ApiResponse, RequestOptions } from "../transport/types.js";
+import type {
+  SuccessEnvelope,
+  SuccessResponse,
+  TemplateCategory,
+} from "./types.js";
+
+export type CloudTemplateStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "PAUSED"
+  | "DISABLED"
+  | "DELETED"
+  | "ARCHIVED"
+  | "IN_APPEAL"
+  | "LIMIT_EXCEEDED"
+  | "PENDING_DELETION";
+
+export interface CloudTemplate {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly session: string;
+  readonly wabaId: string;
+  readonly name: string;
+  readonly language: string;
+  readonly category: TemplateCategory;
+  readonly status: CloudTemplateStatus;
+  readonly components: readonly unknown[];
+  readonly metaTemplateId?: string;
+  readonly rejectionReason?: string;
+  readonly qualityScore?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface CreateCloudTemplateRequest {
+  readonly name: string;
+  readonly language: string;
+  readonly category: TemplateCategory;
+  readonly components: readonly unknown[];
+}
+
+export interface EditCloudTemplateRequest {
+  readonly components: readonly unknown[];
+}
+
+export type EditCloudTemplateResponse = SuccessEnvelope<{
+  readonly accepted: true;
+  readonly name: string;
+  readonly language: string;
+}>;
+
+export interface RetrieveCloudTemplateParams {
+  /** Defaults to en_US at the API when omitted. */
+  readonly language?: string;
+}
+
+export type CloudTemplateResponse = SuccessEnvelope<CloudTemplate>;
+export type ListCloudTemplatesResponse = SuccessEnvelope<
+  readonly CloudTemplate[]
+>;
+
+/** Meta templates for a Number created on an Official API connection, separate from project drafts. */
+export class CloudTemplatesResource {
+  constructor(
+    private readonly transport: HttpTransport,
+    private readonly credentialType: MessagingCredential["type"],
+  ) {}
+
+  private requireServerCredential(): void {
+    if (this.credentialType === "clientToken") {
+      throw new PolymorfaConfigurationError(
+        "Official API templates require an organization API key or project token.",
+        "credential",
+      );
+    }
+  }
+
+  /** Refresh the complete Meta catalog before returning the saved templates. */
+  list(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<ListCloudTemplatesResponse>> {
+    this.requireServerCredential();
+    return this.transport.request({
+      method: "GET",
+      path: templatesPath(session),
+      ...options,
+    });
+  }
+
+  retrieve(
+    session: string,
+    name: string,
+    params: RetrieveCloudTemplateParams = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CloudTemplateResponse>> {
+    this.requireServerCredential();
+    return this.transport.request({
+      method: "GET",
+      path: templatePath(session, name),
+      query: { language: params.language },
+      ...options,
+    });
+  }
+
+  /**
+   * Sends one request; the SDK never retries this provider write. Pass
+   * `options.idempotencyKey` so a manual retry after an unknown outcome returns
+   * `409 idempotency_completed` instead of submitting again, and list templates
+   * before resubmitting.
+   */
+  create(
+    session: string,
+    body: CreateCloudTemplateRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CloudTemplateResponse>> {
+    this.requireServerCredential();
+    return this.transport.request({
+      method: "POST",
+      path: templatesPath(session),
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
+
+  /** Acceptance is not approval. Read the template before retrying an uncertain edit. */
+  update(
+    session: string,
+    name: string,
+    body: EditCloudTemplateRequest,
+    params: RetrieveCloudTemplateParams = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<EditCloudTemplateResponse>> {
+    this.requireServerCredential();
+    return this.transport.request({
+      method: "PATCH",
+      path: templatePath(session, name),
+      query: { language: params.language },
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
+
+  /**
+   * Deletes every language of this name with one request. The SDK never
+   * retries it; reuse `options.idempotencyKey` for a manual retry and list
+   * templates to reconcile an unknown outcome.
+   */
+  delete(
+    session: string,
+    name: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessResponse>> {
+    this.requireServerCredential();
+    return this.transport.request({
+      method: "DELETE",
+      path: templatePath(session, name),
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
+}
+
+function templatesPath(session: string): string {
+  return `/messaging/${encodeURIComponent(session)}/templates`;
+}
+
+function templatePath(session: string, name: string): string {
+  return `${templatesPath(session)}/${encodeURIComponent(name)}`;
+}

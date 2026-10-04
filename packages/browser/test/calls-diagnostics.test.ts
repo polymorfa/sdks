@@ -184,45 +184,51 @@ describe("browser call diagnostics", () => {
 
   const settle = () => vi.advanceTimersByTimeAsync(0);
 
-  it("reports figures every 15 seconds and once more when the connection closes", async () => {
-    const f = fixture();
-    await connected(f);
-    f.receive(500);
-    await vi.advanceTimersByTimeAsync(14_999);
-    expect(f.report).not.toHaveBeenCalled();
-    await vi.advanceTimersByTimeAsync(1);
-    expect(f.reports()).toEqual([
-      {
-        id: "call-1",
-        body: {
-          kind: "quality",
-          connectionId: "conn_media_0001",
-          client,
-          quality: {
-            rttMs: 42,
-            jitterMs: 12,
-            packetsLost: 1,
-            packetsReceived: 600,
-            audioCodec: "audio/opus",
-            videoCodec: "video/H264",
-            candidateType: "relay",
-            reconnects: 0,
+  it.each([0, 4_999, 5_000])(
+    "rate-limits a final report %i ms after a periodic report",
+    async (delay) => {
+      const f = fixture();
+      await connected(f);
+      f.receive(500);
+      await vi.advanceTimersByTimeAsync(14_999);
+      expect(f.report).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(f.reports()).toEqual([
+        {
+          id: "call-1",
+          body: {
+            kind: "quality",
+            connectionId: "conn_media_0001",
+            client,
+            quality: {
+              rttMs: 42,
+              jitterMs: 12,
+              packetsLost: 1,
+              packetsReceived: 600,
+              audioCodec: "audio/opus",
+              videoCodec: "video/H264",
+              candidateType: "relay",
+              reconnects: 0,
+            },
           },
         },
-      },
-    ]);
-    f.receive(900);
-    await vi.advanceTimersByTimeAsync(15_000);
-    expect(f.report).toHaveBeenCalledTimes(2);
-    await f.controller.hangup();
-    await settle();
-    expect(f.report).toHaveBeenCalledTimes(3);
-    expect(f.reports()[2]!.body).toMatchObject({ kind: "quality" });
-    // The loop stopped with the connection.
-    await vi.advanceTimersByTimeAsync(60_000);
-    expect(f.report).toHaveBeenCalledTimes(3);
-    expect(vi.getTimerCount()).toBe(0);
-  });
+      ]);
+      f.receive(900);
+      await vi.advanceTimersByTimeAsync(15_000);
+      expect(f.report).toHaveBeenCalledTimes(2);
+      await vi.advanceTimersByTimeAsync(delay);
+      await f.controller.hangup();
+      await settle();
+      const expected = delay >= 5_000 ? 3 : 2;
+      expect(f.report).toHaveBeenCalledTimes(expected);
+      if (expected === 3)
+        expect(f.reports()[2]!.body).toMatchObject({ kind: "quality" });
+      // The loop stopped with the connection.
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(f.report).toHaveBeenCalledTimes(expected);
+      expect(vi.getTimerCount()).toBe(0);
+    },
+  );
 
   it("reports media_timeout once when nothing arrives while connected", async () => {
     const f = fixture();

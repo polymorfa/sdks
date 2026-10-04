@@ -28,6 +28,11 @@ import { QuickRepliesResource } from "./quick-replies.js";
 import { QuickLinksResource } from "./quicklinks.js";
 import { SessionsResource } from "./sessions.js";
 import { TemplatesResource } from "./templates.js";
+import { CloudTemplatesResource } from "./cloud-templates.js";
+import { OfficialGroupsResource } from "./official-groups.js";
+import { CloudCatalogsResource } from "./cloud-catalogs.js";
+import { CloudMarketingResource } from "./cloud-marketing.js";
+import { FlowEncryptionResource } from "./flow-encryption.js";
 import { UsersResource } from "./users.js";
 import { VoipResource } from "./voip.js";
 import { WebhooksResource } from "./webhooks.js";
@@ -57,6 +62,12 @@ export class MessagingClient {
   readonly testing: TestingResource;
   readonly quickLinks: QuickLinksResource;
   readonly templates: TemplatesResource;
+  readonly cloudTemplates: CloudTemplatesResource;
+  /** Beta: WhatsApp groups on an Official API connection (Groups API). */
+  readonly officialGroups: OfficialGroupsResource;
+  readonly cloudCatalogs: CloudCatalogsResource;
+  readonly cloudMarketing: CloudMarketingResource;
+  readonly flowEncryption: FlowEncryptionResource;
   readonly users: UsersResource;
   readonly voip: VoipResource;
   readonly webhooks: WebhooksResource;
@@ -102,6 +113,23 @@ export class MessagingClient {
     this.testing = new TestingResource(transport, credential.type);
     this.quickLinks = new QuickLinksResource(transport, credential.type);
     this.templates = new TemplatesResource(transport);
+    this.cloudTemplates = new CloudTemplatesResource(
+      transport,
+      credential.type,
+    );
+    this.officialGroups = new OfficialGroupsResource(
+      transport,
+      credential.type,
+    );
+    this.cloudCatalogs = new CloudCatalogsResource(transport, credential.type);
+    this.cloudMarketing = new CloudMarketingResource(
+      transport,
+      credential.type,
+    );
+    this.flowEncryption = new FlowEncryptionResource(
+      transport,
+      credential.type,
+    );
     this.users = new UsersResource(transport);
     this.voip = new VoipResource(transport, credential.type);
     this.webhooks = new WebhooksResource(transport);

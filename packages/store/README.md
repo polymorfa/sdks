@@ -43,6 +43,10 @@ Each `ingest()` call:
 5. Writes the whole batch in one transaction, then notifies subscribers in
    this tab and, through `BroadcastChannel`, in other tabs.
 
+Meta account notices are stored in `sessions.cloudAccountNotification`; they
+do not overwrite connection status. Cloud template status and quality updates
+set the matching template fields and preserve language and WABA references.
+
 Reducers never replace newer state with older state. Message status only
 moves forward (`pending`, `sent`, `delivered`, `read`, `played`); other fields
 keep the time of the event that set them and ignore older updates. A deleted

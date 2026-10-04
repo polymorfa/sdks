@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   BrowserCancelledError,
@@ -440,5 +440,41 @@ describe("BrowserTransport", () => {
       docUrl: "https://docs.polymorfa.com/api/errors#whatsapp-rate-limited",
       message: "WhatsApp is limiting requests from this number.",
     });
+  });
+});
+
+describe("BrowserTransport fetch receiver", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  // Mirrors the browser's native fetch, which throws "Illegal invocation"
+  // before any request when its receiver is not the global object.
+  function receiverCheckingFetch(): typeof globalThis.fetch {
+    return async function (this: unknown) {
+      if (this !== undefined && this !== globalThis)
+        throw new TypeError("Failed to execute 'fetch': Illegal invocation");
+      return Response.json({ ok: true });
+    } as typeof globalThis.fetch;
+  }
+
+  it.each([
+    ["the global fetch", () => ({})],
+    ["a supplied native fetch", () => ({ fetch: globalThis.fetch })],
+  ])("sends mutations through %s", async (_name, options) => {
+    vi.stubGlobal("fetch", receiverCheckingFetch());
+    const transport = new BrowserTransport({
+      getClientToken: async () => "pmfa_ct_fixture",
+      maxNetworkRetries: 0,
+      ...options(),
+    });
+
+    const response = await transport.request({
+      method: "POST",
+      path: "/platform/calls",
+      body: {},
+    });
+
+    expect(response.metadata.status).toBe(200);
   });
 });

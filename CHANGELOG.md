@@ -2,6 +2,54 @@
 
 ## Unreleased
 
+- Dynamic WhatsApp Flow endpoints (beta, Cloud onboarding enrollment, Official
+  API Numbers only). `Client.project(projectId).flows` adds `endpoint`,
+  `setEndpoint` (modes `forward`, `function` and `direct`; a forward endpoint's
+  `signingSecret` is returned once), `deleteEndpoint`, `endpointReceipts`
+  (metadata only), `encryptionKey` and `rotateEncryptionKey` (managed key
+  custody per Number). Writes make one attempt. New
+  `verifyFlowForwardSignature` and `FLOW_FORWARD_SIGNATURE_HEADER` verify
+  forwarded requests at your endpoint. Contracts are pinned to API `dev`
+  `171a968`. API contract: polymorfa/polymorfa#428 and #434.
+
+- Added source-build `Client.analytics.metrics` for scoped Prometheus/OpenMetrics gauges, including denominators, observation times and coverage. Uses Analytics opt-in and `sessions:read`.
+
+- `Client.analytics.get` reads WhatsApp number activity, completed 24-hour read and reply cohorts, response times and connection vitals. Requires `sessions:read` and Analytics enabled by a team owner or admin. Missing coverage returns null rates.
+
+- Hybrid Link tier transitions. `Client.sessions.quoteTierChange` accepts
+  `hybridResolution` (`keep` one connection or `split` into two Numbers) for a
+  Hybrid Link Number leaving Pro, or `hybridMerge` to merge a same-number pair
+  on an upgrade to Pro. `NumberTierChange.quote.hybridTransition` reports the
+  plan and its `status`. `Client.projects.listHybridMergeCandidates` lists
+  mergeable pairs. `PolymorfaErrorCode` adds `hybrid_choice_required` and
+  `hybrid_transition_ineligible`.
+- `Session` gains optional `newChatCapping` (`NewChatCapping`): WhatsApp's
+  per-number new-chat cap, returned by `sessions.retrieve` for linked-device
+  numbers. API contract: polymorfa/polymorfa#403.
+- Brazil payment orders (beta, requires team enrollment, an Official API
+  Number and Meta payments eligibility in Brazil). `messages.send` accepts
+  `orderDetails` (Pix dynamic code, payment link or boleto, itemized or
+  total only) and `orderStatus` content. New types:
+  `OrderDetailsMessageContent`, `OrderStatusMessageContent`,
+  `OrderPaymentSettings`, `OrderDetailsItemization`, `PixDynamicCodePayment`,
+  `PaymentOrderAmount`, `PixKeyType`, `OrderStatus`, `OrderPaymentStatus`,
+  `SendOrderDetailsMessageRequest`, `SendOrderStatusMessageRequest` and
+  `OrderPaymentUpdatedPayload` (discriminated on `kind`) for the
+  `order.payment_updated` event. `MessageKind` adds `order_details` and
+  `order_status`. New error
+  codes: `order_status_transition_invalid` and `order_cancellation_failed`.
+  Polymorfa relays orders and payment reports; it does not process funds.
+  Contracts are pinned to API `dev` `e818ba6`.
+- Official groups (beta, requires team enrollment and an Official Business
+  Account). `MessagingClient.officialGroups` adds `list`, `create`, `retrieve`,
+  `update`, `delete`, `getInviteLink`, `resetInviteLink`, `removeParticipants`,
+  `listJoinRequests`, `approveJoinRequests`, `rejectJoinRequests` and `pin`.
+  Changes make one attempt and pass `idempotencyKey` through. New error codes:
+  `whatsapp_groups_ineligible`, `whatsapp_group_creation_paused`,
+  `whatsapp_group_limit_reached`, `whatsapp_group_full`,
+  `whatsapp_group_suspended` and `whatsapp_group_has_no_participants`.
+  `GroupUpdatePayload` and `GroupParticipantPayload` add optional Official
+  group fields. Contracts are pinned to API `dev` `ee217bf`.
 - Campaign conversion reporting (beta, requires team enrollment).
   `Client.campaigns.recordConversion(campaignId, body)` reports a conversion
   for a named campaign recipient, deduplicated by `eventId`.
@@ -19,10 +67,55 @@
   expose `mediaRetrieval`, call participants expose optional `handRaised`, and
   `message.ack` payloads expose the optional Official API `pricing`
   classification (`MetaPricingReport`).
+- Official API consumers: Number-scoped Meta templates (`cloudTemplates`),
+  service windows, Meta pricing counts, Cloud credential health and
+  reauthorization, QuickLink sync receipts, typing with an inbound message ID,
+  the Flow provider lifecycle, linked catalogs and Flow encryption keys, and
+  the Meta lifecycle webhook payload variants. Provider writes make one
+  attempt. Contracts are pinned to API `dev` `29abb7b`.
+- Campaign records type the stored `sendWindow`; create and update requests
+  accept `CampaignSendWindowRequest`.
+- Breaking for Flow drafts: `flows.list` and `flows.retrieve` now return the
+  unwrapped record in `response.data`, like the other Flow methods. Replace
+  `response.data.data` with `response.data`.
+
 - `message.received` payload types include `replyChoice` (`kind` `button` or
   `list` and the `id` you assigned) and `parentMessageId`, and the linked-device
   message `type` union adds `button_reply`, `list_reply`, and
   `native_flow_response`. `ReplyChoice` is exported.
+
+- Calls quality diagnostics respect their five-second send interval when a
+  connection closes, avoiding an extra report that the API can rate-limit.
+
+- Browser Calls uses its authenticated lifecycle socket for ICE candidates and
+  pauses remote candidate polling while connected. It falls back to HTTP when
+  that socket disconnects. The Calls example also displays call-control errors
+  and failed request IDs.
+- Team webhook tests accept an optional event type. The SDK now rejects a
+  supplied body or session ID before making that request. Project webhook
+  tests keep the paired native body and session ID input.
+
+- Retired the unproduced `bansafe.risk_changed`,
+  `bansafe.health_changed`, and `bansafe.enforcement` webhook names and their
+  test-event fixtures. The typed `bansafe.incident`, `bansafe.action`,
+  `bansafe.health_threshold`, and `bansafe.claim` events remain available.
+
+- Added `Client.sessions.getCapabilities(sessionId)` and the
+  `SessionCapabilities` types. It reads which WhatsApp features and limits
+  WhatsApp has enabled for a number, as of the number's last configuration sync;
+  `status` is `unknown` and every value null before the first sync. It needs
+  `sessions:read` and enrollment in the number capabilities beta (403 until
+  then).
+- Browser Calls hold locally gathered ICE candidates until the platform
+  answers the call's offer, then send them. Candidates sent earlier were
+  refused with `409` because no media session existed yet, and were lost.
+- Fixed browser requests failing before they were sent. `BrowserTransport`
+  called the page's `fetch` with the transport as its receiver, which browsers
+  reject with `TypeError: Illegal invocation`. Every request, including Calls
+  placement, Answer, and Reject, surfaced as a `connection` error and no
+  request reached the network. `HttpTransport` had the same defect in browsers,
+  Cloudflare Workers, and Deno. Both transports now call the default or supplied
+  `fetch` without a receiver.
 - Added typed hosted message history reads to `MessagingClient.chats`:
   `list`, `retrieve`, `listMessages`, and `retrieveMessage`. Server credentials
   need the relevant read scope, HMS enabled on the Number, and enrollment in

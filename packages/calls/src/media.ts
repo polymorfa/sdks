@@ -1,3 +1,8 @@
+import {
+  MediaStateCommands,
+  type MediaState,
+  type MediaStateUpdate,
+} from "./media-state.js";
 import type { CallsApi } from "./api.js";
 import {
   CallClaimedError,
@@ -85,12 +90,15 @@ export interface MediaClose {
 }
 
 type Events = {
+  remoteMute: [boolean | null];
   ready: [MediaReady];
   audio: [Int16Array];
   video: [VideoFrame];
   videoSource: [MediaVideoSource];
   videoSourceRemoved: [source: number];
   keyframeRequest: [];
+  reaction: [import("./protocol.js").CallReaction];
+  handState: [boolean, boolean];
   participantJoined: [Participant];
   participantLeft: [participantId: string, reason: string | undefined];
   participantState: [Participant];
@@ -106,6 +114,7 @@ type Events = {
  */
 export class MediaSocket extends Emitter<Events> {
   readonly #o: MediaSocketOptions;
+  readonly #mediaControls = new MediaStateCommands((frame) => this.send(frame));
   readonly #WS: typeof globalThis.WebSocket;
   #socket: WebSocket | undefined;
   #beat: ReturnType<typeof setInterval> | undefined;
@@ -307,6 +316,7 @@ export class MediaSocket extends Emitter<Events> {
     };
     socket.onclose = (event) => {
       this.#stopHeartbeat();
+      this.#mediaControls.close();
       if (this.#socket === socket) this.#socket = undefined;
       this.#closed = true;
       this.#ready = false;
@@ -328,6 +338,11 @@ export class MediaSocket extends Emitter<Events> {
     if (!this.connected) return false;
     this.#socket!.send(encodeVideoFrame({ ...frame, source: 0 }));
     return true;
+  }
+
+  /** Synchronize this connection's microphone and camera with the call. */
+  setMediaState(update: MediaStateUpdate): Promise<MediaState> {
+    return this.#mediaControls.set(update);
   }
 
   send(frame: MediaClientFrame): boolean {
@@ -360,6 +375,7 @@ export class MediaSocket extends Emitter<Events> {
     if (this.#closed) return;
     this.#closed = true;
     this.#stopHeartbeat();
+    this.#mediaControls.close();
     this.#pending?.(new Error("Media socket closed before media was bridged."));
     const socket = this.#socket;
     this.#socket = undefined;
@@ -411,8 +427,21 @@ export class MediaSocket extends Emitter<Events> {
 
   #control(frame: MediaControlFrame): void {
     switch (frame.type) {
+      case "media_state":
+      case "media_error":
+        this.#mediaControls.receive(frame);
+        return;
+      case "remote_media":
+        this.emit("remoteMute", frame.audioMuted);
+        return;
       case "pong":
         this.#awaitingPong = false;
+        return;
+      case "reaction":
+        this.emit("reaction", frame);
+        return;
+      case "hand_state":
+        this.emit("handState", frame.raised, frame.supported);
         return;
       case "participant_joined":
         this.emit("participantJoined", frame.participant);
@@ -460,6 +489,7 @@ export class MediaSocket extends Emitter<Events> {
       if (this.#awaitingPong) {
         // Treat a silent socket as lost so the call can reconnect it.
         this.#stopHeartbeat();
+        this.#mediaControls.close();
         this.#closed = true;
         this.#socket = undefined;
         this.#ready = false;

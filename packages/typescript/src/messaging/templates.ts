@@ -90,6 +90,7 @@ export class TemplatesResource {
     });
   }
 
+  /** Submit once. If the response is lost, read the Number's template catalog before another attempt. */
   submit(
     projectSlug: string,
     templateId: string,
@@ -101,6 +102,7 @@ export class TemplatesResource {
       path: `${templatePath(projectSlug, templateId)}/submit`,
       body,
       ...options,
+      maxNetworkRetries: 0,
     });
   }
 }
