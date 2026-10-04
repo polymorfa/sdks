@@ -1937,7 +1937,7 @@ message identifiers are URL-encoded by the SDK.
 
 ## Messaging campaigns
 
-`MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `analytics`,
+`MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `update`, `analytics`,
 `listRecipients`, `addRecipients`, `launch`, `pause`, `resume`, `stop`, and
 `requeue`. Reads require `campaigns:read`; writes require `campaigns:manage`.
 Pass the project's slug as the first argument. Campaigns accept organization
@@ -1963,6 +1963,11 @@ const appended = await messaging.campaigns.addRecipients(
 );
 console.log(appended.data.data.added, appended.data.data.invalidRows);
 
+await messaging.campaigns.update("support", created.data.data.id, {
+  name: "August follow-up",
+  recipientListId: null,
+});
+
 const launched = await messaging.campaigns.launch(
   "support",
   created.data.data.id,
@@ -1973,6 +1978,13 @@ console.log(launched.data.data.operationId, launched.metadata.requestId);
 ```
 
 Create accepts inline recipients, an audience ID in `recipientListId`, or both.
+Update accepts `name`, `recipientListId`, `senderConfig`, and `scheduledAt`.
+Pass an integer Unix millisecond value within the JavaScript Date range for a
+non-null `scheduledAt`; the API returns 400 for an out-of-range value.
+Changing the audience or schedule is limited to an unlaunched draft. A sender
+change after launch must pass the live sender checks. The SDK sends PATCH once;
+after an uncertain response, retrieve the campaign before deciding on another
+write.
 Each append accepts up to 1,000 recipients before launch and reports duplicates
 and invalid rows. Each append sends an idempotency key, generated unless you pass
 `idempotencyKey`, and automatic retries reuse it. Within 24 hours a retry of a

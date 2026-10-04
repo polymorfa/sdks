@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `MessagingClient.campaigns.update(projectSlug, campaignId, body)` updates a
+  campaign through the Messaging API. It accepts draft name, audience, sender,
+  and schedule fields; the API refuses audience and schedule changes after
+  launch.
 - `MessagingClient.campaigns.addRecipients`, `Client.campaigns.addRecipients`,
   `Client.audiences.addMembers` and `Client.audiences.create` send an
   `Idempotency-Key` (generated unless you pass `idempotencyKey`) and retry

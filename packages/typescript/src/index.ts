@@ -634,6 +634,8 @@ export type {
   TypingRequest,
   UpdateSessionRequest,
   UpdateSessionResponse,
+  UpdateCampaignRequest,
+  UpdateCampaignResponse,
   UpdateLabelRequest,
   UpdateProjectObservationPolicyRequest,
   UpdateProjectObservationPolicyResponse,
