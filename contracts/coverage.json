@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
+  "sourceCommit": "8e319f6bb4e733e776278577840d8fb15805fe6d",
   "excludedContracts": [
     {
       "family": "graph",
@@ -926,10 +926,24 @@
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
       "operationId": "listProjectCampaignRecipients",
-      "fingerprint": "bfb53bd0dc8e274dec1586beeba8859b5bf7daad7b0450ee69ca2aa661b3b8d3",
+      "fingerprint": "c5a5fdd670d52da0cf0984db7c732f54a21761d6bce690088e9394e5e0fee23a",
       "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.campaigns.listRecipients"
+        "status": "partial",
+        "method": "MessagingClient.campaigns.listRecipients",
+        "reason": "The response adds optional recipient failure-reason fields that polymorfa/sdks#309 types; the existing method still returns them untyped.",
+        "milestone": "campaigns"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients/export",
+      "operationId": "exportProjectCampaignRecipients",
+      "fingerprint": "a3bcb0d983338c18a22ad2259b39629fc753dad5d7a1b2348ec9337c75c471a7",
+      "typescript": {
+        "status": "missing",
+        "reason": "Recipient CSV export methods are added by polymorfa/sdks#309.",
+        "milestone": "campaigns"
       }
     },
     {
@@ -3660,10 +3674,24 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/recipients",
       "operationId": "listCampaignRecipients",
-      "fingerprint": "3fc27f45197d97447db90e3f4344e2c600aabbfc30746b9b61bd552472442505",
+      "fingerprint": "6c1380c4f94338ee41e14872fb8691743646a2d38f5b09ed56dd5c6e48a8dc26",
       "typescript": {
-        "status": "covered",
-        "method": "Client.campaigns.recipients"
+        "status": "partial",
+        "method": "Client.campaigns.recipients",
+        "reason": "The response adds optional recipient failure-reason fields that polymorfa/sdks#309 types; the existing method still returns them untyped.",
+        "milestone": "campaigns"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/recipients/export",
+      "operationId": "exportCampaignRecipients",
+      "fingerprint": "bc684c21f3cbd611946e741633289a23082c830707870c8beaec02e77609f1e6",
+      "typescript": {
+        "status": "missing",
+        "reason": "Recipient CSV export methods are added by polymorfa/sdks#309.",
+        "milestone": "campaigns"
       }
     },
     {
@@ -6346,9 +6374,9 @@
         "status": "covered",
         "method": "Client.analytics.get"
       },
-      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
-      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
+      "sourceContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6",
+      "sourceCommit": "8e319f6bb4e733e776278577840d8fb15805fe6d",
+      "sdkContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6"
     },
     {
       "family": "platform",
@@ -6360,9 +6388,9 @@
         "status": "covered",
         "method": "Client.analytics.get"
       },
-      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
-      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
+      "sourceContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6",
+      "sourceCommit": "8e319f6bb4e733e776278577840d8fb15805fe6d",
+      "sdkContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6"
     },
     {
       "family": "platform",
@@ -6374,9 +6402,9 @@
         "method": "Client.analytics.metrics"
       },
       "fingerprint": "520ce37bc6a198e313d9495ddd968ebb54cbbe5cc84f4d6bea636c43a4ea62c5",
-      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99"
+      "sourceContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6",
+      "sdkContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6",
+      "sourceCommit": "8e319f6bb4e733e776278577840d8fb15805fe6d"
     },
     {
       "family": "platform",
@@ -6388,9 +6416,9 @@
         "method": "Client.analytics.metrics"
       },
       "fingerprint": "56e2540bc5d78c3f458fbd363d63b101df49fcd273b7cc81e1fa9318d69b30b6",
-      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99"
+      "sourceContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6",
+      "sdkContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6",
+      "sourceCommit": "8e319f6bb4e733e776278577840d8fb15805fe6d"
     },
     {
       "family": "platform",

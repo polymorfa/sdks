@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Webhook payload types for `campaign.recipient_delivered`,
+  `campaign.recipient_read` and `campaign.recipient_replied`
+  (`CampaignRecipientDeliveredPayload`, `CampaignRecipientReadPayload`,
+  `CampaignRecipientRepliedPayload` and the shared
+  `CampaignRecipientEngagementPayload`). Replies carry timing metadata, not
+  message text, and `externalMessageId` is nullable on replies. The events
+  require the team's beta enrollment. Contracts are pinned to API `dev`
+  `8e319f6` (polymorfa/polymorfa#392).
+
 - Dynamic WhatsApp Flow endpoints (beta, Cloud onboarding enrollment, Official
   API Numbers only). `Client.project(projectId).flows` adds `endpoint`,
   `setEndpoint` (modes `forward`, `function` and `direct`; a forward endpoint's
