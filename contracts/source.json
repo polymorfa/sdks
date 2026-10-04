@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "8efb062e106ac1d6888bf6fff4fbcdddf8406e48",
-  "branch": "t3code/usage-logs-stack-integration",
+  "commit": "ac1c7010d5c3cdf0262f1b5deb2c4d7ce6a249a5",
+  "branch": "t3code/project-billing-dashboard",
   "published": false,
-  "note": "Project, customer and number funding controls retain their existing public contract. Private Console usage insights accept an immutable number UUID bound to its selected project, return exact scope metadata, and report current-UTC-month completed outgoing calls against the number-tier included allowance independently of the chart period. Request logs and serverless receipts have no number attribution; their number measurements are unavailable. WhatsApp media/HMS GB-month measurement remains unavailable. No allowance pooling, new billing policy or settlement is added. Private Console number options add a bounded, searchable keyset-paginated label read scoped to the live organization and optional project. Console insights and number options remain excluded from server SDK authority; no public SDK method or credential scope changes. Inherited Console Logs adds five private audit, calendar and logging-control operations and server-side filter parameters on the private Logs read. All remain dashboard-only exclusions; no public SDK runtime or financial contract changes. Snapshots are byte-identical to this source commit. This implementation branch is unmerged; API deployment and package publication remain separate gates.",
+  "note": "Exact Messaging and Platform snapshots from the Usage and Logs stack. Financial operations require organization billing scopes. Private Console operations remain excluded from SDK credentials. API deployment and SDK publication are separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
