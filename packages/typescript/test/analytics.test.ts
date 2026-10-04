@@ -1,5 +1,6 @@
 import { afterEach, expect, it } from "vitest";
 import { Client, PolymorfaValidationError } from "../src/index.js";
+import type { WhatsAppDeviceAnalytics } from "../src/index.js";
 import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 const servers: TestServer[] = [];
@@ -175,7 +176,7 @@ it("preserves joint country/message cohorts, unknown client families and stale d
     customerPlatforms: [{ platform: "unknown", messages: 2, share: null }],
     accountPlatforms: [],
     inventory: {
-      observed: true,
+      listObserved: true,
       listCurrent: false,
       observedAt: 0,
       deviceCount: null,
@@ -190,7 +191,7 @@ it("preserves joint country/message cohorts, unknown client families and stale d
         },
       ],
     },
-  };
+  } satisfies WhatsAppDeviceAnalytics;
   const conversationBreakdown = {
     measured: true,
     complete: true,
