@@ -1,4 +1,5 @@
 import { AnalyticsResource } from "./platform/analytics.js";
+import { FlowsResource } from "./platform/flows.js";
 import { FunctionsResource } from "./platform/functions.js";
 import { SessionConfigurationResource } from "./platform/session-configuration.js";
 import {
@@ -102,6 +103,7 @@ export interface OrganizationControlPlaneResources {
 }
 
 export interface ProjectControlPlaneResources {
+  readonly flows: FlowsResource;
   readonly functions: FunctionsResource;
 }
 
@@ -118,6 +120,7 @@ export interface ClientConstructor {
 class ClientImplementation implements ClientBase<ClientOwner> {
   /** Installed only for project instances; the public conditional type reflects that. */
   declare readonly functions: FunctionsResource;
+  declare readonly flows: FlowsResource;
   readonly owner: ClientOwner;
   readonly projectId: string | null;
   readonly events: EventsResource<ClientOwner>;
@@ -205,6 +208,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
     if (projectId !== null)
       Object.assign(this, {
         functions: new FunctionsResource(this.#transport, projectId),
+        flows: new FlowsResource(this.#transport, projectId),
       });
 
     if (this.owner === "organization") {

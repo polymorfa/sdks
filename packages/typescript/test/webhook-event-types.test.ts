@@ -138,6 +138,11 @@ type ExpectedMessagePayload = {
   readonly [key: string]: unknown;
 };
 
+type ExpectedOfficialGroupError = {
+  readonly code: number;
+  readonly title?: string;
+};
+
 type ExpectedPayloads = {
   readonly "blocklist.update": {
     readonly action: string;
@@ -307,12 +312,31 @@ type ExpectedPayloads = {
     readonly left?: readonly ExpectedIdentityReference[];
     readonly promoted?: readonly ExpectedIdentityReference[];
     readonly demoted?: readonly ExpectedIdentityReference[];
+    readonly reason?: string;
+    readonly initiatedBy?: "business" | "participant";
+    readonly requestId?: string;
+    readonly failedParticipants?: readonly {
+      readonly participant: ExpectedIdentityReference;
+      readonly errors?: readonly ExpectedOfficialGroupError[];
+    }[];
+    readonly errors?: readonly ExpectedOfficialGroupError[];
+    readonly joinRequest?: {
+      readonly joinRequestId: string;
+      readonly user: ExpectedIdentityReference;
+      readonly state: "created" | "revoked";
+    };
   };
   readonly "group.update": {
     readonly id: string;
     readonly newSubject?: string;
     readonly newDescription?: string;
     readonly action?: string;
+    readonly requestId?: string;
+    readonly inviteLink?: string;
+    readonly joinApprovalRequired?: boolean;
+    readonly pictureChanged?: boolean;
+    readonly failedChanges?: readonly ("subject" | "description" | "picture")[];
+    readonly errors?: readonly ExpectedOfficialGroupError[];
   };
   readonly "history.sync":
     | {

@@ -141,5 +141,41 @@ describe("credential validation", () => {
     expect(() =>
       assertServerRuntime({ importScripts: () => undefined }),
     ).toThrow(/server credentials cannot be used in browser runtimes/);
+    for (const name of [
+      "DedicatedWorkerGlobalScope",
+      "SharedWorkerGlobalScope",
+      "ServiceWorkerGlobalScope",
+    ]) {
+      expect(() => assertServerRuntime({ constructor: { name } })).toThrow(
+        /server credentials cannot be used in browser runtimes/,
+      );
+    }
+  });
+
+  it("allows Cloudflare server Workers but rejects incomplete or browser globals", () => {
+    const worker = {
+      constructor: { name: "ServiceWorkerGlobalScope" },
+      navigator: { userAgent: "Cloudflare-Workers" },
+      WebSocketPair: function WebSocketPair() {},
+    };
+    expect(() => assertServerRuntime(worker)).not.toThrow();
+    expect(() =>
+      assertServerRuntime({ ...worker, WebSocketPair: undefined }),
+    ).toThrow(/server credentials cannot be used in browser runtimes/);
+    expect(() =>
+      assertServerRuntime({ ...worker, navigator: { userAgent: "browser" } }),
+    ).toThrow(/server credentials cannot be used in browser runtimes/);
+    expect(() => assertServerRuntime({ ...worker, registration: {} })).toThrow(
+      /server credentials cannot be used in browser runtimes/,
+    );
+    expect(() => assertServerRuntime({ ...worker, clients: {} })).toThrow(
+      /server credentials cannot be used in browser runtimes/,
+    );
+    expect(() =>
+      assertServerRuntime({ ...worker, skipWaiting: () => undefined }),
+    ).toThrow(/server credentials cannot be used in browser runtimes/);
+    expect(() => assertServerRuntime({ ...worker, window: {} })).toThrow(
+      /server credentials cannot be used in browser runtimes/,
+    );
   });
 });

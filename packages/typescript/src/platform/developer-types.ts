@@ -182,6 +182,9 @@ export type TestWebhookInput =
       readonly sessionId: string;
     };
 
+export type TestOrganizationWebhookInput = OrganizationWebhookTestInput;
+export type TestProjectWebhookInput = TestWebhookInput;
+
 interface WebhookCreationReceipt<T> {
   readonly webhook: T;
   readonly operationId: null;

@@ -185,12 +185,12 @@ export interface CreatePlatformCampaignRequest {
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Scheduled start time in Unix milliseconds. */
   readonly scheduledAt?: number;
+  /** When the campaign may send; null or omitted sends at any time. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   /** At most 1,000 recipients. */
   readonly recipients?: readonly CampaignRecipientInput[];
   /** Ignored when inline recipients are supplied. */
   readonly recipientCount?: number;
-  /** Local hours the campaign may send in; null or omitted sends at any hour. */
-  readonly sendWindow?: CampaignSendWindowRequest | null;
   // The API deliberately leaves these JSON values opaque.
   readonly composerBlueprint?: unknown;
   readonly messagesArray?: unknown;
@@ -799,14 +799,150 @@ export interface SessionTierOverrideRequest {
   readonly quoteId: string;
 }
 
-export interface NumberTierQuoteRequest {
+/** The two connections of a Hybrid Link Number. */
+export type HybridTransport = "linked_devices" | "official_api";
+
+/** Keep one connection of a Hybrid Link Number and retire the other. */
+export interface HybridKeepResolution {
+  readonly action: "keep";
+  readonly transport: HybridTransport;
+}
+
+/**
+ * Split a Hybrid Link Number into two Standard Numbers. The Number being
+ * quoted keeps `existingNumberTransport`; the other connection moves to a new
+ * Number named `newNumberName` without pairing or signing up again.
+ */
+export interface HybridSplitResolution {
+  readonly action: "split";
+  readonly existingNumberTransport: HybridTransport;
+  /** 1-64 characters: a letter or digit, then letters, digits, `.`, `_` or `-`. */
+  readonly newNumberName: string;
+}
+
+/** Required when a Hybrid Link Number moves to a tier without Hybrid Link. */
+export type HybridResolution = HybridKeepResolution | HybridSplitResolution;
+
+/**
+ * Merges another same-number Number into the quoted Number as a Hybrid Link
+ * Number. The quoted Number keeps its ID; `absorbNumberId` is removed after its
+ * connection moves.
+ */
+export interface HybridMerge {
+  readonly absorbNumberId: string;
+}
+
+interface NumberTierQuoteBase {
   readonly projectId?: string;
   readonly tierOverride: "free" | "standard" | "pro" | null;
+}
+
+/**
+ * A tier quote. Send `hybridResolution` when a Hybrid Link Number leaves Pro
+ * (otherwise the API returns `hybrid_choice_required`), or `hybridMerge`
+ * to merge a same-number pair on an upgrade to Pro. Never both.
+ */
+export type NumberTierQuoteRequest =
+  | (NumberTierQuoteBase & {
+      readonly hybridResolution?: undefined;
+      readonly hybridMerge?: undefined;
+    })
+  | (NumberTierQuoteBase & {
+      readonly hybridResolution: HybridResolution;
+      readonly hybridMerge?: undefined;
+    })
+  | (NumberTierQuoteBase & {
+      readonly hybridResolution?: undefined;
+      readonly hybridMerge: HybridMerge;
+    });
+
+/** Progress of the connection change, reported separately from the tier change. */
+export type NumberHybridTransitionStatus =
+  "scheduled" | "running" | "completed" | "failed" | "cancelled";
+
+interface NumberHybridTransitionBase {
+  /** The Number that keeps its ID. */
+  readonly survivingNumberId: string;
+  /** Present once the change has been confirmed. */
+  readonly status?: NumberHybridTransitionStatus;
+  readonly failureReason?: string | null;
+  /**
+   * True after an Official API connection that shares the number with the
+   * WhatsApp Business app is dropped. Disconnect it in the WhatsApp Business
+   * app under Settings > Account > Business Platform.
+   */
+  readonly metaDisconnectRequired?: boolean;
+  readonly effectiveAtMs?: number | null;
+}
+
+export interface NumberHybridKeepTransition extends NumberHybridTransitionBase {
+  readonly action: "keep";
+  readonly keepTransport: HybridTransport;
+}
+
+export interface NumberHybridSplitTransition extends NumberHybridTransitionBase {
+  readonly action: "split";
+  readonly existingNumberTransport: HybridTransport;
+  readonly newNumberName: string;
+  /** The Number created by a completed split. */
+  readonly newNumberId?: string;
+}
+
+export interface NumberHybridMergeTransition extends NumberHybridTransitionBase {
+  readonly action: "merge";
+  readonly absorbNumberId: string;
+}
+
+/** The Hybrid Link plan echoed by a tier quote, with its progress once confirmed. */
+export type NumberHybridTransition =
+  | NumberHybridKeepTransition
+  | NumberHybridSplitTransition
+  | NumberHybridMergeTransition;
+
+export type HybridMergeIneligibleReason =
+  | "deletion_in_progress"
+  | "not_coexistence"
+  | "different_customer"
+  | "connection_disabled"
+  | "not_connected"
+  | "transition_in_progress"
+  | "pairing_in_progress"
+  | "hms_enabled";
+
+export interface HybridMergeCandidateNumber {
+  readonly id: string;
+  readonly name: string;
+  readonly transport: HybridTransport;
+  readonly status: string;
+  /**
+   * False when this Number uses hosted message storage. It cannot be the
+   * absorbed Number; quote the merge on it so it keeps its ID.
+   */
+  readonly canBeAbsorbed: boolean;
+}
+
+/**
+ * Two Numbers in one project that are the same WhatsApp Business number.
+ * `ineligibleReason` explains a pair that cannot merge now.
+ */
+export interface HybridMergeCandidate {
+  /** One Linked Devices Number and one Official API Number. */
+  readonly numbers: readonly [
+    HybridMergeCandidateNumber,
+    HybridMergeCandidateNumber,
+  ];
+  readonly eligible: boolean;
+  readonly ineligibleReason?: HybridMergeIneligibleReason;
 }
 
 export interface NumberTierChange {
   readonly id: string;
   readonly status: "quoted" | "queued" | "applied" | "rejected";
+  /**
+   * Why a queued change was rejected, for example `hybrid_choice_required`
+   * when a Hybrid Link Number would leave Pro without a recorded choice, or
+   * `hybrid_transition_ineligible`. Quote again with a choice.
+   */
   readonly failureReason: string | null;
   readonly expiresAtMs: number;
   readonly quote: {
@@ -818,6 +954,8 @@ export interface NumberTierChange {
     readonly action: "upgrade" | "downgrade" | "configure";
     readonly effectiveAtMs: number;
     readonly replacesWindowId: string | null;
+    /** Present when the change resolves or merges a Hybrid Link Number. */
+    readonly hybridTransition?: NumberHybridTransition;
   };
 }
 
@@ -1289,6 +1427,61 @@ export interface SafeModeApplied {
   readonly typing: string | null;
   readonly reads: string | null;
   readonly pacing: string | null;
+}
+
+/** `feature`: `value` is a boolean. `limit`: `value` is an integer in `unit`. */
+export type SessionCapabilityKind = "feature" | "limit";
+export type SessionCapabilityUnit =
+  "seconds" | "count" | "characters" | "members";
+/**
+ * `server`: WhatsApp sent a setting the value depends on. `client_default`:
+ * WhatsApp sent none, so its default applies. `account_type`: the capability
+ * does not apply to this account type.
+ */
+export type SessionCapabilitySource =
+  "server" | "client_default" | "account_type";
+
+interface SessionCapabilityBase {
+  /** Stable key such as `channels` or `messageEdit.windowSeconds`. New keys can be added. */
+  readonly key: string;
+  /** Null when `value` is null. */
+  readonly source: SessionCapabilitySource | null;
+}
+
+/** A WhatsApp feature: enabled (`true`), off (`false`) or unknown (`null`). */
+export interface SessionFeatureCapability extends SessionCapabilityBase {
+  readonly kind: "feature";
+  readonly unit: null;
+  readonly value: boolean | null;
+}
+
+/** A WhatsApp limit: an integer in `unit`, or `null` when unknown. */
+export interface SessionLimitCapability extends SessionCapabilityBase {
+  readonly kind: "limit";
+  readonly unit: SessionCapabilityUnit;
+  readonly value: number | null;
+}
+
+/** Narrow on `kind` to type `value` and `unit`. */
+export type SessionCapability =
+  SessionFeatureCapability | SessionLimitCapability;
+
+/** `unknown` before the first sync, after a logout, while waiting to be paired, and after another account is linked; every value is then null. */
+export type SessionCapabilitiesStatus = "synced" | "unknown";
+export type SessionAccountType = "business" | "personal";
+
+/**
+ * WhatsApp features and limits WhatsApp has enabled for one number, as of the
+ * number's last configuration sync (`syncedAt`). Beta: teams must enroll.
+ */
+export interface SessionCapabilities {
+  readonly session: string;
+  readonly projectId: string;
+  readonly status: SessionCapabilitiesStatus;
+  readonly syncedAt: string | null;
+  readonly checkedAt: string | null;
+  readonly accountType: SessionAccountType | null;
+  readonly capabilities: readonly SessionCapability[];
 }
 
 export interface SessionSafeMode {

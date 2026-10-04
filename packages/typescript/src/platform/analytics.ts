@@ -1,4 +1,4 @@
-// Analytics contract source is pinned in contracts/analytics-device-signals.json.
+// Analytics additions pin their source in contracts/analytics-device-signals.json.
 import { PolymorfaValidationError, PolymorfaServerError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import type {
@@ -175,8 +175,8 @@ export interface WhatsAppConversationBreakdown {
   rows: WhatsAppConversationGroup[];
 }
 export interface WhatsAppMetrics {
-  conversationBreakdown: WhatsAppConversationBreakdown;
   deviceAnalytics: WhatsAppDeviceAnalytics;
+  conversationBreakdown: WhatsAppConversationBreakdown;
   calls: CallBusinessMetrics;
   measured: boolean;
   observedHours: number;

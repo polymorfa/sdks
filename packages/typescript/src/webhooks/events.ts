@@ -92,6 +92,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "message.update",
   "message.vote",
   "newsletter.update",
+  "order.payment_updated",
   "presence.update",
   "session.connected",
   "session.logged_out",
@@ -282,10 +283,27 @@ export interface PollVotePayload {
   readonly timestamp: number;
 }
 
-export interface SessionStatusPayload {
+export interface RuntimeSessionStatusPayload {
   readonly status: string;
   readonly statusReason?: string;
+  readonly banCode?: number;
+  readonly banReason?: string;
+  /** Unix seconds. */
+  readonly banExpiresAt?: number;
+  readonly detail?: string;
 }
+
+/** A Meta account notification, not a runtime connection-state transition. */
+export interface CloudAccountStatusPayload {
+  readonly source: "meta";
+  readonly kind:
+    "account_alerts" | "account_update" | "phone_number_name_update";
+  readonly wabaId?: string;
+  readonly value: Readonly<Record<string, unknown>>;
+}
+
+export type SessionStatusPayload =
+  RuntimeSessionStatusPayload | CloudAccountStatusPayload;
 
 export type SessionRestrictionType = "reachout_timelock";
 
@@ -326,11 +344,34 @@ export interface SessionPhoneOfflinePayload {
   readonly action: string;
 }
 
+/** A WhatsApp error reported for an Official group operation (beta). */
+export interface OfficialGroupError {
+  readonly code: number;
+  readonly title?: string;
+}
+
 export interface GroupUpdatePayload {
   readonly id: string;
   readonly newSubject?: string;
   readonly newDescription?: string;
+  /**
+   * What changed, for example `joined`. Official groups (beta): `created`,
+   * `create_failed`, `deleted`, `delete_failed`, `settings_updated`,
+   * `suspended` or `suspension_cleared`.
+   */
   readonly action?: string;
+  /** Official groups (beta): the request ID returned when the group was created, or of a change. */
+  readonly requestId?: string;
+  /** Official groups (beta), action `created`: the invite link. */
+  readonly inviteLink?: string;
+  /** Official groups (beta), action `created`. */
+  readonly joinApprovalRequired?: boolean;
+  /** Official groups (beta), action `settings_updated`. */
+  readonly pictureChanged?: boolean;
+  /** Official groups (beta), action `settings_updated`: changes WhatsApp did not apply. */
+  readonly failedChanges?: readonly ("subject" | "description" | "picture")[];
+  /** Official groups (beta): why WhatsApp refused the operation. */
+  readonly errors?: readonly OfficialGroupError[];
 }
 
 export interface GroupParticipantPayload {
@@ -339,6 +380,23 @@ export interface GroupParticipantPayload {
   readonly left?: readonly IdentityReference[];
   readonly promoted?: readonly IdentityReference[];
   readonly demoted?: readonly IdentityReference[];
+  /** Official groups (beta): how the change happened, for example `invite_link`. */
+  readonly reason?: string;
+  /** Official groups (beta): who removed the participants. */
+  readonly initiatedBy?: "business" | "participant";
+  readonly requestId?: string;
+  /** Official groups (beta): participants WhatsApp could not remove. */
+  readonly failedParticipants?: readonly {
+    readonly participant: IdentityReference;
+    readonly errors?: readonly OfficialGroupError[];
+  }[];
+  readonly errors?: readonly OfficialGroupError[];
+  /** Official groups requiring approval (beta): a join request was created or revoked. */
+  readonly joinRequest?: {
+    readonly joinRequestId: string;
+    readonly user: IdentityReference;
+    readonly state: "created" | "revoked";
+  };
 }
 
 export interface PresenceUpdatePayload {
@@ -824,6 +882,51 @@ export interface CallPermissionChangedPayload {
   readonly changedAt: string;
 }
 
+interface OrderPaymentUpdateBase {
+  readonly reportedBy: "whatsapp";
+  /** WhatsApp's notification or message ID. */
+  readonly providerEventId: string;
+  /** Your order reference ID from the order details message. */
+  readonly referenceId: string;
+  readonly conversation: {
+    readonly id?: string;
+    readonly phoneNumber?: string;
+  };
+}
+
+/**
+ * WhatsApp reported a payment update for a Brazil order (payment orders beta).
+ * Polymorfa relays the report; it does not process, hold or confirm funds.
+ * Confirm settlement with your payment provider by `referenceId`.
+ */
+export type OrderPaymentUpdatedPayload =
+  | (OrderPaymentUpdateBase & {
+      readonly kind: "payment_status";
+      /** Payment status as WhatsApp reported it, for example `captured`. */
+      readonly status: string;
+      /** Reported amount; `value / offset` is the amount in currency units. */
+      readonly amount?: { readonly value: number; readonly offset: number };
+      readonly currency?: string;
+      readonly transaction?: {
+        readonly id?: string;
+        readonly providerTransactionId?: string;
+        readonly provider?: string;
+        readonly status?: string;
+        readonly method?: string;
+        readonly errorCode?: string;
+      };
+    })
+  | (OrderPaymentUpdateBase & {
+      /** The buyer confirmed a one-click payment method. */
+      readonly kind: "payment_method_selected";
+      readonly messageId: string;
+      readonly paymentMethod: string;
+      readonly lastFourDigits?: string;
+      readonly credentialId?: string;
+      /** Unix time in seconds reported by WhatsApp. */
+      readonly paymentTimestamp?: number;
+    });
+
 export type MessageFailedReason =
   | "invalid_recipient"
   | "session_not_connected"
@@ -841,7 +944,7 @@ export interface MessageFailedPayload {
   readonly timestamp: number;
 }
 
-export interface TemplateStatusPayload {
+export interface RuntimeTemplateStatusPayload {
   readonly templateName: string;
   readonly templateId: string;
   readonly status: string;
@@ -849,6 +952,22 @@ export interface TemplateStatusPayload {
   readonly reason: string;
   readonly qualityRating: string;
 }
+
+export interface CloudTemplateStatusPayload {
+  readonly kind:
+    "message_template_status_update" | "message_template_quality_update";
+  readonly event?: string;
+  readonly templateId?: string;
+  readonly templateName?: string;
+  readonly language?: string;
+  readonly reason?: string;
+  readonly previousQualityScore?: string;
+  readonly newQualityScore?: string;
+  readonly wabaId?: string;
+}
+
+export type TemplateStatusPayload =
+  RuntimeTemplateStatusPayload | CloudTemplateStatusPayload;
 
 export interface CampaignLaunchedPayload {
   readonly campaignId: string;
@@ -864,6 +983,16 @@ export interface CampaignPausedPayload {
   readonly sentCount: number;
   readonly remainingCount: number;
   readonly pausedAt: number;
+}
+
+export interface CampaignRescheduledPayload {
+  readonly campaignId: string;
+  /** Replaced start time in Unix milliseconds, or null. */
+  readonly previousScheduledAt: number | null;
+  /** New start time in Unix milliseconds; equals rescheduledAt when starting now. */
+  readonly scheduledAt: number;
+  /** Unix milliseconds when the new start was accepted. */
+  readonly rescheduledAt: number;
 }
 
 export interface CampaignResumedPayload {
@@ -1028,6 +1157,7 @@ export interface WebhookPayloadMap {
   readonly "call.participant_left": CallParticipantLeftPayload;
   readonly "call.participant_state": CallParticipantPayload;
   readonly "call.permission_changed": CallPermissionChangedPayload;
+  readonly "order.payment_updated": OrderPaymentUpdatedPayload;
   readonly "call.received": CallReceivedPayload;
   readonly "call.rejected": CallRejectedPayload;
   readonly "call.telemetry": CallTelemetryPayload;
