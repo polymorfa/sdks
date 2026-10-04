@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "ee885ec4bf62af36b9b85df4310c505f38a224db",
-  "branch": "dev",
-  "published": true,
-  "note": "API number capabilities PR #402, reconciled with Hybrid Link tier transitions and hosted Flow operations. Both snapshots are byte-identical to this source commit. SDK publication, CLI registry pinning and deployed beta access remain separate gates.",
+  "commit": "ac1c7010d5c3cdf0262f1b5deb2c4d7ce6a249a5",
+  "branch": "t3code/project-billing-dashboard",
+  "published": false,
+  "note": "Exact Messaging and Platform snapshots from the Usage and Logs stack. Financial operations require organization billing scopes. Private Console operations remain excluded from SDK credentials. API deployment and SDK publication are separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "fd9709bc7f75e362a1c2008dbde44fd6ba1db310207cf0bed85282a12bef16d4"
+      "sha256": "7f6ddab25a673e45da7a209292ddfd7354acccf30c27e2fa651113e321b66d3d"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "d831f87eb4027c5f43ec4454bdd23e6972a4beb715fa080947545b7bff28d6b7"
+      "sha256": "7f29c5c4a3d309a127e34fcee8dfcedada572141ab5c5902886abe3c4dcf8a7c"
     }
   }
 }

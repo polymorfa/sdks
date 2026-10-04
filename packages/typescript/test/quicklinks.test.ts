@@ -4,6 +4,7 @@ import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import {
   MessagingClient,
   PolymorfaConfigurationError,
+  PolymorfaValidationError,
   type ApiResponse,
   type CancelQuickLinkResponse,
   type CreateQuickLinkResponse,
@@ -273,4 +274,45 @@ describe("MessagingClient.quickLinks", () => {
     ).toThrow(PolymorfaConfigurationError);
     expect(fetch).not.toHaveBeenCalled();
   });
+});
+
+it("applies initial financial controls in the create request and rejects test-number or imprecise controls before sending", async () => {
+  const server = await startTestServer(() => ({
+    status: 201,
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      success: true,
+      data: {
+        id: "ql_budget",
+        url: "https://example.test/budget",
+        session: "reserved",
+        expiresAt: null,
+      },
+    }),
+  }));
+  servers.push(server);
+  const client = new MessagingClient({
+    baseUrl: server.url,
+    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    maxNetworkRetries: 0,
+  });
+  await client.quickLinks.create({
+    projectId: "11111111-2222-4333-8444-555555555555",
+    billingControls: { limitCredits: 250, priority: 30 },
+  });
+  expect(JSON.parse(server.requests[0]!.body)).toMatchObject({
+    billingControls: { limitCredits: 250, priority: 30 },
+  });
+  expect(() =>
+    client.quickLinks.create({
+      configuration: { testing: { country: "US" } },
+      billingControls: { limitCredits: 250, priority: 30 },
+    }),
+  ).toThrow(PolymorfaConfigurationError);
+  expect(() =>
+    client.quickLinks.create({
+      billingControls: { limitCredits: 0.000001000000001, priority: 30 },
+    }),
+  ).toThrow(PolymorfaValidationError);
+  expect(server.requests).toHaveLength(1);
 });

@@ -196,7 +196,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("ee885ec4bf62af36b9b85df4310c505f38a224db");
+    expect(source.commit).toBe("ac1c7010d5c3cdf0262f1b5deb2c4d7ce6a249a5");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -349,6 +349,26 @@ describe("reconciled coverage evidence", () => {
     ).toBe(false);
   });
 
+  it("excludes the bounded number selector based on its dashboard identity contract", () => {
+    const operation = entry("listConsoleNumberOptions");
+    expect(operation).toMatchObject({
+      family: "platform",
+      method: "GET",
+      path: "/console/insights/number-options",
+      typescript: { status: "excluded" },
+    });
+    expect(operation.typescript.reason).toContain("dashboard identity");
+    expect(operation.typescript.method).toBeUndefined();
+    const platform = JSON.parse(
+      readFileSync(repositoryFile("contracts/openapi.platform.json"), "utf8"),
+    ) as {
+      paths: Record<string, Record<string, { security: unknown }>>;
+    };
+    expect(platform.paths[operation.path]!.get!.security).toEqual([
+      { ConsoleSession: [] },
+    ]);
+  });
+
   it("excludes the added Console routes based on their credential contract", () => {
     const platform = JSON.parse(
       readFileSync(repositoryFile("contracts/openapi.platform.json"), "utf8"),
@@ -369,6 +389,34 @@ describe("reconciled coverage evidence", () => {
       expect(
         platform.paths[operation.path]![operation.method.toLowerCase()]!
           .security,
+      ).toEqual([{ ConsoleSession: [] }]);
+    }
+  });
+
+  it("keeps inherited Logs operations excluded according to dashboard identity", () => {
+    const platform = JSON.parse(
+      readFileSync(repositoryFile("contracts/openapi.platform.json"), "utf8"),
+    ) as {
+      paths: Record<string, Record<string, { security: unknown }>>;
+    };
+    for (const operationId of [
+      "getConsoleAuditLogs",
+      "getLogCalendar",
+      "getProjectLogging",
+      "saveProjectDrain",
+      "saveProjectSampling",
+      "logsInsight",
+    ]) {
+      const operation = entry(operationId);
+      expect(operation.typescript.status, operationId).toBe("excluded");
+      expect(operation.typescript.reason, operationId).toContain(
+        "dashboard identity",
+      );
+      expect(operation.typescript.method, operationId).toBeUndefined();
+      expect(
+        platform.paths[operation.path]![operation.method.toLowerCase()]!
+          .security,
+        operationId,
       ).toEqual([{ ConsoleSession: [] }]);
     }
   });

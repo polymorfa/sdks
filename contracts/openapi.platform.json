@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (236 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (101 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (243 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (110 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -16097,7 +16097,7 @@
           "sessions"
         ],
         "summary": "Start a session",
-        "description": "Starts a stopped session or retries a session whose runtime failed. A hosted paid number must reserve credit before connecting; insufficient available credit returns 402. A new paid window is charged only after the messaging connection succeeds. The identifier may be the session UUID or stable session slug.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Starts a stopped session or retries a session whose runtime failed. A hosted paid number must reserve credit before connecting; insufficient available credit returns 402. A new paid window is charged only after the messaging connection succeeds. Monthly project and number credit limits also apply: a new charge that would exceed either limit returns 409 state_conflict. Already-paid service remains available until its paid window ends. The identifier may be the session UUID or stable session slug.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -24416,11 +24416,11 @@
           "billing"
         ],
         "summary": "Get billing",
-        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
+        "description": "Public Management API. Requires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
-        "x-required-scope": "sessions:read",
+        "x-required-scope": "billing:read",
         "security": [
           {
             "ApiKeyAuth": []
@@ -24473,11 +24473,11 @@
           "billing"
         ],
         "summary": "List usage meters",
-        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
+        "description": "Public Management API. Requires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
-        "x-required-scope": "sessions:read",
+        "x-required-scope": "billing:read",
         "security": [
           {
             "ApiKeyAuth": []
@@ -24530,11 +24530,11 @@
           "billing"
         ],
         "summary": "List billing transactions",
-        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
+        "description": "Public Management API. Requires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
-        "x-required-scope": "sessions:read",
+        "x-required-scope": "billing:read",
         "security": [
           {
             "ApiKeyAuth": []
@@ -24587,11 +24587,11 @@
           "billing"
         ],
         "summary": "List tier pricing",
-        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
+        "description": "Public Management API. Requires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "organization",
         "x-excluded-from-public": false,
-        "x-required-scope": "sessions:read",
+        "x-required-scope": "billing:read",
         "security": [
           {
             "ApiKeyAuth": []
@@ -24633,6 +24633,896 @@
           },
           "501": {
             "$ref": "#/components/responses/NotImplemented"
+          }
+        }
+      }
+    },
+    "/platform/billing/controls/{scope}/{resourceId}": {
+      "get": {
+        "operationId": "getResourceBillingControls",
+        "tags": [
+          "billing"
+        ],
+        "summary": "Read a resource's limit and priority",
+        "description": "Reads one project, customer or real number without loading the team directory. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "billing:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "project",
+                "customer",
+                "number"
+              ]
+            }
+          },
+          {
+            "name": "resourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ResourceBillingControls"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      },
+      "put": {
+        "operationId": "setResourceBillingControls",
+        "tags": [
+          "billing"
+        ],
+        "summary": "Set a resource's limit and priority",
+        "description": "Saves the monthly limit and priority together, atomically. Both observed revisions are required. Conflicts leave both settings unchanged. Null removes a limit; zero blocks new charges. Existing paid service continues. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "billing:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "project",
+                "customer",
+                "number"
+              ]
+            }
+          },
+          {
+            "name": "resourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "limitCredits": {
+                    "type": "number",
+                    "minimum": 0,
+                    "multipleOf": 0.000001,
+                    "maximum": 1000000,
+                    "nullable": true
+                  },
+                  "priority": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "expectedBudgetRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483646
+                  },
+                  "expectedPriorityRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483646
+                  }
+                },
+                "required": [
+                  "limitCredits",
+                  "priority",
+                  "expectedBudgetRevision",
+                  "expectedPriorityRevision"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ResourceBillingControls"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/billing/limits": {
+      "get": {
+        "operationId": "getBillingLimits",
+        "tags": [
+          "billing"
+        ],
+        "summary": "Read monthly spending limits",
+        "description": "Reads attributed charges and active reservations in Polymorfa credits. Months reset at 00:00 UTC on the first day. Omit projectId for project limits across the team; pass it to include that project's customer and number limits. Pass scope=project to read only project limits. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "billing:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "project"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BillingLimits"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/billing/limits/{scope}/{resourceId}": {
+      "put": {
+        "operationId": "setBillingLimit",
+        "tags": [
+          "billing"
+        ],
+        "summary": "Set a monthly spending limit",
+        "description": "Zero blocks new charges; null removes the limit. Existing paid service continues to its paid-window end. Reservations count toward admission. Supply the revision from the limit read; a stale revision returns 409. Retrying the same successful update is harmless. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "billing:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "project",
+                "customer",
+                "number"
+              ]
+            }
+          },
+          {
+            "name": "resourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "limitCredits": {
+                    "type": "number",
+                    "minimum": 0,
+                    "multipleOf": 0.000001,
+                    "maximum": 1000000,
+                    "nullable": true
+                  },
+                  "expectedRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483646
+                  }
+                },
+                "required": [
+                  "limitCredits",
+                  "expectedRevision"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "saved": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "saved"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/billing/priorities": {
+      "get": {
+        "operationId": "getBillingPriorities",
+        "tags": [
+          "billing"
+        ],
+        "summary": "Read funding priorities",
+        "description": "Lists active projects, customers and real numbers. Pass scope=project to read only project ranks. Pass projectId to read one project and its customer/number leaderboard. Project priority takes precedence. Within a project, numbers inherit their customer priority; a higher number priority overrides it. Number priority then breaks ties before renewal due time and stable number identity. Numbers are ranked within a project. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "billing:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "project"
+              ]
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BillingPriorities"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      },
+      "put": {
+        "operationId": "reorderBillingPriorities",
+        "tags": [
+          "billing"
+        ],
+        "summary": "Reorder funding priorities",
+        "description": "resourceIds is the complete list in highest-first order. Project order includes every active project; customer and number orders include every active customer or real number in projectId. Use scope=resource with projectId and a complete resources array of {scope: customer or number, resourceId} for one mixed leaderboard. Saves the whole order atomically. Concurrent changes or an incomplete list return 409. Retrying the same successful order is harmless. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "billing:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "scope": {
+                        "type": "string",
+                        "enum": [
+                          "resource"
+                        ]
+                      },
+                      "projectId": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "resources": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "scope": {
+                              "type": "string",
+                              "enum": [
+                                "customer",
+                                "number"
+                              ]
+                            },
+                            "resourceId": {
+                              "type": "string",
+                              "format": "uuid"
+                            }
+                          },
+                          "required": [
+                            "scope",
+                            "resourceId"
+                          ]
+                        },
+                        "uniqueItems": true,
+                        "maxItems": 1000000
+                      },
+                      "expectedRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483646
+                      }
+                    },
+                    "required": [
+                      "scope",
+                      "projectId",
+                      "resources",
+                      "expectedRevision"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "scope": {
+                        "type": "string",
+                        "enum": [
+                          "project"
+                        ]
+                      },
+                      "resourceIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "uniqueItems": true,
+                        "maxItems": 1000000
+                      },
+                      "expectedRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483646
+                      }
+                    },
+                    "required": [
+                      "scope",
+                      "resourceIds",
+                      "expectedRevision"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "scope": {
+                        "type": "string",
+                        "enum": [
+                          "customer",
+                          "number"
+                        ]
+                      },
+                      "projectId": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "resourceIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "uniqueItems": true,
+                        "maxItems": 1000000
+                      },
+                      "expectedRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483646
+                      }
+                    },
+                    "required": [
+                      "scope",
+                      "projectId",
+                      "resourceIds",
+                      "expectedRevision"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BillingPriorities"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
+          }
+        }
+      }
+    },
+    "/platform/billing/priorities/{scope}/{resourceId}": {
+      "put": {
+        "operationId": "setBillingPriority",
+        "tags": [
+          "billing"
+        ],
+        "summary": "Set a funding priority",
+        "description": "Changes future funding protection and recovery order without shortening paid service. Supply the team-wide revision from the priorities read. A stale revision returns 409. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "billing:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "project",
+                "customer",
+                "number"
+              ]
+            }
+          },
+          {
+            "name": "resourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "priority": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "expectedRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483646
+                  }
+                },
+                "required": [
+                  "priority",
+                  "expectedRevision"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BillingPriorities"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/PropagationPending"
           }
         }
       }
@@ -25269,6 +26159,722 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/console/projects/{projectId}/setup": {
+      "get": {
+        "operationId": "getProjectSetup",
+        "tags": [
+          "projects"
+        ],
+        "summary": "Read project setup progress",
+        "description": "Returns current project setup facts and the setup goals selected for this project. Includes a saved enum-only integration plan, revision and live edit eligibility; onboarding choices seed the first project. Completion is derived from current records. Does not enable features, create resources, or verify deployed integrations.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Dashboard-only project setup guidance; no credential or customer data.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "projectId",
+                        "facts",
+                        "connectionPath",
+                        "goals",
+                        "profile",
+                        "revision",
+                        "canEdit"
+                      ],
+                      "properties": {
+                        "projectId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "profile": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "version",
+                            "runtime",
+                            "language",
+                            "integration",
+                            "apiSurface",
+                            "connectionPath",
+                            "audience",
+                            "events",
+                            "sessionSource",
+                            "goals"
+                          ],
+                          "properties": {
+                            "version": {
+                              "type": "integer",
+                              "enum": [
+                                1
+                              ]
+                            },
+                            "runtime": {
+                              "type": "string",
+                              "enum": [
+                                "server",
+                                "browser",
+                                "mobile",
+                                "hybrid",
+                                "unsure"
+                              ]
+                            },
+                            "language": {
+                              "type": "string",
+                              "enum": [
+                                "typescript",
+                                "javascript",
+                                "python",
+                                "go",
+                                "java",
+                                "csharp",
+                                "php",
+                                "ruby",
+                                "other",
+                                "unsure"
+                              ]
+                            },
+                            "integration": {
+                              "type": "string",
+                              "enum": [
+                                "typescript-sdk",
+                                "browser-calls",
+                                "http",
+                                "unsure"
+                              ]
+                            },
+                            "apiSurface": {
+                              "type": "string",
+                              "enum": [
+                                "messaging",
+                                "platform",
+                                "graph",
+                                "unsure"
+                              ]
+                            },
+                            "connectionPath": {
+                              "type": "string",
+                              "enum": [
+                                "meta",
+                                "linked",
+                                "hybrid",
+                                "unsure"
+                              ]
+                            },
+                            "audience": {
+                              "type": "string",
+                              "enum": [
+                                "internal",
+                                "customers",
+                                "unsure"
+                              ]
+                            },
+                            "events": {
+                              "type": "string",
+                              "enum": [
+                                "webhooks",
+                                "polling",
+                                "unsure"
+                              ]
+                            },
+                            "sessionSource": {
+                              "type": "string",
+                              "enum": [
+                                "new",
+                                "baileys",
+                                "whatsmeow",
+                                "unsure"
+                              ]
+                            },
+                            "goals": {
+                              "type": "array",
+                              "maxItems": 8,
+                              "uniqueItems": true,
+                              "items": {
+                                "type": "string",
+                                "enum": [
+                                  "templates",
+                                  "campaigns",
+                                  "catalogs",
+                                  "calls",
+                                  "flows",
+                                  "hms",
+                                  "embedded",
+                                  "safe-mode"
+                                ]
+                              }
+                            }
+                          },
+                          "nullable": true
+                        },
+                        "revision": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "canEdit": {
+                          "type": "boolean"
+                        },
+                        "facts": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "numberCreated",
+                            "webhookCreated",
+                            "numberConnected",
+                            "credentialCreated",
+                            "apiUsed",
+                            "webhookEnabled",
+                            "templateCreated",
+                            "campaignCreated",
+                            "flowCreated",
+                            "catalogProductCreated",
+                            "callSettingsSaved",
+                            "historyRequested",
+                            "historyConfigured",
+                            "quickLinkSettingsSaved",
+                            "quickLinkEnabled",
+                            "safetyViewed"
+                          ],
+                          "properties": {
+                            "numberCreated": {
+                              "type": "boolean"
+                            },
+                            "webhookCreated": {
+                              "type": "boolean"
+                            },
+                            "numberConnected": {
+                              "type": "boolean"
+                            },
+                            "credentialCreated": {
+                              "type": "boolean"
+                            },
+                            "apiUsed": {
+                              "type": "boolean"
+                            },
+                            "webhookEnabled": {
+                              "type": "boolean"
+                            },
+                            "templateCreated": {
+                              "type": "boolean"
+                            },
+                            "campaignCreated": {
+                              "type": "boolean"
+                            },
+                            "flowCreated": {
+                              "type": "boolean"
+                            },
+                            "catalogProductCreated": {
+                              "type": "boolean"
+                            },
+                            "callSettingsSaved": {
+                              "type": "boolean"
+                            },
+                            "historyRequested": {
+                              "type": "boolean"
+                            },
+                            "historyConfigured": {
+                              "type": "boolean"
+                            },
+                            "quickLinkSettingsSaved": {
+                              "type": "boolean"
+                            },
+                            "quickLinkEnabled": {
+                              "type": "boolean"
+                            },
+                            "safetyViewed": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
+                        "connectionPath": {
+                          "type": "string",
+                          "enum": [
+                            "meta",
+                            "linked",
+                            "hybrid",
+                            "unsure"
+                          ]
+                        },
+                        "goals": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "templates",
+                              "campaigns",
+                              "catalogs",
+                              "calls",
+                              "flows",
+                              "hms",
+                              "embedded",
+                              "safe-mode"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "put": {
+        "operationId": "saveProjectSetup",
+        "tags": [
+          "projects"
+        ],
+        "summary": "Save a project integration plan",
+        "description": "Saves reviewed enum-only setup answers. Server SDK choices require TypeScript or JavaScript; browser calling requires client code and the Calls feature. Requires a current owner or admin and the expected revision; stale writes return 409. Does not grant access, enable features, import a session or configure resources.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Dashboard-only enum-only integration guidance; no credentials, feature authority or runtime configuration.",
+        "x-required-organization-role": "owner_or_admin",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "expectedRevision",
+                  "profile"
+                ],
+                "properties": {
+                  "expectedRevision": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "profile": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "version",
+                      "runtime",
+                      "language",
+                      "integration",
+                      "apiSurface",
+                      "connectionPath",
+                      "audience",
+                      "events",
+                      "sessionSource",
+                      "goals"
+                    ],
+                    "properties": {
+                      "version": {
+                        "type": "integer",
+                        "enum": [
+                          1
+                        ]
+                      },
+                      "runtime": {
+                        "type": "string",
+                        "enum": [
+                          "server",
+                          "browser",
+                          "mobile",
+                          "hybrid",
+                          "unsure"
+                        ]
+                      },
+                      "language": {
+                        "type": "string",
+                        "enum": [
+                          "typescript",
+                          "javascript",
+                          "python",
+                          "go",
+                          "java",
+                          "csharp",
+                          "php",
+                          "ruby",
+                          "other",
+                          "unsure"
+                        ]
+                      },
+                      "integration": {
+                        "type": "string",
+                        "enum": [
+                          "typescript-sdk",
+                          "browser-calls",
+                          "http",
+                          "unsure"
+                        ]
+                      },
+                      "apiSurface": {
+                        "type": "string",
+                        "enum": [
+                          "messaging",
+                          "platform",
+                          "graph",
+                          "unsure"
+                        ]
+                      },
+                      "connectionPath": {
+                        "type": "string",
+                        "enum": [
+                          "meta",
+                          "linked",
+                          "hybrid",
+                          "unsure"
+                        ]
+                      },
+                      "audience": {
+                        "type": "string",
+                        "enum": [
+                          "internal",
+                          "customers",
+                          "unsure"
+                        ]
+                      },
+                      "events": {
+                        "type": "string",
+                        "enum": [
+                          "webhooks",
+                          "polling",
+                          "unsure"
+                        ]
+                      },
+                      "sessionSource": {
+                        "type": "string",
+                        "enum": [
+                          "new",
+                          "baileys",
+                          "whatsmeow",
+                          "unsure"
+                        ]
+                      },
+                      "goals": {
+                        "type": "array",
+                        "maxItems": 8,
+                        "uniqueItems": true,
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "templates",
+                            "campaigns",
+                            "catalogs",
+                            "calls",
+                            "flows",
+                            "hms",
+                            "embedded",
+                            "safe-mode"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "revision"
+                      ],
+                      "properties": {
+                        "revision": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/console/projects/{projectId}/setup/usage": {
+      "post": {
+        "operationId": "recordProjectSetupUsage",
+        "tags": [
+          "projects"
+        ],
+        "summary": "Record consented setup usage",
+        "description": "Records a bounded enum-only interaction with a server-derived completion snapshot. Requires current dashboard membership and measurement consent. Stores no prompt or imported answer content. Exact event ids deduplicate retries. Measurements expire after 90 days and staff reads aggregate counts only.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Dashboard-only consented setup usage; aggregate staff analysis only.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "method",
+                  "event",
+                  "step",
+                  "measurementAllowed"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": [
+                      "ai",
+                      "manual",
+                      "both"
+                    ]
+                  },
+                  "event": {
+                    "type": "string",
+                    "enum": [
+                      "method_change",
+                      "wizard_open",
+                      "question_answer",
+                      "answers_imported",
+                      "plan_saved",
+                      "task_open",
+                      "manual_open",
+                      "prompt_copy",
+                      "progress_view"
+                    ]
+                  },
+                  "step": {
+                    "type": "string",
+                    "enum": [
+                      "setup",
+                      "runtime",
+                      "language",
+                      "integration",
+                      "apiSurface",
+                      "connectionPath",
+                      "audience",
+                      "events",
+                      "sessionSource",
+                      "goals",
+                      "connect",
+                      "webhook",
+                      "verify",
+                      "templates",
+                      "campaigns",
+                      "catalogs",
+                      "calls",
+                      "flows",
+                      "hms",
+                      "embedded",
+                      "safe-mode"
+                    ]
+                  },
+                  "measurementAllowed": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "recorded"
+                      ],
+                      "properties": {
+                        "recorded": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
           }
         }
       }
@@ -36092,6 +37698,780 @@
         }
       }
     },
+    "/console/audit": {
+      "get": {
+        "operationId": "getConsoleAuditLogs",
+        "tags": [
+          "audit"
+        ],
+        "summary": "Read scoped Settings audit history",
+        "description": "Dashboard-only team or project audit history for a date range. Includes actor name and profile image only for recorded actors in the authenticated team. Public audit API response stays unchanged.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-dashboard-only": true,
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "maxItems": 500,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/console/projects/{projectId}/logging": {
+      "get": {
+        "operationId": "getProjectLogging",
+        "tags": [
+          "projects"
+        ],
+        "summary": "Read project log forwarding",
+        "description": "Project-scoped dashboard configuration. Returns destination URLs and header names, never saved header values or signing secrets.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-dashboard-only": true,
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "revision",
+                        "disabled",
+                        "rules",
+                        "drains"
+                      ],
+                      "properties": {
+                        "revision": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "disabled": {
+                          "type": "boolean"
+                        },
+                        "rules": {
+                          "type": "array",
+                          "maxItems": 20,
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "rate"
+                            ],
+                            "properties": {
+                              "rate": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 100
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "api",
+                                  "webhooks",
+                                  "sessions"
+                                ]
+                              },
+                              "kind": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 128
+                              },
+                              "identifier": {
+                                "type": "string",
+                                "enum": [
+                                  "requestId",
+                                  "sessionId",
+                                  "eventId",
+                                  "webhookId",
+                                  "customerId",
+                                  "numberId",
+                                  "conversationId"
+                                ]
+                              },
+                              "value": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 256
+                              }
+                            }
+                          }
+                        },
+                        "drains": {
+                          "type": "array",
+                          "maxItems": 5,
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "id",
+                              "name",
+                              "url",
+                              "enabled",
+                              "revision",
+                              "headerNames",
+                              "hasSigningSecret",
+                              "pending",
+                              "failed",
+                              "lastStatus",
+                              "lastError"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "url": {
+                                "type": "string",
+                                "format": "uri"
+                              },
+                              "enabled": {
+                                "type": "boolean"
+                              },
+                              "revision": {
+                                "type": "integer",
+                                "minimum": 1
+                              },
+                              "headerNames": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "hasSigningSecret": {
+                                "type": "boolean"
+                              },
+                              "pending": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "failed": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "lastStatus": {
+                                "type": "integer",
+                                "nullable": true
+                              },
+                              "lastError": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/console/projects/{projectId}/logging/sampling": {
+      "put": {
+        "operationId": "saveProjectSampling",
+        "tags": [
+          "projects"
+        ],
+        "summary": "Save ordered log sampling rules",
+        "description": "Samples operational forwarding by request/event identity. Source logs and permanent audit history remain complete. Requires an exact revision and operation UUID; retries replay for 30 days. Incompatible type/identifier combinations are rejected.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-dashboard-only": true,
+        "x-required-organization-role": "owner_or_admin",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operationId",
+                  "revision",
+                  "rules"
+                ],
+                "properties": {
+                  "operationId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "rules": {
+                    "type": "array",
+                    "maxItems": 20,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "rate"
+                      ],
+                      "properties": {
+                        "rate": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "api",
+                            "webhooks",
+                            "sessions"
+                          ]
+                        },
+                        "kind": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "identifier": {
+                          "type": "string",
+                          "enum": [
+                            "requestId",
+                            "sessionId",
+                            "eventId",
+                            "webhookId",
+                            "customerId",
+                            "numberId",
+                            "conversationId"
+                          ]
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 256
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "revision"
+                      ],
+                      "properties": {
+                        "revision": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/console/projects/{projectId}/logging/drains": {
+      "put": {
+        "operationId": "saveProjectDrain",
+        "tags": [
+          "projects"
+        ],
+        "summary": "Configure a custom HTTPS log drain",
+        "description": "Creates, pauses, resumes or deletes one project drain with revision guards and exact operation replay. Up to five drains. URLs and headers are encrypted at rest. Delivery is at least once, never follows redirects, retries at most six times over 24 hours, and retains delivery metadata for seven days. Deleting removes that drain and its queue.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-dashboard-only": true,
+        "x-required-organization-role": "owner_or_admin",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operationId",
+                  "id",
+                  "revision",
+                  "name",
+                  "enabled"
+                ],
+                "properties": {
+                  "operationId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "destination": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "url"
+                    ],
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "maxLength": 2048
+                      },
+                      "headers": {
+                        "type": "object",
+                        "maxProperties": 20,
+                        "additionalProperties": {
+                          "type": "string",
+                          "maxLength": 2048
+                        }
+                      },
+                      "signingSecret": {
+                        "type": "string",
+                        "minLength": 16,
+                        "maxLength": 256
+                      }
+                    }
+                  },
+                  "remove": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "revision"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "removed"
+                          ],
+                          "properties": {
+                            "removed": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/console/insights/log-calendar": {
+      "get": {
+        "operationId": "getLogCalendar",
+        "tags": [
+          "insights"
+        ],
+        "summary": "Read scoped log activity dates",
+        "description": "Returns the earliest retained operational log and all activity dates in the requested IANA timezone. Does not depend on the log list result limit or active filters.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-dashboard-only": true,
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "earliest",
+                        "days"
+                      ],
+                      "properties": {
+                        "earliest": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "days": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/console/insights/logs": {
       "get": {
         "operationId": "logsInsight",
@@ -36173,6 +38553,22 @@
               "maxLength": 128,
               "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
             }
+          },
+          {
+            "name": "filters",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -36212,18 +38608,18 @@
         }
       }
     },
-    "/console/insights/usage": {
+    "/console/insights/number-options": {
       "get": {
-        "operationId": "usageInsight",
+        "operationId": "listConsoleNumberOptions",
         "tags": [
           "insights"
         ],
-        "summary": "Usage insight",
-        "description": "**EXCLUDED from the public API** (`console`). Customer console usage and entitlement presentation.",
+        "summary": "Search Console number options",
+        "description": "Private dashboard-only, org-scoped production number labels for selectors. Optional projectId must name an active, nondeleting project. Search is a literal case-insensitive substring of display name, current phone, session name or immutable number UUID, evaluated before pagination. Numbers in testing, deletion or deleted status and inactive/deleting projects are excluded; expired number history remains selectable. Results use immutable UUID ascending keyset order, default 25 and maximum 100; a cursor is bound to org, project and normalized search. It is navigation only and never grants authority. Response includes only number ID, project ID and a display label, with no configuration, owner, customer or provider fields. Public session listing is unchanged.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Customer console usage and entitlement presentation.",
+        "x-exclusion-reason": "Dashboard-only bounded, searchable number labels; server credentials cannot use the selector read.",
         "security": [
           {
             "ConsoleSession": []
@@ -36236,23 +38632,38 @@
             "required": false,
             "description": "Project to read. Omit to total every project in the organization.",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           },
           {
-            "name": "start",
+            "name": "search",
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 200
             }
           },
           {
-            "name": "end",
+            "name": "cursor",
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
             }
           }
         ],
@@ -36276,10 +38687,22 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsoleNumberOptionsPage"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -36287,8 +38710,116 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/console/insights/usage": {
+      "get": {
+        "operationId": "usageInsight",
+        "tags": [
+          "insights"
+        ],
+        "summary": "Read Console usage",
+        "description": "Private Console usage for the authenticated team or one active project. `start` and `end` are inclusive Unix-millisecond boundaries, with a maximum span of 366 days. A missing end defaults to now; a missing start defaults to 29 days before the end. Daily buckets use UTC dates and include only dates with observed audit or credit-ledger activity. API request counts include API and MCP operations; peak request rate is the busiest one-minute bucket, not a sum of daily peaks. Number and connection metrics are live snapshots, and message-rate usage remains null because its peak is not measured. The project breakdown includes active projects and omits unattributed team activity, which remains in team totals.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "x-audience": "console",
+        "x-polymorfa-resource-boundary": "human_only",
+        "x-excluded-from-public": true,
+        "x-exclusion-reason": "Customer console usage and entitlement presentation.",
+        "security": [
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project to read. Omit to total every project in the organization.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "numberId",
+            "in": "query",
+            "required": false,
+            "description": "Immutable production number UUID. Requires projectId; missing, deleted, testing or mismatched numbers return 404. Filters only immutable attributed records; request logs and serverless receipts have no number attribution.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "description": "Inclusive Unix-millisecond boundary. The range may span at most 366 days."
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "description": "Inclusive Unix-millisecond boundary. The range may span at most 366 days."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsoleUsageInsights"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -37685,6 +40216,257 @@
           "ok"
         ]
       },
+      "BillingPriorities": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "priority": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "priority"
+              ]
+            }
+          },
+          "customers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "projectId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "priority": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "id",
+                "projectId",
+                "name",
+                "priority"
+              ]
+            }
+          },
+          "numbers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "projectId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "priority": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "id",
+                "projectId",
+                "name",
+                "priority"
+              ]
+            }
+          }
+        },
+        "required": [
+          "revision",
+          "projects",
+          "customers",
+          "numbers"
+        ]
+      },
+      "BillingLimit": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "project",
+              "customer",
+              "number"
+            ]
+          },
+          "resourceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "limitCredits": {
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 0.000001,
+            "maximum": 1000000,
+            "nullable": true
+          },
+          "spentCredits": {
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 0.000001
+          },
+          "reservedCredits": {
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 0.000001
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          }
+        },
+        "required": [
+          "scope",
+          "resourceId",
+          "projectId",
+          "name",
+          "limitCredits",
+          "spentCredits",
+          "reservedCredits",
+          "revision"
+        ]
+      },
+      "ResourceBillingControls": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "budget": {
+            "$ref": "#/components/schemas/BillingLimit"
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "priorityRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          }
+        },
+        "required": [
+          "budget",
+          "priority",
+          "priorityRevision"
+        ]
+      },
+      "BillingLimits": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "todayCredits": {
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 0.000001
+          },
+          "monthCredits": {
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 0.000001
+          },
+          "daily": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "credits": {
+                  "type": "number",
+                  "minimum": 0,
+                  "multipleOf": 0.000001
+                }
+              },
+              "required": [
+                "date",
+                "credits"
+              ]
+            }
+          },
+          "budgets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingLimit"
+            }
+          }
+        },
+        "required": [
+          "checkedAt",
+          "periodStart",
+          "periodEnd",
+          "todayCredits",
+          "monthCredits",
+          "daily",
+          "budgets"
+        ]
+      },
       "DashboardUnauthorizedError": {
         "type": "object",
         "additionalProperties": false,
@@ -37959,6 +40741,533 @@
         },
         "required": [
           "data"
+        ]
+      },
+      "ConsoleNumberOptionsPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "scope": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "orgId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "projectId": {
+                "type": "string",
+                "format": "uuid",
+                "nullable": true
+              }
+            },
+            "required": [
+              "orgId",
+              "projectId"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/ConsoleNumberOption"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "scope",
+          "items",
+          "nextCursor"
+        ]
+      },
+      "ConsoleNumberOption": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Immutable number UUID, never its reusable session name."
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Trimmed number name, else current phone, else session name (UUID fallback when all labels are blank)."
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "name"
+        ]
+      },
+      "ConsoleUsageInsights": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "scope": {
+            "$ref": "#/components/schemas/ConsoleUsageScope"
+          },
+          "monthlyCalls": {
+            "type": "object",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsoleMonthlyOutgoingCalls"
+              }
+            ],
+            "description": "Known-tier selected-number included outgoing allowance and completed-call usage for the current UTC month. Null for team/project reads or an unknown number tier. Independent of the requested chart period and of staff gate overrides; never a hard admission cap or charged-credit quote."
+          },
+          "period": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "end": {
+                "type": "integer",
+                "format": "int64"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ]
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsoleUsageMetric"
+            }
+          },
+          "totals": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "failedRequests": {
+                "type": "integer",
+                "minimum": 0,
+                "nullable": true,
+                "description": "Null for a number read: audit logs have no immutable number attribution."
+              },
+              "sessionDayCredits": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "failedRequests",
+              "sessionDayCredits"
+            ]
+          },
+          "daily": {
+            "type": "array",
+            "maxItems": 367,
+            "description": "Observed UTC dates in ascending order. Missing dates have no observed activity. Partial first and last days count only activity within the inclusive requested range.",
+            "items": {
+              "$ref": "#/components/schemas/ConsoleDailyUsage"
+            }
+          },
+          "consumption": {
+            "type": "array",
+            "maxItems": 18,
+            "description": "Credit-ledger number windows, registered meters and priced overage families. Outbound calls count completed call.duration records, matching the monthly gate. Serverless counts surviving admitted project invocation receipts, including failed or uncertain outcomes; receipts have no per-number allowance attribution. WhatsApp data covers media and enabled HMS but has no approved complete GB-month aggregate source. Pricing and measurement availability never establish a charge; credits come only from the number-window debit ledger.",
+            "items": {
+              "$ref": "#/components/schemas/ConsoleConsumption"
+            }
+          },
+          "byProject": {
+            "type": "array",
+            "description": "Included for a team-wide read; omitted for a selected project or number. Active projects only. Team-level activity without a project is included in totals but has no project row.",
+            "items": {
+              "$ref": "#/components/schemas/ConsoleProjectUsage"
+            }
+          }
+        },
+        "required": [
+          "scope",
+          "monthlyCalls",
+          "period",
+          "metrics",
+          "totals",
+          "daily",
+          "consumption"
+        ]
+      },
+      "ConsoleUsageScope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "team",
+              "project",
+              "number"
+            ]
+          },
+          "orgId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "numberId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "numberName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Selected number display name or session name; null without a selected number."
+          }
+        },
+        "required": [
+          "kind",
+          "orgId",
+          "projectId",
+          "numberId",
+          "numberName"
+        ]
+      },
+      "ConsoleMonthlyOutgoingCalls": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "periodStart": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Inclusive first day of the current UTC calendar month in Unix milliseconds."
+          },
+          "periodEnd": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Exclusive first day of the next UTC calendar month in Unix milliseconds."
+          },
+          "used": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Completed outbound call.duration records for the exact number and project, including zero-duration calls. In-flight placements are not included."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0,
+            "nullable": true,
+            "description": "Included number-tier monthly outgoing calls, using the runtime gate tier lookup. Null means a known unlimited tier. Separate staff gate overrides are not the included allowance."
+          }
+        },
+        "required": [
+          "periodStart",
+          "periodEnd",
+          "used",
+          "limit"
+        ]
+      },
+      "ConsoleConsumption": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "number.free",
+              "number.standard",
+              "number.pro",
+              "number.other",
+              "call.duration",
+              "call.cloud_pulses",
+              "campaign.call",
+              "tts.characters",
+              "tts.seconds",
+              "stt.seconds",
+              "agent.seconds",
+              "agent.tokens",
+              "agent.provider_cost",
+              "channels.peak",
+              "storage.byte_days",
+              "call.outbound",
+              "whatsapp.storage",
+              "serverless.invocations"
+            ]
+          },
+          "group": {
+            "type": "string",
+            "enum": [
+              "numbers",
+              "calls",
+              "voice",
+              "agents",
+              "storage",
+              "serverless"
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "day",
+              "second",
+              "pulse",
+              "call",
+              "character",
+              "token",
+              "provider_unit",
+              "channel",
+              "byte_day",
+              "gb_month",
+              "invocation"
+            ]
+          },
+          "aggregation": {
+            "type": "string",
+            "enum": [
+              "sum",
+              "max"
+            ],
+            "description": "channels.peak uses the maximum observed quantity; additive quantities use the sum."
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0,
+            "nullable": true
+          },
+          "credits": {
+            "type": "number",
+            "nullable": true,
+            "description": "Actual credit-ledger debit. Null for observed meters that have no credit settlement; never calculated from a catalog or rate card."
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "measured",
+              "unavailable"
+            ]
+          },
+          "pricingState": {
+            "type": "string",
+            "enum": [
+              "priced",
+              "unpriced"
+            ],
+            "description": "An approved catalog price or an actual priced ledger category exists. Independent of measurement and actual charged-credit availability; never grants a capability or authorizes settlement."
+          },
+          "chargeState": {
+            "type": "string",
+            "enum": [
+              "charged",
+              "unpriced",
+              "unavailable"
+            ]
+          },
+          "daily": {
+            "type": "array",
+            "maxItems": 367,
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ConsoleConsumptionDay"
+            },
+            "description": "Observed UTC dates in ascending order within the inclusive range. Null when history is unavailable; an empty array is a measured empty range."
+          }
+        },
+        "required": [
+          "key",
+          "group",
+          "unit",
+          "aggregation",
+          "quantity",
+          "credits",
+          "availability",
+          "pricingState",
+          "chargeState",
+          "daily"
+        ]
+      },
+      "ConsoleConsumptionDay": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0
+          },
+          "credits": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "date",
+          "quantity",
+          "credits"
+        ]
+      },
+      "ConsoleUsageMetric": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "numbers",
+              "connected",
+              "session-days",
+              "api-requests",
+              "request-rate",
+              "message-rate",
+              "active-days"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "numbers",
+              "sessions",
+              "days",
+              "requests",
+              "req/min",
+              "msg/min"
+            ]
+          },
+          "used": {
+            "type": "number",
+            "minimum": 0,
+            "nullable": true,
+            "description": "Null for the unmeasured message-rate peak."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": -1,
+            "description": "-1 means no limit. Session-days uses 0 because every observed session-day is metered."
+          },
+          "overage": {
+            "type": "number",
+            "minimum": 0,
+            "nullable": true
+          },
+          "overageLabel": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "description",
+          "unit",
+          "used",
+          "limit",
+          "overage",
+          "overageLabel"
+        ]
+      },
+      "ConsoleDailyUsage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "UTC date, YYYY-MM-DD."
+          },
+          "sessionDays": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sessionDayCredits": {
+            "type": "number"
+          },
+          "apiRequests": {
+            "type": "integer",
+            "minimum": 0,
+            "nullable": true,
+            "description": "Null for number scope: request logs have no immutable number attribution."
+          },
+          "failedRequests": {
+            "type": "integer",
+            "minimum": 0,
+            "nullable": true
+          },
+          "peakRequestRate": {
+            "type": "integer",
+            "minimum": 0,
+            "nullable": true,
+            "description": "Null for number scope. Maximum API and MCP request count in one UTC minute on this date within the requested range."
+          },
+          "activeDays": {
+            "type": "integer",
+            "enum": [
+              1
+            ],
+            "description": "This date has at least one observed audit, credit-ledger, usage-meter or admitted function invocation row, including activity that is not an API request or session charge."
+          }
+        },
+        "required": [
+          "date",
+          "sessionDays",
+          "sessionDayCredits",
+          "apiRequests",
+          "failedRequests",
+          "peakRequestRate",
+          "activeDays"
+        ]
+      },
+      "ConsoleProjectUsage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "connected": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sessionDays": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sessionDayCredits": {
+            "type": "number"
+          },
+          "apiRequests": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failedRequests": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "projectId",
+          "connected",
+          "sessionDays",
+          "sessionDayCredits",
+          "apiRequests",
+          "failedRequests"
         ]
       },
       "ErrorEnvelope": {

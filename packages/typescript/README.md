@@ -2392,7 +2392,10 @@ does not change prices, modes or customer access. Package publication and live a
 ## Billing and usage
 
 `Client.billing` exposes the complete organization-key billing family.
-Reads require `sessions:read`. Credit quantities, including fields ending in
+Balance, usage, transaction and pricing reads require `sessions:read`.
+Spending limits and priority reads require `billing:read`; changes require
+`billing:manage` and Pay-As-You-Go. Project and client credentials cannot use
+these financial controls. Credit quantities, including fields ending in
 `Cents`, support up to six decimal places. They are not cash minor units.
 Team warnings follow the fixed one-day and two-hour insufficiency forecast;
 notification preferences are managed in the Console.
@@ -2865,3 +2868,84 @@ without the original response. An `unknown` outcome can mean an external effect
 occurred; reconcile it before choosing a new key. Request/response bodies and
 customer log output are not retained. List responses contain `items` and
 `nextCursor`; pass that cursor as `before` to read the next page.
+
+## Spending limits and funding order
+
+```ts
+const limits = await platform.billing.getLimits({ projectId });
+const number = limits.data.data.budgets.find((b) => b.scope === "number")!;
+await platform.billing.setLimit("number", number.resourceId, {
+  limitCredits: 1000,
+  expectedRevision: number.revision,
+});
+const priorities = await platform.billing.getPriorities();
+await platform.billing.reorderPriorities({
+  scope: "project",
+  resourceIds: priorities.data.data.projects.map((p) => p.id).reverse(),
+  expectedRevision: priorities.data.data.revision,
+});
+```
+
+`setPriority(scope, resourceId, {priority, expectedRevision})` changes one rank.
+For number order use `scope: "number"`, `projectId` and all its real number UUIDs.
+Orders are complete and highest first; saves are atomic and stale revisions
+return a conflict. Limits reset monthly at 00:00 UTC on the first day. Null
+removes a cap; zero blocks new charges. Paid windows remain intact. These
+methods do not grant permissions, paid access or deployed availability.
+Publication of this source revision is separate from API deployment.
+
+For one customer or number, read and save both controls without loading the
+organization directory:
+
+```typescript
+const {
+  data: { data: current },
+} = await platform.billing.getResourceControls("customer", customerId);
+await platform.billing.setResourceControls("customer", customerId, {
+  limitCredits: 1500,
+  priority: 25,
+  expectedBudgetRevision: current.budget.revision,
+  expectedPriorityRevision: current.priorityRevision,
+});
+```
+
+Both revisions are required; a conflict leaves both settings unchanged. Project
+priority takes precedence. Numbers inherit customer priority; a higher number
+priority overrides it within the project. A customer's assigned numbers share
+its monthly cap. `getLimits({scope:"project"})` and
+`getPriorities({scope:"project"})` avoid downloading number/customer directories.
+Real initial QuickLink creation accepts `billingControls:{limitCredits:250,
+priority:30}` before pairing admission, with team `billing:manage` authority.
+Testing and supplementary connections reject these fields. Package publication
+and API deployment remain separate gates.
+
+Read one project's funding controls and save its combined customer and number
+order:
+
+```typescript
+const {
+  data: { data: controls },
+} = await platform.billing.getPriorities({ projectId });
+const resources = [
+  ...controls.customers.map((customer) => ({
+    scope: "customer" as const,
+    resourceId: customer.id,
+    priority: customer.priority,
+  })),
+  ...controls.numbers.map((number) => ({
+    scope: "number" as const,
+    resourceId: number.id,
+    priority: number.priority,
+  })),
+].sort((first, second) => second.priority - first.priority);
+await platform.billing.reorderPriorities({
+  scope: "resource",
+  projectId,
+  resources: resources.map(({ scope, resourceId }) => ({ scope, resourceId })),
+  expectedRevision: controls.revision,
+});
+```
+
+Pass every active customer and real number, highest priority first. Duplicate,
+incomplete, or stale orders fail without partial changes. This operation never
+bypasses a spending cap.

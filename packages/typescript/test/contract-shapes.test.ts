@@ -192,6 +192,7 @@ describe("SDK types match the pinned contract snapshots", () => {
   it("keeps QuickLink creation and Cloud onboarding request fields", () => {
     expect(
       keys<CreateQuickLinkRequest>({
+        billingControls: true,
         purpose: true,
         connectionGoal: true,
         session: true,
