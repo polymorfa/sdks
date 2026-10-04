@@ -1196,6 +1196,9 @@ export {
   type VoiceAssetEventPayload,
   type VoiceAssetFailedPayload,
   type VoiceAssetReadyPayload,
+  FLOW_FORWARD_SIGNATURE_HEADER,
+  verifyFlowForwardSignature,
+  type VerifyFlowForwardSignatureOptions,
 } from "./webhooks/index.js";
 
 export type * from "./messaging/session-configuration.js";
@@ -1240,6 +1243,21 @@ export {
   type FlowProviderRequest,
   type FlowProviderOperation,
   type FlowProviderResult,
+  type FlowEndpointMode,
+  type FlowEndpoint,
+  type ManagedFlowEncryptionKeyState,
+  type ManagedFlowEncryptionKey,
+  type FlowEncryptionCustody,
+  type FlowEncryptionKeyRotation,
+  type FlowEndpointState,
+  type FlowEndpointSetResult,
+  type ForwardFlowEndpointRequest,
+  type FunctionFlowEndpointRequest,
+  type DirectFlowEndpointRequest,
+  type SetFlowEndpointRequest,
+  type FlowNumberRequest,
+  type ListFlowEndpointReceiptsRequest,
+  type FlowEndpointReceipt,
 } from "./platform/flows.js";
 
 export { AnalyticsResource } from "./platform/analytics.js";

@@ -2660,8 +2660,8 @@
       "operationId": "deleteFlowEndpoint",
       "fingerprint": "c282b7d48c759117c33fbc797616541664c01da36679335444e53d48d37e4e6a",
       "typescript": {
-        "status": "excluded",
-        "reason": "Hosted Flow endpoint and Flow encryption key operations from API PR #428 have no SDK owner yet; they are outside the Hybrid Link tier-transition change and need a separate SDK PR."
+        "status": "covered",
+        "method": "Client.project(projectId).flows.deleteEndpoint"
       }
     },
     {
@@ -3750,8 +3750,8 @@
       "operationId": "getFlowEncryptionKey",
       "fingerprint": "2cef096982f4a550dff1c3cded7248685c28d433c36bd2304d99a193f8cda000",
       "typescript": {
-        "status": "excluded",
-        "reason": "Hosted Flow endpoint and Flow encryption key operations from API PR #428 have no SDK owner yet; they are outside the Hybrid Link tier-transition change and need a separate SDK PR."
+        "status": "covered",
+        "method": "Client.project(projectId).flows.encryptionKey"
       }
     },
     {
@@ -3783,8 +3783,8 @@
       "operationId": "getFlowEndpoint",
       "fingerprint": "12354b56aedcccd9a81fae27d6deb93da3e6490e07192cb8137770312bafe5ff",
       "typescript": {
-        "status": "excluded",
-        "reason": "Hosted Flow endpoint and Flow encryption key operations from API PR #428 have no SDK owner yet; they are outside the Hybrid Link tier-transition change and need a separate SDK PR."
+        "status": "covered",
+        "method": "Client.project(projectId).flows.endpoint"
       }
     },
     {
@@ -3794,8 +3794,8 @@
       "operationId": "listFlowEndpointReceipts",
       "fingerprint": "861ecbba5343f1b72688b9c8da9fb2a678de49cf10abf16794464e8870c68427",
       "typescript": {
-        "status": "excluded",
-        "reason": "Hosted Flow endpoint and Flow encryption key operations from API PR #428 have no SDK owner yet; they are outside the Hybrid Link tier-transition change and need a separate SDK PR."
+        "status": "covered",
+        "method": "Client.project(projectId).flows.endpointReceipts"
       }
     },
     {
@@ -5425,8 +5425,8 @@
       "operationId": "rotateFlowEncryptionKey",
       "fingerprint": "44534cbc6d6ee4f783e3f1782dfa4f638f5c94fe9cb176f93fb74c18dc8f2457",
       "typescript": {
-        "status": "excluded",
-        "reason": "Hosted Flow endpoint and Flow encryption key operations from API PR #428 have no SDK owner yet; they are outside the Hybrid Link tier-transition change and need a separate SDK PR."
+        "status": "covered",
+        "method": "Client.project(projectId).flows.rotateEncryptionKey"
       }
     },
     {
@@ -6200,8 +6200,8 @@
       "operationId": "setFlowEndpoint",
       "fingerprint": "cefa55fe9a7793bc12f590909c8620dd9b82a7f793750167505bce84143ae5a4",
       "typescript": {
-        "status": "excluded",
-        "reason": "Hosted Flow endpoint and Flow encryption key operations from API PR #428 have no SDK owner yet; they are outside the Hybrid Link tier-transition change and need a separate SDK PR."
+        "status": "covered",
+        "method": "Client.project(projectId).flows.setEndpoint"
       }
     },
     {

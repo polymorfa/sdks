@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Dynamic WhatsApp Flow endpoints (beta, Cloud onboarding enrollment, Official
+  API Numbers only). `Client.project(projectId).flows` adds `endpoint`,
+  `setEndpoint` (modes `forward`, `function` and `direct`; a forward endpoint's
+  `signingSecret` is returned once), `deleteEndpoint`, `endpointReceipts`
+  (metadata only), `encryptionKey` and `rotateEncryptionKey` (managed key
+  custody per Number). Writes make one attempt. New
+  `verifyFlowForwardSignature` and `FLOW_FORWARD_SIGNATURE_HEADER` verify
+  forwarded requests at your endpoint. Contracts are pinned to API `dev`
+  `171a968`. API contract: polymorfa/polymorfa#428 and #434.
+
 - Added source-build `Client.analytics.metrics` for scoped Prometheus/OpenMetrics gauges, including denominators, observation times and coverage. Uses Analytics opt-in and `sessions:read`.
 
 - `Client.analytics.get` reads WhatsApp number activity, completed 24-hour read and reply cohorts, response times and connection vitals. Requires `sessions:read` and Analytics enabled by a team owner or admin. Missing coverage returns null rates.
