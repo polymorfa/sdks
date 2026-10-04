@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "ac1c7010d5c3cdf0262f1b5deb2c4d7ce6a249a5",
+  "sourceCommit": "641d377772733ed7f67449deae41beebb38b309d",
   "excludedContracts": [
     {
       "family": "graph",
@@ -2956,7 +2956,7 @@
       "method": "GET",
       "path": "/console/insights/analytics",
       "operationId": "analyticsInsight",
-      "fingerprint": "6574426025ecc2f85e5cb33c616ea91170789fb3834f7dbc4a609358df4e79a6",
+      "fingerprint": "09f2d7ba74398a51e05102ab22bb7e137f6e6019825574615b9a095a9005976c",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -3000,7 +3000,7 @@
       "method": "GET",
       "path": "/console/insights/preferences",
       "operationId": "getInsightPreferences",
-      "fingerprint": "7bfc1895f88c744415f0e1db6915e7afcad8414c1debeaf0ff5e154f2aa7e01e",
+      "fingerprint": "6e65a8a39cf4e9952e71073ee9c0446be4a3e02ba3d70a67471092f8c2be0851",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -3088,7 +3088,7 @@
       "method": "GET",
       "path": "/console/projects/{projectId}/logging",
       "operationId": "getProjectLogging",
-      "fingerprint": "ee09b8d569d9b33bd5e65c1ead0bb2b71ee4b8e8e766627bb97a99e24f78fc19",
+      "fingerprint": "00ccc14321453e8653c1cde355a42bdea78d7d3bace5b7a95bbc13d4f82d5b3a",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
@@ -6033,7 +6033,7 @@
       "method": "PUT",
       "path": "/console/insights/preferences",
       "operationId": "updateInsightPreferences",
-      "fingerprint": "987095e182ff41ca660e7531f0343ad0e22a5c59f39ec730cd56a7feb7e78565",
+      "fingerprint": "596ecaa4a34cc9c991aa33aabadf76670f970291a15f721bb8567076c3fb6048",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -6077,7 +6077,7 @@
       "method": "PUT",
       "path": "/console/projects/{projectId}/logging/drains",
       "operationId": "saveProjectDrain",
-      "fingerprint": "d6464828734345de6640155503d469531741f527bcb1bcd24d28ecdc15d39aae",
+      "fingerprint": "d8de37aca07f8b8b24c4ed5444896dfd7458c3b248a010750ac445a096f28f33",
       "typescript": {
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
@@ -6346,11 +6346,9 @@
         "status": "covered",
         "method": "Client.analytics.get"
       },
-      "sourceContractSha256": "fb337ae222f335ee7773d1fa82f33fa13b00522a0a820b229d01ea612377ff18",
-      "sourceBaseCommit": "5668e178b01f235fe72f9df70fe020b13e41e68b",
-      "sourceState": "committed",
-      "sourceCommit": "e6006c2242ed8fe01abbe6b2d8db93c230508929",
-      "sdkContractSha256": "bf3fddce3a098850b2985c49348b63bf7036e8c03bf8f1551eddeca2e48a9053"
+      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "sourceCommit": "641d377772733ed7f67449deae41beebb38b309d",
+      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
     },
     {
       "family": "platform",
@@ -6362,11 +6360,9 @@
         "status": "covered",
         "method": "Client.analytics.get"
       },
-      "sourceContractSha256": "fb337ae222f335ee7773d1fa82f33fa13b00522a0a820b229d01ea612377ff18",
-      "sourceBaseCommit": "5668e178b01f235fe72f9df70fe020b13e41e68b",
-      "sourceState": "committed",
-      "sourceCommit": "e6006c2242ed8fe01abbe6b2d8db93c230508929",
-      "sdkContractSha256": "bf3fddce3a098850b2985c49348b63bf7036e8c03bf8f1551eddeca2e48a9053"
+      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "sourceCommit": "641d377772733ed7f67449deae41beebb38b309d",
+      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
     },
     {
       "family": "platform",
@@ -6378,11 +6374,9 @@
         "method": "Client.analytics.metrics"
       },
       "fingerprint": "520ce37bc6a198e313d9495ddd968ebb54cbbe5cc84f4d6bea636c43a4ea62c5",
-      "sourceContractSha256": "fb337ae222f335ee7773d1fa82f33fa13b00522a0a820b229d01ea612377ff18",
-      "sdkContractSha256": "bf3fddce3a098850b2985c49348b63bf7036e8c03bf8f1551eddeca2e48a9053",
-      "sourceBaseCommit": "5668e178b01f235fe72f9df70fe020b13e41e68b",
-      "sourceState": "committed",
-      "sourceCommit": "e6006c2242ed8fe01abbe6b2d8db93c230508929"
+      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "sourceCommit": "641d377772733ed7f67449deae41beebb38b309d"
     },
     {
       "family": "platform",
@@ -6394,11 +6388,20 @@
         "method": "Client.analytics.metrics"
       },
       "fingerprint": "56e2540bc5d78c3f458fbd363d63b101df49fcd273b7cc81e1fa9318d69b30b6",
-      "sourceContractSha256": "fb337ae222f335ee7773d1fa82f33fa13b00522a0a820b229d01ea612377ff18",
-      "sdkContractSha256": "bf3fddce3a098850b2985c49348b63bf7036e8c03bf8f1551eddeca2e48a9053",
-      "sourceBaseCommit": "5668e178b01f235fe72f9df70fe020b13e41e68b",
-      "sourceState": "committed",
-      "sourceCommit": "e6006c2242ed8fe01abbe6b2d8db93c230508929"
+      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "sourceCommit": "641d377772733ed7f67449deae41beebb38b309d"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/vitals",
+      "operationId": "getConsoleErrorVitals",
+      "fingerprint": "4c3c1667cc5f2feb631064100976c3e399cd917cb29e4f336b85baf81335e217",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority."
+      }
     }
   ]
 }

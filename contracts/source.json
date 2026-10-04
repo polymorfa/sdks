@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "ac1c7010d5c3cdf0262f1b5deb2c4d7ce6a249a5",
-  "branch": "t3code/project-billing-dashboard",
+  "commit": "641d377772733ed7f67449deae41beebb38b309d",
+  "branch": "codex/analytics-workhorse-current-dev",
   "published": false,
-  "note": "The full Usage and Logs snapshots pin the baseline source commit. Analytics adds only its four public operations and named schema from the supplement revision. Package publication and deployed availability remain separate gates.",
+  "note": "Full Messaging and Platform snapshots pin the coordinated Analytics stack head. SDK publication and API deployment remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,23 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "81ae4744e8751e3c6bee9c1736568ade478c35df9a0a260c664bbb3123eae629",
-      "baselineSha256": "7f29c5c4a3d309a127e34fcee8dfcedada572141ab5c5902886abe3c4dcf8a7c"
-    }
-  },
-  "supplements": {
-    "analytics": {
-      "commit": "e6006c2242ed8fe01abbe6b2d8db93c230508929",
-      "sourcePath": "apps/api/docs/openapi.management.json",
-      "sourceSha256": "fb337ae222f335ee7773d1fa82f33fa13b00522a0a820b229d01ea612377ff18",
-      "published": false,
-      "paths": [
-        "/platform/analytics",
-        "/platform/projects/{projectId}/analytics",
-        "/platform/analytics/metrics",
-        "/platform/projects/{projectId}/analytics/metrics"
-      ],
-      "schemas": ["WhatsAppAnalytics"]
+      "sha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
     }
   }
 }

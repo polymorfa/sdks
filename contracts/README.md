@@ -41,23 +41,24 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
-The current snapshots are byte-identical copies of Messaging and Platform
-contracts at API implementation commit `ac1c7010d5c3cdf0262f1b5deb2c4d7ce6a249a5` on
-`t3code/project-billing-dashboard`. This branch is unmerged. Seven financial
-operations cover limits, priorities, complete ordering and one-resource combined
-read/save. Project priority takes precedence. Numbers inherit customer priority;
-a higher number priority overrides it within the project. Customer limits still
-include all assigned numbers.
-Initial real QuickLink creation accepts optional billing controls before admission.
-This integrated source inherits five private Console operations: Settings
-Activity, the retained-log calendar, project logging reads, sampling writes and
-HTTPS drain writes. All require dashboard identity and remain excluded from
-server SDK authority. The already-excluded `logsInsight` fingerprint changes
-only for its server-side `filters` and `search` parameters. All public and other
-existing operation fingerprints remain unchanged. The ledger contains 574
-operations: 429 covered and 145 excluded. The financial methods operate actual
-monthly credit-debit limits; the separate nested included-usage/overage quota
-model remains an unshipped prototype outside those methods.
+The current snapshots are byte-identical copies of the Messaging and Platform
+contracts at API coordinated stack commit `641d377772733ed7f67449deae41beebb38b309d`.
+The full revision contains the inherited Logs and Usage contracts and all four
+public Analytics reads. The ledger contains 579 operations: 433 covered and
+146 excluded, with no missing, partial or changed fingerprints. Six reviewed
+Console changes cover analytics projections, consent preferences, operational
+error vitals and shared drains. They require dashboard identity and remain
+excluded from server SDK authority.
+
+The seven financial operations cover limits, priorities, complete ordering and
+one-resource combined read/save. Project priority takes precedence. Numbers
+inherit customer priority; a higher number priority overrides it within the
+project. Customer limits include all assigned numbers. Initial real QuickLink
+creation accepts optional billing controls before admission. These methods
+operate actual monthly credit-debit limits; the separate nested included-usage
+quota prototype remains outside those methods. Reads require `billing:read`;
+writes require `billing:manage`, live team authority and Pay-As-You-Go.
+SDK publication and API deployment remain separate gates.
 
 The preceding repin at `b8fa167e47c901131d3bd9865e6479b153ad5157`
 added only the private Console `listConsoleNumberOptions` operation,
@@ -473,25 +474,14 @@ compares the exported types with the supplement.
 
 ## WhatsApp business analytics contract
 
-The two new reads, `/platform/analytics` and
-`/platform/projects/{projectId}/analytics`, are covered by `Client.analytics.get`.
-Their per-operation ledger entries pin the integrated Analytics source and exact
-route/schema fingerprints. Other operations retain the SDK dev contract revision.
-The strict response contains number/project-scoped messaging aggregates and
-retained-call outcomes, measured timings, quality, failure categories, missed-call
-follow-up and daily call series. This is an unshipped source-build addition.
+`Client.analytics.get` covers the team and project Analytics reads.
+The strict response contains number/project-scoped messaging aggregates,
+retained-call outcomes, measured timings, quality, failure categories,
+missed-call follow-up and daily call series. `Client.analytics.metrics` covers
+the two collector reads and returns Prometheus/OpenMetrics text rather than
+a JSON envelope. All four use scoped reader authority and Analytics opt-in.
 
-The two collector reads, `/platform/analytics/metrics` and
-`/platform/projects/{projectId}/analytics/metrics`, are covered by
-`Client.analytics.metrics`. They return Prometheus/OpenMetrics text rather than
-a JSON envelope, using the same scoped reader and Analytics enablement.
-
-With all four Analytics reads included, the strict ledger has 562 operations:
-426 covered and 136 explicitly excluded, with no missing, partial or changed
-fingerprints. This count does not establish package publication or customer access.
-
-`source.json` records the composite Platform hash and the separate Analytics
-source revision. The reconciliation test removes only those four paths and the
-`WhatsAppAnalytics` schema, then verifies the reconstructed baseline against its
-original byte hash. The Messaging snapshot and all existing Platform definitions
-remain unchanged.
+The full Platform snapshot, each Analytics operation and `source.json` pin the
+same API source revision. Reconciliation tests check exact snapshot hashes and
+strict operation fingerprints. Counts do not establish package publication or
+customer access.

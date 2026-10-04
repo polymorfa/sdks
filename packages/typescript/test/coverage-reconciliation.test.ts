@@ -197,7 +197,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("ac1c7010d5c3cdf0262f1b5deb2c4d7ce6a249a5");
+    expect(source.commit).toBe("641d377772733ed7f67449deae41beebb38b309d");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -211,64 +211,35 @@ describe("reconciled coverage evidence", () => {
     }
   });
 
-  it("reconstructs the exact Platform baseline after removing only pinned Analytics additions", () => {
+  it("pins Analytics to the same full Platform source and snapshot hash", () => {
     const source = JSON.parse(
       readFileSync(repositoryFile("contracts/source.json"), "utf8"),
     ) as {
-      contracts: {
-        platform: { snapshotPath: string; baselineSha256: string };
-      };
-      supplements: {
-        analytics: {
-          commit: string;
-          published: boolean;
-          paths: string[];
-          schemas: string[];
-        };
-      };
+      commit: string;
+      contracts: { platform: { sha256: string } };
+      supplements?: unknown;
     };
-    const analytics = source.supplements.analytics;
-    expect(analytics.commit).toBe("e6006c2242ed8fe01abbe6b2d8db93c230508929");
-    expect(analytics.published).toBe(false);
-    expect(analytics.paths).toEqual([
-      "/platform/analytics",
-      "/platform/projects/{projectId}/analytics",
-      "/platform/analytics/metrics",
-      "/platform/projects/{projectId}/analytics/metrics",
-    ]);
-    expect(analytics.schemas).toEqual(["WhatsAppAnalytics"]);
-    const platform = JSON.parse(
-      readFileSync(
-        repositoryFile(source.contracts.platform.snapshotPath),
-        "utf8",
-      ),
-    ) as {
-      paths: Record<string, unknown>;
-      components: { schemas: Record<string, unknown> };
-    };
-    for (const path of analytics.paths) {
-      expect(platform.paths[path], path).toBeDefined();
-      delete platform.paths[path];
-    }
-    for (const schema of analytics.schemas) {
-      expect(platform.components.schemas[schema], schema).toBeDefined();
-      delete platform.components.schemas[schema];
-    }
-    const baselineSha256 =
-      "7f29c5c4a3d309a127e34fcee8dfcedada572141ab5c5902886abe3c4dcf8a7c";
-    expect(source.contracts.platform.baselineSha256).toBe(baselineSha256);
-    expect(
-      createHash("sha256")
-        .update(`${JSON.stringify(platform, null, 2)}\n`)
-        .digest("hex"),
-    ).toBe(baselineSha256);
+    expect(source.supplements).toBeUndefined();
+    expect(source.contracts.platform.sha256).toBe(
+      "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+    );
     for (const id of [
       "getWhatsAppAnalytics",
       "getProjectWhatsAppAnalytics",
       "exportWhatsAppAnalyticsMetrics",
       "exportProjectWhatsAppAnalyticsMetrics",
     ]) {
-      expect(entry(id).sourceCommit).toBe(analytics.commit);
+      const operation = entry(id) as LedgerEntry & {
+        sourceContractSha256: string;
+        sdkContractSha256: string;
+      };
+      expect(operation.sourceCommit).toBe(source.commit);
+      expect(operation.sourceContractSha256).toBe(
+        source.contracts.platform.sha256,
+      );
+      expect(operation.sdkContractSha256).toBe(
+        source.contracts.platform.sha256,
+      );
     }
   });
 
