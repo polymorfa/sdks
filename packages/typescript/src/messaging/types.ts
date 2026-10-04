@@ -2679,3 +2679,109 @@ export type ProjectTemplateResponse = SuccessEnvelope<ProjectTemplate>;
 export type ProjectTemplateOperationResponse = SuccessEnvelope<
   Readonly<Record<string, unknown>>
 >;
+
+/** A choice ID: 1 to 64 letters, digits, `.`, `_`, `:` or `-`, starting with a letter or digit. */
+export type CampaignReplyFlowChoiceId = string;
+
+/** What a reply flow step sends. `flow_form` is for Official numbers only. */
+export type CampaignReplyFlowSend =
+  | { readonly kind: "text"; readonly text: string }
+  | {
+      readonly kind: "buttons";
+      readonly body: string;
+      readonly footer?: string;
+      /** One to three reply buttons. */
+      readonly buttons: readonly {
+        readonly id: CampaignReplyFlowChoiceId;
+        readonly text: string;
+      }[];
+    }
+  | {
+      readonly kind: "list";
+      readonly body: string;
+      readonly buttonText: string;
+      readonly footer?: string;
+      /** One to ten rows. */
+      readonly rows: readonly {
+        readonly id: CampaignReplyFlowChoiceId;
+        readonly title: string;
+        readonly description?: string;
+      }[];
+    }
+  | {
+      readonly kind: "flow_form";
+      /** A published WhatsApp Flow. */
+      readonly flowId: string;
+      readonly body: string;
+      readonly buttonText: string;
+      readonly footer?: string;
+      readonly screen: string;
+    };
+
+/** How a reply selects a branch. */
+export type CampaignReplyFlowMatch =
+  | {
+      readonly kind: "choice";
+      readonly replyKind: "button" | "list";
+      readonly id: CampaignReplyFlowChoiceId;
+    }
+  | { readonly kind: "keyword"; readonly value: string }
+  | { readonly kind: "flow_submission" };
+
+export interface CampaignReplyFlowNode {
+  readonly id: string;
+  /** Omitted on the entry step, which waits for the first reply and sends nothing. */
+  readonly send?: CampaignReplyFlowSend;
+  /** Up to three branches. */
+  readonly edges: readonly {
+    readonly match: CampaignReplyFlowMatch;
+    readonly to: string;
+  }[];
+}
+
+/** An acyclic graph of 2 to 12 steps. */
+export interface CampaignReplyFlowDefinition {
+  readonly entryNodeId: string;
+  readonly nodes: readonly CampaignReplyFlowNode[];
+}
+
+/** An immutable reply flow revision. */
+export interface CampaignReplyFlow {
+  readonly id: string;
+  /** Groups the revisions of one reply flow. */
+  readonly flowKey: string;
+  readonly revision: number;
+  readonly name: string;
+  readonly definition: CampaignReplyFlowDefinition;
+  /** Unix milliseconds. */
+  readonly createdAt: number;
+}
+
+export interface CreateCampaignReplyFlowRequest {
+  readonly name: string;
+  /** Existing flow key to add a revision to. Omit to start a new reply flow. */
+  readonly flowKey?: string;
+  /** Defaults to 1. Each key and revision can be created once. */
+  readonly revision?: number;
+  readonly definition: CampaignReplyFlowDefinition;
+}
+
+export interface SetCampaignReplyFlowRequest {
+  /** Reply flow revision to run after replies, or `null` to detach it. */
+  readonly replyFlowId: string | null;
+}
+
+export interface CampaignReplyFlowAttachment {
+  readonly campaignId: string;
+  readonly replyFlowId: string | null;
+}
+
+export interface CampaignReplyFlowResponse {
+  readonly success: true;
+  readonly data: CampaignReplyFlow;
+}
+
+export interface SetCampaignReplyFlowResponse {
+  readonly success: true;
+  readonly data: CampaignReplyFlowAttachment;
+}

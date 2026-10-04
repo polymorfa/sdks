@@ -1,4 +1,5 @@
 import type {
+  CampaignReplyFlowDefinition,
   CampaignRecipient,
   CampaignRecipientInput,
   CampaignRecipientStatus,
@@ -1543,4 +1544,27 @@ export interface UpdateProjectHealthPolicyRequest {
   readonly slowDownMps: number | null;
   readonly emailNotification: boolean;
   readonly webhookNotification: boolean;
+}
+
+export interface CreatePlatformCampaignReplyFlowRequest {
+  readonly name: string;
+  /** Existing flow key to add a revision to. Omit to start a new reply flow. */
+  readonly flowKey?: string;
+  /** Defaults to 1. Each key and revision can be created once. */
+  readonly revision?: number;
+  readonly definition: CampaignReplyFlowDefinition;
+  /** Required with a team API key. Project tokens derive the project. */
+  readonly projectId?: string;
+}
+
+export interface SetPlatformCampaignReplyFlowRequest {
+  /** Reply flow revision to run after replies, or `null` to detach it. */
+  readonly replyFlowId: string | null;
+  /** Required with a team API key. Project tokens derive the project. */
+  readonly projectId?: string;
+}
+
+export interface PlatformCampaignReplyFlowParams {
+  /** Required with a team API key. Project tokens derive the project. */
+  readonly projectId?: string;
 }

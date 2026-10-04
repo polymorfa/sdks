@@ -9,8 +9,10 @@ import type {
   AddCampaignRecipientsResponse,
   CampaignAnalyticsResponse,
   CampaignOperationResponse,
+  CampaignReplyFlowResponse,
   CampaignRequeueResponse,
   CampaignStopResponse,
+  CreateCampaignReplyFlowRequest,
   CreateCampaignRequest,
   CreateCampaignResponse,
   GetCampaignResponse,
@@ -19,6 +21,8 @@ import type {
   ListCampaignRecipientsResponse,
   ListCampaignsResponse,
   RequeueCampaignRequest,
+  SetCampaignReplyFlowRequest,
+  SetCampaignReplyFlowResponse,
 } from "./types.js";
 
 /** Exact project-slug campaign workflow exposed by the Messaging API. */
@@ -188,6 +192,57 @@ export class MessagingCampaignsResource {
       ...withIdempotencyKey(options),
     });
   }
+
+  /**
+   * Beta: create an immutable reply flow revision, the steps a campaign runs
+   * after a recipient replies.
+   *
+   * Each flow key and revision can be created once; a repeat returns
+   * `409`. The SDK sends this request once and does not retry it.
+   */
+  createReplyFlow(
+    projectSlug: string,
+    body: CreateCampaignReplyFlowRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CampaignReplyFlowResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: replyFlowsPath(projectSlug),
+      body,
+      ...withoutAutomaticRetry(options),
+    });
+  }
+
+  /** Beta: read one reply flow revision. */
+  retrieveReplyFlow(
+    projectSlug: string,
+    replyFlowId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CampaignReplyFlowResponse>> {
+    return this.transport.request({
+      method: "GET",
+      path: `${replyFlowsPath(projectSlug)}/${encodeURIComponent(replyFlowId)}`,
+      ...options,
+    });
+  }
+
+  /**
+   * Beta: attach a reply flow revision to a draft or scheduled campaign, or
+   * detach it with `replyFlowId: null`. Returns `409` after launch.
+   */
+  setReplyFlow(
+    projectSlug: string,
+    campaignId: string,
+    body: SetCampaignReplyFlowRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SetCampaignReplyFlowResponse>> {
+    return this.transport.request({
+      method: "PUT",
+      path: `${campaignPath(projectSlug, campaignId)}/reply-flow`,
+      body,
+      ...options,
+    });
+  }
 }
 
 function campaignsPath(projectSlug: string): string {
@@ -200,4 +255,8 @@ function campaignPath(projectSlug: string, campaignId: string): string {
 
 function recipientsPath(projectSlug: string, campaignId: string): string {
   return `${campaignPath(projectSlug, campaignId)}/recipients`;
+}
+
+function replyFlowsPath(projectSlug: string): string {
+  return `/messaging/projects/${encodeURIComponent(projectSlug)}/campaign-reply-flows`;
 }

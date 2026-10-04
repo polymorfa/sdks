@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "8e319f6bb4e733e776278577840d8fb15805fe6d",
+  "sourceCommit": "ff12a76fe44fa23bf71e00fc6454a51b1fdbb399",
   "excludedContracts": [
     {
       "family": "graph",
@@ -1756,10 +1756,12 @@
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
       "operationId": "addProjectCampaignRecipients",
-      "fingerprint": "b01f480367a45722d420ef6d31ba0bc712e00696fe4f4fc802d94840b2f7aadf",
+      "fingerprint": "dbe8e80d7fa43a79ec85f26b030437a8b3940b723bc13d41aa30a5478fdb34d4",
       "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.campaigns.addRecipients"
+        "status": "partial",
+        "method": "MessagingClient.campaigns.addRecipients",
+        "reason": "The API now accepts an optional Idempotency-Key for safe retries; this SDK method still sends the request once without one until polymorfa/sdks#305 adds it.",
+        "milestone": "campaigns"
       }
     },
     {
@@ -5176,10 +5178,12 @@
       "method": "POST",
       "path": "/platform/audiences",
       "operationId": "createAudience",
-      "fingerprint": "9013c6b210b1e1309959086a00c1466209a7d200f6f286eba3c65b7deb40b1c4",
+      "fingerprint": "324b5af68ec1c7a895fd2423015b1e4d5dbfdf52dee5d58ab915f646a821f003",
       "typescript": {
-        "status": "covered",
-        "method": "Client.audiences.create"
+        "status": "partial",
+        "method": "Client.audiences.create",
+        "reason": "The API now accepts an optional Idempotency-Key for safe retries; this SDK method still sends the request once without one until polymorfa/sdks#305 adds it.",
+        "milestone": "campaigns"
       }
     },
     {
@@ -5187,10 +5191,12 @@
       "method": "POST",
       "path": "/platform/audiences/{listId}/members",
       "operationId": "addAudienceMembers",
-      "fingerprint": "9a6faa8ec2349008298319f63f4831df3c5f4f77597a4b55a8560a26f998f153",
+      "fingerprint": "02c96d26550d1f91252a23773e5aa66758c62c8a815490a6200dd3c7d9a2cfb1",
       "typescript": {
-        "status": "covered",
-        "method": "Client.audiences.addMembers"
+        "status": "partial",
+        "method": "Client.audiences.addMembers",
+        "reason": "The API now accepts an optional Idempotency-Key for safe retries; this SDK method still sends the request once without one until polymorfa/sdks#305 adds it.",
+        "milestone": "campaigns"
       }
     },
     {
@@ -5319,10 +5325,12 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/recipients",
       "operationId": "addCampaignRecipients",
-      "fingerprint": "cf65dd0ffc6a494abc5eb8227430af384320e9ffa55e691c595ed0444e5f8300",
+      "fingerprint": "2e1c4ff335af3a560ddf8ca514a95c59860198f3477f312abdb8b9ff06bc46a6",
       "typescript": {
-        "status": "covered",
-        "method": "Client.campaigns.addRecipients"
+        "status": "partial",
+        "method": "Client.campaigns.addRecipients",
+        "reason": "The API now accepts an optional Idempotency-Key for safe retries; this SDK method still sends the request once without one until polymorfa/sdks#305 adds it.",
+        "milestone": "campaigns"
       }
     },
     {
@@ -6374,9 +6382,9 @@
         "status": "covered",
         "method": "Client.analytics.get"
       },
-      "sourceContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6",
-      "sourceCommit": "8e319f6bb4e733e776278577840d8fb15805fe6d",
-      "sdkContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6"
+      "sourceContractSha256": "0a615de2d7fb903cf2e40534728dcf43298228a046fde5b79f548a129ee397c1",
+      "sourceCommit": "ff12a76fe44fa23bf71e00fc6454a51b1fdbb399",
+      "sdkContractSha256": "0a615de2d7fb903cf2e40534728dcf43298228a046fde5b79f548a129ee397c1"
     },
     {
       "family": "platform",
@@ -6388,9 +6396,9 @@
         "status": "covered",
         "method": "Client.analytics.get"
       },
-      "sourceContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6",
-      "sourceCommit": "8e319f6bb4e733e776278577840d8fb15805fe6d",
-      "sdkContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6"
+      "sourceContractSha256": "0a615de2d7fb903cf2e40534728dcf43298228a046fde5b79f548a129ee397c1",
+      "sourceCommit": "ff12a76fe44fa23bf71e00fc6454a51b1fdbb399",
+      "sdkContractSha256": "0a615de2d7fb903cf2e40534728dcf43298228a046fde5b79f548a129ee397c1"
     },
     {
       "family": "platform",
@@ -6402,9 +6410,9 @@
         "method": "Client.analytics.metrics"
       },
       "fingerprint": "520ce37bc6a198e313d9495ddd968ebb54cbbe5cc84f4d6bea636c43a4ea62c5",
-      "sourceContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6",
-      "sdkContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6",
-      "sourceCommit": "8e319f6bb4e733e776278577840d8fb15805fe6d"
+      "sourceContractSha256": "0a615de2d7fb903cf2e40534728dcf43298228a046fde5b79f548a129ee397c1",
+      "sdkContractSha256": "0a615de2d7fb903cf2e40534728dcf43298228a046fde5b79f548a129ee397c1",
+      "sourceCommit": "ff12a76fe44fa23bf71e00fc6454a51b1fdbb399"
     },
     {
       "family": "platform",
@@ -6416,9 +6424,9 @@
         "method": "Client.analytics.metrics"
       },
       "fingerprint": "56e2540bc5d78c3f458fbd363d63b101df49fcd273b7cc81e1fa9318d69b30b6",
-      "sourceContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6",
-      "sdkContractSha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6",
-      "sourceCommit": "8e319f6bb4e733e776278577840d8fb15805fe6d"
+      "sourceContractSha256": "0a615de2d7fb903cf2e40534728dcf43298228a046fde5b79f548a129ee397c1",
+      "sdkContractSha256": "0a615de2d7fb903cf2e40534728dcf43298228a046fde5b79f548a129ee397c1",
+      "sourceCommit": "ff12a76fe44fa23bf71e00fc6454a51b1fdbb399"
     },
     {
       "family": "platform",
@@ -6429,6 +6437,72 @@
       "typescript": {
         "status": "excluded",
         "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority."
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaign-reply-flows/{id}",
+      "operationId": "getCampaignReplyFlow",
+      "fingerprint": "c14dade2083117fc560d7cb5133e05a0ca7630039e60dec639de0f3ffc83b807",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.campaigns.retrieveReplyFlow"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaign-reply-flows",
+      "operationId": "createCampaignReplyFlow",
+      "fingerprint": "18ac7462af969b0fb8ddabbfab6f6f35df96c3038ab0146a0f09fd4a73b0aa39",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.campaigns.createReplyFlow"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reply-flow",
+      "operationId": "setCampaignReplyFlow",
+      "fingerprint": "bb1e1d54cc93fc932d51123a0207169dcad8e75f3113b424a218485ed8456491",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.campaigns.setReplyFlow"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaign-reply-flows/{replyFlowId}",
+      "operationId": "getPlatformCampaignReplyFlow",
+      "fingerprint": "77a6818aa07af5c963555f90c41d69e8687c0513ec638eb2d977ec9612272763",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.campaigns.retrieveReplyFlow"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaign-reply-flows",
+      "operationId": "createPlatformCampaignReplyFlow",
+      "fingerprint": "54c901def82a609b4cfe6719777c56f2d9a7b368166734fd28540e4f0044ef72",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.campaigns.createReplyFlow"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/campaigns/{campaignId}/reply-flow",
+      "operationId": "setPlatformCampaignReplyFlow",
+      "fingerprint": "62b52fbaa2237ab1c714609135b4eff71e00c93ac269f7aa3cf045d660e5fbbf",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.campaigns.setReplyFlow"
       }
     }
   ]
