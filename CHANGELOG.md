@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `Client.audiences.createFromCampaign` creates a follow-up audience from one
+  previous campaign outcome. The response includes matched and opted-out counts.
 - Campaign recipient lists expose a typed `failureReason` and can filter by
   status and reason. Messaging and Platform campaign resources add
   `exportRecipients`, which returns one CSV page and its continuation cursor.
