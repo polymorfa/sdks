@@ -1,8 +1,8 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "b97c234b57af4f6e56c99d5570bd400ece59f5f8",
+  "sourceCommit": "118963b7eb8745821b64c5998ae9d76e1bf0656d",
   "sourcePath": "apps/api/docs/openapi.management.json",
-  "sourceSha256": "cf5b0118b9ee8a98fb0b460cf635e28dc023710d2b957cb9529d19d3fddfdd34",
+  "sourceSha256": "dffc2647f4db000248c766b0c2fa2f80ad3af554feeb0799c78551d827da9a72",
   "scope": "Analytics operations and their referenced schemas only; all other SDK operations retain contracts/source.json",
   "published": false,
   "paths": {
@@ -607,7 +607,7 @@
         "operationId": "getWhatsAppAnalytics",
         "tags": ["Analytics"],
         "summary": "Get WhatsApp number analytics",
-        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps use UTC. Activity series use hourly buckets for ranges up to 48 hours and daily buckets for longer ranges. Call series use daily buckets. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone activity spans end at their last observed signal and close after 15 minutes without evidence. Quiet gaps end at the next observed signal. Duration sums and averages count completed intervals and exclude open or restart-censored intervals; they do not measure phone online/offline or power state. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history. Device analytics estimates sending client families from message ID prefixes, not verified hardware. Customer/account distributions count observed live direct messages, not unique people or installed devices; unknown is included. Older retained buckets lack device coverage and return null shares. Each number may expose up to 25 of its own device indexes, coarse reported class and last observed sending activity. A list change makes inventory membership/count unknown until another full list. Inventory is null in the combined summary. No recipient device identity or raw message ID is retained by this analytics block. Joint conversation breakdown rows retain first outgoing message type, length band, send source, inferred calling code and observed customer device-count class together with UTC completion bucket. Combine rows matching all selected categories to drill into countries and message attributes without inferring intersections from independent marginal totals. Calling codes do not establish current location and shared codes do not identify a unique country. Counts describe completed 24-hour conversation cohorts, not distinct customers. Rates and averages are null when coverage is missing, dropped or truncated. At most 4096 number/time/category groups are returned in one scope, prioritizing largest groups and marking truncation; raw reply latency sums support weighted aggregation. Connection/call vitals and live message platform distributions are separate measurements, not recipient-country filtered cohorts.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps use UTC. Activity series use hourly buckets for ranges up to 48 hours and daily buckets for longer ranges. Call series use daily buckets. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone activity spans end at their last observed signal and close after 15 minutes without evidence. Quiet gaps end at the next observed signal. Duration sums and averages count completed intervals and exclude open or restart-censored intervals; they do not measure phone online/offline or power state. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history. Device analytics estimates sending client families from message ID prefixes, not verified hardware. Customer/account distributions count observed live direct messages, not unique people or installed devices; unknown is included. Older retained buckets lack device coverage and return null shares. Each number exposes at most 25 of its own device indexes, coarse reported class and last observed sending activity. A list change makes inventory membership/count unknown until another full list. Inventory is null in the combined summary. No recipient device identity or raw message ID is retained by this analytics block. Joint conversation breakdown rows retain first outgoing message type, length band, send source, inferred calling code and observed customer device-count class together with UTC completion bucket. Combine rows matching all selected categories to drill into countries and message attributes without inferring intersections from independent marginal totals. Calling codes do not establish current location and shared codes do not identify a unique country. Counts describe completed 24-hour conversation cohorts, not distinct customers. Rates and averages are null when coverage is missing, dropped or truncated. At most 4096 number/time/category groups are returned in one scope, prioritizing largest groups and marking truncation; raw reply latency sums support weighted aggregation. Connection/call vitals and live message platform distributions are separate measurements, not recipient-country filtered cohorts.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -716,7 +716,7 @@
         "operationId": "getProjectWhatsAppAnalytics",
         "tags": ["Analytics"],
         "summary": "Get WhatsApp number analytics",
-        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps use UTC. Activity series use hourly buckets for ranges up to 48 hours and daily buckets for longer ranges. Call series use daily buckets. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone activity spans end at their last observed signal and close after 15 minutes without evidence. Quiet gaps end at the next observed signal. Duration sums and averages count completed intervals and exclude open or restart-censored intervals; they do not measure phone online/offline or power state. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history. Device analytics estimates sending client families from message ID prefixes, not verified hardware. Customer/account distributions count observed live direct messages, not unique people or installed devices; unknown is included. Older retained buckets lack device coverage and return null shares. Each number may expose up to 25 of its own device indexes, coarse reported class and last observed sending activity. A list change makes inventory membership/count unknown until another full list. Inventory is null in the combined summary. No recipient device identity or raw message ID is retained by this analytics block. Joint conversation breakdown rows retain first outgoing message type, length band, send source, inferred calling code and observed customer device-count class together with UTC completion bucket. Combine rows matching all selected categories to drill into countries and message attributes without inferring intersections from independent marginal totals. Calling codes do not establish current location and shared codes do not identify a unique country. Counts describe completed 24-hour conversation cohorts, not distinct customers. Rates and averages are null when coverage is missing, dropped or truncated. At most 4096 number/time/category groups are returned in one scope, prioritizing largest groups and marking truncation; raw reply latency sums support weighted aggregation. Connection/call vitals and live message platform distributions are separate measurements, not recipient-country filtered cohorts.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps use UTC. Activity series use hourly buckets for ranges up to 48 hours and daily buckets for longer ranges. Call series use daily buckets. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone activity spans end at their last observed signal and close after 15 minutes without evidence. Quiet gaps end at the next observed signal. Duration sums and averages count completed intervals and exclude open or restart-censored intervals; they do not measure phone online/offline or power state. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history. Device analytics estimates sending client families from message ID prefixes, not verified hardware. Customer/account distributions count observed live direct messages, not unique people or installed devices; unknown is included. Older retained buckets lack device coverage and return null shares. Each number exposes at most 25 of its own device indexes, coarse reported class and last observed sending activity. A list change makes inventory membership/count unknown until another full list. Inventory is null in the combined summary. No recipient device identity or raw message ID is retained by this analytics block. Joint conversation breakdown rows retain first outgoing message type, length band, send source, inferred calling code and observed customer device-count class together with UTC completion bucket. Combine rows matching all selected categories to drill into countries and message attributes without inferring intersections from independent marginal totals. Calling codes do not establish current location and shared codes do not identify a unique country. Counts describe completed 24-hour conversation cohorts, not distinct customers. Rates and averages are null when coverage is missing, dropped or truncated. At most 4096 number/time/category groups are returned in one scope, prioritizing largest groups and marking truncation; raw reply latency sums support weighted aggregation. Connection/call vitals and live message platform distributions are separate measurements, not recipient-country filtered cohorts.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -1969,10 +1969,12 @@
                         "enum": ["message_id_prefix/v1"]
                       },
                       "measured": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "True when at least one retained bucket has client-family measurement coverage, including buckets with zero messages."
                       },
                       "complete": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "True when measured is true, every retained bucket has device-family coverage and conversation receipt coverage is complete. False when coverage is missing or records, conversations or receipt joins were dropped. Inventory truncation is reported separately."
                       },
                       "observedBuckets": {
                         "type": "integer",
@@ -2006,7 +2008,19 @@
                                 "wearable",
                                 "ar_device",
                                 "unknown"
-                              ]
+                              ],
+                              "description": "Sending client family estimated from a message ID prefix; not verified hardware or operating system.",
+                              "x-enumDescriptions": {
+                                "web": "Web client.",
+                                "android": "Android client.",
+                                "iphone": "iPhone client.",
+                                "ipad": "iPad client.",
+                                "macos": "macOS client.",
+                                "windows": "Windows client.",
+                                "wearable": "Wearable client.",
+                                "ar_device": "AR device client.",
+                                "unknown": "No recognized client-family prefix."
+                              }
                             },
                             "messages": {
                               "type": "integer",
@@ -2040,7 +2054,19 @@
                                 "wearable",
                                 "ar_device",
                                 "unknown"
-                              ]
+                              ],
+                              "description": "Sending client family estimated from a message ID prefix; not verified hardware or operating system.",
+                              "x-enumDescriptions": {
+                                "web": "Web client.",
+                                "android": "Android client.",
+                                "iphone": "iPhone client.",
+                                "ipad": "iPad client.",
+                                "macos": "macOS client.",
+                                "windows": "Windows client.",
+                                "wearable": "Wearable client.",
+                                "ar_device": "AR device client.",
+                                "unknown": "No recognized client-family prefix."
+                              }
                             },
                             "messages": {
                               "type": "integer",
@@ -2061,10 +2087,12 @@
                         "additionalProperties": false,
                         "properties": {
                           "listObserved": {
-                            "type": "boolean"
+                            "type": "boolean",
+                            "description": "True after a full device list for this number was observed."
                           },
                           "listCurrent": {
-                            "type": "boolean"
+                            "type": "boolean",
+                            "description": "True when a full list was observed and no later list-change signal invalidated it. Membership and device count are unknown until another full list after a change."
                           },
                           "observedAt": {
                             "type": "integer",
@@ -2077,7 +2105,8 @@
                             "nullable": true
                           },
                           "truncated": {
-                            "type": "boolean"
+                            "type": "boolean",
+                            "description": "True when the bounded inventory omitted devices. At most 25 device rows are returned; a current full-list device count can be larger."
                           },
                           "devices": {
                             "type": "array",
@@ -2102,7 +2131,19 @@
                                     "wearable",
                                     "ar_device",
                                     "unknown"
-                                  ]
+                                  ],
+                                  "description": "Sending client family estimated from a message ID prefix; not verified hardware or operating system.",
+                                  "x-enumDescriptions": {
+                                    "web": "Web client.",
+                                    "android": "Android client.",
+                                    "iphone": "iPhone client.",
+                                    "ipad": "iPad client.",
+                                    "macos": "macOS client.",
+                                    "windows": "Windows client.",
+                                    "wearable": "Wearable client.",
+                                    "ar_device": "AR device client.",
+                                    "unknown": "No recognized client-family prefix."
+                                  }
                                 },
                                 "reportedClass": {
                                   "type": "string",
@@ -2112,7 +2153,14 @@
                                     "browser",
                                     "business_api",
                                     "unknown"
-                                  ]
+                                  ],
+                                  "x-enumDescriptions": {
+                                    "phone": "Phone.",
+                                    "desktop_app": "Desktop app.",
+                                    "browser": "Browser.",
+                                    "business_api": "Business API.",
+                                    "unknown": "No recognized reported device class."
+                                  }
                                 },
                                 "lastActiveAt": {
                                   "type": "integer",
@@ -2121,7 +2169,8 @@
                                 },
                                 "listed": {
                                   "type": "boolean",
-                                  "nullable": true
+                                  "nullable": true,
+                                  "description": "Whether this device index belongs to the latest observed full list. Null when that list is no longer current."
                                 }
                               },
                               "required": [
@@ -2156,17 +2205,20 @@
                       "customerPlatforms",
                       "accountPlatforms",
                       "inventory"
-                    ]
+                    ],
+                    "description": "Observed message client-family distributions and a bounded inventory of this number's own devices. The combined summary has null inventory."
                   },
                   "conversationBreakdown": {
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                       "measured": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "True when at least one retained bucket includes joint conversation categories."
                       },
                       "complete": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "True when measured is true, every retained bucket has joint conversation coverage, no conversation, record or receipt-join coverage was lost and the returned groups are not truncated. Rates and averages are null when false."
                       },
                       "observedBuckets": {
                         "type": "integer",
@@ -2177,7 +2229,8 @@
                         "minimum": 0
                       },
                       "truncated": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "True when the requested scope exceeded 4096 number/time/category groups. The largest groups are retained; rates and averages are null."
                       },
                       "buckets": {
                         "type": "array",
@@ -2190,7 +2243,8 @@
                               "description": "Unix milliseconds."
                             },
                             "complete": {
-                              "type": "boolean"
+                              "type": "boolean",
+                              "description": "True when this UTC time bucket has joint category coverage and no conversations or records were dropped. A summary bucket also requires every scoped number to have a bucket."
                             }
                           },
                           "required": ["ts", "complete"]
@@ -2233,7 +2287,12 @@
                             },
                             "origin": {
                               "type": "string",
-                              "enum": ["api", "campaign", "other"]
+                              "enum": ["api", "campaign", "other"],
+                              "x-enumDescriptions": {
+                                "api": "API send.",
+                                "campaign": "Campaign send.",
+                                "other": "Other or unclassified send source."
+                              }
                             },
                             "callingCode": {
                               "type": "string",
@@ -2309,7 +2368,8 @@
                       "truncated",
                       "buckets",
                       "rows"
-                    ]
+                    ],
+                    "description": "Completed 24-hour conversation cohorts grouped jointly by completion bucket, first outgoing message metadata, calling code and observed device-count class."
                   }
                 },
                 "required": [
@@ -3311,10 +3371,12 @@
                       "enum": ["message_id_prefix/v1"]
                     },
                     "measured": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "description": "True when at least one retained bucket has client-family measurement coverage, including buckets with zero messages."
                     },
                     "complete": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "description": "True when measured is true, every retained bucket has device-family coverage and conversation receipt coverage is complete. False when coverage is missing or records, conversations or receipt joins were dropped. Inventory truncation is reported separately."
                     },
                     "observedBuckets": {
                       "type": "integer",
@@ -3348,7 +3410,19 @@
                               "wearable",
                               "ar_device",
                               "unknown"
-                            ]
+                            ],
+                            "description": "Sending client family estimated from a message ID prefix; not verified hardware or operating system.",
+                            "x-enumDescriptions": {
+                              "web": "Web client.",
+                              "android": "Android client.",
+                              "iphone": "iPhone client.",
+                              "ipad": "iPad client.",
+                              "macos": "macOS client.",
+                              "windows": "Windows client.",
+                              "wearable": "Wearable client.",
+                              "ar_device": "AR device client.",
+                              "unknown": "No recognized client-family prefix."
+                            }
                           },
                           "messages": {
                             "type": "integer",
@@ -3382,7 +3456,19 @@
                               "wearable",
                               "ar_device",
                               "unknown"
-                            ]
+                            ],
+                            "description": "Sending client family estimated from a message ID prefix; not verified hardware or operating system.",
+                            "x-enumDescriptions": {
+                              "web": "Web client.",
+                              "android": "Android client.",
+                              "iphone": "iPhone client.",
+                              "ipad": "iPad client.",
+                              "macos": "macOS client.",
+                              "windows": "Windows client.",
+                              "wearable": "Wearable client.",
+                              "ar_device": "AR device client.",
+                              "unknown": "No recognized client-family prefix."
+                            }
                           },
                           "messages": {
                             "type": "integer",
@@ -3403,10 +3489,12 @@
                       "additionalProperties": false,
                       "properties": {
                         "listObserved": {
-                          "type": "boolean"
+                          "type": "boolean",
+                          "description": "True after a full device list for this number was observed."
                         },
                         "listCurrent": {
-                          "type": "boolean"
+                          "type": "boolean",
+                          "description": "True when a full list was observed and no later list-change signal invalidated it. Membership and device count are unknown until another full list after a change."
                         },
                         "observedAt": {
                           "type": "integer",
@@ -3419,7 +3507,8 @@
                           "nullable": true
                         },
                         "truncated": {
-                          "type": "boolean"
+                          "type": "boolean",
+                          "description": "True when the bounded inventory omitted devices. At most 25 device rows are returned; a current full-list device count can be larger."
                         },
                         "devices": {
                           "type": "array",
@@ -3444,7 +3533,19 @@
                                   "wearable",
                                   "ar_device",
                                   "unknown"
-                                ]
+                                ],
+                                "description": "Sending client family estimated from a message ID prefix; not verified hardware or operating system.",
+                                "x-enumDescriptions": {
+                                  "web": "Web client.",
+                                  "android": "Android client.",
+                                  "iphone": "iPhone client.",
+                                  "ipad": "iPad client.",
+                                  "macos": "macOS client.",
+                                  "windows": "Windows client.",
+                                  "wearable": "Wearable client.",
+                                  "ar_device": "AR device client.",
+                                  "unknown": "No recognized client-family prefix."
+                                }
                               },
                               "reportedClass": {
                                 "type": "string",
@@ -3454,7 +3555,14 @@
                                   "browser",
                                   "business_api",
                                   "unknown"
-                                ]
+                                ],
+                                "x-enumDescriptions": {
+                                  "phone": "Phone.",
+                                  "desktop_app": "Desktop app.",
+                                  "browser": "Browser.",
+                                  "business_api": "Business API.",
+                                  "unknown": "No recognized reported device class."
+                                }
                               },
                               "lastActiveAt": {
                                 "type": "integer",
@@ -3463,7 +3571,8 @@
                               },
                               "listed": {
                                 "type": "boolean",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Whether this device index belongs to the latest observed full list. Null when that list is no longer current."
                               }
                             },
                             "required": [
@@ -3498,17 +3607,20 @@
                     "customerPlatforms",
                     "accountPlatforms",
                     "inventory"
-                  ]
+                  ],
+                  "description": "Observed message client-family distributions and a bounded inventory of this number's own devices. The combined summary has null inventory."
                 },
                 "conversationBreakdown": {
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
                     "measured": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "description": "True when at least one retained bucket includes joint conversation categories."
                     },
                     "complete": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "description": "True when measured is true, every retained bucket has joint conversation coverage, no conversation, record or receipt-join coverage was lost and the returned groups are not truncated. Rates and averages are null when false."
                     },
                     "observedBuckets": {
                       "type": "integer",
@@ -3519,7 +3631,8 @@
                       "minimum": 0
                     },
                     "truncated": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "description": "True when the requested scope exceeded 4096 number/time/category groups. The largest groups are retained; rates and averages are null."
                     },
                     "buckets": {
                       "type": "array",
@@ -3532,7 +3645,8 @@
                             "description": "Unix milliseconds."
                           },
                           "complete": {
-                            "type": "boolean"
+                            "type": "boolean",
+                            "description": "True when this UTC time bucket has joint category coverage and no conversations or records were dropped. A summary bucket also requires every scoped number to have a bucket."
                           }
                         },
                         "required": ["ts", "complete"]
@@ -3575,7 +3689,12 @@
                           },
                           "origin": {
                             "type": "string",
-                            "enum": ["api", "campaign", "other"]
+                            "enum": ["api", "campaign", "other"],
+                            "x-enumDescriptions": {
+                              "api": "API send.",
+                              "campaign": "Campaign send.",
+                              "other": "Other or unclassified send source."
+                            }
                           },
                           "callingCode": {
                             "type": "string",
@@ -3651,7 +3770,8 @@
                     "truncated",
                     "buckets",
                     "rows"
-                  ]
+                  ],
+                  "description": "Completed 24-hour conversation cohorts grouped jointly by completion bucket, first outgoing message metadata, calling code and observed device-count class."
                 }
               },
               "required": [
