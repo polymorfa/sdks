@@ -42,8 +42,8 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The current snapshots are byte-identical copies of Messaging and Platform
-contracts at API implementation commit `8efb062e106ac1d6888bf6fff4fbcdddf8406e48` on
-`t3code/usage-logs-stack-integration`. This branch is unmerged. Seven financial
+contracts at API implementation commit `ac1c7010d5c3cdf0262f1b5deb2c4d7ce6a249a5` on
+`t3code/project-billing-dashboard`. This branch is unmerged. Seven financial
 operations cover limits, priorities, complete ordering and one-resource combined
 read/save. Project priority takes precedence. Numbers inherit customer priority;
 a higher number priority overrides it within the project. Customer limits still

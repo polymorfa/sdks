@@ -1,7 +1,7 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "8efb062e106ac1d6888bf6fff4fbcdddf8406e48",
-  "branch": "t3code/usage-logs-stack-integration",
+  "commit": "ac1c7010d5c3cdf0262f1b5deb2c4d7ce6a249a5",
+  "branch": "t3code/project-billing-dashboard",
   "published": false,
   "note": "The full Usage and Logs snapshots pin the baseline source commit. Analytics adds only its four public operations and named schema from the supplement revision. Package publication and deployed availability remain separate gates.",
   "contracts": {
