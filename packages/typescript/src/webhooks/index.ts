@@ -122,6 +122,11 @@ export {
   type WebhookPayloadMap,
 } from "./events.js";
 export {
+  FLOW_FORWARD_SIGNATURE_HEADER,
+  verifyFlowForwardSignature,
+  type VerifyFlowForwardSignatureOptions,
+} from "./flow-forward.js";
+export {
   WebhookSignatureError,
   constructWebhookEvent,
   verifyWebhookSignature,

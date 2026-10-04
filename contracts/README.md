@@ -102,6 +102,12 @@ The two public Flow draft reads in the pinned Platform snapshot are covered by
 `Client.project(projectId).flows.list` and `.retrieve`. The API declares both
 public, project-bound, and `sessions:read`.
 
+The six dynamic Flow endpoint and managed Flow key operations (API PRs #428 and
+#434) are covered by `Client.project(projectId).flows.endpoint`, `setEndpoint`,
+`deleteEndpoint`, `endpointReceipts`, `encryptionKey` and
+`rotateEncryptionKey`. The API withholds them from its public spec while the
+Cloud onboarding beta has no audience.
+
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
 files at API `dev` merge commit `e818ba62830d3727a7822379bb46c1fece90ef1b`
 (API PR #433, which corrects the payment order amount and status schemas from
