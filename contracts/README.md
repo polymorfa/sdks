@@ -42,9 +42,19 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The current snapshots are byte-identical copies of the Messaging and Platform
-contracts at API dev merge commit `171a9683ff45d11a4b5d3917dc428ad2722b0d99`.
-The full revision contains the inherited Logs and Usage contracts and all four
-public Analytics reads. The ledger contains 579 operations: 433 covered and
+contracts at API dev merge commit `8e319f6bb4e733e776278577840d8fb15805fe6d`
+(polymorfa/polymorfa#392). That revision adds the
+`campaign.recipient_delivered`, `campaign.recipient_read` and
+`campaign.recipient_replied` webhook payloads, which the TypeScript webhook
+types now cover. It also contains the recipient CSV export reads and optional
+recipient failure-reason fields from an earlier API merge. The ledger records
+those two export reads as missing and the two recipient list reads as partial
+until polymorfa/sdks#309 adds the methods and fields. The ledger contains 581
+operations: 437 covered, 2 partial, 2 missing and 140 excluded.
+
+The preceding repin at `171a9683ff45d11a4b5d3917dc428ad2722b0d99`
+contained the inherited Logs and Usage contracts and all four
+public Analytics reads. The ledger then contained 579 operations: 433 covered and
 146 excluded, with no missing, partial or changed fingerprints. Six reviewed
 Console changes cover analytics projections, consent preferences, operational
 error vitals and shared drains. They require dashboard identity and remain

@@ -1057,8 +1057,10 @@ export interface CampaignRecipientReadPayload extends CampaignRecipientEngagemen
   readonly readAt: number;
 }
 
-export interface CampaignRecipientRepliedPayload
-  extends Omit<CampaignRecipientEngagementPayload, "externalMessageId"> {
+export interface CampaignRecipientRepliedPayload extends Omit<
+  CampaignRecipientEngagementPayload,
+  "externalMessageId"
+> {
   /** WhatsApp message ID of the campaign send, or `null` when unavailable. */
   readonly externalMessageId: string | null;
   /** Unix seconds of the first attributed reply. */
