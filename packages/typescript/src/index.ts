@@ -1282,6 +1282,9 @@ export type {
   WhatsAppDeviceAnalytics,
   WhatsAppConversationGroup,
   WhatsAppConversationBreakdown,
+  RecipientDeviceCount,
+  WhatsAppRecipientActivity,
+  WhatsAppRecipientActivityRow,
 } from "./platform/analytics.js";
 export type {
   ResourceBillingControls,
