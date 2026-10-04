@@ -22,7 +22,10 @@ The artifact must bind the exact API commit, contract date, hashes, successful
 scenarios, deployed commit and trusted workflow run. Missing, expired or
 mismatched evidence blocks publication. A historical source pin without this
 evidence stays blocked until the contract is deliberately reconciled and
-accepted. Repinning alone does not establish SDK coverage.
+accepted. Repinning alone does not establish SDK coverage. Feature contract pins, including
+`contracts/analytics-device-signals.json`, must match the global release source
+and Platform hash before publication. A newer intermediate feature pin blocks
+a nightly against an older acceptance record.
 
 `Polymorfa-Version` advances for each published API contract batch. Nightly
 package timestamps do not change that date. Compatibility notes, upgrade

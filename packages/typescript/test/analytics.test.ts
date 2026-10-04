@@ -1,5 +1,6 @@
 import { afterEach, expect, it } from "vitest";
 import { Client, PolymorfaValidationError } from "../src/index.js";
+import type { WhatsAppDeviceAnalytics } from "../src/index.js";
 import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 const servers: TestServer[] = [];
@@ -162,4 +163,78 @@ it("rejects HTML success bodies and incomplete OpenMetrics framing", async () =>
       client.analytics.metrics({ format: "openmetrics" }),
     ).rejects.toMatchObject({ code: "invalid_response" });
   }
+});
+
+it("preserves joint country/message cohorts, unknown client families and stale device inventories", async () => {
+  const deviceAnalytics = {
+    detector: "message_id_prefix/v1",
+    measured: true,
+    complete: false,
+    observedBuckets: 1,
+    customerMessages: 2,
+    accountMessages: 0,
+    customerPlatforms: [{ platform: "unknown", messages: 2, share: null }],
+    accountPlatforms: [],
+    inventory: {
+      listObserved: true,
+      listCurrent: false,
+      observedAt: 0,
+      deviceCount: null,
+      truncated: false,
+      devices: [
+        {
+          deviceIndex: 4,
+          estimatedPlatform: "web",
+          reportedClass: "browser",
+          lastActiveAt: null,
+          listed: null,
+        },
+      ],
+    },
+  } satisfies WhatsAppDeviceAnalytics;
+  const conversationBreakdown = {
+    measured: true,
+    complete: true,
+    observedBuckets: 1,
+    droppedConversations: 0,
+    truncated: false,
+    buckets: [{ ts: 0, complete: true }],
+    rows: [
+      {
+        ts: 0,
+        callingCode: "55",
+        messageType: "image",
+        textBand: "short",
+        origin: "campaign",
+        customerDevices: "multiple",
+        completedConversations: 10,
+        deliveredConversations: 8,
+        readConversations: 6,
+        repliedConversations: 4,
+        replyLatencySumMs: 240000,
+        readRate: 0.6,
+        replyRate: 0.4,
+        averageCustomerReplyMs: 60000,
+      },
+    ],
+  };
+  const body = {
+    enabled: true,
+    summary: { deviceAnalytics, conversationBreakdown },
+    numbers: [{ deviceAnalytics, conversationBreakdown }],
+  };
+  const server = await startTestServer(() => ({
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ data: body }),
+  }));
+  servers.push(server);
+  const client = new Client({
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    baseUrl: server.url,
+  });
+  const result = await client.analytics.get({ start: 0, end: 1 });
+  expect(result.data).toEqual(body);
+  expect(
+    result.data.numbers[0]?.deviceAnalytics.inventory?.devices[0]?.listed,
+  ).toBeNull();
 });

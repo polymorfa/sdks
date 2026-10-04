@@ -366,6 +366,57 @@ organization server keys. They are intentionally absent from `Client`;
 browser template tooling must reach them through an application-owned server
 adapter that authorizes the signed-in user.
 
+### WhatsApp analytics
+
+`client.analytics.get({projectId, sessionId, start, end})` reads activity,
+completed 24-hour direct-chat delivery/read/reply cohorts, response times and
+connection vitals. Times are Unix milliseconds and the range is at most 366
+days. A project-bound client confines the request to its own project. Requires
+`sessions:read` and Analytics enabled by a team owner or admin in the Console.
+Disabled results contain no business data. Missing coverage has null rates;
+read receipts do not prove an app open. `measured` distinguishes observed zero
+activity from a number without telemetry. No contact identities or message
+content are returned. See the [Analytics guide](https://docs.polymorfa.com/console/analytics).
+
+### Collector metrics
+
+`client.analytics.metrics({windowHours: 24, format: "openmetrics", segments: true})` returns Prometheus/OpenMetrics text with HTTP metadata, on root and project clients.
+Counts are overlapping-window gauges, with denominators, measurement coverage and observation times.
+Requires `sessions:read` and the same Analytics opt-in. Disabled exports contain only
+enablement and window metadata. [Collector configuration](https://docs.polymorfa.com/console/analytics-collectors).
+
+Analytics responses also expose completed observed phone activity spans and
+quiet gaps, duration sums, sample counts and weighted averages. Ranges up to
+48 hours use hourly activity buckets; longer ranges and call series use daily
+UTC buckets. These signals do not establish phone online/offline or power state.
+See the [measurement definitions](https://docs.polymorfa.com/console/analytics#phone-polymorfa-and-customer-activity).
+
+### Device analytics
+
+`client.analytics.get({start, end, projectId, sessionId})` reads scoped Analytics.
+A project-bound client is confined to its project. Requires `sessions:read` and
+Analytics enabled by a team owner or admin. `deviceAnalytics` counts observed
+live direct messages by estimated sending client family, separately for people
+messaging your numbers and for your own numbers sending. Message ID prefixes are
+estimates, not hardware verification. Unknown is included; incomplete coverage
+has null shares. Older retained buckets have no device measurements.
+
+`numbers[].deviceAnalytics.inventory` lists up to 25 observed device indexes
+belonging to that connected number, with a coarse reported class and last
+observed sending activity. A later device-list change sets `listCurrent=false`
+and makes the count/membership unknown until a fresh list arrives. The combined
+summary has no inventory. No recipient device identities or raw message IDs
+are retained in Analytics.
+
+For a fresh list of a recipient's linked-device indexes, use
+`client.messaging.contacts.devices(numberId, contactId)`. This existing
+scoped read does not establish OS, model or device ownership. See the
+[device guide](https://docs.polymorfa.com/sdks/typescript/devices).
+
+`client.analytics.metrics({windowHours:24, format:"openmetrics"})` exports
+windowed gauges for platform message counts/shares and owned-device list coverage.
+Do not apply `rate()` or `increase()` to overlapping windows.
+
 ## Call consent
 
 Polymorfa checks every call against the team's call policy before the
@@ -936,28 +987,3 @@ or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
 ## License
 
 MIT
-
-### WhatsApp analytics
-
-`client.analytics.get({projectId, sessionId, start, end})` reads activity,
-completed 24-hour direct-chat delivery/read/reply cohorts, response times and
-connection vitals. Times are Unix milliseconds and the range is at most 366
-days. A project-bound client confines the request to its own project. Requires
-`sessions:read` and Analytics enabled by a team owner or admin in the Console.
-Disabled results contain no business data. Missing coverage has null rates;
-read receipts do not prove an app open. `measured` distinguishes observed zero
-activity from a number without telemetry. No contact identities or message
-content are returned. See the [Analytics guide](https://docs.polymorfa.com/console/analytics).
-
-### Collector metrics
-
-`client.analytics.metrics({windowHours: 24, format: "openmetrics", segments: true})` returns Prometheus/OpenMetrics text with HTTP metadata, on root and project clients.
-Counts are overlapping-window gauges, with denominators, measurement coverage and observation times.
-Requires `sessions:read` and the same Analytics opt-in. Disabled exports contain only
-enablement and window metadata. [Collector configuration](https://docs.polymorfa.com/console/analytics-collectors).
-
-Analytics responses also expose completed observed phone activity spans and
-quiet gaps, duration sums, sample counts and weighted averages. Ranges up to
-48 hours use hourly activity buckets; longer ranges and call series use daily
-UTC buckets. These signals do not establish phone online/offline or power state.
-See the [measurement definitions](https://docs.polymorfa.com/console/analytics#phone-polymorfa-and-customer-activity).

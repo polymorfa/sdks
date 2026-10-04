@@ -1,6 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { validateAcceptance, releaseVersion } from "./release-gate.mjs";
+import {
+  validateAcceptance,
+  releaseVersion,
+  validateFeatureContractPins,
+} from "./release-gate.mjs";
 const expected = {
   sourceSha: "a".repeat(40),
   apiVersion: "2026-09-22",
@@ -64,4 +68,32 @@ test("nightly timestamp changes package version without changing API contract da
   for (const version of ["0.1.0-dev.1", "2026-09-22", "01.1.0", ""])
     assert.throws(() => releaseVersion("stable", version, "0.1.0"));
   assert.throws(() => releaseVersion("nightly", "0.1.0", "0.1.0"));
+});
+
+test("new feature contracts cannot publish against an older accepted source", () => {
+  const source = {
+    repository: "polymorfa/polymorfa",
+    commit: "a".repeat(40),
+    contracts: { platform: { sha256: "b".repeat(64) } },
+  };
+  const pin = {
+    repository: source.repository,
+    sourceCommit: source.commit,
+    sourceSha256: source.contracts.platform.sha256,
+  };
+  validateFeatureContractPins(source, [pin]);
+  assert.throws(
+    () =>
+      validateFeatureContractPins(source, [
+        { ...pin, sourceCommit: "c".repeat(40) },
+      ]),
+    /not been reconciled/,
+  );
+  assert.throws(
+    () =>
+      validateFeatureContractPins(source, [
+        { ...pin, sourceSha256: "d".repeat(64) },
+      ]),
+    /hash mismatch/,
+  );
 });

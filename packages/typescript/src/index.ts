@@ -1278,6 +1278,10 @@ export type {
   WhatsAppAnalytics,
   WhatsAppMetrics,
   WhatsAppEngagement,
+  EstimatedMessagePlatform,
+  WhatsAppDeviceAnalytics,
+  WhatsAppConversationGroup,
+  WhatsAppConversationBreakdown,
 } from "./platform/analytics.js";
 export type {
   ResourceBillingControls,

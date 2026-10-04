@@ -31,10 +31,34 @@ export function validateAcceptance(receipt, expected) {
   );
   return receipt;
 }
+export function validateFeatureContractPins(source, pins) {
+  for (const pin of pins) {
+    assert.equal(
+      pin.repository,
+      source.repository,
+      "Feature contract repository mismatch",
+    );
+    assert.equal(
+      pin.sourceCommit,
+      source.commit,
+      "Feature contract source has not been reconciled with the release contract",
+    );
+    assert.equal(
+      pin.sourceSha256,
+      source.contracts.platform.sha256,
+      "Feature Platform contract hash mismatch",
+    );
+  }
+}
 export function expectedContract() {
   const source = JSON.parse(readFileSync(join(root, "contracts/source.json")));
   assert.equal(source.repository, "polymorfa/polymorfa");
   assert.match(source.commit, /^[a-f0-9]{40}$/);
+  validateFeatureContractPins(source, [
+    JSON.parse(
+      readFileSync(join(root, "contracts/analytics-device-signals.json")),
+    ),
+  ]);
   const apiVersion = /NATIVE_API_VERSION = "([^"]+)"/.exec(
     readFileSync(join(root, "packages/typescript/src/version.ts"), "utf8"),
   )?.[1];

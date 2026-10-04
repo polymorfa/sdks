@@ -1,4 +1,4 @@
-// Platform analytics contract: polymorfa/polymorfa@171a9683ff45d11a4b5d3917dc428ad2722b0d99
+// Analytics additions pin their source in contracts/analytics-device-signals.json.
 import { PolymorfaValidationError, PolymorfaServerError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import type {
@@ -96,7 +96,87 @@ export interface WhatsAppEngagement {
   droppedRecords: number;
   droppedReceiptJoins: number;
 }
+export type EstimatedMessagePlatform =
+  | "web"
+  | "android"
+  | "iphone"
+  | "ipad"
+  | "macos"
+  | "windows"
+  | "wearable"
+  | "ar_device"
+  | "unknown";
+export interface WhatsAppDeviceAnalytics {
+  detector: "message_id_prefix/v1";
+  measured: boolean;
+  complete: boolean;
+  observedBuckets: number;
+  customerMessages: number | null;
+  accountMessages: number | null;
+  customerPlatforms: {
+    platform: EstimatedMessagePlatform;
+    messages: number;
+    share: number | null;
+  }[];
+  accountPlatforms: {
+    platform: EstimatedMessagePlatform;
+    messages: number;
+    share: number | null;
+  }[];
+  /** Inventory belongs to one number. The combined summary has null inventory. */
+  inventory: null | {
+    listObserved: boolean;
+    listCurrent: boolean;
+    observedAt: number | null;
+    deviceCount: number | null;
+    truncated: boolean;
+    devices: {
+      deviceIndex: number;
+      estimatedPlatform: EstimatedMessagePlatform;
+      reportedClass:
+        "phone" | "desktop_app" | "browser" | "business_api" | "unknown";
+      lastActiveAt: number | null;
+      listed: boolean | null;
+    }[];
+  };
+}
+export interface WhatsAppConversationGroup {
+  ts: number;
+  messageType:
+    | "text"
+    | "image"
+    | "video"
+    | "audio"
+    | "document"
+    | "sticker"
+    | "interactive"
+    | "template"
+    | "other";
+  textBand: "none" | "short" | "medium" | "long" | "very_long" | "unknown";
+  origin: "api" | "campaign" | "other";
+  callingCode: string;
+  customerDevices: "single" | "multiple" | "unknown";
+  completedConversations: number;
+  deliveredConversations: number;
+  readConversations: number;
+  repliedConversations: number;
+  replyLatencySumMs: number;
+  readRate: number | null;
+  replyRate: number | null;
+  averageCustomerReplyMs: number | null;
+}
+export interface WhatsAppConversationBreakdown {
+  measured: boolean;
+  complete: boolean;
+  observedBuckets: number;
+  droppedConversations: number;
+  truncated: boolean;
+  buckets: { ts: number; complete: boolean }[];
+  rows: WhatsAppConversationGroup[];
+}
 export interface WhatsAppMetrics {
+  deviceAnalytics: WhatsAppDeviceAnalytics;
+  conversationBreakdown: WhatsAppConversationBreakdown;
   calls: CallBusinessMetrics;
   measured: boolean;
   observedHours: number;
