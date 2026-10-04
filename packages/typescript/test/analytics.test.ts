@@ -24,7 +24,7 @@ it("reads enabled or disabled analytics and confines a project token without wid
     baseUrl: server.url,
   });
   expect((await root.analytics.get({ start: 0, end: 1 })).data).toEqual(body);
-  const id = "11111111-2222-4333-8444-555555555555";
+  const id = "111111ab-2222-4333-8444-555555555555";
   const project = new Client({
     credential: { type: "projectToken", value: PROJECT_TOKEN },
     projectId: id,
@@ -37,6 +37,10 @@ it("reads enabled or disabled analytics and confines a project token without wid
     `/platform/projects/${id}/analytics?sessionId=${id}`,
   );
   expect(server.requests[1]?.headers.authorization).toContain(PROJECT_TOKEN);
+  expect(
+    (await project.analytics.get({ projectId: id.toUpperCase() })).data.enabled,
+  ).toBe(false);
+  expect(server.requests[2]?.path).toBe(`/platform/projects/${id}/analytics`);
   await expect(
     project.analytics.get({
       projectId: "22222222-2222-4333-8444-555555555555",

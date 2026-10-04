@@ -320,7 +320,7 @@ export class AnalyticsResource {
     if (
       this.projectId !== null &&
       params.projectId !== undefined &&
-      params.projectId !== this.projectId
+      params.projectId.toLowerCase() !== this.projectId.toLowerCase()
     )
       throw new PolymorfaValidationError(
         "Analytics cannot read outside the client's project.",

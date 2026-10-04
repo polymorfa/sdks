@@ -1,3 +1,4 @@
+import { billingLimit, billingPriority } from "../platform/billing-controls.js";
 import type { SessionConfigurationOverrides } from "./session-configuration.js";
 import { PolymorfaConfigurationError } from "../errors.js";
 import type {
@@ -34,6 +35,10 @@ export type QuickLinkHybridPhase =
   "cloud_setup" | "linked_pairing" | "repair_linked" | "ready";
 
 interface CreateQuickLinkBase {
+  readonly billingControls?: {
+    readonly limitCredits: number | null;
+    readonly priority: number;
+  };
   readonly connectionGoal?: QuickLinkConnectionGoal;
   readonly addConnection?: QuickLinkConnectionKind;
   readonly projectId?: string;
@@ -164,6 +169,15 @@ export class QuickLinksResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<CreateQuickLinkResponse>> {
     this.assertServerCredential();
+    if (input.billingControls) {
+      billingLimit(input.billingControls.limitCredits);
+      billingPriority(input.billingControls.priority);
+      if (input.purpose === "add_connection" || input.configuration?.testing)
+        throw new PolymorfaConfigurationError(
+          "Initial billing controls require a real new number",
+          "billingControls",
+        );
+    }
     return this.transport.request({
       method: "POST",
       path: "/messaging/quicklinks",

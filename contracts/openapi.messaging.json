@@ -19190,6 +19190,28 @@
             "format": "uuid",
             "description": "Customer that owns the connected number when Customers is enabled for the project."
           },
+          "billingControls": {
+            "type": "object",
+            "properties": {
+              "limitCredits": {
+                "type": "number",
+                "nullable": true,
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "priority": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              }
+            },
+            "required": [
+              "limitCredits",
+              "priority"
+            ],
+            "additionalProperties": false,
+            "description": "Initial monthly spending limit and funding priority for a real Number. Requires a team key with billing:manage or a live team owner/admin on Pay-As-You-Go. Applied atomically before pairing admission."
+          },
           "externalId": {
             "type": "string",
             "minLength": 1,

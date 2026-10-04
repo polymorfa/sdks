@@ -41,18 +41,59 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
-The baseline snapshots are byte-identical copies of API number capabilities
-PR #402 at merged `dev` commit
-`ee885ec4bf62af36b9b85df4310c505f38a224db`. It adds `Client.sessions.getCapabilities` and the
-capability response types. The API requires `sessions:read`, beta access and
-live Number authority. Before configuration is synced, values are unknown.
+The current snapshots are byte-identical copies of Messaging and Platform
+contracts at API implementation commit `8efb062e106ac1d6888bf6fff4fbcdddf8406e48` on
+`t3code/usage-logs-stack-integration`. This branch is unmerged. Seven financial
+operations cover limits, priorities, complete ordering and one-resource combined
+read/save. Project priority takes precedence. Numbers inherit customer priority;
+a higher number priority overrides it within the project. Customer limits still
+include all assigned numbers.
+Initial real QuickLink creation accepts optional billing controls before admission.
+This integrated source inherits five private Console operations: Settings
+Activity, the retained-log calendar, project logging reads, sampling writes and
+HTTPS drain writes. All require dashboard identity and remain excluded from
+server SDK authority. The already-excluded `logsInsight` fingerprint changes
+only for its server-side `filters` and `search` parameters. All public and other
+existing operation fingerprints remain unchanged. The ledger contains 574
+operations: 429 covered and 145 excluded. The financial methods operate actual
+monthly credit-debit limits; the separate nested included-usage/overage quota
+model remains an unshipped prototype outside those methods.
 
-The pin also includes merged Hybrid Link tier transitions and new-chat capping.
-The two Hybrid Link error codes now appear in the public error enum; the SDK
-already recognizes both. Template submission has a more precise response
-schema; its SDK response remains an object. Hosted Flow endpoint and encryption
-key operations remain explicitly excluded from typed SDK coverage. Package
-publication and deployed feature access are separate gates.
+The preceding repin at `b8fa167e47c901131d3bd9865e6479b153ad5157`
+added only the private Console `listConsoleNumberOptions` operation,
+a bounded searchable number-label read with keyset pagination. Its dashboard
+identity requirement excludes it from server SDK methods. All 568 preceding
+operation fingerprints and the public API contract remain unchanged. The ledger
+then contained 569 operations: 429 covered and 140 excluded.
+The preceding private `usageInsight` contract at
+`49b529fd74f42fdd6bb30671ebd4b0ec8e9558f3`
+added exact org/project/number scope metadata and immutable-number filtering.
+The selected number's current UTC monthly completed outgoing calls and included
+allowance remain separate from the chart period. Unknown tiers have no allowance
+read; known unlimited tiers are explicit. Request logs and serverless receipts
+have no number attribution, so their number measurements are unavailable.
+No per-number allowance is pooled into a project/team quota; credit caps still use
+their separate financial read. The preceding private read at
+`9aa751ef923990c4b9ff6df56f64e35c7ae78027` distinguished catalog pricing from
+measured quantities and actual charged credits across 18 aggregate categories.
+Completed outbound calls match the monthly gate; serverless counts surviving
+admitted project receipts, without number attribution or durable billing authority.
+Complete WhatsApp media/HMS GB-month usage remains unavailable. The total
+production-number metric does not treat the legacy session limit as a cap.
+The preceding source,
+`61d0a0e6e2c7b0eca1971657afc80926b4d4142b`, added registered consumption meters.
+The earlier source, `ba09326dd3c6688f05320c1f7685aeb0290a0ed2`,
+added project-filtered priority reads and mixed customer/number ordering; those
+public operations retain their typed SDK methods and unchanged fingerprints.
+Usage insights require dashboard identity; no server SDK method grants access
+to that Console route. The three Console-only setup operations also remain
+excluded from SDK authority.
+Reads require organization credentials with `billing:read`; writes require
+`billing:manage`, live team authority and Pay-As-You-Go. Existing credential masks
+do not gain these permissions. Paid service continues through its window when a
+limit is reached. The older Graph and test-event supplements keep their independent
+pins; these financial operations do not change them. API deployment, SDK and CLI
+publication remain separate gates.
 
 The preceding snapshots were described as follows.
 

@@ -1253,3 +1253,12 @@ export type {
   WhatsAppMetrics,
   WhatsAppEngagement,
 } from "./platform/analytics.js";
+export type {
+  ResourceBillingControls,
+  BillingScope,
+  BillingLimit,
+  BillingLimits,
+  BillingPriority,
+  BillingPriorities,
+  ReorderBillingPrioritiesInput,
+} from "./platform/billing-controls.js";
