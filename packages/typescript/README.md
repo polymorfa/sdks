@@ -1938,7 +1938,7 @@ message identifiers are URL-encoded by the SDK.
 ## Messaging campaigns
 
 `MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `update`, `analytics`,
-`listRecipients`, `exportRecipients`, `addRecipients`, `launch`, `pause`, `resume`, `stop`, and
+`listRecipients`, `exportRecipients`, `addRecipients`, `launch`, `reschedule`, `pause`, `resume`, `stop`, and
 `requeue`. Reads require `campaigns:read`; writes require `campaigns:manage`.
 Pass the project's slug as the first argument. Campaigns accept organization
 API keys or project tokens; browser client tokens cannot use these methods.
@@ -1968,14 +1968,27 @@ await messaging.campaigns.update("support", created.data.data.id, {
   recipientListId: null,
 });
 
+const firstStart = Date.now() + 24 * 60 * 60 * 1000;
 const launched = await messaging.campaigns.launch(
   "support",
   created.data.data.id,
-  { scheduledAt: Date.parse("2026-08-25T09:00:00Z") },
+  { scheduledAt: firstStart },
   { idempotencyKey: "campaign-august-launch" },
 );
 console.log(launched.data.data.operationId, launched.metadata.requestId);
+
+const moved = await messaging.campaigns.reschedule(
+  "support",
+  created.data.data.id,
+  { scheduledAt: firstStart + 60 * 60 * 1000 },
+  { idempotencyKey: "campaign-august-move" },
+);
+console.log(moved.data.data.scheduledAt, moved.data.data.operationId);
 ```
+
+Reschedule sends once by default, including when the API returns a campaign
+state conflict. If a response is lost, read the campaign before repeating the
+write with the same idempotency key.
 
 Create accepts inline recipients, an audience ID in `recipientListId`, or both.
 Update accepts `name`, `recipientListId`, `senderConfig`, and `scheduledAt`.
@@ -2015,14 +2028,19 @@ object with `projectId` and the same filters. A failed request raises an SDK
 error; an unexpected success content type is rejected instead of returned as
 CSV.
 
-Launch, pause and resume return the campaign state with an `operationId`.
+Launch, reschedule, pause and resume return the campaign state with an `operationId`.
 They accept the transition without waiting for sending to finish. Stop always
 cancels; its `operationId` is null when the campaign had no active delivery run
 and was cancelled immediately. Check for null before calling
 `Client.operations.wait(operationId)`. A launched campaign waiting for its
-scheduled start can be stopped, but its start time cannot be changed.
-Launch, pause, resume, and stop generate one idempotency key per call unless you
-pass one. Automatic retries reuse that key; a completed replay returns the
+scheduled start can move to another time through `reschedule`, or start now with
+`{ scheduledAt: null }`. Once sending starts, rescheduling returns a `409`
+state conflict. Platform `update` also refuses a changed `scheduledAt` after
+launch; use `reschedule` for that change. A team suspended by BanSafe receives
+`403 bansafe_org_suspended`.
+
+Launch, reschedule, pause, resume, and stop generate one idempotency key per call
+unless you pass one. Automatic retries reuse that key; a completed replay returns the
 API's `idempotency_completed` conflict, so inspect the campaign state after a
 lost response.
 
@@ -2076,8 +2094,19 @@ listing and append also require `projectId`. Platform
 `recipients` uses the same cursor-page shape. `Client.audiences` manages audience
 members, and `Client.optOuts` reads and replaces team keyword settings.
 
-`create` and `launch` generate an `Idempotency-Key` for each call. A supplied
-key is preserved across retries within the API's 24-hour replay window. If the
+For Platform rescheduling, pass the owning project in the body:
+
+```ts
+await client.campaigns.reschedule(
+  campaignId,
+  { projectId, scheduledAt: null },
+  { idempotencyKey: "start-campaign-now" },
+);
+```
+
+`create`, `launch` and `reschedule` generate an `Idempotency-Key` for each call.
+Reschedule sends once by default; a caller may explicitly set `maxNetworkRetries`
+while retaining the same key within the API's 24-hour replay window. If the
 outcome remains uncertain after that window, reconcile campaign state before
 starting another request; see [Idempotent sends](#idempotent-sends).
 `archive` returns a receipt for a completed, failed, or cancelled campaign;
@@ -2171,6 +2200,8 @@ if (isEvent(event, "history.sync")) {
   console.log(event.payload.rung, event.payload.requires);
 } else if (isEvent(event, "campaign.stopped")) {
   console.log(event.payload.campaignId, event.payload.abandonedCount);
+} else if (isEvent(event, "campaign.rescheduled")) {
+  console.log(event.payload.previousScheduledAt, event.payload.scheduledAt);
 } else if (isEvent(event, "customer.pairing_link.connected")) {
   console.log(event.payload.customerId, event.payload.sessionId);
 }

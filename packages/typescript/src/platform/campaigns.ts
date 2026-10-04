@@ -17,6 +17,7 @@ import type {
   PlatformCampaignRecipientsEnvelope,
   PlatformPayload,
   RecordCampaignConversionRequest,
+  ReschedulePlatformCampaignRequest,
   UpdatePlatformCampaignRequest,
 } from "./types.js";
 
@@ -110,6 +111,20 @@ export class CampaignsResource {
     options: RequestOptions = {},
   ): CampaignResponse {
     return this.action(campaignId, "launch", body, options);
+  }
+
+  /** Move a launched campaign that has not started sending, or start it now. */
+  reschedule(
+    campaignId: string,
+    body: ReschedulePlatformCampaignRequest,
+    options: RequestOptions = {},
+  ): CampaignResponse {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(campaignId)}/reschedule`,
+      body,
+      ...withoutAutomaticRetry(withIdempotencyKey(options)),
+    });
   }
 
   pause(

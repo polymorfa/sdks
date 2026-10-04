@@ -215,6 +215,45 @@ describe("Client audiences", () => {
 });
 
 describe("Client campaigns", () => {
+  it("reschedules with the owning project in the body and an idempotency key", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.reschedule(
+      "campaign/a",
+      { projectId: "project/a", scheduledAt: 1_790_000_003_000 },
+      { idempotencyKey: "move-campaign-a" },
+    );
+    expect(requests[0]).toMatchObject({
+      method: "POST",
+      path: "/platform/campaigns/campaign%2Fa/reschedule",
+      body: '{"projectId":"project/a","scheduledAt":1790000003000}',
+    });
+    expect(requests[0]?.headers["idempotency-key"]).toBe("move-campaign-a");
+  });
+  it("does not replay a Platform reschedule on a known conflict", async () => {
+    const server = await startTestServer(() => ({
+      status: 409,
+      body: JSON.stringify({
+        error: {
+          code: "campaign_state_conflict",
+          message: "Campaign already started.",
+        },
+      }),
+    }));
+    servers.push(server);
+    const client = new Client({
+      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: server.url,
+      maxNetworkRetries: 2,
+    });
+
+    await expect(
+      client.campaigns.reschedule("campaign/a", {
+        projectId: "project/a",
+        scheduledAt: null,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(server.requests).toHaveLength(1);
+  });
   it("maps collection, encoded item, and project query operations", async () => {
     const { client, requests } = await platformServer();
     await client.campaigns.list({
