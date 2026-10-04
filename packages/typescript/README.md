@@ -2392,7 +2392,10 @@ does not change prices, modes or customer access. Package publication and live a
 ## Billing and usage
 
 `Client.billing` exposes the complete organization-key billing family.
-Reads require `sessions:read`. Credit quantities, including fields ending in
+Balance, usage, transaction and pricing reads require `sessions:read`.
+Spending limits and priority reads require `billing:read`; changes require
+`billing:manage` and Pay-As-You-Go. Project and client credentials cannot use
+these financial controls. Credit quantities, including fields ending in
 `Cents`, support up to six decimal places. They are not cash minor units.
 Team warnings follow the fixed one-day and two-hour insufficiency forecast;
 notification preferences are managed in the Console.
@@ -2439,6 +2442,67 @@ changes. Show a new quote for confirmation after a conflict; never silently
 purchase a replacement. Set `tierOverride: null` when quoting to restore project
 inheritance. The old `setTierOverride({tierOverride})` request and
 `billing.updateReminderSettings` method are removed.
+
+#### Hybrid Link Numbers
+
+A Hybrid Link Number (Linked Devices and Official API on one Number) needs a
+choice before it leaves Pro. Without `hybridResolution`, the quote fails with
+`PolymorfaConflictError` and `code === "hybrid_choice_required"`. This
+includes `tierOverride: null` when the project default lacks Hybrid Link.
+
+```ts
+// Keep one connection; the other is disconnected when Pro ends.
+await platform.sessions.quoteTierChange(sessionId, {
+  tierOverride: "standard",
+  hybridResolution: { action: "keep", transport: "linked_devices" },
+});
+
+// Split into two Standard Numbers. This Number keeps the Official API; Linked
+// Devices moves to a new Number named "support-linked" without re-pairing.
+await platform.sessions.quoteTierChange(sessionId, {
+  tierOverride: "standard",
+  hybridResolution: {
+    action: "split",
+    existingNumberTransport: "official_api",
+    newNumberName: "support-linked",
+  },
+});
+```
+
+The choice runs when the paid Pro window ends. To merge two Numbers that are
+the same WhatsApp Business number into one Hybrid Link Number, list the pairs
+and quote Pro on the Number that keeps its ID:
+
+```ts
+const pairs = await platform.projects.listHybridMergeCandidates(projectId);
+const pair = pairs.data.data.find((candidate) => candidate.eligible);
+if (pair) {
+  // A Number with hosted message storage cannot be absorbed; keep it instead.
+  const [first, second] = pair.numbers;
+  const [keep, absorb] = second.canBeAbsorbed
+    ? [first, second]
+    : [second, first];
+  await platform.sessions.quoteTierChange(keep.id, {
+    tierOverride: "pro",
+    hybridMerge: { absorbNumberId: absorb.id },
+  });
+}
+```
+
+Send either `hybridResolution` or `hybridMerge`, never both; the SDK rejects
+both before sending. `quote.hybridTransition` echoes the plan (`keep`, `split`
+or `merge`), the surviving Number and the effective time. After confirmation,
+`retrieveTierChange` reports `hybridTransition.status` (`scheduled`, `running`,
+`completed`, `failed` or `cancelled`) separately from the tier change status,
+plus `failureReason`, `newNumberId` for a completed split, and
+`metaDisconnectRequired`. A queued change that the API rejects at apply time
+because no choice is recorded reports `status: "rejected"` with
+`failureReason: "hybrid_choice_required"`; quote again with a choice. When that flag is true, disconnect the Official API in
+the WhatsApp Business app under Settings > Account > Business Platform. An
+ineligible pair or Number fails with `hybrid_transition_ineligible`; the reason
+appears only in the error message. A candidate's `ineligibleReason` explains why
+a pair cannot merge now. Listing candidates and merging require Hybrid Link
+access; without it the API returns `403 feature_unavailable`.
 
 ## Organization access and security
 
@@ -2606,6 +2670,31 @@ provided. The pinned handlers do not persist that header. A repeated stop can
 enqueue another stop command; a repeated delete reports only rows still found.
 QuickLink settings updates are state upserts and can safely converge on the
 same supplied values.
+
+## Number capabilities (beta)
+
+`sessions.getCapabilities` reads which WhatsApp features WhatsApp has enabled
+for one number, and the limits it applies, as of the number's last
+configuration sync. It needs `sessions:read` and team enrollment in the number
+capabilities beta; until then it throws `PolymorfaAuthorizationError` (403).
+
+```ts
+const { data } = await platform.sessions.getCapabilities("support");
+if (data.data.status === "synced") {
+  for (const capability of data.data.capabilities) {
+    if (capability.kind === "feature")
+      console.log(capability.key, capability.value);
+    else console.log(capability.key, capability.value, capability.unit);
+  }
+}
+```
+
+`status` is `unknown`, and every `value` is `null`, before the number's first
+sync, after a logout, while it waits to be paired, and after another WhatsApp
+account is linked, until that account's first sync. `source` says whether
+WhatsApp sent the setting (`server`), left its default (`client_default`) or
+the capability does not apply to the account type (`account_type`). Ignore
+keys you do not recognize; new keys can be added.
 
 ## Session creation and configuration
 
@@ -2779,3 +2868,127 @@ without the original response. An `unknown` outcome can mean an external effect
 occurred; reconcile it before choosing a new key. Request/response bodies and
 customer log output are not retained. List responses contain `items` and
 `nextCursor`; pass that cursor as `before` to read the next page.
+
+## WhatsApp business analytics
+
+Source builds expose `client.analytics.get({ projectId, sessionId, start, end })`.
+Requires `sessions:read`; project-bound clients cannot read another project.
+A team owner or admin enables Analytics in the Console. Disabled results contain
+no business aggregates.
+
+```ts
+const { data } = await client.analytics.get({ sessionId: numberId });
+console.log(data.summary?.engagement.replyRate);
+console.log(data.summary?.calls.answerRate);
+console.log(data.summary?.calls.followUp);
+console.log(data.callSeries);
+```
+
+Messaging results include completed 24-hour receipt/reply cohorts, response
+queues, coarse metadata comparisons and observed phone/customer activity.
+Calls include outcomes, direction breakdowns, measured pickup and length timings,
+reported quality, failure categories and completed missed-call follow-up windows.
+Call results do not require messaging telemetry. Preserve `null` measurements;
+missing reports do not imply healthy quality. Disabling Analytics clears message
+and engagement aggregates and hides the call view; operational call history is
+retained separately. [Measurement definitions](https://docs.polymorfa.com/console/analytics).
+These source-build methods have not been published in a package release.
+
+## Analytics metrics export
+
+Source builds expose `client.analytics.metrics` on root and project clients:
+
+```ts
+const { data, metadata } = await client.analytics.metrics({
+  windowHours: 24,
+  format: "openmetrics",
+  segments: true,
+});
+```
+
+`data` is the metrics text; `metadata` retains HTTP status, request ID and headers.
+The method validates UUID filters and the 1–168-hour window. It uses `sessions:read`
+and the same Analytics opt-in. All metrics are gauges over completed UTC hours;
+never apply `rate()` or `increase()`. Disabled exports contain enablement and window
+metadata only. [Collector setup and definitions](https://docs.polymorfa.com/console/analytics-collectors).
+
+## Spending limits and funding order
+
+```ts
+const limits = await platform.billing.getLimits({ projectId });
+const number = limits.data.data.budgets.find((b) => b.scope === "number")!;
+await platform.billing.setLimit("number", number.resourceId, {
+  limitCredits: 1000,
+  expectedRevision: number.revision,
+});
+const priorities = await platform.billing.getPriorities();
+await platform.billing.reorderPriorities({
+  scope: "project",
+  resourceIds: priorities.data.data.projects.map((p) => p.id).reverse(),
+  expectedRevision: priorities.data.data.revision,
+});
+```
+
+`setPriority(scope, resourceId, {priority, expectedRevision})` changes one rank.
+For number order use `scope: "number"`, `projectId` and all its real number UUIDs.
+Orders are complete and highest first; saves are atomic and stale revisions
+return a conflict. Limits reset monthly at 00:00 UTC on the first day. Null
+removes a cap; zero blocks new charges. Paid windows remain intact. These
+methods do not grant permissions, paid access or deployed availability.
+Publication of this source revision is separate from API deployment.
+
+For one customer or number, read and save both controls without loading the
+organization directory:
+
+```typescript
+const {
+  data: { data: current },
+} = await platform.billing.getResourceControls("customer", customerId);
+await platform.billing.setResourceControls("customer", customerId, {
+  limitCredits: 1500,
+  priority: 25,
+  expectedBudgetRevision: current.budget.revision,
+  expectedPriorityRevision: current.priorityRevision,
+});
+```
+
+Both revisions are required; a conflict leaves both settings unchanged. Project
+priority takes precedence. Numbers inherit customer priority; a higher number
+priority overrides it within the project. A customer's assigned numbers share
+its monthly cap. `getLimits({scope:"project"})` and
+`getPriorities({scope:"project"})` avoid downloading number/customer directories.
+Real initial QuickLink creation accepts `billingControls:{limitCredits:250,
+priority:30}` before pairing admission, with team `billing:manage` authority.
+Testing and supplementary connections reject these fields. Package publication
+and API deployment remain separate gates.
+
+Read one project's funding controls and save its combined customer and number
+order:
+
+```typescript
+const {
+  data: { data: controls },
+} = await platform.billing.getPriorities({ projectId });
+const resources = [
+  ...controls.customers.map((customer) => ({
+    scope: "customer" as const,
+    resourceId: customer.id,
+    priority: customer.priority,
+  })),
+  ...controls.numbers.map((number) => ({
+    scope: "number" as const,
+    resourceId: number.id,
+    priority: number.priority,
+  })),
+].sort((first, second) => second.priority - first.priority);
+await platform.billing.reorderPriorities({
+  scope: "resource",
+  projectId,
+  resources: resources.map(({ scope, resourceId }) => ({ scope, resourceId })),
+  expectedRevision: controls.revision,
+});
+```
+
+Pass every active customer and real number, highest priority first. Duplicate,
+incomplete, or stale orders fail without partial changes. This operation never
+bypasses a spending cap.

@@ -7950,6 +7950,8 @@
                   "stream_connection_limit_reached",
                   "state_conflict",
                   "hybrid_routing_paused",
+                  "hybrid_choice_required",
+                  "hybrid_transition_ineligible",
                   "hybrid_automation_unavailable",
                   "hybrid_transport_unavailable",
                   "hybrid_target_reference_unavailable",
@@ -17911,6 +17913,38 @@
           }
         }
       },
+      "TemplateSubmission": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "description": "Number the template was submitted for."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED"
+            ],
+            "description": "PENDING: sent to Meta for review. APPROVED: the number sends this template without Meta review."
+          },
+          "autoApproved": {
+            "type": "boolean",
+            "description": "True when the number does not need Meta approval (any number that is not a Cloud API number). Nothing was sent to Meta."
+          },
+          "metaTemplateId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Meta's template ID; null when auto-approved."
+          }
+        },
+        "required": [
+          "session",
+          "status",
+          "autoApproved",
+          "metaTemplateId"
+        ]
+      },
       "SubmitProjectTemplateResponse": {
         "type": "object",
         "properties": {
@@ -17921,8 +17955,22 @@
             ]
           },
           "data": {
-            "type": "object",
-            "additionalProperties": {}
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MessageTemplate"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "submission": {
+                    "$ref": "#/components/schemas/TemplateSubmission"
+                  }
+                },
+                "required": [
+                  "submission"
+                ]
+              }
+            ]
           }
         },
         "required": [
@@ -19141,6 +19189,28 @@
             "type": "string",
             "format": "uuid",
             "description": "Customer that owns the connected number when Customers is enabled for the project."
+          },
+          "billingControls": {
+            "type": "object",
+            "properties": {
+              "limitCredits": {
+                "type": "number",
+                "nullable": true,
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "priority": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              }
+            },
+            "required": [
+              "limitCredits",
+              "priority"
+            ],
+            "additionalProperties": false,
+            "description": "Initial monthly spending limit and funding priority for a real Number. Requires a team key with billing:manage or a live team owner/admin on Pay-As-You-Go. Applied atomically before pairing admission."
           },
           "externalId": {
             "type": "string",
@@ -66133,8 +66203,8 @@
         "tags": [
           "Templates"
         ],
-        "summary": "Submit a project template to Meta for approval on a Cloud-API session",
-        "description": "**Required scope:** `templates:manage`\n\nRenders the canonical template into a Meta create-template payload and submits it through the given cloud_api session. Records a per-session approval pointer (cloudLinks) and returns the updated template. Incomplete or invalid definitions return 400 before submission; passing local validation does not guarantee Meta approval. Read the Number's template catalog for the review status.",
+        "summary": "Submit a project template for approval",
+        "description": "**Required scope:** `templates:manage`\n\nAccepts any number, so one integration handles both connection types; check `submission` in the response. A Cloud API number needs Meta approval: the template is rendered into a Meta create-template payload, submitted through that number, recorded as a per-number approval pointer (cloudLinks), and returned with `submission.status` PENDING. Read the Number's template catalog for Meta's review result. Any other number needs no review: nothing is sent to Meta and the template is returned with `submission.status` APPROVED and `submission.autoApproved` true. Incomplete or invalid definitions return 400 for every number; passing local validation does not guarantee Meta approval.",
         "security": [
           {
             "BearerAuth": []
@@ -66170,7 +66240,7 @@
         },
         "responses": {
           "200": {
-            "description": "Submitted",
+            "description": "Submitted to Meta (Cloud API number) or approved automatically (any other number)",
             "content": {
               "application/json": {
                 "schema": {

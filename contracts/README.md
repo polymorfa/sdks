@@ -41,22 +41,75 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
+The current snapshots are byte-identical copies of the Messaging and Platform
+contracts at API dev merge commit `171a9683ff45d11a4b5d3917dc428ad2722b0d99`.
+The full revision contains the inherited Logs and Usage contracts and all four
+public Analytics reads. The ledger contains 579 operations: 433 covered and
+146 excluded, with no missing, partial or changed fingerprints. Six reviewed
+Console changes cover analytics projections, consent preferences, operational
+error vitals and shared drains. They require dashboard identity and remain
+excluded from server SDK authority.
+
+The seven financial operations cover limits, priorities, complete ordering and
+one-resource combined read/save. Project priority takes precedence. Numbers
+inherit customer priority; a higher number priority overrides it within the
+project. Customer limits include all assigned numbers. Initial real QuickLink
+creation accepts optional billing controls before admission. These methods
+operate actual monthly credit-debit limits; the separate nested included-usage
+quota prototype remains outside those methods. Reads require `billing:read`;
+writes require `billing:manage`, live team authority and Pay-As-You-Go.
+SDK publication and API deployment remain separate gates.
+
+The preceding repin at `b8fa167e47c901131d3bd9865e6479b153ad5157`
+added only the private Console `listConsoleNumberOptions` operation,
+a bounded searchable number-label read with keyset pagination. Its dashboard
+identity requirement excludes it from server SDK methods. All 568 preceding
+operation fingerprints and the public API contract remain unchanged. The ledger
+then contained 569 operations: 429 covered and 140 excluded.
+The preceding private `usageInsight` contract at
+`49b529fd74f42fdd6bb30671ebd4b0ec8e9558f3`
+added exact org/project/number scope metadata and immutable-number filtering.
+The selected number's current UTC monthly completed outgoing calls and included
+allowance remain separate from the chart period. Unknown tiers have no allowance
+read; known unlimited tiers are explicit. Request logs and serverless receipts
+have no number attribution, so their number measurements are unavailable.
+No per-number allowance is pooled into a project/team quota; credit caps still use
+their separate financial read. The preceding private read at
+`9aa751ef923990c4b9ff6df56f64e35c7ae78027` distinguished catalog pricing from
+measured quantities and actual charged credits across 18 aggregate categories.
+Completed outbound calls match the monthly gate; serverless counts surviving
+admitted project receipts, without number attribution or durable billing authority.
+Complete WhatsApp media/HMS GB-month usage remains unavailable. The total
+production-number metric does not treat the legacy session limit as a cap.
+The preceding source,
+`61d0a0e6e2c7b0eca1971657afc80926b4d4142b`, added registered consumption meters.
+The earlier source, `ba09326dd3c6688f05320c1f7685aeb0290a0ed2`,
+added project-filtered priority reads and mixed customer/number ordering; those
+public operations retain their typed SDK methods and unchanged fingerprints.
+Usage insights require dashboard identity; no server SDK method grants access
+to that Console route. The three Console-only setup operations also remain
+excluded from SDK authority.
+Reads require organization credentials with `billing:read`; writes require
+`billing:manage`, live team authority and Pay-As-You-Go. Existing credential masks
+do not gain these permissions. Paid service continues through its window when a
+limit is reached. The older Graph and test-event supplements keep their independent
+pins; these financial operations do not change them. API deployment, SDK and CLI
+publication remain separate gates.
+
+The preceding snapshots were described as follows.
+
 The two public Flow draft reads in the pinned Platform snapshot are covered by
 `Client.project(projectId).flows.list` and `.retrieve`. The API declares both
 public, project-bound, and `sessions:read`.
 
-The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API `dev` merge commit `8bc53d8bcdef167f43cf7a4a339af380b30fa860`
-(API PR #434, after PR #428 dynamic Flow endpoints). Moving from
-`e818ba62830d3727a7822379bb46c1fece90ef1b` adds six beta Platform operations,
-covered by `Client.project(projectId).flows.endpoint`, `setEndpoint`,
+The six dynamic Flow endpoint and managed Flow key operations (API PRs #428 and
+#434) are covered by `Client.project(projectId).flows.endpoint`, `setEndpoint`,
 `deleteEndpoint`, `endpointReceipts`, `encryptionKey` and
-`rotateEncryptionKey`. It changes two fingerprints, both reviewed:
-`getSession` and `updateSession` gain the optional `newChatCapping` from PR
-#403, already typed on `Session`. The API withholds the six operations from
-its public spec while the Cloud onboarding beta has no audience.
+`rotateEncryptionKey`. The API withholds them from its public spec while the
+Cloud onboarding beta has no audience.
 
-The previous pin was API `dev` merge commit `e818ba62830d3727a7822379bb46c1fece90ef1b`
+The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
+files at API `dev` merge commit `e818ba62830d3727a7822379bb46c1fece90ef1b`
 (API PR #433, which corrects the payment order amount and status schemas from
 PR #429, on top of PR #431). PR #433 changes only the `sendMessage`
 fingerprint: `tax`, `shipping` and `discount` become single closed objects
@@ -240,14 +293,17 @@ exported `ContactOptPayload`. The unproduced `bansafe.health_changed`,
 `bansafe.risk_changed`, and `bansafe.enforcement` names are retired. Historical
 signed events with these names still decode as unknown events.
 
+The base contract snapshot below excludes the four WhatsApp business analytics
+reads described at the end of this document.
+
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        406 |
+| Covered             |        422 |
 | Missing             |          0 |
-| Excluded            |        130 |
+| Excluded            |        136 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        536 |
+| Total               |        558 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -421,3 +477,17 @@ spec while the beta has no audience. The full snapshots stay pinned to
 coverage ledger as `Client.campaigns.recordConversion` and
 `Client.campaigns.conversions`. `campaign-conversions-contract.test.ts`
 compares the exported types with the supplement.
+
+## WhatsApp business analytics contract
+
+`Client.analytics.get` covers the team and project Analytics reads.
+The strict response contains number/project-scoped messaging aggregates,
+retained-call outcomes, measured timings, quality, failure categories,
+missed-call follow-up and daily call series. `Client.analytics.metrics` covers
+the two collector reads and returns Prometheus/OpenMetrics text rather than
+a JSON envelope. All four use scoped reader authority and Analytics opt-in.
+
+The full Platform snapshot, each Analytics operation and `source.json` pin the
+same API source revision. Reconciliation tests check exact snapshot hashes and
+strict operation fingerprints. Counts do not establish package publication or
+customer access.

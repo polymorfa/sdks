@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "8bc53d8bcdef167f43cf7a4a339af380b30fa860",
+  "commit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
   "branch": "dev",
   "published": true,
-  "note": "API dev merge of PR #434 (OA-15 custody race fixes) after PR #428 (dynamic Flow endpoints and managed Flow key custody) and PR #403 (new-chat capping). Includes every merged Official API, Flow lifecycle and dynamic endpoint, catalog, campaign send-window and campaign conversion contract. Both snapshots are byte-identical to this exact API commit. SDK publication, CLI registry pinning, deployment and live acceptance remain separate gates.",
+  "note": "Full Messaging and Platform snapshots pin the merged API dev revision. SDK publication and API deployment remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "b600599e7ca9cb089cc071205b15187823141eae4f02e6015f17083d79b3f80a"
+      "sha256": "7f6ddab25a673e45da7a209292ddfd7354acccf30c27e2fa651113e321b66d3d"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "78c94fd5d5581488b83ade1035ec8b61028b2391e7543b504b5bbc3d584328a9"
+      "sha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
     }
   }
 }

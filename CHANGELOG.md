@@ -10,12 +10,22 @@
   custody per Number). Writes make one attempt. New
   `verifyFlowForwardSignature` and `FLOW_FORWARD_SIGNATURE_HEADER` verify
   forwarded requests at your endpoint. Contracts are pinned to API `dev`
-  `8bc53d8`. API contract: polymorfa/polymorfa#428 and #434.
+  `171a968`. API contract: polymorfa/polymorfa#428 and #434.
 
+- Added source-build `Client.analytics.metrics` for scoped Prometheus/OpenMetrics gauges, including denominators, observation times and coverage. Uses Analytics opt-in and `sessions:read`.
+
+- `Client.analytics.get` reads WhatsApp number activity, completed 24-hour read and reply cohorts, response times and connection vitals. Requires `sessions:read` and Analytics enabled by a team owner or admin. Missing coverage returns null rates.
+
+- Hybrid Link tier transitions. `Client.sessions.quoteTierChange` accepts
+  `hybridResolution` (`keep` one connection or `split` into two Numbers) for a
+  Hybrid Link Number leaving Pro, or `hybridMerge` to merge a same-number pair
+  on an upgrade to Pro. `NumberTierChange.quote.hybridTransition` reports the
+  plan and its `status`. `Client.projects.listHybridMergeCandidates` lists
+  mergeable pairs. `PolymorfaErrorCode` adds `hybrid_choice_required` and
+  `hybrid_transition_ineligible`.
 - `Session` gains optional `newChatCapping` (`NewChatCapping`): WhatsApp's
   per-number new-chat cap, returned by `sessions.retrieve` for linked-device
   numbers. API contract: polymorfa/polymorfa#403.
-
 - Brazil payment orders (beta, requires team enrollment, an Official API
   Number and Meta payments eligibility in Brazil). `messages.send` accepts
   `orderDetails` (Pix dynamic code, payment link or boleto, itemized or
@@ -81,6 +91,12 @@
   test-event fixtures. The typed `bansafe.incident`, `bansafe.action`,
   `bansafe.health_threshold`, and `bansafe.claim` events remain available.
 
+- Added `Client.sessions.getCapabilities(sessionId)` and the
+  `SessionCapabilities` types. It reads which WhatsApp features and limits
+  WhatsApp has enabled for a number, as of the number's last configuration sync;
+  `status` is `unknown` and every value null before the first sync. It needs
+  `sessions:read` and enrollment in the number capabilities beta (403 until
+  then).
 - Browser Calls hold locally gathered ICE candidates until the platform
   answers the call's offer, then send them. Candidates sent earlier were
   refused with `409` because no media session existed yet, and were lost.
