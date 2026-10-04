@@ -329,7 +329,12 @@ export class FlowsResource {
     params: FlowNumberRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<FlowEndpointState>> {
-    return this.request("GET", `${flowPath(flowId)}/endpoint`, numberInput(params), options);
+    return this.request(
+      "GET",
+      `${flowPath(flowId)}/endpoint`,
+      numberInput(params),
+      options,
+    );
   }
   /**
    * Create or replace the Flow's data endpoint on one Number. Sent once:
@@ -348,7 +353,12 @@ export class FlowsResource {
     params: FlowNumberRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<{ readonly ok: true }>> {
-    return this.request("DELETE", `${flowPath(flowId)}/endpoint`, numberInput(params), options);
+    return this.request(
+      "DELETE",
+      `${flowPath(flowId)}/endpoint`,
+      numberInput(params),
+      options,
+    );
   }
   endpointReceipts(
     flowId: string,
@@ -357,18 +367,33 @@ export class FlowsResource {
   ): Promise<ApiResponse<readonly FlowEndpointReceipt[]>> {
     if (
       params.limit !== undefined &&
-      (!Number.isInteger(params.limit) || params.limit < 1 || params.limit > 100)
+      (!Number.isInteger(params.limit) ||
+        params.limit < 1 ||
+        params.limit > 100)
     ) {
-      throw new PolymorfaValidationError("limit must be an integer from 1 to 100.");
+      throw new PolymorfaValidationError(
+        "limit must be an integer from 1 to 100.",
+      );
     }
-    return this.request("GET", `${flowPath(flowId)}/endpoint/receipts`, params, options);
+    return this.request(
+      "GET",
+      `${flowPath(flowId)}/endpoint/receipts`,
+      params,
+      options,
+    );
   }
   /** The Number's Flow encryption custody and recent managed keys. */
   encryptionKey(
     params: FlowNumberRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<FlowEncryptionCustody>> {
-    return this.request("GET", "", numberInput(params), options, "/platform/flow-encryption-keys");
+    return this.request(
+      "GET",
+      "",
+      numberInput(params),
+      options,
+      "/platform/flow-encryption-keys",
+    );
   }
   /**
    * Generate and register a new managed key for the Number. Sent once; the
@@ -378,7 +403,13 @@ export class FlowsResource {
     body: FlowNumberRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<FlowEncryptionKeyRotation>> {
-    return this.request("POST", "", numberInput(body), options, "/platform/flow-encryption-keys/rotate");
+    return this.request(
+      "POST",
+      "",
+      numberInput(body),
+      options,
+      "/platform/flow-encryption-keys/rotate",
+    );
   }
   private request<T>(
     method: RawRequest["method"],
@@ -430,11 +461,15 @@ function validateEndpointRequest(body: SetFlowEndpointRequest): void {
     if (typeof body.functionId !== "string" || !body.functionId)
       throw new PolymorfaValidationError("functionId is required.");
   } else {
-    throw new PolymorfaValidationError("mode must be forward, function or direct.");
+    throw new PolymorfaValidationError(
+      "mode must be forward, function or direct.",
+    );
   }
   if (
     body.expectedRevision !== undefined &&
     (!Number.isInteger(body.expectedRevision) || body.expectedRevision < 1)
   )
-    throw new PolymorfaValidationError("expectedRevision must be a positive integer.");
+    throw new PolymorfaValidationError(
+      "expectedRevision must be a positive integer.",
+    );
 }

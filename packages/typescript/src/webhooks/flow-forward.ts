@@ -1,4 +1,9 @@
-import { hexBytes, verifyWebhookHmac, webhookBodyBytes, type WebhookBody } from "./crypto.js";
+import {
+  hexBytes,
+  verifyWebhookHmac,
+  webhookBodyBytes,
+  type WebhookBody,
+} from "./crypto.js";
 
 /** Header on a decrypted WhatsApp Flow request that Polymorfa forwards to your endpoint. */
 export const FLOW_FORWARD_SIGNATURE_HEADER = "x-polymorfa-flow-signature";
@@ -21,13 +26,25 @@ export async function verifyFlowForwardSignature(
   secret: string,
   options: VerifyFlowForwardSignatureOptions = {},
 ): Promise<boolean> {
-  if (typeof signatureHeader !== "string" || typeof secret !== "string" || secret.length === 0) return false;
-  const match = /^t=(\d{1,12}),v1=([a-fA-F0-9]{64})$/.exec(signatureHeader.trim());
+  if (
+    typeof signatureHeader !== "string" ||
+    typeof secret !== "string" ||
+    secret.length === 0
+  )
+    return false;
+  const match = /^t=(\d{1,12}),v1=([a-fA-F0-9]{64})$/.exec(
+    signatureHeader.trim(),
+  );
   if (!match) return false;
   const timestamp = Number(match[1]);
   const tolerance = options.toleranceSeconds ?? 300;
   const nowSeconds = (options.now ?? Date.now()) / 1000;
-  if (!Number.isFinite(tolerance) || tolerance < 0 || Math.abs(nowSeconds - timestamp) > tolerance) return false;
+  if (
+    !Number.isFinite(tolerance) ||
+    tolerance < 0 ||
+    Math.abs(nowSeconds - timestamp) > tolerance
+  )
+    return false;
   const body = webhookBodyBytes(rawBody);
   const prefix = new TextEncoder().encode(`${match[1]}.`);
   const signed = new Uint8Array(prefix.length + body.length);
