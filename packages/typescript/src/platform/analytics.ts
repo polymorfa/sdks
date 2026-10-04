@@ -140,7 +140,35 @@ export interface WhatsAppDeviceAnalytics {
     }[];
   };
 }
+export type RecipientDeviceCount =
+  "primary_only" | "one_linked" | "two_plus_linked" | "unknown";
+export interface WhatsAppRecipientActivityRow {
+  ts: number;
+  recipientCountry: string;
+  recipientDeviceCount: RecipientDeviceCount;
+  deviceSource: "primary" | "linked" | "unknown";
+  incomingMessages: number;
+  deliveryReceipts: number;
+  readReceipts: number;
+  onlineSignals: number;
+  offlineSignals: number;
+  typingSignals: number;
+  lastSignalAt: number;
+  quietGaps: number;
+  quietGapMs: number;
+  averageQuietGapMs: number | null;
+}
+export interface WhatsAppRecipientActivity {
+  measured: boolean;
+  complete: boolean;
+  observedBuckets: number;
+  droppedSignals: number;
+  truncated: boolean;
+  rows: WhatsAppRecipientActivityRow[];
+}
 export interface WhatsAppConversationGroup {
+  recipientCountry?: string;
+  recipientDeviceCount?: RecipientDeviceCount;
   ts: number;
   messageType:
     | "text"
@@ -175,6 +203,7 @@ export interface WhatsAppConversationBreakdown {
   rows: WhatsAppConversationGroup[];
 }
 export interface WhatsAppMetrics {
+  recipientActivity?: WhatsAppRecipientActivity;
   deviceAnalytics: WhatsAppDeviceAnalytics;
   conversationBreakdown: WhatsAppConversationBreakdown;
   calls: CallBusinessMetrics;

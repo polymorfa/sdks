@@ -238,3 +238,52 @@ it("preserves joint country/message cohorts, unknown client families and stale d
     result.data.numbers[0]?.deviceAnalytics.inventory?.devices[0]?.listed,
   ).toBeNull();
 });
+
+it("preserves country/count/device receipt activity without changing nullable coverage", async () => {
+  const recipientActivity = {
+    measured: true,
+    complete: false,
+    observedBuckets: 1,
+    droppedSignals: 1,
+    truncated: false,
+    rows: [
+      {
+        ts: 1,
+        recipientCountry: "CA",
+        recipientDeviceCount: "one_linked",
+        deviceSource: "linked",
+        incomingMessages: 4,
+        deliveryReceipts: 8,
+        readReceipts: 2,
+        onlineSignals: 0,
+        offlineSignals: 0,
+        typingSignals: 0,
+        lastSignalAt: 10,
+        quietGaps: 1,
+        quietGapMs: 1200000,
+        averageQuietGapMs: null,
+      },
+    ],
+  };
+  const body = {
+    enabled: true,
+    summary: { recipientActivity },
+    numbers: [{ sessionId: "number", recipientActivity }],
+    series: [],
+    callSeries: [],
+  };
+  const server = await startTestServer(() => ({
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ data: body }),
+  }));
+  servers.push(server);
+  const client = new Client({
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    baseUrl: server.url,
+  });
+  const data = (await client.analytics.get()).data;
+  expect(data.summary?.recipientActivity).toEqual(recipientActivity);
+  expect(
+    data.numbers[0]?.recipientActivity?.rows[0]?.averageQuietGapMs,
+  ).toBeNull();
+});

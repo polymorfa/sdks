@@ -378,6 +378,28 @@ read receipts do not prove an app open. `measured` distinguishes observed zero
 activity from a number without telemetry. No contact identities or message
 content are returned. See the [Analytics guide](https://docs.polymorfa.com/console/analytics).
 
+### Recipient observations
+
+`analytics.get()` exposes optional `recipientActivity` on the combined summary
+and each number. Hourly rows preserve recipient numbering country, complete-list
+linked-device count range and primary/linked/unknown signal source. Country and
+count fields also appear on joint `conversationBreakdown` rows; older buckets use
+Unknown. `primary_only`, `one_linked` and `two_plus_linked` exclude device zero from
+the linked count.
+
+Delivery receipts indicate delivery to a device, independently of read receipts.
+Multiple devices can receipt the same message. Quiet-gap sums and completed sample
+counts support weighted means; quiet does not establish offline or power state.
+Check `measured`, `complete`, `droppedSignals` and `truncated` before interpreting
+averages. Message type/length/source filters do not apply to recipient activity
+rows because those dimensions are not collected together.
+
+These additions are pinned to the producer in
+`contracts/analytics-device-signals.json`; source availability does not publish a
+package or advance the accepted API contract. Publication requires matching
+runtime acceptance. Linked Devices produces these aggregates; Official messaging
+Analytics remains unmeasured.
+
 ### Collector metrics
 
 `client.analytics.metrics({windowHours: 24, format: "openmetrics", segments: true})` returns Prometheus/OpenMetrics text with HTTP metadata, on root and project clients.
